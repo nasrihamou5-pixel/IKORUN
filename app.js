@@ -1975,6 +1975,18 @@ function kmThisWeek(){ return sessThisWeek().reduce((a,s)=>a+(s.km||0),0); }
 function totalKm(){ return SESS.reduce((a,s)=>a+(s.km||0),0); }
 function totalTonnage(){ return MSESS.reduce((a,s)=>a+(s.tonnage||0),0); }
 function runCountWeek(){ return sessThisWeek().length; }
+function sessInPeriod(period){
+  const now=new Date(); now.setHours(0,0,0,0);
+  let start=new Date(now);
+  if(period==='today'){ /* start = now */ }
+  else if(period==='week'){ start.setDate(now.getDate()-now.getDay()+(now.getDay()===0?-6:1)); }
+  else if(period==='month'){ start=new Date(now.getFullYear(),now.getMonth(),1); }
+  else if(period==='year'){ start=new Date(now.getFullYear(),0,1); }
+  const end=new Date(now); end.setDate(end.getDate()+1);
+  return [...SESS,...MSESS].filter(s=>{ const d=new Date(s.date+'T00:00:00'); return d>=start && d<end; });
+}
+function kmInPeriod(period){ return sessInPeriod(period).reduce((a,s)=>a+(s.km||0),0); }
+function timeInPeriod(period){ return sessInPeriod(period).reduce((a,s)=>a+(s.duration||0),0); }
 function muscuCountWeek(){ const ws=weekStart(); return MSESS.filter(s=>new Date(s.date)>=ws).length; }
 function totalSessions(){ return SESS.length+MSESS.length; }
 function streakDays(){
@@ -2035,6 +2047,21 @@ function ringSVG(size,pct,stroke,color,bg){
   const r=(size-stroke)/2, c=2*Math.PI*r, off=c*(1-Math.min(1,pct/100));
   return '<svg width="'+size+'" height="'+size+'" style="transform:rotate(-90deg)"><circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="'+(bg||'var(--s2)')+'" stroke-width="'+stroke+'"/><circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="'+stroke+'" stroke-linecap="round" stroke-dasharray="'+c+'" stroke-dashoffset="'+off+'" style="transition:stroke-dashoffset .8s ease"/></svg>';
 }
+/* multi-segment donut: segs = [{v:number,color:'var(--e)'}], centerHTML optional */
+function donutSVG(segs,size,stroke,centerHTML){
+  size=size||120; stroke=stroke||16;
+  const total=segs.reduce((a,s)=>a+s.v,0)||1;
+  const r=(size-stroke)/2, c=2*Math.PI*r;
+  let off=0, arcs='';
+  segs.forEach(s=>{
+    const frac=s.v/total, len=c*frac;
+    arcs+='<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="'+s.color+'" stroke-width="'+stroke+'" stroke-dasharray="'+len+' '+(c-len)+'" stroke-dashoffset="'+(-off)+'" style="transition:stroke-dasharray .8s var(--ease)"/>';
+    off+=len;
+  });
+  return '<div style="position:relative;width:'+size+'px;height:'+size+'px;margin:0 auto"><svg width="'+size+'" height="'+size+'" style="transform:rotate(-90deg)">'+arcs+'</svg>'+
+    (centerHTML?'<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">'+centerHTML+'</div>':'')+'</div>';
+}
+function fmtHM(mins){ mins=Math.round(mins||0); const h=Math.floor(mins/60), m=mins%60; return h>0?(h+'h '+String(m).padStart(2,'0')+'min'):(m+'min'); }
 
 /* ---------- RENDER HOME ---------- */
 function renderHome(){
@@ -2938,17 +2965,43 @@ function renderStats(){
   if(statsTab==='medals') h+=statsMedals();
   $('#s-stats').innerHTML=h;
 }
+let bilanPeriod='week';
 function statsBilan(){
-  let h='<div class="sgrid" style="margin-bottom:14px">'+
-    '<div class="sbox"><div class="v">'+totalKm().toFixed(0)+'</div><div class="l">km courus</div></div>'+
-    '<div class="sbox"><div class="v">'+(totalTonnage()/1000).toFixed(1)+'t</div><div class="l">Tonnage total</div></div>'+
-    '<div class="sbox"><div class="v">'+totalSessions()+'</div><div class="l">Séances</div></div>'+
-    '<div class="sbox"><div class="v">'+XP.level+'</div><div class="l">Niveau</div></div></div>';
+  const per=sessInPeriod(bilanPeriod);
+  const km=per.reduce((a,s)=>a+(s.km||0),0);
+  const mins=per.reduce((a,s)=>a+(s.duration||0),0);
+
+  let h='<div class="pills" style="margin-bottom:14px">'+
+    [['today','Aujourd\u2019hui'],['week','Semaine'],['month','Mois'],['year','Année']].map(p=>'<div class="pill '+(bilanPeriod===p[0]?'on':'')+'" onclick="bilanPeriod=\''+p[0]+'\';renderStats()">'+p[1]+'</div>').join('')+'</div>';
+
+  h+='<div class="sgrid" style="margin-bottom:10px">'+
+    '<div class="sbox"><div class="lab" style="margin-bottom:4px">Distance</div><div class="v">'+km.toFixed(1)+'<span style="font-size:12px;color:var(--dim)"> km</span></div></div>'+
+    '<div class="sbox"><div class="lab" style="margin-bottom:4px">Temps</div><div class="v" style="font-size:17px">'+fmtHM(mins)+'</div></div>'+
+    '<div class="sbox"><div class="lab" style="margin-bottom:4px">Séances</div><div class="v">'+per.length+'</div></div></div>';
+
+  // CHARGE D'ENTRAÎNEMENT
+  h+='<div class="card"><div class="card-t">📈 Charge d\u2019entraînement</div>'+formChart()+'</div>';
+
+  // RÉPARTITION DES TYPES (donut)
+  const byType={};
+  per.forEach(s=>{ const ty=s.type||s.baseType||(s.tonnage?'Muscu':'Autre'); byType[ty]=(byType[ty]||0)+1; });
+  const entries=Object.entries(byType).sort((a,b)=>b[1]-a[1]);
+  if(entries.length){
+    const segs=entries.map(([ty,ct],i)=>({v:ct,color:'var('+(TYPE_COLORS[ty]||'--e')+')',ty,ct}));
+    h+='<div class="card"><div class="card-t">🍩 Répartition des séances</div><div class="row" style="align-items:center;gap:18px">'+
+      donutSVG(segs,110,15,'<div class="man" style="font-weight:800;font-size:20px">'+per.length+'</div><div style="font-size:10px;color:var(--dim)">séances</div>')+
+      '<div style="flex:1;display:flex;flex-direction:column;gap:8px">'+
+      segs.map(s=>'<div class="row" style="gap:8px"><span class="zdot" style="background:'+s.color+'"></span><span style="flex:1;font-size:12.5px;font-weight:600">'+s.ty+'</span><span class="mono" style="font-size:12px;color:var(--muted)">'+Math.round(s.ct/per.length*100)+'%</span></div>').join('')+
+      '</div></div></div>';
+  } else {
+    h+='<div class="card"><div class="empty"><div class="em-ic">🍩</div><div style="font-size:13px">Aucune séance sur cette période.</div></div></div>';
+  }
+
   // heatmap 13 weeks
   h+='<div class="card"><div class="card-t">🔥 13 dernières semaines</div><div class="heat">'+heatmap13()+'</div><div class="row" style="margin-top:10px;font-size:11px;color:var(--dim)"><span>Moins</span><span>Plus</span></div></div>';
   // week vs target
   const kmW=kmThisWeek(),tg=P.kmWeek||40;
-  h+='<div class="card"><div class="card-t">📊 Semaine vs cible</div><div class="row" style="margin-bottom:6px"><span style="font-size:13px">Cette semaine</span><span class="mono" style="color:var(--e)">'+kmW.toFixed(0)+' km</span></div><div class="pbar"><div style="width:'+Math.min(100,kmW/tg*100)+'%"></div></div><div style="font-size:12px;color:var(--muted);margin-top:8px">Cible : '+tg+' km · '+(kmW>=tg?'Objectif atteint ! 🎉':(tg-kmW).toFixed(0)+' km restants')+'</div></div>';
+  h+='<div class="card"><div class="card-t">🎯 Semaine vs cible</div><div class="row" style="margin-bottom:6px"><span style="font-size:13px">Cette semaine</span><span class="mono" style="color:var(--e)">'+kmW.toFixed(0)+' km</span></div><div class="pbar"><div style="width:'+Math.min(100,kmW/tg*100)+'%"></div></div><div style="font-size:12px;color:var(--muted);margin-top:8px">Cible : '+tg+' km · '+(kmW>=tg?'Objectif atteint ! 🎉':(tg-kmW).toFixed(0)+' km restants')+'</div></div>';
   return h;
 }
 function heatmap13(){
@@ -2985,8 +3038,8 @@ function statsRun(){
   return h;
 }
 function formChart(){
-  // CTL (fitness, slow EWMA) vs ATL (fatigue, fast EWMA) over last 42 days using real km load
-  const days=42; const arr=[];
+  // CTL (Chronique, 42j) vs ATL (Aiguë, 7j) — charge d'entraînement réelle basée sur km/RPE et tonnage
+  const days=42; 
   const end=new Date(); end.setHours(0,0,0,0);
   const load={}; SESS.forEach(s=>{ load[s.date]=(load[s.date]||0)+(s.km||0)*(s.rpe||5); });
   MSESS.forEach(s=>{ load[s.date]=(load[s.date]||0)+(s.tonnage||0)/100; });
@@ -2994,10 +3047,18 @@ function formChart(){
   for(let i=days-1;i>=0;i--){ const d=new Date(end); d.setDate(end.getDate()-i); const l=load[dateKey(d)]||0;
     ctl=ctl+(l-ctl)/42; atl=atl+(l-atl)/7; ctlA.push(ctl); atlA.push(atl); }
   const max=Math.max(1,...ctlA,...atlA);
-  const W=320,H=120;
-  const path=a=>a.map((v,i)=>(i===0?'M':'L')+(i/(days-1)*W).toFixed(1)+' '+(H-v/max*H).toFixed(1)).join(' ');
-  return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:120px"><path d="'+path(ctlA)+'" fill="none" stroke="var(--e)" stroke-width="2.5"/><path d="'+path(atlA)+'" fill="none" stroke="var(--bad)" stroke-width="2" stroke-dasharray="4 3"/></svg>'+
-    '<div class="row" style="margin-top:8px;font-size:11px"><span style="color:var(--e)">━ Forme (CTL)</span><span style="color:var(--bad)">┄ Fatigue (ATL)</span></div>';
+  const W=320,H=110;
+  const pt=(a,i)=>(i/(days-1)*W).toFixed(1)+' '+(H-a[i]/max*H).toFixed(1);
+  const path=a=>a.map((v,i)=>(i===0?'M':'L')+pt(a,i)).join(' ');
+  const area=a=>'M0 '+H+' '+a.map((v,i)=>'L'+pt(a,i)).join(' ')+' L'+W+' '+H+' Z';
+  return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:110px">'+
+    '<path d="'+area(ctlA)+'" fill="var(--e)" opacity=".08"/>'+
+    '<path d="'+path(ctlA)+'" fill="none" stroke="var(--e)" stroke-width="2.5" stroke-linecap="round"/>'+
+    '<path d="'+path(atlA)+'" fill="none" stroke="var(--maitre)" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 5"/>'+
+    '</svg>'+
+    '<div class="row" style="margin-top:10px;font-size:11.5px;gap:14px;justify-content:flex-start">'+
+    '<span style="display:flex;align-items:center;gap:5px"><span class="zdot" style="background:var(--e)"></span>Chronique</span>'+
+    '<span style="display:flex;align-items:center;gap:5px"><span class="zdot" style="background:var(--maitre)"></span>Aiguë</span></div>';
 }
 function statsMuscu(){
   const pr=MSESS.reduce((a,s)=>Math.max(a,s.tonnage||0),0);
