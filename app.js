@@ -459,21 +459,21 @@ let _bgNotif=null, _bgTick=null;
 async function startBgActivity(type){
   _bgActivity={type,start:Date.now(),paused:false};
   try{ if('wakeLock'in navigator){ _wakeLock=await navigator.wakeLock.request('screen'); } }catch(e){}
-  // Notification persistante mise à jour en continu
+  // Une seule notification fixe au démarrage — pas de recréation en boucle (ça spammait avant)
+  clearInterval(_bgTick); _bgTick=null;
   if(P.notif!==false && 'Notification'in window && Notification.permission==='granted'){
-    clearInterval(_bgTick);
-    const update=()=>{
-      if(!_bgActivity) return;
-      let body;
-      if(_bgActivity.type==='Minuteur'){ const left=(typeof timer!=='undefined'&&timer.endAt)?Math.max(0,Math.round((timer.endAt-Date.now())/1000)):0; body='⏳ Restant : '+fmtMS(left); }
-      else { body='⏱ Écoulé : '+fmtTime((Date.now()-_bgActivity.start)/1000); }
-      body+=' · '+(_bgActivity.paused?'⏸ En pause':'▶ En cours');
-      try{ if(_bgNotif) _bgNotif.close(); _bgNotif=new Notification('VVV · '+_bgActivity.type,{body,icon:appIconDataURL(),tag:'vvv-activity',renotify:false,silent:true}); }catch(e){}
-    };
-    update(); _bgTick=setInterval(update,3000);
+    try{ if(_bgNotif){ _bgNotif.close(); _bgNotif=null; } }catch(e){}
+    try{ _bgNotif=new Notification('VVV · '+type,{body:'▶ Séance en cours',icon:appIconDataURL(),tag:'vvv-activity',renotify:false,silent:true}); }catch(e){}
   }
 }
-function pauseBgActivity(p){ if(_bgActivity) _bgActivity.paused=p; }
+function pauseBgActivity(p){
+  if(_bgActivity) _bgActivity.paused=p;
+  // Met à jour la même notification une seule fois (pas de boucle) quand on met en pause / reprend
+  if(_bgActivity && P.notif!==false && 'Notification'in window && Notification.permission==='granted'){
+    try{ if(_bgNotif) _bgNotif.close(); }catch(e){}
+    try{ _bgNotif=new Notification('VVV · '+_bgActivity.type,{body:(p?'⏸ En pause':'▶ En cours'),icon:appIconDataURL(),tag:'vvv-activity',renotify:false,silent:true}); }catch(e){}
+  }
+}
 function stopBgActivity(){
   _bgActivity=null; clearInterval(_bgTick);
   try{ if(_bgNotif){ _bgNotif.close(); _bgNotif=null; } }catch(e){}
@@ -526,6 +526,9 @@ function openPicker(cfg){
   _pkCfg=cfg;
   $('#pkTitle').textContent=cfg.title||'Choisir';
   const wrap=$('#pkWheels'); wrap.innerHTML='';
+  // Ouvre l'overlay AVANT de positionner les roues : sur iOS Safari, définir scrollTop
+  // sur un élément encore display:none est ignoré, ce qui faisait retomber le curseur au minimum.
+  openOv('ovPicker');
   cfg.cols.forEach((col,ci)=>{
     if(ci>0 && cfg.seps && cfg.seps[ci-1]!=null){ const s=document.createElement('div'); s.className='pk-sep'; s.textContent=cfg.seps[ci-1]; wrap.appendChild(s); }
     const c=document.createElement('div'); c.className='pkcol'+(col.wide?' wide':''); c.dataset.ci=ci;
@@ -549,8 +552,11 @@ function openPicker(cfg){
         it.style.opacity=op.toFixed(2);
       });
     }
-    // init position (après ouverture de l'overlay)
-    requestAnimationFrame(()=>{ requestAnimationFrame(()=>{ c.scrollTop=col.sel*PK_H; paint(); }); });
+    // init position (après ouverture de l'overlay) — appliqué plusieurs fois pour garantir la fiabilité
+    const applyInitPos=()=>{ c.scrollTop=col.sel*PK_H; paint(); };
+    applyInitPos();
+    requestAnimationFrame(()=>{ requestAnimationFrame(applyInitPos); });
+    setTimeout(applyInitPos,150);
     let raf,settle;
     c.addEventListener('scroll',()=>{
       if(raf) cancelAnimationFrame(raf);
@@ -568,7 +574,6 @@ function openPicker(cfg){
     },{passive:true});
   });
   $('#pkOk').onclick=()=>{ const idx=cfg.cols.map(c=>c.sel); closeOv('ovPicker'); if(cfg.onOk)cfg.onOk(idx); };
-  openOv('ovPicker');
 }
 /* Helpers de ranges */
 function range(a,b,step){ const o=[]; step=step||1; for(let i=a;i<=b;i+=step)o.push(i); return o; }
@@ -1784,7 +1789,8 @@ function persoDetailHTML(){
     const sorted=[...p.sessions].sort((a,b)=>new Date(a.date)-new Date(b.date));
     sorted.forEach(s=>{
       const isToday=s.date===tk; const col='var('+(TYPE_COLORS[s.type]||'--e')+')';
-      h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'"><div class="row" onclick="openPersoSheet('+s.id+')" style="cursor:pointer"><div><div style="font-weight:700;font-size:14px">'+s.title+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+fmtDate(s.date)+(s.km?' · '+s.km+' km · '+s.pace+'/km':'')+'</div></div><div class="badge" style="background:rgba(61,127,255,.15);color:'+col+';font-size:11px">'+s.type+'</div></div></div>';
+      const detail=(s.intervals&&s.intervals.length)?(' · '+s.intervals.length+'×'+s.intervals[0].dist+'m'):(s.km?' · '+s.km+' km · '+s.pace+'/km':'');
+      h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'"><div class="row" onclick="openPersoSheet('+s.id+')" style="cursor:pointer"><div><div style="font-weight:700;font-size:14px">'+s.title+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+fmtDate(s.date)+detail+'</div></div><div class="badge" style="background:rgba(61,127,255,.15);color:'+col+';font-size:11px">'+s.type+'</div></div></div>';
     });
   }
   return h;
@@ -1794,22 +1800,88 @@ function renamePerso(id){ const p=CUSTOM.find(x=>x.id===id); const n=prompt('Nom
 function dupPerso(id){ const p=CUSTOM.find(x=>x.id===id); CUSTOM.push({...JSON.parse(JSON.stringify(p)),id:'P'+Date.now(),name:p.name+' (copie)'}); saveAll(); renderSport(); }
 function delPerso(id){ if(!confirm('Supprimer ce plan ?'))return; CUSTOM=CUSTOM.filter(x=>x.id!==id); curPerso=null; saveAll(); renderSport(); }
 let psType='EF';
+let psMode='simple'; // 'simple' (km+allure) ou 'intervals' (temps saisi à chaque répétition) — indépendant du type
+let psIntervals=[{dist:400,timeS:null}];
 function addPersoSession(){
-  psType='EF';
+  psType='EF'; psMode='simple'; psIntervals=[{dist:400,timeS:null}];
+  const types=['EF','Récup','Tempo','Seuil','VMA','Fractionné','Test','Long','Course'];
   let h='<div class="field"><label>Titre</label><input class="inp" id="ps_title" placeholder="Footing du matin"></div>';
-  h+='<div class="field"><label>Type</label><div class="pills" id="ps_types">'+['EF','Récup','Tempo','Seuil','VMA','Long','Course'].map(t=>'<div class="pill '+(t==='EF'?'on':'')+'" onclick="psType=\''+t+'\';document.querySelectorAll(\'#ps_types .pill\').forEach(x=>x.classList.remove(\'on\'));this.classList.add(\'on\')">'+t+'</div>').join('')+'</div></div>';
+  h+='<div class="field"><label>Type</label><div class="pills" id="ps_types">'+types.map(t=>'<div class="pill '+(t==='EF'?'on':'')+'" onclick="psTypeChanged(\''+t+'\')">'+t+'</div>').join('')+'</div></div>';
   h+='<div class="field"><label>Date</label><input class="inp" id="ps_date" type="date" value="'+todayKey()+'"></div>';
-  h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>Distance (km)</label><input class="inp" id="ps_km" type="number" placeholder="8"></div><div class="field" style="flex:1"><label>Allure /km</label><input class="inp" id="ps_pace" placeholder="4:30"></div></div>';
+  h+='<div class="field"><label>Comment veux-tu saisir cette séance ?</label><div class="pills" id="ps_modes">'+
+       '<div class="pill on" onclick="psModeChanged(\'simple\')">Simple (km + allure)</div>'+
+       '<div class="pill" onclick="psModeChanged(\'intervals\')">Par répétition (temps de chaque)</div>'+
+     '</div></div>';
+  h+='<div id="ps_simple" class="row" style="gap:10px"><div class="field" style="flex:1"><label>Distance (km)</label><input class="inp" id="ps_km" type="number" placeholder="8"></div><div class="field" style="flex:1"><label>Allure /km</label><input class="inp" id="ps_pace" placeholder="4:30"></div></div>';
+  h+='<div id="ps_intervals" style="display:none">'+
+       '<div class="field"><label>Distance par répétition</label><div class="inp pkfield set" id="ps_int_dist" onclick="pickPsIntervalDist()">400 m</div></div>'+
+       '<div id="ps_int_rows"></div>'+
+       '<button class="btn ghost sm" style="margin:2px 0 14px" onclick="addPsIntervalRow()">＋ Ajouter une répétition</button>'+
+     '</div>';
   h+='<div class="field"><label>Description (optionnel)</label><textarea class="inp" id="ps_desc" rows="3" placeholder="Détails de la séance..."></textarea></div>';
   h+='<button class="btn" onclick="savePersoSession()">💾 Ajouter la séance</button>';
   $('#progBody').innerHTML=h; $('#ovProgTitle').textContent='Nouvelle séance'; openOv('ovProg');
+  renderPsIntervalRows();
+}
+function psTypeChanged(t){
+  psType=t;
+  document.querySelectorAll('#ps_types .pill').forEach(x=>{ x.classList.toggle('on',x.textContent.trim()===t); });
+  // Suggestion automatique du mode selon le type choisi, mais l'utilisateur peut toujours changer via psModeChanged
+  const suggestsIntervals=['Fractionné','VMA','Seuil','Test'].includes(t);
+  psModeChanged(suggestsIntervals?'intervals':'simple');
+}
+function psModeChanged(mode){
+  psMode=mode;
+  document.querySelectorAll('#ps_modes .pill').forEach(x=>{ x.classList.toggle('on',(mode==='intervals')===(x.textContent.indexOf('répétition')>-1)); });
+  const simple=$('#ps_simple'), ivs=$('#ps_intervals');
+  const isInterval=(mode==='intervals');
+  if(simple) simple.style.display=isInterval?'none':'flex';
+  if(ivs) ivs.style.display=isInterval?'block':'none';
+}
+function pickPsIntervalDist(){
+  const cur=psIntervals[0]?.dist||400;
+  openPicker({title:'Distance par répétition',cols:[{values:[100,150,200,300,400,500,600,800,1000,1200,1500,2000],sel:Math.max(0,[100,150,200,300,400,500,600,800,1000,1200,1500,2000].indexOf(cur)),unit:'m'}],onOk:idx=>{
+    const vals=[100,150,200,300,400,500,600,800,1000,1200,1500,2000]; const v=vals[idx[0]];
+    psIntervals.forEach(r=>r.dist=v); $('#ps_int_dist').textContent=v+' m'; renderPsIntervalRows();
+  }});
+}
+function renderPsIntervalRows(){
+  const box=$('#ps_int_rows'); if(!box) return;
+  let h='';
+  psIntervals.forEach((r,i)=>{
+    h+='<div class="perfrow">'+
+      '<div class="perfcard" style="flex:0 0 64px;cursor:default"><div class="pcl">Rép.</div><div class="pcv">'+(i+1)+'</div></div>'+
+      '<div class="perfcard" onclick="pickPsIntervalTime('+i+')"><div class="pcl">⏱ Temps</div><div class="pcv '+(r.timeS!=null?'':'empty')+'">'+(r.timeS!=null?fmtTime(r.timeS):'Choisir')+'</div></div>'+
+      (psIntervals.length>1?'<div class="perfdel" onclick="delPsIntervalRow('+i+')">🗑</div>':'')+
+    '</div>';
+  });
+  box.innerHTML=h;
+}
+function addPsIntervalRow(){ const dist=psIntervals[0]?psIntervals[0].dist:400; psIntervals.push({dist,timeS:null}); renderPsIntervalRows(); }
+function delPsIntervalRow(i){ psIntervals.splice(i,1); renderPsIntervalRows(); }
+function pickPsIntervalTime(i){
+  const dist=psIntervals[i].dist||400;
+  pickTime('Temps · '+dist+' m',psIntervals[i].timeS!=null?psIntervals[i].timeS:Math.round(dist*0.24),v=>{ psIntervals[i].timeS=v; renderPsIntervalRows(); },false);
 }
 function savePersoSession(){
   const p=CUSTOM.find(x=>x.id===curPerso); if(!p) return;
   const title=$('#ps_title').value.trim()||psType;
-  const km=+$('#ps_km').value||0, pace=$('#ps_pace').value.trim()||'—';
-  const durMin=(km&&pace!=='—')?Math.round(km*parseTime(pace)/60):0;
-  p.sessions.push({id:Date.now(),title,type:psType,date:$('#ps_date').value,km,pace,duration:durMin,rpe:5,desc:$('#ps_desc').value.trim(),done:false});
+  let km,pace,durMin,intervals=null;
+  if(psMode==='intervals'){
+    const valid=psIntervals.filter(r=>r.timeS!=null);
+    if(!valid.length){ toast('Ajoute au moins un temps de répétition'); return; }
+    const distM=valid[0].dist||400;
+    km=+(valid.length*distM/1000).toFixed(2);
+    const totalSec=valid.reduce((a,r)=>a+r.timeS,0);
+    const avgSecPerKm=km>0?Math.round(totalSec/km):0;
+    pace=fmtTime(avgSecPerKm);
+    durMin=Math.round(totalSec/60);
+    intervals=valid.map(r=>({dist:r.dist,timeS:r.timeS}));
+  } else {
+    km=+$('#ps_km').value||0; pace=$('#ps_pace').value.trim()||'—';
+    durMin=(km&&pace!=='—')?Math.round(km*parseTime(pace)/60):0;
+  }
+  p.sessions.push({id:Date.now(),title,type:psType,date:$('#ps_date').value,km,pace,duration:durMin,rpe:5,desc:$('#ps_desc').value.trim(),done:false,intervals});
   saveAll(); closeOv('ovProg'); renderSport(); toast('Séance ajoutée ✓');
 }
 let curPersoSess=null;
@@ -1819,7 +1891,12 @@ function openPersoSheet(sid){
   $('#sheetTitle').textContent=s.title;
   const col='var('+(TYPE_COLORS[s.type]||'--e')+')';
   let h='<div class="badge" style="background:rgba(61,127,255,.15);color:'+col+';margin-bottom:14px">'+s.type+' · '+fmtDate(s.date)+'</div>';
-  if(s.km) h+='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+s.km+'</div><div class="l">km</div></div><div class="sbox"><div class="v" style="font-size:18px">'+s.pace+'</div><div class="l">/km</div></div><div class="sbox"><div class="v">'+s.duration+'</div><div class="l">min</div></div></div>';
+  if(s.km) h+='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+s.km+'</div><div class="l">km</div></div><div class="sbox"><div class="v" style="font-size:18px">'+s.pace+'</div><div class="l">/km moy.</div></div><div class="sbox"><div class="v">'+s.duration+'</div><div class="l">min</div></div></div>';
+  if(s.intervals && s.intervals.length){
+    h+='<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:8px">'+s.intervals.length+' × '+s.intervals[0].dist+' m</div><div style="display:flex;flex-direction:column;gap:6px">';
+    s.intervals.forEach((r,i)=>{ h+='<div class="row" style="font-size:13px"><span style="color:var(--muted)">Rép. '+(i+1)+' · '+r.dist+' m</span><span style="font-weight:700">'+fmtTime(r.timeS)+'</span></div>'; });
+    h+='</div></div>';
+  }
   if(s.desc) h+='<div class="tip" style="margin-bottom:14px">'+s.desc+'</div>';
   if(s.done) h+='<div class="badge" style="background:rgba(51,211,153,.18);color:var(--ok);width:100%;justify-content:center;padding:14px;border-radius:14px;margin-bottom:10px">✓ Terminée</div>';
   else h+='<button class="btn" style="margin-bottom:10px" onclick="markPersoDone()">✓ Marquer terminée</button>';
@@ -2128,6 +2205,7 @@ function renderLive(){
   else h+='<button class="btn sm" onclick="finishLive()" style="background:linear-gradient(135deg,var(--e),#6FA0FF)">🏁 Terminer</button>';
   h+='</div>';
   h+='<button class="btn" style="margin-top:8px;background:var(--ok)" onclick="finishLive()">✓ Terminer l\u2019exercice</button>';
+  h+='<button class="btn ghost sm" style="margin-top:8px;color:var(--bad)" onclick="confirmCloseLive()">🗑 Annuler la séance</button>';
   $('#liveBody').innerHTML=h;
 }
 function liveProgressChart(name){
@@ -2205,7 +2283,24 @@ function openRest(secs){
 function addRest(s){ if(window._restAdd)window._restAdd(s); }
 function skipRest(){ clearInterval(restTimer); const o=$('#restOv'); if(o)o.remove(); }
 function liveNav(d){ LIVE.idx=Math.max(0,Math.min(LIVE.prog.ex.length-1,LIVE.idx+d)); renderLive(); }
-function confirmCloseLive(){ if(confirm('Quitter la séance ? La progression sera perdue.')){ clearInterval(liveTimer); LIVE=null; localStorage.removeItem('vvv_live_active'); closeOv('ovLive'); stopBgActivity(); } }
+function confirmCloseLive(){
+  // Popup "maison" à la place de confirm() natif, qui ne fonctionne pas dans une app ajoutée à l'écran d'accueil (iOS)
+  const old=$('#cancelLiveOv'); if(old) old.remove();
+  const ov=document.createElement('div'); ov.className='ov on'; ov.id='cancelLiveOv';
+  ov.innerHTML='<div class="ov-card" style="text-align:center">'+
+    '<div class="card-t" style="justify-content:center;margin-bottom:10px">⚠️ Annuler la séance ?</div>'+
+    '<div style="font-size:13px;color:var(--muted);margin-bottom:18px">Ta progression sur cette séance sera perdue.</div>'+
+    '<div class="row" style="gap:10px">'+
+      '<button class="btn ghost" style="flex:1" onclick="document.getElementById(\'cancelLiveOv\').remove()">Continuer</button>'+
+      '<button class="btn" style="flex:1;background:var(--bad)" onclick="doCancelLive()">Oui, annuler</button>'+
+    '</div></div>';
+  document.body.appendChild(ov);
+}
+function doCancelLive(){
+  const ov=$('#cancelLiveOv'); if(ov) ov.remove();
+  clearInterval(liveTimer); LIVE=null; localStorage.removeItem('vvv_live_active');
+  closeOv('ovLive'); stopBgActivity(); toast('Séance annulée'); renderSport();
+}
 function finishLive(){
   clearInterval(liveTimer); skipRest();
   const dur=Math.round((Date.now()-LIVE.start)/1000);
