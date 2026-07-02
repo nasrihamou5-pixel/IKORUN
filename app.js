@@ -2674,23 +2674,42 @@ function renderOutilsTimer(){ $('#s-outils').innerHTML='<div class="row" style="
 
 /* ============ COACH IA — APPEL EDGE FUNCTION SUPABASE ============ */
 const COACH_AI_URL='https://bsrbzuhvqtjkkmpmxyzw.supabase.co/functions/v1/coach-ai';
+const SUPABASE_ANON_KEY='sb_publishable_d1eInkDkCJG-Fx4S8UqNgw_Bm6uQuKw';
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 async function callCoachAI(mode, extra){
   if(!window.supabaseClient) throw new Error('Supabase non initialisé');
   const { data:{ session } } = await window.supabaseClient.auth.getSession();
   if(!session) throw new Error('Tu dois être connecté pour utiliser le Coach IA');
-  const { data, error } = await window.supabaseClient.functions.invoke('coach-ai', {
-    body: {
-      mode,
-      profile: P,
-      recentSessions: (SESS||[]).slice(-10),
-      records: RECORDS||[],
-      extra: extra||{}
-    }
-  });
-  if(error) throw new Error(error.message || 'Erreur de connexion au coach IA');
-  if(data && data.error) throw new Error(data.error);
-  return data && data.result;
+  const ctrl=new AbortController();
+  const killer=setTimeout(()=>ctrl.abort(),20000);
+  let resp;
+  try{
+    resp = await fetch(COACH_AI_URL, {
+      method:'POST',
+      signal: ctrl.signal,
+      headers:{
+        'Content-Type':'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization':'Bearer '+session.access_token
+      },
+      body: JSON.stringify({
+        mode,
+        profile: P,
+        recentSessions: (SESS||[]).slice(-10),
+        records: RECORDS||[],
+        extra: extra||{}
+      })
+    });
+  }catch(e){
+    if(e.name==='AbortError') throw new Error('Le coach met trop de temps à répondre (timeout 20s). Réessaie, ou vérifie ta connexion.');
+    throw new Error('Connexion impossible au coach IA : '+(e.message||e));
+  }finally{
+    clearTimeout(killer);
+  }
+  let data;
+  try{ data = await resp.json(); }catch(e){ throw new Error('Réponse invalide du serveur (status '+resp.status+')'); }
+  if(!resp.ok || data.error) throw new Error(data.error || ('Erreur serveur ('+resp.status+')'));
+  return data.result;
 }
 function parseAIJson(text){
   try{ const clean=String(text).replace(/```json|```/g,'').trim(); return JSON.parse(clean); }catch(e){ return null; }
