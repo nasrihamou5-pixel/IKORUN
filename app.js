@@ -273,56 +273,122 @@ function computeVDOT(){
 /* ---------- XP — SYSTÈME DÉRIVÉ (recalculé depuis les données réelles) ---------- */
 /* Le total XP n'est JAMAIS stocké de façon cumulative : il est toujours
    recalculé depuis les sources réelles. Cocher/décocher un objectif met donc
-   automatiquement à jour le total, ce qui corrige définitivement le bug. */
-const LEVEL_NAMES=['Recrue','Coureur','Coureur+','Confirmé','Confirmé+','Athlète','Athlète+','Compétiteur','Expert','Élite','Maître','Champion','Légende','Mythique'];
-const XP_RULES={ perKm:8, perRunSession:30, perMuscuSession:50, perMuscuSet:5, perMinTraining:0.5, perGoal:10, allGoalsBonus:50, perStreakDay:6, perRecord:40 };
+   automatiquement à jour le total, ce qui corrige définitivement le bug.
+
+   ---- Refonte "carrière d'athlète" ----
+   Objectif : un pratiquant très régulier (~100-120 km/mois, séances
+   assidues, quelques records et compétitions par an) doit mettre
+   au moins ~3 ans, et plus réalistement 3 à 4 ans, pour atteindre le
+   niveau maximum (70). L'XP quotidien (hydratation, étirements...) est
+   volontairement presque nul : la vraie progression vient des séances
+   réelles, des records, des cycles/préparations terminés et des
+   compétitions. */
+const MAX_LEVEL=70;
+const RANKS=[
+  {min:1,  max:9,  name:'Novice',      color:'#8993A6', bg:'linear-gradient(135deg,#3a4048,#5c6473)'},
+  {min:10, max:19, name:'Athlète',     color:'#3D7FFF', bg:'linear-gradient(135deg,#1b3a7a,#3D7FFF)'},
+  {min:20, max:29, name:'Compétiteur', color:'#33D399', bg:'linear-gradient(135deg,#0d5c3f,#33D399)'},
+  {min:30, max:39, name:'Élite',       color:'#4d9dff', bg:'linear-gradient(135deg,#0d2f7a,#4d9dff)'},
+  {min:40, max:49, name:'Champion',    color:'#F2B84B', bg:'linear-gradient(135deg,#a5720f,#F2B84B)'},
+  {min:50, max:59, name:'Légende',     color:'#FFD76A', bg:'linear-gradient(135deg,#7a5c0d,#FFD76A)'},
+  {min:60, max:69, name:'Immortel',    color:'#b57dff', bg:'linear-gradient(135deg,#4a1a7a,#b57dff)'},
+  {min:70, max:9999,name:'VVV Elite',  color:'#ffffff', bg:'linear-gradient(135deg,#0a0a0a,#ffd76a)'}
+];
+function rankFor(level){ return RANKS.find(r=>level>=r.min&&level<=r.max)||RANKS[RANKS.length-1]; }
+
+/* Petites actions quotidiennes → XP volontairement minuscule */
+const XP_RULES={
+  // habitudes du jour (presque rien)
+  perGoal:3, allGoalsBonus:8,
+  // séances réelles
+  perKm:3, perRunSession:15, perMuscuSession:15, perMuscuSet:1, perMinTraining:0.15,
+  // régularité (meilleure série jamais atteinte)
+  perStreakDay:3,
+  // vrais accomplissements
+  perRecord:120, perCompetitionRecord:250,
+  perWeekCompleted:60, perPlanCompleted:500
+};
+
+/* Courbe de niveau : need(n) = 70 + 2.1575...*n^1.85 (arrondi)
+   → niveau 70 ≈ 145 000 XP cumulés, atteignable en ~3 à 4 ans pour un
+   pratiquant très régulier à 100-120 km/mois. */
+function xpForLevel(n){ return Math.round(70 + 2.157542326080347*Math.pow(n,1.85)); }
+function cumulXpForLevel(n){
+  // total XP requis pour ATTEINDRE le niveau n (fin du niveau n-1)
+  let acc=0; for(let i=1;i<n;i++) acc+=xpForLevel(i); return acc;
+}
+const TOTAL_XP_MAX=cumulXpForLevel(MAX_LEVEL+1); // XP pour boucler le niveau 70
 
 function computeXPTotal(){
   let xp=0;
-  // Distance
+  // Distance (le gros contributeur naturel : ~3 XP/km)
   xp += Math.round(totalKm()*XP_RULES.perKm);
-  // Séances
+  // Séances réalisées
   xp += SESS.length*XP_RULES.perRunSession;
   xp += MSESS.length*XP_RULES.perMuscuSession;
-  // Séries muscu
   xp += MSESS.reduce((a,s)=>a+(s.sets||0),0)*XP_RULES.perMuscuSet;
-  // Durée totale (running + muscu, en minutes)
   const totMin = SESS.reduce((a,s)=>a+(s.duration||0),0) + MSESS.reduce((a,s)=>a+(s.duration||0)/60,0);
   xp += Math.round(totMin*XP_RULES.perMinTraining);
-  // Objectifs cochés AUJOURD'HUI (recalculé en direct → fix toggle)
+  // Objectifs du jour cochés (presque rien, comme demandé)
   if(GOALS.list){
     const checked=GOALS.list.filter(g=>g.done).length;
     xp += checked*XP_RULES.perGoal;
     if(GOALS.list.length && GOALS.list.every(g=>g.done)) xp += XP_RULES.allGoalsBonus;
   }
-  // Historique des objectifs des jours passés (figé)
   xp += (XP.pastGoalXP||0);
-  // Régularité (meilleure série)
+  // Régularité
   xp += bestStreak()*XP_RULES.perStreakDay;
-  // Records personnels renseignés
-  xp += personalRecords().filter(r=>r.time).length*XP_RULES.perRecord;
+  // Records personnels — bonus supplémentaire si marqués "compétition officielle"
+  const recs=personalRecords().filter(r=>r.time);
+  xp += recs.length*XP_RULES.perRecord;
+  xp += RECORDS.filter(r=>r.competition).length*XP_RULES.perCompetitionRecord;
+  // Semaines de plan 100% terminées + préparations/cycles complets
+  xp += (XP.weeksCompleted||0)*XP_RULES.perWeekCompleted;
+  xp += (XP.plansCompleted||0)*XP_RULES.perPlanCompleted;
   return Math.max(0,Math.round(xp));
 }
 function levelFromTotal(total){
-  let lvl=1, need=200, acc=0;
-  while(total>=acc+need){ acc+=need; lvl++; need=Math.round(need*1.22); }
-  return { level:lvl, base:acc, next:acc+need, span:need, inLvl:total-acc };
+  const capped=Math.min(total,TOTAL_XP_MAX-1);
+  let lvl=1, need=xpForLevel(1), acc=0;
+  while(lvl<MAX_LEVEL && capped>=acc+need){ acc+=need; lvl++; need=xpForLevel(lvl); }
+  return { level:lvl, base:acc, next:acc+need, span:need, inLvl:capped-acc, maxed: total>=TOTAL_XP_MAX-1 };
 }
-function levelName(lvl){ return LEVEL_NAMES[Math.min(lvl-1,LEVEL_NAMES.length-1)]; }
-/* Recalcule l'état XP, détecte une montée de niveau, déclenche animation */
+function levelName(lvl){ return rankFor(lvl).name; }
+/* Détecte et enregistre les cycles/semaines de plan terminés (source d'XP majeure) */
+function checkPlanProgressXP(){
+  if(!PLAN||!PLAN.sessions||!PLAN.sessions.length) return;
+  XP.countedWeeks=XP.countedWeeks||[];
+  XP.countedPlans=XP.countedPlans||[];
+  const planId=PLAN.created||'plan';
+  const byWeek={};
+  PLAN.sessions.forEach(s=>{ (byWeek[s.week]=byWeek[s.week]||[]).push(s); });
+  Object.keys(byWeek).forEach(wk=>{
+    const wid=planId+'-w'+wk;
+    const sessions=byWeek[wk];
+    const allDone=sessions.every(s=>s.done||s.type==='Repos');
+    if(allDone && !XP.countedWeeks.includes(wid)){ XP.countedWeeks.push(wid); XP.weeksCompleted=(XP.weeksCompleted||0)+1; }
+  });
+  const planDone=PLAN.sessions.every(s=>s.done||s.type==='Repos');
+  if(planDone && !XP.countedPlans.includes(planId)){ XP.countedPlans.push(planId); XP.plansCompleted=(XP.plansCompleted||0)+1; }
+}
+/* Recalcule l'état XP, détecte une montée de niveau, déclenche animation, et
+   vérifie l'obtention de nouveaux badges. */
 function refreshXP(opts){
+  checkPlanProgressXP();
   const total=computeXPTotal();
   const info=levelFromTotal(total);
   const prevLevel=XP.level||1;
-  XP.total=total; XP.level=info.level; XP.name=levelName(info.level);
+  const rank=rankFor(info.level);
+  XP.total=total; XP.level=info.level; XP.name=levelName(info.level); XP.rank=rank.name; XP.maxed=info.maxed;
   XP.next=info.next; XP.base=info.base; XP.span=info.span; XP.inLvl=info.inLvl;
   DB.save('xp',XP);
   if(opts&&opts.animate&&info.level>prevLevel){ levelUpAnimation(info.level); }
+  checkNewBadges(opts&&opts.animate);
   return XP;
 }
 function xpProgress(){
   refreshXP();
-  return { pct:Math.min(100,Math.round(XP.inLvl/XP.span*100)), inLvl:XP.inLvl, span:XP.span, next:XP.next };
+  return { pct: XP.maxed?100:Math.min(100,Math.round(XP.inLvl/XP.span*100)), inLvl:XP.inLvl, span:XP.span, next:XP.next };
 }
 /* Compat : addXP devient un simple déclencheur de recalcul + feedback */
 function addXP(amount,reason){
@@ -330,6 +396,190 @@ function addXP(amount,reason){
   sfx('xp');
   if(reason) toast('+'+amount+' XP · '+reason);
 }
+/* ============ BADGES — 23 PALIERS DE PRESTIGE ============ */
+/* Chaque badge exige un niveau ET une distance cumulée cohérents avec la
+   courbe d'XP ci-dessus (donc avec le rythme réel de 100-120 km/mois).
+   Les derniers paliers ajoutent une exigence de séances et, pour les tout
+   derniers, de compétitions/préparations terminées — "aucune obtention
+   rapide possible". */
+const BADGE_TIERS=[
+  {key:'pierre',    name:'Pierre',     cls:'bd-pierre',    emoji:'🪨', level:1,  km:0,    sess:0, desc:"Le début du parcours."},
+  {key:'bronze',    name:'Bronze',     cls:'bd-bronze',    emoji:'🥉', level:2,  km:10,   sess:1, desc:"Les toutes premières bases."},
+  {key:'fer',       name:'Fer',        cls:'bd-fer',       emoji:'⚙️', level:4,  km:10,   sess:2, desc:"La discipline s'installe."},
+  {key:'acier',     name:'Acier',      cls:'bd-acier',     emoji:'🛡️', level:6,  km:20,   sess:4, desc:"Un corps qui se solidifie."},
+  {key:'argent',    name:'Argent',     cls:'bd-argent',    emoji:'⭐', level:8,  km:40,   sess:6, desc:"La régularité paie déjà."},
+  {key:'or',        name:'Or',         cls:'bd-or',        emoji:'🏅', level:10, km:50,   sess:8, desc:"Détermination confirmée."},
+  {key:'emeraude',  name:'Émeraude',   cls:'bd-emeraude',  emoji:'💚', level:13, km:90,   sess:12,desc:"Progrès constants."},
+  {key:'rubis',     name:'Rubis',      cls:'bd-rubis',     emoji:'❤️', level:16, km:130,  sess:16,desc:"La passion se voit."},
+  {key:'saphir',    name:'Saphir',     cls:'bd-saphir',    emoji:'🔷', level:19, km:190,  sess:22,desc:"Un athlète qui s'affirme."},
+  {key:'amethyste', name:'Améthyste',  cls:'bd-amethyste', emoji:'🔮', level:22, km:270,  sess:28,desc:"Une préparation, une vraie."},
+  {key:'diamant',   name:'Diamant',    cls:'bd-diamant',   emoji:'💎', level:25, km:370,  sess:36,desc:"Résistance à l'épreuve du temps.",preps:1},
+  {key:'obsidienne',name:'Obsidienne', cls:'bd-obsidienne',emoji:'🖤', level:28, km:490,  sess:44,desc:"Forgé dans l'effort."},
+  {key:'titanium',  name:'Titanium',   cls:'bd-titanium',  emoji:'🔩', level:31, km:640,  sess:54,desc:"Une carrière qui prend forme.",preps:1},
+  {key:'onyx',      name:'Onyx',       cls:'bd-onyx',      emoji:'⚫', level:35, km:880,  sess:66,desc:"Constance sur la durée."},
+  {key:'cristal',   name:'Cristal',    cls:'bd-cristal',   emoji:'🧊', level:38, km:1090, sess:78,desc:"Pureté du geste, répété.",preps:2},
+  {key:'prisme',    name:'Prisme',     cls:'bd-prisme',    emoji:'🌈', level:42, km:1420, sess:94,desc:"Plusieurs facettes d'un athlète complet.",comps:1},
+  {key:'galaxie',   name:'Galaxie',    cls:'bd-galaxie',   emoji:'🌌', level:46, km:1810, sess:112,desc:"Une trajectoire qui s'étend.",preps:2},
+  {key:'cosmos',    name:'Cosmos',     cls:'bd-cosmos',    emoji:'🪐', level:50, km:2260, sess:132,desc:"Plusieurs années de sérieux.",comps:2},
+  {key:'mythique',  name:'Mythique',   cls:'bd-mythique',  emoji:'🔥', level:54, km:2790, sess:154,desc:"Peu de monde va aussi loin.",preps:3,comps:2},
+  {key:'divin',     name:'Divin',      cls:'bd-divin',     emoji:'✨', level:58, km:3390, sess:178,desc:"Un niveau que peu atteignent.",comps:3},
+  {key:'celeste',   name:'Céleste',    cls:'bd-celeste',   emoji:'🌠', level:62, km:4080, sess:206,desc:"Des années de carrière derrière soi.",preps:4,comps:3},
+  {key:'infinity',  name:'Infinity',   cls:'bd-infinity',  emoji:'♾️', level:66, km:4840, sess:236,desc:"La régularité comme mode de vie.",preps:5,comps:4},
+  {key:'vvvelite',  name:'VVV Elite',  cls:'bd-vvvelite',  emoji:'👑', level:70, km:5700, sess:270,desc:"Le sommet. Aucune obtention rapide n'est possible.",preps:6,comps:5}
+];
+function badgeStats(){
+  return {
+    level: XP.level||1,
+    km: Math.round(totalKm()),
+    sess: SESS.length+MSESS.length,
+    preps: XP.plansCompleted||0,
+    comps: RECORDS.filter(r=>r.competition).length
+  };
+}
+function badgeProgress(b){
+  const s=badgeStats();
+  const parts=[
+    {label:'Niveau', have:s.level, need:b.level, unit:''},
+    {label:'Distance', have:s.km, need:b.km, unit:'km'},
+    {label:'Séances', have:s.sess, need:b.sess, unit:''}
+  ];
+  if(b.preps) parts.push({label:'Préparations terminées', have:s.preps, need:b.preps, unit:''});
+  if(b.comps) parts.push({label:'Compétitions', have:s.comps, need:b.comps, unit:''});
+  const pctEach=parts.map(p=>Math.min(1,p.need?p.have/p.need:1));
+  const pct=Math.round((pctEach.reduce((a,v)=>a+v,0)/pctEach.length)*100);
+  const unlocked=parts.every(p=>p.have>=p.need);
+  return {parts,pct,unlocked};
+}
+function unlockedBadges(){ return DB.load('badges_unlocked')||[]; }
+function saveUnlockedBadges(list){ DB.save('badges_unlocked',list); }
+/* Vérifie l'obtention de nouveaux badges ; joue l'animation plein écran pour
+   le plus prestigieux nouvellement débloqué. */
+let _badgeUnlockQueue=[];
+function checkNewBadges(animate){
+  const unlocked=unlockedBadges();
+  const already=new Set(unlocked.map(u=>u.key));
+  let newest=null;
+  BADGE_TIERS.forEach(b=>{
+    if(already.has(b.key)) return;
+    const prog=badgeProgress(b);
+    if(prog.unlocked){
+      unlocked.push({key:b.key,date:todayKey()});
+      newest=b;
+    }
+  });
+  if(newest){
+    saveUnlockedBadges(unlocked);
+    if(animate) _badgeUnlockQueue.push(newest.key);
+    playBadgeUnlockQueue();
+  }
+}
+function playBadgeUnlockQueue(){
+  if(document.querySelector('.bd-unlock-ov')) return; // une animation à la fois
+  const key=_badgeUnlockQueue.shift();
+  if(!key) return;
+  const b=BADGE_TIERS.find(x=>x.key===key);
+  if(b) showBadgeUnlockAnim(b);
+}
+function showBadgeUnlockAnim(b){
+  burst(); sfx('medal');
+  if(navigator.vibrate) navigator.vibrate([120,60,120,60,260]);
+  const ov=document.createElement('div');
+  ov.className='bd-unlock-ov';
+  let sparks=''; for(let i=0;i<18;i++){ const a=Math.random()*Math.PI*2, d=90+Math.random()*90;
+    sparks+='<span class="bd-spark" style="--tx:'+(Math.cos(a)*d)+'px;--ty:'+(Math.sin(a)*d)+'px;animation-delay:'+(Math.random()*1.2)+'s"></span>'; }
+  ov.innerHTML='<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Manrope;margin-bottom:6px">NOUVEAU BADGE DÉBLOQUÉ</div>'+
+    '<div class="bd-unlock-stage '+b.cls+'"><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div>'+
+    '<div class="bd-unlock-badge"><span class="bd-emoji">'+b.emoji+'</span>'+sparks+'</div></div>'+
+    '<div class="man" style="font-weight:800;font-size:30px;margin-top:18px;letter-spacing:.5px">'+b.name+'</div>'+
+    '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+b.desc+'</div>'+
+    '<div style="color:var(--dim);font-size:12px;margin-top:18px">Touche pour continuer</div>';
+  ov.onclick=()=>{ ov.remove(); playBadgeUnlockQueue(); };
+  document.body.appendChild(ov);
+  setTimeout(()=>{ if(ov.parentNode){ ov.remove(); playBadgeUnlockQueue(); } },4000);
+}
+/* Consultation "premium" d'un badge déjà obtenu (rejoue une version sans confettis) */
+function replayBadgeAnim(key){
+  const b=BADGE_TIERS.find(x=>x.key===key); if(!b) return;
+  sfx('goal'); if(navigator.vibrate) navigator.vibrate(60);
+  const ov=document.createElement('div');
+  ov.className='bd-unlock-ov';
+  let sparks=''; for(let i=0;i<14;i++){ const a=Math.random()*Math.PI*2, d=80+Math.random()*80;
+    sparks+='<span class="bd-spark" style="--tx:'+(Math.cos(a)*d)+'px;--ty:'+(Math.sin(a)*d)+'px;animation-delay:'+(Math.random()*1.4)+'s"></span>'; }
+  ov.innerHTML='<div class="bd-unlock-stage '+b.cls+'"><div class="bd-ring"></div><div class="bd-ring r2"></div>'+
+    '<div class="bd-unlock-badge"><span class="bd-emoji">'+b.emoji+'</span>'+sparks+'</div></div>'+
+    '<div class="man" style="font-weight:800;font-size:26px;margin-top:18px">'+b.name+'</div>'+
+    '<div style="color:var(--dim);font-size:12px;margin-top:16px">Touche pour fermer</div>';
+  ov.onclick=()=>ov.remove();
+  document.body.appendChild(ov);
+}
+let badgeFilter='tous';
+function openBadges(){
+  $('#ovBadgesTitle').textContent='Badges';
+  renderBadgeGallery();
+  openOv('ovBadges');
+}
+function renderBadgeGallery(){
+  const unlocked=unlockedBadges(); const ukeys=new Set(unlocked.map(u=>u.key));
+  const list=BADGE_TIERS.filter(b=> badgeFilter==='tous' ? true : (badgeFilter==='obtenus'? ukeys.has(b.key) : !ukeys.has(b.key)));
+  let h='<div class="pills" style="margin-bottom:14px">'+
+    [['tous','Tous'],['obtenus','Obtenus'],['verrouilles','Verrouillés']].map(f=>'<div class="pill '+(badgeFilter===f[0]?'on':'')+'" onclick="badgeFilter=\''+f[0]+'\';renderBadgeGallery()">'+f[1]+'</div>').join('')+
+    '</div>';
+  h+='<div style="font-size:12px;color:var(--muted);margin-bottom:10px">'+unlocked.length+' / '+BADGE_TIERS.length+' badges obtenus</div>';
+  h+='<div class="bd-grid">';
+  list.forEach(b=>{
+    const on=ukeys.has(b.key);
+    h+='<div class="bd-cell" onclick="openBadgeDetail(\''+b.key+'\')">'+
+      '<div class="bd-icon '+(on?b.cls:'locked')+'"><span class="bd-emoji">'+(on?b.emoji:'🔒')+'</span></div>'+
+      '<div class="bd-name">'+b.name+'</div><div class="bd-lvl">Niv. '+b.level+'</div></div>';
+  });
+  h+='</div>';
+  $('#badgesBody').innerHTML=h;
+}
+function openBadgeDetail(key){
+  const b=BADGE_TIERS.find(x=>x.key===key); if(!b) return;
+  const unlocked=unlockedBadges(); const rec=unlocked.find(u=>u.key===key);
+  const prog=badgeProgress(b);
+  $('#ovBadgesTitle').textContent='Détails du badge';
+  let h='<div style="text-align:center;margin-bottom:18px">'+
+    '<div class="bd-icon big '+(rec?b.cls:'locked')+'" style="margin:0 auto 14px'+(rec?';cursor:pointer':'')+'"'+(rec?' onclick="replayBadgeAnim(\''+b.key+'\')"':'')+'><span class="bd-emoji">'+(rec?b.emoji:'🔒')+'</span></div>'+
+    '<div class="man" style="font-weight:800;font-size:24px">'+b.name+'</div>'+
+    '<div style="color:var(--muted);font-size:13px;margin-top:6px;padding:0 10px">'+b.desc+'</div>'+
+    (rec?'<div style="color:var(--e);font-size:12px;margin-top:8px">Obtenu le '+fmtDate(rec.date)+' · <span style="text-decoration:underline;cursor:pointer" onclick="replayBadgeAnim(\''+b.key+'\')">revivre l\u2019animation</span></div>':'')+
+    '</div>';
+  h+='<div class="card"><div class="lab" style="margin-bottom:12px">Conditions d\u2019obtention</div>';
+  prog.parts.forEach(p=>{
+    const pc=Math.min(100,Math.round((p.need?p.have/p.need:1)*100));
+    const done=p.have>=p.need;
+    h+='<div style="margin-bottom:12px"><div class="row" style="margin-bottom:5px"><span style="font-size:13px">'+(done?'✅ ':'⬜ ')+p.label+'</span><span class="mono" style="font-size:12px;color:var(--muted)">'+Math.min(p.have,p.need)+' / '+p.need+' '+p.unit+'</span></div><div class="pbar" style="height:6px"><div style="width:'+pc+'%"></div></div></div>';
+  });
+  h+='<div class="row" style="margin-top:6px"><span class="lab">Progression globale</span><span class="mono" style="color:var(--e)">'+prog.pct+'%</span></div></div>';
+  h+='<button class="btn ghost" onclick="openBadges()">‹ Retour aux badges</button>';
+  $('#badgesBody').innerHTML=h;
+}
+/* Bloc résumé badges affiché sur le profil (mini-galerie + prochaine récompense) */
+function badgeStripHTML(){
+  const unlocked=unlockedBadges(); const ukeys=new Set(unlocked.map(u=>u.key));
+  const recent=[...unlocked].sort((a,b)=>b.date<a.date?-1:1).slice(0,4).map(u=>BADGE_TIERS.find(b=>b.key===u.key)).filter(Boolean);
+  const nb=nextBadge();
+  let h='<div class="card stag" style="animation-delay:.12s">';
+  h+='<div class="row" style="margin-bottom:12px"><span class="card-t" style="margin:0">🏆 Mes badges</span><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="openBadges()">'+unlocked.length+' / '+BADGE_TIERS.length+' · Voir tout ›</span></div>';
+  if(recent.length){
+    h+='<div class="row" style="gap:10px;flex-wrap:wrap">'+recent.map(b=>'<div class="bd-icon '+b.cls+'" style="width:52px;height:52px;font-size:22px;cursor:pointer" onclick="openBadges();openBadgeDetail(\''+b.key+'\')"><span class="bd-emoji">'+b.emoji+'</span></div>').join('')+'</div>';
+  } else {
+    h+='<div style="font-size:12px;color:var(--muted)">Aucun badge obtenu pour l\u2019instant — ta première séance te rapprochera du badge Pierre.</div>';
+  }
+  if(nb){
+    const prog=badgeProgress(nb);
+    h+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--hair)"><div class="row" style="margin-bottom:6px"><span style="font-size:12px;color:var(--muted)">Prochain badge · '+nb.name+'</span><span class="mono" style="font-size:12px;color:var(--e)">'+prog.pct+'%</span></div><div class="pbar" style="height:6px"><div style="width:'+prog.pct+'%"></div></div></div>';
+  }
+  h+='</div>';
+  return h;
+}
+function nextBadge(){
+  const unlocked=new Set(unlockedBadges().map(u=>u.key));
+  return BADGE_TIERS.find(b=>!unlocked.has(b.key))||null;
+}
+
 function bestStreak(){
   const set=new Set([...SESS,...MSESS].map(s=>s.date));
   if(!set.size) return 0;
@@ -3409,14 +3659,20 @@ function renderProfile(){
   // HEADER : photo + nom + bio
   let h='<div class="card stag" style="text-align:center;padding-top:20px"><div style="position:relative;width:92px;margin:0 auto 12px">'+avatarHTML(92,36)+
     '<div onclick="changePhoto()" style="position:absolute;bottom:0;right:0;width:30px;height:30px;border-radius:50%;background:var(--e);border:2px solid var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px">📷</div></div>';
-  h+='<div class="man" style="font-weight:800;font-size:22px">'+(P.name||'Athlète')+'</div><div class="badge" style="margin-top:8px">'+XP.name+' · '+t('level')+' '+XP.level+'</div>';
+  const rk=rankFor(XP.level||1);
+  h+='<div class="man" style="font-weight:800;font-size:22px">'+(P.name||'Athlète')+'</div>';
+  h+='<div class="rankchip" style="margin-top:8px;background:'+rk.bg+';color:#fff">'+t('level')+' '+XP.level+' · '+rk.name+'</div>';
   h+='<div style="font-size:13px;color:var(--muted);margin-top:10px;line-height:1.5;font-style:'+(P.bio?'normal':'italic')+'">'+(P.bio||'Ajoute une biographie ✍️')+'</div>';
   h+='<div class="row" style="gap:8px;margin-top:14px;justify-content:center">'+
     (P.photo?'<button class="btn ghost sm" style="width:auto;padding:8px 14px" onclick="removePhoto()">🗑 '+t('removePhoto')+'</button>':'')+
     '<button class="btn ghost sm" style="width:auto;padding:8px 14px" onclick="editBio()">✍️ '+t('bio')+'</button></div></div>';
   // STATS
   h+='<div class="card stag" style="animation-delay:.05s"><div class="sgrid"><div class="sbox"><div class="v">'+(P.height||'—')+'</div><div class="l">'+t('height')+' (cm)</div></div><div class="sbox"><div class="v">'+(P.weight||'—')+'</div><div class="l">'+t('weight')+' (kg)</div></div><div class="sbox"><div class="v">'+age()+'</div><div class="l">'+t('age')+'</div></div><div class="sbox"><div class="v">'+(getUserVDOT()||'—')+'</div><div class="l">VDOT</div></div></div></div>';
-  h+='<div class="card stag" style="animation-delay:.10s"><div class="row" style="margin-bottom:8px"><span class="lab">'+t('xpProgress')+'</span><span class="mono" style="color:var(--e)">'+XP.total+' XP</span></div><div class="pbar"><div style="width:'+xp.pct+'%"></div></div></div>';
+  h+='<div class="card stag" style="animation-delay:.10s"><div class="row" style="margin-bottom:8px"><span class="lab">'+t('xpProgress')+' · Niv. '+XP.level+(XP.maxed?' (MAX)':'')+'</span><span class="mono" style="color:var(--e)">'+XP.total+' XP</span></div><div class="pbar"><div style="width:'+xp.pct+'%"></div></div>'+
+    (XP.maxed?'<div style="font-size:11px;color:var(--muted);margin-top:8px">Niveau maximum atteint — sommet de la carrière VVV.</div>':'<div style="font-size:11px;color:var(--muted);margin-top:8px">'+(XP.span-XP.inLvl)+' XP avant le niveau '+(XP.level+1)+'</div>')+
+    '</div>';
+  // ===== BADGES =====
+  h+=badgeStripHTML();
   h+='<button class="btn stag" style="animation-delay:.15s" onclick="openProfileEdit()">✏️ '+t('editInfos')+'</button>';
   h+='<button class="btn ghost stag" style="margin-top:10px;animation-delay:.16s" onclick="openRecords()">🏅 '+t('perfHistory')+'</button>';
   // ===== COMPTE =====
@@ -3562,22 +3818,23 @@ function addRecord(){
   }});
 }
 function recordForm(d){
-  recTmp={dist:d[0],meters:d[1],timeS:d[1]>=21000?5400:(d[1]>=5000?1200:300),date:todayKey(),place:'',feel:''};
+  recTmp={dist:d[0],meters:d[1],timeS:d[1]>=21000?5400:(d[1]>=5000?1200:300),date:todayKey(),place:'',feel:'',competition:false};
   let h='<div style="text-align:center;margin-bottom:16px"><div class="badge" style="font-size:14px;padding:8px 16px">🏁 '+d[0]+'</div></div>';
   h+='<div class="field"><label>Chrono *</label><div class="inp pkfield set" id="rc_time" onclick="pickTime(\'Chrono '+d[0]+'\',recTmp.timeS,v=>{recTmp.timeS=v;document.getElementById(\'rc_time\').textContent=fmtTime(v)},'+(d[1]>=15000?'true':'false')+')">'+fmtTime(recTmp.timeS)+'</div></div>';
   h+='<div class="field"><label>Date</label><input class="inp" id="rc_date" type="date" value="'+todayKey()+'"></div>';
   h+='<div class="field"><label>Lieu (optionnel)</label><input class="inp" id="rc_place" placeholder="Lieu de la course"></div>';
   h+='<div class="field"><label>Sensation (optionnel)</label><input class="inp" id="rc_feel" placeholder="Comment c\u2019était ?"></div>';
+  h+='<div class="row" style="margin:14px 0"><span>🏁 Compétition officielle</span><div class="toggle" id="rc_comp" onclick="recTmp.competition=!recTmp.competition;this.classList.toggle(\'on\')"></div></div>';
   h+='<button class="btn" onclick="saveRecord()">💾 Enregistrer cette performance</button>';
   h+='<button class="btn ghost" style="margin-top:10px" onclick="openRecords()">‹ Retour</button>';
   $('#profileEditBody').innerHTML=h;
 }
 function saveRecord(){
   const time=fmtTime(recTmp.timeS);
-  RECORDS.push({dist:recTmp.dist,meters:recTmp.meters,time,date:$('#rc_date').value,place:$('#rc_place').value.trim(),feel:$('#rc_feel').value.trim()});
+  RECORDS.push({dist:recTmp.dist,meters:recTmp.meters,time,date:$('#rc_date').value,place:$('#rc_place').value.trim(),feel:$('#rc_feel').value.trim(),competition:!!recTmp.competition});
   if(recTmp.dist==='5000 m')P.pb5k=time; if(recTmp.dist==='3000 m')P.pb3k=time; if(recTmp.dist==='1500 m')P.pb1500=time; if(recTmp.dist==='10 km')P.pb10k=time;
   P.vdot=computeVDOTfromRecords();
-  saveAll(); refreshXP({animate:true}); openRecords(); toast('Performance ajoutée ✓'); burst();
+  saveAll(); refreshXP({animate:true}); openRecords(); toast(recTmp.competition?'Performance ajoutée · +XP compétition ✓':'Performance ajoutée ✓'); burst();
 }
 function delRecord(i){ const sorted=[...RECORDS].sort((a,b)=>(a.meters||0)-(b.meters||0)); const r=sorted[i]; RECORDS=RECORDS.filter(x=>x!==r); P.vdot=computeVDOTfromRecords(); saveAll(); openRecords(); }
 function computeVDOTfromRecords(){
