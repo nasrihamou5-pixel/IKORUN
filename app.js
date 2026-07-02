@@ -1,4 +1,4 @@
-/* ============ VVV — Elite Athletic Intelligence ============ */
+/* ============ IKORUN — Elite Athletic Intelligence ============ */
 
 /* ---------- CLOUD SYNC (Supabase) ---------- */
 window.currentUserId = null;
@@ -122,7 +122,7 @@ const I18N={
     home:'Accueil',sport:'Sport',stats:'Statistiques',outils:'Outils',profil:'Profil',
     sub_sport:'Course & Musculation',sub_stats:'Tes données réelles',sub_outils:'Calculs & timers',
     save:'Sauver',cancel:'Annuler',add:'Ajouter',edit:'Modifier',delete:'Supprimer',close:'Fermer',validate:'Valider',back:'Retour',seeAll:'Voir tout',
-    running:'Course',muscu:'Musculation',coachIA:'Plan VVV',myPlan:'Plan personnel',
+    running:'Course',muscu:'Musculation',coachIA:'Plan IKORUN',myPlan:'Plan personnel',
     perfHistory:'Historique des performances',editInfos:'Modifier mes informations',
     objective:'Objectif',appearance:'Apparence',accentColor:'Couleur d\u2019accent',language:'Langue',
     notifsApp:'Notifications & app',trainReminders:'Rappels d\u2019entraînement',sounds:'Sons & vibrations',units:'Unités métriques (km)',
@@ -292,7 +292,7 @@ const RANKS=[
   {min:40, max:49, name:'Champion',    color:'#F2B84B', bg:'linear-gradient(135deg,#a5720f,#F2B84B)'},
   {min:50, max:59, name:'Légende',     color:'#FFD76A', bg:'linear-gradient(135deg,#7a5c0d,#FFD76A)'},
   {min:60, max:69, name:'Immortel',    color:'#b57dff', bg:'linear-gradient(135deg,#4a1a7a,#b57dff)'},
-  {min:70, max:9999,name:'VVV Elite',  color:'#ffffff', bg:'linear-gradient(135deg,#0a0a0a,#ffd76a)'}
+  {min:70, max:9999,name:'IKORUN Elite',  color:'#ffffff', bg:'linear-gradient(135deg,#0a0a0a,#ffd76a)'}
 ];
 function rankFor(level){ return RANKS.find(r=>level>=r.min&&level<=r.max)||RANKS[RANKS.length-1]; }
 
@@ -425,7 +425,7 @@ const BADGE_TIERS=[
   {key:'divin',     name:'Divin',      cls:'bd-divin',     emoji:'✨', level:58, km:3390, sess:178,desc:"Un niveau que peu atteignent.",comps:3},
   {key:'celeste',   name:'Céleste',    cls:'bd-celeste',   emoji:'🌠', level:62, km:4080, sess:206,desc:"Des années de carrière derrière soi.",preps:4,comps:3},
   {key:'infinity',  name:'Infinity',   cls:'bd-infinity',  emoji:'♾️', level:66, km:4840, sess:236,desc:"La régularité comme mode de vie.",preps:5,comps:4},
-  {key:'vvvelite',  name:'VVV Elite',  cls:'bd-vvvelite',  emoji:'👑', level:70, km:5700, sess:270,desc:"Le sommet. Aucune obtention rapide n'est possible.",preps:6,comps:5}
+  {key:'vvvelite',  name:'IKORUN Elite',  cls:'bd-vvvelite',  emoji:'👑', level:70, km:5700, sess:270,desc:"Le sommet. Aucune obtention rapide n'est possible.",preps:6,comps:5}
 ];
 function badgeStats(){
   return {
@@ -701,7 +701,7 @@ function ensureNotifPerm(){ if('Notification'in window && Notification.permissio
 function notify(title,body){
   if(P.notif===false) return;
   if('Notification'in window && Notification.permission==='granted'){
-    try{ const n=new Notification(title,{body,icon:appIconDataURL(),badge:appIconDataURL(),tag:'vvv',renotify:true}); setTimeout(()=>n.close(),6000); return; }catch(e){}
+    try{ const n=new Notification(title,{body,icon:appIconDataURL(),badge:appIconDataURL(),tag:'ikorun',renotify:true}); setTimeout(()=>n.close(),6000); return; }catch(e){}
   }
   sfx('notif');
 }
@@ -713,7 +713,7 @@ async function startBgActivity(type){
   clearInterval(_bgTick); _bgTick=null;
   if(P.notif!==false && 'Notification'in window && Notification.permission==='granted'){
     try{ if(_bgNotif){ _bgNotif.close(); _bgNotif=null; } }catch(e){}
-    try{ _bgNotif=new Notification('VVV · '+type,{body:'▶ Séance en cours',icon:appIconDataURL(),tag:'vvv-activity',renotify:false,silent:true}); }catch(e){}
+    try{ _bgNotif=new Notification('IKORUN · '+type,{body:'▶ Séance en cours',icon:appIconDataURL(),tag:'ikorun-activity',renotify:false,silent:true}); }catch(e){}
   }
 }
 function pauseBgActivity(p){
@@ -721,7 +721,7 @@ function pauseBgActivity(p){
   // Met à jour la même notification une seule fois (pas de boucle) quand on met en pause / reprend
   if(_bgActivity && P.notif!==false && 'Notification'in window && Notification.permission==='granted'){
     try{ if(_bgNotif) _bgNotif.close(); }catch(e){}
-    try{ _bgNotif=new Notification('VVV · '+_bgActivity.type,{body:(p?'⏸ En pause':'▶ En cours'),icon:appIconDataURL(),tag:'vvv-activity',renotify:false,silent:true}); }catch(e){}
+    try{ _bgNotif=new Notification('IKORUN · '+_bgActivity.type,{body:(p?'⏸ En pause':'▶ En cours'),icon:appIconDataURL(),tag:'ikorun-activity',renotify:false,silent:true}); }catch(e){}
   }
 }
 function stopBgActivity(){
@@ -735,7 +735,7 @@ document.addEventListener('visibilitychange',async()=>{
     try{ if('wakeLock'in navigator) _wakeLock=await navigator.wakeLock.request('screen'); }catch(e){}
   }
 });
-function appIconDataURL(){ return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230A0D12'/%3E%3Ctext x='32' y='44' font-size='34' font-weight='800' fill='%233D7FFF' text-anchor='middle' font-family='sans-serif'%3EV%3C/text%3E%3C/svg%3E"; }
+function appIconDataURL(){ return "icon-192.png"; }
 function ripple(e){
   const b=e.currentTarget, r=document.createElement('span'); r.className='ripple';
   const rect=b.getBoundingClientRect(), sz=Math.max(rect.width,rect.height);
@@ -2191,10 +2191,10 @@ function planHeroHTML(){
   return h;
 }
 function renderRunning(){
-  let h='<div class="pills" style="margin-bottom:14px"><div class="pill '+(runSub==='ia'?'on':'')+'" onclick="runSub=\'ia\';renderSport()">⚡ Plan VVV</div><div class="pill '+(runSub==='perso'?'on':'')+'" onclick="runSub=\'perso\';renderSport()">📋 Plan personnel</div></div>';
+  let h='<div class="pills" style="margin-bottom:14px"><div class="pill '+(runSub==='ia'?'on':'')+'" onclick="runSub=\'ia\';renderSport()">⚡ Plan IKORUN</div><div class="pill '+(runSub==='perso'?'on':'')+'" onclick="runSub=\'perso\';renderSport()">📋 Plan personnel</div></div>';
   if(runSub==='ia'){
     if(!PLAN){
-      h+='<div class="card"><div class="empty"><div class="em-ic">⚡</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">Plan VVV — moteur scientifique</div><div style="font-size:13px;margin-bottom:16px">Génère un plan périodisé sur-mesure (méthode norvégienne + VDOT/Daniels) basé sur ton VDOT ('+(getUserVDOT()||'?')+'), ton objectif, tes préférences et ta date de course. Le plan se réajuste automatiquement si tu rates une séance.</div><button class="btn" onclick="openPlanSetup()">⚙️ Configurer & générer</button></div></div>';
+      h+='<div class="card"><div class="empty"><div class="em-ic">⚡</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">Plan IKORUN — moteur scientifique</div><div style="font-size:13px;margin-bottom:16px">Génère un plan périodisé sur-mesure (méthode norvégienne + VDOT/Daniels) basé sur ton VDOT ('+(getUserVDOT()||'?')+'), ton objectif, tes préférences et ta date de course. Le plan se réajuste automatiquement si tu rates une séance.</div><button class="btn" onclick="openPlanSetup()">⚙️ Configurer & générer</button></div></div>';
     } else {
       h+=planHeroHTML();
       // group by phase puis semaine
@@ -2376,9 +2376,9 @@ function delPersoSession(){
   const p=CUSTOM.find(x=>x.id===curPerso); p.sessions=p.sessions.filter(x=>x.id!==curPersoSess);
   saveAll(); closeOv('ovSheet'); renderSport();
 }
-function sharePlan(n){ if(navigator.share) navigator.share({title:'VVV Plan',text:'Mon plan : '+n}); else toast('Partage non supporté'); }
+function sharePlan(n){ if(navigator.share) navigator.share({title:'IKORUN Plan',text:'Mon plan : '+n}); else toast('Partage non supporté'); }
 
-/* ---------- QUESTIONNAIRE POST-SÉANCE + ANALYSE MOTEUR VVV ---------- */
+/* ---------- QUESTIONNAIRE POST-SÉANCE + ANALYSE MOTEUR IKORUN ---------- */
 let debriefData=null, debriefCtx=null;
 function openSessionDebrief(ctx){
   debriefCtx=ctx;
@@ -2390,7 +2390,7 @@ function openSessionDebrief(ctx){
 function renderDebrief(){
   const d=debriefData;
   const scale=(key,label,icons)=>'<div class="field"><label>'+label+'</label><div class="pills">'+icons.map((ic,i)=>'<div class="pill '+(d[key]===i+1?'on':'')+'" onclick="debriefData.'+key+'='+(i+1)+';renderDebrief()">'+ic+'</div>').join('')+'</div></div>';
-  let h='<div class="tip" style="margin-bottom:14px">📋 Réponds honnêtement : le moteur VVV va analyser ta séance.</div>';
+  let h='<div class="tip" style="margin-bottom:14px">📋 Réponds honnêtement : le moteur IKORUN va analyser ta séance.</div>';
   h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>Durée (min)</label><input class="inp" type="number" value="'+(d.duration||'')+'" oninput="debriefData.duration=+this.value"></div><div class="field" style="flex:1"><label>Distance (km)</label><input class="inp" type="number" value="'+(d.distance||'')+'" oninput="debriefData.distance=+this.value"></div></div>';
   h+='<div class="field"><label>Allure moyenne /km</label><input class="inp" value="'+(d.pace||'')+'" oninput="debriefData.pace=this.value" placeholder="4:30"></div>';
   h+='<div class="field"><label>RPE — difficulté ressentie : '+d.rpe+'/10</label><input type="range" min="1" max="10" value="'+d.rpe+'" style="width:100%" oninput="debriefData.rpe=+this.value;renderDebrief()"></div>';
@@ -2448,7 +2448,7 @@ function renderCoachAnalysis(a){
   h+=blk('🔧','Ajustements à venir',a.adjust,'var(--e)');
   h+='<div style="background:linear-gradient(135deg,var(--ed),rgba(31,47,80,.3));border:1px solid var(--e);border-radius:14px;padding:14px;margin-top:16px;text-align:center"><div style="font-style:italic;font-size:15px">"'+a.motiv+'"</div></div>';
   h+='<button class="btn" style="margin-top:16px" onclick="closeOv(\'ovProg\');renderSport();nav(\'home\')">C\u2019est noté, Coach ! 💪</button>';
-  $('#progBody').innerHTML=h; $('#ovProgTitle').textContent='Analyse VVV';
+  $('#progBody').innerHTML=h; $('#ovProgTitle').textContent='Analyse IKORUN';
 }
 
 /* ---------- RUN SHEET ---------- */
@@ -3473,13 +3473,13 @@ function saveCalcResult(){
 function copyCalc(){
   if(!calc.lastResult){ toast(`Lance un calcul d'abord`); return; }
   const t=predictTime(getUserVDOT(),resultDist);
-  navigator.clipboard&&navigator.clipboard.writeText('VVV — '+(resultDist/1000)+'km en '+fmtTime(t));
+  navigator.clipboard&&navigator.clipboard.writeText('IKORUN — '+(resultDist/1000)+'km en '+fmtTime(t));
   toast('Copié ✓');
 }
 function shareCalc(){
   const t=predictTime(getUserVDOT(),resultDist);
-  const txt='Ma prédiction VVV : '+(resultDist/1000)+'km en '+fmtTime(t);
-  if(navigator.share) navigator.share({title:'VVV',text:txt}); else toast('Partage non supporté');
+  const txt='Ma prédiction IKORUN : '+(resultDist/1000)+'km en '+fmtTime(t);
+  if(navigator.share) navigator.share({title:'IKORUN',text:txt}); else toast('Partage non supporté');
 }
 function calcAsGoal(){ addXP(10,'objectif ajouté'); toast('Objectif ajouté ✓'); }
 
@@ -3539,8 +3539,8 @@ function renderChrono(){
 function chronoStop(){ chrono.running=false; chrono.elapsed+=Date.now()-chrono.start; cancelAnimationFrame(chrono.raf); sfx('stop'); stopBgActivity(); renderChrono(); }
 function chronoReset(){ chrono={running:false,start:0,elapsed:0,laps:[],raf:null}; renderChrono(); }
 function exportLaps(){
-  let txt='VVV Chronomètre\n'; chrono.laps.forEach((l,i)=>txt+='Tour '+(i+1)+' : '+fmtChrono(l)+'\n');
-  if(navigator.share) navigator.share({title:'Chrono VVV',text:txt}); else { navigator.clipboard&&navigator.clipboard.writeText(txt); toast('Tours copiés ✓'); }
+  let txt='IKORUN Chronomètre\n'; chrono.laps.forEach((l,i)=>txt+='Tour '+(i+1)+' : '+fmtChrono(l)+'\n');
+  if(navigator.share) navigator.share({title:'Chrono IKORUN',text:txt}); else { navigator.clipboard&&navigator.clipboard.writeText(txt); toast('Tours copiés ✓'); }
 }
 function fmtChrono(ms){ const t=Math.floor(ms); const m=Math.floor(t/60000),s=Math.floor((t%60000)/1000),cs=Math.floor((t%1000)/10); return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+String(cs).padStart(2,'0'); }
 function chronoToggle(){
@@ -3669,7 +3669,7 @@ function renderProfile(){
   // STATS
   h+='<div class="card stag" style="animation-delay:.05s"><div class="sgrid"><div class="sbox"><div class="v">'+(P.height||'—')+'</div><div class="l">'+t('height')+' (cm)</div></div><div class="sbox"><div class="v">'+(P.weight||'—')+'</div><div class="l">'+t('weight')+' (kg)</div></div><div class="sbox"><div class="v">'+age()+'</div><div class="l">'+t('age')+'</div></div><div class="sbox"><div class="v">'+(getUserVDOT()||'—')+'</div><div class="l">VDOT</div></div></div></div>';
   h+='<div class="card stag" style="animation-delay:.10s"><div class="row" style="margin-bottom:8px"><span class="lab">'+t('xpProgress')+' · Niv. '+XP.level+(XP.maxed?' (MAX)':'')+'</span><span class="mono" style="color:var(--e)">'+XP.total+' XP</span></div><div class="pbar"><div style="width:'+xp.pct+'%"></div></div>'+
-    (XP.maxed?'<div style="font-size:11px;color:var(--muted);margin-top:8px">Niveau maximum atteint — sommet de la carrière VVV.</div>':'<div style="font-size:11px;color:var(--muted);margin-top:8px">'+(XP.span-XP.inLvl)+' XP avant le niveau '+(XP.level+1)+'</div>')+
+    (XP.maxed?'<div style="font-size:11px;color:var(--muted);margin-top:8px">Niveau maximum atteint — sommet de la carrière IKORUN.</div>':'<div style="font-size:11px;color:var(--muted);margin-top:8px">'+(XP.span-XP.inLvl)+' XP avant le niveau '+(XP.level+1)+'</div>')+
     '</div>';
   // ===== BADGES =====
   h+=badgeStripHTML();
@@ -3719,7 +3719,7 @@ function renderProfile(){
   h+='<div class="card stag"><button class="btn ghost sm" style="margin-bottom:8px" onclick="exportData()">📤 '+t('exportData')+'</button>';
   h+='<button class="btn ghost sm" style="margin-bottom:8px" onclick="importData()">📥 '+t('importData')+'</button>';
   h+='<button class="btn ghost sm" style="color:var(--bad)" onclick="resetAll()">🗑 '+t('resetApp')+'</button></div>';
-  h+='<div style="text-align:center;color:var(--dim);font-size:12px;margin:20px 0">VVV — Elite Athletic Intelligence · v2.0</div>';
+  h+='<div style="text-align:center;color:var(--dim);font-size:12px;margin:20px 0">IKORUN — Elite Athletic Intelligence · v2.0</div>';
   $('#s-profil').innerHTML=h;
 }
 /* ---- Photo & Bio ---- */
@@ -3873,13 +3873,13 @@ function openSettings(){
     '<div class="row" style="margin-bottom:14px"><span>Unités métriques (km)</span><div class="toggle on"></div></div>'+
     '<div class="row"><span>Notifications</span><div class="toggle'+(P.notif?' on':'')+'" onclick="P.notif=!P.notif;saveAll();this.classList.toggle(\'on\')"></div></div></div>';
   h+='<div class="card"><div class="card-t">🔒 Données & confidentialité</div><button class="btn ghost sm" style="margin-bottom:8px" onclick="exportData()">📤 Exporter mes données (JSON)</button><button class="btn ghost sm" style="color:var(--bad)" onclick="resetAll()">🗑 Réinitialisation totale</button></div>';
-  h+='<div style="text-align:center;color:var(--dim);font-size:12px">VVV v2.0 · Données locales uniquement</div>';
+  h+='<div style="text-align:center;color:var(--dim);font-size:12px">IKORUN v2.0 · Données locales uniquement</div>';
   $('#settingsBody').innerHTML=h; openOv('ovSettings');
 }
 function exportData(){
   const data={profile:P,sessions:SESS,muscu:MSESS,custom:CUSTOM,plan:PLAN,goals:GOALS,agenda:AGENDA,xp:XP};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='vvv-export.json'; a.click();
+  const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='ikorun-export.json'; a.click();
   toast('Export généré ✓');
 }
 function resetAll(){
@@ -3894,7 +3894,7 @@ function setupPWA(){
   // Manifest dynamique
   try{
     const icon=appIconDataURL();
-    const manifest={ name:'VVV — Elite Athletic Intelligence', short_name:'VVV', start_url:'.', scope:'.',
+    const manifest={ name:'IKORUN — Elite Athletic Intelligence', short_name:'IKORUN', start_url:'.', scope:'.',
       display:'standalone', orientation:'portrait', background_color:'#0A0D12', theme_color:'#0A0D12',
       icons:[{src:icon,sizes:'192x192',type:'image/svg+xml',purpose:'any maskable'},{src:icon,sizes:'512x512',type:'image/svg+xml',purpose:'any maskable'}] };
     const blob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
@@ -3904,7 +3904,7 @@ function setupPWA(){
   }catch(e){}
   // Service worker : cache la page courante pour fonctionner hors-ligne
   if('serviceWorker'in navigator && location.protocol.startsWith('http')){
-    const swCode="const C='vvv-v2';self.addEventListener('install',e=>{self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(self.clients.claim())});self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(caches.open(C).then(c=>c.match(e.request).then(r=>{const f=fetch(e.request).then(res=>{try{c.put(e.request,res.clone())}catch(x){}return res}).catch(()=>r);return r||f})))});";
+    const swCode="const C='ikorun-v2';self.addEventListener('install',e=>{self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(self.clients.claim())});self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(caches.open(C).then(c=>c.match(e.request).then(r=>{const f=fetch(e.request).then(res=>{try{c.put(e.request,res.clone())}catch(x){}return res}).catch(()=>r);return r||f})))});";
     try{ const b=new Blob([swCode],{type:'text/javascript'}); navigator.serviceWorker.register(URL.createObjectURL(b)).catch(()=>{}); }catch(e){}
   }
 }
