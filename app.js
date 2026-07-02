@@ -122,7 +122,7 @@ const I18N={
     home:'Accueil',sport:'Sport',stats:'Statistiques',outils:'Outils',profil:'Profil',
     sub_sport:'Course & Musculation',sub_stats:'Tes données réelles',sub_outils:'Calculs & timers',
     save:'Sauver',cancel:'Annuler',add:'Ajouter',edit:'Modifier',delete:'Supprimer',close:'Fermer',validate:'Valider',back:'Retour',seeAll:'Voir tout',
-    running:'Course',muscu:'Musculation',coachIA:'Coach IA',myPlan:'Plan personnel',
+    running:'Course',muscu:'Musculation',coachIA:'Plan VVV',myPlan:'Plan personnel',
     perfHistory:'Historique des performances',editInfos:'Modifier mes informations',
     objective:'Objectif',appearance:'Apparence',accentColor:'Couleur d\u2019accent',language:'Langue',
     notifsApp:'Notifications & app',trainReminders:'Rappels d\u2019entraînement',sounds:'Sons & vibrations',units:'Unités métriques (km)',
@@ -624,7 +624,7 @@ function nav(s){
   const av=$('#tbAvatar'); if(av){ if(P.photo){ av.style.background='url('+P.photo+') center/cover'; av.textContent=''; } else { av.style.background='var(--ed)'; av.style.color='var(--e)'; av.style.fontWeight='800'; av.textContent=P.name?P.name[0].toUpperCase():'?'; } }
   $('#scroll').scrollTop=0;
   if(s==='home') renderHome();
-  if(s==='sport') renderSport();
+  if(s==='sport'){ renderSport(); setTimeout(checkMissedSessions,300); }
   if(s==='stats') renderStats();
   if(s==='outils') renderOutils();
   if(s==='profil') renderProfile();
@@ -1331,84 +1331,162 @@ function phaseDistribution(weeks){
   for(;w<=weeks;w++) phaseByWeek[w]=PHASES[5];
   return phaseByWeek;
 }
-/* ============ COACH IA — génération du rythme hebdo (l'IA décide QUOI, le moteur VDOT décide COMBIEN) ============ */
-const COACH_AI_URL='https://bsrbzuhvqtjkkmpmxyzw.supabase.co/functions/v1/coach-ai';
-const SUPABASE_ANON_KEY='sb_publishable_d1eInkDkCJG-Fx4S8UqNgw_Bm6uQuKw';
-const VALID_QUALITY_TYPES=['VMAc','VMAl','VO2','INTERVAL','DBLSEUIL','TEMPO','SEUIL','PROGRESSIF','FARTLEK','COTES'];
-async function callCoachAI(mode, extra){
-  if(!window.supabaseClient) throw new Error('Supabase non initialisé');
-  const { data:{ session } } = await window.supabaseClient.auth.getSession();
-  if(!session) throw new Error('Tu dois être connecté pour utiliser le Coach IA');
-  const ctrl=new AbortController();
-  const killer=setTimeout(()=>ctrl.abort(),20000);
-  let resp;
-  try{
-    resp = await fetch(COACH_AI_URL, {
-      method:'POST',
-      signal: ctrl.signal,
-      headers:{
-        'Content-Type':'application/json',
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization':'Bearer '+session.access_token
-      },
-      body: JSON.stringify({
-        mode,
-        profile: P,
-        recentSessions: (SESS||[]).slice(-10),
-        records: RECORDS||[],
-        extra: extra||{}
-      })
-    });
-  }catch(e){
-    if(e.name==='AbortError') throw new Error('Le coach met trop de temps à répondre (timeout 20s).');
-    throw new Error('Connexion impossible au coach IA : '+(e.message||e));
-  }finally{
-    clearTimeout(killer);
-  }
-  let data;
-  try{ data = await resp.json(); }catch(e){ throw new Error('Réponse invalide du serveur (status '+resp.status+')'); }
-  if(!resp.ok || data.error) throw new Error(data.error || ('Erreur serveur ('+resp.status+')'));
-  return data.result;
+/* ============ MOTEUR VVV — SÉANCE RATÉE, REMPLACEMENT & AJUSTEMENT AUTOMATIQUE ============ */
+const MISSED_REASONS=['Manque de temps','Fatigue','Douleur','Maladie','Météo','Déplacement','Motivation','Oubli','Autre'];
+const REPLACEMENT_ACTIVITIES=['Aucune activité','Running','Musculation','Vélo','Natation','Mobilité','Marche','Autre'];
+const HARD_TYPES=['VMAc','VMAl','VO2','INTERVAL','DBLSEUIL','SEUIL','SPE','TEMPO_SPE','TEMPO','PROGRESSIF','FARTLEK','COTES'];
+let missedCtx=null;
+
+function checkMissedSessions(){
+  if(!PLAN || !PLAN.sessions) return;
+  const tk=todayKey();
+  const missed=PLAN.sessions.find(s=>s.date<tk && !s.done && !s.missed && s.type!=='Repos');
+  if(missed) openMissedFlow(missed.id);
 }
-function parseAIJson(text){
-  try{ const clean=String(text).replace(/```json|```/g,'').trim(); return JSON.parse(clean); }catch(e){ return null; }
+function openMissedFlow(sid){
+  missedCtx={sessionId:sid, reason:null, replacement:null, replData:null, muscuCat:null};
+  renderMissedReason();
+  $('#ovProgTitle').textContent='Séance manquée';
+  openOv('ovProg');
 }
-async function fetchAIWeeklyRhythm(setup){
-  const raw=await callCoachAI('generate_plan',{
-    objRace:setup.objRace, compDate:setup.compDate, objGoal:setup.objGoal, objTime:setup.objTime,
-    days:setup.days, kmWeekMin:setup.kmWeekMin, kmWeekMax:setup.kmWeekMax, likedTypes:setup.likedTypes,
-    philosophy:'haute intensité, méthode norvégienne double-seuil, priorité: fractionné long > fractionné court > tempo à haut kilométrage'
-  });
-  const parsed=parseAIJson(raw);
-  if(!parsed || !Array.isArray(parsed.weeklyRhythm) || !parsed.weeklyRhythm.length) return null;
-  const clean=parsed.weeklyRhythm.filter(t=>VALID_QUALITY_TYPES.includes(t));
-  if(!clean.length) return null;
-  return { types:clean, note:parsed.note||'' };
+function renderMissedReason(){
+  const s=PLAN.sessions.find(x=>x.id===missedCtx.sessionId); if(!s) return;
+  let h='<div class="card" style="border-color:rgba(255,92,108,.35);background:rgba(255,92,108,.08);margin-bottom:16px"><div style="font-weight:700;color:var(--bad)">⚠️ Séance manquée</div><div style="font-size:13px;color:var(--muted);margin-top:4px">'+s.title+' · '+fmtDate(s.date)+'</div></div>';
+  h+='<div class="field"><label>Pourquoi cette séance n\u2019a-t-elle pas été réalisée ?</label><div class="pills">'+MISSED_REASONS.map(r=>'<div class="pill" onclick="selectMissedReason(\''+r+'\')">'+r+'</div>').join('')+'</div></div>';
+  $('#progBody').innerHTML=h;
 }
-async function generatePlanWithAI(){
-  const vdot=getUserVDOT();
-  if(!vdot){ toast('Profil incomplet : ajoute un chrono dans tes records'); return; }
-  if(!P.compDate){ toast('Choisis une date de compétition'); return; }
-  toast('🧠 L\u2019IA prépare ton plan...');
-  try{
-    const rhythm=await fetchAIWeeklyRhythm({
-      objRace:P.objRace, compDate:P.compDate, objGoal:P.objGoal, objTime:P.objTime,
-      days:P.days, kmWeekMin:P.kmWeekMin, kmWeekMax:P.kmWeekMax, likedTypes:PREFS.likedTypes
-    });
-    if(rhythm && rhythm.types.length){
-      window.AI_WEEKLY_RHYTHM=rhythm.types;
-      generatePlan();
-      window.AI_WEEKLY_RHYTHM=null;
-      toast('🔥 Plan généré par l\u2019IA'+(rhythm.note?' — '+rhythm.note:''));
-      return;
+function selectMissedReason(r){ missedCtx.reason=r; renderMissedReplacement(); }
+function renderMissedReplacement(){
+  let h='<div class="field"><label>As-tu finalement fait autre chose ?</label><div class="pills">'+REPLACEMENT_ACTIVITIES.map(a=>'<div class="pill" onclick="selectReplacement(\''+a+'\')">'+a+'</div>').join('')+'</div></div>';
+  $('#progBody').innerHTML=h;
+}
+function selectReplacement(a){
+  missedCtx.replacement=a;
+  if(a==='Aucune activité'){ finalizeMissedSession(); return; }
+  if(a==='Running'){ renderMissedRunningForm(); return; }
+  if(a==='Musculation'){ renderMissedMuscuForm(); return; }
+  if(a==='Vélo'||a==='Natation'){ renderMissedCardioForm(a); return; }
+  renderMissedSimpleForm(a);
+}
+function renderMissedRunningForm(){
+  let h='<div class="field"><label>Distance (km)</label><input class="inp" id="mr_km" type="number" placeholder="8"></div>';
+  h+='<div class="field"><label>Allure /km</label><input class="inp" id="mr_pace" placeholder="4:30"></div>';
+  h+='<div class="field"><label>RPE — difficulté ressentie : <span id="mr_rpe_v">5</span>/10</label><input type="range" min="1" max="10" value="5" style="width:100%" id="mr_rpe" oninput="document.getElementById(\'mr_rpe_v\').textContent=this.value"></div>';
+  h+='<div class="field"><label>Notes (optionnel)</label><textarea class="inp" id="mr_notes" rows="2"></textarea></div>';
+  h+='<button class="btn" onclick="saveMissedRunning()">Valider</button>';
+  $('#progBody').innerHTML=h;
+}
+function saveMissedRunning(){
+  const km=+$('#mr_km').value||0, pace=$('#mr_pace').value.trim()||'—', rpe=+$('#mr_rpe').value, notes=$('#mr_notes').value.trim();
+  missedCtx.replData={km,pace,rpe,notes};
+  if(km>0){ SESS.push({date:todayKey(),title:'Course de remplacement',km,pace,type:'EF',duration:(pace!=='—')?Math.round(km*parseTime(pace)/60):0,rpe}); }
+  finalizeMissedSession();
+}
+function renderMissedMuscuForm(){
+  const cats=['Haut du corps','Bas du corps','Gainage','Explosivité','Force maximale','Force endurance','Puissance','Mobilité'];
+  missedCtx.muscuCat=cats[0];
+  let h='<div class="field"><label>Type de séance</label><div class="pills" id="mm_cats">'+cats.map((c,i)=>'<div class="pill '+(i===0?'on':'')+'" onclick="selMuscuCat(\''+c+'\',this)">'+c+'</div>').join('')+'</div></div>';
+  h+='<div class="field"><label>Durée (min)</label><input class="inp" id="mm_dur" type="number" placeholder="45"></div>';
+  h+='<div class="field"><label>RPE — difficulté ressentie : <span id="mm_rpe_v">5</span>/10</label><input type="range" min="1" max="10" value="5" style="width:100%" id="mm_rpe" oninput="document.getElementById(\'mm_rpe_v\').textContent=this.value"></div>';
+  h+='<button class="btn" onclick="saveMissedMuscu()">Valider</button>';
+  $('#progBody').innerHTML=h;
+}
+function selMuscuCat(c,el){ missedCtx.muscuCat=c; document.querySelectorAll('#mm_cats .pill').forEach(x=>x.classList.remove('on')); el.classList.add('on'); }
+function saveMissedMuscu(){
+  const dur=+$('#mm_dur').value||0, rpe=+$('#mm_rpe').value;
+  missedCtx.replData={cat:missedCtx.muscuCat,dur,rpe};
+  MSESS.push({date:todayKey(),progName:'Remplacement — '+missedCtx.muscuCat,tonnage:0,sets:0,reps:0,duration:dur,calories:0,muscles:{}});
+  finalizeMissedSession();
+}
+function renderMissedCardioForm(kind){
+  let h='<div class="field"><label>Durée (min)</label><input class="inp" id="mc_dur" type="number" placeholder="45"></div>';
+  h+='<div class="field"><label>Distance (km, optionnel)</label><input class="inp" id="mc_km" type="number" placeholder="15"></div>';
+  h+='<div class="field"><label>RPE — difficulté ressentie : <span id="mc_rpe_v">5</span>/10</label><input type="range" min="1" max="10" value="5" style="width:100%" id="mc_rpe" oninput="document.getElementById(\'mc_rpe_v\').textContent=this.value"></div>';
+  h+='<button class="btn" onclick="saveMissedCardio(\''+kind+'\')">Valider</button>';
+  $('#progBody').innerHTML=h;
+}
+function saveMissedCardio(kind){
+  const dur=+$('#mc_dur').value||0, km=+$('#mc_km').value||0, rpe=+$('#mc_rpe').value;
+  missedCtx.replData={kind,dur,km,rpe};
+  finalizeMissedSession();
+}
+function renderMissedSimpleForm(kind){
+  let h='<div class="field"><label>Durée (min, optionnel)</label><input class="inp" id="ms_dur" type="number" placeholder="30"></div>';
+  h+='<button class="btn" onclick="saveMissedSimple(\''+kind+'\')">Valider</button>';
+  $('#progBody').innerHTML=h;
+}
+function saveMissedSimple(kind){ missedCtx.replData={kind,dur:+$('#ms_dur').value||0}; finalizeMissedSession(); }
+function finalizeMissedSession(){
+  const s=PLAN.sessions.find(x=>x.id===missedCtx.sessionId);
+  if(!s){ missedCtx=null; closeOv('ovProg'); return; }
+  s.missed=true; s.missedReason=missedCtx.reason||null; s.missedReplacement=missedCtx.replacement||'Aucune activité'; s.missedReplData=missedCtx.replData||null;
+  const note=ruleBasedAdjust(s, missedCtx.reason, missedCtx.replacement);
+  saveAll();
+  closeOv('ovProg');
+  toast('📝 Séance notée'+(note?' — '+note:''));
+  missedCtx=null;
+  renderSport();
+  setTimeout(checkMissedSessions,400);
+}
+
+/* ---------- MOTEUR DE RÈGLES D'ADAPTATION (100% local, aucune IA) ---------- */
+function addDaysKey(dateKey,n){ const d=new Date(dateKey); d.setDate(d.getDate()+n); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function nextUpcoming(afterDate){ return PLAN.sessions.filter(s=>s.date>afterDate && !s.done && !s.missed).sort((a,b)=>a.date<b.date?-1:1); }
+function nextHardUpcoming(afterDate){ return nextUpcoming(afterDate).find(s=>HARD_TYPES.includes(s.baseType)); }
+function ruleBasedAdjust(session, reason, replacement){
+  const heavyReasons=['Fatigue','Douleur','Maladie'];
+  let note='';
+  if(heavyReasons.includes(reason)){
+    const cardioReplacement=(replacement==='Running'||replacement==='Vélo'||replacement==='Natation');
+    const nh=nextHardUpcoming(session.date);
+    if(nh){
+      const factor=cardioReplacement?0.9:0.75;
+      nh.km=Math.round(nh.km*factor*10)/10;
+      nh.duration=Math.round(nh.duration*factor);
+      const flag='⚠️ Séance allégée automatiquement (raison : '+reason.toLowerCase()+' le '+fmtDate(session.date)+'). — ';
+      if(nh.detail && nh.detail.objectif) nh.detail.objectif=flag+nh.detail.objectif;
+      nh.desc=flag+(nh.desc||'');
+      note='prochaine séance dure allégée';
     }
-  }catch(e){
-    console.error('generatePlanWithAI:',e);
+  } else if(replacement==='Musculation' && missedCtx && ['Bas du corps','Explosivité','Puissance'].includes(missedCtx.muscuCat)){
+    const tomorrow=addDaysKey(session.date,1);
+    const nextDay=PLAN.sessions.find(s=>s.date===tomorrow && !s.done && !s.missed);
+    if(nextDay && ['VMAc','COTES'].includes(nextDay.baseType)){
+      const flag='💡 Ta séance jambes a déjà sollicité tes muscles — reste souple sur l\u2019explosivité aujourd\u2019hui. — ';
+      if(nextDay.detail && nextDay.detail.objectif) nextDay.detail.objectif=flag+nextDay.detail.objectif;
+      nextDay.desc=flag+(nextDay.desc||'');
+      note='vigilance sur ta prochaine séance explosive';
+    }
+  } else if((replacement==='Vélo'||replacement==='Natation') && !heavyReasons.includes(reason)){
+    note='charge cardio déjà comptabilisée, plan inchangé';
   }
-  // Fallback : le moteur classique tourne déjà en haute intensité par défaut
-  window.AI_WEEKLY_RHYTHM=null;
-  generatePlan();
-  toast('⚠️ IA indisponible — plan généré avec le rythme par défaut');
+  checkConsecutiveMisses();
+  return note;
+}
+function checkConsecutiveMisses(){
+  if(!PLAN) return;
+  const tk=todayKey();
+  const recentMissed=PLAN.sessions.filter(s=>s.missed && s.date>=addDaysKey(tk,-14) && s.date<=tk).length;
+  if(recentMissed>=3 && PLAN.autoReducedAt!==tk){
+    nextUpcoming(tk).forEach(s=>{ s.km=Math.round(s.km*0.85*10)/10; s.duration=Math.round(s.duration*0.85); });
+    PLAN.autoReducedAt=tk;
+    toast('📉 3 séances ratées récemment : volume des prochaines semaines réduit de 15%');
+  }
+}
+function applyProgressiveOverload(entry){
+  if(!PLAN) return;
+  if(entry.pain && entry.pain!=='Aucune') return;
+  if(entry.fatigue>=4) return;
+  if(!(entry.feel>=4 && entry.plannedRpe && entry.rpe<=entry.plannedRpe)) return;
+  const sess=PLAN.sessions.find(s=>s.date===entry.date);
+  const wk=sess?sess.week:0;
+  PLAN.overloadWeeks=PLAN.overloadWeeks||[];
+  if(PLAN.overloadWeeks.includes(wk)) return;
+  PLAN.overloadWeeks.push(wk);
+  nextUpcoming(entry.date).slice(0,3).forEach(s=>{
+    if(s.baseType==='EF'||s.baseType==='LONG'){ s.km=Math.round(s.km*1.05*10)/10; s.duration=Math.round(s.duration*1.05); }
+  });
+  saveAll();
 }
 
 function generatePlan(){
@@ -1501,16 +1579,13 @@ function confirmPlanSetup(){
   if(!s.days.length){ toast('Choisis au moins un jour'); return; }
   Object.assign(P,{objRace:s.objRace,compDate:s.compDate,objProfile:s.objProfile,objGoal:s.objGoal,objTime:s.objTime,days:s.days.sort((a,b)=>a-b),kmWeekMin:s.kmWeekMin,kmWeekMax:s.kmWeekMax});
   PREFS.likedTypes=s.likedTypes;
-  saveAll(); closeOv('ovProg'); generatePlanWithAI();
+  saveAll(); closeOv('ovProg'); generatePlan();
 }
 // Compose la liste des types pour la semaine (variée, cohérente)
 function composeWeek(ph,nDays,qCount,isDeload,pick,rng,liked,isRaceWeek){
   const easy=['EF','EF','RECUP'];
   let quality;
-  if(window.AI_WEEKLY_RHYTHM && window.AI_WEEKLY_RHYTHM.length){
-    quality=[...window.AI_WEEKLY_RHYTHM];
-  }
-  else if(ph.key==='PG') quality=['FARTLEK','COTES','TEMPO','LIGNES'];
+  if(ph.key==='PG') quality=['FARTLEK','COTES','TEMPO','LIGNES'];
   else if(ph.key==='AERO') quality=['TEMPO','SEUIL','PROGRESSIF','FARTLEK','COTES'];
   else if(ph.key==='VO2') quality=['VMAc','VMAl','VO2','INTERVAL','DBLSEUIL'];
   else if(ph.key==='SPE') quality=['SPE','SEUIL','VMAl','TEMPO_SPE','PROGRESSIF'];
@@ -1811,13 +1886,13 @@ function weekDotsHTML(){
 /* ---------- SPORT ---------- */
 let sportTab='run', runSub='ia';
 function renderRunning(){
-  let h='<div class="pills" style="margin-bottom:14px"><div class="pill '+(runSub==='ia'?'on':'')+'" onclick="runSub=\'ia\';renderSport()">🤖 Coach IA</div><div class="pill '+(runSub==='perso'?'on':'')+'" onclick="runSub=\'perso\';renderSport()">📋 Plan personnel</div></div>';
+  let h='<div class="pills" style="margin-bottom:14px"><div class="pill '+(runSub==='ia'?'on':'')+'" onclick="runSub=\'ia\';renderSport()">⚡ Plan VVV</div><div class="pill '+(runSub==='perso'?'on':'')+'" onclick="runSub=\'perso\';renderSport()">📋 Plan personnel</div></div>';
   if(runSub==='ia'){
     if(!PLAN){
-      h+='<div class="card"><div class="empty"><div class="em-ic">🤖</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">Coach IA — Plan scientifique</div><div style="font-size:13px;margin-bottom:16px">Génère un plan périodisé sur-mesure (méthode norvégienne + science moderne) basé sur ton VDOT ('+(getUserVDOT()||'?')+'), ton objectif, tes préférences et ta date de course. Chaque plan est unique.</div><button class="btn" onclick="openPlanSetup()">⚙️ Configurer & générer</button></div></div>';
+      h+='<div class="card"><div class="empty"><div class="em-ic">⚡</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">Plan VVV — moteur scientifique</div><div style="font-size:13px;margin-bottom:16px">Génère un plan périodisé sur-mesure (méthode norvégienne + VDOT/Daniels) basé sur ton VDOT ('+(getUserVDOT()||'?')+'), ton objectif, tes préférences et ta date de course. Le plan se réajuste automatiquement si tu rates une séance.</div><button class="btn" onclick="openPlanSetup()">⚙️ Configurer & générer</button></div></div>';
     } else {
       const done=PLAN.sessions.filter(s=>s.done).length;
-      h+='<div class="card"><div class="row"><div><div class="lab">Plan IA · VDOT '+PLAN.vdot+'</div><div class="man" style="font-weight:800;font-size:18px;margin-top:2px">'+PLAN.weeks+' semaines</div></div><div class="badge">'+done+'/'+PLAN.sessions.length+'</div></div>'+
+      h+='<div class="card"><div class="row"><div><div class="lab">Plan VVV · VDOT '+PLAN.vdot+'</div><div class="man" style="font-weight:800;font-size:18px;margin-top:2px">'+PLAN.weeks+' semaines</div></div><div class="badge">'+done+'/'+PLAN.sessions.length+'</div></div>'+
         '<div class="pbar" style="margin-top:12px"><div style="width:'+(done/PLAN.sessions.length*100)+'%"></div></div>'+
         '<button class="btn ghost sm" style="margin-top:12px" onclick="if(confirm(\'Régénérer un nouveau plan ? Tes séances faites restent dans tes stats.\')){PLAN=null;openPlanSetup()}">🔄 Régénérer / reconfigurer</button></div>';
       // group by phase puis semaine
@@ -1828,7 +1903,8 @@ function renderRunning(){
         if(s.week!==curWeek){ curWeek=s.week; h+='<div class="lab" style="margin:8px 0 6px">Semaine '+s.week+(s.deload?' · 🟢 allégée':'')+'</div>'; }
         const isToday=s.date===tk;
         const col='var('+(s.color||'--e')+')';
-        h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'" onclick="openRunSheet('+s.id+')"><div class="row"><div><div style="font-weight:700;font-size:14px">'+s.title+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+fmtDate(s.date)+(s.km?' · '+s.km+' km · '+s.pace+'/km':' · Repos')+'</div></div><div class="badge" style="background:rgba(61,127,255,.15);color:'+col+';font-size:11px">'+(s.type||'')+'</div></div></div>';
+        const badge=s.missed?'<div class="badge" style="background:rgba(255,92,108,.18);color:var(--bad);font-size:11px">⚠ Manquée</div>':'<div class="badge" style="background:rgba(61,127,255,.15);color:'+col+';font-size:11px">'+(s.type||'')+'</div>';
+        h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'" onclick="openRunSheet('+s.id+')" style="'+(s.missed?'border-color:rgba(255,92,108,.35)':'')+'"><div class="row"><div><div style="font-weight:700;font-size:14px">'+s.title+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+fmtDate(s.date)+(s.km?' · '+s.km+' km · '+s.pace+'/km':' · Repos')+'</div></div>'+badge+'</div></div>';
       });
     }
   } else {
@@ -1998,7 +2074,7 @@ function delPersoSession(){
 }
 function sharePlan(n){ if(navigator.share) navigator.share({title:'VVV Plan',text:'Mon plan : '+n}); else toast('Partage non supporté'); }
 
-/* ---------- QUESTIONNAIRE POST-SÉANCE + ANALYSE COACH IA ---------- */
+/* ---------- QUESTIONNAIRE POST-SÉANCE + ANALYSE MOTEUR VVV ---------- */
 let debriefData=null, debriefCtx=null;
 function openSessionDebrief(ctx){
   debriefCtx=ctx;
@@ -2010,7 +2086,7 @@ function openSessionDebrief(ctx){
 function renderDebrief(){
   const d=debriefData;
   const scale=(key,label,icons)=>'<div class="field"><label>'+label+'</label><div class="pills">'+icons.map((ic,i)=>'<div class="pill '+(d[key]===i+1?'on':'')+'" onclick="debriefData.'+key+'='+(i+1)+';renderDebrief()">'+ic+'</div>').join('')+'</div></div>';
-  let h='<div class="tip" style="margin-bottom:14px">📋 Réponds honnêtement : ton coach IA va analyser ta séance.</div>';
+  let h='<div class="tip" style="margin-bottom:14px">📋 Réponds honnêtement : le moteur VVV va analyser ta séance.</div>';
   h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>Durée (min)</label><input class="inp" type="number" value="'+(d.duration||'')+'" oninput="debriefData.duration=+this.value"></div><div class="field" style="flex:1"><label>Distance (km)</label><input class="inp" type="number" value="'+(d.distance||'')+'" oninput="debriefData.distance=+this.value"></div></div>';
   h+='<div class="field"><label>Allure moyenne /km</label><input class="inp" value="'+(d.pace||'')+'" oninput="debriefData.pace=this.value" placeholder="4:30"></div>';
   h+='<div class="field"><label>RPE — difficulté ressentie : '+d.rpe+'/10</label><input type="range" min="1" max="10" value="'+d.rpe+'" style="width:100%" oninput="debriefData.rpe=+this.value;renderDebrief()"></div>';
@@ -2028,6 +2104,7 @@ function submitDebrief(){
   const entry={...debriefData,date:debriefCtx.date,title:debriefCtx.title,type:debriefCtx.type,plannedRpe:debriefCtx.plannedRpe,ts:Date.now()};
   SESSLOG.push(entry); DB.save('sesslog',SESSLOG);
   const analysis=coachAnalyze(entry);
+  applyProgressiveOverload(entry);
   renderCoachAnalysis(analysis);
 }
 function coachAnalyze(e){
@@ -2067,7 +2144,7 @@ function renderCoachAnalysis(a){
   h+=blk('🔧','Ajustements à venir',a.adjust,'var(--e)');
   h+='<div style="background:linear-gradient(135deg,var(--ed),rgba(31,47,80,.3));border:1px solid var(--e);border-radius:14px;padding:14px;margin-top:16px;text-align:center"><div style="font-style:italic;font-size:15px">"'+a.motiv+'"</div></div>';
   h+='<button class="btn" style="margin-top:16px" onclick="closeOv(\'ovProg\');renderSport();nav(\'home\')">C\u2019est noté, Coach ! 💪</button>';
-  $('#progBody').innerHTML=h; $('#ovProgTitle').textContent='Coach IA';
+  $('#progBody').innerHTML=h; $('#ovProgTitle').textContent='Analyse VVV';
 }
 
 /* ---------- RUN SHEET ---------- */
