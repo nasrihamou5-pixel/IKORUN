@@ -2048,12 +2048,13 @@ function renderHome(){
   const compDays=P.compDate?daysBetween(new Date(),new Date(P.compDate)):null;
 
   let html='';
-  // XP CARD
-  html+='<div class="card stag" style="animation-delay:.02s;background:linear-gradient(135deg,var(--s1),rgba(31,47,80,.35));">'+
-    '<div class="row"><div><div class="lab">Niveau '+XP.level+'</div><div class="man" style="font-weight:800;font-size:22px;margin-top:2px;">'+XP.name+'</div></div>'+
+  // XP CARD — hero treatment
+  html+='<div class="card stag xp-hero" style="animation-delay:.02s;">'+
+    '<div class="xp-hero-glow"></div>'+
+    '<div class="row" style="position:relative;z-index:1"><div><div class="lab">Niveau '+XP.level+'</div><div class="man" style="font-weight:800;font-size:23px;margin-top:3px;letter-spacing:-.4px;">'+XP.name+'</div></div>'+
     '<div class="badge mono">'+XP.total+' XP</div></div>'+
-    '<div class="pbar" style="margin-top:14px;"><div style="width:'+xp.pct+'%"></div></div>'+
-    '<div class="row" style="margin-top:6px;"><span style="font-size:11px;color:var(--muted)" class="mono">'+xp.inLvl+' / '+xp.span+' XP</span><span style="font-size:11px;color:var(--muted)">Niv. '+(XP.level+1)+'</span></div></div>';
+    '<div class="pbar" style="margin-top:15px;position:relative;z-index:1"><div style="width:'+xp.pct+'%"></div></div>'+
+    '<div class="row" style="margin-top:7px;position:relative;z-index:1"><span style="font-size:11px;color:var(--dim)" class="mono">'+xp.inLvl+' / '+xp.span+' XP</span><span style="font-size:11px;color:var(--dim)">Niv. '+(XP.level+1)+'</span></div></div>';
 
   // RINGS
   html+='<div class="card stag" style="animation-delay:.06s"><div class="card-t">📊 Charge de la semaine</div>'+
@@ -3650,8 +3651,8 @@ function prayerTimes(){
 /* ---------- PROFILE ---------- */
 function age(){ if(!P.bday)return'—'; const d=new Date(P.bday); return Math.floor((Date.now()-d)/31557600000); }
 function avatarHTML(size,fs){
-  if(P.photo) return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background-image:url('+P.photo+');background-size:cover;background-position:center;margin:0 auto"></div>';
-  return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:linear-gradient(135deg,var(--e),var(--marineL));display:flex;align-items:center;justify-content:center;margin:0 auto;font-family:Manrope;font-weight:800;font-size:'+fs+'px">'+(P.name?P.name[0].toUpperCase():'?')+'</div>';
+  if(P.photo) return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background-image:url('+P.photo+');background-size:cover;background-position:center;margin:0 auto;border:2.5px solid rgba(61,127,255,.35);box-shadow:0 6px 18px -6px rgba(61,127,255,.4)"></div>';
+  return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:linear-gradient(135deg,var(--e),var(--marineL));display:flex;align-items:center;justify-content:center;margin:0 auto;font-family:Manrope;font-weight:800;font-size:'+fs+'px;border:2.5px solid rgba(61,127,255,.35);box-shadow:0 6px 18px -6px rgba(61,127,255,.4)">'+(P.name?P.name[0].toUpperCase():'?')+'</div>';
 }
 function renderProfile(){
   const xp=xpProgress();
