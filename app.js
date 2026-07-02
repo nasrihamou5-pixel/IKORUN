@@ -1334,6 +1334,8 @@ function phaseDistribution(weeks){
 /* ============ MOTEUR VVV — SÉANCE RATÉE, REMPLACEMENT & AJUSTEMENT AUTOMATIQUE ============ */
 const MISSED_REASONS=['Manque de temps','Fatigue','Douleur','Maladie','Météo','Déplacement','Motivation','Oubli','Autre'];
 const REPLACEMENT_ACTIVITIES=['Aucune activité','Running','Musculation','Vélo','Natation','Mobilité','Marche','Autre'];
+const MISSED_REASON_ICONS={'Manque de temps':'⏱️','Fatigue':'🥱','Douleur':'🤕','Maladie':'🤒','Météo':'🌧️','Déplacement':'🧳','Motivation':'😕','Oubli':'💭','Autre':'✏️'};
+const REPLACEMENT_ICONS={'Aucune activité':'🚫','Running':'🏃','Musculation':'🏋️','Vélo':'🚴','Natation':'🏊','Mobilité':'🧘','Marche':'🚶','Autre':'➕'};
 const HARD_TYPES=['VMAc','VMAl','VO2','INTERVAL','DBLSEUIL','SEUIL','SPE','TEMPO_SPE','TEMPO','PROGRESSIF','FARTLEK','COTES'];
 let missedCtx=null;
 
@@ -1351,13 +1353,15 @@ function openMissedFlow(sid){
 }
 function renderMissedReason(){
   const s=PLAN.sessions.find(x=>x.id===missedCtx.sessionId); if(!s) return;
-  let h='<div class="card" style="border-color:rgba(255,92,108,.35);background:rgba(255,92,108,.08);margin-bottom:16px"><div style="font-weight:700;color:var(--bad)">⚠️ Séance manquée</div><div style="font-size:13px;color:var(--muted);margin-top:4px">'+s.title+' · '+fmtDate(s.date)+'</div></div>';
-  h+='<div class="field"><label>Pourquoi cette séance n\u2019a-t-elle pas été réalisée ?</label><div class="pills">'+MISSED_REASONS.map(r=>'<div class="pill" onclick="selectMissedReason(\''+r+'\')">'+r+'</div>').join('')+'</div></div>';
+  let h='<div class="card" style="border-color:rgba(255,92,108,.35);background:rgba(255,92,108,.08);margin-bottom:18px"><div style="font-weight:700;color:var(--bad)">⚠️ Séance manquée</div><div style="font-size:13px;color:var(--muted);margin-top:4px">'+s.title+' · '+fmtDate(s.date)+'</div></div>';
+  h+='<div class="lab" style="margin-bottom:10px">Pourquoi cette séance n\u2019a-t-elle pas été réalisée ?</div>';
+  h+='<div class="reason-grid">'+MISSED_REASONS.map(r=>'<div class="reason-tile" onclick="selectMissedReason(\''+r+'\')">'+(MISSED_REASON_ICONS[r]||'')+' '+r+'</div>').join('')+'</div>';
   $('#progBody').innerHTML=h;
 }
 function selectMissedReason(r){ missedCtx.reason=r; renderMissedReplacement(); }
 function renderMissedReplacement(){
-  let h='<div class="field"><label>As-tu finalement fait autre chose ?</label><div class="pills">'+REPLACEMENT_ACTIVITIES.map(a=>'<div class="pill" onclick="selectReplacement(\''+a+'\')">'+a+'</div>').join('')+'</div></div>';
+  let h='<div class="lab" style="margin-bottom:10px">As-tu finalement fait autre chose ?</div>';
+  h+='<div class="act-grid">'+REPLACEMENT_ACTIVITIES.map(a=>'<div class="act-tile" onclick="selectReplacement(\''+a+'\')"><div class="ic">'+(REPLACEMENT_ICONS[a]||'')+'</div><div class="lb">'+a+'</div></div>').join('')+'</div>';
   $('#progBody').innerHTML=h;
 }
 function selectReplacement(a){
@@ -1885,16 +1889,64 @@ function weekDotsHTML(){
 
 /* ---------- SPORT ---------- */
 let sportTab='run', runSub='ia';
+/* ---------- HERO DU PLAN (design inspiré wireframe) ---------- */
+function planHeroHTML(){
+  const tk=todayKey();
+  const done=PLAN.sessions.filter(s=>s.done).length;
+  const todaySess=PLAN.sessions.find(s=>s.date===tk);
+  const upcoming=PLAN.sessions.find(s=>s.date>=tk);
+  const curWeekNum=(todaySess||upcoming||PLAN.sessions[PLAN.sessions.length-1]).week;
+  const weekSessions=PLAN.sessions.filter(s=>s.week===curWeekNum);
+  const phaseKey=weekSessions[0]?.phaseKey;
+  const phaseWeeks=[...new Set(PLAN.sessions.filter(s=>s.phaseKey===phaseKey).map(s=>s.week))].sort((a,b)=>a-b);
+  const phaseProgress=phaseWeeks.length>1?Math.round(((curWeekNum-phaseWeeks[0])/(phaseWeeks.length-1))*100):100;
+  const comp=new Date(P.compDate+'T00:00:00'), today=new Date(tk+'T00:00:00');
+  const daysLeft=Math.max(0,Math.round((comp-today)/86400000));
+
+  const byDow={}; weekSessions.forEach(s=>{ byDow[new Date(s.date+'T00:00:00').getDay()]=s; });
+  const dowOrder=[1,2,3,4,5,6,0], dowLab=['L','M','M','J','V','S','D'];
+  let dots='';
+  dowOrder.forEach((dow,i)=>{
+    const s=byDow[dow];
+    let cls='dotcell', ic='';
+    if(!s || s.km===0) cls+=' dot-rest';
+    else if(s.done){ cls+=' dot-done'; ic='✓'; }
+    else if(s.missed){ cls+=' dot-missed'; ic='✕'; }
+    else if(s.date===tk) cls+=' dot-today';
+    dots+='<div class="'+cls+'"><div class="dc-lab">'+dowLab[i]+'</div><div class="dc-circ">'+ic+'</div></div>';
+  });
+
+  const curKm=Math.round(weekSessions.reduce((a,s)=>a+(s.km||0),0));
+  const prevKm=Math.round(PLAN.sessions.filter(s=>s.week===curWeekNum-1).reduce((a,s)=>a+(s.km||0),0));
+  const kmDelta=prevKm?Math.round((curKm-prevKm)/prevKm*100):null;
+
+  const curVdot=getUserVDOT()||PLAN.vdot;
+  const vdotDelta=Math.round((curVdot-PLAN.vdot)*10)/10;
+
+  let h='<div class="card plan-hero">';
+  h+='<div class="lab">OBJECTIF</div><div class="plan-race">'+(P.objRace||'Course')+'</div>';
+  h+='<div class="plan-sub">'+(P.objTime?'Objectif : '+P.objTime+' · ':'')+'Course le '+fmtDate(P.compDate)+'</div>';
+  h+='<div class="row" style="gap:10px;margin-top:16px">';
+  h+='<div class="minicard"><div class="lab">Jour de course</div><div class="v" style="color:var(--e)">J-'+daysLeft+'</div></div>';
+  h+='<div class="minicard"><div class="lab">VDOT actuel</div><div class="v">'+curVdot+(vdotDelta?' <span class="'+(vdotDelta>0?'delta-up':'delta-down')+'">'+(vdotDelta>0?'+':'')+vdotDelta+'</span>':'')+'</div></div>';
+  h+='</div>';
+  h+='<div style="margin-top:16px"><div class="lab">Phase actuelle</div><div class="man" style="font-weight:700;font-size:16px;margin:2px 0 8px">'+(weekSessions[0]?.phase||'')+'</div><div class="pbar"><div style="width:'+phaseProgress+'%"></div></div></div>';
+  h+='<div style="margin-top:16px"><div class="row" style="margin-bottom:8px"><div class="lab">Cette semaine</div><div class="lab">Semaine '+curWeekNum+'/'+PLAN.weeks+'</div></div><div class="dotrow">'+dots+'</div></div>';
+  h+='<div class="row" style="gap:10px;margin-top:16px">';
+  h+='<div class="minicard"><div class="lab">Charge hebdo</div><div class="v">'+curKm+' km'+(kmDelta!==null?' <span class="'+(kmDelta>=0?'delta-up':'delta-down')+'">'+(kmDelta>=0?'+':'')+kmDelta+'%</span>':'')+'</div></div>';
+  h+='<div class="minicard"><div class="lab">Séances</div><div class="v">'+done+'/'+PLAN.sessions.length+'</div></div>';
+  h+='</div>';
+  h+='<button class="btn ghost sm" style="margin-top:16px" onclick="if(confirm(\'Régénérer un nouveau plan ? Tes séances faites restent dans tes stats.\')){PLAN=null;openPlanSetup()}">🔄 Régénérer / reconfigurer</button>';
+  h+='</div>';
+  return h;
+}
 function renderRunning(){
   let h='<div class="pills" style="margin-bottom:14px"><div class="pill '+(runSub==='ia'?'on':'')+'" onclick="runSub=\'ia\';renderSport()">⚡ Plan VVV</div><div class="pill '+(runSub==='perso'?'on':'')+'" onclick="runSub=\'perso\';renderSport()">📋 Plan personnel</div></div>';
   if(runSub==='ia'){
     if(!PLAN){
       h+='<div class="card"><div class="empty"><div class="em-ic">⚡</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">Plan VVV — moteur scientifique</div><div style="font-size:13px;margin-bottom:16px">Génère un plan périodisé sur-mesure (méthode norvégienne + VDOT/Daniels) basé sur ton VDOT ('+(getUserVDOT()||'?')+'), ton objectif, tes préférences et ta date de course. Le plan se réajuste automatiquement si tu rates une séance.</div><button class="btn" onclick="openPlanSetup()">⚙️ Configurer & générer</button></div></div>';
     } else {
-      const done=PLAN.sessions.filter(s=>s.done).length;
-      h+='<div class="card"><div class="row"><div><div class="lab">Plan VVV · VDOT '+PLAN.vdot+'</div><div class="man" style="font-weight:800;font-size:18px;margin-top:2px">'+PLAN.weeks+' semaines</div></div><div class="badge">'+done+'/'+PLAN.sessions.length+'</div></div>'+
-        '<div class="pbar" style="margin-top:12px"><div style="width:'+(done/PLAN.sessions.length*100)+'%"></div></div>'+
-        '<button class="btn ghost sm" style="margin-top:12px" onclick="if(confirm(\'Régénérer un nouveau plan ? Tes séances faites restent dans tes stats.\')){PLAN=null;openPlanSetup()}">🔄 Régénérer / reconfigurer</button></div>';
+      h+=planHeroHTML();
       // group by phase puis semaine
       let curPhase=null, curWeek=null;
       const tk=todayKey();
@@ -1903,8 +1955,10 @@ function renderRunning(){
         if(s.week!==curWeek){ curWeek=s.week; h+='<div class="lab" style="margin:8px 0 6px">Semaine '+s.week+(s.deload?' · 🟢 allégée':'')+'</div>'; }
         const isToday=s.date===tk;
         const col='var('+(s.color||'--e')+')';
-        const badge=s.missed?'<div class="badge" style="background:rgba(255,92,108,.18);color:var(--bad);font-size:11px">⚠ Manquée</div>':'<div class="badge" style="background:rgba(61,127,255,.15);color:'+col+';font-size:11px">'+(s.type||'')+'</div>';
-        h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'" onclick="openRunSheet('+s.id+')" style="'+(s.missed?'border-color:rgba(255,92,108,.35)':'')+'"><div class="row"><div><div style="font-weight:700;font-size:14px">'+s.title+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+fmtDate(s.date)+(s.km?' · '+s.km+' km · '+s.pace+'/km':' · Repos')+'</div></div>'+badge+'</div></div>';
+        const isHard=HARD_TYPES.includes(s.baseType);
+        const qb=s.missed?'<div class="qbadge" style="background:rgba(255,92,108,.16);color:var(--bad)">⚠ Manquée</div>'
+          :(s.km===0?'<div class="qbadge rest">Repos</div>':(isHard?'<div class="qbadge hard">Qualité</div>':'<div class="qbadge easy">Facile</div>'));
+        h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'" onclick="openRunSheet('+s.id+')" style="'+(s.missed?'border-color:rgba(255,92,108,.35)':'')+'"><div class="row"><div><div style="font-weight:700;font-size:14px">'+s.title+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+fmtDate(s.date)+(s.km?' · '+s.km+' km · '+s.pace+'/km':' · Repos')+'</div></div>'+qb+'</div></div>';
       });
     }
   } else {

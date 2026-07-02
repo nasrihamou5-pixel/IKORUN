@@ -310,6 +310,44 @@ hr.hl{border:none;border-top:1px solid var(--hair);margin:14px 0;}
 .searchbox .searchic{position:absolute;left:14px;top:50%;transform:translateY(-50%);display:flex;pointer-events:none;}
 .chbtn{width:62px;height:62px;border-radius:50%;background:var(--s2);border:1.5px solid var(--hair);color:var(--snow);font-family:'Manrope';font-weight:700;font-size:13px;cursor:pointer;transition:transform .12s;}
 .chbtn:active{transform:scale(.92);}
+
+/* ===== PLAN HERO (onglet Sport) ===== */
+.plan-hero{background:linear-gradient(165deg,var(--s1) 0%,var(--marineL) 160%);position:relative;overflow:hidden;}
+.plan-hero::before{content:'';position:absolute;top:-40%;right:-20%;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(61,127,255,.16),transparent 70%);pointer-events:none;}
+.plan-race{font-family:'Manrope';font-weight:800;font-size:27px;letter-spacing:-.5px;margin:2px 0 3px;}
+.plan-sub{color:var(--muted);font-size:13px;}
+.minicard{background:rgba(255,255,255,.03);border:1px solid var(--hair);border-radius:14px;padding:11px 13px;flex:1;}
+html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
+.minicard .lab{margin-bottom:3px;}
+.minicard .v{font-family:'Manrope';font-weight:800;font-size:19px;}
+.delta-up{color:var(--ok);font-size:11px;font-weight:700;}
+.delta-down{color:var(--bad);font-size:11px;font-weight:700;}
+.dotrow{display:flex;gap:6px;justify-content:space-between;}
+.dotcell{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;}
+.dotcell .dc-lab{font-size:10px;color:var(--dim);font-weight:700;text-transform:uppercase;}
+.dotcell .dc-circ{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800;border:1.5px solid var(--hair);color:var(--dim);background:var(--s2);}
+.dotcell.dot-done .dc-circ{background:rgba(51,211,153,.16);border-color:var(--ok);color:var(--ok);}
+.dotcell.dot-missed .dc-circ{background:rgba(255,92,108,.16);border-color:var(--bad);color:var(--bad);}
+.dotcell.dot-today .dc-circ{background:var(--ed);border-color:var(--e);color:var(--e);box-shadow:0 0 0 3px rgba(61,127,255,.12);}
+.dotcell.dot-rest .dc-circ{border-style:dashed;opacity:.5;}
+.qbadge{font-size:10.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:4px 10px;border-radius:999px;}
+.qbadge.hard{background:rgba(255,92,108,.16);color:var(--bad);}
+.qbadge.easy{background:rgba(51,211,153,.14);color:var(--ok);}
+.qbadge.rest{background:var(--s2);color:var(--dim);}
+
+/* ===== SÉANCE MANQUÉE — grille d'icônes ===== */
+.reason-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.reason-tile{background:var(--s2);border:1px solid var(--hair);border-radius:14px;padding:12px 10px;
+  font-size:13px;font-weight:600;color:var(--snow);text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+.reason-tile:active{border-color:var(--e);background:var(--ed);}
+.act-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.act-tile{background:var(--s2);border:1px solid var(--hair);border-radius:16px;padding:14px 6px;text-align:center;
+  cursor:pointer;transition:border-color .15s,background .15s,transform .1s;}
+.act-tile:active{border-color:var(--e);background:var(--ed);transform:scale(.96);}
+.act-tile .ic{font-size:24px;margin-bottom:6px;}
+.act-tile .lb{font-size:11px;font-weight:700;color:var(--snow);line-height:1.2;}
 </style>
 </head>
 <body>
