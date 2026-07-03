@@ -285,14 +285,14 @@ function computeVDOT(){
    compétitions. */
 const MAX_LEVEL=70;
 const RANKS=[
-  {min:1,  max:9,  name:'Novice',      color:'#8993A6', bg:'linear-gradient(135deg,#3a4048,#5c6473)'},
-  {min:10, max:19, name:'Athlète',     color:'#3D7FFF', bg:'linear-gradient(135deg,#1b3a7a,#3D7FFF)'},
-  {min:20, max:29, name:'Compétiteur', color:'#33D399', bg:'linear-gradient(135deg,#0d5c3f,#33D399)'},
-  {min:30, max:39, name:'Élite',       color:'#4d9dff', bg:'linear-gradient(135deg,#0d2f7a,#4d9dff)'},
-  {min:40, max:49, name:'Champion',    color:'#F2B84B', bg:'linear-gradient(135deg,#a5720f,#F2B84B)'},
-  {min:50, max:59, name:'Légende',     color:'#FFD76A', bg:'linear-gradient(135deg,#7a5c0d,#FFD76A)'},
-  {min:60, max:69, name:'Immortel',    color:'#b57dff', bg:'linear-gradient(135deg,#4a1a7a,#b57dff)'},
-  {min:70, max:9999,name:'IKORUN Elite',  color:'#ffffff', bg:'linear-gradient(135deg,#0a0a0a,#ffd76a)'}
+  {min:1,  max:9,  name:'Novice',      slug:'novice',     color:'#8993A6', bg:'linear-gradient(135deg,#3a4048,#5c6473)'},
+  {min:10, max:19, name:'Athlète',     slug:'athlete',    color:'#3D7FFF', bg:'linear-gradient(135deg,#1b3a7a,#3D7FFF)'},
+  {min:20, max:29, name:'Compétiteur', slug:'competiteur',color:'#33D399', bg:'linear-gradient(135deg,#0d5c3f,#33D399)'},
+  {min:30, max:39, name:'Élite',       slug:'elite',      color:'#4d9dff', bg:'linear-gradient(135deg,#0d2f7a,#4d9dff)'},
+  {min:40, max:49, name:'Champion',    slug:'champion',   color:'#F2B84B', bg:'linear-gradient(135deg,#a5720f,#F2B84B)'},
+  {min:50, max:59, name:'Légende',     slug:'legende',    color:'#FFD76A', bg:'linear-gradient(135deg,#7a5c0d,#FFD76A)'},
+  {min:60, max:69, name:'Immortel',    slug:'immortel',   color:'#b57dff', bg:'linear-gradient(135deg,#4a1a7a,#b57dff)'},
+  {min:70, max:9999,name:'IKORUN Elite',slug:'ikorun-elite',color:'#ffffff', bg:'linear-gradient(135deg,#0a0a0a,#ffd76a)'}
 ];
 function rankFor(level){ return RANKS.find(r=>level>=r.min&&level<=r.max)||RANKS[RANKS.length-1]; }
 
@@ -382,6 +382,7 @@ function refreshXP(opts){
   XP.total=total; XP.level=info.level; XP.name=levelName(info.level); XP.rank=rank.name; XP.maxed=info.maxed;
   XP.next=info.next; XP.base=info.base; XP.span=info.span; XP.inLvl=info.inLvl;
   DB.save('xp',XP);
+  document.documentElement.setAttribute('data-rank-theme', rank.slug||'novice');
   if(opts&&opts.animate&&info.level>prevLevel){ levelUpAnimation(info.level); }
   checkNewBadges(opts&&opts.animate);
   return XP;
@@ -403,29 +404,16 @@ function addXP(amount,reason){
    derniers, de compétitions/préparations terminées — "aucune obtention
    rapide possible". */
 const BADGE_TIERS=[
-  {key:'pierre',    name:'Pierre',     cls:'bd-pierre',    emoji:'🪨', level:1,  km:0,    sess:0, desc:"Le début du parcours."},
-  {key:'bronze',    name:'Bronze',     cls:'bd-bronze',    emoji:'🥉', level:2,  km:10,   sess:1, desc:"Les toutes premières bases."},
-  {key:'fer',       name:'Fer',        cls:'bd-fer',       emoji:'⚙️', level:4,  km:10,   sess:2, desc:"La discipline s'installe."},
-  {key:'acier',     name:'Acier',      cls:'bd-acier',     emoji:'🛡️', level:6,  km:20,   sess:4, desc:"Un corps qui se solidifie."},
-  {key:'argent',    name:'Argent',     cls:'bd-argent',    emoji:'⭐', level:8,  km:40,   sess:6, desc:"La régularité paie déjà."},
-  {key:'or',        name:'Or',         cls:'bd-or',        emoji:'🏅', level:10, km:50,   sess:8, desc:"Détermination confirmée."},
-  {key:'emeraude',  name:'Émeraude',   cls:'bd-emeraude',  emoji:'💚', level:13, km:90,   sess:12,desc:"Progrès constants."},
-  {key:'rubis',     name:'Rubis',      cls:'bd-rubis',     emoji:'❤️', level:16, km:130,  sess:16,desc:"La passion se voit."},
-  {key:'saphir',    name:'Saphir',     cls:'bd-saphir',    emoji:'🔷', level:19, km:190,  sess:22,desc:"Un athlète qui s'affirme."},
-  {key:'amethyste', name:'Améthyste',  cls:'bd-amethyste', emoji:'🔮', level:22, km:270,  sess:28,desc:"Une préparation, une vraie."},
-  {key:'diamant',   name:'Diamant',    cls:'bd-diamant',   emoji:'💎', level:25, km:370,  sess:36,desc:"Résistance à l'épreuve du temps.",preps:1},
-  {key:'obsidienne',name:'Obsidienne', cls:'bd-obsidienne',emoji:'🖤', level:28, km:490,  sess:44,desc:"Forgé dans l'effort."},
-  {key:'titanium',  name:'Titanium',   cls:'bd-titanium',  emoji:'🔩', level:31, km:640,  sess:54,desc:"Une carrière qui prend forme.",preps:1},
-  {key:'onyx',      name:'Onyx',       cls:'bd-onyx',      emoji:'⚫', level:35, km:880,  sess:66,desc:"Constance sur la durée."},
-  {key:'cristal',   name:'Cristal',    cls:'bd-cristal',   emoji:'🧊', level:38, km:1090, sess:78,desc:"Pureté du geste, répété.",preps:2},
-  {key:'prisme',    name:'Prisme',     cls:'bd-prisme',    emoji:'🌈', level:42, km:1420, sess:94,desc:"Plusieurs facettes d'un athlète complet.",comps:1},
-  {key:'galaxie',   name:'Galaxie',    cls:'bd-galaxie',   emoji:'🌌', level:46, km:1810, sess:112,desc:"Une trajectoire qui s'étend.",preps:2},
-  {key:'cosmos',    name:'Cosmos',     cls:'bd-cosmos',    emoji:'🪐', level:50, km:2260, sess:132,desc:"Plusieurs années de sérieux.",comps:2},
-  {key:'mythique',  name:'Mythique',   cls:'bd-mythique',  emoji:'🔥', level:54, km:2790, sess:154,desc:"Peu de monde va aussi loin.",preps:3,comps:2},
-  {key:'divin',     name:'Divin',      cls:'bd-divin',     emoji:'✨', level:58, km:3390, sess:178,desc:"Un niveau que peu atteignent.",comps:3},
-  {key:'celeste',   name:'Céleste',    cls:'bd-celeste',   emoji:'🌠', level:62, km:4080, sess:206,desc:"Des années de carrière derrière soi.",preps:4,comps:3},
-  {key:'infinity',  name:'Infinity',   cls:'bd-infinity',  emoji:'♾️', level:66, km:4840, sess:236,desc:"La régularité comme mode de vie.",preps:5,comps:4},
-  {key:'vvvelite',  name:'IKORUN Elite',  cls:'bd-vvvelite',  emoji:'👑', level:70, km:5700, sess:270,desc:"Le sommet. Aucune obtention rapide n'est possible.",preps:6,comps:5}
+  {key:'pierre',    name:'Pierre',       cls:'bd-pierre',    emoji:'🪨', level:1,  km:0,    sess:0, desc:"Le début du parcours."},
+  {key:'bronze',    name:'Bronze',       cls:'bd-bronze',    emoji:'🥉', level:2,  km:10,   sess:1, desc:"Les toutes premières bases."},
+  {key:'argent',    name:'Argent',       cls:'bd-argent',    emoji:'⭐', level:8,  km:40,   sess:6, desc:"La régularité paie déjà."},
+  {key:'or',        name:'Or',           cls:'bd-or',        emoji:'🏅', level:10, km:50,   sess:8, desc:"Détermination confirmée."},
+  {key:'emeraude',  name:'Émeraude',     cls:'bd-emeraude',  emoji:'💚', level:16, km:130,  sess:16,desc:"Progrès constants."},
+  {key:'diamant',   name:'Diamant',      cls:'bd-diamant',   emoji:'💎', level:25, km:370,  sess:36,desc:"Résistance à l'épreuve du temps.",preps:1},
+  {key:'cristal',   name:'Cristal',      cls:'bd-cristal',   emoji:'🧊', level:38, km:1090, sess:78,desc:"Pureté du geste, répété.",preps:2},
+  {key:'galaxie',   name:'Galaxie',      cls:'bd-galaxie',   emoji:'🌌', level:46, km:1810, sess:112,desc:"Une trajectoire qui s'étend.",preps:2},
+  {key:'divin',     name:'Divin',        cls:'bd-divin',     emoji:'✨', level:58, km:3390, sess:178,desc:"Un niveau que peu atteignent.",comps:3},
+  {key:'vvvelite',  name:'IKORUN Elite', cls:'bd-vvvelite',  emoji:'👑', level:70, km:5700, sess:270,desc:"Le sommet. Aucune obtention rapide n'est possible.",preps:6,comps:5}
 ];
 function badgeStats(){
   return {
@@ -526,10 +514,10 @@ function renderBadgeGallery(){
     '</div>';
   h+='<div style="font-size:12px;color:var(--muted);margin-bottom:10px">'+unlocked.length+' / '+BADGE_TIERS.length+' badges obtenus</div>';
   h+='<div class="bd-grid">';
-  list.forEach(b=>{
+  list.forEach((b,i)=>{
     const on=ukeys.has(b.key);
     h+='<div class="bd-cell" onclick="openBadgeDetail(\''+b.key+'\')">'+
-      '<div class="bd-icon '+(on?b.cls:'locked')+'"><span class="bd-emoji">'+(on?b.emoji:'🔒')+'</span></div>'+
+      '<div class="bd-icon '+(on?b.cls:'locked')+'" style="--sw:'+(i%5)+'"><span class="bd-emoji">'+(on?b.emoji:'🔒')+'</span></div>'+
       '<div class="bd-name">'+b.name+'</div><div class="bd-lvl">Niv. '+b.level+'</div></div>';
   });
   h+='</div>';
@@ -2088,7 +2076,7 @@ function renderHome(){
     '<div class="row" style="margin-top:7px;position:relative;z-index:1"><span style="font-size:11px;color:var(--dim)" class="mono">'+xp.inLvl+' / '+xp.span+' XP</span><span style="font-size:11px;color:var(--dim)">Niv. '+(XP.level+1)+'</span></div></div>';
 
   // RINGS
-  html+='<div class="card stag" style="animation-delay:.06s"><div class="card-t">'+cardIcon('chart','var(--e)')+'Charge de la semaine</div>'+
+  html+='<div class="card stag accent-e" style="animation-delay:.06s"><div class="card-t">'+cardIcon('chart','var(--e)')+'Charge de la semaine</div>'+
     '<div class="row" style="justify-content:space-around;align-items:center;">'+
     '<div class="ring-wrap" style="width:120px;height:120px;">'+ringSVG(120,Math.min(100,kmW/kmTarget*100),12,'var(--e)')+'<div class="ring-c"><div class="big">'+kmW.toFixed(0)+'</div><div class="sm">/ '+kmTarget+' km</div></div></div>'+
     '<div style="display:flex;flex-direction:column;gap:14px;">'+
@@ -2097,7 +2085,7 @@ function renderHome(){
     '</div></div></div>';
 
   // CHECKLIST
-  html+='<div class="card stag" style="animation-delay:.10s"><div class="card-t">'+cardIcon('check','var(--ok)')+'Objectifs du jour</div>';
+  html+='<div class="card stag accent-ok" style="animation-delay:.10s"><div class="card-t">'+cardIcon('check','var(--ok)')+'Objectifs du jour</div>';
   goals.forEach(g=>{
     html+='<div class="chk '+(g.done?'done':'')+'" onclick="toggleGoal(\''+g.id+'\')"><div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div><div class="txt" style="font-size:14px;font-weight:500">'+g.txt+'</div></div>';
   });
@@ -2106,22 +2094,21 @@ function renderHome(){
   // SESSION TODAY
   if(ps){
     const col='var('+(TYPE_COLORS[ps.type]||'--e')+')';
-    html+='<div class="card stag" style="animation-delay:.14s"><div class="card-t">'+cardIcon('run',col)+'Séance du jour</div>'+
+    html+='<div class="card stag accent-or" style="animation-delay:.14s"><div class="card-t">'+cardIcon('run',col)+'Séance du jour</div>'+
       '<div class="sess today" onclick="openRunSheet('+ps.id+')"><div class="row"><div><div style="font-weight:700;font-size:15px">'+ps.title+'</div>'+
       '<div style="color:var(--muted);font-size:12px;margin-top:3px">'+(ps.km?ps.km+' km · '+ps.pace+'/km · RPE '+ps.rpe:'Repos')+'</div></div>'+
       '<div class="badge" style="background:rgba(61,127,255,.18);color:'+col+'">'+ps.type+'</div></div></div></div>';
   }
 
-  // WEEK TARGETS
-  html+='<div class="card stag" style="animation-delay:.18s"><div class="card-t">'+cardIcon('target','var(--e)')+'Objectifs semaine</div>'+
+  // WEEK TARGETS + WEEKLY DOTS (fusionnés)
+  html+='<div class="card stag accent-e" style="animation-delay:.18s"><div class="card-t">'+cardIcon('target','var(--e)')+'Objectifs semaine</div>'+
     '<div style="margin-bottom:12px"><div class="row" style="margin-bottom:5px"><span style="font-size:13px">Kilomètres</span><span class="mono" style="font-size:13px;color:var(--muted)">'+kmW.toFixed(0)+' / '+kmTarget+'</span></div><div class="pbar"><div style="width:'+Math.min(100,kmW/kmTarget*100)+'%"></div></div></div>'+
-    '<div><div class="row" style="margin-bottom:5px"><span style="font-size:13px">Séances</span><span class="mono" style="font-size:13px;color:var(--muted)">'+sessW+' / '+sessTarget+'</span></div><div class="pbar"><div style="width:'+Math.min(100,sessW/sessTarget*100)+'%;background:linear-gradient(90deg,var(--ok),#6FE0B0)"></div></div></div></div>';
-
-  // WEEKLY DOTS
-  html+='<div class="card stag" style="animation-delay:.22s"><div class="card-t">'+cardIcon('calendar','var(--e2)')+'Semainier</div><div class="week">'+weekDotsHTML()+'</div></div>';
+    '<div style="margin-bottom:16px"><div class="row" style="margin-bottom:5px"><span style="font-size:13px">Séances</span><span class="mono" style="font-size:13px;color:var(--muted)">'+sessW+' / '+sessTarget+'</span></div><div class="pbar"><div style="width:'+Math.min(100,sessW/sessTarget*100)+'%;background:linear-gradient(90deg,var(--ok),#6FE0B0)"></div></div></div>'+
+    '<div class="card-divider"></div>'+
+    '<div class="week">'+weekDotsHTML()+'</div></div>';
 
   // EN BREF
-  html+='<div class="card stag" style="animation-delay:.26s"><div class="card-t">'+cardIcon('bolt','var(--or)')+'En bref</div><div class="sgrid">'+
+  html+='<div class="card stag accent-or" style="animation-delay:.26s"><div class="card-t">'+cardIcon('bolt','var(--or)')+'En bref</div><div class="sgrid">'+
     '<div class="sbox"><div class="v">'+(vdot||'—')+'</div><div class="l">VDOT</div></div>'+
     '<div class="sbox"><div class="v" style="font-size:18px">'+(P.pb5k||'—')+'</div><div class="l">PB 5000m</div></div>'+
     '<div class="sbox"><div class="v">'+(compDays!==null?'J-'+compDays:'—')+'</div><div class="l">Compétition</div></div>'+
@@ -2130,7 +2117,7 @@ function renderHome(){
   // RECENT RECORD
   const recent=[...SESS,...MSESS].sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
   if(recent){
-    html+='<div class="card stag" style="animation-delay:.30s"><div class="card-t">'+cardIcon('medal','var(--maitre)')+'Activité récente</div>'+
+    html+='<div class="card stag accent-purple" style="animation-delay:.30s"><div class="card-t">'+cardIcon('medal','var(--maitre)')+'Activité récente</div>'+
       '<div class="row"><div><div style="font-weight:700">'+(recent.title||recent.progName||'Séance')+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+fmtDate(recent.date)+'</div></div>'+
       '<div class="mono" style="color:var(--e);font-weight:700">'+(recent.km?recent.km+' km':(recent.tonnage?Math.round(recent.tonnage)+' kg':''))+'</div></div></div>';
   }

@@ -67,6 +67,70 @@ html[data-mode="light"] body::before{
     radial-gradient(700px 600px at 50% 115%, rgba(180,200,230,.35), transparent 60%),
     var(--bg);}
 html[data-mode="light"] body::after{opacity:.025;}
+
+/* ===== SYSTÈME DE THÈMES PAR PALIER (23 rangs → 8 familles visuelles) =====
+   Chaque palier débloqué change l'ambiance : teinte du glow de fond,
+   intensité des ombres, et texture/finition des cartes. L'accent couleur
+   choisi manuellement par l'utilisateur (P.theme) reste indépendant. */
+html[data-rank-theme="novice"] body::before{
+  background:radial-gradient(650px 500px at 18% -6%, rgba(137,147,166,.10), transparent 60%),
+    radial-gradient(700px 600px at 50% 115%, rgba(31,40,56,.30), transparent 60%), var(--bg);}
+html[data-rank-theme="novice"] .card{box-shadow:var(--sh-sm);}
+
+html[data-rank-theme="athlete"] body::before{
+  background:radial-gradient(650px 500px at 18% -6%, rgba(61,127,255,.16), transparent 60%),
+    radial-gradient(500px 420px at 100% 12%, rgba(111,160,255,.10), transparent 55%),
+    radial-gradient(700px 600px at 50% 115%, rgba(31,47,80,.28), transparent 60%), var(--bg);}
+
+html[data-rank-theme="competiteur"] body::before{
+  background:radial-gradient(650px 500px at 18% -6%, rgba(51,211,153,.14), transparent 60%),
+    radial-gradient(500px 420px at 100% 12%, rgba(111,255,200,.08), transparent 55%),
+    radial-gradient(700px 600px at 50% 115%, rgba(13,58,45,.30), transparent 60%), var(--bg);}
+html[data-rank-theme="competiteur"] .card{box-shadow:var(--sh-deep),0 0 0 1px rgba(51,211,153,.05) inset;}
+
+html[data-rank-theme="elite"] body::before{
+  background:radial-gradient(650px 520px at 18% -6%, rgba(77,157,255,.20), transparent 60%),
+    radial-gradient(520px 440px at 100% 12%, rgba(150,190,255,.13), transparent 55%),
+    radial-gradient(700px 600px at 50% 115%, rgba(20,45,90,.34), transparent 60%), var(--bg);}
+html[data-rank-theme="elite"] .card{box-shadow:0 12px 32px -12px rgba(0,0,0,.7),0 2px 8px -2px rgba(77,157,255,.14),0 1px 0 rgba(255,255,255,.04) inset;}
+
+html[data-rank-theme="champion"] body::before{
+  background:radial-gradient(650px 520px at 18% -6%, rgba(242,184,75,.18), transparent 60%),
+    radial-gradient(520px 440px at 100% 12%, rgba(255,210,130,.10), transparent 55%),
+    radial-gradient(700px 600px at 50% 115%, rgba(90,60,10,.30), transparent 60%), var(--bg);}
+html[data-rank-theme="champion"] .card{border-color:rgba(242,184,75,.16);box-shadow:0 14px 34px -12px rgba(0,0,0,.72),0 2px 10px -2px rgba(242,184,75,.16),0 1px 0 rgba(255,255,255,.04) inset;}
+
+html[data-rank-theme="legende"] body::before{
+  background:radial-gradient(680px 540px at 18% -6%, rgba(255,215,106,.22), transparent 60%),
+    radial-gradient(540px 460px at 100% 12%, rgba(255,230,170,.13), transparent 55%),
+    radial-gradient(720px 620px at 50% 115%, rgba(100,70,10,.32), transparent 60%), var(--bg);}
+html[data-rank-theme="legende"] .card{border-color:rgba(255,215,106,.20);box-shadow:0 16px 38px -12px rgba(0,0,0,.75),0 3px 12px -2px rgba(255,215,106,.20),0 1px 0 rgba(255,255,255,.05) inset;}
+html[data-rank-theme="legende"] .xp-hero{background:linear-gradient(135deg,var(--s1) 0%,#4a3a10 145%);}
+
+html[data-rank-theme="immortel"] body::before{
+  background:radial-gradient(680px 540px at 18% -6%, rgba(181,125,255,.20), transparent 60%),
+    radial-gradient(540px 460px at 100% 12%, rgba(210,170,255,.13), transparent 55%),
+    radial-gradient(720px 620px at 50% 115%, rgba(60,20,90,.34), transparent 60%), var(--bg);}
+html[data-rank-theme="immortel"] .card{border-color:rgba(181,125,255,.18);box-shadow:0 18px 42px -14px rgba(0,0,0,.78),0 4px 14px -2px rgba(181,125,255,.22),0 1px 0 rgba(255,255,255,.05) inset;}
+html[data-rank-theme="immortel"] .xp-hero{background:linear-gradient(135deg,var(--s1) 0%,#3a1a5c 145%);}
+
+html[data-rank-theme="ikorun-elite"] body::before{
+  background:radial-gradient(700px 560px at 18% -6%, rgba(255,255,255,.14), transparent 60%),
+    radial-gradient(560px 480px at 100% 12%, rgba(255,215,106,.16), transparent 55%),
+    radial-gradient(740px 640px at 50% 115%, rgba(255,215,106,.10), transparent 60%), var(--bg);}
+html[data-rank-theme="ikorun-elite"] .card{border-color:rgba(255,255,255,.14);box-shadow:0 20px 46px -14px rgba(0,0,0,.8),0 4px 16px -2px rgba(255,215,106,.24),0 1px 0 rgba(255,255,255,.07) inset;}
+html[data-rank-theme="ikorun-elite"] .xp-hero{background:linear-gradient(135deg,#12100a 0%,#3a2f0a 145%);border-image:linear-gradient(135deg,#ffd76a,#fff,#ffd76a) 1;}
+html[data-rank-theme="ikorun-elite"] .xp-hero-glow{background:radial-gradient(circle,rgba(255,215,106,.4),transparent 70%);}
+
+/* accents thématiques par catégorie de card (variété visuelle, item 2) */
+.card.accent-e{border-left:2px solid rgba(61,127,255,.35);}
+.card.accent-ok{border-left:2px solid rgba(51,211,153,.35);}
+.card.accent-or{border-left:2px solid rgba(242,184,75,.35);}
+.card.accent-purple{border-left:2px solid rgba(181,125,255,.35);}
+.card-divider{height:1px;background:linear-gradient(90deg,transparent,var(--hair2),transparent);margin:14px 0;}
+/* micro-interaction tap feedback sur les cartes */
+.card{transition:transform .18s var(--ease-spring),box-shadow .25s ease,border-color .25s ease;}
+.card:active{transform:scale(.985);}
 .mono{font-family:'JetBrains Mono',monospace;}
 .man{font-family:'Manrope',sans-serif;}
 ::-webkit-scrollbar{display:none;}
@@ -134,17 +198,23 @@ html[data-mode="light"] body::after{opacity:.025;}
 .bd-vvvelite{--c1:#0a0a0a;--c2:#ffd76a;--glow:#ffffff;}
 
 .bd-icon{position:relative;width:64px;height:64px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:28px;
-  background:conic-gradient(from 220deg,var(--c1),var(--c2),var(--c1));border:1px solid rgba(255,255,255,.18);
-  box-shadow:0 0 0 1px rgba(255,255,255,.06) inset,0 4px 18px -4px var(--glow),0 0 24px -6px var(--glow);}
+  background:conic-gradient(from 220deg,var(--c1),var(--c2),var(--c1));border:1px solid rgba(255,255,255,.2);overflow:hidden;
+  box-shadow:0 0 0 1px rgba(255,255,255,.08) inset,0 6px 20px -4px var(--glow),0 0 30px -6px var(--glow);
+  transition:transform .2s var(--ease-spring),box-shadow .2s ease;}
 .bd-icon.big{width:128px;height:128px;border-radius:34px;font-size:56px;}
 .bd-icon.locked{background:var(--s2);box-shadow:none;border:1px dashed var(--hair);filter:grayscale(1) brightness(.55);}
 .bd-icon.locked .bd-emoji{opacity:.35;}
-.bd-icon .bd-emoji{filter:drop-shadow(0 2px 4px rgba(0,0,0,.4));}
-.bd-icon::after{content:'';position:absolute;inset:-2px;border-radius:inherit;background:linear-gradient(135deg,rgba(255,255,255,.35),transparent 40%);pointer-events:none;}
+.bd-icon .bd-emoji{filter:drop-shadow(0 2px 4px rgba(0,0,0,.4));position:relative;z-index:1;}
+.bd-icon::after{content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(135deg,rgba(255,255,255,.4),transparent 42%);pointer-events:none;}
+.bd-icon:not(.locked)::before{content:'';position:absolute;top:-30%;left:-60%;width:60%;height:160%;pointer-events:none;
+  background:linear-gradient(100deg,transparent 20%,rgba(255,255,255,.55) 45%,transparent 70%);
+  transform:rotate(20deg);animation:bdIdleSweep 3.8s ease-in-out infinite;animation-delay:calc(var(--sw,0)*.22s);}
+@keyframes bdIdleSweep{0%,42%{transform:translateX(0) rotate(20deg);}58%,100%{transform:translateX(260%) rotate(20deg);}}
 
 .bd-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:6px;}
-.bd-cell{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border-radius:16px;cursor:pointer;text-align:center;}
+.bd-cell{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border-radius:16px;cursor:pointer;text-align:center;transition:background .2s ease;}
 .bd-cell:active{background:var(--s2);}
+.bd-cell:active .bd-icon{transform:scale(.9);}
 .bd-cell .bd-name{font-size:11px;font-weight:700;font-family:'Manrope';}
 .bd-cell .bd-lvl{font-size:9px;color:var(--muted);}
 
