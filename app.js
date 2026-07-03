@@ -2043,9 +2043,13 @@ function toggleGoal(id){
 }
 
 /* ---------- RING SVG ---------- */
+let _ringGradId=0;
 function ringSVG(size,pct,stroke,color,bg){
   const r=(size-stroke)/2, c=2*Math.PI*r, off=c*(1-Math.min(1,pct/100));
-  return '<svg width="'+size+'" height="'+size+'" style="transform:rotate(-90deg)"><circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="'+(bg||'var(--s2)')+'" stroke-width="'+stroke+'"/><circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="'+stroke+'" stroke-linecap="round" stroke-dasharray="'+c+'" stroke-dashoffset="'+off+'" style="transition:stroke-dashoffset .8s ease"/></svg>';
+  const gid='rg'+(_ringGradId++);
+  return '<svg width="'+size+'" height="'+size+'" style="transform:rotate(-90deg);overflow:visible"><defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="'+color+'" stop-opacity=".55"/><stop offset="100%" stop-color="'+color+'"/></linearGradient></defs>'+
+    '<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="'+(bg||'var(--s2)')+'" stroke-width="'+stroke+'"/>'+
+    '<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="url(#'+gid+')" stroke-width="'+stroke+'" stroke-linecap="round" stroke-dasharray="'+c+'" stroke-dashoffset="'+off+'" style="transition:stroke-dashoffset 1s var(--ease);filter:drop-shadow(0 0 6px '+color+'aa)"/></svg>';
 }
 /* multi-segment donut: segs = [{v:number,color:'var(--e)'}], centerHTML optional */
 function donutSVG(segs,size,stroke,centerHTML){
@@ -2084,7 +2088,7 @@ function renderHome(){
     '<div class="row" style="margin-top:7px;position:relative;z-index:1"><span style="font-size:11px;color:var(--dim)" class="mono">'+xp.inLvl+' / '+xp.span+' XP</span><span style="font-size:11px;color:var(--dim)">Niv. '+(XP.level+1)+'</span></div></div>';
 
   // RINGS
-  html+='<div class="card stag" style="animation-delay:.06s"><div class="card-t">📊 Charge de la semaine</div>'+
+  html+='<div class="card stag" style="animation-delay:.06s"><div class="card-t">'+cardIcon('chart','var(--e)')+'Charge de la semaine</div>'+
     '<div class="row" style="justify-content:space-around;align-items:center;">'+
     '<div class="ring-wrap" style="width:120px;height:120px;">'+ringSVG(120,Math.min(100,kmW/kmTarget*100),12,'var(--e)')+'<div class="ring-c"><div class="big">'+kmW.toFixed(0)+'</div><div class="sm">/ '+kmTarget+' km</div></div></div>'+
     '<div style="display:flex;flex-direction:column;gap:14px;">'+
@@ -2093,7 +2097,7 @@ function renderHome(){
     '</div></div></div>';
 
   // CHECKLIST
-  html+='<div class="card stag" style="animation-delay:.10s"><div class="card-t">✅ Objectifs du jour</div>';
+  html+='<div class="card stag" style="animation-delay:.10s"><div class="card-t">'+cardIcon('check','var(--ok)')+'Objectifs du jour</div>';
   goals.forEach(g=>{
     html+='<div class="chk '+(g.done?'done':'')+'" onclick="toggleGoal(\''+g.id+'\')"><div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div><div class="txt" style="font-size:14px;font-weight:500">'+g.txt+'</div></div>';
   });
@@ -2102,22 +2106,22 @@ function renderHome(){
   // SESSION TODAY
   if(ps){
     const col='var('+(TYPE_COLORS[ps.type]||'--e')+')';
-    html+='<div class="card stag" style="animation-delay:.14s"><div class="card-t">🏃 Séance du jour</div>'+
+    html+='<div class="card stag" style="animation-delay:.14s"><div class="card-t">'+cardIcon('run',col)+'Séance du jour</div>'+
       '<div class="sess today" onclick="openRunSheet('+ps.id+')"><div class="row"><div><div style="font-weight:700;font-size:15px">'+ps.title+'</div>'+
       '<div style="color:var(--muted);font-size:12px;margin-top:3px">'+(ps.km?ps.km+' km · '+ps.pace+'/km · RPE '+ps.rpe:'Repos')+'</div></div>'+
       '<div class="badge" style="background:rgba(61,127,255,.18);color:'+col+'">'+ps.type+'</div></div></div></div>';
   }
 
   // WEEK TARGETS
-  html+='<div class="card stag" style="animation-delay:.18s"><div class="card-t">🎯 Objectifs semaine</div>'+
+  html+='<div class="card stag" style="animation-delay:.18s"><div class="card-t">'+cardIcon('target','var(--e)')+'Objectifs semaine</div>'+
     '<div style="margin-bottom:12px"><div class="row" style="margin-bottom:5px"><span style="font-size:13px">Kilomètres</span><span class="mono" style="font-size:13px;color:var(--muted)">'+kmW.toFixed(0)+' / '+kmTarget+'</span></div><div class="pbar"><div style="width:'+Math.min(100,kmW/kmTarget*100)+'%"></div></div></div>'+
     '<div><div class="row" style="margin-bottom:5px"><span style="font-size:13px">Séances</span><span class="mono" style="font-size:13px;color:var(--muted)">'+sessW+' / '+sessTarget+'</span></div><div class="pbar"><div style="width:'+Math.min(100,sessW/sessTarget*100)+'%;background:linear-gradient(90deg,var(--ok),#6FE0B0)"></div></div></div></div>';
 
   // WEEKLY DOTS
-  html+='<div class="card stag" style="animation-delay:.22s"><div class="card-t">📅 Semainier</div><div class="week">'+weekDotsHTML()+'</div></div>';
+  html+='<div class="card stag" style="animation-delay:.22s"><div class="card-t">'+cardIcon('calendar','var(--e2)')+'Semainier</div><div class="week">'+weekDotsHTML()+'</div></div>';
 
   // EN BREF
-  html+='<div class="card stag" style="animation-delay:.26s"><div class="card-t">⚡ En bref</div><div class="sgrid">'+
+  html+='<div class="card stag" style="animation-delay:.26s"><div class="card-t">'+cardIcon('bolt','var(--or)')+'En bref</div><div class="sgrid">'+
     '<div class="sbox"><div class="v">'+(vdot||'—')+'</div><div class="l">VDOT</div></div>'+
     '<div class="sbox"><div class="v" style="font-size:18px">'+(P.pb5k||'—')+'</div><div class="l">PB 5000m</div></div>'+
     '<div class="sbox"><div class="v">'+(compDays!==null?'J-'+compDays:'—')+'</div><div class="l">Compétition</div></div>'+
@@ -2126,7 +2130,7 @@ function renderHome(){
   // RECENT RECORD
   const recent=[...SESS,...MSESS].sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
   if(recent){
-    html+='<div class="card stag" style="animation-delay:.30s"><div class="card-t">🏅 Activité récente</div>'+
+    html+='<div class="card stag" style="animation-delay:.30s"><div class="card-t">'+cardIcon('medal','var(--maitre)')+'Activité récente</div>'+
       '<div class="row"><div><div style="font-weight:700">'+(recent.title||recent.progName||'Séance')+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+fmtDate(recent.date)+'</div></div>'+
       '<div class="mono" style="color:var(--e);font-weight:700">'+(recent.km?recent.km+' km':(recent.tonnage?Math.round(recent.tonnage)+' kg':''))+'</div></div></div>';
   }
@@ -3114,9 +3118,16 @@ const ICONS={
   star:'<path d="M12 3l2.5 6 6.5.5-5 4 1.7 6.5L12 16l-5.7 4 1.7-6.5-5-4 6.5-.5z"/>',
   bell:'<path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6zM10 20a2 2 0 0 0 4 0"/>',
   calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/>',
-  mosque:'<path d="M4 21V11a8 8 0 0 1 16 0v10M12 3c-1.5 1-1.5 3 0 4M9 21v-4a3 3 0 0 1 6 0v4"/>'
+  mosque:'<path d="M4 21V11a8 8 0 0 1 16 0v10M12 3c-1.5 1-1.5 3 0 4M9 21v-4a3 3 0 0 1 6 0v4"/>',
+  chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  check:'<path d="M5 13l4 4L19 7"/>',
+  target:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".5" fill="currentColor"/>',
+  bolt:'<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>',
+  medal:'<circle cx="12" cy="15" r="6"/><path d="M9 10 6 3M15 10l3-7M9.5 13.5 12 16l2.5-2.5"/>'
 };
 function ICN(name,size,color){ const s=size||22; return '<svg viewBox="0 0 24 24" width="'+s+'" height="'+s+'" fill="none" stroke="'+(color||'currentColor')+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[name]||'')+'</svg>'; }
+/* colored rounded-square icon badge used in card headers, replaces flat emoji */
+function cardIcon(name,color){ color=color||'var(--e)'; return '<span class="icb" style="background:linear-gradient(145deg,'+color+'22,'+color+'0d);box-shadow:0 0 0 1px '+color+'33 inset,0 4px 10px -4px '+color+'55;color:'+color+'">'+ICN(name,15,color)+'</span>'; }
 
 /* ---------- OUTILS — HUB ÉPURÉ ---------- */
 let outilsTab='home';
