@@ -477,7 +477,7 @@ function showBadgeUnlockAnim(b){
     sparks+='<span class="bd-spark" style="--tx:'+(Math.cos(a)*d)+'px;--ty:'+(Math.sin(a)*d)+'px;animation-delay:'+(Math.random()*1.2)+'s"></span>'; }
   ov.innerHTML='<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Manrope;margin-bottom:6px">NOUVEAU BADGE DÉBLOQUÉ</div>'+
     '<div class="bd-unlock-stage '+b.cls+'"><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div>'+
-    '<div class="bd-unlock-badge"><span class="bd-emoji">'+b.emoji+'</span>'+sparks+'</div></div>'+
+    '<div class="bd-unlock-badge">'+bdGlyph(b.key)+sparks+'</div></div>'+
     '<div class="man" style="font-weight:800;font-size:30px;margin-top:18px;letter-spacing:.5px">'+b.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+b.desc+'</div>'+
     '<div style="color:var(--dim);font-size:12px;margin-top:18px">Touche pour continuer</div>';
@@ -494,7 +494,7 @@ function replayBadgeAnim(key){
   let sparks=''; for(let i=0;i<14;i++){ const a=Math.random()*Math.PI*2, d=80+Math.random()*80;
     sparks+='<span class="bd-spark" style="--tx:'+(Math.cos(a)*d)+'px;--ty:'+(Math.sin(a)*d)+'px;animation-delay:'+(Math.random()*1.4)+'s"></span>'; }
   ov.innerHTML='<div class="bd-unlock-stage '+b.cls+'"><div class="bd-ring"></div><div class="bd-ring r2"></div>'+
-    '<div class="bd-unlock-badge"><span class="bd-emoji">'+b.emoji+'</span>'+sparks+'</div></div>'+
+    '<div class="bd-unlock-badge">'+bdGlyph(b.key)+sparks+'</div></div>'+
     '<div class="man" style="font-weight:800;font-size:26px;margin-top:18px">'+b.name+'</div>'+
     '<div style="color:var(--dim);font-size:12px;margin-top:16px">Touche pour fermer</div>';
   ov.onclick=()=>ov.remove();
@@ -517,7 +517,7 @@ function renderBadgeGallery(){
   list.forEach((b,i)=>{
     const on=ukeys.has(b.key);
     h+='<div class="bd-cell" onclick="openBadgeDetail(\''+b.key+'\')">'+
-      '<div class="bd-icon '+(on?b.cls:'locked')+'" style="--sw:'+(i%5)+'"><span class="bd-emoji">'+(on?b.emoji:'🔒')+'</span></div>'+
+      '<div class="bd-icon '+(on?b.cls:'locked')+'" style="--sw:'+(i%5)+'">'+(on?bdGlyph(b.key):'<span class="bd-emoji">🔒</span>')+'</div>'+
       '<div class="bd-name">'+b.name+'</div><div class="bd-lvl">Niv. '+b.level+'</div></div>';
   });
   h+='</div>';
@@ -529,7 +529,7 @@ function openBadgeDetail(key){
   const prog=badgeProgress(b);
   $('#ovBadgesTitle').textContent='Détails du badge';
   let h='<div style="text-align:center;margin-bottom:18px">'+
-    '<div class="bd-icon big '+(rec?b.cls:'locked')+'" style="margin:0 auto 14px'+(rec?';cursor:pointer':'')+'"'+(rec?' onclick="replayBadgeAnim(\''+b.key+'\')"':'')+'><span class="bd-emoji">'+(rec?b.emoji:'🔒')+'</span></div>'+
+    '<div class="bd-icon big '+(rec?b.cls:'locked')+'" style="margin:0 auto 14px'+(rec?';cursor:pointer':'')+'"'+(rec?' onclick="replayBadgeAnim(\''+b.key+'\')"':'')+'>'+(rec?bdGlyph(b.key):'<span class="bd-emoji">🔒</span>')+'</div>'+
     '<div class="man" style="font-weight:800;font-size:24px">'+b.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;padding:0 10px">'+b.desc+'</div>'+
     (rec?'<div style="color:var(--e);font-size:12px;margin-top:8px">Obtenu le '+fmtDate(rec.date)+' · <span style="text-decoration:underline;cursor:pointer" onclick="replayBadgeAnim(\''+b.key+'\')">revivre l\u2019animation</span></div>':'')+
@@ -552,7 +552,7 @@ function badgeStripHTML(){
   let h='<div class="card stag" style="animation-delay:.12s">';
   h+='<div class="row" style="margin-bottom:12px"><span class="card-t" style="margin:0">🏆 Mes badges</span><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="openBadges()">'+unlocked.length+' / '+BADGE_TIERS.length+' · Voir tout ›</span></div>';
   if(recent.length){
-    h+='<div class="row" style="gap:10px;flex-wrap:wrap">'+recent.map(b=>'<div class="bd-icon '+b.cls+'" style="width:52px;height:52px;font-size:22px;cursor:pointer" onclick="openBadges();openBadgeDetail(\''+b.key+'\')"><span class="bd-emoji">'+b.emoji+'</span></div>').join('')+'</div>';
+    h+='<div class="row" style="gap:10px;flex-wrap:wrap">'+recent.map(b=>'<div class="bd-icon '+b.cls+'" style="width:52px;height:52px;cursor:pointer" onclick="openBadges();openBadgeDetail(\''+b.key+'\')">'+bdGlyph(b.key)+'</div>').join('')+'</div>';
   } else {
     h+='<div style="font-size:12px;color:var(--muted)">Aucun badge obtenu pour l\u2019instant — ta première séance te rapprochera du badge Pierre.</div>';
   }
@@ -3115,6 +3115,45 @@ const ICONS={
 function ICN(name,size,color){ const s=size||22; return '<svg viewBox="0 0 24 24" width="'+s+'" height="'+s+'" fill="none" stroke="'+(color||'currentColor')+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[name]||'')+'</svg>'; }
 /* colored rounded-square icon badge used in card headers, replaces flat emoji */
 function cardIcon(name,color){ color=color||'var(--e)'; return '<span class="icb" style="background:linear-gradient(145deg,'+color+'22,'+color+'0d);box-shadow:0 0 0 1px '+color+'33 inset,0 4px 10px -4px '+color+'55;color:'+color+'">'+ICN(name,15,color)+'</span>'; }
+
+/* ---------- BADGE CRESTS (SVG sur-mesure, remplace les emojis) ----------
+   Inspiré des rangs Rocket League : un écusson qui gagne des ailes et des
+   ornements (étoile, laurier, gemme, couronne) au fil des paliers. */
+function _bdWing(side,count){
+  if(count<=0) return '';
+  let out='<g transform="scale('+side+',1)">';
+  for(let i=0;i<count;i++){
+    const y=24+i*5, len=14+i*3;
+    out+='<path d="M32 '+y+' Q'+(32+len*0.6)+' '+(y-4)+' '+(32+len)+' '+(y+2)+'" stroke="rgba(255,255,255,.85)" stroke-width="1.6" fill="none" stroke-linecap="round"/>';
+  }
+  return out+'</g>';
+}
+function _bdStar(cx,cy,r,fill){
+  let pts=[];
+  for(let i=0;i<10;i++){ const a=-Math.PI/2+i*Math.PI/5, rad=i%2===0?r:r*0.42;
+    pts.push((cx+Math.cos(a)*rad).toFixed(1)+','+(cy+Math.sin(a)*rad).toFixed(1)); }
+  return '<polygon points="'+pts.join(' ')+'" fill="'+fill+'"/>';
+}
+function _bdLaurel(side){
+  let out='<g transform="scale('+side+',1)">';
+  for(let i=0;i<3;i++){ const y=38+i*6, x=16+i*2;
+    out+='<ellipse cx="'+x+'" cy="'+y+'" rx="4" ry="2.2" fill="rgba(255,255,255,.7)" transform="rotate(-25 '+x+' '+y+')"/>'; }
+  return out+'</g>';
+}
+function _bdShield(){ return '<path d="M32 6 L52 13 L52 30 Q52 46 32 58 Q12 46 12 30 L12 13 Z" fill="rgba(255,255,255,.10)" stroke="rgba(255,255,255,.9)" stroke-width="2"/>'; }
+const BADGE_GLYPHS={
+  pierre:'<polygon points="32,14 44,20 46,34 36,48 22,46 16,32 20,18" fill="rgba(255,255,255,.14)" stroke="rgba(255,255,255,.85)" stroke-width="2"/><path d="M24 26 L34 24 M28 34 L40 32" stroke="rgba(255,255,255,.5)" stroke-width="1.4"/>',
+  bronze:'<circle cx="32" cy="32" r="20" fill="rgba(255,255,255,.10)" stroke="rgba(255,255,255,.9)" stroke-width="2"/><circle cx="32" cy="32" r="12" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1.4"/>'+_bdStar(32,32,6,'rgba(255,255,255,.85)'),
+  argent:_bdShield()+_bdStar(32,30,8,'rgba(255,255,255,.9)'),
+  or:_bdShield()+_bdStar(32,28,8,'rgba(255,255,255,.95)')+_bdLaurel(1)+_bdLaurel(-1),
+  emeraude:_bdShield()+_bdWing(1,1)+_bdWing(-1,1)+'<polygon points="32,20 40,26 40,36 32,42 24,36 24,26" fill="rgba(255,255,255,.85)"/>',
+  diamant:_bdShield()+_bdWing(1,2)+_bdWing(-1,2)+'<polygon points="32,18 42,28 32,44 22,28" fill="rgba(255,255,255,.92)"/>',
+  cristal:_bdShield()+_bdWing(1,3)+_bdWing(-1,3)+'<polygon points="32,16 37,26 34,40 30,40 27,26" fill="rgba(255,255,255,.9)"/><polygon points="24,26 27,32 24,40 20,36" fill="rgba(255,255,255,.6)"/><polygon points="40,26 37,32 40,40 44,36" fill="rgba(255,255,255,.6)"/>',
+  galaxie:_bdShield()+_bdWing(1,3)+_bdWing(-1,3)+'<circle cx="32" cy="30" r="5" fill="rgba(255,255,255,.95)"/><ellipse cx="32" cy="30" rx="14" ry="5" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1.4"/>',
+  divin:_bdShield()+_bdWing(1,4)+_bdWing(-1,4)+'<g stroke="rgba(255,255,255,.8)" stroke-width="1.4">'+[0,45,90,135,180,225,270,315].map(a=>'<line x1="32" y1="28" x2="'+(32+Math.cos(a*Math.PI/180)*16).toFixed(1)+'" y2="'+(28+Math.sin(a*Math.PI/180)*16).toFixed(1)+'"/>').join('')+'</g>'+_bdStar(32,28,7,'rgba(255,255,255,.95)'),
+  vvvelite:_bdShield()+_bdWing(1,5)+_bdWing(-1,5)+_bdLaurel(1)+_bdLaurel(-1)+'<path d="M20 26 L24 34 L28 24 L32 32 L36 24 L40 34 L44 26 L42 40 L22 40 Z" fill="rgba(255,255,255,.95)"/>'
+};
+function bdGlyph(key){ return '<svg class="bd-glyph" viewBox="0 0 64 64">'+(BADGE_GLYPHS[key]||'')+'</svg>'; }
 
 /* ---------- OUTILS — HUB ÉPURÉ ---------- */
 let outilsTab='home';
