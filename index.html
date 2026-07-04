@@ -218,9 +218,26 @@ html[data-rank-theme="ikorun-elite"] .xp-hero-glow{background:radial-gradient(ci
 
 /* SCROLL ZONE */
 #scroll{height:100vh;overflow-y:auto;overflow-x:hidden;padding-bottom:92px;-webkit-overflow-scrolling:touch;}
-.scr{display:none;padding:0 14px 20px;animation:fade .35s var(--ease-out);}
+.scr{display:none;padding:0 14px 20px;animation:pageIn .4s var(--ease-out);}
 .scr.on{display:block;}
-@keyframes fade{from{opacity:0;}to{opacity:1;}}
+@keyframes pageIn{from{opacity:0;transform:translateY(10px) scale(.99);}to{opacity:1;transform:translateY(0) scale(1);}}
+
+/* ===== FOND PAR PAGE — chaque onglet a sa propre teinte ambiante ===== */
+#s-home{background:radial-gradient(620px 360px at 15% 0%,rgba(61,127,255,.12),transparent 60%),radial-gradient(500px 300px at 100% 30%,rgba(61,127,255,.06),transparent 55%);}
+#s-sport{background:radial-gradient(620px 360px at 85% 0%,rgba(51,211,153,.11),transparent 60%),radial-gradient(500px 300px at 0% 30%,rgba(51,211,153,.05),transparent 55%);}
+#s-stats{background:radial-gradient(620px 360px at 15% 0%,rgba(181,125,255,.12),transparent 60%),radial-gradient(500px 300px at 100% 30%,rgba(181,125,255,.06),transparent 55%);}
+#s-outils{background:radial-gradient(620px 360px at 85% 0%,rgba(242,184,75,.11),transparent 60%),radial-gradient(500px 300px at 0% 30%,rgba(242,184,75,.05),transparent 55%);}
+#s-profil{background:radial-gradient(620px 360px at 50% 0%,rgba(255,110,150,.11),transparent 60%),radial-gradient(500px 300px at 50% 40%,rgba(181,125,255,.05),transparent 55%);}
+
+/* ===== ICÔNES FLOTTANTES — presque partout où une icône apparaît ===== */
+@keyframes floatIcon{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-3px) rotate(-3deg);}}
+.icb svg,.lr-icon svg,.qa-pill svg,.favtile svg,.perfcard .pcl svg{animation:floatIcon 3.2s ease-in-out infinite;}
+.favtile:nth-child(2n) svg,.lr-icon:nth-of-type(2n) svg{animation-delay:.4s;}
+.favtile:nth-child(3n) svg{animation-delay:.8s;}
+.favtile{transition:transform .15s var(--ease-spring);}
+.favtile:active{transform:scale(.93);}
+.ev-tile,.tip-tile{transition:transform .15s var(--ease-spring);}
+.ev-tile:active{transform:scale(.97);}
 
 /* TOPBAR */
 .topbar{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,var(--bg) 75%,transparent);
