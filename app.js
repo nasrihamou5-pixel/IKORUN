@@ -2300,9 +2300,9 @@ function renderPersoList(){
   if(!persoPlans.length){ h+='<div class="card"><div class="empty"><div class="em-ic">📋</div><div style="font-weight:700;color:var(--snow);margin-bottom:6px">Crée ton plan sur-mesure</div><div style="font-size:13px">Ajoute tes propres séances, choisis les dates, types et allures. Tout se synchronise avec ton accueil et tes stats.</div></div></div>'; }
   else persoPlans.forEach((p)=>{
     const done=p.sessions.filter(s=>s.done).length;
-    h+='<div class="card"><div class="row" onclick="openPerso(\''+p.id+'\')" style="cursor:pointer"><div><div style="font-weight:700;font-size:16px">'+p.name+'</div><div style="font-size:12px;color:var(--muted);margin-top:3px">'+p.sessions.length+' séances · '+done+' terminées</div></div><span style="color:var(--e);font-size:20px">›</span></div>'+
-      '<div class="pbar" style="margin-top:10px"><div style="width:'+(p.sessions.length?done/p.sessions.length*100:0)+'%"></div></div>'+
-      '<div class="row" style="gap:6px;margin-top:10px"><button class="btn ghost sm" onclick="dupPerso(\''+p.id+'\')">⎘ Dupliquer</button><button class="btn ghost sm" onclick="sharePlan(\''+p.name+'\')">↗ Partager</button><button class="btn ghost sm" style="color:var(--bad)" onclick="delPerso(\''+p.id+'\')">🗑</button></div></div>';
+    h+='<div class="card" style="padding:13px 14px"><div class="row" onclick="openPerso(\''+p.id+'\')" style="cursor:pointer"><div><div style="font-weight:700;font-size:14.5px">'+p.name+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+p.sessions.length+' séances · '+done+' terminées</div></div><span style="color:var(--e);font-size:18px">›</span></div>'+
+      '<div class="row" style="margin-top:9px;gap:8px"><div class="pbar" style="flex:1;margin-top:0"><div style="width:'+(p.sessions.length?done/p.sessions.length*100:0)+'%"></div></div>'+
+      '<span class="mini-ic" onclick="dupPerso(\''+p.id+'\')" title="Dupliquer">⎘</span><span class="mini-ic" onclick="sharePlan(\''+p.name+'\')" title="Partager">↗</span><span class="mini-ic" style="color:var(--bad)" onclick="delPerso(\''+p.id+'\')" title="Supprimer">🗑</span></div></div>';
   });
   return h;
 }
@@ -3253,7 +3253,7 @@ function bindToolSearch(){ const si=$('#toolSearchInp'); if(si){ si.oninput=()=>
 // VDOT badge réutilisable
 function vdotBadge(){ const v=getUserVDOT()||'—'; return '<div onclick="openTool(\'vdot\')" style="width:54px;height:54px;border-radius:50%;border:2px solid var(--e);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:var(--ed)"><div class="mono" style="font-weight:800;font-size:15px;color:var(--e);line-height:1">'+v+'</div><div style="font-size:7px;color:var(--muted);letter-spacing:.5px">VDOT</div></div>'; }
 function outilsHome(){
-  let h='<div class="row" style="margin:2px 0 14px"><div class="man" style="font-weight:800;font-size:24px;letter-spacing:-.5px">Outils</div>'+vdotBadge()+'</div>';
+  let h='<div class="row" style="margin:2px 0 14px;justify-content:flex-end">'+vdotBadge()+'</div>';
   // Raccourcis rapides Chrono + Minuteur
   h+='<div style="display:flex;gap:10px;margin-bottom:16px"><div class="card" style="flex:1;padding:14px;margin:0;cursor:pointer;text-align:center" onclick="openTool(\'chrono\')"><div style="color:var(--e);display:flex;justify-content:center">'+ICN('stopwatch',26)+'</div><div style="font-weight:700;font-size:13px;margin-top:6px">Chronomètre</div></div><div class="card" style="flex:1;padding:14px;margin:0;cursor:pointer;text-align:center" onclick="openQuickTimer()"><div style="color:var(--warn);display:flex;justify-content:center">'+ICN('timer',26)+'</div><div style="font-weight:700;font-size:13px;margin-top:6px">Minuteur</div></div></div>';
   h+='<div class="searchbox"><span class="searchic">'+ICN('search',18,'var(--muted)')+'</span><input class="inp" id="toolSearchInp" style="padding-left:42px" placeholder="Rechercher un outil..." value="'+toolSearch+'"></div>';
@@ -3273,7 +3273,7 @@ function outilsHome(){
   // OUTILS PRINCIPAUX
   h+='<div class="lab" style="margin:0 0 12px">Outils principaux</div>';
   MAIN_TOOLS.forEach(k=>{ const t=TOOLS[k];
-    h+='<div class="card" style="padding:15px;margin-bottom:10px;cursor:pointer" onclick="openTool(\''+k+'\')"><div class="row"><div class="row" style="gap:14px"><div style="width:46px;height:46px;border-radius:13px;background:var(--ed);color:var(--e);display:flex;align-items:center;justify-content:center">'+t.icon+'</div><div style="flex:1"><div style="font-weight:700;font-size:15px">'+t.name+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+t.sub+'</div></div></div><span style="color:var(--dim);font-size:20px">›</span></div></div>';
+    h+='<div class="list-row" onclick="openTool(\''+k+'\')"><div class="lr-icon">'+t.icon+'</div><div class="lr-txt"><div class="lr-title">'+t.name+'</div><div class="lr-sub">'+t.sub+'</div></div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>';
   });
   // AUTRES OUTILS
   h+='<div class="lab" style="margin:18px 0 12px">Autres outils</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px">';
@@ -3288,7 +3288,7 @@ function editFavs(){
   $('#settingsBody').innerHTML=h; $('#ovSettings').querySelector('h2').textContent='Modifier les favoris'; openOv('ovSettings');
 }
 function toolRow(k,t){ const fav=toolFav().includes(k);
-  return '<div class="card" style="padding:13px;margin-bottom:8px"><div class="row"><div class="row" style="gap:13px;flex:1;cursor:pointer" onclick="openTool(\''+k+'\')"><div style="width:40px;height:40px;border-radius:11px;background:var(--s2);color:var(--e);display:flex;align-items:center;justify-content:center">'+t.icon+'</div><div><div style="font-weight:700;font-size:14px">'+t.name+'</div>'+(t.sub?'<div style="font-size:11px;color:var(--muted);margin-top:2px">'+t.sub+'</div>':'')+'</div></div><span onclick="event.stopPropagation();toggleFav(\''+k+'\')" style="color:'+(fav?'var(--or)':'var(--dim)')+';font-size:18px;cursor:pointer;padding:4px">★</span></div></div>'; }
+  return '<div class="list-row"><div class="lr-icon" style="cursor:pointer" onclick="openTool(\''+k+'\')">'+t.icon+'</div><div class="lr-txt" style="cursor:pointer" onclick="openTool(\''+k+'\')"><div class="lr-title">'+t.name+'</div>'+(t.sub?'<div class="lr-sub">'+t.sub+'</div>':'')+'</div><span onclick="event.stopPropagation();toggleFav(\''+k+'\')" style="color:'+(fav?'var(--or)':'var(--dim)')+';font-size:17px;cursor:pointer;padding:4px">★</span></div>'; }
 function openQuickTimer(){ outilsFrom='home'; outilsTab='_timer'; renderOutilsTimer(); }
 function renderOutilsTimer(){ $('#s-outils').innerHTML='<div class="row" style="margin-bottom:14px"><button class="x" onclick="outilsTab=\'home\';renderOutils()">‹</button><div class="man" style="font-weight:800;font-size:17px;flex:1;text-align:center">Minuteur</div><div style="width:34px"></div></div><div id="outBody"></div>'; renderTimer(); }
 
@@ -3819,15 +3819,13 @@ function renderProfile(){
   const rk=rankFor(XP.level||1);
   h+='<div class="man" style="font-weight:800;font-size:22px">'+(P.name||'Athlète')+'</div>';
   h+='<div class="rankchip" style="margin-top:8px;background:'+rk.bg+';color:#fff">'+t('level')+' '+XP.level+' · '+rk.name+'</div>';
+  h+='<div style="font-size:11px;color:var(--dim);margin-top:6px" class="mono">'+XP.total+' XP'+(XP.maxed?' · niveau max':' · '+(XP.span-XP.inLvl)+' XP avant niv. '+(XP.level+1))+'</div>';
   h+='<div style="font-size:13px;color:var(--muted);margin-top:10px;line-height:1.5;font-style:'+(P.bio?'normal':'italic')+'">'+(P.bio||'Ajoute une biographie ✍️')+'</div>';
   h+='<div class="row" style="gap:8px;margin-top:14px;justify-content:center">'+
     (P.photo?'<button class="btn ghost sm" style="width:auto;padding:8px 14px" onclick="removePhoto()">🗑 '+t('removePhoto')+'</button>':'')+
     '<button class="btn ghost sm" style="width:auto;padding:8px 14px" onclick="editBio()">✍️ '+t('bio')+'</button></div></div>';
   // STATS
   h+='<div class="card stag" style="animation-delay:.05s"><div class="sgrid"><div class="sbox"><div class="v">'+(P.height||'—')+'</div><div class="l">'+t('height')+' (cm)</div></div><div class="sbox"><div class="v">'+(P.weight||'—')+'</div><div class="l">'+t('weight')+' (kg)</div></div><div class="sbox"><div class="v">'+age()+'</div><div class="l">'+t('age')+'</div></div><div class="sbox"><div class="v">'+(getUserVDOT()||'—')+'</div><div class="l">VDOT</div></div></div></div>';
-  h+='<div class="card stag" style="animation-delay:.10s"><div class="row" style="margin-bottom:8px"><span class="lab">'+t('xpProgress')+' · Niv. '+XP.level+(XP.maxed?' (MAX)':'')+'</span><span class="mono" style="color:var(--e)">'+XP.total+' XP</span></div><div class="pbar"><div style="width:'+xp.pct+'%"></div></div>'+
-    (XP.maxed?'<div style="font-size:11px;color:var(--muted);margin-top:8px">Niveau maximum atteint — sommet de la carrière IKORUN.</div>':'<div style="font-size:11px;color:var(--muted);margin-top:8px">'+(XP.span-XP.inLvl)+' XP avant le niveau '+(XP.level+1)+'</div>')+
-    '</div>';
   // ===== BADGES =====
   h+=badgeStripHTML();
   h+='<button class="btn stag" style="animation-delay:.15s" onclick="openProfileEdit()">✏️ '+t('editInfos')+'</button>';
