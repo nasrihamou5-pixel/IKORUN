@@ -94,6 +94,23 @@ html[data-mode="light"] body::after{opacity:.025;}
 .ev-days{font-size:15px;font-weight:800;color:#fff;background:rgba(255,255,255,.16);padding:6px 12px;border-radius:var(--r-pill);flex-shrink:0;}
 .ev-banner.alt .ev-days{background:transparent;color:var(--muted);padding:0;}
 
+/* MOSAÏQUE — objectif + conseil côte à côte, tailles différentes (asymétrie volontaire) */
+.mosaic{display:grid;grid-template-columns:1fr 1.15fr;gap:9px;margin-bottom:8px;align-items:stretch;}
+.ev-tile{position:relative;overflow:hidden;padding:14px;border-radius:18px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;
+  background:linear-gradient(150deg,#4A3AD6,#7A4FE8 85%);box-shadow:0 12px 28px -10px rgba(90,60,220,.4);}
+.ev-tile.alt{background:linear-gradient(150deg,var(--s2),var(--s1));box-shadow:var(--sh-sm);}
+.ev-tile::after{content:'';position:absolute;top:-45%;right:-15%;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.2),transparent 70%);pointer-events:none;}
+.ev-tile .ev-lab{font-size:9.5px;letter-spacing:.6px;color:rgba(255,255,255,.65);font-weight:700;}
+.ev-tile.alt .ev-lab{color:var(--muted);}
+.ev-tile .ev-title{font-size:14.5px;font-weight:800;font-family:'Manrope';color:#fff;margin-top:3px;line-height:1.2;}
+.ev-tile.alt .ev-title{color:var(--snow);}
+.ev-tile .ev-days{font-size:13px;font-weight:800;color:#fff;margin-top:8px;}
+.ev-tile.alt .ev-days{color:var(--dim);}
+.tip-tile{background:linear-gradient(150deg,#152036 0%,#0d1420 65%);border-radius:18px;padding:14px;box-shadow:var(--sh-sm);position:relative;overflow:hidden;}
+.tip-tile::before{content:'';position:absolute;top:-50%;left:-20%;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,rgba(61,127,255,.18),transparent 70%);animation:heroBreathe 5.5s ease-in-out infinite;pointer-events:none;}
+.tip-tile .tip-lab{font-size:9.5px;letter-spacing:.6px;color:rgba(255,255,255,.5);font-weight:700;display:flex;align-items:center;gap:5px;position:relative;z-index:1;}
+.tip-tile .tip-txt{font-size:12.5px;line-height:1.4;font-weight:600;color:#fff;margin-top:6px;position:relative;z-index:1;}
+
 .tip-card{position:relative;overflow:hidden;padding:18px;border-radius:var(--r-md);margin-bottom:10px;
   background:linear-gradient(150deg,#1a2542 0%,#0d1420 60%);box-shadow:var(--sh-deep);}
 .tip-glow{position:absolute;top:-50%;left:-20%;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(61,127,255,.22),transparent 70%);pointer-events:none;animation:heroBreathe 5.5s ease-in-out infinite;}

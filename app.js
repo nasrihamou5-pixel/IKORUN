@@ -2068,54 +2068,7 @@ function renderHome(){
 
   let html='';
 
-  // DAY STRIP — bande horizontale des prochains jours avec type de séance
-  html+='<div class="daystrip-wrap stag" style="animation-delay:0s"><div class="daystrip">';
-  { const labels=['D','L','M','M','J','V','S']; const doneDates=new Set([...SESS,...MSESS].map(s=>s.date));
-    const planByDate={}; if(PLAN) PLAN.sessions.forEach(s=>planByDate[s.date]=s);
-    for(let i=-1;i<6;i++){
-      const d=new Date(); d.setDate(d.getDate()+i); const k=dateKey(d); const isToday=i===0;
-      const sess=planByDate[k]; const done=doneDates.has(k);
-      let dotCol='var(--hair2)', glyph='';
-      if(sess && sess.type!=='Repos'){ dotCol='var('+(TYPE_COLORS[sess.type]||'--e')+')'; glyph='<span class="ds-dot" style="background:'+dotCol+(done?';opacity:1':';opacity:.85')+'"></span>'; }
-      else if(sess) glyph='<span class="ds-dot" style="background:var(--hair2)"></span>';
-      html+='<div class="ds-day '+(isToday?'today':'')+'" onclick="nav(\'sport\')"><div class="ds-l">'+labels[d.getDay()]+'</div><div class="ds-n">'+d.getDate()+'</div>'+glyph+'</div>';
-    }
-  }
-  html+='</div></div>';
-
-  // QUICK ACTION PILLS
-  html+='<div class="qa-row stag" style="animation-delay:.03s">'+
-    '<div class="qa-pill" onclick="nav(\'outils\');openTool(\'aio\')">'+ICN('lab',16)+'<span>Performance Lab</span></div>'+
-    '<div class="qa-pill" onclick="nav(\'outils\');openTool(\'chrono\')">'+ICN('stopwatch',16)+'<span>Chrono</span></div>'+
-    '</div>';
-
-  // BANDEAU OBJECTIF / COMPÉTITION (dégradé)
-  if(P.compDate && compDays!==null && compDays>=0){
-    html+='<div class="ev-banner stag" style="animation-delay:.05s" onclick="nav(\'sport\')">'+
-      '<div class="ev-txt"><div class="ev-lab">PROCHAIN OBJECTIF</div><div class="ev-title">'+(P.objRace||'Compétition')+'</div></div>'+
-      '<div class="ev-days">J-'+compDays+'</div></div>';
-  } else {
-    html+='<div class="ev-banner alt stag" style="animation-delay:.05s" onclick="nav(\'sport\')">'+
-      '<div class="ev-txt"><div class="ev-lab">TON PLAN</div><div class="ev-title">'+(PLAN?PLAN.goal||'En cours':'Aucun plan actif')+'</div></div>'+
-      '<div class="ev-days">'+ICN('chevronR',18)+'</div></div>';
-  }
-
-  // CONSEIL DU JOUR — grande card immersive
-  { const TIPS=[
-      "Un jour de récup bien géré vaut souvent plus qu'une séance forcée.",
-      "La régularité sur 4 semaines compte plus qu'une séance parfaite.",
-      "Hydrate-toi bien aujourd'hui, ça se joue aussi hors des séances.",
-      "Le sommeil est ton premier levier de progression, avant l'entraînement.",
-      "Une allure trop rapide en EF grille la récup du lendemain.",
-      "Écoute les signaux de fatigue — la charge s'ajuste, elle se force pas."
-    ];
-    const idx=(new Date().getDate()+new Date().getMonth())%TIPS.length;
-    html+='<div class="tip-card stag" style="animation-delay:.08s"><div class="tip-glow"></div>'+
-      '<div class="tip-lab">CONSEIL DU JOUR</div><div class="tip-txt">'+TIPS[idx]+'</div>'+
-      '<div class="tip-coach">'+cardIcon('bolt','var(--or)')+'<span>Coach IKORUN</span></div></div>';
-  }
-
-  // RANK CARD — carte de rang façon jeu vidéo (crest + progression)
+  // RANK CARD — carte de rang (identité, en premier : c'est le hero de l'écran)
   { const curBadge=BADGE_TIERS.filter(b=>b.level<=XP.level).slice(-1)[0]||BADGE_TIERS[0];
     html+='<div class="rank-card stag" style="animation-delay:.02s">'+
       '<div class="rk-stripe"></div><div class="rk-glow"></div>'+
@@ -2133,13 +2086,54 @@ function renderHome(){
   }
 
   // BENTO STATS — km (grande tuile) + séances/forme (tuiles compactes)
-  html+='<div class="bento stag" style="animation-delay:.05s">'+
+  html+='<div class="bento stag" style="animation-delay:.04s">'+
     '<div class="bt bt-km"><div class="bt-lab">'+cardIcon('chart','var(--e)')+'CHARGE SEMAINE</div>'+
-      '<div class="ring-wrap" style="width:108px;height:108px;margin:6px auto 0">'+ringSVG(108,Math.min(100,kmW/kmTarget*100),11,'var(--e)')+'<div class="ring-c"><div class="big">'+kmW.toFixed(0)+'</div><div class="sm">/ '+kmTarget+' km</div></div></div></div>'+
+      '<div class="ring-wrap" style="width:104px;height:104px;margin:6px auto 0">'+ringSVG(104,Math.min(100,kmW/kmTarget*100),11,'var(--e)')+'<div class="ring-c"><div class="big">'+kmW.toFixed(0)+'</div><div class="sm">/ '+kmTarget+' km</div></div></div></div>'+
     '<div class="bt-col">'+
-      '<div class="bt bt-sm"><div class="ring-wrap" style="width:52px;height:52px">'+ringSVG(52,Math.min(100,sessW/sessTarget*100),6,'var(--ok)')+'<div class="ring-c"><div class="big" style="font-size:14px">'+sessW+'</div></div></div><div class="bt-txt"><div class="bt-n">'+sessW+'<span>/'+sessTarget+'</span></div><div class="bt-l">séances</div></div></div>'+
-      '<div class="bt bt-sm"><div class="ring-wrap" style="width:52px;height:52px">'+ringSVG(52,form,6,'var(--or)')+'<div class="ring-c"><div class="big" style="font-size:14px">'+form+'</div></div></div><div class="bt-txt"><div class="bt-n">'+form+'</div><div class="bt-l">forme</div></div></div>'+
+      '<div class="bt bt-sm"><div class="ring-wrap" style="width:50px;height:50px">'+ringSVG(50,Math.min(100,sessW/sessTarget*100),6,'var(--ok)')+'<div class="ring-c"><div class="big" style="font-size:14px">'+sessW+'</div></div></div><div class="bt-txt"><div class="bt-n">'+sessW+'<span>/'+sessTarget+'</span></div><div class="bt-l">séances</div></div></div>'+
+      '<div class="bt bt-sm"><div class="ring-wrap" style="width:50px;height:50px">'+ringSVG(50,form,6,'var(--or)')+'<div class="ring-c"><div class="big" style="font-size:14px">'+form+'</div></div></div><div class="bt-txt"><div class="bt-n">'+form+'</div><div class="bt-l">forme</div></div></div>'+
     '</div></div>';
+
+  // DAY STRIP — bande horizontale des prochains jours avec type de séance
+  html+='<div class="daystrip-wrap stag" style="animation-delay:.06s"><div class="daystrip">';
+  { const labels=['D','L','M','M','J','V','S']; const doneDates=new Set([...SESS,...MSESS].map(s=>s.date));
+    const planByDate={}; if(PLAN) PLAN.sessions.forEach(s=>planByDate[s.date]=s);
+    for(let i=-1;i<6;i++){
+      const d=new Date(); d.setDate(d.getDate()+i); const k=dateKey(d); const isToday=i===0;
+      const sess=planByDate[k]; const done=doneDates.has(k);
+      let dotCol='var(--hair2)', glyph='';
+      if(sess && sess.type!=='Repos'){ dotCol='var('+(TYPE_COLORS[sess.type]||'--e')+')'; glyph='<span class="ds-dot" style="background:'+dotCol+(done?';opacity:1':';opacity:.85')+'"></span>'; }
+      else if(sess) glyph='<span class="ds-dot" style="background:var(--hair2)"></span>';
+      html+='<div class="ds-day '+(isToday?'today':'')+'" onclick="nav(\'sport\')"><div class="ds-l">'+labels[d.getDay()]+'</div><div class="ds-n">'+d.getDate()+'</div>'+glyph+'</div>';
+    }
+  }
+  html+='</div></div>';
+
+  // OBJECTIF + CONSEIL — mosaïque 2 colonnes (au lieu de 2 blocs pleine largeur empilés)
+  html+='<div class="mosaic stag" style="animation-delay:.08s">';
+  if(P.compDate && compDays!==null && compDays>=0){
+    html+='<div class="ev-tile" onclick="nav(\'sport\')"><div class="ev-lab">OBJECTIF</div><div class="ev-title">'+(P.objRace||'Compétition')+'</div><div class="ev-days">J-'+compDays+'</div></div>';
+  } else {
+    html+='<div class="ev-tile alt" onclick="nav(\'sport\')"><div class="ev-lab">TON PLAN</div><div class="ev-title">'+(PLAN?PLAN.goal||'En cours':'Aucun plan actif')+'</div><div class="ev-days">'+ICN('chevronR',16)+'</div></div>';
+  }
+  { const TIPS=[
+      "Un jour de récup bien géré vaut souvent plus qu'une séance forcée.",
+      "La régularité sur 4 semaines compte plus qu'une séance parfaite.",
+      "Hydrate-toi bien aujourd'hui, ça se joue aussi hors des séances.",
+      "Le sommeil est ton premier levier de progression, avant l'entraînement.",
+      "Une allure trop rapide en EF grille la récup du lendemain.",
+      "Écoute les signaux de fatigue — la charge s'ajuste, elle se force pas."
+    ];
+    const idx=(new Date().getDate()+new Date().getMonth())%TIPS.length;
+    html+='<div class="tip-tile"><div class="tip-lab">'+ICN('bolt',13,'var(--or)')+' CONSEIL</div><div class="tip-txt">'+TIPS[idx]+'</div></div>';
+  }
+  html+='</div>';
+
+  // QUICK ACTION PILLS
+  html+='<div class="qa-row stag" style="animation-delay:.10s">'+
+    '<div class="qa-pill" onclick="nav(\'outils\');openTool(\'aio\')">'+ICN('lab',16)+'<span>Performance Lab</span></div>'+
+    '<div class="qa-pill" onclick="nav(\'outils\');openTool(\'chrono\')">'+ICN('stopwatch',16)+'<span>Chrono</span></div>'+
+    '</div>';
 
   // CHECKLIST
   html+='<div class="card stag accent-ok" style="animation-delay:.10s"><div class="card-t">'+cardIcon('check','var(--ok)')+'Objectifs du jour</div>';
