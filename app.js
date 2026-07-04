@@ -4061,7 +4061,7 @@ function setupPWA(){
   }catch(e){}
   // Service worker : cache la page courante pour fonctionner hors-ligne
   if('serviceWorker'in navigator && location.protocol.startsWith('http')){
-    const swCode="const C='ikorun-v2';self.addEventListener('install',e=>{self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(self.clients.claim())});self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(caches.open(C).then(c=>c.match(e.request).then(r=>{const f=fetch(e.request).then(res=>{try{c.put(e.request,res.clone())}catch(x){}return res}).catch(()=>r);return r||f})))});";
+    const swCode="const C='ikorun-v3';self.addEventListener('install',e=>{self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(res=>{try{const c2=res.clone();caches.open(C).then(c=>c.put(e.request,c2))}catch(x){}return res}).catch(()=>caches.open(C).then(c=>c.match(e.request))))});";
     try{ const b=new Blob([swCode],{type:'text/javascript'}); navigator.serviceWorker.register(URL.createObjectURL(b)).catch(()=>{}); }catch(e){}
   }
 }
