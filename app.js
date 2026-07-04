@@ -2115,21 +2115,31 @@ function renderHome(){
       '<div class="tip-coach">'+cardIcon('bolt','var(--or)')+'<span>Coach IKORUN</span></div></div>';
   }
 
-  html+='<div class="card stag xp-hero" style="animation-delay:.02s;">'+
-    '<div class="xp-hero-glow"></div>'+
-    '<div class="row" style="position:relative;z-index:1"><div><div class="lab">Niveau '+XP.level+'</div><div class="man" style="font-weight:800;font-size:23px;margin-top:3px;letter-spacing:-.4px;">'+XP.name+'</div></div>'+
-    '<div class="badge mono">'+XP.total+' XP</div></div>'+
-    '<div class="pbar" style="margin-top:15px;position:relative;z-index:1"><div style="width:'+xp.pct+'%"></div></div>'+
-    '<div class="row" style="margin-top:7px;position:relative;z-index:1"><span style="font-size:11px;color:var(--dim)" class="mono">'+xp.inLvl+' / '+xp.span+' XP</span><span style="font-size:11px;color:var(--dim)">Niv. '+(XP.level+1)+'</span></div></div>';
+  // RANK CARD — carte de rang façon jeu vidéo (crest + progression)
+  { const curBadge=BADGE_TIERS.filter(b=>b.level<=XP.level).slice(-1)[0]||BADGE_TIERS[0];
+    html+='<div class="rank-card stag" style="animation-delay:.02s">'+
+      '<div class="rk-stripe"></div><div class="rk-glow"></div>'+
+      '<div class="rk-top">'+
+        '<div class="bd-icon rk-crest '+curBadge.cls+'">'+bdGlyph(curBadge.key)+'</div>'+
+        '<div class="rk-info">'+
+          '<div class="rk-lvl">NIVEAU '+XP.level+'</div>'+
+          '<div class="rk-name">'+XP.name+'</div>'+
+        '</div>'+
+        '<div class="rk-xp mono">'+XP.total+'<span>XP</span></div>'+
+      '</div>'+
+      '<div class="pbar rk-bar"><div style="width:'+xp.pct+'%"></div></div>'+
+      '<div class="row" style="margin-top:6px;position:relative;z-index:1"><span class="rk-sub mono">'+xp.inLvl+' / '+xp.span+' XP</span><span class="rk-sub">NIV. '+(XP.level+1)+'</span></div>'+
+    '</div>';
+  }
 
-  // RINGS
-  html+='<div class="card stag accent-e" style="animation-delay:.06s"><div class="card-t">'+cardIcon('chart','var(--e)')+'Charge de la semaine</div>'+
-    '<div class="row" style="justify-content:space-around;align-items:center;">'+
-    '<div class="ring-wrap" style="width:120px;height:120px;">'+ringSVG(120,Math.min(100,kmW/kmTarget*100),12,'var(--e)')+'<div class="ring-c"><div class="big">'+kmW.toFixed(0)+'</div><div class="sm">/ '+kmTarget+' km</div></div></div>'+
-    '<div style="display:flex;flex-direction:column;gap:14px;">'+
-      '<div class="ring-wrap" style="width:64px;height:64px;">'+ringSVG(64,Math.min(100,sessW/sessTarget*100),7,'var(--ok)')+'<div class="ring-c"><div class="big" style="font-size:15px">'+sessW+'</div><div class="sm" style="font-size:8px">séances</div></div></div>'+
-      '<div class="ring-wrap" style="width:64px;height:64px;">'+ringSVG(64,form,7,'var(--or)')+'<div class="ring-c"><div class="big" style="font-size:15px">'+form+'</div><div class="sm" style="font-size:8px">forme</div></div></div>'+
-    '</div></div></div>';
+  // BENTO STATS — km (grande tuile) + séances/forme (tuiles compactes)
+  html+='<div class="bento stag" style="animation-delay:.05s">'+
+    '<div class="bt bt-km"><div class="bt-lab">'+cardIcon('chart','var(--e)')+'CHARGE SEMAINE</div>'+
+      '<div class="ring-wrap" style="width:108px;height:108px;margin:6px auto 0">'+ringSVG(108,Math.min(100,kmW/kmTarget*100),11,'var(--e)')+'<div class="ring-c"><div class="big">'+kmW.toFixed(0)+'</div><div class="sm">/ '+kmTarget+' km</div></div></div></div>'+
+    '<div class="bt-col">'+
+      '<div class="bt bt-sm"><div class="ring-wrap" style="width:52px;height:52px">'+ringSVG(52,Math.min(100,sessW/sessTarget*100),6,'var(--ok)')+'<div class="ring-c"><div class="big" style="font-size:14px">'+sessW+'</div></div></div><div class="bt-txt"><div class="bt-n">'+sessW+'<span>/'+sessTarget+'</span></div><div class="bt-l">séances</div></div></div>'+
+      '<div class="bt bt-sm"><div class="ring-wrap" style="width:52px;height:52px">'+ringSVG(52,form,6,'var(--or)')+'<div class="ring-c"><div class="big" style="font-size:14px">'+form+'</div></div></div><div class="bt-txt"><div class="bt-n">'+form+'</div><div class="bt-l">forme</div></div></div>'+
+    '</div></div>';
 
   // CHECKLIST
   html+='<div class="card stag accent-ok" style="animation-delay:.10s"><div class="card-t">'+cardIcon('check','var(--ok)')+'Objectifs du jour</div>';

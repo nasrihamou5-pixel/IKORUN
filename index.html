@@ -101,6 +101,37 @@ html[data-mode="light"] body::after{opacity:.025;}
 .tip-txt{font-size:15px;line-height:1.5;font-weight:600;color:#fff;margin-top:8px;position:relative;z-index:1;}
 .tip-coach{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:12px;color:rgba(255,255,255,.6);font-weight:700;position:relative;z-index:1;}
 
+/* ===== RANK CARD (style carte de rang jeu vidéo) ===== */
+.rank-card{position:relative;overflow:hidden;padding:18px 18px 16px;border-radius:20px;margin-bottom:10px;
+  background:linear-gradient(150deg,#131826 0%,#0a0d14 70%);border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 20px 44px -16px rgba(0,0,0,.75),0 1px 0 rgba(255,255,255,.05) inset;}
+.rk-stripe{position:absolute;top:0;left:-10%;width:60%;height:100%;pointer-events:none;
+  background:linear-gradient(100deg,transparent 40%,rgba(61,127,255,.14) 55%,transparent 72%);transform:skewX(-8deg);}
+.rk-glow{position:absolute;top:-55%;right:-10%;width:220px;height:220px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(61,127,255,.30),transparent 70%);animation:heroBreathe 5s ease-in-out infinite;}
+.rk-top{display:flex;align-items:center;gap:13px;position:relative;z-index:1;}
+.rk-crest{width:60px;height:60px;border-radius:18px;flex-shrink:0;}
+.rk-info{flex:1;min-width:0;}
+.rk-lvl{font-size:10.5px;letter-spacing:1px;color:var(--e2);font-weight:800;}
+.rk-name{font-size:20px;font-weight:800;font-family:'Manrope';letter-spacing:-.3px;color:#fff;margin-top:1px;}
+.rk-xp{text-align:right;font-size:19px;font-weight:800;color:#fff;text-shadow:0 0 16px rgba(61,127,255,.6);flex-shrink:0;}
+.rk-xp span{display:block;font-size:9px;font-weight:700;color:var(--dim);text-shadow:none;letter-spacing:.5px;margin-top:-1px;}
+.rk-bar{margin-top:14px;position:relative;z-index:1;height:7px;}
+.rk-bar div{box-shadow:0 0 12px rgba(61,127,255,.55);}
+.rk-sub{font-size:10.5px;color:var(--dim);font-weight:700;letter-spacing:.2px;}
+
+/* ===== BENTO STATS ===== */
+.bento{display:grid;grid-template-columns:1.3fr 1fr;gap:10px;margin-bottom:10px;}
+.bt{background:var(--s1);border:1px solid var(--hair);border-radius:18px;box-shadow:var(--sh-sm);}
+.bt-km{padding:14px 10px 16px;text-align:center;}
+.bt-lab{display:flex;align-items:center;justify-content:center;gap:6px;font-size:10px;letter-spacing:.5px;font-weight:800;color:var(--muted);}
+.bt-col{display:flex;flex-direction:column;gap:9px;}
+.bt-sm{flex:1;display:flex;align-items:center;gap:10px;padding:11px 12px;}
+.bt-txt{min-width:0;}
+.bt-n{font-size:16px;font-weight:800;font-family:'Manrope';line-height:1.1;}
+.bt-n span{font-size:11px;color:var(--muted);font-weight:600;}
+.bt-l{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-top:1px;}
+
 /* ===== SYSTÈME DE THÈMES PAR PALIER (23 rangs → 8 familles visuelles) =====
    Chaque palier débloqué change l'ambiance : teinte du glow de fond,
    intensité des ombres, et texture/finition des cartes. L'accent couleur
