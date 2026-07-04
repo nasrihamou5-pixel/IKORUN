@@ -2067,7 +2067,54 @@ function renderHome(){
   const compDays=P.compDate?daysBetween(new Date(),new Date(P.compDate)):null;
 
   let html='';
-  // XP CARD — hero treatment
+
+  // DAY STRIP — bande horizontale des prochains jours avec type de séance
+  html+='<div class="daystrip-wrap stag" style="animation-delay:0s"><div class="daystrip">';
+  { const labels=['D','L','M','M','J','V','S']; const doneDates=new Set([...SESS,...MSESS].map(s=>s.date));
+    const planByDate={}; if(PLAN) PLAN.sessions.forEach(s=>planByDate[s.date]=s);
+    for(let i=-1;i<6;i++){
+      const d=new Date(); d.setDate(d.getDate()+i); const k=dateKey(d); const isToday=i===0;
+      const sess=planByDate[k]; const done=doneDates.has(k);
+      let dotCol='var(--hair2)', glyph='';
+      if(sess && sess.type!=='Repos'){ dotCol='var('+(TYPE_COLORS[sess.type]||'--e')+')'; glyph='<span class="ds-dot" style="background:'+dotCol+(done?';opacity:1':';opacity:.85')+'"></span>'; }
+      else if(sess) glyph='<span class="ds-dot" style="background:var(--hair2)"></span>';
+      html+='<div class="ds-day '+(isToday?'today':'')+'" onclick="nav(\'sport\')"><div class="ds-l">'+labels[d.getDay()]+'</div><div class="ds-n">'+d.getDate()+'</div>'+glyph+'</div>';
+    }
+  }
+  html+='</div></div>';
+
+  // QUICK ACTION PILLS
+  html+='<div class="qa-row stag" style="animation-delay:.03s">'+
+    '<div class="qa-pill" onclick="nav(\'outils\');openTool(\'aio\')">'+ICN('lab',16)+'<span>Performance Lab</span></div>'+
+    '<div class="qa-pill" onclick="nav(\'outils\');openTool(\'chrono\')">'+ICN('stopwatch',16)+'<span>Chrono</span></div>'+
+    '</div>';
+
+  // BANDEAU OBJECTIF / COMPÉTITION (dégradé)
+  if(P.compDate && compDays!==null && compDays>=0){
+    html+='<div class="ev-banner stag" style="animation-delay:.05s" onclick="nav(\'sport\')">'+
+      '<div class="ev-txt"><div class="ev-lab">PROCHAIN OBJECTIF</div><div class="ev-title">'+(P.objRace||'Compétition')+'</div></div>'+
+      '<div class="ev-days">J-'+compDays+'</div></div>';
+  } else {
+    html+='<div class="ev-banner alt stag" style="animation-delay:.05s" onclick="nav(\'sport\')">'+
+      '<div class="ev-txt"><div class="ev-lab">TON PLAN</div><div class="ev-title">'+(PLAN?PLAN.goal||'En cours':'Aucun plan actif')+'</div></div>'+
+      '<div class="ev-days">'+ICN('chevronR',18)+'</div></div>';
+  }
+
+  // CONSEIL DU JOUR — grande card immersive
+  { const TIPS=[
+      "Un jour de récup bien géré vaut souvent plus qu'une séance forcée.",
+      "La régularité sur 4 semaines compte plus qu'une séance parfaite.",
+      "Hydrate-toi bien aujourd'hui, ça se joue aussi hors des séances.",
+      "Le sommeil est ton premier levier de progression, avant l'entraînement.",
+      "Une allure trop rapide en EF grille la récup du lendemain.",
+      "Écoute les signaux de fatigue — la charge s'ajuste, elle se force pas."
+    ];
+    const idx=(new Date().getDate()+new Date().getMonth())%TIPS.length;
+    html+='<div class="tip-card stag" style="animation-delay:.08s"><div class="tip-glow"></div>'+
+      '<div class="tip-lab">CONSEIL DU JOUR</div><div class="tip-txt">'+TIPS[idx]+'</div>'+
+      '<div class="tip-coach">'+cardIcon('bolt','var(--or)')+'<span>Coach IKORUN</span></div></div>';
+  }
+
   html+='<div class="card stag xp-hero" style="animation-delay:.02s;">'+
     '<div class="xp-hero-glow"></div>'+
     '<div class="row" style="position:relative;z-index:1"><div><div class="lab">Niveau '+XP.level+'</div><div class="man" style="font-weight:800;font-size:23px;margin-top:3px;letter-spacing:-.4px;">'+XP.name+'</div></div>'+
@@ -3110,7 +3157,8 @@ const ICONS={
   check:'<path d="M5 13l4 4L19 7"/>',
   target:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".5" fill="currentColor"/>',
   bolt:'<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>',
-  medal:'<circle cx="12" cy="15" r="6"/><path d="M9 10 6 3M15 10l3-7M9.5 13.5 12 16l2.5-2.5"/>'
+  medal:'<circle cx="12" cy="15" r="6"/><path d="M9 10 6 3M15 10l3-7M9.5 13.5 12 16l2.5-2.5"/>',
+  chevronR:'<path d="M9 5l7 7-7 7"/>'
 };
 function ICN(name,size,color){ const s=size||22; return '<svg viewBox="0 0 24 24" width="'+s+'" height="'+s+'" fill="none" stroke="'+(color||'currentColor')+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[name]||'')+'</svg>'; }
 /* colored rounded-square icon badge used in card headers, replaces flat emoji */
