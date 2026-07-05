@@ -73,23 +73,19 @@ html{transition:background .25s ease;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{background:var(--bg);color:var(--snow);font-family:'Inter',sans-serif;overflow-x:hidden;width:100%;}
 body{max-width:430px;margin:0 auto;position:relative;min-height:100vh;isolation:isolate;}
-/* AMBIENT DEPTH LAYER — radial glow + grain, fixed behind all content */
+/* AMBIENT DEPTH LAYER — un seul glow discret, pas de soupe de couleurs */
 body::before{content:'';position:fixed;inset:0;z-index:-2;pointer-events:none;
   background:
-    radial-gradient(650px 500px at 18% -6%, rgba(var(--e-rgb),.16), transparent 60%),
-    radial-gradient(500px 420px at 100% 12%, rgba(var(--e2-rgb),.10), transparent 55%),
-    radial-gradient(700px 600px at 50% 115%, rgba(31,47,80,.28), transparent 60%),
+    radial-gradient(600px 460px at 22% -8%, rgba(var(--e-rgb),.09), transparent 62%),
     var(--bg);}
-body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.035;mix-blend-mode:overlay;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size:120px 120px;}
 html[data-mode="light"] body::before{
   background:
-    radial-gradient(650px 500px at 18% -6%, rgba(var(--e-rgb),.08), transparent 60%),
-    radial-gradient(500px 420px at 100% 12%, rgba(var(--e2-rgb),.06), transparent 55%),
-    radial-gradient(700px 600px at 50% 115%, rgba(180,200,230,.35), transparent 60%),
+    radial-gradient(600px 460px at 22% -8%, rgba(var(--e-rgb),.06), transparent 62%),
     var(--bg);}
-html[data-mode="light"] body::after{opacity:.025;}
+html[data-mode="light"] body::after{opacity:.02;}
 
 /* ===== COUCHE DE FOND DÉCORATIVE — photo au choix (Paramètres > Arrière-plan) ===== */
 .bg-art{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;}
@@ -119,7 +115,7 @@ html[data-bg-style="none"] .bg-tint{display:none;}
 .qa-pill:active{transform:scale(.96);}
 
 .ev-banner{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-radius:var(--r-md);margin-bottom:10px;cursor:pointer;
-  background:linear-gradient(120deg,#3D2FBF,#5B3FE0 55%,#7A4FE8);box-shadow:0 14px 32px -12px rgba(90,60,220,.45);position:relative;overflow:hidden;}
+  background:linear-gradient(120deg,#0d1a33,#153059 55%,#1f4685);box-shadow:0 14px 32px -12px rgba(var(--e-rgb),.35);position:relative;overflow:hidden;}
 .ev-banner.alt{background:linear-gradient(120deg,var(--s2),var(--s1));box-shadow:var(--sh-sm);}
 .ev-banner::after{content:'';position:absolute;top:-40%;right:-10%;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.18),transparent 70%);pointer-events:none;}
 .ev-lab{font-size:10px;letter-spacing:.6px;color:rgba(255,255,255,.65);font-weight:700;}
@@ -132,7 +128,7 @@ html[data-bg-style="none"] .bg-tint{display:none;}
 /* MOSAÏQUE — objectif + conseil côte à côte, tailles différentes (asymétrie volontaire) */
 .mosaic{display:grid;grid-template-columns:1fr 1.15fr;gap:9px;margin-bottom:8px;align-items:stretch;}
 .ev-tile{position:relative;overflow:hidden;padding:14px;border-radius:18px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;
-  background:linear-gradient(150deg,#4A3AD6,#7A4FE8 85%);box-shadow:0 12px 28px -10px rgba(90,60,220,.4);}
+  background:linear-gradient(150deg,#153059,#1f4685 85%);box-shadow:0 12px 28px -10px rgba(var(--e-rgb),.35);}
 .ev-tile.alt{background:linear-gradient(150deg,var(--s2),var(--s1));box-shadow:var(--sh-sm);}
 .ev-tile::after{content:'';position:absolute;top:-45%;right:-15%;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.2),transparent 70%);pointer-events:none;}
 .ev-tile .ev-lab{font-size:9.5px;letter-spacing:.6px;color:rgba(255,255,255,.65);font-weight:700;}
@@ -184,65 +180,19 @@ html[data-bg-style="none"] .bg-tint{display:none;}
 .bt-n span{font-size:11px;color:var(--muted);font-weight:600;}
 .bt-l{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-top:1px;}
 
-/* ===== SYSTÈME DE THÈMES PAR PALIER (23 rangs → 8 familles visuelles) =====
-   Chaque palier débloqué change l'ambiance : teinte du glow de fond,
-   intensité des ombres, et texture/finition des cartes. L'accent couleur
-   choisi manuellement par l'utilisateur (P.theme) reste indépendant. */
-html[data-rank-theme="novice"] body::before{
-  background:radial-gradient(650px 500px at 18% -6%, rgba(137,147,166,.10), transparent 60%),
-    radial-gradient(700px 600px at 50% 115%, rgba(31,40,56,.30), transparent 60%), var(--bg);}
-html[data-rank-theme="novice"] .card{box-shadow:var(--sh-sm);}
-
-html[data-rank-theme="athlete"] body::before{
-  background:radial-gradient(650px 500px at 18% -6%, rgba(var(--e-rgb),.16), transparent 60%),
-    radial-gradient(500px 420px at 100% 12%, rgba(var(--e2-rgb),.10), transparent 55%),
-    radial-gradient(700px 600px at 50% 115%, rgba(31,47,80,.28), transparent 60%), var(--bg);}
-
-html[data-rank-theme="competiteur"] body::before{
-  background:radial-gradient(650px 500px at 18% -6%, rgba(51,211,153,.14), transparent 60%),
-    radial-gradient(500px 420px at 100% 12%, rgba(111,255,200,.08), transparent 55%),
-    radial-gradient(700px 600px at 50% 115%, rgba(13,58,45,.30), transparent 60%), var(--bg);}
-html[data-rank-theme="competiteur"] .card{box-shadow:var(--sh-deep),0 0 0 1px rgba(51,211,153,.05) inset;}
-
-html[data-rank-theme="elite"] body::before{
-  background:radial-gradient(650px 520px at 18% -6%, rgba(77,157,255,.20), transparent 60%),
-    radial-gradient(520px 440px at 100% 12%, rgba(150,190,255,.13), transparent 55%),
-    radial-gradient(700px 600px at 50% 115%, rgba(20,45,90,.34), transparent 60%), var(--bg);}
-html[data-rank-theme="elite"] .card{box-shadow:0 12px 32px -12px rgba(0,0,0,.7),0 2px 8px -2px rgba(77,157,255,.14),0 1px 0 rgba(255,255,255,.04) inset;}
-
-html[data-rank-theme="champion"] body::before{
-  background:radial-gradient(650px 520px at 18% -6%, rgba(242,184,75,.18), transparent 60%),
-    radial-gradient(520px 440px at 100% 12%, rgba(255,210,130,.10), transparent 55%),
-    radial-gradient(700px 600px at 50% 115%, rgba(90,60,10,.30), transparent 60%), var(--bg);}
-html[data-rank-theme="champion"] .card{border-color:rgba(242,184,75,.16);box-shadow:0 14px 34px -12px rgba(0,0,0,.72),0 2px 10px -2px rgba(242,184,75,.16),0 1px 0 rgba(255,255,255,.04) inset;}
-
-html[data-rank-theme="legende"] body::before{
-  background:radial-gradient(680px 540px at 18% -6%, rgba(255,215,106,.22), transparent 60%),
-    radial-gradient(540px 460px at 100% 12%, rgba(255,230,170,.13), transparent 55%),
-    radial-gradient(720px 620px at 50% 115%, rgba(100,70,10,.32), transparent 60%), var(--bg);}
-html[data-rank-theme="legende"] .card{border-color:rgba(255,215,106,.20);box-shadow:0 16px 38px -12px rgba(0,0,0,.75),0 3px 12px -2px rgba(255,215,106,.20),0 1px 0 rgba(255,255,255,.05) inset;}
-html[data-rank-theme="legende"] .xp-hero{background:linear-gradient(135deg,var(--s1) 0%,#4a3a10 145%);}
-
-html[data-rank-theme="immortel"] body::before{
-  background:radial-gradient(680px 540px at 18% -6%, rgba(181,125,255,.20), transparent 60%),
-    radial-gradient(540px 460px at 100% 12%, rgba(210,170,255,.13), transparent 55%),
-    radial-gradient(720px 620px at 50% 115%, rgba(60,20,90,.34), transparent 60%), var(--bg);}
-html[data-rank-theme="immortel"] .card{border-color:rgba(181,125,255,.18);box-shadow:0 18px 42px -14px rgba(0,0,0,.78),0 4px 14px -2px rgba(181,125,255,.22),0 1px 0 rgba(255,255,255,.05) inset;}
-html[data-rank-theme="immortel"] .xp-hero{background:linear-gradient(135deg,var(--s1) 0%,#3a1a5c 145%);}
-
-html[data-rank-theme="ikorun-elite"] body::before{
-  background:radial-gradient(700px 560px at 18% -6%, rgba(255,255,255,.14), transparent 60%),
-    radial-gradient(560px 480px at 100% 12%, rgba(255,215,106,.16), transparent 55%),
-    radial-gradient(740px 640px at 50% 115%, rgba(255,215,106,.10), transparent 60%), var(--bg);}
-html[data-rank-theme="ikorun-elite"] .card{border-color:rgba(255,255,255,.14);box-shadow:0 20px 46px -14px rgba(0,0,0,.8),0 4px 16px -2px rgba(255,215,106,.24),0 1px 0 rgba(255,255,255,.07) inset;}
-html[data-rank-theme="ikorun-elite"] .xp-hero{background:linear-gradient(135deg,#12100a 0%,#3a2f0a 145%);border-image:linear-gradient(135deg,#ffd76a,#fff,#ffd76a) 1;}
-html[data-rank-theme="ikorun-elite"] .xp-hero-glow{background:radial-gradient(circle,rgba(255,215,106,.4),transparent 70%);}
+/* ===== IDENTITÉ DE RANG =====
+   Le rang ne recolore plus toute la page (trop chargé) : il reste visible
+   uniquement sur la rank-card elle-même (crest, liseré, glow interne),
+   qui garde sa propre teinte via un attribut posé sur .rank-card en JS. */
+.rank-card[data-tier="champion"],.rank-card[data-tier="legende"],.rank-card[data-tier="ikorun-elite"]{border-color:rgba(255,215,106,.20);}
+.rank-card[data-tier="immortel"]{border-color:rgba(181,125,255,.18);}
+.rank-card[data-tier="elite"]{border-color:rgba(77,157,255,.18);}
 
 /* accents thématiques par catégorie de card (variété visuelle, item 2) */
-.card.accent-e{border-left:2px solid rgba(var(--e-rgb),.4);background:linear-gradient(155deg,rgba(var(--e-rgb),.16),var(--glass-bg) 55%) !important;}
-.card.accent-ok{border-left:2px solid rgba(51,211,153,.4);background:linear-gradient(155deg,rgba(51,211,153,.14),var(--glass-bg) 55%) !important;}
-.card.accent-or{border-left:2px solid rgba(242,184,75,.4);background:linear-gradient(155deg,rgba(242,184,75,.14),var(--glass-bg) 55%) !important;}
-.card.accent-purple{border-left:2px solid rgba(181,125,255,.4);background:linear-gradient(155deg,rgba(181,125,255,.16),var(--glass-bg) 55%) !important;}
+.card.accent-e{border-left:2px solid rgba(var(--e-rgb),.5);}
+.card.accent-ok{border-left:2px solid rgba(51,211,153,.5);}
+.card.accent-or{border-left:2px solid rgba(242,184,75,.5);}
+.card.accent-purple{border-left:2px solid rgba(181,125,255,.5);}
 .card-divider{height:1px;background:linear-gradient(90deg,transparent,var(--hair2),transparent);margin:14px 0;}
 /* micro-interaction tap feedback sur les cartes */
 .card{transition:transform .18s var(--ease-spring),box-shadow .25s ease,border-color .25s ease;}
@@ -257,16 +207,8 @@ html[data-rank-theme="ikorun-elite"] .xp-hero-glow{background:radial-gradient(ci
 .scr.on{display:block;}
 @keyframes pageIn{from{opacity:0;transform:translateY(10px) scale(.99);}to{opacity:1;transform:translateY(0) scale(1);}}
 
-/* ===== FOND PAR PAGE — vraies compositions visibles, pas juste une teinte ===== */
-#s-home{background:radial-gradient(560px 420px at 8% -8%,rgba(var(--e-rgb),.16),transparent 55%),radial-gradient(420px 360px at 105% 18%,rgba(255,215,106,.08),transparent 55%),radial-gradient(500px 400px at 40% 90%,rgba(var(--e-rgb),.05),transparent 60%);}
-#s-sport{background:radial-gradient(560px 420px at 100% -8%,rgba(51,211,153,.15),transparent 55%),radial-gradient(420px 360px at -5% 20%,rgba(var(--e-rgb),.08),transparent 55%),radial-gradient(500px 400px at 60% 90%,rgba(51,211,153,.05),transparent 60%);}
-#s-stats{background:radial-gradient(560px 420px at 8% -8%,rgba(181,125,255,.16),transparent 55%),radial-gradient(420px 360px at 105% 18%,rgba(77,157,255,.08),transparent 55%),radial-gradient(500px 400px at 40% 90%,rgba(181,125,255,.05),transparent 60%);}
-#s-outils{background:radial-gradient(560px 420px at 100% -8%,rgba(242,184,75,.15),transparent 55%),radial-gradient(420px 360px at -5% 20%,rgba(255,120,90,.08),transparent 55%),radial-gradient(500px 400px at 60% 90%,rgba(242,184,75,.05),transparent 60%);}
-#s-profil{background:radial-gradient(560px 420px at 50% -10%,rgba(255,110,150,.15),transparent 55%),radial-gradient(420px 360px at 100% 25%,rgba(181,125,255,.08),transparent 55%),radial-gradient(500px 400px at 20% 90%,rgba(255,110,150,.05),transparent 60%);}
+/* ===== FOND — une seule ambiance cohérente, pas une couleur par page ===== */
 .scr{position:relative;}
-.scr::after{content:'';position:absolute;top:0;left:-14px;right:-14px;height:260px;pointer-events:none;z-index:-1;
-  background-image:radial-gradient(circle,rgba(255,255,255,.16) 1px,transparent 1.4px);background-size:22px 22px;
-  -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,.55),transparent);mask-image:linear-gradient(180deg,rgba(0,0,0,.55),transparent);}
 
 /* ===== ICÔNES FLOTTANTES — mouvement net, pas subtil ===== */
 @keyframes floatIcon{0%,100%{transform:translateY(0) rotate(0deg) scale(1);}50%{transform:translateY(-6px) rotate(-6deg) scale(1.06);}}
@@ -459,55 +401,67 @@ html[data-bg-style="none"][data-mode="light"] .tb-sub{color:var(--muted);text-sh
 select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238993A6' stroke-width='2'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;}
 
 /* ============================================================
-   LIQUID GLASS — thème appliqué à tous les composants partagés
-   (cartes, champs, pills, boutons secondaires, feuilles, topbar…)
-   S'appuie sur les glows radiaux déjà en fond de chaque écran
-   pour que le backdrop-filter ait une vraie matière à flouter.
+   SURFACES SOBRES — cartes, champs, feuilles : plates, un bord fin,
+   une ombre discrète. Le "glass" givré ne reste que sur les pills
+   et la nav (voir CARBON GLASS plus bas).
    ============================================================ */
 .card,.sbox,.favtile,.bt,.ds-day,.qa-pill,.ov-card,.tb-gear,.gbtn.dark,.perfcard,.perfdel,.x{
-  background:var(--glass-bg) !important;
-  background-image:var(--glass-shine) !important;
-  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
-  backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
-  border:1px solid var(--glass-border) !important;
-  box-shadow:var(--glass-shadow) !important;
+  background:var(--s1);
+  border:1px solid var(--hair);
+  box-shadow:var(--sh-md);
 }
-.inp,.pill,select.inp,.pkfield,.setcell{
-  background:var(--glass-bg-2) !important;
-  -webkit-backdrop-filter:blur(18px) saturate(1.6);
-  backdrop-filter:blur(18px) saturate(1.6);
-  border:1px solid var(--glass-border-soft) !important;
+.inp,select.inp,.pkfield,.setcell{
+  background:var(--s2);
+  border:1px solid var(--hair);
 }
-.pill.on{background:linear-gradient(155deg,rgba(var(--e-rgb),.32),rgba(var(--e-rgb),.14)) !important;
-  border:1px solid rgba(var(--e-rgb),.45) !important;-webkit-backdrop-filter:blur(18px) saturate(2);backdrop-filter:blur(18px) saturate(2);}
 .card::before,.ov-card::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-  background:linear-gradient(180deg,rgba(255,255,255,.05),transparent 40%);}
+  background:linear-gradient(180deg,rgba(255,255,255,.03),transparent 40%);}
 .card{isolation:isolate;}
-/* légère respiration flottante sur les surfaces clés — "flottance" demandée */
-.tip-card,.xp-hero,.ev-banner,.mosaic .ev-tile:first-child{animation:glassFloat 6s ease-in-out infinite;}
-/* La rank-card cumule l'entrée en fondu (.stag) ET le flottement idle : une seule
-   règle "animation" par élément est possible en CSS, donc la déclarer à part et
-   combiner les deux animations évite qu'elle écrase le fade-in de .stag (ce qui
-   laissait la carte bloquée à opacity:0 → gros espace vide en haut de l'accueil). */
-.rank-card{animation:slideUp .5s ease forwards,glassFloat 6s ease-in-out .5s infinite;}
-.topbar{-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);}
+.rank-card{animation:slideUp .5s ease forwards;}
+.topbar{-webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);}
 
-/* NAV */
+/* ============================================================
+   CARBON GLASS — réservé aux sélecteurs de menu (pills) et à la
+   nav du bas : verre liquide toujours vivant (flou + reflet qui
+   glisse), mais fini graphite tramé au lieu du blanc givré.
+   ============================================================ */
+:root{
+  --carbon-weave:repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0px,rgba(255,255,255,.05) 1px,transparent 1px,transparent 4px);
+  --carbon-base:linear-gradient(155deg,#1a1d22 0%,#0e1013 100%);
+  --carbon-border:rgba(255,255,255,.09);
+  --carbon-sheen:linear-gradient(100deg,transparent 32%,rgba(255,255,255,.10) 48%,transparent 64%);
+}
+html[data-mode="light"]{
+  --carbon-weave:repeating-linear-gradient(135deg,rgba(0,0,0,.045) 0px,rgba(0,0,0,.045) 1px,transparent 1px,transparent 4px);
+  --carbon-base:linear-gradient(155deg,#2a2d32 0%,#181a1e 100%);
+  --carbon-border:rgba(255,255,255,.12);
+}
+.pill{
+  background:var(--carbon-weave),var(--carbon-base) !important;
+  -webkit-backdrop-filter:blur(20px) saturate(1.3);backdrop-filter:blur(20px) saturate(1.3);
+  border:1px solid var(--carbon-border) !important;color:var(--muted);
+}
+.pill.on{
+  background:var(--carbon-weave),linear-gradient(155deg,rgba(var(--e-rgb),.30),rgba(var(--e-rgb),.10)) !important;
+  border:1px solid rgba(var(--e-rgb),.45) !important;color:var(--e2);
+  -webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);
+}
+
+/* NAV — même finition carbone que les pills */
 #nav{position:fixed;bottom:calc(10px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:calc(100% - 26px);max-width:404px;z-index:9999;
-  background:rgba(255,255,255,.07);backdrop-filter:blur(30px) saturate(2);-webkit-backdrop-filter:blur(30px) saturate(2);
-  border:1px solid rgba(255,255,255,.16);border-radius:26px;overflow:hidden;
-  box-shadow:0 24px 54px -16px rgba(0,0,0,.72),0 1px 0 rgba(255,255,255,.14) inset,0 -1px 0 rgba(0,0,0,.25) inset;
-  display:flex;padding:7px 6px;transition:transform .28s var(--ease-spring),background .35s ease,backdrop-filter .35s ease,box-shadow .35s ease;}
-#nav::before{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.12),transparent 55%);}
-#nav.nav-dragging{transform:translateX(-50%) scale(1.045);
-  background:rgba(255,255,255,.035);backdrop-filter:blur(46px) saturate(2.4);-webkit-backdrop-filter:blur(46px) saturate(2.4);
-  border-color:rgba(255,255,255,.28);box-shadow:0 30px 64px -16px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.06) inset,0 0 40px -8px rgba(var(--e-rgb),.35);}
+  background:var(--carbon-weave),var(--carbon-base);
+  backdrop-filter:blur(28px) saturate(1.3);-webkit-backdrop-filter:blur(28px) saturate(1.3);
+  border:1px solid var(--carbon-border);border-radius:26px;overflow:hidden;
+  box-shadow:0 20px 46px -16px rgba(0,0,0,.7),0 1px 0 rgba(255,255,255,.06) inset;
+  display:flex;padding:7px 6px;transition:transform .28s var(--ease-spring),box-shadow .35s ease;}
+#nav.nav-dragging{transform:translateX(-50%) scale(1.03);
+  box-shadow:0 26px 54px -16px rgba(0,0,0,.78),0 1px 0 rgba(255,255,255,.08) inset,0 0 30px -8px rgba(var(--e-rgb),.3);}
 #nav-pill{position:absolute;top:7px;height:44px;width:18%;border-radius:18px;background:var(--ed);
   box-shadow:0 0 0 1px rgba(var(--e-rgb),.18) inset;transition:left .38s var(--ease-spring),width .38s var(--ease-spring),background .3s ease,box-shadow .3s ease,border-color .3s ease;
   overflow:hidden;border:1px solid transparent;will-change:left;}
-#nav-pill::after{content:'';position:absolute;inset:0;background:var(--glass-sheen);opacity:0;pointer-events:none;}
-#nav.nav-dragging #nav-pill{background:rgba(255,255,255,.14);-webkit-backdrop-filter:blur(20px) saturate(2.4);backdrop-filter:blur(20px) saturate(2.4);
-  border:1px solid rgba(255,255,255,.4);box-shadow:0 0 0 1px rgba(255,255,255,.25) inset,0 0 26px rgba(var(--e-rgb),.65),0 0 50px -6px rgba(var(--e-rgb),.5);}
+#nav-pill::after{content:'';position:absolute;inset:0;background:var(--carbon-sheen);opacity:0;pointer-events:none;}
+#nav.nav-dragging #nav-pill{background:rgba(var(--e-rgb),.16);-webkit-backdrop-filter:blur(16px) saturate(1.6);backdrop-filter:blur(16px) saturate(1.6);
+  border:1px solid rgba(var(--e-rgb),.35);box-shadow:0 0 0 1px rgba(var(--e-rgb),.2) inset,0 0 22px rgba(var(--e-rgb),.45);}
 #nav.nav-dragging #nav-pill::after{opacity:1;animation:glassSheenSweep 1.1s ease-in-out infinite;}
 .nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
   height:44px;cursor:pointer;z-index:1;position:relative;color:var(--dim);transition:color .2s;-webkit-user-select:none;user-select:none;}
