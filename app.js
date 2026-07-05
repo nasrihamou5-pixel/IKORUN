@@ -499,17 +499,18 @@ function showBadgeUnlockAnim(b){
   if(navigator.vibrate) navigator.vibrate([120,60,120,60,260]);
   const ov=document.createElement('div');
   ov.className='bd-unlock-ov';
-  let sparks=''; for(let i=0;i<18;i++){ const a=Math.random()*Math.PI*2, d=90+Math.random()*90;
+  let sparks=''; for(let i=0;i<26;i++){ const a=Math.random()*Math.PI*2, d=90+Math.random()*110;
     sparks+='<span class="bd-spark" style="--tx:'+(Math.cos(a)*d)+'px;--ty:'+(Math.sin(a)*d)+'px;animation-delay:'+(Math.random()*1.2)+'s"></span>'; }
-  ov.innerHTML='<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Manrope;margin-bottom:6px">NOUVEAU BADGE DÉBLOQUÉ</div>'+
-    '<div class="bd-unlock-stage '+b.cls+'"><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div>'+
+  ov.innerHTML='<div class="bd-flash"></div>'+
+    '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Manrope;margin-bottom:6px">NOUVEAU BADGE DÉBLOQUÉ</div>'+
+    '<div class="bd-unlock-stage '+b.cls+'"><div class="bd-rays"></div><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div><div class="bd-ring r4"></div>'+
     '<div class="bd-unlock-badge">'+bdGlyph(b.key)+sparks+'</div></div>'+
     '<div class="man" style="font-weight:800;font-size:30px;margin-top:18px;letter-spacing:.5px">'+b.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+b.desc+'</div>'+
     '<div style="color:var(--dim);font-size:12px;margin-top:18px">Touche pour continuer</div>';
   ov.onclick=()=>{ ov.remove(); playBadgeUnlockQueue(); };
   document.body.appendChild(ov);
-  setTimeout(()=>{ if(ov.parentNode){ ov.remove(); playBadgeUnlockQueue(); } },4000);
+  setTimeout(()=>{ if(ov.parentNode){ ov.remove(); playBadgeUnlockQueue(); } },4200);
 }
 /* Consultation "premium" d'un badge déjà obtenu (rejoue une version sans confettis) */
 function replayBadgeAnim(key){
@@ -517,12 +518,40 @@ function replayBadgeAnim(key){
   sfx('goal'); if(navigator.vibrate) navigator.vibrate(60);
   const ov=document.createElement('div');
   ov.className='bd-unlock-ov';
-  let sparks=''; for(let i=0;i<14;i++){ const a=Math.random()*Math.PI*2, d=80+Math.random()*80;
+  let sparks=''; for(let i=0;i<20;i++){ const a=Math.random()*Math.PI*2, d=80+Math.random()*90;
     sparks+='<span class="bd-spark" style="--tx:'+(Math.cos(a)*d)+'px;--ty:'+(Math.sin(a)*d)+'px;animation-delay:'+(Math.random()*1.4)+'s"></span>'; }
-  ov.innerHTML='<div class="bd-unlock-stage '+b.cls+'"><div class="bd-ring"></div><div class="bd-ring r2"></div>'+
+  ov.innerHTML='<div class="bd-flash"></div>'+
+    '<div class="bd-unlock-stage '+b.cls+'"><div class="bd-rays"></div><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div>'+
     '<div class="bd-unlock-badge">'+bdGlyph(b.key)+sparks+'</div></div>'+
     '<div class="man" style="font-weight:800;font-size:26px;margin-top:18px">'+b.name+'</div>'+
+    '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+b.desc+'</div>'+
     '<div style="color:var(--dim);font-size:12px;margin-top:16px">Touche pour fermer</div>';
+  ov.onclick=()=>ov.remove();
+  document.body.appendChild(ov);
+}
+/* Aperçu d'un badge encore verrouillé : même show lumineux, en plus sobre,
+   avec le rappel des conditions restantes pour ne rien laisser "mystérieux". */
+function previewBadgeAnim(key){
+  const b=BADGE_TIERS.find(x=>x.key===key); if(!b) return;
+  sfx('tap'); if(navigator.vibrate) navigator.vibrate(35);
+  const prog=badgeProgress(b);
+  const ov=document.createElement('div');
+  ov.className='bd-unlock-ov preview';
+  let sparks=''; for(let i=0;i<16;i++){ const a=Math.random()*Math.PI*2, d=80+Math.random()*90;
+    sparks+='<span class="bd-spark" style="--tx:'+(Math.cos(a)*d)+'px;--ty:'+(Math.sin(a)*d)+'px;animation-delay:'+(Math.random()*1.4)+'s"></span>'; }
+  const remain=prog.parts.filter(p=>p.have<p.need);
+  let condHtml='';
+  if(remain.length){
+    condHtml='<div class="bd-preview-cond">'+remain.map(p=>'<div class="row" style="justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px"><span>'+p.label+'</span><span class="mono">'+Math.min(p.have,p.need)+' / '+p.need+' '+p.unit+'</span></div>').join('')+'</div>';
+  }
+  ov.innerHTML='<div class="bd-flash"></div>'+
+    '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Manrope;margin-bottom:6px">APERÇU · VERROUILLÉ</div>'+
+    '<div class="bd-unlock-stage '+b.cls+'"><div class="bd-rays"></div><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div>'+
+    '<div class="bd-unlock-badge">'+bdGlyph(b.key)+sparks+'<div class="bd-lock-chip big">🔒</div></div></div>'+
+    '<div class="man" style="font-weight:800;font-size:26px;margin-top:18px">'+b.name+'</div>'+
+    '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+b.desc+'</div>'+
+    condHtml+
+    '<div style="color:var(--dim);font-size:12px;margin-top:18px">Touche pour fermer</div>';
   ov.onclick=()=>ov.remove();
   document.body.appendChild(ov);
 }
@@ -543,7 +572,7 @@ function renderBadgeGallery(){
   list.forEach((b,i)=>{
     const on=ukeys.has(b.key);
     h+='<div class="bd-cell" onclick="openBadgeDetail(\''+b.key+'\')">'+
-      '<div class="bd-icon '+(on?b.cls:'locked')+'" style="--sw:'+(i%5)+'">'+(on?bdGlyph(b.key):'<span class="bd-emoji">🔒</span>')+'</div>'+
+      '<div class="bd-icon '+b.cls+(on?'':' locked')+'" style="--sw:'+(i%5)+'">'+bdGlyph(b.key)+(on?'':'<div class="bd-lock-chip">🔒</div>')+'</div>'+
       '<div class="bd-name">'+b.name+'</div><div class="bd-lvl">Niv. '+b.level+'</div></div>';
   });
   h+='</div>';
@@ -555,10 +584,11 @@ function openBadgeDetail(key){
   const prog=badgeProgress(b);
   $('#ovBadgesTitle').textContent='Détails du badge';
   let h='<div style="text-align:center;margin-bottom:18px">'+
-    '<div class="bd-icon big '+(rec?b.cls:'locked')+'" style="margin:0 auto 14px'+(rec?';cursor:pointer':'')+'"'+(rec?' onclick="replayBadgeAnim(\''+b.key+'\')"':'')+'>'+(rec?bdGlyph(b.key):'<span class="bd-emoji">🔒</span>')+'</div>'+
+    '<div class="bd-icon big '+b.cls+(rec?'':' locked')+'" style="margin:0 auto 14px;cursor:pointer" onclick="'+(rec?'replayBadgeAnim':'previewBadgeAnim')+'(\''+b.key+'\')">'+bdGlyph(b.key)+(rec?'':'<div class="bd-lock-chip big">🔒</div>')+'</div>'+
     '<div class="man" style="font-weight:800;font-size:24px">'+b.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;padding:0 10px">'+b.desc+'</div>'+
-    (rec?'<div style="color:var(--e);font-size:12px;margin-top:8px">Obtenu le '+fmtDate(rec.date)+' · <span style="text-decoration:underline;cursor:pointer" onclick="replayBadgeAnim(\''+b.key+'\')">revivre l\u2019animation</span></div>':'')+
+    (rec?'<div style="color:var(--e);font-size:12px;margin-top:8px">Obtenu le '+fmtDate(rec.date)+' · <span style="text-decoration:underline;cursor:pointer" onclick="replayBadgeAnim(\''+b.key+'\')">revivre l\u2019animation</span></div>'
+        :'<div style="color:var(--muted);font-size:12px;margin-top:8px">🔒 Verrouillé · <span style="text-decoration:underline;cursor:pointer;color:var(--e)" onclick="previewBadgeAnim(\''+b.key+'\')">voir un aperçu</span></div>')+
     '</div>';
   h+='<div class="card"><div class="lab" style="margin-bottom:12px">Conditions d\u2019obtention</div>';
   prog.parts.forEach(p=>{
