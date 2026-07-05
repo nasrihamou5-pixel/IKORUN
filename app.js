@@ -1093,10 +1093,15 @@ function applyTheme(){
   const hex=c.replace('#','');
   const r=parseInt(hex.slice(0,2),16),g=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16);
   document.documentElement.style.setProperty('--ed','rgba('+r+','+g+','+b+',.'+(effectiveMode()==='light'?'12':'16')+')');
+  // couleur secondaire du fondu (dérivée, plus claire) pour la teinte du fond
+  const lr=Math.min(255,Math.round(r+(255-r)*.4)),lg=Math.min(255,Math.round(g+(255-g)*.4)),lb=Math.min(255,Math.round(b+(255-b)*.4));
+  document.documentElement.style.setProperty('--e2','rgb('+lr+','+lg+','+lb+')');
   const mode=effectiveMode();
   document.documentElement.setAttribute('data-mode',mode);
+  document.documentElement.setAttribute('data-bg-style',P.bgStyle||'mesh');
   const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.content=mode==='light'?'#F2F4F8':'#0A0D12';
 }
+function setBgStyle(s){ P.bgStyle=s; saveAll(); applyTheme(); if($('#s-profil')&&$('#s-profil').classList.contains('on'))renderProfile(); toast('Arrière-plan appliqué ✓'); }
 function setTheme(t){ P.theme=t; saveAll(); applyTheme(); if($('#s-profil')&&$('#s-profil').classList.contains('on'))renderProfile(); }
 function setMode(m){ P.mode=m; saveAll(); applyTheme(); if($('#s-profil')&&$('#s-profil').classList.contains('on'))renderProfile(); }
 function toggleSounds(el){ P.sounds=(P.sounds===false); saveAll(); el.classList.toggle('on'); if(P.sounds!==false) sfx('goal'); }
@@ -3889,7 +3894,21 @@ function renderProfile(){
   const custom=P.theme==='custom';
   h+='<div class="lab" style="margin:14px 0 8px">'+t('accentColor')+'</div><div class="pills">'+
     [['blue','Bleu','#3D7FFF'],['violet','Violet','#A98CF0'],['cyan','Cyan','#7FE0E8'],['green','Vert','#33D399'],['orange','Orange','#FF8A3D'],['pink','Rose','#FF5C9E']].map(c=>'<div class="pill '+(P.theme===c[0]?'on':'')+'" onclick="setTheme(\''+c[0]+'\')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+c[2]+';margin-right:6px"></span>'+c[1]+'</div>').join('')+
-    '<div class="pill '+(custom?'on':'')+'" onclick="openColorPicker()"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+(custom?P.customColor:'conic-gradient(red,orange,yellow,lime,cyan,blue,magenta,red)')+';margin-right:6px"></span>🎨 Autre</div></div></div>';
+    '<div class="pill '+(custom?'on':'')+'" onclick="openColorPicker()"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+(custom?P.customColor:'conic-gradient(red,orange,yellow,lime,cyan,blue,magenta,red)')+';margin-right:6px"></span>🎨 Autre</div></div>';
+  // ARRIÈRE-PLAN — choix du style de fond + rappel que le fondu suit la couleur d'accent
+  const bgStyle=P.bgStyle||'mesh';
+  const bgOpts=[
+    ['mesh','Maillage','linear-gradient(150deg,#24365f 0%,#0b0f18 70%)'],
+    ['lines','Lignes','repeating-linear-gradient(115deg,rgba(255,255,255,.18) 0 2px,transparent 2px 9px),linear-gradient(150deg,#1a2544,#0b0e16)'],
+    ['hex','Alvéoles','repeating-linear-gradient(60deg,rgba(255,255,255,.16) 0 2px,transparent 2px 10px),linear-gradient(150deg,#1c2b52,#0b0e16)'],
+    ['waves','Vagues','repeating-radial-gradient(circle at 30% 120%,rgba(255,255,255,.22) 0 2px,transparent 2px 9px),linear-gradient(150deg,#182544,#0b0e16)'],
+    ['none','Aucun','var(--s2)']
+  ];
+  h+='<div class="lab" style="margin:14px 0 8px">🖼️ Arrière-plan</div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">'+
+    bgOpts.map(o=>'<div onclick="setBgStyle(\''+o[0]+'\')" style="text-align:center;cursor:pointer">'+
+      '<div style="aspect-ratio:1;border-radius:14px;background:'+o[2]+';border:2px solid '+(bgStyle===o[0]?'var(--e)':'var(--hair)')+';box-shadow:'+(bgStyle===o[0]?'0 0 0 3px var(--ed)':'none')+'"></div>'+
+      '<div style="font-size:9.5px;margin-top:4px;color:'+(bgStyle===o[0]?'var(--e2)':'var(--muted)')+';font-weight:700">'+o[1]+'</div></div>').join('')+
+    '</div><div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.4">💡 Le fondu de couleur de l\u2019arrière-plan suit ta couleur d\u2019accent ci-dessus.</div></div>';
   // NOTIFICATIONS & SONS
   h+=sec('🔔 '+t('notifsApp'));
   h+='<div class="card stag"><div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('trainReminders')+'</span><div class="toggle'+(P.notif!==false?' on':'')+'" onclick="toggleNotif(this)"></div></div>'+

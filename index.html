@@ -74,8 +74,14 @@ html[data-mode="light"] body::before{
     var(--bg);}
 html[data-mode="light"] body::after{opacity:.025;}
 
-/* ===== COUCHE DE FOND DÉCORATIVE (maillage low-poly) — fixe, séparée du contenu ===== */
+/* ===== COUCHE DE FOND DÉCORATIVE — plusieurs styles au choix (Paramètres > Arrière-plan) ===== */
 .bg-art{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;}
+.bg-p{position:absolute;inset:0;display:none;}
+html:not([data-bg-style]) .bg-p-mesh,
+html[data-bg-style="mesh"] .bg-p-mesh,
+html[data-bg-style="lines"] .bg-p-lines,
+html[data-bg-style="hex"] .bg-p-hex,
+html[data-bg-style="waves"] .bg-p-waves{display:block;}
 .bg-art-svg{position:absolute;inset:0;width:100%;height:100%;opacity:1;
   -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,1) 0%,rgba(0,0,0,.85) 55%,rgba(0,0,0,.4) 78%,transparent 100%);
   mask-image:linear-gradient(180deg,rgba(0,0,0,1) 0%,rgba(0,0,0,.85) 55%,rgba(0,0,0,.4) 78%,transparent 100%);}
@@ -83,6 +89,49 @@ html[data-mode="light"] body::after{opacity:.025;}
 html[data-mode="light"] .bg-art-dark{display:none;}
 html[data-mode="light"] .bg-art-light{display:block;opacity:1;}
 @media (min-width:431px){.bg-art{left:50%;transform:translateX(-50%);width:430px;max-width:100%;}}
+
+/* -- Lignes diagonales -- */
+.bg-lines-l{background:
+  repeating-linear-gradient(115deg,rgba(255,255,255,.09) 0 1px,transparent 1px 22px),
+  linear-gradient(150deg,#1a2544 0%,#0b0e16 55%,#07090D 100%);}
+html[data-mode="light"] .bg-art-light.bg-lines-l{background:
+  repeating-linear-gradient(115deg,rgba(20,30,50,.10) 0 1px,transparent 1px 22px),
+  linear-gradient(150deg,#eef1f6 0%,#ffffff 60%);}
+
+/* -- Alvéoles (hexagones) -- */
+.bg-hex-l{background-color:#0b0e16;
+  background-image:
+    linear-gradient(150deg,#1c2b52 0%,#0b0e16 60%),
+    linear-gradient(30deg,rgba(255,255,255,.05) 12%,transparent 12.5%,transparent 87%,rgba(255,255,255,.05) 87.5%,rgba(255,255,255,.05)),
+    linear-gradient(150deg,rgba(255,255,255,.05) 12%,transparent 12.5%,transparent 87%,rgba(255,255,255,.05) 87.5%,rgba(255,255,255,.05)),
+    linear-gradient(30deg,rgba(255,255,255,.05) 12%,transparent 12.5%,transparent 87%,rgba(255,255,255,.05) 87.5%,rgba(255,255,255,.05)),
+    linear-gradient(150deg,rgba(255,255,255,.05) 12%,transparent 12.5%,transparent 87%,rgba(255,255,255,.05) 87.5%,rgba(255,255,255,.05)),
+    linear-gradient(60deg,rgba(0,0,0,.18) 25%,transparent 25.5%,transparent 75%,rgba(0,0,0,.18) 75%,rgba(0,0,0,.18));
+  background-size:64px 112px;
+  background-position:0 0,0 0,0 0,32px 56px,32px 56px,0 0;}
+html[data-mode="light"] .bg-art-light.bg-hex-l{background-color:#fdfdfe;
+  background-image:
+    linear-gradient(150deg,#eef1f6 0%,#ffffff 60%),
+    linear-gradient(30deg,rgba(20,30,50,.06) 12%,transparent 12.5%,transparent 87%,rgba(20,30,50,.06) 87.5%,rgba(20,30,50,.06)),
+    linear-gradient(150deg,rgba(20,30,50,.06) 12%,transparent 12.5%,transparent 87%,rgba(20,30,50,.06) 87.5%,rgba(20,30,50,.06)),
+    linear-gradient(30deg,rgba(20,30,50,.06) 12%,transparent 12.5%,transparent 87%,rgba(20,30,50,.06) 87.5%,rgba(20,30,50,.06)),
+    linear-gradient(150deg,rgba(20,30,50,.06) 12%,transparent 12.5%,transparent 87%,rgba(20,30,50,.06) 87.5%,rgba(20,30,50,.06)),
+    linear-gradient(60deg,rgba(20,30,50,.05) 25%,transparent 25.5%,transparent 75%,rgba(20,30,50,.05) 75%,rgba(20,30,50,.05));
+  background-size:64px 112px;
+  background-position:0 0,0 0,0 0,32px 56px,32px 56px,0 0;}
+
+/* -- Vagues concentriques -- */
+.bg-waves-l{background:
+  repeating-radial-gradient(circle at 22% 128%,rgba(255,255,255,.10) 0 2px,transparent 2px 16px),
+  linear-gradient(150deg,#182544 0%,#0b0e16 60%);}
+html[data-mode="light"] .bg-art-light.bg-waves-l{background:
+  repeating-radial-gradient(circle at 22% 128%,rgba(20,30,50,.09) 0 2px,transparent 2px 16px),
+  linear-gradient(150deg,#eef1f6 0%,#ffffff 60%);}
+
+/* -- Fondu de couleur — teinte l'arrière-plan avec la couleur d'accent choisie -- */
+.bg-tint{position:absolute;inset:0;pointer-events:none;mix-blend-mode:overlay;opacity:.55;
+  background:radial-gradient(650px 520px at 20% -4%,var(--e),transparent 62%),radial-gradient(520px 440px at 105% 22%,var(--e2),transparent 58%);}
+html[data-bg-style="none"] .bg-tint{display:none;}
 
 /* ===== NOUVEAUX ÉLÉMENTS ACCUEIL (inspirés pattern app mobile) ===== */
 .daystrip-wrap{margin-bottom:10px;}
@@ -694,6 +743,7 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
 
 <!-- ===== FOND DÉCORATIF — maillage géométrique low-poly, séparé du contenu, fixe derrière tout ===== -->
 <div class="bg-art" aria-hidden="true">
+  <div class="bg-p bg-p-mesh">
   <svg class="bg-art-svg bg-art-dark" viewBox="0 0 430 932" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMin slice">
     <polygon points="0.0,0.0 50.9,0.0 0.0,52.2" fill="#263864"/>
     <polygon points="50.9,0.0 74.9,62.1 0.0,52.2" fill="#223259"/>
@@ -1062,6 +1112,20 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
     <polygon points="379.1,855.5 430.0,871.3 369.5,932.0" fill="#f2f2f2"/>
     <polygon points="430.0,871.3 430.0,932.0 369.5,932.0" fill="#fafafb"/>
   </svg>
+  </div>
+  <div class="bg-p bg-p-lines">
+    <div class="bg-art-svg bg-art-dark bg-lines-l"></div>
+    <div class="bg-art-svg bg-art-light bg-lines-l"></div>
+  </div>
+  <div class="bg-p bg-p-hex">
+    <div class="bg-art-svg bg-art-dark bg-hex-l"></div>
+    <div class="bg-art-svg bg-art-light bg-hex-l"></div>
+  </div>
+  <div class="bg-p bg-p-waves">
+    <div class="bg-art-svg bg-art-dark bg-waves-l"></div>
+    <div class="bg-art-svg bg-art-light bg-waves-l"></div>
+  </div>
+  <div class="bg-tint"></div>
 </div>
 
 <!-- LOGIN / AUTH -->
