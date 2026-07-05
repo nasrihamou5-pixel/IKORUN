@@ -1081,6 +1081,12 @@ function finishOnboarding(){
 
 /* ---------- THEME ---------- */
 const THEMES={blue:'#3D7FFF',violet:'#A98CF0',cyan:'#7FE0E8',green:'#33D399',orange:'#FF8A3D',pink:'#FF5C9E'};
+/* Photos d'arrière-plan disponibles (Paramètres > Arrière-plan). La teinte suit toujours la couleur d'accent choisie. */
+const BG_PHOTOS={
+  photo1:'photo1.jpg', photo2:'photo2.jpg', photo3:'photo3.jpg',
+  photo4:'photo4.jpg', photo5:'photo5.jpg', photo6:'photo6.jpg',
+  photo7:'photo7.jpg', photo8:'photo8.jpg', photo9:'photo9.jpg'
+};
 function accentHex(){ return P.theme==='custom'?(P.customColor||'#3D7FFF'):(THEMES[P.theme]||'#3D7FFF'); }
 function effectiveMode(){
   const m=P.mode||'dark';
@@ -1114,7 +1120,10 @@ function applyTheme(){
   document.documentElement.style.setProperty('--bg-hue',rotate+'deg');
   const mode=effectiveMode();
   document.documentElement.setAttribute('data-mode',mode);
-  document.documentElement.setAttribute('data-bg-style',P.bgStyle||'mesh');
+  const bgStyle=P.bgStyle||'photo1';
+  document.documentElement.setAttribute('data-bg-style',bgStyle);
+  const layer=document.getElementById('bgPhotoLayer');
+  if(layer){ layer.style.backgroundImage = (bgStyle!=='none' && BG_PHOTOS[bgStyle]) ? "url('"+BG_PHOTOS[bgStyle]+"')" : 'none'; }
   const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.content=mode==='light'?'#F2F4F8':'#0A0D12';
 }
 function setBgStyle(s){ P.bgStyle=s; saveAll(); applyTheme(); if($('#s-profil')&&$('#s-profil').classList.contains('on'))renderProfile(); toast('Arrière-plan appliqué ✓'); }
@@ -3911,20 +3920,19 @@ function renderProfile(){
   h+='<div class="lab" style="margin:14px 0 8px">'+t('accentColor')+'</div><div class="pills">'+
     [['blue','Bleu','#3D7FFF'],['violet','Violet','#A98CF0'],['cyan','Cyan','#7FE0E8'],['green','Vert','#33D399'],['orange','Orange','#FF8A3D'],['pink','Rose','#FF5C9E']].map(c=>'<div class="pill '+(P.theme===c[0]?'on':'')+'" onclick="setTheme(\''+c[0]+'\')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+c[2]+';margin-right:6px"></span>'+c[1]+'</div>').join('')+
     '<div class="pill '+(custom?'on':'')+'" onclick="openColorPicker()"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+(custom?P.customColor:'conic-gradient(red,orange,yellow,lime,cyan,blue,magenta,red)')+';margin-right:6px"></span>🎨 Autre</div></div>';
-  // ARRIÈRE-PLAN — choix du style de fond + rappel que le fondu suit la couleur d'accent
-  const bgStyle=P.bgStyle||'mesh';
+  // ARRIÈRE-PLAN — choix de la photo de fond + rappel que la teinte suit la couleur d'accent
+  const bgStyle=P.bgStyle||'photo1';
   const bgOpts=[
-    ['mesh','Maillage','linear-gradient(150deg,#24365f 0%,#0b0f18 70%)'],
-    ['lines','Lignes','repeating-linear-gradient(115deg,rgba(255,255,255,.18) 0 2px,transparent 2px 9px),linear-gradient(150deg,#1a2544,#0b0e16)'],
-    ['hex','Alvéoles','repeating-linear-gradient(60deg,rgba(255,255,255,.16) 0 2px,transparent 2px 10px),linear-gradient(150deg,#1c2b52,#0b0e16)'],
-    ['waves','Vagues','repeating-radial-gradient(circle at 30% 120%,rgba(255,255,255,.22) 0 2px,transparent 2px 9px),linear-gradient(150deg,#182544,#0b0e16)'],
+    ['photo1','Fond 1','photo1.jpg'],['photo2','Fond 2','photo2.jpg'],['photo3','Fond 3','photo3.jpg'],
+    ['photo4','Fond 4','photo4.jpg'],['photo5','Fond 5','photo5.jpg'],['photo6','Fond 6','photo6.jpg'],
+    ['photo7','Fond 7','photo7.jpg'],['photo8','Fond 8','photo8.jpg'],['photo9','Fond 9','photo9.jpg'],
     ['none','Aucun','var(--s2)']
   ];
-  h+='<div class="lab" style="margin:14px 0 8px">🖼️ Arrière-plan</div><div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">'+
+  h+='<div class="lab" style="margin:14px 0 8px">🖼️ Arrière-plan</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'+
     bgOpts.map(o=>'<div onclick="setBgStyle(\''+o[0]+'\')" style="text-align:center;cursor:pointer">'+
-      '<div style="aspect-ratio:1;border-radius:14px;background:'+o[2]+';border:2px solid '+(bgStyle===o[0]?'var(--e)':'var(--hair)')+';box-shadow:'+(bgStyle===o[0]?'0 0 0 3px var(--ed)':'none')+'"></div>'+
+      '<div style="aspect-ratio:1;border-radius:14px;background:'+(o[0]==='none'?o[2]:'url(\''+o[2]+'\') center/cover')+';border:2px solid '+(bgStyle===o[0]?'var(--e)':'var(--hair)')+';box-shadow:'+(bgStyle===o[0]?'0 0 0 3px var(--ed)':'none')+'"></div>'+
       '<div style="font-size:9.5px;margin-top:4px;color:'+(bgStyle===o[0]?'var(--e2)':'var(--muted)')+';font-weight:700">'+o[1]+'</div></div>').join('')+
-    '</div><div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.4">💡 Le fondu de couleur de l\u2019arrière-plan suit ta couleur d\u2019accent ci-dessus.</div></div>';
+    '</div><div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.4">💡 La teinte de l\u2019arrière-plan suit ta couleur d\u2019accent choisie ci-dessus — tu peux mettre n\u2019importe quelle couleur.</div></div>';
   // NOTIFICATIONS & SONS
   h+=sec('🔔 '+t('notifsApp'));
   h+='<div class="card stag"><div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('trainReminders')+'</span><div class="toggle'+(P.notif!==false?' on':'')+'" onclick="toggleNotif(this)"></div></div>'+
