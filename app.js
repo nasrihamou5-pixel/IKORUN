@@ -1087,6 +1087,18 @@ function effectiveMode(){
   if(m==='auto') return (window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';
   return m;
 }
+function hexToHueDeg(hex){
+  hex=hex.replace('#','');
+  const r=parseInt(hex.slice(0,2),16)/255,g=parseInt(hex.slice(2,4),16)/255,b=parseInt(hex.slice(4,6),16)/255;
+  const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min;
+  let hh=0;
+  if(d===0) hh=0;
+  else if(max===r) hh=60*(((g-b)/d)%6);
+  else if(max===g) hh=60*(((b-r)/d)+2);
+  else hh=60*(((r-g)/d)+4);
+  if(hh<0) hh+=360;
+  return hh;
+}
 function applyTheme(){
   const c=accentHex();
   document.documentElement.style.setProperty('--e',c);
@@ -1096,6 +1108,10 @@ function applyTheme(){
   // couleur secondaire du fondu (dérivée, plus claire) pour la teinte du fond
   const lr=Math.min(255,Math.round(r+(255-r)*.4)),lg=Math.min(255,Math.round(g+(255-g)*.4)),lb=Math.min(255,Math.round(b+(255-b)*.4));
   document.documentElement.style.setProperty('--e2','rgb('+lr+','+lg+','+lb+')');
+  // recolore réellement l'arrière-plan (maillage/lignes/alvéoles/vagues) selon la couleur d'accent choisie
+  const baseHue=222; // teinte de référence utilisée dans les dessins de fond (bleu marine)
+  const rotate=(hexToHueDeg(c)-baseHue);
+  document.documentElement.style.setProperty('--bg-hue',rotate+'deg');
   const mode=effectiveMode();
   document.documentElement.setAttribute('data-mode',mode);
   document.documentElement.setAttribute('data-bg-style',P.bgStyle||'mesh');

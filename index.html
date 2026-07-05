@@ -128,10 +128,9 @@ html[data-mode="light"] .bg-art-light.bg-waves-l{background:
   repeating-radial-gradient(circle at 22% 128%,rgba(20,30,50,.09) 0 2px,transparent 2px 16px),
   linear-gradient(150deg,#eef1f6 0%,#ffffff 60%);}
 
-/* -- Fondu de couleur — teinte l'arrière-plan avec la couleur d'accent choisie -- */
-.bg-tint{position:absolute;inset:0;pointer-events:none;mix-blend-mode:overlay;opacity:.55;
-  background:radial-gradient(650px 520px at 20% -4%,var(--e),transparent 62%),radial-gradient(520px 440px at 105% 22%,var(--e2),transparent 58%);}
-html[data-bg-style="none"] .bg-tint{display:none;}
+/* -- Fondu de couleur — recolore vraiment le fond selon la couleur d'accent choisie -- */
+.bg-art{filter:hue-rotate(var(--bg-hue,0deg)) saturate(1.15);}
+.bg-tint{display:none;}
 
 /* ===== NOUVEAUX ÉLÉMENTS ACCUEIL (inspirés pattern app mobile) ===== */
 .daystrip-wrap{margin-bottom:10px;}
