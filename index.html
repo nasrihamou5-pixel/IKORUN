@@ -471,7 +471,12 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
   background:linear-gradient(180deg,rgba(255,255,255,.05),transparent 40%);}
 .card{isolation:isolate;}
 /* légère respiration flottante sur les surfaces clés — "flottance" demandée */
-.rank-card,.tip-card,.xp-hero,.ev-banner,.mosaic .ev-tile:first-child{animation:glassFloat 6s ease-in-out infinite;}
+.tip-card,.xp-hero,.ev-banner,.mosaic .ev-tile:first-child{animation:glassFloat 6s ease-in-out infinite;}
+/* La rank-card cumule l'entrée en fondu (.stag) ET le flottement idle : une seule
+   règle "animation" par élément est possible en CSS, donc la déclarer à part et
+   combiner les deux animations évite qu'elle écrase le fade-in de .stag (ce qui
+   laissait la carte bloquée à opacity:0 → gros espace vide en haut de l'accueil). */
+.rank-card{animation:slideUp .5s ease forwards,glassFloat 6s ease-in-out .5s infinite;}
 .topbar{-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);}
 
 /* NAV */
