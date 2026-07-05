@@ -2270,18 +2270,11 @@ function renderHome(){
       '<div class="badge" style="background:rgba(var(--e-rgb),.18);color:'+col+'">'+ps.type+'</div></div></div></div>';
   }
 
-  // WEEK TARGETS + WEEKLY DOTS (fusionnés)
-  html+='<div class="card stag accent-e" style="animation-delay:.18s"><div class="card-t">'+cardIcon('target','var(--e)')+'Objectifs semaine</div>'+
-    '<div style="margin-bottom:12px"><div class="row" style="margin-bottom:5px"><span style="font-size:13px">Kilomètres</span><span class="mono" style="font-size:13px;color:var(--muted)">'+kmW.toFixed(0)+' / '+kmTarget+'</span></div><div class="pbar"><div style="width:'+Math.min(100,kmW/kmTarget*100)+'%"></div></div></div>'+
-    '<div style="margin-bottom:16px"><div class="row" style="margin-bottom:5px"><span style="font-size:13px">Séances</span><span class="mono" style="font-size:13px;color:var(--muted)">'+sessW+' / '+sessTarget+'</span></div><div class="pbar"><div style="width:'+Math.min(100,sessW/sessTarget*100)+'%;background:linear-gradient(90deg,var(--ok),#6FE0B0)"></div></div></div>'+
-    '<div class="card-divider"></div>'+
-    '<div class="week">'+weekDotsHTML()+'</div></div>';
-
-  // EN BREF
-  html+='<div class="card stag accent-or" style="animation-delay:.26s"><div class="card-t">'+cardIcon('bolt','var(--or)')+'En bref</div><div class="sgrid">'+
+  // EN BREF — recentré sur ce qui n'apparaît nulle part ailleurs sur l'accueil
+  // (le km/séances de la semaine est déjà dans le bento, le J- est déjà dans la mosaïque)
+  html+='<div class="card stag accent-or" style="animation-delay:.18s"><div class="card-t">'+cardIcon('bolt','var(--or)')+'En bref</div><div class="sgrid">'+
     '<div class="sbox"><div class="v">'+(vdot||'—')+'</div><div class="l">VDOT</div></div>'+
     '<div class="sbox"><div class="v" style="font-size:18px">'+(P.pb5k||'—')+'</div><div class="l">PB 5000m</div></div>'+
-    '<div class="sbox"><div class="v">'+(compDays!==null?'J-'+compDays:'—')+'</div><div class="l">Compétition</div></div>'+
     '<div class="sbox"><div class="v">'+streakDays()+'</div><div class="l">Jours de série</div></div></div></div>';
 
   // RECENT RECORD
@@ -2310,21 +2303,6 @@ function renderHome(){
   $('#s-home').innerHTML=html;
 }
 function fmtDate(s){ const d=new Date(s); return d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}); }
-function weekDotsHTML(){
-  const ws=weekStart(); const labels=['L','M','M','J','V','S','D']; let h='';
-  const doneDates=new Set([...SESS,...MSESS].map(s=>s.date));
-  const planDates=PLAN?new Set(PLAN.sessions.filter(s=>s.type!=='Repos').map(s=>s.date)):new Set();
-  for(let i=0;i<7;i++){
-    const d=new Date(ws); d.setDate(ws.getDate()+i); const k=dateKey(d);
-    const isToday=k===todayKey();
-    let cls='rest', label='';
-    if(doneDates.has(k)){ cls='done'; label='✓'; }
-    else if(planDates.has(k)){ cls='run'; label='•'; }
-    else { label=''; }
-    h+='<div class="wd '+(isToday?'today':'')+'"><div class="dl">'+labels[i]+'</div><div class="dot '+cls+'">'+label+'</div></div>';
-  }
-  return h;
-}
 
 /* ---------- SPORT ---------- */
 let sportTab='run', runSub='ia';
