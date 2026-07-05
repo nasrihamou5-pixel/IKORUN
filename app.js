@@ -1085,7 +1085,7 @@ const THEMES={blue:'#3D7FFF',violet:'#A98CF0',cyan:'#7FE0E8',green:'#33D399',ora
 const BG_PHOTOS={
   photo1:'photo1.jpg', photo2:'photo2.jpg', photo3:'photo3.jpg',
   photo4:'photo4.jpg', photo5:'photo5.jpg', photo6:'photo6.jpg',
-  photo7:'photo7.jpg', photo8:'photo8.jpg', photo9:'photo9.jpg'
+  photo7:'photo7.jpg', photo8:'photo8.jpg', photo9:'photo9.jpg', photo10:'photo10.jpg'
 };
 function accentHex(){ return P.theme==='custom'?(P.customColor||'#3D7FFF'):(THEMES[P.theme]||'#3D7FFF'); }
 function effectiveMode(){
@@ -1105,17 +1105,26 @@ function hexToHueDeg(hex){
   if(hh<0) hh+=360;
   return hh;
 }
+function clamp255(n){ return Math.max(0,Math.min(255,Math.round(n))); }
+function mixToward(r,g,b,target,amt){ return [clamp255(r+(target-r)*amt),clamp255(g+(target-g)*amt),clamp255(b+(target-b)*amt)]; }
 function applyTheme(){
   const c=accentHex();
   document.documentElement.style.setProperty('--e',c);
   const hex=c.replace('#','');
   const r=parseInt(hex.slice(0,2),16),g=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16);
+  document.documentElement.style.setProperty('--e-rgb',r+','+g+','+b);
   document.documentElement.style.setProperty('--ed','rgba('+r+','+g+','+b+',.'+(effectiveMode()==='light'?'12':'16')+')');
-  // couleur secondaire du fondu (dérivée, plus claire) pour la teinte du fond
-  const lr=Math.min(255,Math.round(r+(255-r)*.4)),lg=Math.min(255,Math.round(g+(255-g)*.4)),lb=Math.min(255,Math.round(b+(255-b)*.4));
+  // couleur secondaire du fondu (dérivée, plus claire) pour la teinte du fond, boutons, icônes actives, etc.
+  const [lr,lg,lb]=mixToward(r,g,b,255,.4);
   document.documentElement.style.setProperty('--e2','rgb('+lr+','+lg+','+lb+')');
-  // recolore réellement l'arrière-plan (maillage/lignes/alvéoles/vagues) selon la couleur d'accent choisie
-  const baseHue=222; // teinte de référence utilisée dans les dessins de fond (bleu marine)
+  document.documentElement.style.setProperty('--e2-rgb',lr+','+lg+','+lb);
+  // dégradé du bouton principal + son ombre : recalculés à partir de la couleur d'accent choisie
+  const [btnTr,btnTg,btnTb]=mixToward(r,g,b,255,.22); // stop clair (haut)
+  const [btnMr,btnMg,btnMb]=mixToward(r,g,b,0,.10);   // stop milieu (légèrement assombri)
+  const [btnDr,btnDg,btnDb]=mixToward(r,g,b,0,.28);   // stop foncé (bas)
+  document.documentElement.style.setProperty('--grad-btn','linear-gradient(180deg,rgb('+btnTr+','+btnTg+','+btnTb+'),rgb('+btnMr+','+btnMg+','+btnMb+') 60%,rgb('+btnDr+','+btnDg+','+btnDb+'))');
+  // recolore réellement l'arrière-plan (halos ambiants + photo) selon la couleur d'accent choisie
+  const baseHue=222; // teinte de référence utilisée dans les halos de fond (bleu marine)
   const rotate=(hexToHueDeg(c)-baseHue);
   document.documentElement.style.setProperty('--bg-hue',rotate+'deg');
   const mode=effectiveMode();
@@ -1146,19 +1155,60 @@ async function toggleNotif(el){
     P.notif=false; el.classList.remove('on'); saveAll(); stopBgActivity(); toast('Notifications désactivées');
   }
 }
-/* Palette de couleur personnalisée */
-const PALETTE=['#3D7FFF','#5B8DEF','#00C2FF','#1FD3B0','#33D399','#7BD938','#FFD23F','#FF8A3D','#FF6B35','#FF5C6C','#FF5C9E','#C159F0','#A98CF0','#7C5CFF','#E0E6F0','#9FD8FF','#F2B84B','#C97B4A'];
-function openColorPicker(){
-  let h='<div class="tip" style="margin-bottom:14px">Choisis ta couleur d\u2019accent.</div>';
-  h+='<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px">';
-  PALETTE.forEach(col=>{ const sel=(P.theme==='custom'&&P.customColor===col); h+='<div onclick="applyCustomColor(\''+col+'\')" style="aspect-ratio:1;border-radius:50%;background:'+col+';cursor:pointer;border:3px solid '+(sel?'var(--snow)':'transparent')+';box-shadow:0 0 0 1px var(--hair)"></div>'; });
-  h+='</div>';
-  h+='<div class="field"><label>Couleur sur-mesure</label><input type="color" id="customColorInp" value="'+(P.customColor||'#3D7FFF')+'" style="width:100%;height:48px;border:1px solid var(--hair);border-radius:12px;background:var(--s2);cursor:pointer"></div>';
-  h+='<button class="btn" onclick="applyCustomColor(document.getElementById(\'customColorInp\').value)">✓ Appliquer</button>';
-  $('#ovProgTitle').textContent='Palette de couleurs'; $('#progBody').innerHTML=h; $('#ovProg').style.zIndex='13700'; openOv('ovProg');
-  const inp=$('#customColorInp'); if(inp) inp.oninput=()=>{ P.theme='custom'; P.customColor=inp.value; applyTheme(); };
+/* ---------- SÉLECTEUR DE COULEUR "VAGUES" ---------- */
+/* Palette de vagues (spectre complet) + le classique color-picker natif pour une teinte 100% libre */
+const WAVE_COLORS=['#FF5C6C','#FF8A3D','#F2B84B','#FFD23F','#9BE05A','#33D399','#1FD3B0','#00C2FF','#3D7FFF','#7C5CFF','#A98CF0','#FF5C9E'];
+function hslToHex(h,s,l){
+  s/=100; l/=100;
+  const k=n=>(n+h/30)%12;
+  const a=s*Math.min(l,1-l);
+  const f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));
+  const toHex=x=>Math.round(255*x).toString(16).padStart(2,'0');
+  return '#'+toHex(f(0))+toHex(f(8))+toHex(f(4));
 }
-function applyCustomColor(col){ P.theme='custom'; P.customColor=col; saveAll(); applyTheme(); closeOv('ovProg'); renderProfile(); toast('Couleur appliquée ✓'); }
+/* Génère les N bandes ondulées (comme des vagues empilées et penchées en diagonale) */
+function buildWaveSVG(colors){
+  const W=400,H=560,N=colors.length,amp=17,periods=1.1,slope=.55,steps=28;
+  function boundaryY(k,x){
+    if(k===0) return 0;
+    if(k===N) return H;
+    const baseY=(k/N)*H;
+    return baseY + slope*(x-W/2) + amp*Math.sin((x/W)*periods*2*Math.PI + k*.65);
+  }
+  let paths='';
+  for(let i=0;i<N;i++){
+    const top=[],bot=[];
+    for(let s=0;s<=steps;s++){ const x=W*s/steps; top.push(x.toFixed(1)+','+boundaryY(i,x).toFixed(1)); }
+    for(let s=steps;s>=0;s--){ const x=W*s/steps; bot.push(x.toFixed(1)+','+boundaryY(i+1,x).toFixed(1)); }
+    const d='M'+top.concat(bot).join(' L')+' Z';
+    paths+='<path d="'+d+'" fill="'+colors[i]+'" onclick="selectWaveColor(\''+colors[i]+'\')" style="cursor:pointer"><title>'+colors[i]+'</title></path>';
+  }
+  return '<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="display:block;border-radius:20px;overflow:hidden" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">'+paths+'</svg>';
+}
+function openColorPicker(){
+  let h='<div class="tip" style="margin-bottom:14px">Touche une vague pour appliquer sa couleur à tout le site 🌊</div>';
+  h+='<div style="margin-bottom:16px">'+buildWaveSVG(WAVE_COLORS)+'</div>';
+  h+='<div class="lab" style="margin-bottom:8px">🎨 Ou choisis n\u2019importe quelle teinte</div>';
+  h+='<div id="hueStrip" style="height:46px;border-radius:14px;margin-bottom:16px;cursor:pointer;background:linear-gradient(90deg,#FF0000,#FFFF00,#00FF00,#00FFFF,#0000FF,#FF00FF,#FF0000);box-shadow:0 0 0 1px var(--hair)"></div>';
+  h+='<div class="field"><label>Couleur sur-mesure (précision totale)</label><input type="color" id="customColorInp" value="'+(P.customColor||'#3D7FFF')+'" style="width:100%;height:48px;border:1px solid var(--hair);border-radius:12px;background:var(--s2);cursor:pointer"></div>';
+  h+='<button class="btn" onclick="selectWaveColor(document.getElementById(\'customColorInp\').value)">✓ Appliquer cette couleur</button>';
+  $('#ovProgTitle').textContent='Couleur du site'; $('#progBody').innerHTML=h; $('#ovProg').style.zIndex='13700'; openOv('ovProg');
+  const inp=$('#customColorInp'); if(inp) inp.oninput=()=>{ P.theme='custom'; P.customColor=inp.value; applyTheme(); };
+  const strip=$('#hueStrip');
+  if(strip){
+    const pickFromEvent=(e)=>{
+      const rect=strip.getBoundingClientRect();
+      const clientX=(e.touches&&e.touches[0])?e.touches[0].clientX:e.clientX;
+      let ratio=(clientX-rect.left)/rect.width; ratio=Math.max(0,Math.min(1,ratio));
+      const hex=hslToHex(Math.round(ratio*360),82,56);
+      P.theme='custom'; P.customColor=hex; applyTheme();
+      const ci=$('#customColorInp'); if(ci) ci.value=hex;
+    };
+    strip.addEventListener('click',(e)=>{ pickFromEvent(e); selectWaveColor($('#customColorInp').value); });
+  }
+}
+function selectWaveColor(col){ P.theme='custom'; P.customColor=col; saveAll(); applyTheme(); closeOv('ovProg'); renderProfile(); toast('Couleur appliquée ✓'); }
+function applyCustomColor(col){ selectWaveColor(col); }
 // suit le thème du téléphone en mode auto
 if(window.matchMedia){ try{ window.matchMedia('(prefers-color-scheme: light)').addEventListener('change',()=>{ if((P.mode||'dark')==='auto') applyTheme(); }); }catch(e){} }
 
@@ -2210,7 +2260,7 @@ function renderHome(){
     html+='<div class="card stag accent-or" style="animation-delay:.14s"><div class="card-t">'+cardIcon('run',col)+'Séance du jour</div>'+
       '<div class="sess today" onclick="openRunSheet('+ps.id+')"><div class="row"><div><div style="font-weight:700;font-size:15px">'+ps.title+'</div>'+
       '<div style="color:var(--muted);font-size:12px;margin-top:3px">'+(ps.km?ps.km+' km · '+ps.pace+'/km · RPE '+ps.rpe:'Repos')+'</div></div>'+
-      '<div class="badge" style="background:rgba(61,127,255,.18);color:'+col+'">'+ps.type+'</div></div></div></div>';
+      '<div class="badge" style="background:rgba(var(--e-rgb),.18);color:'+col+'">'+ps.type+'</div></div></div></div>';
   }
 
   // WEEK TARGETS + WEEKLY DOTS (fusionnés)
@@ -2385,7 +2435,7 @@ function persoDetailHTML(){
     sorted.forEach(s=>{
       const isToday=s.date===tk; const col='var('+(TYPE_COLORS[s.type]||'--e')+')';
       const detail=(s.intervals&&s.intervals.length)?(' · '+s.intervals.length+'×'+s.intervals[0].dist+'m'):(s.km?' · '+s.km+' km · '+s.pace+'/km':'');
-      h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'"><div class="row" onclick="openPersoSheet('+s.id+')" style="cursor:pointer"><div><div style="font-weight:700;font-size:14px">'+s.title+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+fmtDate(s.date)+detail+'</div></div><div class="badge" style="background:rgba(61,127,255,.15);color:'+col+';font-size:11px">'+s.type+'</div></div></div>';
+      h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'"><div class="row" onclick="openPersoSheet('+s.id+')" style="cursor:pointer"><div><div style="font-weight:700;font-size:14px">'+s.title+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+fmtDate(s.date)+detail+'</div></div><div class="badge" style="background:rgba(var(--e-rgb),.15);color:'+col+';font-size:11px">'+s.type+'</div></div></div>';
     });
   }
   return h;
@@ -2485,7 +2535,7 @@ function openPersoSheet(sid){
   curPersoSess=sid;
   $('#sheetTitle').textContent=s.title;
   const col='var('+(TYPE_COLORS[s.type]||'--e')+')';
-  let h='<div class="badge" style="background:rgba(61,127,255,.15);color:'+col+';margin-bottom:14px">'+s.type+' · '+fmtDate(s.date)+'</div>';
+  let h='<div class="badge" style="background:rgba(var(--e-rgb),.15);color:'+col+';margin-bottom:14px">'+s.type+' · '+fmtDate(s.date)+'</div>';
   if(s.km) h+='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+s.km+'</div><div class="l">km</div></div><div class="sbox"><div class="v" style="font-size:18px">'+s.pace+'</div><div class="l">/km moy.</div></div><div class="sbox"><div class="v">'+s.duration+'</div><div class="l">min</div></div></div>';
   if(s.intervals && s.intervals.length){
     h+='<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:8px">'+s.intervals.length+' × '+s.intervals[0].dist+' m</div><div style="display:flex;flex-direction:column;gap:6px">';
@@ -2590,7 +2640,7 @@ function openRunSheet(id){
   curRunId=id;
   $('#sheetTitle').textContent=s.title;
   const col='var('+(TYPE_COLORS[s.type]||'--e')+')';
-  let h='<div class="badge" style="background:rgba(61,127,255,.15);color:'+col+';margin-bottom:14px">'+s.type+' · '+fmtDate(s.date)+'</div>';
+  let h='<div class="badge" style="background:rgba(var(--e-rgb),.15);color:'+col+';margin-bottom:14px">'+s.type+' · '+fmtDate(s.date)+'</div>';
   if(s.km){
     h+='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+s.km+'</div><div class="l">km</div></div><div class="sbox"><div class="v" style="font-size:18px">'+s.pace+'</div><div class="l">/km</div></div><div class="sbox"><div class="v">'+s.duration+'</div><div class="l">min</div></div><div class="sbox"><div class="v">'+s.rpe+'</div><div class="l">RPE /10</div></div></div>';
   }
@@ -2798,7 +2848,7 @@ function renderLive(){
   h+='<div class="row" style="gap:8px;margin-top:8px"><button class="btn ghost sm" onclick="liveNav(-1)" '+(LIVE.idx===0?'disabled style="opacity:.4"':'')+'>◀</button>';
   h+='<button class="btn ghost sm" onclick="skipExercise()">Passer</button>';
   if(LIVE.idx<p.ex.length-1) h+='<button class="btn sm" onclick="liveNav(1)">Exercice suivant ▶</button>';
-  else h+='<button class="btn sm" onclick="finishLive()" style="background:linear-gradient(135deg,var(--e),#6FA0FF)">🏁 Terminer</button>';
+  else h+='<button class="btn sm" onclick="finishLive()" style="background:linear-gradient(135deg,var(--e),var(--e2))">🏁 Terminer</button>';
   h+='</div>';
   h+='<button class="btn" style="margin-top:8px;background:var(--ok)" onclick="finishLive()">✓ Terminer l\u2019exercice</button>';
   h+='<button class="btn ghost sm" style="margin-top:8px;color:var(--bad)" onclick="confirmCloseLive()">🗑 Annuler la séance</button>';
@@ -3115,7 +3165,7 @@ function heatmap13(){
   for(let i=0;i<cells;i++){
     const d=new Date(start); d.setDate(start.getDate()+i); const c=map[dateKey(d)]||0;
     const op=c===0?0:Math.min(1,.3+c*.25);
-    h+='<div style="background:'+(c?'rgba(61,127,255,'+op+')':'var(--s2)')+'"></div>';
+    h+='<div style="background:'+(c?'rgba(var(--e-rgb),'+op+')':'var(--s2)')+'"></div>';
   }
   return h;
 }
@@ -3723,7 +3773,7 @@ function renderIMC(){
 let chrono={running:false,start:0,elapsed:0,laps:[],raf:null};
 function renderChrono(){
   const total=chrono.elapsed+(chrono.running?Date.now()-chrono.start:0);
-  let h='<div class="card" style="text-align:center;padding:28px 16px;background:radial-gradient(circle at 50% 30%,rgba(61,127,255,.12),var(--s1))"><div class="mono" id="chDisp" style="font-size:54px;font-weight:700;letter-spacing:-2px;'+(chrono.running?'color:var(--e)':'')+'">'+fmtChrono(total)+'</div>';
+  let h='<div class="card" style="text-align:center;padding:28px 16px;background:radial-gradient(circle at 50% 30%,rgba(var(--e-rgb),.12),var(--s1))"><div class="mono" id="chDisp" style="font-size:54px;font-weight:700;letter-spacing:-2px;'+(chrono.running?'color:var(--e)':'')+'">'+fmtChrono(total)+'</div>';
   // Boutons
   h+='<div class="row" style="gap:14px;margin-top:24px;justify-content:center">';
   if(!chrono.running && total===0){
@@ -3863,8 +3913,8 @@ function prayerTimes(){
 /* ---------- PROFILE ---------- */
 function age(){ if(!P.bday)return'—'; const d=new Date(P.bday); return Math.floor((Date.now()-d)/31557600000); }
 function avatarHTML(size,fs){
-  if(P.photo) return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background-image:url('+P.photo+');background-size:cover;background-position:center;margin:0 auto;border:2.5px solid rgba(61,127,255,.35);box-shadow:0 6px 18px -6px rgba(61,127,255,.4)"></div>';
-  return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:linear-gradient(135deg,var(--e),var(--marineL));display:flex;align-items:center;justify-content:center;margin:0 auto;font-family:Manrope;font-weight:800;font-size:'+fs+'px;border:2.5px solid rgba(61,127,255,.35);box-shadow:0 6px 18px -6px rgba(61,127,255,.4)">'+(P.name?P.name[0].toUpperCase():'?')+'</div>';
+  if(P.photo) return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background-image:url('+P.photo+');background-size:cover;background-position:center;margin:0 auto;border:2.5px solid rgba(var(--e-rgb),.35);box-shadow:0 6px 18px -6px rgba(var(--e-rgb),.4)"></div>';
+  return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:linear-gradient(135deg,var(--e),var(--marineL));display:flex;align-items:center;justify-content:center;margin:0 auto;font-family:Manrope;font-weight:800;font-size:'+fs+'px;border:2.5px solid rgba(var(--e-rgb),.35);box-shadow:0 6px 18px -6px rgba(var(--e-rgb),.4)">'+(P.name?P.name[0].toUpperCase():'?')+'</div>';
 }
 function renderProfile(){
   const xp=xpProgress();
@@ -3926,6 +3976,7 @@ function renderProfile(){
     ['photo1','Fond 1','photo1.jpg'],['photo2','Fond 2','photo2.jpg'],['photo3','Fond 3','photo3.jpg'],
     ['photo4','Fond 4','photo4.jpg'],['photo5','Fond 5','photo5.jpg'],['photo6','Fond 6','photo6.jpg'],
     ['photo7','Fond 7','photo7.jpg'],['photo8','Fond 8','photo8.jpg'],['photo9','Fond 9','photo9.jpg'],
+    ['photo10','Fond 10','photo10.jpg'],
     ['none','Aucun','var(--s2)']
   ];
   h+='<div class="lab" style="margin:14px 0 8px">🖼️ Arrière-plan</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'+
