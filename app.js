@@ -173,6 +173,7 @@ function setLang(l){
   applyNavLabels();
   // re-render la vue active
   const active=document.querySelector('.nb.on'); if(active) nav(active.dataset.s);
+  refreshPfSheet();
   toast('✓');
 }
 function applyNavLabels(){
@@ -753,7 +754,7 @@ function burst(){
 
 /* ---------- OVERLAYS ---------- */
 function openOv(id){ $('#'+id).classList.add('on'); }
-function closeOv(id){ $('#'+id).classList.remove('on'); if(id==='ovLib'&&typeof _exDemoTimer!=='undefined'){ clearInterval(_exDemoTimer); } if((id==='ovProg'||id==='ovLive')&&typeof _exDemo2!=='undefined'&&_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; } }
+function closeOv(id){ $('#'+id).classList.remove('on'); if(id==='ovProg') _pfSheet=null; if(id==='ovLib'&&typeof _exDemoTimer!=='undefined'){ clearInterval(_exDemoTimer); } if((id==='ovProg'||id==='ovLive')&&typeof _exDemo2!=='undefined'&&_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; } }
 
 /* ============ WHEEL PICKER réutilisable ============ */
 const PK_H=42;
@@ -1142,9 +1143,9 @@ function applyTheme(){
   if(layer){ layer.style.backgroundImage = (bgStyle!=='none' && BG_PHOTOS[bgStyle]) ? "url('"+BG_PHOTOS[bgStyle]+"')" : 'none'; }
   const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.content=mode==='light'?'#F2F4F8':'#0A0D12';
 }
-function setBgStyle(s){ P.bgStyle=s; saveAll(); applyTheme(); if($('#s-profil')&&$('#s-profil').classList.contains('on'))renderProfile(); toast('Arrière-plan appliqué ✓'); }
-function setTheme(t){ P.theme=t; saveAll(); applyTheme(); if($('#s-profil')&&$('#s-profil').classList.contains('on'))renderProfile(); }
-function setMode(m){ P.mode=m; saveAll(); applyTheme(); if($('#s-profil')&&$('#s-profil').classList.contains('on'))renderProfile(); }
+function setBgStyle(s){ P.bgStyle=s; saveAll(); applyTheme(); if($('#s-profil')&&$('#s-profil').classList.contains('on'))renderProfile(); refreshPfSheet(); toast('Arrière-plan appliqué ✓'); }
+function setTheme(t){ P.theme=t; saveAll(); applyTheme(); if($('#s-profil')&&$('#s-profil').classList.contains('on'))renderProfile(); refreshPfSheet(); }
+function setMode(m){ P.mode=m; saveAll(); applyTheme(); if($('#s-profil')&&$('#s-profil').classList.contains('on'))renderProfile(); refreshPfSheet(); }
 function toggleSounds(el){ P.sounds=(P.sounds===false); saveAll(); el.classList.toggle('on'); if(P.sounds!==false) sfx('goal'); }
 async function toggleNotif(el){
   const turningOn = (P.notif===false) || P.notif===undefined ? true : false;
@@ -3921,28 +3922,70 @@ function avatarHTML(size,fs){
 }
 function renderProfile(){
   const xp=xpProgress();
-  const sec=(label)=>'<div class="lab" style="margin:22px 0 10px">'+label+'</div>';
-  // HEADER : photo + nom + bio
-  let h='<div class="card stag" style="text-align:center;padding-top:20px"><div style="position:relative;width:92px;margin:0 auto 12px">'+avatarHTML(92,36)+
-    '<div onclick="changePhoto()" style="position:absolute;bottom:0;right:0;width:30px;height:30px;border-radius:50%;background:var(--e);border:2px solid var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px">📷</div></div>';
   const rk=rankFor(XP.level||1);
-  h+='<div class="man" style="font-weight:800;font-size:22px">'+(P.name||'Athlète')+'</div>';
-  h+='<div class="rankchip" style="margin-top:8px;background:'+rk.bg+';color:#fff">'+t('level')+' '+XP.level+' · '+rk.name+'</div>';
+  const compDays=P.compDate?daysBetween(new Date(),new Date(P.compDate)):null;
+  const langInfo=LANGS.find(l=>l[0]===curLang())||LANGS[0];
+  let h='';
+  // ===== HERO : avatar + nom + niveau + bio =====
+  h+='<div class="card stag pf-hero"><div class="pf-avwrap">'+avatarHTML(96,38)+
+    '<div class="pf-cam" onclick="changePhoto()">📷</div></div>';
+  h+='<div class="pf-name-row"><div class="man" style="font-weight:800;font-size:21px">'+(P.name||'Athlète')+'</div>'+
+    '<div class="pf-edit" onclick="openProfileEdit()" title="'+t('editInfos')+'">✏️</div></div>';
+  h+='<div class="rankchip" style="margin-top:9px;background:'+rk.bg+';color:#fff">'+t('level')+' '+XP.level+' · '+rk.name+'</div>';
   h+='<div style="font-size:11px;color:var(--dim);margin-top:6px" class="mono">'+XP.total+' XP'+(XP.maxed?' · niveau max':' · '+(XP.span-XP.inLvl)+' XP avant niv. '+(XP.level+1))+'</div>';
-  h+='<div style="font-size:13px;color:var(--muted);margin-top:10px;line-height:1.5;font-style:'+(P.bio?'normal':'italic')+'">'+(P.bio||'Ajoute une biographie ✍️')+'</div>';
-  h+='<div class="row" style="gap:8px;margin-top:14px;justify-content:center">'+
-    (P.photo?'<button class="btn ghost sm" style="width:auto;padding:8px 14px" onclick="removePhoto()">🗑 '+t('removePhoto')+'</button>':'')+
-    '<button class="btn ghost sm" style="width:auto;padding:8px 14px" onclick="editBio()">✍️ '+t('bio')+'</button></div></div>';
-  // STATS
-  h+='<div class="card stag" style="animation-delay:.05s"><div class="sgrid"><div class="sbox"><div class="v">'+(P.height||'—')+'</div><div class="l">'+t('height')+' (cm)</div></div><div class="sbox"><div class="v">'+(P.weight||'—')+'</div><div class="l">'+t('weight')+' (kg)</div></div><div class="sbox"><div class="v">'+age()+'</div><div class="l">'+t('age')+'</div></div><div class="sbox"><div class="v">'+(getUserVDOT()||'—')+'</div><div class="l">VDOT</div></div></div></div>';
-  // ===== BADGES =====
-  h+=badgeStripHTML();
-  h+='<button class="btn stag" style="animation-delay:.15s" onclick="openProfileEdit()">✏️ '+t('editInfos')+'</button>';
-  h+='<button class="btn ghost stag" style="margin-top:10px;animation-delay:.16s" onclick="openRecords()">🏅 '+t('perfHistory')+'</button>';
-  // ===== COMPTE =====
-  h+='<div class="lab" style="margin:22px 0 10px">👤 Compte</div>';
+  h+='<div style="font-size:13px;color:var(--muted);margin-top:10px;line-height:1.5;font-style:'+(P.bio?'normal':'italic')+'" onclick="editBio()">'+(P.bio||'Ajoute une biographie ✍️')+'</div>';
+  // ===== STATS — rangée compacte (au lieu d'une grille 2×2 qui prenait toute la hauteur) =====
+  h+='<div class="pstat-row">'+
+    '<div class="pstat"><div class="v">'+(P.height||'—')+'</div><div class="l">'+t('height')+'</div></div>'+
+    '<div class="pstat"><div class="v">'+(P.weight||'—')+'</div><div class="l">'+t('weight')+'</div></div>'+
+    '<div class="pstat"><div class="v">'+age()+'</div><div class="l">'+t('age')+'</div></div>'+
+    '<div class="pstat"><div class="v">'+(getUserVDOT()||'—')+'</div><div class="l">VDOT</div></div>'+
+  '</div></div>';
+  // ===== PROMO BAR — objectif en cours, mis en avant comme une bannière =====
+  h+='<div class="promo-bar stag" style="animation-delay:.05s" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\';renderSport()">'+
+    '<div class="promo-ic">🎯</div>'+
+    '<div class="promo-txt"><div class="promo-t1">Objectif</div><div class="promo-t2">'+(P.objRace||P.goal||'Aucun objectif défini')+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div></div>'+
+    '<div class="promo-cta">Voir</div></div>';
+  // ===== LISTE — chaque réglage s'ouvre dans sa propre fiche (au lieu de tout empiler) =====
+  const rows=[
+    ['🏅','Historique & records','Tes meilleures performances','openRecords()'],
+    ['🏆','Badges & progression',unlockedBadges().length+' / '+BADGE_TIERS.length+' débloqués','openBadges()'],
+    ['📊','Statistiques','Charge, allure, tendances',"nav('stats')"],
+    ['👤','Compte',window.currentUserEmail||'Non connecté',"openProfileSection('account')"],
+    ['🌍','Langue',langInfo[1]+' '+langInfo[2],"openProfileSection('lang')"],
+    ['🎨','Apparence','Thème, couleur, fond d\u2019écran',"openProfileSection('appearance')"],
+    ['🔔','Notifications & sons','Rappels, sons, unités',"openProfileSection('notif')"],
+    ['🔒','Données & confidentialité','Export, import, réinitialisation',"openProfileSection('data')"]
+  ];
+  rows.forEach((r,i)=>{
+    h+='<div class="list-row stag" style="animation-delay:.'+Math.min(20,7+i)+'s" onclick="'+r[3]+'"><div class="lr-icon">'+r[0]+'</div>'+
+      '<div class="lr-txt"><div class="lr-title">'+r[1]+'</div><div class="lr-sub">'+r[2]+'</div></div>'+
+      '<span class="lr-chev">'+ICN('chevronR',16)+'</span></div>';
+  });
+  h+='<div style="text-align:center;color:var(--dim);font-size:12px;margin:20px 0">IKORUN — Elite Athletic Intelligence · v2.0</div>';
+  $('#s-profil').innerHTML=h;
+}
+/* ---- Fiches de réglages du profil, ouvertes dans l'overlay générique ---- */
+let _pfSheet=null;
+function openProfileSection(key){
+  _pfSheet=key;
+  const titles={account:'👤 Compte',lang:'🌍 '+t('language'),appearance:'🎨 '+t('appearance'),notif:'🔔 '+t('notifsApp'),data:'🔒 '+t('dataPrivacy')};
+  $('#ovProgTitle').textContent=titles[key]||'Réglages';
+  $('#progBody').innerHTML=pfSectionHTML(key);
+  openOv('ovProg');
+}
+function refreshPfSheet(){ if(_pfSheet && $('#ovProg').classList.contains('on')) $('#progBody').innerHTML=pfSectionHTML(_pfSheet); }
+function pfSectionHTML(key){
+  if(key==='account') return pfAccountHTML();
+  if(key==='lang') return pfLangHTML();
+  if(key==='appearance') return pfAppearanceHTML();
+  if(key==='notif') return pfNotifHTML();
+  if(key==='data') return pfDataHTML();
+  return '';
+}
+function pfAccountHTML(){
   if(window.currentUserEmail){
-    h+='<div class="card stag"><div class="row"><div class="row" style="gap:12px">'+
+    return '<div class="row"><div class="row" style="gap:12px">'+
       '<div style="width:44px;height:44px;border-radius:50%;background:var(--ed);color:var(--e);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px">'+(P.name?P.name[0].toUpperCase():'?')+'</div>'+
       '<div><div style="font-weight:700">'+(P.name||'Athlète')+'</div><div style="font-size:12px;color:var(--muted)">'+window.currentUserEmail+'</div></div></div>'+
       '<span class="badge" style="font-size:10px">🔴 Google</span></div>'+
@@ -3951,29 +3994,15 @@ function renderProfile(){
         '<button class="btn ghost sm" onclick="addAnotherAccount()">➕ Ajouter un compte</button>'+
         '<button class="btn ghost sm" style="color:var(--bad)" onclick="logout()">🚪 '+t('logout')+'</button>'+
       '</div>'+
-      '<button class="btn ghost sm" style="margin-top:10px;color:var(--bad);width:100%" onclick="deleteAccountCompletely()">🗑 Supprimer mon compte et mes données</button>'+
-      '</div>';
-  } else {
-    h+='<div class="card stag"><button class="btn" onclick="signInWithGoogle()">🔐 Se connecter</button></div>';
+      '<button class="btn ghost sm" style="margin-top:10px;color:var(--bad);width:100%" onclick="deleteAccountCompletely()">🗑 Supprimer mon compte et mes données</button>';
   }
-  // OBJECTIF
-  h+=sec('🎯 '+t('objective'));
-  h+='<div class="card stag"><div class="row"><div><div style="font-weight:700">'+(P.objRace||P.goal||'—')+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+(P.compDate?fmtDate(P.compDate):'—')+'</div></div><span style="color:var(--e);font-size:12px;cursor:pointer" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\';renderSport()">'+t('edit')+'</span></div></div>';
-  // LANGUE
-  h+=sec('🌍 '+t('language'));
-  h+='<div class="card stag"><div class="pills">'+LANGS.map(l=>'<div class="pill '+(curLang()===l[0]?'on':'')+'" onclick="setLang(\''+l[0]+'\')">'+l[1]+' '+l[2]+'</div>').join('')+'</div></div>';
-  // APPARENCE
-  h+=sec('🎨 '+t('appearance'));
-  // MODE sombre / clair / auto
-  const mode=P.mode||'dark';
-  h+='<div class="card stag"><div class="lab" style="margin-bottom:8px">Thème</div><div class="pills">'+
-    [['dark','🌙 Sombre'],['light','☀️ Clair'],['auto','⚙️ Auto']].map(m=>'<div class="pill '+(mode===m[0]?'on':'')+'" onclick="setMode(\''+m[0]+'\')">'+m[1]+'</div>').join('')+'</div>';
-  // COULEUR D'ACCENT + Autre (palette personnalisée)
-  const custom=P.theme==='custom';
-  h+='<div class="lab" style="margin:14px 0 8px">'+t('accentColor')+'</div><div class="pills">'+
-    [['blue','Bleu','#3D7FFF'],['violet','Violet','#A98CF0'],['cyan','Cyan','#7FE0E8'],['green','Vert','#33D399'],['orange','Orange','#FF8A3D'],['pink','Rose','#FF5C9E']].map(c=>'<div class="pill '+(P.theme===c[0]?'on':'')+'" onclick="setTheme(\''+c[0]+'\')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+c[2]+';margin-right:6px"></span>'+c[1]+'</div>').join('')+
-    '<div class="pill '+(custom?'on':'')+'" onclick="openColorPicker()"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+(custom?P.customColor:'conic-gradient(red,orange,yellow,lime,cyan,blue,magenta,red)')+';margin-right:6px"></span>🎨 Autre</div></div>';
-  // ARRIÈRE-PLAN — choix de la photo de fond + rappel que la teinte suit la couleur d'accent
+  return '<button class="btn" onclick="signInWithGoogle()">🔐 Se connecter</button>';
+}
+function pfLangHTML(){
+  return '<div class="pills">'+LANGS.map(l=>'<div class="pill '+(curLang()===l[0]?'on':'')+'" onclick="setLang(\''+l[0]+'\')">'+l[1]+' '+l[2]+'</div>').join('')+'</div>';
+}
+function pfAppearanceHTML(){
+  const mode=P.mode||'dark', custom=P.theme==='custom';
   const bgStyle=P.bgStyle||'photo1';
   const bgOpts=[
     ['photo1','Fond 1','photo1.jpg'],['photo2','Fond 2','photo2.jpg'],['photo3','Fond 3','photo3.jpg'],
@@ -3982,23 +4011,27 @@ function renderProfile(){
     ['photo10','Fond 10','photo10.jpg'],
     ['none','Aucun','var(--s2)']
   ];
-  h+='<div class="lab" style="margin:14px 0 8px">🖼️ Arrière-plan</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'+
+  let s='<div class="lab" style="margin-bottom:8px">Thème</div><div class="pills">'+
+    [['dark','🌙 Sombre'],['light','☀️ Clair'],['auto','⚙️ Auto']].map(m=>'<div class="pill '+(mode===m[0]?'on':'')+'" onclick="setMode(\''+m[0]+'\')">'+m[1]+'</div>').join('')+'</div>';
+  s+='<div class="lab" style="margin:16px 0 8px">'+t('accentColor')+'</div><div class="pills">'+
+    [['blue','Bleu','#3D7FFF'],['violet','Violet','#A98CF0'],['cyan','Cyan','#7FE0E8'],['green','Vert','#33D399'],['orange','Orange','#FF8A3D'],['pink','Rose','#FF5C9E']].map(c=>'<div class="pill '+(P.theme===c[0]?'on':'')+'" onclick="setTheme(\''+c[0]+'\')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+c[2]+';margin-right:6px"></span>'+c[1]+'</div>').join('')+
+    '<div class="pill '+(custom?'on':'')+'" onclick="openColorPicker()"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+(custom?P.customColor:'conic-gradient(red,orange,yellow,lime,cyan,blue,magenta,red)')+';margin-right:6px"></span>🎨 Autre</div></div>';
+  s+='<div class="lab" style="margin:16px 0 8px">🖼️ Arrière-plan</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'+
     bgOpts.map(o=>'<div onclick="setBgStyle(\''+o[0]+'\')" style="text-align:center;cursor:pointer">'+
       '<div style="aspect-ratio:1;border-radius:14px;background:'+(o[0]==='none'?o[2]:'url(\''+o[2]+'\') center/cover')+';border:2px solid '+(bgStyle===o[0]?'var(--e)':'var(--hair)')+';box-shadow:'+(bgStyle===o[0]?'0 0 0 3px var(--ed)':'none')+'"></div>'+
       '<div style="font-size:9.5px;margin-top:4px;color:'+(bgStyle===o[0]?'var(--e2)':'var(--muted)')+';font-weight:700">'+o[1]+'</div></div>').join('')+
-    '</div><div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.4">💡 La teinte de l\u2019arrière-plan suit ta couleur d\u2019accent choisie ci-dessus — tu peux mettre n\u2019importe quelle couleur.</div></div>';
-  // NOTIFICATIONS & SONS
-  h+=sec('🔔 '+t('notifsApp'));
-  h+='<div class="card stag"><div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('trainReminders')+'</span><div class="toggle'+(P.notif!==false?' on':'')+'" onclick="toggleNotif(this)"></div></div>'+
+    '</div><div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.4">💡 La teinte de l\u2019arrière-plan suit ta couleur d\u2019accent choisie ci-dessus — tu peux mettre n\u2019importe quelle couleur.</div>';
+  return s;
+}
+function pfNotifHTML(){
+  return '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('trainReminders')+'</span><div class="toggle'+(P.notif!==false?' on':'')+'" onclick="toggleNotif(this)"></div></div>'+
     '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">🔊 '+t('sounds')+'</span><div class="toggle'+(P.sounds!==false?' on':'')+'" onclick="toggleSounds(this)"></div></div>'+
-    '<div class="row"><span style="font-size:14px">'+t('units')+'</span><div class="toggle on"></div></div></div>';
-  // DONNÉES
-  h+=sec('🔒 '+t('dataPrivacy'));
-  h+='<div class="card stag"><button class="btn ghost sm" style="margin-bottom:8px" onclick="exportData()">📤 '+t('exportData')+'</button>';
-  h+='<button class="btn ghost sm" style="margin-bottom:8px" onclick="importData()">📥 '+t('importData')+'</button>';
-  h+='<button class="btn ghost sm" style="color:var(--bad)" onclick="resetAll()">🗑 '+t('resetApp')+'</button></div>';
-  h+='<div style="text-align:center;color:var(--dim);font-size:12px;margin:20px 0">IKORUN — Elite Athletic Intelligence · v2.0</div>';
-  $('#s-profil').innerHTML=h;
+    '<div class="row"><span style="font-size:14px">'+t('units')+'</span><div class="toggle on"></div></div>';
+}
+function pfDataHTML(){
+  return '<button class="btn ghost sm" style="margin-bottom:8px" onclick="exportData()">📤 '+t('exportData')+'</button>'+
+    '<button class="btn ghost sm" style="margin-bottom:8px" onclick="importData()">📥 '+t('importData')+'</button>'+
+    '<button class="btn ghost sm" style="color:var(--bad)" onclick="resetAll()">🗑 '+t('resetApp')+'</button>';
 }
 /* ---- Photo & Bio ---- */
 function changePhoto(){
