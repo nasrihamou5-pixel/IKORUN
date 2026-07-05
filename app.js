@@ -2158,6 +2158,18 @@ function ringSVG(size,pct,stroke,color,bg){
     '<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="'+(bg||'var(--s2)')+'" stroke-width="'+stroke+'"/>'+
     '<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="url(#'+gid+')" stroke-width="'+stroke+'" stroke-linecap="round" stroke-dasharray="'+c+'" stroke-dashoffset="'+off+'" style="transition:stroke-dashoffset 1s var(--ease);filter:drop-shadow(0 0 6px '+color+'aa)"/></svg>';
 }
+/* Anneau de stat compact (ring-wrap + svg + valeur centrale), factorisé pour
+   éviter de dupliquer ce markup à chaque tuile du bento (charge/séances/forme).
+   Ajoute un badge ✓ discret quand l'objectif est dépassé, plutôt que de
+   laisser l'anneau plein (100%) sans distinction visuelle avec "pile à 100%". */
+function ringStat(size,stroke,color,valueLabel,subLabel,pct,over){
+  const fs=size>=90?21:14;
+  return '<div class="ring-wrap" style="width:'+size+'px;height:'+size+'px">'+
+    ringSVG(size,pct,stroke,color)+
+    (over?'<div class="ring-over">'+ICN('check',size>=90?12:10)+'</div>':'')+
+    '<div class="ring-c"><div class="big" style="font-size:'+fs+'px">'+valueLabel+'</div>'+(subLabel?'<div class="sm">'+subLabel+'</div>':'')+'</div>'+
+  '</div>';
+}
 /* multi-segment donut: segs = [{v:number,color:'var(--e)'}], centerHTML optional */
 function donutSVG(segs,size,stroke,centerHTML){
   size=size||120; stroke=stroke||16;
@@ -2205,13 +2217,19 @@ function renderHome(){
   }
 
   // BENTO STATS — km (grande tuile) + séances/forme (tuiles compactes)
-  html+='<div class="bento stag" style="animation-delay:.04s">'+
-    '<div class="bt bt-km"><div class="bt-lab">'+cardIcon('chart','var(--e)')+'CHARGE SEMAINE</div>'+
-      '<div class="ring-wrap" style="width:104px;height:104px;margin:6px auto 0">'+ringSVG(104,Math.min(100,kmW/kmTarget*100),11,'var(--e)')+'<div class="ring-c"><div class="big">'+kmW.toFixed(0)+'</div><div class="sm">/ '+kmTarget+' km</div></div></div></div>'+
-    '<div class="bt-col">'+
-      '<div class="bt bt-sm"><div class="ring-wrap" style="width:50px;height:50px">'+ringSVG(50,Math.min(100,sessW/sessTarget*100),6,'var(--ok)')+'<div class="ring-c"><div class="big" style="font-size:14px">'+sessW+'</div></div></div><div class="bt-txt"><div class="bt-n">'+sessW+'<span>/'+sessTarget+'</span></div><div class="bt-l">séances</div></div></div>'+
-      '<div class="bt bt-sm"><div class="ring-wrap" style="width:50px;height:50px">'+ringSVG(50,form,6,'var(--or)')+'<div class="ring-c"><div class="big" style="font-size:14px">'+form+'</div></div></div><div class="bt-txt"><div class="bt-n">'+form+'</div><div class="bt-l">forme</div></div></div>'+
-    '</div></div>';
+  { const kmPct=kmW/kmTarget*100, kmOver=kmPct>=100;
+    const sessPct=sessW/sessTarget*100, sessOver=sessPct>=100;
+    const formOver=form>=100;
+    html+='<div class="bento stag" style="animation-delay:.04s">'+
+      '<div class="bt bt-km"><div class="bt-lab">'+cardIcon('chart','var(--e)')+'CHARGE SEMAINE</div>'+
+        '<div style="margin:6px auto 0">'+ringStat(104,11,'var(--e)',kmW.toFixed(0),'/ '+kmTarget+' km',kmPct,kmOver)+'</div>'+
+        (kmOver?'<div class="bt-over">+'+Math.round(kmW-kmTarget)+' km au-dessus de l\u2019objectif</div>':'')+
+      '</div>'+
+      '<div class="bt-col">'+
+        '<div class="bt bt-sm">'+ringStat(50,6,'var(--ok)',sessW,null,sessPct,sessOver)+'<div class="bt-txt"><div class="bt-n">'+sessW+'<span>/'+sessTarget+'</span></div><div class="bt-l">séances</div></div></div>'+
+        '<div class="bt bt-sm">'+ringStat(50,6,'var(--or)',form,null,form,formOver)+'<div class="bt-txt"><div class="bt-n">'+form+'</div><div class="bt-l">forme</div></div></div>'+
+      '</div></div>';
+  }
 
   // DAY STRIP — bande horizontale des prochains jours avec type de séance
   html+='<div class="daystrip-wrap stag" style="animation-delay:.06s"><div class="daystrip">';
@@ -4162,25 +4180,10 @@ function setupPWA(){
     let link=document.querySelector('link[rel="manifest"]'); if(!link){ link=document.createElement('link'); link.rel='manifest'; document.head.appendChild(link); }
     link.href=url;
   }catch(e){}
-  // Service worker : fichier réel et versionné (sw.js), plus fiable que l'ancien
-  // enregistrement par Blob URL qui empêchait iOS de détecter les mises à jour.
+  // Service worker : cache la page courante pour fonctionner hors-ligne
   if('serviceWorker'in navigator && location.protocol.startsWith('http')){
-    navigator.serviceWorker.register('sw.js').then(reg=>{
-      reg.update().catch(()=>{}); // force une vérification immédiate à chaque ouverture
-      // Si une nouvelle version est déjà en attente, on l'active tout de suite.
-      if(reg.waiting) reg.waiting.postMessage('skipWaiting');
-      reg.addEventListener('updatefound',()=>{
-        const nw=reg.installing;
-        if(nw) nw.addEventListener('statechange',()=>{ if(nw.state==='installed' && reg.waiting) nw.postMessage('skipWaiting'); });
-      });
-    }).catch(()=>{});
-    // Dès qu'un nouveau SW prend le contrôle, on recharge une seule fois
-    // pour que le nouveau code/CSS s'affiche immédiatement (plus besoin de
-    // fermer l'app ou de vider le cache à la main).
-    let swRefreshed=false;
-    navigator.serviceWorker.addEventListener('controllerchange',()=>{
-      if(swRefreshed) return; swRefreshed=true; location.reload();
-    });
+    const swCode="const C='ikorun-v3';self.addEventListener('install',e=>{self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(res=>{try{const c2=res.clone();caches.open(C).then(c=>c.put(e.request,c2))}catch(x){}return res}).catch(()=>caches.open(C).then(c=>c.match(e.request))))});";
+    try{ const b=new Blob([swCode],{type:'text/javascript'}); navigator.serviceWorker.register(URL.createObjectURL(b)).catch(()=>{}); }catch(e){}
   }
 }
 

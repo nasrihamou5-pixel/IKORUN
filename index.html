@@ -280,12 +280,16 @@ html[data-rank-theme="ikorun-elite"] .xp-hero-glow{background:radial-gradient(ci
 
 /* TOPBAR */
 .topbar{position:sticky;top:0;z-index:50;
-  background:linear-gradient(180deg,rgba(var(--bg-rgb),.38) 0%,rgba(var(--bg-rgb),.22) 65%,rgba(var(--bg-rgb),0) 100%);
-  -webkit-backdrop-filter:blur(6px) saturate(140%);backdrop-filter:blur(6px) saturate(140%);
+  background:linear-gradient(180deg,rgba(var(--bg-rgb),.58) 0%,rgba(var(--bg-rgb),.34) 65%,rgba(var(--bg-rgb),0) 100%);
+  -webkit-backdrop-filter:blur(8px) saturate(140%);backdrop-filter:blur(8px) saturate(140%);
   padding:max(8px,env(safe-area-inset-top)) 0 6px;display:flex;align-items:center;justify-content:space-between;}
-.tb-title,.tb-sub{text-shadow:0 1px 8px rgba(0,0,0,.5);}
+.tb-title,.tb-sub{text-shadow:0 1px 10px rgba(0,0,0,.65);}
 .tb-title{font-family:'Manrope';font-weight:800;font-size:19px;letter-spacing:-.5px;}
-.tb-sub{color:var(--muted);font-size:11.5px;margin-top:0px;font-weight:500;}
+/* Lisibilité garantie même par-dessus une photo de fond claire : couleur fixe
+   plutôt que --muted (qui devenait quasi invisible sur fond clair/photo, cf capture). */
+.tb-sub{color:rgba(255,255,255,.86);font-size:11.5px;margin-top:0px;font-weight:600;}
+html[data-bg-style="none"]{}
+html[data-bg-style="none"][data-mode="light"] .tb-sub{color:var(--muted);text-shadow:none;}
 .tb-gear{width:34px;height:34px;border-radius:var(--r-xs);background:var(--s1);border:1px solid var(--hair);
   box-shadow:var(--sh-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s var(--ease-spring);}
 .tb-gear:active{transform:scale(.92);}
@@ -596,6 +600,13 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .ring-c{position:absolute;text-align:center;}
 .ring-c .big{font-family:'JetBrains Mono';font-weight:700;font-size:21px;letter-spacing:-.3px;}
 .ring-c .sm{font-size:9.5px;color:var(--muted);font-weight:600;}
+/* Badge affiché quand un objectif est dépassé (anneau plein à 100% + marge) :
+   sans ça, "130/70km" et "70/70km" affichaient exactement le même anneau. */
+.ring-over{position:absolute;top:-2px;right:-2px;width:18px;height:18px;border-radius:50%;
+  background:var(--ok);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 2px var(--s1);}
+.ring-over svg{stroke:#fff;}
+.bt-over{font-size:10.5px;color:var(--ok);font-weight:700;text-align:center;margin-top:6px;}
 
 /* CHECK ITEM */
 .chk{display:flex;align-items:center;gap:12px;padding:12px 13px;background:var(--s2);border:1px solid var(--hair);
