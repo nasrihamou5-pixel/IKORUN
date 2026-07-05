@@ -4162,10 +4162,25 @@ function setupPWA(){
     let link=document.querySelector('link[rel="manifest"]'); if(!link){ link=document.createElement('link'); link.rel='manifest'; document.head.appendChild(link); }
     link.href=url;
   }catch(e){}
-  // Service worker : cache la page courante pour fonctionner hors-ligne
+  // Service worker : fichier réel et versionné (sw.js), plus fiable que l'ancien
+  // enregistrement par Blob URL qui empêchait iOS de détecter les mises à jour.
   if('serviceWorker'in navigator && location.protocol.startsWith('http')){
-    const swCode="const C='ikorun-v3';self.addEventListener('install',e=>{self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(res=>{try{const c2=res.clone();caches.open(C).then(c=>c.put(e.request,c2))}catch(x){}return res}).catch(()=>caches.open(C).then(c=>c.match(e.request))))});";
-    try{ const b=new Blob([swCode],{type:'text/javascript'}); navigator.serviceWorker.register(URL.createObjectURL(b)).catch(()=>{}); }catch(e){}
+    navigator.serviceWorker.register('sw.js').then(reg=>{
+      reg.update().catch(()=>{}); // force une vérification immédiate à chaque ouverture
+      // Si une nouvelle version est déjà en attente, on l'active tout de suite.
+      if(reg.waiting) reg.waiting.postMessage('skipWaiting');
+      reg.addEventListener('updatefound',()=>{
+        const nw=reg.installing;
+        if(nw) nw.addEventListener('statechange',()=>{ if(nw.state==='installed' && reg.waiting) nw.postMessage('skipWaiting'); });
+      });
+    }).catch(()=>{});
+    // Dès qu'un nouveau SW prend le contrôle, on recharge une seule fois
+    // pour que le nouveau code/CSS s'affiche immédiatement (plus besoin de
+    // fermer l'app ou de vider le cache à la main).
+    let swRefreshed=false;
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{
+      if(swRefreshed) return; swRefreshed=true; location.reload();
+    });
   }
 }
 
