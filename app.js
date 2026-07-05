@@ -405,16 +405,16 @@ function addXP(amount,reason){
    derniers, de compétitions/préparations terminées — "aucune obtention
    rapide possible". */
 const BADGE_TIERS=[
-  {key:'pierre',    name:'Pierre',       cls:'bd-pierre',    emoji:'🪨', level:1,  km:0,    sess:0, desc:"Le début du parcours."},
-  {key:'bronze',    name:'Bronze',       cls:'bd-bronze',    emoji:'🥉', level:2,  km:10,   sess:1, desc:"Les toutes premières bases."},
-  {key:'argent',    name:'Argent',       cls:'bd-argent',    emoji:'⭐', level:8,  km:40,   sess:6, desc:"La régularité paie déjà."},
-  {key:'or',        name:'Or',           cls:'bd-or',        emoji:'🏅', level:10, km:50,   sess:8, desc:"Détermination confirmée."},
-  {key:'emeraude',  name:'Émeraude',     cls:'bd-emeraude',  emoji:'💚', level:16, km:130,  sess:16,desc:"Progrès constants."},
-  {key:'diamant',   name:'Diamant',      cls:'bd-diamant',   emoji:'💎', level:25, km:370,  sess:36,desc:"Résistance à l'épreuve du temps.",preps:1},
-  {key:'cristal',   name:'Cristal',      cls:'bd-cristal',   emoji:'🧊', level:38, km:1090, sess:78,desc:"Pureté du geste, répété.",preps:2},
-  {key:'galaxie',   name:'Galaxie',      cls:'bd-galaxie',   emoji:'🌌', level:46, km:1810, sess:112,desc:"Une trajectoire qui s'étend.",preps:2},
-  {key:'divin',     name:'Divin',        cls:'bd-divin',     emoji:'✨', level:58, km:3390, sess:178,desc:"Un niveau que peu atteignent.",comps:3},
-  {key:'vvvelite',  name:'IKORUN Elite', cls:'bd-vvvelite',  emoji:'👑', level:70, km:5700, sess:270,desc:"Le sommet. Aucune obtention rapide n'est possible.",preps:6,comps:5}
+  {key:'initie',       name:'Initié',       cls:'bd-initie',       emoji:'🪨', level:1,  km:0,    sess:0, desc:"Début du parcours."},
+  {key:'discipline',   name:'Discipliné',   cls:'bd-discipline',   emoji:'🥉', level:2,  km:10,   sess:1, desc:"Premiers pas."},
+  {key:'perseverant',  name:'Persévérant',  cls:'bd-perseverant',  emoji:'⭐', level:8,  km:40,   sess:6, desc:"L'habitude s'installe."},
+  {key:'determine',    name:'Déterminé',    cls:'bd-determine',    emoji:'🏅', level:10, km:50,   sess:8, desc:"L'effort paie."},
+  {key:'avance',       name:'Avancé',       cls:'bd-avance',       emoji:'💚', level:16, km:130,  sess:16,desc:"Dépasse tes limites."},
+  {key:'elite',        name:'Élite',        cls:'bd-elite',        emoji:'💎', level:25, km:370,  sess:36,desc:"Constante amélioration.",preps:1},
+  {key:'exceptionnel', name:'Exceptionnel', cls:'bd-exceptionnel', emoji:'🧊', level:38, km:1090, sess:78,desc:"Maîtrise ton corps.",preps:2},
+  {key:'legendaire',   name:'Légendaire',   cls:'bd-legendaire',   emoji:'🌌', level:46, km:1810, sess:112,desc:"Devenu une référence.",preps:2},
+  {key:'ultime',       name:'Ultime',       cls:'bd-ultime',       emoji:'✨', level:58, km:3390, sess:178,desc:"Au sommet de toi-même.",comps:3},
+  {key:'iconique',     name:'Iconique',     cls:'bd-iconique',     emoji:'👑', level:70, km:5700, sess:270,desc:"Inspiration pour tous.",preps:6,comps:5}
 ];
 function badgeStats(){
   return {
@@ -555,7 +555,7 @@ function badgeStripHTML(){
   if(recent.length){
     h+='<div class="row" style="gap:10px;flex-wrap:wrap">'+recent.map(b=>'<div class="bd-icon '+b.cls+'" style="width:52px;height:52px;cursor:pointer" onclick="openBadges();openBadgeDetail(\''+b.key+'\')">'+bdGlyph(b.key)+'</div>').join('')+'</div>';
   } else {
-    h+='<div style="font-size:12px;color:var(--muted)">Aucun badge obtenu pour l\u2019instant — ta première séance te rapprochera du badge Pierre.</div>';
+    h+='<div style="font-size:12px;color:var(--muted)">Aucun badge obtenu pour l\u2019instant — ta première séance te rapprochera du badge Initié.</div>';
   }
   if(nb){
     const prog=badgeProgress(nb);
@@ -3309,17 +3309,49 @@ function _bdLaurel(side){
   return out+'</g>';
 }
 function _bdShield(){ return '<path d="M32 6 L52 13 L52 30 Q52 46 32 58 Q12 46 12 30 L12 13 Z" fill="rgba(255,255,255,.10)" stroke="rgba(255,255,255,.9)" stroke-width="2"/>'; }
+/* Aile-plume unique : part du centre bas, s'évase vers l'extérieur-haut.
+   idx=position de la plume dans l'aile (0=intérieure), total=nb de plumes. */
+function _bdPlume(mirror,idx,total,op){
+  const t=total<=1?0:idx/(total-1);
+  const spread=10+t*20, rise=10+t*26, w=4+t*3;
+  const bx=3+idx*0.6, by=46-idx*1.6;
+  const tipX=bx+spread, tipY=by-rise;
+  const ctrlX=bx+spread*0.55, ctrlY=by-rise*0.65;
+  return '<g transform="scale('+mirror+',1)"><path d="M'+bx+' '+by+
+    ' Q'+ctrlX+' '+(ctrlY-2)+' '+tipX+' '+tipY+
+    ' Q'+(ctrlX-2)+' '+(ctrlY+3)+' '+(bx-1)+' '+(by-3)+' Z" '+
+    'fill="rgba(255,255,255,'+op+')"/></g>';
+}
+function _bdWings(count){
+  let out='';
+  for(let i=0;i<count;i++){
+    const op=(0.32+ (i/(Math.max(1,count-1)))*0.55).toFixed(2);
+    out+=_bdPlume(1,i,count,op)+_bdPlume(-1,i,count,op);
+  }
+  return out;
+}
+/* Gemme centrale (losange) — grossit avec le prestige du palier */
+function _bdGem(cy,r){
+  return '<polygon points="32,'+(cy-r)+' '+(32+r*0.68).toFixed(1)+','+cy+' 32,'+(cy+r)+' '+(32-r*0.68).toFixed(1)+','+cy+
+    '" fill="rgba(255,255,255,.95)" stroke="rgba(255,255,255,.55)" stroke-width="0.8"/>'+
+    '<line x1="32" y1="'+(cy-r)+'" x2="32" y2="'+(cy+r)+'" stroke="rgba(255,255,255,.35)" stroke-width="0.6"/>';
+}
+/* Couronne — réservée au tout dernier palier */
+function _bdCrown(){
+  return '<path d="M18 16 L22.5 24 L32 12 L41.5 24 L46 16 L43.5 26 L20.5 26 Z" fill="rgba(255,255,255,.95)"/>'+
+    '<circle cx="18" cy="15" r="2.2" fill="rgba(255,255,255,.95)"/><circle cx="32" cy="11" r="2.6" fill="rgba(255,255,255,.95)"/><circle cx="46" cy="15" r="2.2" fill="rgba(255,255,255,.95)"/>';
+}
 const BADGE_GLYPHS={
-  pierre:'<polygon points="32,14 44,20 46,34 36,48 22,46 16,32 20,18" fill="rgba(255,255,255,.14)" stroke="rgba(255,255,255,.85)" stroke-width="2"/><path d="M24 26 L34 24 M28 34 L40 32" stroke="rgba(255,255,255,.5)" stroke-width="1.4"/>',
-  bronze:'<circle cx="32" cy="32" r="20" fill="rgba(255,255,255,.10)" stroke="rgba(255,255,255,.9)" stroke-width="2"/><circle cx="32" cy="32" r="12" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1.4"/>'+_bdStar(32,32,6,'rgba(255,255,255,.85)'),
-  argent:_bdShield()+_bdStar(32,30,8,'rgba(255,255,255,.9)'),
-  or:_bdShield()+_bdStar(32,28,8,'rgba(255,255,255,.95)')+_bdLaurel(1)+_bdLaurel(-1),
-  emeraude:_bdShield()+_bdWing(1,1)+_bdWing(-1,1)+'<polygon points="32,20 40,26 40,36 32,42 24,36 24,26" fill="rgba(255,255,255,.85)"/>',
-  diamant:_bdShield()+_bdWing(1,2)+_bdWing(-1,2)+'<polygon points="32,18 42,28 32,44 22,28" fill="rgba(255,255,255,.92)"/>',
-  cristal:_bdShield()+_bdWing(1,3)+_bdWing(-1,3)+'<polygon points="32,16 37,26 34,40 30,40 27,26" fill="rgba(255,255,255,.9)"/><polygon points="24,26 27,32 24,40 20,36" fill="rgba(255,255,255,.6)"/><polygon points="40,26 37,32 40,40 44,36" fill="rgba(255,255,255,.6)"/>',
-  galaxie:_bdShield()+_bdWing(1,3)+_bdWing(-1,3)+'<circle cx="32" cy="30" r="5" fill="rgba(255,255,255,.95)"/><ellipse cx="32" cy="30" rx="14" ry="5" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1.4"/>',
-  divin:_bdShield()+_bdWing(1,4)+_bdWing(-1,4)+'<g stroke="rgba(255,255,255,.8)" stroke-width="1.4">'+[0,45,90,135,180,225,270,315].map(a=>'<line x1="32" y1="28" x2="'+(32+Math.cos(a*Math.PI/180)*16).toFixed(1)+'" y2="'+(28+Math.sin(a*Math.PI/180)*16).toFixed(1)+'"/>').join('')+'</g>'+_bdStar(32,28,7,'rgba(255,255,255,.95)'),
-  vvvelite:_bdShield()+_bdWing(1,5)+_bdWing(-1,5)+_bdLaurel(1)+_bdLaurel(-1)+'<path d="M20 26 L24 34 L28 24 L32 32 L36 24 L40 34 L44 26 L42 40 L22 40 Z" fill="rgba(255,255,255,.95)"/>'
+  initie:      _bdWings(2)+_bdGem(36,3.6),
+  discipline:  _bdWings(3)+_bdGem(35,4.4),
+  perseverant: _bdWings(4)+_bdGem(34,5),
+  determine:   _bdWings(4)+_bdGem(33,5.6),
+  avance:      _bdWings(5)+_bdGem(32,6.2),
+  elite:       _bdWings(5)+_bdGem(31,6.8),
+  exceptionnel:_bdWings(6)+_bdGem(30,7.4),
+  legendaire:  _bdWings(6)+_bdGem(30,8),
+  ultime:      _bdWings(7)+_bdGem(29,8.6),
+  iconique:    _bdWings(8)+_bdGem(30,9)+_bdCrown()
 };
 function bdGlyph(key){ return '<svg class="bd-glyph" viewBox="0 0 64 64">'+(BADGE_GLYPHS[key]||'')+'</svg>'; }
 
