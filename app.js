@@ -868,6 +868,38 @@ function nav(s){
   if(s==='profil') renderProfile();
 }
 $$('.nb').forEach(b=>b.onclick=()=>nav(b.dataset.s));
+
+/* ---------- APPUI LONG + GLISSER pour changer d'onglet (style iOS) ---------- */
+(function(){
+  const navEl=document.getElementById('nav'); if(!navEl) return;
+  let pressTimer=null, dragMode=false, startX=0, startY=0, lastTab=null, suppressClick=false;
+  function tabAt(x,y){ const el=document.elementFromPoint(x,y); return el && el.closest('.nb'); }
+  navEl.addEventListener('touchstart',e=>{
+    const tt=e.touches[0]; startX=tt.clientX; startY=tt.clientY;
+    const nb=e.target.closest('.nb'); if(!nb) return;
+    clearTimeout(pressTimer);
+    pressTimer=setTimeout(()=>{
+      dragMode=true; suppressClick=true; navEl.classList.add('nav-dragging');
+      lastTab=nb.dataset.s; nav(lastTab);
+      if(navigator.vibrate) navigator.vibrate(9);
+    },320);
+  },{passive:true});
+  navEl.addEventListener('touchmove',e=>{
+    const tt=e.touches[0];
+    if(!dragMode){
+      if(Math.abs(tt.clientX-startX)>10||Math.abs(tt.clientY-startY)>10) clearTimeout(pressTimer);
+      return;
+    }
+    e.preventDefault();
+    const nb=tabAt(tt.clientX,tt.clientY);
+    if(nb && nb.dataset.s!==lastTab){ lastTab=nb.dataset.s; nav(lastTab); if(navigator.vibrate) navigator.vibrate(5); }
+  },{passive:false});
+  navEl.addEventListener('touchend',()=>{
+    clearTimeout(pressTimer);
+    if(dragMode){ dragMode=false; navEl.classList.remove('nav-dragging'); setTimeout(()=>{suppressClick=false;},60); }
+  });
+  navEl.addEventListener('click',e=>{ if(suppressClick){ e.stopImmediatePropagation(); e.preventDefault(); } },true);
+})();
 function greet(){ const h=new Date().getHours(); const l=curLang();
   const G={fr:[h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir'],en:[h<12?'Good morning':h<18?'Good afternoon':'Good evening'],ar:['مرحباً']};
   return (G[l]||G.fr)[0]+', '+(P.name||t('profil'))+' 👋'; }
