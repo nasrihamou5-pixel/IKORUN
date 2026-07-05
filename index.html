@@ -343,15 +343,15 @@ html[data-bg-style="none"][data-mode="light"] .tb-sub{color:var(--muted);text-sh
 .bd-iconique{--c1:#5c4a12;--c2:#fff2d0;--glow:#ffffff;}
 
 .bd-icon{position:relative;width:64px;height:64px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:28px;
-  background:conic-gradient(from 220deg,var(--c1),var(--c2),var(--c1));border:1px solid rgba(255,255,255,.2);overflow:hidden;
-  box-shadow:0 0 0 1px rgba(255,255,255,.08) inset,0 6px 20px -4px var(--glow),0 0 30px -6px var(--glow);
+  background:radial-gradient(120% 120% at 50% 30%,color-mix(in srgb,var(--c2) 22%,#0a0d12),#0a0d12 72%);border:1px solid rgba(255,255,255,.14);overflow:hidden;
+  box-shadow:0 0 0 1px rgba(255,255,255,.06) inset,0 6px 20px -4px var(--glow),0 0 30px -6px var(--glow);
   transition:transform .2s var(--ease-spring),box-shadow .2s ease;}
 .bd-icon.big{width:128px;height:128px;border-radius:34px;font-size:56px;}
 .bd-icon.locked{background:var(--s2);box-shadow:none;border:1px dashed var(--hair);filter:grayscale(1) brightness(.55);}
 .bd-icon.locked .bd-emoji{opacity:.35;}
 .bd-icon .bd-emoji{filter:drop-shadow(0 2px 4px rgba(0,0,0,.4));position:relative;z-index:1;}
-.bd-glyph{width:60%;height:60%;position:relative;z-index:1;filter:drop-shadow(0 2px 5px rgba(0,0,0,.45));}
-.bd-unlock-badge .bd-glyph{width:66%;height:66%;}
+.bd-glyph{width:82%;height:82%;object-fit:contain;position:relative;z-index:1;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5));}
+.bd-unlock-badge .bd-glyph{width:88%;height:88%;}
 .bd-icon::after{content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(135deg,rgba(255,255,255,.4),transparent 42%);pointer-events:none;}
 .bd-icon:not(.locked)::before{content:'';position:absolute;top:-30%;left:-60%;width:60%;height:160%;pointer-events:none;
   background:linear-gradient(100deg,transparent 20%,rgba(255,255,255,.55) 45%,transparent 70%);
@@ -380,8 +380,8 @@ html[data-bg-style="none"][data-mode="light"] .tb-sub{color:var(--muted);text-sh
 .bd-ring.r2{animation-delay:.5s;}
 .bd-ring.r3{animation-delay:1s;}
 .bd-unlock-badge{position:relative;width:160px;height:160px;border-radius:44px;display:flex;align-items:center;justify-content:center;font-size:76px;
-  background:conic-gradient(from 220deg,var(--c1),var(--c2),var(--c1));box-shadow:0 0 60px 10px var(--glow),0 0 140px 30px var(--glow);
-  animation:bdRotate 5s linear infinite,bdFloat 3s ease-in-out infinite;transform-style:preserve-3d;}
+  background:radial-gradient(120% 120% at 50% 30%,color-mix(in srgb,var(--c2) 26%,#0a0d12),#0a0d12 72%);box-shadow:0 0 60px 10px var(--glow),0 0 140px 30px var(--glow);
+  animation:bdFloat 3s ease-in-out infinite;}
 .bd-unlock-badge::after{content:'';position:absolute;inset:0;border-radius:inherit;overflow:hidden;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.55) 48%,transparent 66%);animation:bdSweep 2.2s ease-in-out infinite;}
 .bd-spark{position:absolute;top:50%;left:50%;width:5px;height:5px;border-radius:50%;background:var(--glow);animation:bdSpark 1.6s ease-out infinite;}
 
@@ -937,6 +937,6 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
     'sb_publishable_d1eInkDkCJG-Fx4S8UqNgw_Bm6uQuKw'
   );
 </script>
-<script src="app.js"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>
