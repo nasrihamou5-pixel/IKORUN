@@ -848,14 +848,25 @@ function pickSpeed(title,init,cb){
 
 /* ---------- NAV ---------- */
 const TITLES={home:['Accueil',''],sport:['Sport','Running & Musculation'],stats:['Statistiques','Tes données réelles'],outils:['Outils','Calculs & timers'],profil:['Profil','']};
+function positionNavPill(btn){
+  // Mesure réelle du bouton pour que la pastille soit toujours parfaitement
+  // centrée sous l'onglet actif, quel que soit le nombre d'onglets ou le
+  // padding du conteneur (évite le décalage causé par un calc() en %% fixe).
+  if(!btn) return;
+  const nav=document.getElementById('nav'), pill=document.getElementById('nav-pill');
+  if(!nav||!pill) return;
+  const navRect=nav.getBoundingClientRect(), btnRect=btn.getBoundingClientRect();
+  const pad=3; // marge interne autour du bouton pour l'effet "capsule"
+  pill.style.left=(btnRect.left-navRect.left+pad)+'px';
+  pill.style.width=(btnRect.width-pad*2)+'px';
+}
 function nav(s){
   $$('.scr').forEach(el=>el.classList.remove('on'));
   $('#s-'+s).classList.add('on');
   $$('.nb').forEach(b=>b.classList.remove('on'));
   const btn=document.querySelector('.nb[data-s="'+s+'"]');
   btn.classList.add('on');
-  const idx=[...$$('.nb')].indexOf(btn);
-  $('#nav-pill').style.left='calc('+(idx*20)+'% + 8px)';
+  positionNavPill(btn);
   const subs={home:'',sport:t('sub_sport'),stats:t('sub_stats'),outils:t('sub_outils'),profil:''};
   $('#tbTitle').textContent=t(s);
   $('#tbSub').textContent= s==='home'?greet():subs[s];
@@ -909,8 +920,8 @@ function boot(){
   applyTheme(); // applique le mode (clair/sombre) dès le démarrage
   checkConnectivity();
   if(P.notif!==false) ensureNotifPerm();
-  $('#nav-pill').style.width='calc(20% - 0px)';
-  $('#nav-pill').style.left='calc(0% + 8px)';
+  positionNavPill(document.querySelector('.nb.on')||document.querySelector('.nb'));
+  window.addEventListener('resize',()=>positionNavPill(document.querySelector('.nb.on')));
   if(!P.setupDone){ startOnboarding(); return; }  // création profil
   initApp();                                      // app
 }
