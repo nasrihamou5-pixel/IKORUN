@@ -1123,10 +1123,6 @@ function applyTheme(){
   const [btnMr,btnMg,btnMb]=mixToward(r,g,b,0,.10);   // stop milieu (légèrement assombri)
   const [btnDr,btnDg,btnDb]=mixToward(r,g,b,0,.28);   // stop foncé (bas)
   document.documentElement.style.setProperty('--grad-btn','linear-gradient(180deg,rgb('+btnTr+','+btnTg+','+btnTb+'),rgb('+btnMr+','+btnMg+','+btnMb+') 60%,rgb('+btnDr+','+btnDg+','+btnDb+'))');
-  // recolore réellement l'arrière-plan (halos ambiants + photo) selon la couleur d'accent choisie
-  const baseHue=222; // teinte de référence utilisée dans les halos de fond (bleu marine)
-  const rotate=(hexToHueDeg(c)-baseHue);
-  document.documentElement.style.setProperty('--bg-hue',rotate+'deg');
   const mode=effectiveMode();
   document.documentElement.setAttribute('data-mode',mode);
   const bgStyle=P.bgStyle||'photo1';

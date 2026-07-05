@@ -76,7 +76,7 @@ html[data-mode="light"] body::before{
 html[data-mode="light"] body::after{opacity:.025;}
 
 /* ===== COUCHE DE FOND DÉCORATIVE — photo au choix (Paramètres > Arrière-plan) ===== */
-.bg-art{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;filter:hue-rotate(var(--bg-hue,0deg)) saturate(1.15);}
+.bg-art{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;}
 .bg-photo-layer{position:absolute;inset:0;background-size:cover;background-position:center;background-repeat:no-repeat;opacity:0;transition:opacity .35s ease;
   -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,1) 0%,rgba(0,0,0,.85) 55%,rgba(0,0,0,.4) 78%,transparent 100%);
   mask-image:linear-gradient(180deg,rgba(0,0,0,1) 0%,rgba(0,0,0,.85) 55%,rgba(0,0,0,.4) 78%,transparent 100%);}
