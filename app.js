@@ -1105,6 +1105,8 @@ function initApp(){
   scheduleMotionSettle(1400);
   // Reprise automatique d'une séance muscu interrompue
   setTimeout(maybeResumeLive,600);
+  // Régénération hebdomadaire adaptative du plan (au moins 1x/semaine si nécessaire)
+  setTimeout(weeklyAdaptiveRegen,800);
 }
 function maybeResumeLive(){
   const snap=DB.load('live_active'); if(!snap||LIVE) return;
@@ -1570,6 +1572,11 @@ function allProgs(){ return [...PROGS,...CUSTOM]; }
 
 /* ---------- RUN PLAN GENERATOR ---------- */
 const TYPE_COLORS={EF:'--ok','Tempo':'--warn','Seuil':'--or','VMA':'--bad','Intervalle':'--bad','Récup':'--dim','Long':'--e','Course':'--e','Repos':'--dim'};
+// Couleur par baseType brut (codes générés par buildSessionV2) — utilisée pour la puce de type
+// affichée AVANT clic sur la carte de séance (aperçu rapide).
+const BASETYPE_COLORS={EF:'--ok',RECUP:'--dim',LONG:'--e',LONG_COURT:'--e',TEMPO:'--warn',TEMPO_SPE:'--warn',
+  SEUIL:'--or',DBLSEUIL:'--or',VMAc:'--bad',VMAl:'--bad',VO2:'--bad',INTERVAL:'--bad',COURSE:'--e',Repos:'--dim'};
+function baseTypeColor(bt){ return 'var('+(BASETYPE_COLORS[bt]||'--e')+')'; }
 
 /* Assigne les types aux jours dispo en respectant les préférences utilisateur */
 function assignTypesToDays(days,types,isLastWeek){
@@ -1808,6 +1815,7 @@ function finalizeMissedSession(){
   if(!s){ missedCtx=null; closeOv('ovProg'); return; }
   s.missed=true; s.missedReason=missedCtx.reason||null; s.missedReplacement=missedCtx.replacement||'Aucune activité'; s.missedReplData=missedCtx.replData||null;
   const note=ruleBasedAdjust(s, missedCtx.reason, missedCtx.replacement);
+  weeklyAdaptiveRegen();
   saveAll();
   closeOv('ovProg');
   toast('📝 Séance notée'+(note?' — '+note:''));
@@ -1876,6 +1884,68 @@ function applyProgressiveOverload(entry){
   saveAll();
 }
 
+/* ---------- RÉGÉNÉRATION HEBDOMADAIRE ADAPTATIVE DU PLAN ----------
+   Le plan n'est jamais figé : au moins une fois par semaine, si besoin,
+   les séances à venir (non faites) sont RECONSTRUITES (nouveau tirage
+   aléatoire dans buildSessionV2 → variantes différentes, pas une copie)
+   avec un volume/intensité ajusté selon :
+   - le taux de répétitions "respectées" dans les bilans récents,
+   - l'écart RPE réel vs prévu,
+   - la fatigue déclarée,
+   - le nombre de séances ratées récemment.
+   La périodisation (semaine/phase/type de séance/date) est conservée :
+   seul le contenu réel de chaque séance à venir est régénéré. */
+function weeklyAdaptiveRegen(force){
+  if(!PLAN || !PLAN.sessions || !PLAN.sessions.length) return;
+  const tk=todayKey();
+  const last=PLAN.lastAdapt||PLAN.created;
+  if(!force && daysBetween(new Date(last),new Date(tk))<7) return;
+  const since=addDaysKey(tk,-14);
+  const recentLogs=(SESSLOG||[]).filter(e=>e.date>=since && e.date<=tk);
+  const missedCount=PLAN.sessions.filter(s=>s.missed && s.date>=since && s.date<=tk).length;
+  let repTot=0, repOk=0, rpeDeltaSum=0, rpeN=0, fatSum=0, fatN=0;
+  recentLogs.forEach(e=>{
+    if(e.repsLog) e.repsLog.forEach(r=>{ if(r.timeS!=null){ repTot++; if(r.respected) repOk++; } });
+    if(e.plannedRpe){ rpeDeltaSum+=(e.rpe-e.plannedRpe); rpeN++; }
+    if(e.fatigue){ fatSum+=e.fatigue; fatN++; }
+  });
+  const repRatio=repTot?repOk/repTot:null;
+  const rpeDelta=rpeN?rpeDeltaSum/rpeN:0;
+  const avgFatigue=fatN?fatSum/fatN:3;
+  let factor=1, reason='Charge stable : nouvelles variantes de séances, volume inchangé.';
+  if(missedCount>=2 || rpeDelta>=1.5 || avgFatigue>=4){
+    factor=0.88; reason='Charge élevée détectée (séances ratées, RPE au-dessus du prévu ou fatigue) → volume réduit d\u2019environ 12% cette semaine.';
+  } else if(repRatio!=null && repRatio>=0.85 && rpeDelta<=0 && avgFatigue<=3){
+    factor=1.06; reason='Bonne assimilation (répétitions respectées, RPE maîtrisé) → volume et intensité légèrement augmentés.';
+  }
+  const vdot=getUserVDOT(); if(!vdot) return;
+  const pace={ EF:paceFromPct(vdot,.70), RC:paceFromPct(vdot,.66), MAR:paceFromPct(vdot,.80),
+    TEMPO:paceFromPct(vdot,.83), SEUIL:paceFromPct(vdot,.88), SPE:predictTime(vdot, raceMeters())/(raceMeters()/1000),
+    VMAl:repPace(vdot,1000), VMAc:repPace(vdot,300), SPRINT:paceFromPct(vdot,1.18) };
+  const seed=(Date.now()^Math.floor(Math.random()*1e9))>>>0;
+  const rng=mulberry32(seed);
+  const pick=arr=>arr[Math.floor(rng()*arr.length)];
+  const upcoming=nextUpcoming(tk);
+  if(!upcoming.length){ PLAN.lastAdapt=tk; saveAll(); return; }
+  // km hebdo courant par semaine (avant régénération), pour dériver un wkKm ajusté par séance
+  const wkKmBySemaine={};
+  PLAN.sessions.forEach(s=>{ wkKmBySemaine[s.week]=(wkKmBySemaine[s.week]||0)+(s.km||0); });
+  const nDaysBySemaine={};
+  PLAN.sessions.forEach(s=>{ nDaysBySemaine[s.week]=(nDaysBySemaine[s.week]||0)+1; });
+  upcoming.forEach(s=>{
+    if(s.baseType==='Repos'||s.km===0||s.baseType==='COURSE') return;
+    const wkKm=Math.max(15,Math.round((wkKmBySemaine[s.week]||s.km*4)*factor));
+    const ph={name:s.phase,key:s.phaseKey,color:s.color};
+    const built=buildSessionV2(s.baseType,{vdot,pace,wkKm,nDays:nDaysBySemaine[s.week]||4,phase:ph,rng,pick,isDeload:s.deload,goal:PLAN.goal,w:s.week,weeks:PLAN.weeks});
+    const durMin=built.durMin!=null?built.durMin:(built.pace==='—'?0:Math.round(built.km*parseTime(built.pace)/60));
+    s.type=built.label; s.title=built.title; s.km=built.km; s.duration=durMin; s.pace=built.pace;
+    s.rpe=built.rpe; s.series=built.series||null; s.desc=built.detail.objectif; s.detail=built.detail;
+  });
+  PLAN.lastAdapt=tk;
+  DB.save('run_plan',PLAN);
+  toast('🔄 Plan mis à jour pour la semaine — '+reason);
+}
+
 function generatePlan(){
   const vdot=getUserVDOT();
   if(!vdot){ toast('Profil incomplet : ajoute un chrono dans tes records'); return; }
@@ -1934,6 +2004,17 @@ function generatePlan(){
   burst(); renderSport();
 }
 function raceMeters(){ const m={'5 km':5000,'10 km':10000,'Semi-marathon':21097,'Marathon':42195,'Trail':21097,'Cross':8000,'Ultra':50000}; return m[P.objRace]||5000; }
+// Plafond de la sortie longue selon l'objectif de course — évite les sorties à 30-40 km
+// quand on prépare un 3000 m, et évite de plafonner à 18 km quand on prépare un semi/marathon.
+function longRunCapKm(){
+  const m=raceMeters();
+  if(m<=3000) return 16;
+  if(m<=5000) return 20;
+  if(m<=10000) return 26;
+  if(m<=21097) return 32;
+  if(m<=42195) return 38;
+  return 42;
+}
 
 /* ---------- CONFIGURATION DU PLAN (collecte des inputs avancés) ---------- */
 const LIKED_TYPES=['VMA courte','VMA longue','Intervalles','Tempo','Seuil','Endurance fondamentale','Sortie longue','Double seuil','Fartlek','Côtes','Travail VO₂max','Travail à l\u2019allure spécifique','Récupération active'];
@@ -2043,7 +2124,7 @@ function buildSessionV2(type,o){
       break;
     case 'LONG': case 'LONG_COURT':
       km=type==='LONG_COURT'?Math.round(wkKm*0.22):Math.round(wkKm*(phase.key==='SPE'?0.34:0.30));
-      km=Math.max(8,km); p=S(pace.EF*0.99); rpe=4; label='Long'; title='Sortie Longue'+(phase.key==='SPE'?' progressive':'');
+      km=Math.max(8,Math.min(longRunCapKm(),km)); p=S(pace.EF*0.99); rpe=4; label='Long'; title='Sortie Longue'+(phase.key==='SPE'?' progressive':'');
       d={objectif:'Développer l\u2019endurance, l\u2019économie de course et le mental.',warmup:'Départ progressif 10 min.',body:phase.key==='SPE'||phase.key==='PIC'?km+' km progressifs : 1ère moitié en '+S(pace.EF)+'/km, 2nde moitié en accélérant jusqu\u2019à '+S(pace.MAR)+'/km.':km+' km à allure endurance stable ('+S(pace.EF*0.99)+'/km).',paces:'EF '+S(pace.EF)+'/km → allure marathon '+S(pace.MAR)+'/km en fin.',recovery:'Continu, ravitaille si > 1h15.',cooldown:CD,tips:['Mange bien la veille.','Emporte eau + gel si > 1h30.'],mistakes:['Partir trop vite et marcher à la fin.'],why:'Augmente les réserves de glycogène et la capacité à utiliser les graisses.'};
       break;
     case 'TEMPO': {
@@ -2086,7 +2167,8 @@ function buildSessionV2(type,o){
       km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*splitSecFromPace(pace.VMAc,dist)/60+recN*recSecEach/60+CD_MIN);
       p=S(pace.VMAc); rpe=9; label='VMA courte'; title='VMA Courte';
       series={reps:n,dist,paceSecPerKm:pace.VMAc,recoverySec:recSecEach,recoveryLabel:'1 min trot'};
-      d={objectif:'Développer la vVO2max et la vitesse de pointe.',warmup:WU+' Échauffement OBLIGATOIRE.',body:repsText(n,dist,pace.VMAc)+', récup 1 min trot. (ou 30/30 : '+vary(12,16)+' × 30 s vite / 30 s lent).',paces:'~108-110% VMA — vise '+fmtSplit(splitSecFromPace(pace.VMAc,dist))+' sur chaque '+dist+' m (et non '+S(pace.VMAc)+', qui est juste l\u2019allure ramenée au km).',recovery:'1 min trot / 30 s.',cooldown:CD,tips:['Même temps de passage sur toutes les reps : '+fmtSplit(splitSecFromPace(pace.VMAc,dist))+' au '+dist+' m.'],mistakes:['Négliger l\u2019échauffement → blessure.','Confondre l\u2019allure /km affichée avec le temps réel à réaliser sur '+dist+' m.'],why:'Stimule le VO₂max et l\u2019économie neuromusculaire.'};
+      const vmac30m=Math.round(distKmFromTime(30,pace.VMAc)*1000);
+      d={objectif:'Développer la vVO2max et la vitesse de pointe.',warmup:WU+' Échauffement OBLIGATOIRE.',body:repsText(n,dist,pace.VMAc)+', récup 1 min trot. (ou variante courte : '+vary(12,16)+' × ~'+vmac30m+' m vif / '+vmac30m+' m trot, même intensité).',paces:'~108-110% VMA — vise '+fmtSplit(splitSecFromPace(pace.VMAc,dist))+' sur chaque '+dist+' m (et non '+S(pace.VMAc)+', qui est juste l\u2019allure ramenée au km).',recovery:'1 min trot entre les '+dist+' m.',cooldown:CD,tips:['Même temps de passage sur toutes les reps : '+fmtSplit(splitSecFromPace(pace.VMAc,dist))+' au '+dist+' m.'],mistakes:['Négliger l\u2019échauffement → blessure.','Confondre l\u2019allure /km affichée avec le temps réel à réaliser sur '+dist+' m.'],why:'Stimule le VO₂max et l\u2019économie neuromusculaire.'};
       break; }
     case 'VMAl': case 'VO2': {
       const n=vary(5,7), dist=1000, recSecEach=150, recN=Math.max(0,n-1);
@@ -2600,7 +2682,7 @@ function renderRunning(){
         const col='var('+(s.color||'--e')+')';
         const isHard=HARD_TYPES.includes(s.baseType);
         const qb=s.missed?'<div class="qbadge" style="background:rgba(255,92,108,.16);color:var(--bad)">⚠ Manquée</div>'
-          :(s.km===0?'<div class="qbadge rest">Repos</div>':(isHard?'<div class="qbadge hard">Qualité</div>':'<div class="qbadge easy">Facile</div>'));
+          :(s.km===0?'<div class="qbadge rest">Repos</div>':'<div class="chrome-chip" style="color:'+baseTypeColor(s.baseType)+'">'+s.type+'</div>');
         const ssum=seriesSummary(s);
         const line2=fmtDate(s.date)+(s.km?' · '+s.km+' km':' · Repos')+(s.km&&!ssum?' · '+s.pace+'/km':'');
         h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'" onclick="openRunSheet('+s.id+')" style="'+(s.missed?'border-color:rgba(255,92,108,.35)':'')+'"><div class="row"><div><div style="font-weight:700;font-size:14px">'+s.title+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+line2+'</div>'+(ssum?'<div style="color:var(--e);font-size:12px;font-weight:700;margin-top:3px">⏱ '+ssum+'</div>':'')+'</div>'+qb+'</div></div>';
@@ -2763,9 +2845,11 @@ function openPersoSheet(sid){
 }
 function markPersoDone(){
   const p=CUSTOM.find(x=>x.id===curPerso); const s=p.sessions.find(x=>x.id===curPersoSess); if(!s)return;
-  s.done=true; SESS.push({date:s.date,title:s.title,km:s.km,pace:s.pace,type:s.type,duration:s.duration,rpe:s.rpe});
+  s.done=true;
+  const sessRef=Date.now()+Math.random();
+  SESS.push({sessRef,provisional:true,date:s.date,title:s.title,km:s.km,pace:s.pace,type:s.type,duration:s.duration,rpe:s.rpe});
   saveAll(); refreshXP({animate:true}); closeOv('ovSheet'); renderSport();
-  openSessionDebrief({date:s.date,title:s.title,km:s.km,pace:s.pace,type:s.type,duration:s.duration,plannedRpe:s.rpe});
+  openSessionDebrief({date:s.date,title:s.title,km:s.km,pace:s.pace,type:s.type,duration:s.duration,plannedRpe:s.rpe,sessRef});
 }
 function delPersoSession(){
   const p=CUSTOM.find(x=>x.id===curPerso); p.sessions=p.sessions.filter(x=>x.id!==curPersoSess);
@@ -2774,36 +2858,92 @@ function delPersoSession(){
 function sharePlan(n){ if(navigator.share) navigator.share({title:'IKORUN Plan',text:'Mon plan : '+n}); else toast('Partage non supporté'); }
 
 /* ---------- QUESTIONNAIRE POST-SÉANCE + ANALYSE MOTEUR IKORUN ---------- */
-let debriefData=null, debriefCtx=null;
+let debriefData=null, debriefCtx=null, debriefReps=[];
 function openSessionDebrief(ctx){
   debriefCtx=ctx;
   debriefData={ done:true, duration:ctx.duration||'', distance:ctx.km||'', pace:ctx.pace||'',
-    rpe:5, pain:'Aucune', fatigue:3, weather:'☀️', feel:3, sleep:3, nutrition:3, note:'' };
+    rpe:5, pain:'Aucune', fatigue:3, weather:'\u2600\ufe0f', feel:3, sleep:3, nutrition:3, note:'' };
+  // Si la seance prevue est une serie de repetitions (400, 1000, pyramide simple...),
+  // on propose une ligne par repetition : temps reel ou bouton rapide "Respecte"
+  // qui remplit tout seul avec le temps de passage cible.
+  const sr=ctx.series;
+  debriefReps=(sr&&sr.reps&&sr.dist)?Array.from({length:sr.reps},(_,i)=>({
+    n:i+1, dist:sr.dist, target:Math.round(splitSecFromPace(sr.paceSecPerKm,sr.dist)), timeS:null, respected:null
+  })):[];
   renderDebrief();
   openOv('ovProg'); $('#ovProgTitle').textContent='Bilan de séance';
+}
+function pickDebriefRepTime(i){
+  const r=debriefReps[i];
+  pickTime('Temps · '+r.dist+' m (cible '+fmtSplit(r.target)+')', r.timeS!=null?r.timeS:r.target, v=>{
+    r.timeS=v; r.respected=v<=Math.round(r.target*1.06);
+    syncDebriefFromReps(); renderDebrief();
+  }, false);
+}
+function quickRespectDebriefRep(i){
+  const r=debriefReps[i];
+  r.timeS=r.target; r.respected=true;
+  syncDebriefFromReps(); renderDebrief();
+}
+function syncDebriefFromReps(){
+  const done=debriefReps.filter(r=>r.timeS!=null);
+  if(!done.length) return;
+  const totKm=done.length*debriefReps[0].dist/1000;
+  const totSec=done.reduce((a,r)=>a+r.timeS,0);
+  debriefData.distance=+totKm.toFixed(2);
+  debriefData.duration=Math.round(totSec/60);
+  debriefData.pace=fmtSplit(Math.round(totSec/totKm));
 }
 function renderDebrief(){
   const d=debriefData;
   const scale=(key,label,icons)=>'<div class="field"><label>'+label+'</label><div class="pills">'+icons.map((ic,i)=>'<div class="pill '+(d[key]===i+1?'on':'')+'" onclick="debriefData.'+key+'='+(i+1)+';renderDebrief()">'+ic+'</div>').join('')+'</div></div>';
-  let h='<div class="tip" style="margin-bottom:14px">📋 Réponds honnêtement : le moteur IKORUN va analyser ta séance.</div>';
+  let h='<div class="tip" style="margin-bottom:14px">\U0001f4cb Réponds honnêtement : le moteur IKORUN va analyser ta séance.</div>';
+  if(debriefReps.length){
+    const doneCount=debriefReps.filter(r=>r.respected===true).length;
+    h+='<div class="chrome-box"><div class="cb-head">\U0001f3c3 Bilan par répétition — '+debriefReps.length+' × '+debriefReps[0].dist+' m <span style="margin-left:auto;font-weight:600;color:var(--e2)">'+doneCount+'/'+debriefReps.length+' respectées</span></div>';
+    debriefReps.forEach((r,i)=>{
+      const st=r.respected===true?'border-color:rgba(51,211,153,.4);background:rgba(51,211,153,.08)':r.respected===false?'border-color:rgba(255,92,108,.35);background:rgba(255,92,108,.08)':'';
+      h+='<div class="row" style="align-items:center;gap:8px;border:1px solid var(--hair);border-radius:12px;padding:8px 10px;margin-bottom:6px;'+st+'">'
+        +'<div style="flex:1"><div style="font-weight:700;font-size:13px">Rép. '+r.n+' · '+r.dist+' m</div><div style="font-size:11px;color:var(--muted)">Cible '+fmtSplit(r.target)+'</div></div>'
+        +'<div style="font-weight:700;font-family:\'JetBrains Mono\';font-size:14px;min-width:44px;text-align:right">'+(r.timeS!=null?fmtSplit(r.timeS):'—')+'</div>'
+        +'<button class="btn ghost sm" style="width:auto;padding:6px 10px" onclick="pickDebriefRepTime('+i+')">\u23f1</button>'
+        +'<button class="btn ghost sm" style="width:auto;padding:6px 10px;color:var(--ok)" onclick="quickRespectDebriefRep('+i+')">\u2713</button>'
+        +'</div>';
+    });
+    h+='<div style="font-size:11px;color:var(--muted);margin-top:2px">\u23f1 = saisir le temps réel · \u2713 = "j\u2019ai respecté l\u2019allure" (remplit automatiquement avec le temps cible)</div></div>';
+  }
   h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>Durée (min)</label><input class="inp" type="number" value="'+(d.duration||'')+'" oninput="debriefData.duration=+this.value"></div><div class="field" style="flex:1"><label>Distance (km)</label><input class="inp" type="number" value="'+(d.distance||'')+'" oninput="debriefData.distance=+this.value"></div></div>';
   h+='<div class="field"><label>Allure moyenne /km</label><input class="inp" value="'+(d.pace||'')+'" oninput="debriefData.pace=this.value" placeholder="4:30"></div>';
   h+='<div class="field"><label>RPE — difficulté ressentie : '+d.rpe+'/10</label><input type="range" min="1" max="10" value="'+d.rpe+'" style="width:100%" oninput="debriefData.rpe=+this.value;renderDebrief()"></div>';
   h+='<div class="field"><label>Douleurs</label><div class="pills">'+['Aucune','Légères','Gênantes','Importantes'].map(p=>'<div class="pill '+(d.pain===p?'on':'')+'" onclick="debriefData.pain=\''+p+'\';renderDebrief()">'+p+'</div>').join('')+'</div></div>';
-  h+=scale('fatigue','Fatigue',['😀','🙂','😐','😓','😵']);
-  h+=scale('feel','Sensations',['😣','😕','😐','😊','🤩']);
-  h+=scale('sleep','Sommeil de la nuit',['😴','😪','😐','🙂','💤']);
-  h+=scale('nutrition','Alimentation du jour',['🍔','😐','🙂','🥗','💪']);
-  h+='<div class="field"><label>Météo</label><div class="pills">'+['☀️','⛅','🌧️','💨','🥵','🥶'].map(w=>'<div class="pill '+(d.weather===w?'on':'')+'" onclick="debriefData.weather=\''+w+'\';renderDebrief()">'+w+'</div>').join('')+'</div></div>';
+  h+=scale('fatigue','Fatigue',['\ud83d\ude00','\ud83d\ude42','\ud83d\ude10','\ud83d\ude13','\ud83d\ude35']);
+  h+=scale('feel','Sensations',['\ud83d\ude23','\ud83d\ude15','\ud83d\ude10','\ud83d\ude0a','\ud83e\udd29']);
+  h+=scale('sleep','Sommeil de la nuit',['\ud83d\ude34','\ud83d\ude2a','\ud83d\ude10','\ud83d\ude42','\ud83d\udca4']);
+  h+=scale('nutrition','Alimentation du jour',['\ud83c\udf54','\ud83d\ude10','\ud83d\ude42','\ud83e\udd57','\ud83d\udcaa']);
+  h+='<div class="field"><label>Météo</label><div class="pills">'+['\u2600\ufe0f','\u26c5','\ud83c\udf27\ufe0f','\ud83d\udca8','\ud83e\udd75','\ud83e\udd76'].map(w=>'<div class="pill '+(d.weather===w?'on':'')+'" onclick="debriefData.weather=\''+w+'\';renderDebrief()">'+w+'</div>').join('')+'</div></div>';
   h+='<div class="field"><label>Commentaire libre</label><textarea class="inp" rows="2" oninput="debriefData.note=this.value" placeholder="Comment t\u2019es-tu senti ?">'+(d.note||'')+'</textarea></div>';
-  h+='<button class="btn" onclick="submitDebrief()">🧠 Analyser ma séance</button>';
+  h+='<button class="btn" onclick="submitDebrief()">\ud83e\udde0 Analyser ma séance</button>';
   $('#progBody').innerHTML=h;
 }
 function submitDebrief(){
-  const entry={...debriefData,date:debriefCtx.date,title:debriefCtx.title,type:debriefCtx.type,plannedRpe:debriefCtx.plannedRpe,ts:Date.now()};
+  const repsLog=debriefReps.length?debriefReps.map(r=>({n:r.n,dist:r.dist,target:r.target,timeS:r.timeS,respected:r.respected})):null;
+  const entry={...debriefData,date:debriefCtx.date,title:debriefCtx.title,type:debriefCtx.type,plannedRpe:debriefCtx.plannedRpe,repsLog,ts:Date.now()};
   SESSLOG.push(entry); DB.save('sesslog',SESSLOG);
+  // Historique réel (stats, XP, charge, semaine...) : on remplace l'entrée provisoire
+  // (valeurs du plan) par les valeurs REELLES saisies dans le bilan. On ne pousse
+  // jamais deux fois la même séance dans SESS.
+  const real={
+    date:debriefCtx.date, title:debriefCtx.title, type:debriefCtx.type,
+    km:+debriefData.distance||0, pace:debriefData.pace||'—',
+    duration:+debriefData.duration||0, rpe:+debriefData.rpe||5,
+    planSessionId:debriefCtx.planSessionId||null, repsLog
+  };
+  const idx=debriefCtx.sessRef?SESS.findIndex(s=>s.sessRef===debriefCtx.sessRef):-1;
+  if(idx>=0) SESS[idx]=real; else SESS.push(real);
+  DB.save('sessions',SESS);
   const analysis=coachAnalyze(entry);
   applyProgressiveOverload(entry);
+  weeklyAdaptiveRegen();
   renderCoachAnalysis(analysis);
 }
 function coachAnalyze(e){
@@ -2874,39 +3014,50 @@ function openRunSheet(id){
   const s=PLAN?PLAN.sessions.find(x=>x.id===id):null; if(!s) return;
   curRunId=id;
   $('#sheetTitle').textContent=s.title;
-  const col='var('+(TYPE_COLORS[s.type]||'--e')+')';
-  let h='<div class="badge" style="background:rgba(var(--e-rgb),.15);color:'+col+';margin-bottom:14px">'+s.type+' · '+fmtDate(s.date)+'</div>';
+  const col=baseTypeColor(s.baseType);
+  let h='<div class="row" style="align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">'
+      +'<div class="chrome-chip" style="color:'+col+'">'+s.type+'</div>'
+      +'<div class="chrome-chip" style="color:var(--muted)">📅 '+fmtDate(s.date)+'</div>'
+      +'</div>';
   if(s.km){
-    h+='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+s.km+'</div><div class="l">km</div></div><div class="sbox"><div class="v" style="font-size:18px">'+s.pace+'</div><div class="l">/km moy.</div></div><div class="sbox"><div class="v">'+s.duration+'</div><div class="l">min</div></div><div class="sbox"><div class="v">'+s.rpe+'</div><div class="l">RPE /10</div></div></div>';
+    h+='<div class="chrome-sgrid"><div class="chrome-sbox"><div class="v">'+s.km+'</div><div class="l">km</div></div>'
+      +'<div class="chrome-sbox"><div class="v" style="font-size:16px">'+s.pace+'</div><div class="l">/km moy.</div></div>'
+      +'<div class="chrome-sbox"><div class="v">'+s.duration+'</div><div class="l">min</div></div>'
+      +'<div class="chrome-sbox"><div class="v">'+s.rpe+'</div><div class="l">RPE /10</div></div></div>';
   }
-  h+=seriesTableHTML(s.series);
   const dt=s.detail;
   if(dt){
-    const sec=(icon,t,c)=>'<div class="card-t" style="margin-top:14px">'+icon+' '+t+'</div><div class="tip">'+c+'</div>';
-    h+='<div style="background:linear-gradient(135deg,var(--ed),rgba(31,47,80,.3));border:1px solid var(--e);border-radius:14px;padding:12px;margin-bottom:6px"><div class="lab" style="color:var(--e)">🎯 Objectif</div><div style="font-size:14px;margin-top:4px;line-height:1.4">'+dt.objectif+'</div></div>';
-    h+=sec('🔥','Échauffement',dt.warmup);
-    h+=sec('💪','Corps de séance',dt.body);
-    h+=sec('🏁','Allures',dt.paces);
-    h+=sec('⏱','Temps de récupération',dt.recovery);
-    h+=sec('🧊','Retour au calme',dt.cooldown);
-    h+='<div class="card-t" style="margin-top:14px">✅ Conseils</div>'+dt.tips.map(t=>'<div class="tip" style="margin-bottom:6px">• '+t+'</div>').join('');
-    h+='<div class="card-t" style="margin-top:14px;color:var(--bad)">⚠️ Erreurs à éviter</div>'+dt.mistakes.map(t=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(255,92,108,.3);background:rgba(255,92,108,.08)">✗ '+t+'</div>').join('');
-    h+='<div class="card-t" style="margin-top:14px">🧠 Pourquoi cette séance ?</div><div class="tip" style="margin-bottom:18px">'+dt.why+'</div>';
+    h+='<div class="chrome-box accent"><div class="cb-head">🎯 Objectif</div><div class="cb-body">'+dt.objectif+'</div></div>';
+    // Échauffement replié par défaut : visible d'un coup d'œil mais ne prend pas toute la place.
+    h+='<div class="chrome-box"><div class="cb-head wu-toggle" onclick="this.classList.toggle(\'open\');this.nextElementSibling.classList.toggle(\'open\')"><span>🔥 Échauffement</span><span class="car">▾</span></div>'
+      +'<div class="wu-content"><div class="cb-body" style="margin-top:6px">'+dt.warmup+'</div></div></div>';
+    h+='<div class="chrome-box"><div class="cb-head">💪 Corps de séance</div><div class="cb-body">'+dt.body+'</div></div>';
+    h+=seriesTableHTML(s.series);
+    h+='<div class="pace-warn">⚠️ Ne dépasse pas l\u2019allure indiquée sur les premières répétitions — mieux vaut finir fort que partir trop vite.</div>';
+    h+='<div class="chrome-box"><div class="cb-head">🏁 Allures</div><div class="cb-body">'+dt.paces+'</div></div>';
+    h+='<div class="chrome-box"><div class="cb-head">⏱ Récupération</div><div class="cb-body">'+dt.recovery+'</div></div>';
+    h+='<div class="chrome-box"><div class="cb-head">🧊 Retour au calme</div><div class="cb-body">'+dt.cooldown+'</div></div>';
+    h+='<div class="chrome-box"><div class="cb-head">✅ Conseils</div>'+dt.tips.map(t=>'<div class="cb-body" style="margin-bottom:5px">• '+t+'</div>').join('')+'</div>';
+    h+='<div class="chrome-box bad"><div class="cb-head" style="color:var(--bad)">⚠️ Erreurs à éviter</div>'+dt.mistakes.map(t=>'<div class="cb-body" style="margin-bottom:5px">✗ '+t+'</div>').join('')+'</div>';
+    h+='<div class="chrome-box"><div class="cb-head">🧠 Pourquoi cette séance ?</div><div class="cb-body">'+dt.why+'</div></div>';
   } else {
-    h+='<div class="card-t">💪 Corps de séance</div><div class="tip" style="margin-bottom:18px">'+s.desc+'</div>';
+    h+=seriesTableHTML(s.series);
+    h+='<div class="chrome-box"><div class="cb-head">💪 Corps de séance</div><div class="cb-body">'+s.desc+'</div></div>';
   }
-  if(s.done) h+='<div class="badge" style="background:rgba(51,211,153,.18);color:var(--ok);width:100%;justify-content:center;padding:14px;border-radius:14px">✓ Séance terminée</div>';
-  else if(s.type!=='Repos') h+='<button class="btn" onclick="markRunDone()">✓ Marquer terminée</button>';
+  if(s.done) h+='<div class="badge" style="background:rgba(51,211,153,.18);color:var(--ok);width:100%;justify-content:center;padding:14px;border-radius:14px;margin-top:4px">✓ Séance terminée</div>';
+  else if(s.type!=='Repos') h+='<button class="btn" style="margin-top:4px" onclick="markRunDone()">✓ Marquer terminée</button>';
   $('#sheetBody').innerHTML=h;
   openOv('ovSheet');
 }
 function markRunDone(){
   const s=PLAN.sessions.find(x=>x.id===curRunId); if(!s) return;
   s.done=true;
-  SESS.push({date:s.date,title:s.title,km:s.km,pace:s.pace,type:s.type,duration:s.duration,rpe:s.rpe});
+  // Entrée provisoire (valeurs du plan) au cas où le bilan ne serait jamais validé —
+  // elle sera écrasée par les vraies valeurs si l'athlète remplit le bilan.
+  const sessRef=Date.now()+Math.random();
+  SESS.push({sessRef,provisional:true,date:s.date,title:s.title,km:s.km,pace:s.pace,type:s.type,duration:s.duration,rpe:s.rpe});
   saveAll(); refreshXP({animate:true}); closeOv('ovSheet'); renderSport();
-  // Questionnaire intelligent post-séance (Prompt 2.4)
-  openSessionDebrief({date:s.date,title:s.title,km:s.km,pace:s.pace,type:s.type,duration:s.duration,plannedRpe:s.rpe});
+  openSessionDebrief({date:s.date,title:s.title,km:s.km,pace:s.pace,type:s.type,duration:s.duration,plannedRpe:s.rpe,planSessionId:s.id,sessRef,series:s.series||null});
 }
 
 /* ---------- MUSCULATION ---------- */
