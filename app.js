@@ -989,6 +989,14 @@ function greet(){ const h=new Date().getHours(); const l=curLang();
   return (G[l]||G.fr)[0]+', '+(P.name||t('profil'))+' 👋'; }
 
 /* ---------- INIT ---------- */
+/* Fige les animations d'ambiance (icônes flottantes, halos, reflets...) une fois
+   que l'écran a eu le temps de s'afficher, au lieu de les laisser boucler
+   indéfiniment. Rejoue depuis zéro à chaque appel (nouvel écran / re-login). */
+function scheduleMotionSettle(delay){
+  document.documentElement.classList.remove('motion-settled');
+  clearTimeout(window._motionSettleT);
+  window._motionSettleT=setTimeout(()=>{ document.documentElement.classList.add('motion-settled'); }, delay||1400);
+}
 function boot(){
   applyTheme(); // applique le mode (clair/sombre) dès le démarrage
   checkConnectivity();
@@ -1000,7 +1008,7 @@ function boot(){
 }
 
 /* ============ CONNEXION / COMPTE (Supabase) ============ */
-function startLogin(){ $('#login').classList.add('on'); }
+function startLogin(){ $('#login').classList.add('on'); scheduleMotionSettle(2200); }
 function endLogin(){ $('#login').classList.remove('on'); }
 
 async function startApp(){
@@ -1046,6 +1054,7 @@ function initApp(){
   getDailyGoals();
   refreshXP();
   nav('home');
+  scheduleMotionSettle(1400);
   // Reprise automatique d'une séance muscu interrompue
   setTimeout(maybeResumeLive,600);
 }
@@ -2247,30 +2256,42 @@ function renderHome(){
     '</div>';
 
   // CHECKLIST
-  html+='<div class="card stag accent-ok" style="animation-delay:.10s"><div class="card-t">'+cardIcon('check','var(--ok)')+'Objectifs du jour</div>';
-  goals.forEach(g=>{
-    html+='<div class="chk '+(g.done?'done':'')+'" onclick="toggleGoal(\''+g.id+'\')"><div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div><div class="txt" style="font-size:14px;font-weight:500">'+g.txt+'</div></div>';
-  });
-  html+='</div>';
+  { const gDone=goals.filter(g=>g.done).length;
+    const gPct=goals.length?Math.round(gDone/goals.length*100):0;
+    const GOAL_ICN={plan:'run',mobility:'bolt',hydra:'water',sleep:'moon'};
+    html+='<div class="card stag accent-ok goals-card" style="animation-delay:.10s">'+
+      '<div class="goals-head"><div class="card-t" style="margin:0">'+cardIcon('check','var(--ok)')+'Objectifs du jour</div>'+
+      '<div class="goals-count '+(gDone===goals.length&&goals.length?'all':'')+'">'+gDone+'/'+goals.length+'</div></div>'+
+      '<div class="goals-bar"><div style="width:'+gPct+'%"></div></div>';
+    goals.forEach(g=>{
+      html+='<div class="goal-item '+(g.done?'done':'')+'" onclick="toggleGoal(\''+g.id+'\')">'+
+        '<div class="goal-ic">'+ICN(GOAL_ICN[g.id]||'bolt',15)+'</div>'+
+        '<div class="txt">'+g.txt+'</div>'+
+        '<div class="goal-check"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div></div>';
+    });
+    html+='</div>';
+  }
 
-  // DÉFI DU JOUR — carte mise en avant façon "challenge" d'app mobile
+  // DÉFI DU JOUR — carte mise en avant façon "challenge" d'app mobile, détaillée
   if(ps){
     const col='var('+(TYPE_COLORS[ps.type]||'--e')+')';
     const chPct=sessTarget?Math.min(100,Math.round(sessW/sessTarget*100)):0;
     const lw=lastWeekKm(); const delta=lw>0?Math.round((kmW-lw)/lw*100):(kmW>0?100:0);
+    const dt=ps.detail;
     html+='<div class="sec-head stag" style="animation-delay:.12s"><h3>Défi du jour</h3></div>';
     html+='<div class="challenge-card stag" style="animation-delay:.13s" onclick="openRunSheet('+ps.id+')"><div class="ch-glow"></div>'+
       (delta!==0?'<div class="ch-badge" style="'+(delta<0?'background:rgba(255,92,108,.18);color:var(--bad)':'')+'">'+(delta>0?'+':'')+delta+'%</div>':'')+
-      '<div class="ch-ic">'+(ps.type==='Repos'?'😴':cardIcon('run',col))+'</div>'+
+      '<div class="ch-row"><div class="ch-ic">'+(ps.type==='Repos'?'😴':cardIcon('run',col))+'</div>'+
       '<div class="ch-body"><div class="ch-tag">'+ps.type+(XP&&XP.level?' · '+levelName(XP.level):'')+'</div><div class="ch-title">'+ps.title+'</div>'+
-      '<div class="ch-meta">'+(ps.km?ps.km+' km · '+ps.pace+'/km · RPE '+ps.rpe:'Jour de récupération')+'</div>'+
-      '<div class="ch-bar"><div style="width:'+chPct+'%"></div></div></div>'+
-      '<div class="ch-cta">'+ICN('chevronR',16)+'</div></div>';
+      '<div class="ch-meta">'+(ps.km?ps.km+' km · '+ps.pace+'/km · RPE '+ps.rpe+(ps.duration?' · ~'+ps.duration+' min':''):'Jour de récupération')+'</div></div>'+
+      '<div class="ch-cta">'+ICN('chevronR',16)+'</div></div>'+
+      (dt&&dt.objectif?'<div class="ch-obj">🎯 '+dt.objectif+'</div>':'')+
+      '<div class="ch-bar"><div style="width:'+chPct+'%"></div></div></div>';
   }
 
   // EN BREF — recentré sur ce qui n'apparaît nulle part ailleurs sur l'accueil
   // (le km/séances de la semaine est déjà dans le bento, le J- est déjà dans la mosaïque)
-  html+='<div class="card stag accent-or" style="animation-delay:.18s"><div class="card-t">'+cardIcon('bolt','var(--or)')+'En bref</div><div class="sgrid">'+
+  html+='<div class="card stag accent-or" style="animation-delay:.15s"><div class="card-t">'+cardIcon('bolt','var(--or)')+'En bref</div><div class="sgrid">'+
     '<div class="sbox"><div class="v">'+(vdot||'—')+'</div><div class="l">VDOT</div></div>'+
     '<div class="sbox"><div class="v" style="font-size:18px">'+(P.pb5k||'—')+'</div><div class="l">PB 5000m</div></div>'+
     '<div class="sbox"><div class="v">'+streakDays()+'</div><div class="l">Jours de série</div></div></div></div>';
@@ -2278,7 +2299,7 @@ function renderHome(){
   // RECENT RECORD
   const recent=[...SESS,...MSESS].sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
   if(recent){
-    html+='<div class="card stag accent-purple" style="animation-delay:.30s"><div class="card-t">'+cardIcon('medal','var(--maitre)')+'Activité récente</div>'+
+    html+='<div class="card stag accent-purple" style="animation-delay:.17s"><div class="card-t">'+cardIcon('medal','var(--maitre)')+'Activité récente</div>'+
       '<div class="row"><div><div style="font-weight:700">'+(recent.title||recent.progName||'Séance')+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+fmtDate(recent.date)+'</div></div>'+
       '<div class="mono" style="color:var(--e);font-weight:700">'+(recent.km?recent.km+' km':(recent.tonnage?Math.round(recent.tonnage)+' kg':''))+'</div></div></div>';
   }
@@ -2286,7 +2307,7 @@ function renderHome(){
   // CARTE AGENDA
   const evts=[...AGENDA]; if(P.compDate) evts.push({date:P.compDate,title:'🏆 '+(P.goal||'Compétition')});
   const upcoming=evts.filter(e=>new Date(e.date)>=new Date(todayKey())).sort((a,b)=>new Date(a.date)-new Date(b.date))[0];
-  html+='<div class="card stag" style="animation-delay:.34s"><div class="row" style="margin-bottom:10px"><div class="card-t" style="margin:0">'+ICN('calendar',18,'var(--e)')+' Agenda</div><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="openTool(\'agenda\');nav(\'outils\')">Voir tout</span></div>';
+  html+='<div class="card stag" style="animation-delay:.19s"><div class="row" style="margin-bottom:10px"><div class="card-t" style="margin:0">'+ICN('calendar',18,'var(--e)')+' Agenda</div><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="openTool(\'agenda\');nav(\'outils\')">Voir tout</span></div>';
   if(upcoming){ const dd=daysBetween(new Date(),new Date(upcoming.date)); html+='<div class="row"><div><div style="font-weight:700">'+upcoming.title+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+fmtDate(upcoming.date)+'</div></div><div class="badge">'+(dd<=0?'Aujourd\u2019hui':'J-'+dd)+'</div></div>'; }
   else html+='<div style="font-size:13px;color:var(--dim)">Aucun événement à venir.</div>';
   html+='</div>';
@@ -2295,7 +2316,7 @@ function renderHome(){
     let next=null,nextT=null; for(const p of order){ const[hh,mm]=pt[p].split(':').map(Number); if(hh*60+mm>nm){ next=p; nextT=pt[p]; break; } }
     if(!next){ next='Fajr (demain)'; nextT=pt.Fajr; }
     const[nh,nmm]=nextT.split(':').map(Number); let diff=(nh*60+nmm)-(nm); if(diff<0)diff+=1440; const cd=Math.floor(diff/60)+'h'+String(diff%60).padStart(2,'0');
-    html+='<div class="card stag" style="animation-delay:.38s"><div class="row" style="margin-bottom:10px"><div class="card-t" style="margin:0">'+ICN('mosque',18,'var(--e)')+' Prochaine prière</div><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="openTool(\'priere\');nav(\'outils\')">Voir tout</span></div>';
+    html+='<div class="card stag" style="animation-delay:.21s"><div class="row" style="margin-bottom:10px"><div class="card-t" style="margin:0">'+ICN('mosque',18,'var(--e)')+' Prochaine prière</div><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="openTool(\'priere\');nav(\'outils\')">Voir tout</span></div>';
     html+='<div class="row"><div><div style="font-weight:700;font-size:16px">'+next+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">dans '+cd+'</div></div><div class="mono" style="font-size:24px;font-weight:700;color:var(--e)">'+nextT+'</div></div></div>';
   }catch(e){}
   $('#s-home').innerHTML=html;
@@ -3257,7 +3278,8 @@ const ICONS={
   target:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".5" fill="currentColor"/>',
   bolt:'<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>',
   medal:'<circle cx="12" cy="15" r="6"/><path d="M9 10 6 3M15 10l3-7M9.5 13.5 12 16l2.5-2.5"/>',
-  chevronR:'<path d="M9 5l7 7-7 7"/>'
+  chevronR:'<path d="M9 5l7 7-7 7"/>',
+  moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/>'
 };
 function ICN(name,size,color){ const s=size||22; return '<svg viewBox="0 0 24 24" width="'+s+'" height="'+s+'" fill="none" stroke="'+(color||'currentColor')+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[name]||'')+'</svg>'; }
 /* colored rounded-square icon badge used in card headers, replaces flat emoji */
@@ -3333,18 +3355,28 @@ const BADGE_GLYPHS={
   iconique:    _bdWings(8)+_bdGem(30,9)+_bdCrown()
 };
 const BADGE_IMG_FILES={
-  initie:'badges/initie.png',
-  discipline:'badges/discipline.png',
-  perseverant:'badges/perseverant.png',
-  determine:'badges/determine.png',
-  avance:'badges/avance.png',
-  elite:'badges/elite.png',
-  exceptionnel:'badges/exceptionnel.png',
-  legendaire:'badges/legendaire.png',
-  ultime:'badges/ultime.png',
-  iconique:'badges/iconique.png'
+  initie:'initie.png',
+  discipline:'discipline.png',
+  perseverant:'perseverant.png',
+  determine:'determine.png',
+  avance:'avance.png',
+  elite:'elite.png',
+  exceptionnel:'exceptionnel.png',
+  legendaire:'legendaire.png',
+  ultime:'ultime.png',
+  iconique:'iconique.png'
 };
-function bdGlyph(key){ return BADGE_IMG_FILES[key] ? '<img class="bd-glyph" src="'+BADGE_IMG_FILES[key]+'" alt="" draggable="false" loading="lazy">' : ''; }
+function bdGlyph(key){
+  const src=BADGE_IMG_FILES[key];
+  if(!src) return '<span class="bd-emoji">'+badgeEmoji(key)+'</span>';
+  return '<img class="bd-glyph" src="'+src+'" alt="" draggable="false" loading="lazy" onerror="bdImgErr(this,\''+key+'\')">';
+}
+function badgeEmoji(key){ const b=BADGE_TIERS.find(x=>x.key===key); return b?b.emoji:'🏅'; }
+function bdImgErr(img,key){
+  if(img.dataset.fallenBack) return; img.dataset.fallenBack='1';
+  const span=document.createElement('span'); span.className='bd-glyph bd-emoji'; span.textContent=badgeEmoji(key);
+  img.replaceWith(span);
+}
 
 /* ---------- OUTILS — HUB ÉPURÉ ---------- */
 let outilsTab='home';

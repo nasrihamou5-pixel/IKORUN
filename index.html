@@ -195,8 +195,7 @@ html[data-mode="light"] body::after{opacity:.02;}
 
 /* ===== CARTE "DÉFI DU JOUR" ===== */
 .challenge-card{position:relative;border-radius:22px;padding:16px;overflow:hidden;cursor:pointer;
-  background:linear-gradient(135deg,var(--marineL),var(--s1) 70%);border:1px solid var(--hair);box-shadow:var(--float-md);
-  display:flex;align-items:center;gap:14px;}
+  background:linear-gradient(135deg,var(--marineL),var(--s1) 70%);border:1px solid var(--hair);box-shadow:var(--float-md);}
 html[data-mode="light"] .challenge-card{background:linear-gradient(135deg,#dce8ff,#f4f7fc 70%);}
 .ch-glow{position:absolute;inset:0;background:radial-gradient(120px 120px at 85% 0%,rgba(var(--e-rgb),.28),transparent 70%);pointer-events:none;}
 .ch-ic{width:56px;height:56px;border-radius:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
@@ -641,6 +640,55 @@ html[data-mode="light"]{
 .chk .box svg{opacity:0;width:13px;height:13px;}
 .chk.done .txt{color:var(--dim);text-decoration:line-through;}
 @keyframes bounceChk{0%{transform:scale(.7);}60%{transform:scale(1.2);}100%{transform:scale(1);}}
+
+/* OBJECTIFS DU JOUR — refonte */
+.goals-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.goals-count{font-family:'JetBrains Mono';font-size:11.5px;font-weight:700;color:var(--muted);background:var(--s2);
+  border:1px solid var(--hair);border-radius:var(--r-pill);padding:3px 10px;transition:color .2s,background .2s,border-color .2s;}
+.goals-count.all{color:var(--ok);background:rgba(51,211,153,.12);border-color:rgba(51,211,153,.35);}
+.goals-bar{height:5px;border-radius:99px;background:var(--s2);overflow:hidden;margin-bottom:12px;}
+.goals-bar div{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--e),var(--ok));transition:width .35s var(--ease-out);}
+.goal-item{display:flex;align-items:center;gap:11px;padding:11px 12px;background:var(--s2);border:1px solid var(--hair);
+  border-radius:var(--r-sm);margin-bottom:7px;cursor:pointer;transition:border-color .15s,background .15s,transform .15s var(--ease-spring);}
+.goal-item:last-child{margin-bottom:0;}
+.goal-item:active{transform:scale(.985);background:var(--s3);}
+.goal-item .goal-ic{width:30px;height:30px;border-radius:9px;background:var(--ed);color:var(--e2);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s;}
+.goal-item .txt{flex:1;min-width:0;font-size:13.5px;font-weight:600;}
+.goal-item .goal-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--hair2);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;transition:.2s;}
+.goal-item .goal-check svg{opacity:0;width:12px;height:12px;}
+.goal-item.done{border-color:rgba(51,211,153,.3);background:rgba(51,211,153,.06);}
+.goal-item.done .goal-ic{background:rgba(51,211,153,.16);color:var(--ok);}
+.goal-item.done .goal-check{background:var(--ok);border-color:var(--ok);animation:bounceChk .4s var(--ease-spring);}
+.goal-item.done .goal-check svg{opacity:1;}
+.goal-item.done .txt{color:var(--dim);text-decoration:line-through;}
+
+/* DÉFI DU JOUR — détail */
+.challenge-card .ch-row{display:flex;align-items:center;gap:14px;}
+.challenge-card .ch-obj{position:relative;z-index:1;margin-top:10px;padding:9px 11px;font-size:12.5px;line-height:1.4;
+  color:var(--muted);background:rgba(255,255,255,.03);border:1px solid var(--hair);border-radius:12px;}
+
+/* ===== MOTION SETTLE — les animations d'ambiance (icônes flottantes, halos qui
+   pulsent, reflets qui balaient...) tournent un court instant puis se figent une
+   fois la page chargée, au lieu de boucler indéfiniment. Les animations d'entrée
+   (.stag), les feedbacks tactiles et l'écran de déblocage de badge ne sont pas
+   concernés : ils sont déjà ponctuels. ===== */
+html.motion-settled .icb svg,
+html.motion-settled .lr-icon svg,
+html.motion-settled .qa-pill svg,
+html.motion-settled .favtile svg,
+html.motion-settled .perfcard .pcl svg,
+html.motion-settled .tip-tile::before,
+html.motion-settled .tip-glow,
+html.motion-settled .wd.today .dot,
+html.motion-settled .bd-icon:not(.locked)::before,
+html.motion-settled #login::before,
+html.motion-settled .login-card,
+html.motion-settled .login-logo,
+html.motion-settled .login-hero{
+  animation:none !important;
+}
 
 /* WEEK DOTS */
 .week{display:flex;justify-content:space-between;gap:4px;}
