@@ -222,6 +222,29 @@ function fmtTime(sec){
   if(h>0) return h+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
   return m+':'+String(s).padStart(2,'0');
 }
+// ---- Courbe d'intensité des répétitions (% de vVO2max) selon la distance ----
+// Calibrée sur des données réelles d'entraînement (coureur ~VDOT 65-67, ex: 30×200m à 26-28s,
+// 30×300m à 40-45s, 20×400m à 60s, 10-15×1000m à 2:40-2:50, 4-6×2000m à 5:50-6:00, etc.).
+// Sur les répétitions courtes, la réserve de vitesse anaérobie fait qu'on court BEAUCOUP plus vite
+// que la simple extrapolation VMA/vVO2max (200 m ≈ 134% vVO2max, pas ~102% comme avant). Se
+// généralise à tous les niveaux car exprimée en % de la vVO2max individuelle (dérivée du VDOT).
+const REP_INTENSITY_CURVE=[
+  [200,133.8],[300,127.5],[400,120.4],[600,116.8],[800,113.1],
+  [1000,109.5],[1500,104.5],[2000,101.8],[3000,100.4],[4000,98.3],[5000,96.6]
+];
+function repIntensityPct(meters){
+  const c=REP_INTENSITY_CURVE;
+  if(meters<=c[0][0]) return c[0][1];
+  if(meters>=c[c.length-1][0]) return c[c.length-1][1];
+  for(let i=0;i<c.length-1;i++){
+    if(meters>=c[i][0] && meters<=c[i+1][0]){
+      const t=(meters-c[i][0])/(c[i+1][0]-c[i][0]);
+      return c[i][1]+(c[i+1][1]-c[i][1])*t;
+    }
+  }
+  return 100;
+}
+function repPace(vdot,meters){ return paceFromPct(vdot,repIntensityPct(meters)/100); }
 function vdotFromRace(d,t){
   const tm=t/60, v=d/tm;
   const vo2=-4.60+0.182258*v+0.000104*v*v;
@@ -1869,10 +1892,10 @@ function generatePlan(){
   // allures
   const pace={ EF:paceFromPct(vdot,.70), RC:paceFromPct(vdot,.66), MAR:paceFromPct(vdot,.80),
     TEMPO:paceFromPct(vdot,.83), SEUIL:paceFromPct(vdot,.88), SPE:predictTime(vdot, raceMeters())/(raceMeters()/1000),
-    // VMAc = allure "répétition" (courtes reps ≤ 400 m) : doit être nettement plus rapide que l'allure
-    // "intervalle" (VMAl, reps longues 800-1200 m). 1.02 était trop proche de VMAl et donnait des allures
-    // trop molles sur les 200/300 m ("R-pace" doit tourner autour de 108-112% vVO2max, cf. méthode Daniels).
-    VMAl:paceFromPct(vdot,.95), VMAc:paceFromPct(vdot,1.10), SPRINT:paceFromPct(vdot,1.18) };
+    // VMAc = allure "répétition" (courtes reps ≤ 400 m), VMAl = allure "intervalle" (reps 800-1200 m).
+    // Les deux utilisent la courbe distance→intensité calibrée sur données réelles (REP_INTENSITY_CURVE
+    // / repPace) au lieu d'un % fixe — nettement plus rapide et réaliste sur les 200/300 m.
+    VMAl:repPace(vdot,1000), VMAc:repPace(vdot,300), SPRINT:paceFromPct(vdot,1.18) };
   // volume : kmMin -> kmMax avec deload toutes 4 sem + taper
   const kmMin=P.kmWeekMin||P.kmWeek||35;
   const kmMax=P.kmWeekMax||Math.round((P.kmWeek||35)*1.6);
@@ -2075,7 +2098,7 @@ function buildSessionV2(type,o){
       break; }
     case 'INTERVAL': {
       const segs=[200,400,600,800,600,400,200];
-      const paceFor=dist=>dist<=400?pace.VMAc:(dist<=600?(pace.VMAc+pace.SEUIL)/2:pace.SEUIL);
+      const paceFor=dist=>repPace(vdot,dist);
       const mainSec=segs.reduce((a,dist)=>a+splitSecFromPace(paceFor(dist),dist),0);
       const mainKm=segs.reduce((a,dist)=>a+dist,0)/1000;
       const recSec=mainSec*6/7; // récup = durée de l'effort, entre chaque segment (pas après le dernier)
@@ -2084,7 +2107,7 @@ function buildSessionV2(type,o){
       p=S(pace.VMAl); rpe=8; label='Intervalles'; title='Intervalles mixtes';
       series={segments:segs.map(dist=>({dist,paceSecPerKm:paceFor(dist),splitSec:splitSecFromPace(paceFor(dist),dist)})),recoveryLabel:'jog = durée de l\u2019effort'};
       const detailSegs=segs.map(dist=>dist+' m ('+fmtSplit(splitSecFromPace(paceFor(dist),dist))+')').join(' · ');
-      d={objectif:'Travail mixte vitesse-endurance.',warmup:WU,body:'Pyramide : '+detailSegs+', récup jog = durée de l\u2019effort entre chaque segment.',paces:'VMA ('+S(pace.VMAc)+'/km) → seuil ('+S(pace.SEUIL)+'/km) selon la distance.',recovery:'Récup active égale à l\u2019effort.',cooldown:CD,tips:['Gère l\u2019allure selon la distance : plus la rép est courte, plus tu vas vite en valeur absolue.'],mistakes:['Tout faire à la même vitesse.'],why:'Combine plusieurs filières énergétiques.'};
+      d={objectif:'Travail mixte vitesse-endurance.',warmup:WU,body:'Pyramide : '+detailSegs+', récup jog = durée de l\u2019effort entre chaque segment.',paces:'De '+S(paceFor(200))+'/km (200 m) à '+S(paceFor(800))+'/km (800 m) — l\u2019allure ralentit progressivement avec la distance.',recovery:'Récup active égale à l\u2019effort.',cooldown:CD,tips:['Gère l\u2019allure selon la distance : plus la rép est courte, plus tu vas vite en valeur absolue.'],mistakes:['Tout faire à la même vitesse.'],why:'Combine plusieurs filières énergétiques.'};
       break; }
     case 'SPE': case 'SPE_COURT': {
       const n=type==='SPE_COURT'?vary(3,4):vary(4,6), dist=1000, recSecEach=90, recN=Math.max(0,n-1);
