@@ -2034,6 +2034,19 @@ function buildSessionV2(type,o){
 function weekStart(){ const d=new Date(); const dow=(d.getDay()+6)%7; d.setHours(0,0,0,0); d.setDate(d.getDate()-dow); return d; }
 function sessThisWeek(){ const ws=weekStart(); return SESS.filter(s=>new Date(s.date)>=ws); }
 function kmThisWeek(){ return sessThisWeek().reduce((a,s)=>a+(s.km||0),0); }
+function lastWeekKm(){
+  const now=new Date(); now.setHours(0,0,0,0);
+  const dow=now.getDay()===0?7:now.getDay();
+  const thisWeekStart=new Date(now); thisWeekStart.setDate(now.getDate()-dow+1);
+  const lastWeekStart=new Date(thisWeekStart); lastWeekStart.setDate(thisWeekStart.getDate()-7);
+  return SESS.filter(s=>{ const d=new Date(s.date+'T00:00:00'); return d>=lastWeekStart && d<thisWeekStart; }).reduce((a,s)=>a+(s.km||0),0);
+}
+function last7DaysKm(){
+  const out=[];
+  for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); const k=dateKey(d);
+    out.push([...SESS,...MSESS].filter(s=>s.date===k).reduce((a,s)=>a+(s.km||0),0)); }
+  return out;
+}
 function totalKm(){ return SESS.reduce((a,s)=>a+(s.km||0),0); }
 function totalTonnage(){ return MSESS.reduce((a,s)=>a+(s.tonnage||0),0); }
 function runCountWeek(){ return sessThisWeek().length; }
@@ -2171,25 +2184,24 @@ function renderHome(){
     '</div>';
   }
 
-  // AUJOURD'HUI — grille 2x2 (charge, séances, forme, VDOT), inspirée d'une home d'app mobile
+  // AUJOURD'HUI — bague double (charge/séances) + 2 mini-cartes, façon home d'app mobile
   { const kmPct=Math.min(100,kmW/kmTarget*100);
     const sessPct=Math.min(100,sessW/sessTarget*100);
-    const formPct=Math.min(100,form);
-    const vdotPct=vdot?Math.min(100,(vdot/85)*100):0;
+    const week7=last7DaysKm(); const maxDay=Math.max(1,...week7);
     html+='<div class="sec-head stag" style="animation-delay:.03s"><h3>Aujourd\u2019hui</h3><span class="see" onclick="nav(\'stats\')">Voir tout ›</span></div>';
-    html+='<div class="today-grid stag" style="animation-delay:.04s">'+
-      '<div class="tg-cell"><div class="tg-top"><div class="tg-ic" style="background:rgba(var(--e-rgb),.16);color:var(--e2)">'+ICN('run',15)+'</div><div class="tg-lab">CHARGE</div></div>'+
-        '<div class="tg-val">'+kmW.toFixed(0)+'<span style="font-size:11px;color:var(--muted);font-weight:600"> / '+kmTarget+' km</span></div>'+
-        '<div class="tg-bar"><div style="width:'+kmPct+'%;background:var(--e)"></div></div></div>'+
-      '<div class="tg-cell"><div class="tg-top"><div class="tg-ic" style="background:rgba(51,211,153,.16);color:var(--ok)">'+ICN('check',14)+'</div><div class="tg-lab">SÉANCES</div></div>'+
-        '<div class="tg-val">'+sessW+'<span style="font-size:11px;color:var(--muted);font-weight:600"> / '+sessTarget+'</span></div>'+
-        '<div class="tg-bar"><div style="width:'+sessPct+'%;background:var(--ok)"></div></div></div>'+
-      '<div class="tg-cell"><div class="tg-top"><div class="tg-ic" style="background:rgba(242,184,75,.18);color:var(--or)">'+ICN('bolt',14)+'</div><div class="tg-lab">FORME</div></div>'+
+    html+='<div class="hero-ring-card stag" style="animation-delay:.04s" onclick="nav(\'stats\')">'+
+      donutSVG([{v:kmPct,color:'var(--e)'},{v:100-kmPct,color:'rgba(255,255,255,.06)'}],92,10,'<div style="font-family:\'Manrope\';font-weight:800;font-size:19px">'+Math.round(kmPct)+'%</div><div style="font-size:8.5px;color:var(--muted)">objectif</div>')+
+      '<div class="hr-legend">'+
+        '<div class="hr-item"><span class="hr-dot" style="background:var(--e)"></span><div class="hr-txt"><div class="hr-val">'+kmW.toFixed(0)+'/'+kmTarget+' km</div><div class="hr-lab">Charge semaine</div></div></div>'+
+        '<div class="hr-item"><span class="hr-dot" style="background:var(--ok)"></span><div class="hr-txt"><div class="hr-val">'+sessW+'/'+sessTarget+'</div><div class="hr-lab">Séances</div></div></div>'+
+      '</div></div>';
+    html+='<div class="today-grid stag" style="animation-delay:.05s">'+
+      '<div class="tg-cell"><div class="tg-top"><div class="tg-ic" style="background:rgba(var(--e-rgb),.16);color:var(--e2)">'+ICN('chart',13)+'</div><div class="tg-lab">7 DERNIERS JOURS</div></div>'+
+        '<div class="tg-val">'+week7.reduce((a,v)=>a+v,0).toFixed(0)+' <span style="font-size:11px;color:var(--muted);font-weight:600">km</span></div>'+
+        '<div class="spark">'+week7.map(v=>'<b style="height:'+Math.max(10,Math.round(v/maxDay*100))+'%"></b>').join('')+'</div></div>'+
+      '<div class="tg-cell"><div class="tg-top"><div class="tg-ic" style="background:rgba(242,184,75,.18);color:var(--or)">'+ICN('bolt',13)+'</div><div class="tg-lab">FORME & SÉRIE</div></div>'+
         '<div class="tg-val">'+form+'<span style="font-size:11px;color:var(--muted);font-weight:600">/100</span></div>'+
-        '<div class="tg-bar"><div style="width:'+formPct+'%;background:var(--or)"></div></div></div>'+
-      '<div class="tg-cell"><div class="tg-top"><div class="tg-ic" style="background:rgba(127,224,232,.18);color:var(--diamant)">'+ICN('chart',14)+'</div><div class="tg-lab">VDOT</div></div>'+
-        '<div class="tg-val">'+(vdot||'—')+'</div>'+
-        '<div class="tg-bar"><div style="width:'+vdotPct+'%;background:var(--diamant)"></div></div></div>'+
+        '<div style="font-size:11px;color:var(--muted)">🔥 '+streakDays()+' jours de série</div></div>'+
     '</div>';
   }
 
@@ -2245,10 +2257,12 @@ function renderHome(){
   if(ps){
     const col='var('+(TYPE_COLORS[ps.type]||'--e')+')';
     const chPct=sessTarget?Math.min(100,Math.round(sessW/sessTarget*100)):0;
+    const lw=lastWeekKm(); const delta=lw>0?Math.round((kmW-lw)/lw*100):(kmW>0?100:0);
     html+='<div class="sec-head stag" style="animation-delay:.12s"><h3>Défi du jour</h3></div>';
     html+='<div class="challenge-card stag" style="animation-delay:.13s" onclick="openRunSheet('+ps.id+')"><div class="ch-glow"></div>'+
+      (delta!==0?'<div class="ch-badge" style="'+(delta<0?'background:rgba(255,92,108,.18);color:var(--bad)':'')+'">'+(delta>0?'+':'')+delta+'%</div>':'')+
       '<div class="ch-ic">'+(ps.type==='Repos'?'😴':cardIcon('run',col))+'</div>'+
-      '<div class="ch-body"><div class="ch-tag">'+ps.type+'</div><div class="ch-title">'+ps.title+'</div>'+
+      '<div class="ch-body"><div class="ch-tag">'+ps.type+(XP&&XP.level?' · '+levelName(XP.level):'')+'</div><div class="ch-title">'+ps.title+'</div>'+
       '<div class="ch-meta">'+(ps.km?ps.km+' km · '+ps.pace+'/km · RPE '+ps.rpe:'Jour de récupération')+'</div>'+
       '<div class="ch-bar"><div style="width:'+chPct+'%"></div></div></div>'+
       '<div class="ch-cta">'+ICN('chevronR',16)+'</div></div>';
@@ -3935,29 +3949,24 @@ function renderProfile(){
   const compDays=P.compDate?daysBetween(new Date(),new Date(P.compDate)):null;
   const langInfo=LANGS.find(l=>l[0]===curLang())||LANGS[0];
   let h='';
-  // ===== HERO : avatar + nom + niveau + bio =====
-  h+='<div class="card stag pf-hero"><div class="pf-avwrap">'+avatarHTML(96,38)+
+  // ===== HERO — avatar + nom + email/bio, épuré (image de référence : Profil) =====
+  h+='<div class="card stag pf-hero" style="animation-delay:0s"><div class="pf-avwrap">'+avatarHTML(88,34)+
     '<div class="pf-cam" onclick="changePhoto()">📷</div></div>';
-  h+='<div class="pf-name-row"><div class="man" style="font-weight:800;font-size:21px">'+(P.name||'Athlète')+'</div>'+
+  h+='<div class="pf-name-row"><div class="man" style="font-weight:800;font-size:20px">'+(P.name||'Athlète')+'</div>'+
     '<div class="pf-edit" onclick="openProfileEdit()" title="'+t('editInfos')+'">✏️</div></div>';
-  h+='<div class="rankchip" style="margin-top:9px;background:'+rk.bg+';color:#fff">'+t('level')+' '+XP.level+' · '+rk.name+'</div>';
-  h+='<div style="font-size:11px;color:var(--dim);margin-top:6px" class="mono">'+XP.total+' XP'+(XP.maxed?' · niveau max':' · '+(XP.span-XP.inLvl)+' XP avant niv. '+(XP.level+1))+'</div>';
-  h+='<div style="font-size:13px;color:var(--muted);margin-top:10px;line-height:1.5;font-style:'+(P.bio?'normal':'italic')+'" onclick="editBio()">'+(P.bio||'Ajoute une biographie ✍️')+'</div>';
-  // ===== STATS — rangée compacte (au lieu d'une grille 2×2 qui prenait toute la hauteur) =====
-  h+='<div class="pstat-row">'+
-    '<div class="pstat"><div class="v">'+(P.height||'—')+'</div><div class="l">'+t('height')+'</div></div>'+
-    '<div class="pstat"><div class="v">'+(P.weight||'—')+'</div><div class="l">'+t('weight')+'</div></div>'+
-    '<div class="pstat"><div class="v">'+age()+'</div><div class="l">'+t('age')+'</div></div>'+
-    '<div class="pstat"><div class="v">'+(getUserVDOT()||'—')+'</div><div class="l">VDOT</div></div>'+
-  '</div></div>';
-  // ===== PROMO BAR — objectif en cours, mis en avant comme une bannière =====
-  h+='<div class="promo-bar stag" style="animation-delay:.05s" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\';renderSport()">'+
-    '<div class="promo-ic">🎯</div>'+
-    '<div class="promo-txt"><div class="promo-t1">Objectif</div><div class="promo-t2">'+(P.objRace||P.goal||'Aucun objectif défini')+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div></div>'+
-    '<div class="promo-cta">Voir</div></div>';
-  // ===== PROGRESSION — bande de badges intégrée directement au profil =====
+  h+='<div style="font-size:12.5px;color:var(--muted);margin-top:3px" onclick="editBio()">'+(window.currentUserEmail||P.bio||'Ajoute une biographie ✍️')+'</div>';
+  h+='<div class="rankchip" style="margin-top:11px;background:'+rk.bg+';color:#fff">'+t('level')+' '+XP.level+' · '+rk.name+' · '+XP.total+' XP</div>';
+  h+='</div>';
+  // ===== APERÇU RAPIDE — carte unique, une ligne par info (au lieu d'une grille + bannière séparées) =====
+  h+='<div class="grp-card stag" style="animation-delay:.04s">'+
+    '<div class="grp-row no-chev"><div class="lr-icon">📏</div><div class="lr-title">Taille / poids</div><div class="lr-val">'+(P.height||'—')+' cm · '+(P.weight||'—')+' kg</div></div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">🎂</div><div class="lr-title">Âge</div><div class="lr-val">'+age()+' ans</div></div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">📈</div><div class="lr-title">VDOT</div><div class="lr-val">'+(getUserVDOT()||'—')+'</div></div>'+
+    '<div class="grp-row" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\';renderSport()"><div class="lr-icon">🎯</div><div class="lr-title">Objectif</div><div class="lr-val">'+(P.objRace||P.goal||'Aucun')+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+  '</div>';
+  // ===== PROGRESSION — badges intégrés directement au profil =====
   { const unlocked=unlockedBadges(); const recent=[...unlocked].sort((a,b)=>b.date<a.date?-1:1).slice(0,5).map(u=>BADGE_TIERS.find(b=>b.key===u.key)).filter(Boolean);
-    h+='<div class="sec-head stag" style="animation-delay:.06s"><h3>Progression</h3><span class="see" onclick="openBadges()">'+unlocked.length+' / '+BADGE_TIERS.length+' · Voir tout ›</span></div>';
+    h+='<div class="sec-head stag" style="animation-delay:.06s"><h3 class="grp-lab" style="margin:0">Progression</h3><span class="see" onclick="openBadges()">'+unlocked.length+' / '+BADGE_TIERS.length+' · Voir tout ›</span></div>';
     h+='<div class="card stag" style="animation-delay:.07s">';
     if(recent.length){
       h+='<div class="row" style="gap:10px;flex-wrap:wrap">'+recent.map(b=>'<div class="bd-icon '+b.cls+'" style="width:52px;height:52px;cursor:pointer" onclick="openBadgeDetail(\''+b.key+'\')">'+bdGlyph(b.key)+'</div>').join('')+'</div>';
@@ -3971,32 +3980,25 @@ function renderProfile(){
     }
     h+='</div>';
   }
-  // ===== SECTIONS GROUPÉES — Compte / Préférences / Support =====
-  const groups=[
-    ['Compte',[
-      ['👤','Gérer le profil','Nom, bio, photo','openProfileEdit()'],
-      ['🔐','Mot de passe & sécurité',window.currentUserEmail||'Non connecté',"openProfileSection('account')"],
-      ['🔔','Notifications','Rappels, sons',"openProfileSection('notif')"],
-      ['🌍','Langue',langInfo[1]+' '+langInfo[2],"openProfileSection('lang')"]
-    ]],
-    ['Préférences',[
-      ['🏅','Historique & records','Tes meilleures performances','openRecords()'],
-      ['📊','Statistiques','Charge, allure, tendances',"nav('stats')"],
-      ['🎨','Thème',(P.mode==='light'?'Clair':'Sombre'),"openProfileSection('appearance')"]
-    ]],
-    ['Support',[
-      ['🔒','Données & confidentialité','Export, import, réinitialisation',"openProfileSection('data')"],
-      ['❓',"Centre d\u2019aide",'FAQ, contact',"openProfileSection('data')"]
-    ]]
-  ];
-  groups.forEach((g,gi)=>{
-    h+='<div class="sec-head stag" style="animation-delay:.'+Math.min(24,9+gi*3)+'s"><h3 style="font-size:13px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)">'+g[0]+'</h3></div>';
-    g[1].forEach((r,i)=>{
-      h+='<div class="list-row stag" style="animation-delay:.'+Math.min(28,10+gi*3+i)+'s" onclick="'+r[3]+'"><div class="lr-icon">'+r[0]+'</div>'+
-        '<div class="lr-txt"><div class="lr-title">'+r[1]+'</div><div class="lr-sub">'+r[2]+'</div></div>'+
-        '<span class="lr-chev">'+ICN('chevronR',16)+'</span></div>';
-    });
-  });
+  // ===== SECTIONS GROUPÉES — Compte / Préférences / Support, une seule carte par groupe =====
+  h+='<div class="grp-lab stag" style="animation-delay:.09s">Compte</div>';
+  h+='<div class="grp-card stag" style="animation-delay:.10s">'+
+    '<div class="grp-row" onclick="openProfileEdit()"><div class="lr-icon">👤</div><div class="lr-title">Gérer le profil</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'account\')"><div class="lr-icon">🔐</div><div class="lr-title">Mot de passe & sécurité</div><div class="lr-val">'+(window.currentUserEmail||'Non connecté')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'notif\')"><div class="lr-icon">🔔</div><div class="lr-title">Notifications</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'lang\')"><div class="lr-icon">🌍</div><div class="lr-title">Langue</div><div class="lr-val">'+langInfo[1]+' '+langInfo[2]+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+  '</div>';
+  h+='<div class="grp-lab stag" style="animation-delay:.12s">Préférences</div>';
+  h+='<div class="grp-card stag" style="animation-delay:.13s">'+
+    '<div class="grp-row" onclick="openRecords()"><div class="lr-icon">🏅</div><div class="lr-title">Historique & records</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">📊</div><div class="lr-title">Statistiques</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">🎨</div><div class="lr-title">Thème</div>'+pfThemeSwitchHTML()+'</div>'+
+  '</div>';
+  h+='<div class="grp-lab stag" style="animation-delay:.15s">Support</div>';
+  h+='<div class="grp-card stag" style="animation-delay:.16s">'+
+    '<div class="grp-row" onclick="openProfileSection(\'data\')"><div class="lr-icon">🔒</div><div class="lr-title">Données & confidentialité</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'data\')"><div class="lr-icon">❓</div><div class="lr-title">Centre d\u2019aide</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+  '</div>';
   h+='<div style="text-align:center;color:var(--dim);font-size:12px;margin:20px 0">IKORUN — Elite Athletic Intelligence · v2.0</div>';
   $('#s-profil').innerHTML=h;
 }
@@ -4036,24 +4038,21 @@ function pfAccountHTML(){
 function pfLangHTML(){
   return '<div class="pills">'+LANGS.map(l=>'<div class="pill '+(curLang()===l[0]?'on':'')+'" onclick="setLang(\''+l[0]+'\')">'+l[1]+' '+l[2]+'</div>').join('')+'</div>';
 }
+/* Petit switch soleil/lune utilisé directement dans la ligne "Thème" du profil */
+function pfThemeSwitchHTML(){
+  const isLight=(P.mode==='light');
+  return '<div class="theme-switch sm'+(isLight?' light':'')+'" id="themeSwitch" onclick="event.stopPropagation();toggleThemeSwitch()">'+
+    '<div class="ts-sky"><div class="ts-star" style="top:6px;left:10px"></div><div class="ts-star" style="top:14px;left:28px"></div></div>'+
+    '<div class="ts-ray"></div>'+
+    '<div class="ts-thumb">'+(isLight?ICN_SUN:ICN_MOON)+'</div></div>';
+}
 function pfAppearanceHTML(){
   const mode=P.mode||'dark';
   const isLight=mode==='light';
   let s='<div class="lab" style="margin-bottom:10px">Thème</div>';
   s+='<div class="row" style="justify-content:space-between;align-items:center">'+
      '<span style="font-size:14px;color:var(--muted)">'+(isLight?'☀️ Clair':'🌙 Sombre')+'</span>'+
-     '<div class="theme-switch'+(isLight?' light':'')+'" id="themeSwitch" onclick="toggleThemeSwitch()">'+
-       '<div class="ts-sky">'+
-         '<div class="ts-star" style="top:8px;left:14px"></div>'+
-         '<div class="ts-star" style="top:18px;left:40px"></div>'+
-         '<div class="ts-star" style="top:26px;left:20px"></div>'+
-       '</div>'+
-       '<div class="ts-ray"></div>'+
-       '<div class="ts-thumb">'+(isLight?
-          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>'
-          :'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>')+
-       '</div>'+
-     '</div>'+
+     pfThemeSwitchHTML().replace('theme-switch sm','theme-switch')+
    '</div>';
   return s;
 }

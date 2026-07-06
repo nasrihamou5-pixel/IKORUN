@@ -171,20 +171,27 @@ html[data-mode="light"] body::after{opacity:.02;}
 .bt-n span{font-size:11px;color:var(--muted);font-weight:600;}
 .bt-l{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-top:1px;}
 
-/* ===== SECTION "AUJOURD'HUI" (grille 2x2 façon app mobile) ===== */
+/* ===== SECTION "AUJOURD'HUI" façon app mobile : bague double + 2 mini-cartes ===== */
 .sec-head{display:flex;align-items:center;justify-content:space-between;margin:4px 2px 10px;}
 .sec-head h3{font-family:'Manrope';font-weight:800;font-size:16px;}
 .sec-head .see{font-size:12px;font-weight:700;color:var(--e);cursor:pointer;}
+.hero-ring-card{display:flex;align-items:center;gap:16px;background:var(--s1);border:1px solid var(--hair);
+  border-radius:20px;padding:16px;box-shadow:var(--float-md);margin-bottom:10px;}
+.hr-legend{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;}
+.hr-item{display:flex;align-items:center;gap:8px;}
+.hr-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.hr-txt{min-width:0;}
+.hr-val{font-family:'Manrope';font-weight:800;font-size:14px;line-height:1.2;}
+.hr-lab{font-size:10.5px;color:var(--muted);font-weight:600;}
 .today-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
 .tg-cell{background:var(--s1);border:1px solid var(--hair);border-radius:18px;box-shadow:var(--float-sm);
-  padding:14px 12px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-height:104px;}
+  padding:13px 14px;display:flex;flex-direction:column;gap:8px;min-height:96px;}
 .tg-top{display:flex;align-items:center;justify-content:space-between;width:100%;}
-.tg-ic{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.tg-lab{font-size:10.5px;color:var(--muted);font-weight:700;letter-spacing:.2px;}
-.tg-val{font-family:'Manrope';font-weight:800;font-size:17px;line-height:1.1;}
-.tg-sub{font-size:10px;color:var(--dim);font-weight:600;}
-.tg-bar{width:100%;height:5px;border-radius:99px;background:var(--s2);overflow:hidden;}
-.tg-bar>div{height:100%;border-radius:99px;transition:width .8s var(--ease);}
+.tg-ic{width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.tg-lab{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.2px;}
+.tg-val{font-family:'Manrope';font-weight:800;font-size:16px;line-height:1.1;}
+.spark{display:flex;align-items:flex-end;gap:3px;height:26px;}
+.spark b{flex:1;border-radius:3px 3px 1px 1px;background:var(--e);min-height:3px;display:block;}
 
 /* ===== CARTE "DÉFI DU JOUR" ===== */
 .challenge-card{position:relative;border-radius:22px;padding:16px;overflow:hidden;cursor:pointer;
@@ -202,6 +209,8 @@ html[data-mode="light"] .challenge-card{background:linear-gradient(135deg,#dce8f
 html[data-mode="light"] .ch-bar{background:rgba(20,30,55,.1);}
 .ch-bar>div{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--e),var(--e2));transition:width .8s var(--ease);}
 .ch-cta{width:32px;height:32px;border-radius:50%;background:var(--e);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:1;}
+.ch-badge{position:absolute;top:12px;right:14px;font-size:10.5px;font-weight:800;padding:4px 9px;border-radius:99px;
+  background:rgba(51,211,153,.18);color:var(--ok);z-index:1;}
 
 /* ===== IDENTITÉ DE RANG =====
    Le rang ne recolore plus toute la page (trop chargé) : il reste visible
@@ -273,6 +282,19 @@ html[data-mode="light"] .ch-bar{background:rgba(20,30,55,.1);}
 .list-row .lr-title{font-weight:700;font-size:13.5px;font-family:'Manrope';}
 .list-row .lr-sub{font-size:11.5px;color:var(--muted);margin-top:1px;}
 .list-row .lr-chev{color:var(--dim);flex-shrink:0;}
+/* GROUPED CARD LIST — une seule carte par section, lignes séparées par un filet
+   (organisation "Profil / Réglages" classique : icône + libellé + valeur + chevron) */
+.grp-card{background:var(--s1);border:1px solid var(--hair);border-radius:16px;overflow:hidden;box-shadow:var(--float-sm);margin-bottom:16px;}
+.grp-row{display:flex;align-items:center;gap:12px;padding:13px 14px;cursor:pointer;border-bottom:1px solid var(--hair);transition:background .15s;}
+.grp-row:last-child{border-bottom:none;}
+.grp-row:active{background:var(--s2);}
+.grp-row .lr-icon{width:32px;height:32px;border-radius:9px;background:var(--ed);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--e);font-size:14.5px;}
+.grp-row .lr-title{font-weight:600;font-size:14px;flex:1;min-width:0;}
+.grp-row .lr-val{font-size:12.5px;color:var(--muted);flex-shrink:0;max-width:120px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;}
+.grp-row .lr-chev{color:var(--dim);flex-shrink:0;}
+.grp-row.no-chev{cursor:default;}
+.grp-row.no-chev:active{background:transparent;}
+.grp-lab{font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-weight:700;margin:0 2px 8px;}
 .mini-ic{width:28px;height:28px;border-radius:9px;background:var(--s2);border:1px solid var(--hair);display:inline-flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;flex-shrink:0;}
 .mini-ic:active{transform:scale(.9);}
 
@@ -700,6 +722,13 @@ html[data-mode="light"]{
 .theme-switch.light .ts-ray{background:radial-gradient(circle,rgba(159,216,255,.5),transparent 65%);}
 .theme-switch.burst .ts-ray{animation:tsBurst .55s ease-out;}
 @keyframes tsBurst{0%{opacity:.9;transform:scale(.3);}100%{opacity:0;transform:scale(1.8);}}
+
+.theme-switch.sm{width:54px;height:28px;}
+.theme-switch.sm .ts-thumb{width:22px;height:22px;top:2px;left:2px;}
+.theme-switch.sm .ts-thumb svg{width:12px;height:12px;}
+.theme-switch.sm.light .ts-thumb{left:calc(100% - 24px);}
+.theme-switch.sm .ts-star{width:1.5px;height:1.5px;}
+.theme-switch.sm .ts-ray{width:40px;height:40px;margin:-20px 0 0 -20px;}
 
 /* STEPPER */
 .stepper{display:flex;align-items:center;gap:8px;}
