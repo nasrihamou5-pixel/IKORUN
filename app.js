@@ -255,6 +255,31 @@ function spkToStr(spk){
   const m=Math.floor(spk/60), s=Math.round(spk%60);
   return m+':'+String(s).padStart(2,'0');
 }
+// ---- Helpers séries / fractionné (corrige l'affichage "allure /km" trompeur sur les courtes distances) ----
+// Distance parcourue (en km) pendant `sec` secondes à une allure sec/km donnée
+function distKmFromTime(sec,paceSecPerKm){ return paceSecPerKm>0?sec/paceSecPerKm:0; }
+// Temps de passage réel (en s) sur une distance donnée (m) à une allure sec/km donnée
+function splitSecFromPace(paceSecPerKm,meters){ return paceSecPerKm*meters/1000; }
+// Formatte un temps de passage : "27 s" si < 1 min, sinon "1:23"
+function fmtSplit(sec){
+  sec=Math.round(sec);
+  if(sec<60) return sec+' s';
+  const m=Math.floor(sec/60), s=sec%60;
+  return m+':'+String(s).padStart(2,'0');
+}
+// Texte complet "8 × 300 m à 53 s (2:57/km)" pour une série de répétitions
+function repsText(n,meters,paceSecPerKm){
+  return n+' × '+meters+' m à '+fmtSplit(splitSecFromPace(paceSecPerKm,meters))+' ('+spkToStr(paceSecPerKm)+'/km)';
+}
+// Résumé compact des séries d'une séance, pour affichage AVANT clic (carte de la liste)
+function seriesSummary(s){
+  const sr=s.series;
+  if(!sr) return null;
+  if(sr.segments) return 'Pyramide '+sr.segments[0].dist+'→'+Math.max(...sr.segments.map(x=>x.dist))+' m';
+  if(sr.reps && sr.dist) return sr.reps+' × '+sr.dist+' m à '+fmtSplit(splitSecFromPace(sr.paceSecPerKm,sr.dist));
+  if(sr.reps) return sr.reps+' × efforts'+(sr.note?' · '+sr.note:'');
+  return null;
+}
 function getUserVDOT(){
   const fromRec=(typeof RECORDS!=='undefined')?computeVDOTfromRecords():computeVDOT();
   if(fromRec) return fromRec;
@@ -1844,7 +1869,10 @@ function generatePlan(){
   // allures
   const pace={ EF:paceFromPct(vdot,.70), RC:paceFromPct(vdot,.66), MAR:paceFromPct(vdot,.80),
     TEMPO:paceFromPct(vdot,.83), SEUIL:paceFromPct(vdot,.88), SPE:predictTime(vdot, raceMeters())/(raceMeters()/1000),
-    VMAl:paceFromPct(vdot,.95), VMAc:paceFromPct(vdot,1.02), SPRINT:paceFromPct(vdot,1.10) };
+    // VMAc = allure "répétition" (courtes reps ≤ 400 m) : doit être nettement plus rapide que l'allure
+    // "intervalle" (VMAl, reps longues 800-1200 m). 1.02 était trop proche de VMAl et donnait des allures
+    // trop molles sur les 200/300 m ("R-pace" doit tourner autour de 108-112% vVO2max, cf. méthode Daniels).
+    VMAl:paceFromPct(vdot,.95), VMAc:paceFromPct(vdot,1.10), SPRINT:paceFromPct(vdot,1.18) };
   // volume : kmMin -> kmMax avec deload toutes 4 sem + taper
   const kmMin=P.kmWeekMin||P.kmWeek||35;
   const kmMax=P.kmWeekMax||Math.round((P.kmWeek||35)*1.6);
@@ -1870,10 +1898,10 @@ function generatePlan(){
       let type=assigned[di]||'EF';
       if(w===weeks && di===days.length-1) type='COURSE';
       const built=buildSessionV2(type,{vdot,pace,wkKm,nDays:days.length,phase:ph,rng,pick,isDeload,goal,w,weeks});
-      const durMin=built.pace==='—'?0:Math.round(built.km*parseTime(built.pace)/60);
+      const durMin=built.durMin!=null?built.durMin:(built.pace==='—'?0:Math.round(built.km*parseTime(built.pace)/60));
       sessions.push({ id:id++, week:w, phase:ph.name, phaseKey:ph.key, color:ph.color,
         date:dateKey(d), type:built.label, baseType:type, title:built.title,
-        km:built.km, duration:durMin, pace:built.pace, rpe:built.rpe,
+        km:built.km, duration:durMin, pace:built.pace, rpe:built.rpe, series:built.series||null,
         desc:built.detail.objectif, detail:built.detail, deload:isDeload, done:false });
     });
   }
@@ -1975,7 +2003,10 @@ function buildSessionV2(type,o){
   const S=spkToStr;
   const easyKm=Math.max(5,Math.round(wkKm/nDays*0.95));
   const vary=(a,b)=>a+Math.round(rng()*(b-a)); // variabilité contrôlée
-  let km,p,rpe,title,label,d={};
+  let km,p,rpe,title,label,d={},durMin=null,series=null;
+  const WU_MIN=17.5, CD_MIN=12.5;
+  const wuKm=distKmFromTime(WU_MIN*60,pace.EF), cdKm=distKmFromTime(CD_MIN*60,pace.RC);
+  const round1=x=>Math.round(x*10)/10;
   const WU='15-20 min footing en '+S(pace.EF)+'/km + 4-5 lignes droites progressives + gammes (montées de genoux, talons-fesses, foulées bondissantes).';
   const CD='10-15 min footing très lent en '+S(pace.RC)+'/km + étirements doux.';
   switch(type){
@@ -1992,51 +2023,96 @@ function buildSessionV2(type,o){
       km=Math.max(8,km); p=S(pace.EF*0.99); rpe=4; label='Long'; title='Sortie Longue'+(phase.key==='SPE'?' progressive':'');
       d={objectif:'Développer l\u2019endurance, l\u2019économie de course et le mental.',warmup:'Départ progressif 10 min.',body:phase.key==='SPE'||phase.key==='PIC'?km+' km progressifs : 1ère moitié en '+S(pace.EF)+'/km, 2nde moitié en accélérant jusqu\u2019à '+S(pace.MAR)+'/km.':km+' km à allure endurance stable ('+S(pace.EF*0.99)+'/km).',paces:'EF '+S(pace.EF)+'/km → allure marathon '+S(pace.MAR)+'/km en fin.',recovery:'Continu, ravitaille si > 1h15.',cooldown:CD,tips:['Mange bien la veille.','Emporte eau + gel si > 1h30.'],mistakes:['Partir trop vite et marcher à la fin.'],why:'Augmente les réserves de glycogène et la capacité à utiliser les graisses.'};
       break;
-    case 'TEMPO':
-      km=Math.round(easyKm*1.1); p=S(pace.TEMPO); rpe=6; label='Tempo'; title='Tempo Run';
+    case 'TEMPO': {
       const tmin=vary(20,30);
-      d={objectif:'Améliorer l\u2019efficacité et l\u2019endurance à allure soutenue.',warmup:WU,body:tmin+' min en continu à '+S(pace.TEMPO)+'/km (« confortablement difficile »).',paces:'~83% VMA — '+S(pace.TEMPO)+'/km.',recovery:'Bloc continu.',cooldown:CD,tips:['Tu dois pouvoir dire 2-3 mots, pas une phrase.'],mistakes:['Partir trop vite et exploser.'],why:'Repousse le seuil d\u2019accumulation du lactate.'};
-      break;
-    case 'TEMPO_SPE':
-      km=Math.round(easyKm*1.1); p=S(pace.SPE*1.02); rpe=6; label='Tempo spé'; title='Tempo allure spécifique';
-      d={objectif:'Te familiariser avec l\u2019allure de ta course objectif ('+goal+').',warmup:WU,body:vary(2,3)+' × 2 km à allure spécifique '+S(pace.SPE)+'/km, récup 2 min.',paces:'Allure course : '+S(pace.SPE)+'/km.',recovery:'2 min trot entre blocs.',cooldown:CD,tips:['Mémorise les sensations de cette allure.'],mistakes:['Aller plus vite que l\u2019allure cible.'],why:'L\u2019allure spécifique doit devenir automatique le jour J.'};
-      break;
-    case 'SEUIL':
-      const reps=vary(4,6); p=S(pace.SEUIL); km=Math.round(easyKm*1.2); rpe=7; label='Seuil'; title='Séance au Seuil';
-      d={objectif:'Repousser le seuil lactique — facteur n°1 de performance.',warmup:WU,body:reps+' × 1000 m à '+S(pace.SEUIL)+'/km, récup 1 min trot.',paces:'~88% VMA — '+S(pace.SEUIL)+'/km.',recovery:'1 min trot entre chaque.',cooldown:CD,tips:['Toutes les reps à la même allure.'],mistakes:['Partir trop fort sur la 1ère.'],why:'Le seuil est l\u2019allure tenable ~1h ; l\u2019élever rend tout plus facile.'};
-      break;
-    case 'DBLSEUIL':
-      p=S(pace.SEUIL); km=Math.round(easyKm*1.15); rpe=7; label='Double seuil'; title='Double Seuil (méthode norvégienne)';
-      d={objectif:'Maximiser le volume au seuil sans fatigue excessive (clé norvégienne).',warmup:WU,body:'Matin : 5 × 6 min à '+S(pace.SEUIL*1.01)+'/km (récup 1 min). Soir : 10 × 400 m à '+S(pace.SEUIL)+'/km (récup 30 s). Reste sous-maximal.',paces:'Seuil contrôlé '+S(pace.SEUIL)+'/km — lactate ~2-4 mmol.',recovery:'Récup courte, intensité maîtrisée.',cooldown:CD,tips:['Ne jamais finir épuisé : tu dois pouvoir refaire la séance.'],mistakes:['Transformer le seuil en VMA.'],why:'Double dose de stimulus seuil pour une fatigue minimale — signature des Ingebrigtsen.'};
-      break;
-    case 'VMAc':
-      const rc=vary(8,12); p=S(pace.VMAc); km=Math.round(easyKm); rpe=9; label='VMA courte'; title='VMA Courte';
-      d={objectif:'Développer la vVO2max et la vitesse de pointe.',warmup:WU+' Échauffement OBLIGATOIRE.',body:rc+' × 300 m à '+S(pace.VMAc)+'/km, récup 1 min trot. (ou 30/30 : '+vary(12,16)+' × 30 s vite / 30 s lent).',paces:'~100-102% VMA.',recovery:'1 min trot / 30 s.',cooldown:CD,tips:['Même allure sur toutes les reps.'],mistakes:['Négliger l\u2019échauffement → blessure.'],why:'Stimule le VO₂max et l\u2019économie neuromusculaire.'};
-      break;
-    case 'VMAl': case 'VO2':
-      const rl=vary(5,7); p=S(pace.VMAl); km=Math.round(easyKm*1.1); rpe=9; label=type==='VO2'?'VO₂max':'VMA longue'; title=type==='VO2'?'Séance VO₂max':'VMA Longue';
-      d={objectif:'Élever le VO₂max — ta cylindrée maximale.',warmup:WU,body:rl+' × 1000 m à '+S(pace.VMAl)+'/km, récup 2-3 min trot. (ou '+vary(4,5)+' × 1200 m).',paces:'~95-98% VMA — '+S(pace.VMAl)+'/km.',recovery:'2-3 min trot.',cooldown:CD,tips:['Régularité avant tout.','Arrête si tu ne tiens plus l\u2019allure.'],mistakes:['Récup trop courte.'],why:'Le temps passé à ~90-100% VO₂max augmente ta puissance aérobie maximale.'};
-      break;
-    case 'INTERVAL':
-      const ri=vary(6,10); p=S(pace.VMAl); km=Math.round(easyKm); rpe=8; label='Intervalles'; title='Intervalles mixtes';
-      d={objectif:'Travail mixte vitesse-endurance.',warmup:WU,body:'Pyramide : 200-400-600-800-600-400-200 m à allures '+S(pace.VMAc)+' à '+S(pace.SEUIL)+'/km, récup = durée de l\u2019effort.',paces:'VMA → seuil.',recovery:'Récup active égale à l\u2019effort.',cooldown:CD,tips:['Gère l\u2019allure selon la distance.'],mistakes:['Tout faire à la même vitesse.'],why:'Combine plusieurs filières énergétiques.'};
-      break;
-    case 'SPE': case 'SPE_COURT':
-      const reps2=type==='SPE_COURT'?vary(3,4):vary(4,6); p=S(pace.SPE); km=Math.round(easyKm*1.1); rpe=8; label='Allure spé'; title='Allure Spécifique '+(P.objRace||'');
-      d={objectif:'Ancrer l\u2019allure exacte de ta course ('+goal+').',warmup:WU,body:reps2+' × 1000 m à allure course '+S(pace.SPE)+'/km, récup 90 s.',paces:'Allure objectif : '+S(pace.SPE)+'/km.',recovery:'90 s trot.',cooldown:CD,tips:['Cette allure doit devenir un réflexe.'],mistakes:['Aller plus vite par excès de confiance.'],why:'La spécificité prime à l\u2019approche de la course.'};
-      break;
+      const mainKm=distKmFromTime(tmin*60,pace.TEMPO);
+      km=round1(wuKm+mainKm+cdKm); durMin=Math.round(WU_MIN+tmin+CD_MIN); p=S(pace.TEMPO); rpe=6; label='Tempo'; title='Tempo Run';
+      d={objectif:'Améliorer l\u2019efficacité et l\u2019endurance à allure soutenue.',warmup:WU,body:tmin+' min en continu à '+S(pace.TEMPO)+'/km (« confortablement difficile »), soit environ '+round1(mainKm)+' km.',paces:'~83% VMA — '+S(pace.TEMPO)+'/km.',recovery:'Bloc continu.',cooldown:CD,tips:['Tu dois pouvoir dire 2-3 mots, pas une phrase.'],mistakes:['Partir trop vite et exploser.'],why:'Repousse le seuil d\u2019accumulation du lactate.'};
+      break; }
+    case 'TEMPO_SPE': {
+      const n=vary(2,3), dist=2000, recSecEach=120, recN=Math.max(0,n-1);
+      const mainKm=n*dist/1000, recKm=distKmFromTime(recN*recSecEach,pace.RC);
+      km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*splitSecFromPace(pace.SPE,dist)/60+recN*recSecEach/60+CD_MIN);
+      p=S(pace.SPE); rpe=6; label='Tempo spé'; title='Tempo allure spécifique';
+      series={reps:n,dist,paceSecPerKm:pace.SPE,recoverySec:recSecEach,recoveryLabel:'2 min trot'};
+      d={objectif:'Te familiariser avec l\u2019allure de ta course objectif ('+goal+').',warmup:WU,body:repsText(n,dist,pace.SPE)+', récup 2 min trot entre blocs.',paces:'Allure course : '+S(pace.SPE)+'/km.',recovery:'2 min trot entre blocs.',cooldown:CD,tips:['Mémorise les sensations de cette allure.'],mistakes:['Aller plus vite que l\u2019allure cible.'],why:'L\u2019allure spécifique doit devenir automatique le jour J.'};
+      break; }
+    case 'SEUIL': {
+      const n=vary(4,6), dist=1000, recSecEach=60, recN=Math.max(0,n-1);
+      const mainKm=n*dist/1000, recKm=distKmFromTime(recN*recSecEach,pace.RC);
+      km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*splitSecFromPace(pace.SEUIL,dist)/60+recN*recSecEach/60+CD_MIN);
+      p=S(pace.SEUIL); rpe=7; label='Seuil'; title='Séance au Seuil';
+      series={reps:n,dist,paceSecPerKm:pace.SEUIL,recoverySec:recSecEach,recoveryLabel:'1 min trot'};
+      d={objectif:'Repousser le seuil lactique — facteur n°1 de performance.',warmup:WU,body:repsText(n,dist,pace.SEUIL)+', récup 1 min trot.',paces:'~88% VMA — '+S(pace.SEUIL)+'/km.',recovery:'1 min trot entre chaque.',cooldown:CD,tips:['Toutes les reps à la même allure.'],mistakes:['Partir trop fort sur la 1ère.'],why:'Le seuil est l\u2019allure tenable ~1h ; l\u2019élever rend tout plus facile.'};
+      break; }
+    case 'DBLSEUIL': {
+      // 2 sorties dans la journée : le matin en blocs longs, le soir en 400 m courts.
+      const nAM=5, minAM=6, recAM=60, recNam=4;
+      const nPM=10, distPM=400, recPM=30, recNpm=9;
+      const amMainKm=distKmFromTime(nAM*minAM*60,pace.SEUIL*1.01), amRecKm=distKmFromTime(recNam*recAM,pace.RC);
+      const pmMainKm=nPM*distPM/1000, pmRecKm=distKmFromTime(recNpm*recPM,pace.RC);
+      km=round1(wuKm+amMainKm+amRecKm+cdKm+wuKm+pmMainKm+pmRecKm+cdKm);
+      durMin=Math.round(2*WU_MIN+nAM*minAM+recNam*recAM/60+2*CD_MIN+nPM*splitSecFromPace(pace.SEUIL,distPM)/60+recNpm*recPM/60);
+      p=S(pace.SEUIL); rpe=7; label='Double seuil'; title='Double Seuil (méthode norvégienne)';
+      series={reps:nPM,dist:distPM,paceSecPerKm:pace.SEUIL,recoverySec:recPM,recoveryLabel:'30 s trot',note:'Séance du soir (matin = '+nAM+' × '+minAM+' min)'};
+      d={objectif:'Maximiser le volume au seuil sans fatigue excessive (clé norvégienne).',warmup:WU+' (×2 : une fois le matin, une fois le soir)',body:'Matin : '+nAM+' × '+minAM+' min à '+S(pace.SEUIL*1.01)+'/km (récup 1 min). Soir : '+repsText(nPM,distPM,pace.SEUIL)+' (récup 30 s). Reste sous-maximal.',paces:'Seuil contrôlé '+S(pace.SEUIL)+'/km — lactate ~2-4 mmol.',recovery:'Récup courte, intensité maîtrisée.',cooldown:CD+' (après chaque séance)',tips:['Ne jamais finir épuisé : tu dois pouvoir refaire la séance.'],mistakes:['Transformer le seuil en VMA.'],why:'Double dose de stimulus seuil pour une fatigue minimale — signature des Ingebrigtsen.'};
+      break; }
+    case 'VMAc': {
+      const n=vary(8,12), dist=300, recSecEach=60, recN=Math.max(0,n-1);
+      const mainKm=n*dist/1000, recKm=distKmFromTime(recN*recSecEach,pace.RC);
+      km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*splitSecFromPace(pace.VMAc,dist)/60+recN*recSecEach/60+CD_MIN);
+      p=S(pace.VMAc); rpe=9; label='VMA courte'; title='VMA Courte';
+      series={reps:n,dist,paceSecPerKm:pace.VMAc,recoverySec:recSecEach,recoveryLabel:'1 min trot'};
+      d={objectif:'Développer la vVO2max et la vitesse de pointe.',warmup:WU+' Échauffement OBLIGATOIRE.',body:repsText(n,dist,pace.VMAc)+', récup 1 min trot. (ou 30/30 : '+vary(12,16)+' × 30 s vite / 30 s lent).',paces:'~108-110% VMA — vise '+fmtSplit(splitSecFromPace(pace.VMAc,dist))+' sur chaque '+dist+' m (et non '+S(pace.VMAc)+', qui est juste l\u2019allure ramenée au km).',recovery:'1 min trot / 30 s.',cooldown:CD,tips:['Même temps de passage sur toutes les reps : '+fmtSplit(splitSecFromPace(pace.VMAc,dist))+' au '+dist+' m.'],mistakes:['Négliger l\u2019échauffement → blessure.','Confondre l\u2019allure /km affichée avec le temps réel à réaliser sur '+dist+' m.'],why:'Stimule le VO₂max et l\u2019économie neuromusculaire.'};
+      break; }
+    case 'VMAl': case 'VO2': {
+      const n=vary(5,7), dist=1000, recSecEach=150, recN=Math.max(0,n-1);
+      const mainKm=n*dist/1000, recKm=distKmFromTime(recN*recSecEach,pace.RC);
+      km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*splitSecFromPace(pace.VMAl,dist)/60+recN*recSecEach/60+CD_MIN);
+      p=S(pace.VMAl); rpe=9; label=type==='VO2'?'VO₂max':'VMA longue'; title=type==='VO2'?'Séance VO₂max':'VMA Longue';
+      series={reps:n,dist,paceSecPerKm:pace.VMAl,recoverySec:recSecEach,recoveryLabel:'2-3 min trot'};
+      d={objectif:'Élever le VO₂max — ta cylindrée maximale.',warmup:WU,body:repsText(n,dist,pace.VMAl)+', récup 2-3 min trot. (ou '+vary(4,5)+' × 1200 m).',paces:'~95-98% VMA — '+S(pace.VMAl)+'/km.',recovery:'2-3 min trot.',cooldown:CD,tips:['Régularité avant tout.','Arrête si tu ne tiens plus l\u2019allure.'],mistakes:['Récup trop courte.'],why:'Le temps passé à ~90-100% VO₂max augmente ta puissance aérobie maximale.'};
+      break; }
+    case 'INTERVAL': {
+      const segs=[200,400,600,800,600,400,200];
+      const paceFor=dist=>dist<=400?pace.VMAc:(dist<=600?(pace.VMAc+pace.SEUIL)/2:pace.SEUIL);
+      const mainSec=segs.reduce((a,dist)=>a+splitSecFromPace(paceFor(dist),dist),0);
+      const mainKm=segs.reduce((a,dist)=>a+dist,0)/1000;
+      const recSec=mainSec*6/7; // récup = durée de l'effort, entre chaque segment (pas après le dernier)
+      const recKm=distKmFromTime(recSec,pace.RC);
+      km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+mainSec/60+recSec/60+CD_MIN);
+      p=S(pace.VMAl); rpe=8; label='Intervalles'; title='Intervalles mixtes';
+      series={segments:segs.map(dist=>({dist,paceSecPerKm:paceFor(dist),splitSec:splitSecFromPace(paceFor(dist),dist)})),recoveryLabel:'jog = durée de l\u2019effort'};
+      const detailSegs=segs.map(dist=>dist+' m ('+fmtSplit(splitSecFromPace(paceFor(dist),dist))+')').join(' · ');
+      d={objectif:'Travail mixte vitesse-endurance.',warmup:WU,body:'Pyramide : '+detailSegs+', récup jog = durée de l\u2019effort entre chaque segment.',paces:'VMA ('+S(pace.VMAc)+'/km) → seuil ('+S(pace.SEUIL)+'/km) selon la distance.',recovery:'Récup active égale à l\u2019effort.',cooldown:CD,tips:['Gère l\u2019allure selon la distance : plus la rép est courte, plus tu vas vite en valeur absolue.'],mistakes:['Tout faire à la même vitesse.'],why:'Combine plusieurs filières énergétiques.'};
+      break; }
+    case 'SPE': case 'SPE_COURT': {
+      const n=type==='SPE_COURT'?vary(3,4):vary(4,6), dist=1000, recSecEach=90, recN=Math.max(0,n-1);
+      const mainKm=n*dist/1000, recKm=distKmFromTime(recN*recSecEach,pace.RC);
+      km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*splitSecFromPace(pace.SPE,dist)/60+recN*recSecEach/60+CD_MIN);
+      p=S(pace.SPE); rpe=8; label='Allure spé'; title='Allure Spécifique '+(P.objRace||'');
+      series={reps:n,dist,paceSecPerKm:pace.SPE,recoverySec:recSecEach,recoveryLabel:'90 s trot'};
+      d={objectif:'Ancrer l\u2019allure exacte de ta course ('+goal+').',warmup:WU,body:repsText(n,dist,pace.SPE)+', récup 90 s.',paces:'Allure objectif : '+S(pace.SPE)+'/km.',recovery:'90 s trot.',cooldown:CD,tips:['Cette allure doit devenir un réflexe.'],mistakes:['Aller plus vite par excès de confiance.'],why:'La spécificité prime à l\u2019approche de la course.'};
+      break; }
     case 'PROGRESSIF':
       km=Math.round(easyKm*1.2); p=S(pace.MAR); rpe=6; label='Progressif'; title='Run Progressif';
       d={objectif:'Apprendre à accélérer sur la fatigue.',warmup:'10 min '+S(pace.EF)+'/km.',body:km+' km en 3 paliers : '+S(pace.EF)+' → '+S(pace.MAR)+' → '+S(pace.TEMPO)+'/km.',paces:'EF → tempo.',recovery:'Continu.',cooldown:CD,tips:['Chaque palier un peu plus vite.'],mistakes:['Partir trop vite.'],why:'Renforce le mental et le négatif split.'};
       break;
-    case 'FARTLEK':
-      km=Math.round(easyKm*1.1); p=S(pace.TEMPO); rpe=6; label='Fartlek'; title='Fartlek (jeu d\u2019allures)';
-      d={objectif:'Travail au ressenti, ludique et libre.',warmup:'15 min '+S(pace.EF)+'/km.',body:vary(8,12)+' × (1 min vite / 1 min lent) au ressenti, dans la nature.',paces:'Vite ≈ '+S(pace.VMAl)+'/km, lent ≈ '+S(pace.EF)+'/km.',recovery:'Récup active libre.',cooldown:CD,tips:['Joue avec le terrain.'],mistakes:['Trop structurer : laisse-toi aller.'],why:'Développe le VO₂max en s\u2019amusant et casse la routine.'};
-      break;
-    case 'COTES':
-      km=Math.round(easyKm); p=S(pace.SEUIL); rpe=8; label='Côtes'; title='Séance de Côtes';
-      d={objectif:'Développer puissance, force et économie de course.',warmup:WU,body:vary(8,12)+' × 30-45 s en côte (4-6%) à effort soutenu, récup en descente trot.',paces:'Effort à ~90%.',recovery:'Descente en récup.',cooldown:CD,tips:['Foulée courte et dynamique, regarde devant.'],mistakes:['Descendre trop vite (impact).'],why:'La côte = musculation spécifique sans impact traumatisant.'};
-      break;
+    case 'FARTLEK': {
+      const n=vary(8,12);
+      const mainKm=n*(distKmFromTime(60,pace.VMAl)+distKmFromTime(60,pace.EF));
+      km=round1(distKmFromTime(15*60,pace.EF)+mainKm+cdKm); durMin=Math.round(15+n*2+CD_MIN);
+      p=S(pace.TEMPO); rpe=6; label='Fartlek'; title='Fartlek (jeu d\u2019allures)';
+      d={objectif:'Travail au ressenti, ludique et libre.',warmup:'15 min '+S(pace.EF)+'/km.',body:n+' × (1 min vite / 1 min lent) au ressenti, dans la nature.',paces:'Vite ≈ '+S(pace.VMAl)+'/km, lent ≈ '+S(pace.EF)+'/km.',recovery:'Récup active libre.',cooldown:CD,tips:['Joue avec le terrain.'],mistakes:['Trop structurer : laisse-toi aller.'],why:'Développe le VO₂max en s\u2019amusant et casse la routine.'};
+      break; }
+    case 'COTES': {
+      const n=vary(8,12), effortSec=37.5;
+      const mainKm=distKmFromTime(n*effortSec,pace.SEUIL), recKm=distKmFromTime(n*effortSec,pace.RC);
+      km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*effortSec/60+n*effortSec/60+CD_MIN);
+      p=S(pace.SEUIL); rpe=8; label='Côtes'; title='Séance de Côtes';
+      series={reps:n,recoveryLabel:'descente trot',note:'30-45 s d\u2019effort en côte par répétition'};
+      d={objectif:'Développer puissance, force et économie de course.',warmup:WU,body:n+' × 30-45 s en côte (4-6%) à effort soutenu, récup en descente trot.',paces:'Effort à ~90%.',recovery:'Descente en récup.',cooldown:CD,tips:['Foulée courte et dynamique, regarde devant.'],mistakes:['Descendre trop vite (impact).'],why:'La côte = musculation spécifique sans impact traumatisant.'};
+      break; }
     case 'LIGNES':
       km=Math.round(easyKm*0.8); p=S(pace.EF); rpe=4; label='Lignes'; title='Footing + Lignes droites';
       d={objectif:'Entretenir la vitesse et la fraîcheur (idéal taper).',warmup:'10 min '+S(pace.EF)+'/km.',body:Math.round(km*0.7)+' km EF + '+vary(6,8)+' × 80-100 m en accélération progressive (sans forcer), récup marche.',paces:'EF + accélérations relâchées.',recovery:'Marche/trot entre lignes.',cooldown:'Étirements.',tips:['Reste relâché, ne sprinte pas.'],mistakes:['Forcer sur les lignes en période d\u2019affûtage.'],why:'Garde le système nerveux affûté sans fatigue.'};
@@ -2050,7 +2126,7 @@ function buildSessionV2(type,o){
       d={objectif:'Endurance.',warmup:'-',body:km+' km facile.',paces:S(pace.EF)+'/km',recovery:'-',cooldown:'-',tips:[],mistakes:[],why:'Base aérobie.'};
   }
   if(isDeload && km>0){ d.objectif='🟢 SEMAINE ALLÉGÉE — '+d.objectif; }
-  return {km,pace:p,rpe,title,label,detail:d};
+  return {km,pace:p,rpe,title,label,detail:d,durMin,series};
 }
 
 /* ---------- HELPERS: real stats ---------- */
@@ -2502,7 +2578,9 @@ function renderRunning(){
         const isHard=HARD_TYPES.includes(s.baseType);
         const qb=s.missed?'<div class="qbadge" style="background:rgba(255,92,108,.16);color:var(--bad)">⚠ Manquée</div>'
           :(s.km===0?'<div class="qbadge rest">Repos</div>':(isHard?'<div class="qbadge hard">Qualité</div>':'<div class="qbadge easy">Facile</div>'));
-        h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'" onclick="openRunSheet('+s.id+')" style="'+(s.missed?'border-color:rgba(255,92,108,.35)':'')+'"><div class="row"><div><div style="font-weight:700;font-size:14px">'+s.title+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+fmtDate(s.date)+(s.km?' · '+s.km+' km · '+s.pace+'/km':' · Repos')+'</div></div>'+qb+'</div></div>';
+        const ssum=seriesSummary(s);
+        const line2=fmtDate(s.date)+(s.km?' · '+s.km+' km':' · Repos')+(s.km&&!ssum?' · '+s.pace+'/km':'');
+        h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'" onclick="openRunSheet('+s.id+')" style="'+(s.missed?'border-color:rgba(255,92,108,.35)':'')+'"><div class="row"><div><div style="font-weight:700;font-size:14px">'+s.title+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+line2+'</div>'+(ssum?'<div style="color:var(--e);font-size:12px;font-weight:700;margin-top:3px">⏱ '+ssum+'</div>':'')+'</div>'+qb+'</div></div>';
       });
     }
   } else {
@@ -2546,7 +2624,7 @@ function persoDetailHTML(){
     const sorted=[...p.sessions].sort((a,b)=>new Date(a.date)-new Date(b.date));
     sorted.forEach(s=>{
       const isToday=s.date===tk; const col='var('+(TYPE_COLORS[s.type]||'--e')+')';
-      const detail=(s.intervals&&s.intervals.length)?(' · '+s.intervals.length+'×'+s.intervals[0].dist+'m'):(s.km?' · '+s.km+' km · '+s.pace+'/km':'');
+      const detail=(s.intervals&&s.intervals.length)?(' · '+s.intervals.length+' × '+s.intervals[0].dist+' m'):(s.km?' · '+s.km+' km · '+s.pace+'/km':'');
       h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'"><div class="row" onclick="openPersoSheet('+s.id+')" style="cursor:pointer"><div><div style="font-weight:700;font-size:14px">'+s.title+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+fmtDate(s.date)+detail+'</div></div><div class="badge" style="background:rgba(var(--e-rgb),.15);color:'+col+';font-size:11px">'+s.type+'</div></div></div>';
     });
   }
@@ -2747,6 +2825,28 @@ function renderCoachAnalysis(a){
 
 /* ---------- RUN SHEET ---------- */
 let curRunId=null;
+// Tableau structuré des séries (reps/distance/temps de passage/récup) pour la fiche séance détaillée
+function seriesTableHTML(sr){
+  if(!sr) return '';
+  if(sr.segments){
+    const rows=sr.segments.map(sg=>'<div class="row" style="font-size:13px;padding:4px 0"><span style="color:var(--muted)">'+sg.dist+' m</span><span style="font-weight:700;color:var(--e)">'+fmtSplit(sg.splitSec)+'</span></div>').join('');
+    return '<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:6px">🏃 Séries — pyramide</div>'+rows+'<div style="font-size:11.5px;color:var(--muted);margin-top:8px">Récup : '+sr.recoveryLabel+'</div></div>';
+  }
+  if(sr.reps && sr.dist){
+    return '<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:8px">🏃 '+sr.reps+' × '+sr.dist+' m</div>'
+      +'<div class="row" style="font-size:13px;padding:3px 0"><span style="color:var(--muted)">Temps de passage cible</span><span style="font-weight:700;color:var(--e)">'+fmtSplit(splitSecFromPace(sr.paceSecPerKm,sr.dist))+'</span></div>'
+      +'<div class="row" style="font-size:13px;padding:3px 0"><span style="color:var(--muted)">Allure équivalente</span><span>'+spkToStr(sr.paceSecPerKm)+'/km</span></div>'
+      +'<div class="row" style="font-size:13px;padding:3px 0"><span style="color:var(--muted)">Récupération</span><span>'+sr.recoveryLabel+'</span></div>'
+      +(sr.note?'<div style="font-size:11.5px;color:var(--muted);margin-top:6px">ℹ️ '+sr.note+'</div>':'')
+      +'</div>';
+  }
+  if(sr.reps){
+    return '<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:6px">🏃 '+sr.reps+' répétitions</div>'
+      +(sr.note?'<div style="font-size:13px;color:var(--muted)">'+sr.note+'</div>':'')
+      +'<div class="row" style="font-size:13px;padding:3px 0;margin-top:4px"><span style="color:var(--muted)">Récupération</span><span>'+sr.recoveryLabel+'</span></div></div>';
+  }
+  return '';
+}
 function openRunSheet(id){
   const s=PLAN?PLAN.sessions.find(x=>x.id===id):null; if(!s) return;
   curRunId=id;
@@ -2754,8 +2854,9 @@ function openRunSheet(id){
   const col='var('+(TYPE_COLORS[s.type]||'--e')+')';
   let h='<div class="badge" style="background:rgba(var(--e-rgb),.15);color:'+col+';margin-bottom:14px">'+s.type+' · '+fmtDate(s.date)+'</div>';
   if(s.km){
-    h+='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+s.km+'</div><div class="l">km</div></div><div class="sbox"><div class="v" style="font-size:18px">'+s.pace+'</div><div class="l">/km</div></div><div class="sbox"><div class="v">'+s.duration+'</div><div class="l">min</div></div><div class="sbox"><div class="v">'+s.rpe+'</div><div class="l">RPE /10</div></div></div>';
+    h+='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+s.km+'</div><div class="l">km</div></div><div class="sbox"><div class="v" style="font-size:18px">'+s.pace+'</div><div class="l">/km moy.</div></div><div class="sbox"><div class="v">'+s.duration+'</div><div class="l">min</div></div><div class="sbox"><div class="v">'+s.rpe+'</div><div class="l">RPE /10</div></div></div>';
   }
+  h+=seriesTableHTML(s.series);
   const dt=s.detail;
   if(dt){
     const sec=(icon,t,c)=>'<div class="card-t" style="margin-top:14px">'+icon+' '+t+'</div><div class="tip">'+c+'</div>';
