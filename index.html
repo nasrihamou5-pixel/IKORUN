@@ -707,6 +707,55 @@ html.motion-settled .login-hero{
 .sbox{background:var(--s2);background-image:linear-gradient(180deg,rgba(255,255,255,.025),transparent 50%);border:1px solid var(--hair);border-radius:var(--r-sm);padding:13px 14px;box-shadow:var(--sh-sm);}
 .sbox .v{font-family:'JetBrains Mono';font-weight:700;font-size:21px;letter-spacing:-.3px;}
 .sbox .l{font-size:10.5px;color:var(--muted);margin-top:3px;font-weight:600;}
+
+/* ===== KALO-STYLE PROGRESS BLOCK (accueil) ===== */
+.kalo-head{margin:2px 0 12px;}
+.kalo-head h2{font-family:'Manrope';font-weight:800;font-size:21px;letter-spacing:-.3px;}
+.kalo-head p{font-size:12.5px;color:var(--muted);margin-top:3px;}
+
+.seg-ctrl{display:flex;gap:3px;background:var(--s1);border:1px solid var(--hair);border-radius:999px;padding:4px;margin-bottom:12px;box-shadow:var(--float-sm);}
+.seg-btn{flex:1;text-align:center;padding:8px 0;border-radius:999px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;transition:background .18s var(--ease),color .18s ease,transform .15s var(--ease-spring);}
+.seg-btn:active{transform:scale(.95);}
+.seg-btn.on{background:linear-gradient(180deg,var(--e2),var(--e));color:#fff;box-shadow:0 4px 12px -4px rgba(var(--e-rgb),.55);}
+
+.kchart-card{background:var(--s1);border:1px solid var(--hair);border-radius:20px;padding:16px;box-shadow:var(--float-sm);margin-bottom:10px;}
+.kchart-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.kchart-lab{font-size:12.5px;color:var(--muted);font-weight:600;}
+.kchart-val{font-family:'Manrope';font-weight:800;font-size:23px;margin-top:3px;}
+.kchart-val span{font-size:12px;color:var(--muted);font-weight:600;margin-left:3px;}
+.kchart-delta{font-size:11px;font-weight:800;padding:4px 9px;border-radius:999px;background:rgba(51,211,153,.14);color:var(--ok);white-space:nowrap;flex-shrink:0;}
+.kchart-delta.bad{background:rgba(255,92,108,.14);color:var(--bad);}
+.kchart-delta-sub{font-size:9.5px;color:var(--muted);text-align:right;margin-top:4px;font-weight:600;}
+
+.kbars-box{position:relative;height:68px;margin-top:16px;}
+.kbars-avgline{position:absolute;left:0;right:0;border-top:1.5px dashed var(--hair2);}
+.kbars-row{display:flex;align-items:flex-end;gap:6px;height:100%;position:relative;z-index:1;}
+.kbar-col{flex:1;display:flex;align-items:flex-end;justify-content:center;height:100%;}
+.kbar{width:100%;max-width:22px;border-radius:6px 6px 3px 3px;background:linear-gradient(180deg,var(--e2),var(--e));min-height:3px;transition:height .5s var(--ease);}
+.kbar.hi{background:linear-gradient(180deg,#FFE07A,var(--or));box-shadow:0 0 10px rgba(242,184,75,.45);}
+.kbars-labs{display:flex;gap:6px;margin-top:7px;}
+.kbars-labs span{flex:1;text-align:center;font-size:10px;color:var(--muted);font-weight:600;}
+
+.kline-labs{display:flex;justify-content:space-between;margin-top:2px;}
+.kline-labs span{font-size:9.5px;color:var(--muted);font-weight:600;}
+
+.kduo{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.kduo-card{background:var(--s1);border:1px solid var(--hair);border-radius:18px;padding:14px;box-shadow:var(--float-sm);}
+.kduo-lab{font-size:12px;color:var(--muted);font-weight:600;}
+.kduo-val{font-family:'Manrope';font-weight:800;font-size:20px;margin-top:6px;}
+.kduo-sub{font-size:10.5px;color:var(--ok);font-weight:700;margin-top:7px;}
+.kgoal-bar{height:7px;border-radius:99px;background:var(--s2);overflow:hidden;margin:9px 0 0;}
+.kgoal-bar div{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--e),var(--ok));transition:width .5s var(--ease-out);}
+
+.kinsights-head{font-family:'Manrope';font-weight:800;font-size:16.5px;margin:14px 0 8px;}
+.krow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.ktile{background:var(--s1);border:1px solid var(--hair);border-radius:16px;padding:11px 10px;box-shadow:var(--float-sm);position:relative;min-height:86px;}
+.ktile-lab{font-size:9.5px;color:var(--muted);font-weight:700;line-height:1.2;}
+.ktile-val{font-family:'Manrope';font-weight:800;font-size:14.5px;margin-top:8px;line-height:1.2;}
+.ktile-sub{font-size:9.5px;color:var(--ok);font-weight:700;margin-top:4px;}
+.ktile-sub.bad{color:var(--bad);}
+.ktile-star{position:absolute;top:9px;right:9px;font-size:12px;}
+.ktile-donut{margin:2px auto 0;}
 /* ===== PROFIL — refonte : rangée de stats compacte + barre promo ===== */
 .pf-hero{text-align:center;padding:22px 18px 18px;}
 .pf-avwrap{position:relative;width:96px;margin:0 auto 14px;}
@@ -1039,6 +1088,6 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
     'sb_publishable_d1eInkDkCJG-Fx4S8UqNgw_Bm6uQuKw'
   );
 </script>
-<script src="app.js?v=6"></script>
+<script src="app.js?v=7"></script>
 </body>
 </html>
