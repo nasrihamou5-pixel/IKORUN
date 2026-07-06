@@ -2058,40 +2058,61 @@ function last7DaysKm(){
 }
 function sumKmBetween(start,end){ return [...SESS,...MSESS].filter(s=>{ const d=new Date(s.date+'T00:00:00'); return d>=start && d<end; }).reduce((a,s)=>a+(s.km||0),0); }
 function countBetween(start,end){ return [...SESS,...MSESS].filter(s=>{ const d=new Date(s.date+'T00:00:00'); return d>=start && d<end; }).length; }
+function sumMinsBetween(start,end){ return sessBetween(start,end).reduce((a,s)=>a+(s.duration||0),0); }
+function sessBetween(start,end){ return [...SESS,...MSESS].filter(s=>{ const d=new Date(s.date+'T00:00:00'); return d>=start && d<end; }); }
+/* Bornes [début,fin[ de la période courante + période précédente équivalente,
+   partagées par kmBarSeries() et statsBilan() pour rester cohérentes. */
+function periodRanges(per){
+  const ws=weekStart(); const now=new Date();
+  if(per==='month'){
+    const st=new Date(ws); st.setDate(ws.getDate()-21); const en=new Date(ws); en.setDate(ws.getDate()+7);
+    const pst=new Date(st); pst.setDate(st.getDate()-28);
+    return {cur:[st,en],prev:[pst,st]};
+  }
+  if(per==='3m'){
+    const st=new Date(now.getFullYear(),now.getMonth()-2,1); const en=new Date(now.getFullYear(),now.getMonth()+1,1);
+    const pst=new Date(now.getFullYear(),now.getMonth()-5,1);
+    return {cur:[st,en],prev:[pst,st]};
+  }
+  if(per==='year'){
+    const st=new Date(now.getFullYear(),now.getMonth()-11,1); const en=new Date(now.getFullYear(),now.getMonth()+1,1);
+    const pst=new Date(now.getFullYear()-1,now.getMonth()-11,1);
+    return {cur:[st,en],prev:[pst,st]};
+  }
+  const en=new Date(ws); en.setDate(ws.getDate()+7);
+  const pst=new Date(ws); pst.setDate(ws.getDate()-7);
+  return {cur:[ws,en],prev:[pst,ws]};
+}
+function weeksInPeriod(per){ return per==='month'?4:per==='3m'?13:per==='year'?52:1; }
+function periodTabLabel(per){ return {week:'Semaine',month:'Mois',['3m']:'3 Mois',year:'Année'}[per]||'Semaine'; }
 /* Séries de barres pour le bloc "Progression" de l'accueil, façon Kalo :
    change de résolution selon l'onglet actif (semaine/mois/3 mois/année). */
 function kmBarSeries(period){
   const ws=weekStart();
+  const {prev}=periodRanges(period);
+  const prevTotal=sumKmBetween(prev[0],prev[1]);
   if(period==='month'){
     const labels=[], values=[];
     for(let w=3; w>=0; w--){ const st=new Date(ws); st.setDate(ws.getDate()-7*w); const en=new Date(st); en.setDate(st.getDate()+7);
       values.push(sumKmBetween(st,en)); labels.push(w===0?'Cette sem.':'S-'+w); }
-    const total=values.reduce((a,v)=>a+v,0);
-    const pst=new Date(ws); pst.setDate(ws.getDate()-56); const pen=new Date(ws); pen.setDate(ws.getDate()-28);
-    return {labels,values,total,prevTotal:sumKmBetween(pst,pen)};
+    return {labels,values,total:values.reduce((a,v)=>a+v,0),prevTotal};
   }
   if(period==='3m'){
     const labels=[], values=[]; const now=new Date();
     for(let m=2;m>=0;m--){ const st=new Date(now.getFullYear(),now.getMonth()-m,1); const en=new Date(now.getFullYear(),now.getMonth()-m+1,1);
       values.push(sumKmBetween(st,en)); labels.push(st.toLocaleDateString('fr-FR',{month:'short'}).replace('.','')); }
-    const total=values.reduce((a,v)=>a+v,0);
-    const pst=new Date(now.getFullYear(),now.getMonth()-5,1), pen=new Date(now.getFullYear(),now.getMonth()-2,1);
-    return {labels,values,total,prevTotal:sumKmBetween(pst,pen)};
+    return {labels,values,total:values.reduce((a,v)=>a+v,0),prevTotal};
   }
   if(period==='year'){
     const labels=[], values=[]; const now=new Date(); const initials=['J','F','M','A','M','J','J','A','S','O','N','D'];
     for(let m=11;m>=0;m--){ const d=new Date(now.getFullYear(),now.getMonth()-m,1); const en=new Date(now.getFullYear(),now.getMonth()-m+1,1);
       values.push(sumKmBetween(d,en)); labels.push(initials[d.getMonth()]); }
-    const total=values.reduce((a,v)=>a+v,0);
-    const pst=new Date(now.getFullYear()-1,now.getMonth()+1,1), pen=new Date(now.getFullYear(),now.getMonth()+1,1);
-    return {labels,values,total,prevTotal:sumKmBetween(pst,pen)};
+    return {labels,values,total:values.reduce((a,v)=>a+v,0),prevTotal};
   }
   // 'week' par défaut
   const labels=['L','M','M','J','V','S','D']; const values=[];
   for(let i=0;i<7;i++){ const d=new Date(ws); d.setDate(ws.getDate()+i); const en=new Date(d); en.setDate(d.getDate()+1); values.push(sumKmBetween(d,en)); }
-  const total=values.reduce((a,v)=>a+v,0);
-  const pst=new Date(ws); pst.setDate(ws.getDate()-7);
-  return {labels,values,total,prevTotal:sumKmBetween(pst,ws)};
+  return {labels,values,total:values.reduce((a,v)=>a+v,0),prevTotal};
 }
 /* Tendance hebdo (8 dernières semaines) pour le graphe en ligne, indépendante
    de l'onglet sélectionné — donne une vue plus longue de la progression. */
@@ -2237,8 +2258,6 @@ function donutSVG(segs,size,stroke,centerHTML){
 function fmtHM(mins){ mins=Math.round(mins||0); const h=Math.floor(mins/60), m=mins%60; return h>0?(h+'h '+String(m).padStart(2,'0')+'min'):(m+'min'); }
 
 /* ---------- RENDER HOME ---------- */
-let HOME_PERIOD='week';
-function setHomePeriod(p){ HOME_PERIOD=p; renderHome(); }
 function renderHome(){
   const xp=xpProgress();
   const kmW=kmThisWeek(), kmTarget=P.kmWeek||40;
@@ -2268,77 +2287,24 @@ function renderHome(){
     '</div>';
   }
 
-  // TA PROGRESSION — bloc façon Kalo : titre + onglets période + carte barres (km)
-  //  + carte ligne (tendance 8 sem.) + duo série/objectif + rangée d'insights.
-  { const per=HOME_PERIOD;
-    const bars=kmBarSeries(per);
-    const deltaPct=bars.prevTotal>0?Math.round((bars.total-bars.prevTotal)/bars.prevTotal*100):(bars.total>0?100:null);
-    const trend=weeklyTrend8();
-    const streak=streakDays();
-    const gDoneN=goals.filter(g=>g.done).length;
-    const gPctN=goals.length?Math.round(gDoneN/goals.length*100):0;
-    const week7=last7DaysKm(); const bestDayIdx=week7.reduce((bi,v,i)=>v>week7[bi]?i:bi,0);
-    const dayNamesShort=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
-    const bestDayDate=new Date(); bestDayDate.setDate(bestDayDate.getDate()-(6-bestDayIdx));
-    const avgKmSess=sessW?(kmW/sessW):0;
-    const pWs=new Date(weekStart()); pWs.setDate(pWs.getDate()-7);
-    const pWe=weekStart(); const prevSessCount=countBetween(pWs,pWe);
-    const prevAvgKmSess=prevSessCount?(bars.prevTotal/prevSessCount):0;
-    const avgDelta=prevAvgKmSess>0?Math.round((avgKmSess-prevAvgKmSess)/prevAvgKmSess*100):null;
-    // répartition des types de séance de la semaine (donut)
-    const weekRuns=sessThisWeek();
-    const typeMap={}; weekRuns.forEach(s=>{ const t=s.type||'Course'; typeMap[t]=(typeMap[t]||0)+(s.km||0.01); });
-    const typeSegs=Object.keys(typeMap).map(t=>({v:typeMap[t],color:'var('+(TYPE_COLORS[t]||'--e')+')',t}));
-    if(!typeSegs.length) typeSegs.push({v:1,color:'rgba(255,255,255,.08)',t:'—'});
-
-    html+='<div class="kalo-head stag" style="animation-delay:.03s"><h2>Ta progression</h2><p>Semaine après semaine, tu construis ton chrono.</p></div>';
-
-    html+='<div class="seg-ctrl stag" style="animation-delay:.035s">'+
-      ['week','month','3m','year'].map(p=>'<div class="seg-btn'+(per===p?' on':'')+'" onclick="setHomePeriod(\''+p+'\')">'+{week:'Semaine',month:'Mois',['3m']:'3 Mois',year:'Année'}[p]+'</div>').join('')+
-    '</div>';
-
-    html+='<div class="kchart-card stag" style="animation-delay:.04s" onclick="nav(\'stats\')">'+
-      '<div class="kchart-top"><div><div class="kchart-lab">Kilométrage</div><div class="kchart-val">'+bars.total.toFixed(1)+'<span>km cumulés</span></div></div>'+
-      (deltaPct!==null?'<div><div class="kchart-delta'+(deltaPct<0?' bad':'')+'">'+(deltaPct>0?'↑ ':deltaPct<0?'↓ ':'')+Math.abs(deltaPct)+'%</div><div class="kchart-delta-sub">vs période préc.</div></div>':'')+
-      '</div>'+
-      kBarsHTML(bars.labels,bars.values)+
-    '</div>';
-
-    html+='<div class="kchart-card stag" style="animation-delay:.06s" onclick="nav(\'stats\')">'+
-      '<div class="kchart-top"><div><div class="kchart-lab">Tendance volume</div><div class="kchart-val">'+trend[trend.length-1].toFixed(1)+'<span>km cette sem.</span></div></div>'+
-      '<div><div class="kchart-delta">8 sem.</div></div></div>'+
-      '<div style="margin-top:14px">'+lineChartSVG(trend,300,60,'var(--e2)')+'</div>'+
-      '<div class="kline-labs"><span>Il y a 8 sem.</span><span>Cette semaine</span></div>'+
-    '</div>';
-
-    html+='<div class="kduo stag" style="animation-delay:.08s">'+
-      '<div class="kduo-card"><div class="kduo-lab">Série</div>'+
-        '<div class="row" style="align-items:center;margin-top:2px">'+
-          '<div class="kduo-val">'+streak+' <span style="font-size:12px;color:var(--muted);font-weight:600">j</span></div>'+
-          '<div style="position:relative;width:52px;height:52px">'+ringSVG(52,Math.min(100,streak/14*100),6,'var(--or)')+
-            '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px">🔥</div></div>'+
-        '</div>'+
-        '<div class="kduo-sub">'+(streak>0?'Continue comme ça !':'Reprends aujourd\u2019hui !')+'</div>'+
-      '</div>'+
-      '<div class="kduo-card" onclick="event.stopPropagation()"><div class="kduo-lab">Objectifs du jour</div>'+
-        '<div class="kduo-val">'+gPctN+'%</div>'+
-        '<div class="kgoal-bar"><div style="width:'+gPctN+'%"></div></div>'+
-        '<div class="kduo-sub">'+(gPctN===100?'Journée parfaite !':'Sur la bonne voie')+'</div>'+
-      '</div>'+
-    '</div>';
-
-    html+='<div class="kinsights-head stag" style="animation-delay:.10s">Insights</div>';
-    html+='<div class="krow3 stag" style="animation-delay:.11s">'+
-      '<div class="ktile"><div class="ktile-lab">KM / SÉANCE</div><div class="ktile-val">'+avgKmSess.toFixed(1)+' km</div>'+
-        (avgDelta!==null?'<div class="ktile-sub'+(avgDelta<0?' bad':'')+'">'+(avgDelta>0?'↑ ':avgDelta<0?'↓ ':'')+Math.abs(avgDelta)+'% vs sem. préc.</div>':'<div class="ktile-sub">—</div>')+
-      '</div>'+
-      '<div class="ktile" style="text-align:center"><div class="ktile-lab">TYPES DE SÉANCE</div>'+
-        '<div class="ktile-donut">'+donutSVG(typeSegs,50,9,'')+'</div>'+
-      '</div>'+
-      '<div class="ktile"><span class="ktile-star">⭐</span><div class="ktile-lab">MEILLEUR JOUR</div>'+
-        '<div class="ktile-val">'+dayNamesShort[bestDayDate.getDay()]+'</div>'+
-        '<div class="ktile-sub">'+week7[bestDayIdx].toFixed(1)+' km</div>'+
-      '</div>'+
+  // AUJOURD'HUI — bague double (charge/séances) + 2 mini-cartes, façon home d'app mobile
+  { const kmPct=Math.min(100,kmW/kmTarget*100);
+    const sessPct=Math.min(100,sessW/sessTarget*100);
+    const week7=last7DaysKm(); const maxDay=Math.max(1,...week7);
+    html+='<div class="sec-head stag" style="animation-delay:.03s"><h3>Aujourd\u2019hui</h3><span class="see" onclick="nav(\'stats\')">Voir tout ›</span></div>';
+    html+='<div class="hero-ring-card stag" style="animation-delay:.04s" onclick="nav(\'stats\')">'+
+      donutSVG([{v:kmPct,color:'var(--e)'},{v:100-kmPct,color:'rgba(255,255,255,.06)'}],92,10,'<div style="font-family:\'Manrope\';font-weight:800;font-size:19px">'+Math.round(kmPct)+'%</div><div style="font-size:8.5px;color:var(--muted)">objectif</div>')+
+      '<div class="hr-legend">'+
+        '<div class="hr-item"><span class="hr-dot" style="background:var(--e)"></span><div class="hr-txt"><div class="hr-val">'+kmW.toFixed(0)+'/'+kmTarget+' km</div><div class="hr-lab">Charge semaine</div></div></div>'+
+        '<div class="hr-item"><span class="hr-dot" style="background:var(--ok)"></span><div class="hr-txt"><div class="hr-val">'+sessW+'/'+sessTarget+'</div><div class="hr-lab">Séances</div></div></div>'+
+      '</div></div>';
+    html+='<div class="today-grid stag" style="animation-delay:.05s">'+
+      '<div class="tg-cell"><div class="tg-top"><div class="tg-ic" style="background:rgba(var(--e-rgb),.16);color:var(--e2)">'+ICN('chart',13)+'</div><div class="tg-lab">7 DERNIERS JOURS</div></div>'+
+        '<div class="tg-val">'+week7.reduce((a,v)=>a+v,0).toFixed(0)+' <span style="font-size:11px;color:var(--muted);font-weight:600">km</span></div>'+
+        '<div class="spark">'+week7.map(v=>'<b style="height:'+Math.max(10,Math.round(v/maxDay*100))+'%"></b>').join('')+'</div></div>'+
+      '<div class="tg-cell"><div class="tg-top"><div class="tg-ic" style="background:rgba(242,184,75,.18);color:var(--or)">'+ICN('bolt',13)+'</div><div class="tg-lab">FORME & SÉRIE</div></div>'+
+        '<div class="tg-val">'+form+'<span style="font-size:11px;color:var(--muted);font-weight:600">/100</span></div>'+
+        '<div style="font-size:11px;color:var(--muted)">🔥 '+streakDays()+' jours de série</div></div>'+
     '</div>';
   }
 
@@ -3253,41 +3219,82 @@ function renderStats(){
 }
 let bilanPeriod='week';
 function statsBilan(){
-  const per=sessInPeriod(bilanPeriod);
-  const km=per.reduce((a,s)=>a+(s.km||0),0);
-  const mins=per.reduce((a,s)=>a+(s.duration||0),0);
+  const per=bilanPeriod;
+  const {cur,prev}=periodRanges(per);
+  const km=sumKmBetween(cur[0],cur[1]);
+  const mins=sumMinsBetween(cur[0],cur[1]);
+  const cnt=countBetween(cur[0],cur[1]);
+  const prevKm=sumKmBetween(prev[0],prev[1]);
+  const prevCnt=countBetween(prev[0],prev[1]);
+  const deltaPct=prevKm>0?Math.round((km-prevKm)/prevKm*100):(km>0?100:null);
+  const bars=kmBarSeries(per);
+  const trend=weeklyTrend8();
 
-  let h='<div class="pills" style="margin-bottom:14px">'+
-    [['today','Aujourd\u2019hui'],['week','Semaine'],['month','Mois'],['year','Année']].map(p=>'<div class="pill '+(bilanPeriod===p[0]?'on':'')+'" onclick="bilanPeriod=\''+p[0]+'\';renderStats()">'+p[1]+'</div>').join('')+'</div>';
+  // ONGLETS PÉRIODE — segmented control façon Kalo
+  let h='<div class="seg-ctrl">'+
+    ['week','month','3m','year'].map(p=>'<div class="seg-btn'+(per===p?' on':'')+'" onclick="bilanPeriod=\''+p+'\';renderStats()">'+periodTabLabel(p)+'</div>').join('')+
+  '</div>';
 
-  h+='<div class="sgrid" style="margin-bottom:10px">'+
-    '<div class="sbox"><div class="lab" style="margin-bottom:4px">Distance</div><div class="v">'+km.toFixed(1)+'<span style="font-size:12px;color:var(--dim)"> km</span></div></div>'+
-    '<div class="sbox"><div class="lab" style="margin-bottom:4px">Temps</div><div class="v" style="font-size:17px">'+fmtHM(mins)+'</div></div>'+
-    '<div class="sbox"><div class="lab" style="margin-bottom:4px">Séances</div><div class="v">'+per.length+'</div></div></div>';
+  // CARTE KILOMÉTRAGE — gros chiffre + delta + barres avec ligne de moyenne
+  h+='<div class="kchart-card">'+
+    '<div class="kchart-top"><div><div class="kchart-lab">Kilométrage</div><div class="kchart-val">'+km.toFixed(1)+'<span>km cumulés</span></div></div>'+
+    (deltaPct!==null?'<div><div class="kchart-delta'+(deltaPct<0?' bad':'')+'">'+(deltaPct>0?'↑ ':deltaPct<0?'↓ ':'')+Math.abs(deltaPct)+'%</div><div class="kchart-delta-sub">vs période préc.</div></div>':'')+
+    '</div>'+
+    kBarsHTML(bars.labels,bars.values)+
+  '</div>';
 
-  // CHARGE D'ENTRAÎNEMENT
-  h+='<div class="card"><div class="card-t">📈 Charge d\u2019entraînement</div>'+formChart()+'</div>';
+  // CARTE TENDANCE — ligne sur les 8 dernières semaines, peu importe l'onglet actif
+  h+='<div class="kchart-card">'+
+    '<div class="kchart-top"><div><div class="kchart-lab">Tendance volume</div><div class="kchart-val">'+trend[trend.length-1].toFixed(1)+'<span>km cette sem.</span></div></div>'+
+    '<div><div class="kchart-delta">8 sem.</div></div></div>'+
+    '<div style="margin-top:14px">'+lineChartSVG(trend,300,60,'var(--e2)')+'</div>'+
+    '<div class="kline-labs"><span>Il y a 8 sem.</span><span>Cette semaine</span></div>'+
+  '</div>';
 
-  // RÉPARTITION DES TYPES (donut)
-  const byType={};
-  per.forEach(s=>{ const ty=s.type||s.baseType||(s.tonnage?'Muscu':'Autre'); byType[ty]=(byType[ty]||0)+1; });
-  const entries=Object.entries(byType).sort((a,b)=>b[1]-a[1]);
-  if(entries.length){
-    const segs=entries.map(([ty,ct],i)=>({v:ct,color:'var('+(TYPE_COLORS[ty]||'--e')+')',ty,ct}));
-    h+='<div class="card"><div class="card-t">🍩 Répartition des séances</div><div class="row" style="align-items:center;gap:18px">'+
-      donutSVG(segs,110,15,'<div class="man" style="font-weight:800;font-size:20px">'+per.length+'</div><div style="font-size:10px;color:var(--dim)">séances</div>')+
-      '<div style="flex:1;display:flex;flex-direction:column;gap:8px">'+
-      segs.map(s=>'<div class="row" style="gap:8px"><span class="zdot" style="background:'+s.color+'"></span><span style="flex:1;font-size:12.5px;font-weight:600">'+s.ty+'</span><span class="mono" style="font-size:12px;color:var(--muted)">'+Math.round(s.ct/per.length*100)+'%</span></div>').join('')+
-      '</div></div></div>';
-  } else {
-    h+='<div class="card"><div class="empty"><div class="em-ic">🍩</div><div style="font-size:13px">Aucune séance sur cette période.</div></div></div>';
+  // DUO TEMPS / SÉANCES
+  const sessTarget=Math.round(((P.days&&P.days.length)||4)*weeksInPeriod(per));
+  const sessPct=sessTarget?Math.min(100,Math.round(cnt/sessTarget*100)):0;
+  h+='<div class="kduo">'+
+    '<div class="kduo-card"><div class="kduo-lab">Temps total</div><div class="kduo-val">'+fmtHM(mins)+'</div>'+
+      '<div class="kduo-sub" style="color:var(--muted)">sur la période</div></div>'+
+    '<div class="kduo-card"><div class="kduo-lab">Séances</div><div class="kduo-val">'+cnt+' <span style="font-size:12px;color:var(--muted);font-weight:600">/ '+sessTarget+'</span></div>'+
+      '<div class="kgoal-bar"><div style="width:'+sessPct+'%"></div></div>'+
+      '<div class="kduo-sub">'+(sessPct>=100?'Objectif atteint ! 🎉':sessPct+'% de la cible')+'</div></div>'+
+  '</div>';
+
+  // INSIGHTS — km/séance (delta), répartition des types (donut), meilleure fenêtre
+  const avgKmSess=cnt?(km/cnt):0;
+  const prevAvgKmSess=prevCnt?(prevKm/prevCnt):0;
+  const avgDelta=prevAvgKmSess>0?Math.round((avgKmSess-prevAvgKmSess)/prevAvgKmSess*100):null;
+  const periodSess=sessBetween(cur[0],cur[1]);
+  const byType={}; periodSess.forEach(s=>{ const ty=s.type||s.baseType||(s.tonnage?'Muscu':'Autre'); byType[ty]=(byType[ty]||0)+1; });
+  const typeSegs=Object.entries(byType).map(([ty,ct])=>({v:ct,color:'var('+(TYPE_COLORS[ty]||'--e')+')',ty,ct}));
+  if(!typeSegs.length) typeSegs.push({v:1,color:'rgba(255,255,255,.08)',ty:'—',ct:0});
+  const bestI=bars.values.reduce((bi,v,i)=>v>bars.values[bi]?i:bi,0);
+  const bestLab={week:'MEILLEUR JOUR',month:'MEILLEURE SEMAINE',['3m']:'MEILLEUR MOIS',year:'MEILLEUR MOIS'}[per];
+
+  h+='<div class="kinsights-head">Insights</div>';
+  h+='<div class="krow3">'+
+    '<div class="ktile"><div class="ktile-lab">KM / SÉANCE</div><div class="ktile-val">'+avgKmSess.toFixed(1)+' km</div>'+
+      (avgDelta!==null?'<div class="ktile-sub'+(avgDelta<0?' bad':'')+'">'+(avgDelta>0?'↑ ':avgDelta<0?'↓ ':'')+Math.abs(avgDelta)+'% vs préc.</div>':'<div class="ktile-sub" style="color:var(--muted)">—</div>')+
+    '</div>'+
+    '<div class="ktile" style="text-align:center"><div class="ktile-lab">TYPES DE SÉANCE</div>'+
+      '<div class="ktile-donut">'+donutSVG(typeSegs,50,9,'')+'</div>'+
+    '</div>'+
+    '<div class="ktile"><span class="ktile-star">⭐</span><div class="ktile-lab">'+bestLab+'</div>'+
+      '<div class="ktile-val">'+bars.labels[bestI]+'</div>'+
+      '<div class="ktile-sub">'+bars.values[bestI].toFixed(1)+' km</div>'+
+    '</div>'+
+  '</div>';
+  if(typeSegs[0].ty!=='—'){
+    h+='<div class="card" style="margin-top:2px"><div class="card-t">'+cardIcon('chart','var(--e)')+'Détail par type</div>'+
+      typeSegs.sort((a,b)=>b.ct-a.ct).map(s=>'<div class="row" style="gap:8px;margin-bottom:6px"><span class="zdot" style="background:'+s.color+'"></span><span style="flex:1;font-size:12.5px;font-weight:600">'+s.ty+'</span><span class="mono" style="font-size:12px;color:var(--muted)">'+s.ct+' · '+Math.round(s.ct/periodSess.length*100)+'%</span></div>').join('')+
+    '</div>';
   }
 
-  // heatmap 13 weeks
-  h+='<div class="card"><div class="card-t">🔥 13 dernières semaines</div><div class="heat">'+heatmap13()+'</div><div class="row" style="margin-top:10px;font-size:11px;color:var(--dim)"><span>Moins</span><span>Plus</span></div></div>';
-  // week vs target
-  const kmW=kmThisWeek(),tg=P.kmWeek||40;
-  h+='<div class="card"><div class="card-t">🎯 Semaine vs cible</div><div class="row" style="margin-bottom:6px"><span style="font-size:13px">Cette semaine</span><span class="mono" style="color:var(--e)">'+kmW.toFixed(0)+' km</span></div><div class="pbar"><div style="width:'+Math.min(100,kmW/tg*100)+'%"></div></div><div style="font-size:12px;color:var(--muted);margin-top:8px">Cible : '+tg+' km · '+(kmW>=tg?'Objectif atteint ! 🎉':(tg-kmW).toFixed(0)+' km restants')+'</div></div>';
+  // 13 DERNIÈRES SEMAINES — heatmap, complément utile non présent chez Kalo
+  h+='<div class="card"><div class="card-t">'+cardIcon('fire','var(--or)')+'13 dernières semaines</div><div class="heat">'+heatmap13()+'</div><div class="row" style="margin-top:10px;font-size:11px;color:var(--dim)"><span>Moins</span><span>Plus</span></div></div>';
+
   return h;
 }
 function heatmap13(){
