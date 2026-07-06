@@ -297,6 +297,31 @@ html[data-mode="light"] .ch-bar{background:rgba(20,30,55,.1);}
 .mini-ic{width:28px;height:28px;border-radius:9px;background:var(--s2);border:1px solid var(--hair);display:inline-flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;flex-shrink:0;}
 .mini-ic:active{transform:scale(.9);}
 
+/* ===== BIBLIOTHÈQUE — tuiles muscles (photo) + grille d'exercices en photo ===== */
+.mtile-row{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;margin-bottom:14px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.mtile-row::-webkit-scrollbar{display:none;}
+.mtile{flex:0 0 60px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;}
+.mtile:active .mtile-img{transform:scale(.92);}
+.mtile-img{width:56px;height:56px;border-radius:16px;background:var(--s2) center/cover no-repeat;border:2px solid var(--hair);
+  display:flex;align-items:center;justify-content:center;font-size:22px;transition:transform .15s var(--ease-spring),border-color .15s ease;box-shadow:var(--float-sm);}
+.mtile.on .mtile-img{border-color:var(--e);box-shadow:0 6px 16px -6px rgba(var(--e-rgb),.4);}
+.mtile-lab{font-size:10px;font-weight:700;color:var(--muted);text-align:center;line-height:1.15;max-width:62px;}
+.mtile.on .mtile-lab{color:var(--e);}
+
+.exg-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.exg-card{background:var(--s1);border:1px solid var(--hair);border-radius:var(--r-md);overflow:hidden;box-shadow:var(--float-sm);
+  cursor:pointer;transition:transform .15s var(--ease-spring);}
+.exg-card:active{transform:scale(.97);}
+.exg-img{position:relative;width:100%;aspect-ratio:5/4;background:linear-gradient(135deg,var(--s2),var(--s1)) center/cover no-repeat;
+  display:flex;align-items:center;justify-content:center;font-size:34px;}
+.exg-bm{position:absolute;top:7px;left:7px;width:26px;height:26px;border-radius:8px;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;}
+.exg-add{position:absolute;top:7px;right:7px;width:26px;height:26px;border-radius:8px;background:var(--e);color:#fff;font-size:16px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px -4px rgba(var(--e-rgb),.6);}
+.exg-body{padding:9px 10px 11px;}
+.exg-name{font-weight:700;font-size:12.5px;line-height:1.25;font-family:'Manrope';}
+.exg-sub{font-size:10.5px;color:var(--muted);margin-top:3px;}
+
 /* slideUp stagger */
 .stag{opacity:0;animation:slideUp .5s ease forwards;}
 @keyframes slideUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
@@ -1088,6 +1113,6 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
     'sb_publishable_d1eInkDkCJG-Fx4S8UqNgw_Bm6uQuKw'
   );
 </script>
-<script src="app.js?v=8"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>

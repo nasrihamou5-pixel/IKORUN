@@ -1443,6 +1443,20 @@ function exGif(name){
   const id=EXDB_MAP[name]; if(!id) return null;
   return [EXDB_BASE+id+'/0.jpg', EXDB_BASE+id+'/1.jpg'];
 }
+/* ---------- Tuiles "Muscle" en photo (style navigateur d'exercices) ---------- */
+const MUSCLE_ICONS={'Tous':'🔎','Pectoraux':'🏋️','Dos':'🔙','Épaules':'🏋️','Trapèzes':'🤷','Biceps':'💪','Triceps':'💪',
+  'Avant-bras':'✊','Abdominaux':'🧘','Lombaires':'🔙','Fessiers':'🍑','Quadriceps':'🦵','Ischios':'🦵','Adducteurs':'🦵',
+  'Abducteurs':'🦵','Mollets':'🦵','Cou':'🧍','Corps entier':'🏋️'};
+let _MUSCLE_REP_CACHE={};
+function muscleRepImg(group){
+  if(group==='Tous') return null;
+  if(_MUSCLE_REP_CACHE[group]!==undefined) return _MUSCLE_REP_CACHE[group];
+  const cand=XDATA.filter(x=>x[1]===group);
+  let img=null;
+  for(const x of cand){ const g=exGif(x[0]); if(g){ img=g[0]; break; } }
+  _MUSCLE_REP_CACHE[group]=img;
+  return img;
+}
 function exMeta(name){
   const d=XDATA.find(x=>x[0]===name);
   let base;
@@ -2778,7 +2792,7 @@ function renderMuscu(){
   h+='<div class="row" style="gap:10px;margin-bottom:14px"><button class="btn" onclick="openCreate()">＋ Créer</button><button class="btn ghost" onclick="openLibBrowse()">📚 Bibliothèque</button></div>';
   h+='<div class="lab" style="margin:6px 0 10px">Programmes par défaut</div>';
   PROGS.forEach((p,i)=>{
-    h+='<div class="card" onclick="openProg(\''+p.id+'\')" style="cursor:pointer"><div class="row"><div><div class="badge" style="margin-bottom:8px">'+p.id+'</div><div style="font-weight:700;font-size:16px">'+p.name+'</div><div style="font-size:12px;color:var(--muted);margin-top:3px">'+p.ex.length+' exercices · '+p.ex.reduce((a,e)=>a+e.sets,0)+' séries</div></div><div style="font-size:28px">'+p.ex[0].anim+'</div></div></div>';
+    h+='<div class="card" onclick="openProg(\''+p.id+'\')" style="cursor:pointer"><div class="row"><div><div class="badge" style="margin-bottom:8px">'+p.id+'</div><div style="font-weight:700;font-size:16px">'+p.name+'</div><div style="font-size:12px;color:var(--muted);margin-top:3px">'+p.ex.length+' exercices · '+p.ex.reduce((a,e)=>a+e.sets,0)+' séries</div></div>'+exThumb(p.ex[0].name,52)+'</div></div>';
   });
   const custs=CUSTOM.filter(p=>p.kind==='muscu');
   if(custs.length){
@@ -3118,9 +3132,14 @@ function saveNewProg(){
 let libFilterEquip='Tous', libFilterLevel='Tous', libSearch='', libBrowseMode=false;
 function openLibFor(cb){ libCallback=cb; libBrowseMode=false; closeOv('ovCreate'); renderLib(); openOv('ovLib'); }
 function openLibBrowse(){ libCallback=null; libBrowseMode=true; renderLib(); openOv('ovLib'); }
+let libView='grid';
 function renderLib(){
-  let h='<input class="inp" style="margin-bottom:12px" placeholder="🔍 Rechercher un exercice..." value="'+libSearch+'" oninput="libSearch=this.value;renderLib();this.focus()">';
-  h+='<div class="lab" style="margin-bottom:6px">Muscle</div><div class="pills" style="margin-bottom:10px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px">'+MUSCLE_GROUPS.map(m=>'<div class="pill '+(libFilter===m?'on':'')+'" onclick="libFilter=\''+m+'\';renderLib()">'+m+'</div>').join('')+'</div>';
+  let h='<input class="inp" style="margin-bottom:14px" placeholder="🔍 Rechercher un exercice..." value="'+libSearch+'" oninput="libSearch=this.value;renderLib();this.focus()">';
+  // Tuiles muscle en photo — navigation visuelle rapide, comme une planche anatomique
+  h+='<div class="lab" style="margin-bottom:8px">Muscle</div><div class="mtile-row">'+MUSCLE_GROUPS.map(m=>{
+    const img=muscleRepImg(m); const on=libFilter===m;
+    return '<div class="mtile '+(on?'on':'')+'" onclick="libFilter=\''+m+'\';renderLib()"><div class="mtile-img" '+(img?'style="background-image:url(\''+img+'\')"':'')+'>'+(img?'':MUSCLE_ICONS[m]||'🏋️')+'</div><div class="mtile-lab">'+m+'</div></div>';
+  }).join('')+'</div>';
   h+='<div class="lab" style="margin-bottom:6px">Matériel</div><div class="pills" style="margin-bottom:10px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px">'+EQUIPMENT.map(m=>'<div class="pill '+(libFilterEquip===m?'on':'')+'" onclick="libFilterEquip=\''+m+'\';renderLib()">'+m+'</div>').join('')+'</div>';
   h+='<div class="lab" style="margin-bottom:6px">Niveau</div><div class="pills" style="margin-bottom:14px">'+['Tous',...LEVELS].map(m=>'<div class="pill '+(libFilterLevel===m?'on':'')+'" onclick="libFilterLevel=\''+m+'\';renderLib()">'+m+'</div>').join('')+'</div>';
   const q=libSearch.toLowerCase().trim();
@@ -3131,11 +3150,23 @@ function renderLib(){
     if(q && !e.name.toLowerCase().includes(q)) return false;
     return true;
   });
-  h+='<div class="lab" style="margin-bottom:8px">'+list.length+' exercice'+(list.length>1?'s':'')+'</div>';
+  h+='<div class="row" style="margin-bottom:8px"><div class="lab" style="flex:1">'+list.length+' exercice'+(list.length>1?'s':'')+'</div><div style="display:flex;gap:6px"><span class="mini-ic" style="'+(libView==='grid'?'color:var(--e);border-color:var(--e)':'')+'" onclick="libView=\'grid\';renderLib()">▦</span><span class="mini-ic" style="'+(libView==='list'?'color:var(--e);border-color:var(--e)':'')+'" onclick="libView=\'list\';renderLib()">☰</span></div></div>';
+  if(libView==='grid'){
+    h+='<div class="exg-grid">';
+    list.forEach(e=>{
+      const nm=e.name.replace(/"/g,'&quot;'); const g=exGif(e.name); const lvCol=e.level==='Débutant'?'--ok':e.level==='Avancé'?'--bad':'--warn';
+      h+='<div class="exg-card" onclick=\'openFiche("'+nm+'")\'>'+
+        '<div class="exg-img" '+(g?'style="background-image:url(\''+g[0]+'\')"':'')+'>'+(g?'':'<span>'+e.anim+'</span>')+
+        (libBrowseMode?'':'<span class="exg-add" onclick=\'event.stopPropagation();pickEx("'+nm+'")\'>＋</span>')+
+        '</div><div class="exg-body"><div class="exg-name">'+e.name+'</div><div class="exg-sub">'+e.equip+' · <span style="color:var('+lvCol+')">'+e.level+'</span></div></div></div>';
+    });
+    h+='</div>';
+  } else {
   list.forEach(e=>{
     const lvCol=e.level==='Débutant'?'--ok':e.level==='Avancé'?'--bad':'--warn';
-    h+='<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:10px;flex:1;cursor:pointer" onclick=\'openFiche("'+e.name.replace(/"/g,'&quot;')+'")\'><span style="font-size:24px">'+e.anim+'</span><div><div style="font-weight:700;font-size:14px">'+e.name+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+e.equip+' · <span style="color:var('+lvCol+')">'+e.level+'</span></div><div class="muscle-tags">'+(e.primary||[]).map(m=>'<span class="mtag">'+m+'</span>').join('')+'</div></div></div>'+(libBrowseMode?'<button class="x" onclick=\'openFiche("'+e.name.replace(/"/g,'&quot;')+'")\'>›</button>':'<button class="x" style="color:var(--e)" onclick=\'pickEx("'+e.name.replace(/"/g,'&quot;')+'")\'>＋</button>')+'</div></div>';
+    h+='<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:10px;flex:1;cursor:pointer" onclick=\'openFiche("'+e.name.replace(/"/g,'&quot;')+'")\'>'+exThumb(e.name,48)+'<div><div style="font-weight:700;font-size:14px">'+e.name+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+e.equip+' · <span style="color:var('+lvCol+')">'+e.level+'</span></div><div class="muscle-tags">'+(e.primary||[]).map(m=>'<span class="mtag">'+m+'</span>').join('')+'</div></div></div>'+(libBrowseMode?'<button class="x" onclick=\'openFiche("'+e.name.replace(/"/g,'&quot;')+'")\'>›</button>':'<button class="x" style="color:var(--e)" onclick=\'pickEx("'+e.name.replace(/"/g,'&quot;')+'")\'>＋</button>')+'</div></div>';
   });
+  }
   $('#libBody').innerHTML=h;
 }
 function pickEx(name){ const e=findEx(name); if(libCallback) libCallback(e); else openFiche(name); }
