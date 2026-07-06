@@ -3369,11 +3369,15 @@ const BADGE_IMG_FILES={
 function bdGlyph(key){
   const src=BADGE_IMG_FILES[key];
   if(!src) return '<span class="bd-emoji">'+badgeEmoji(key)+'</span>';
-  return '<img class="bd-glyph" src="'+src+'" alt="" draggable="false" loading="lazy" onerror="bdImgErr(this,\''+key+'\')">';
+  return '<img class="bd-glyph" src="'+src+'" alt="" draggable="false" loading="lazy" data-key="'+key+'" data-stage="0" onerror="bdImgErr(this)">';
 }
 function badgeEmoji(key){ const b=BADGE_TIERS.find(x=>x.key===key); return b?b.emoji:'🏅'; }
-function bdImgErr(img,key){
-  if(img.dataset.fallenBack) return; img.dataset.fallenBack='1';
+function bdImgErr(img){
+  const key=img.dataset.key; const stage=+img.dataset.stage;
+  // Étape 0 → on retente dans un sous-dossier badges/, au cas où les PNG
+  // seraient rangés là plutôt qu'à la racine du site.
+  if(stage===0){ img.dataset.stage='1'; img.src='badges/'+BADGE_IMG_FILES[key]; return; }
+  // Étape 1 échouée aussi → on bascule sur l'emoji, plus aucune requête réseau.
   const span=document.createElement('span'); span.className='bd-glyph bd-emoji'; span.textContent=badgeEmoji(key);
   img.replaceWith(span);
 }
@@ -4293,7 +4297,7 @@ function setupPWA(){
   }catch(e){}
   // Service worker : cache la page courante pour fonctionner hors-ligne
   if('serviceWorker'in navigator && location.protocol.startsWith('http')){
-    const swCode="const C='ikorun-v3';self.addEventListener('install',e=>{self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(res=>{try{const c2=res.clone();caches.open(C).then(c=>c.put(e.request,c2))}catch(x){}return res}).catch(()=>caches.open(C).then(c=>c.match(e.request))))});";
+    const swCode="const C='ikorun-v4';self.addEventListener('install',e=>{self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(res=>{try{const c2=res.clone();caches.open(C).then(c=>c.put(e.request,c2))}catch(x){}return res}).catch(()=>caches.open(C).then(c=>c.match(e.request))))});";
     try{ const b=new Blob([swCode],{type:'text/javascript'}); navigator.serviceWorker.register(URL.createObjectURL(b)).catch(()=>{}); }catch(e){}
   }
 }
