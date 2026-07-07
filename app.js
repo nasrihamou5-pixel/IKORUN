@@ -80,11 +80,32 @@ async function deleteAccountCompletely(){
   location.reload();
 }
 
-/* ---------- STORAGE ---------- */
+/* ---------- STORAGE ----------
+   OPTIMISATION : l'écriture locale (localStorage) reste instantanée et
+   synchrone (aucun risque de perte de données), mais l'envoi au cloud
+   (requête réseau Supabase) est maintenant débité clé par clé : si la
+   même clé est sauvegardée plusieurs fois rapidement (ex: saisie dans un
+   champ texte, toggles répétés), on ne pousse qu'UNE seule requête réseau
+   après une courte pause, au lieu d'une requête par appel. Avant ce fix,
+   taper dans "Notes rapides" déclenchait 13 requêtes réseau par frappe. */
 const DB = {
   load(k){ try{ return JSON.parse(localStorage.getItem('vvv_'+k)); }catch(e){ return null; } },
-  save(k,v){ localStorage.setItem('vvv_'+k, JSON.stringify(v)); cloudPush(k,v); }
+  save(k,v){ localStorage.setItem('vvv_'+k, JSON.stringify(v)); DB._queueCloudPush(k,v); },
+  _pending:{}, _timers:{},
+  _queueCloudPush(k,v){
+    DB._pending[k]=v;
+    clearTimeout(DB._timers[k]);
+    DB._timers[k]=setTimeout(()=>{ const val=DB._pending[k]; delete DB._pending[k]; delete DB._timers[k]; cloudPush(k,val); },900);
+  },
+  // Force l'envoi immédiat de tout ce qui est en attente (avant fermeture/masquage de l'app)
+  flushPending(){
+    Object.keys(DB._timers).forEach(k=>clearTimeout(DB._timers[k]));
+    Object.keys(DB._pending).forEach(k=>{ const val=DB._pending[k]; cloudPush(k,val); });
+    DB._pending={}; DB._timers={};
+  }
 };
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') DB.flushPending(); });
+window.addEventListener('pagehide',()=>DB.flushPending());
 
 /* ---------- STATE ---------- */
 let P, SESS, MSESS, CUSTOM, PLAN, GOALS, AGENDA, XP, RECORDS, PREFS, WEIGHTLOG, TRACKER, SESSLOG, MUSCU_PR;
@@ -1050,7 +1071,7 @@ function boot(){
   checkConnectivity();
   if(P.notif!==false) ensureNotifPerm();
   positionNavPill(document.querySelector('.nb.on')||document.querySelector('.nb'));
-  window.addEventListener('resize',()=>positionNavPill(document.querySelector('.nb.on')));
+  { let _rzT; window.addEventListener('resize',()=>{ clearTimeout(_rzT); _rzT=setTimeout(()=>positionNavPill(document.querySelector('.nb.on')),120); }); }
   if(!P.setupDone){ startOnboarding(); return; }  // création profil
   initApp();                                      // app
 }
@@ -4171,7 +4192,7 @@ function pomoToggle(){
 function pomoReset(){ clearInterval(pomoState.iv); pomoState={phase:'work',left:25*60,running:false,iv:null,count:pomoState.count}; renderPomodoro(); }
 function renderNotesTool(){
   const notes=PREFS.quickNotes||'';
-  let h='<div class="card"><div class="card-t">📝 Notes rapides</div><textarea class="inp" rows="12" id="qnotes" placeholder="Écris ici... (sauvegarde automatique)" oninput="PREFS.quickNotes=this.value;saveAll()">'+notes+'</textarea><div style="font-size:11px;color:var(--dim);margin-top:8px">💾 Sauvegarde automatique en local.</div></div>';
+  let h='<div class="card"><div class="card-t">📝 Notes rapides</div><textarea class="inp" rows="12" id="qnotes" placeholder="Écris ici... (sauvegarde automatique)" oninput="PREFS.quickNotes=this.value;clearTimeout(window._notesSaveT);window._notesSaveT=setTimeout(saveAll,400)">'+notes+'</textarea><div style="font-size:11px;color:var(--dim);margin-top:8px">💾 Sauvegarde automatique en local.</div></div>';
   $('#outBody').innerHTML=h;
 }
 let sleepH=8;
