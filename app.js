@@ -2369,7 +2369,23 @@ function streakDays(){
   while(set.has(dateKey(d))){ streak++; d.setDate(d.getDate()-1); }
   return streak;
 }
-function planSessionToday(){ if(!PLAN) return null; return PLAN.sessions.find(s=>s.date===todayKey()); }
+// Nom du plan réellement suivi en ce moment (généré par IKORUN ou perso choisi par l'athlète)
+function followedPlanLabel(){
+  if(P.followPerso){ const p=CUSTOM.find(x=>x.id===P.followPerso); if(p) return '👤 '+p.name; }
+  return PLAN?PLAN.goal||'En cours':'Aucun plan actif';
+}
+function planSessionToday(){
+  if(P.followPerso){
+    const p=CUSTOM.find(x=>x.id===P.followPerso);
+    if(p){
+      const s=p.sessions.find(x=>x.date===todayKey());
+      if(s) return {...s,_source:'perso',_personId:p.id};
+      return null;
+    }
+  }
+  if(!PLAN) return null;
+  return PLAN.sessions.find(s=>s.date===todayKey());
+}
 function formScore(){
   // simple: based on sessions done this week vs target & recent load
   const target=(P.days&&P.days.length)||4;
@@ -2506,7 +2522,10 @@ function renderHome(){
   // DAY STRIP — bande horizontale des prochains jours avec type de séance
   html+='<div class="daystrip-wrap stag" style="animation-delay:.06s"><div class="daystrip">';
   { const labels=['D','L','M','M','J','V','S']; const doneDates=new Set([...SESS,...MSESS].map(s=>s.date));
-    const planByDate={}; if(PLAN) PLAN.sessions.forEach(s=>planByDate[s.date]=s);
+    const followedP=P.followPerso?CUSTOM.find(x=>x.id===P.followPerso):null;
+    const planByDate={};
+    if(followedP) followedP.sessions.forEach(s=>planByDate[s.date]=s);
+    else if(PLAN) PLAN.sessions.forEach(s=>planByDate[s.date]=s);
     for(let i=-1;i<6;i++){
       const d=new Date(); d.setDate(d.getDate()+i); const k=dateKey(d); const isToday=i===0;
       const sess=planByDate[k]; const done=doneDates.has(k);
@@ -2523,7 +2542,7 @@ function renderHome(){
   if(P.compDate && compDays!==null && compDays>=0){
     html+='<div class="ev-tile" onclick="nav(\'sport\')"><div class="ev-lab">OBJECTIF</div><div class="ev-title">'+(P.objRace||'Compétition')+'</div><div class="ev-days">J-'+compDays+'</div></div>';
   } else {
-    html+='<div class="ev-tile alt" onclick="nav(\'sport\')"><div class="ev-lab">TON PLAN</div><div class="ev-title">'+(PLAN?PLAN.goal||'En cours':'Aucun plan actif')+'</div><div class="ev-days">'+ICN('chevronR',16)+'</div></div>';
+    html+='<div class="ev-tile alt" onclick="nav(\'sport\')"><div class="ev-lab">TON PLAN</div><div class="ev-title">'+(followedPlanLabel())+'</div><div class="ev-days">'+ICN('chevronR',16)+'</div></div>';
   }
   { const TIPS=[
       "Un jour de récup bien géré vaut souvent plus qu'une séance forcée.",
@@ -2568,7 +2587,7 @@ function renderHome(){
     const lw=lastWeekKm(); const delta=lw>0?Math.round((kmW-lw)/lw*100):(kmW>0?100:0);
     const dt=ps.detail;
     html+='<div class="sec-head stag" style="animation-delay:.12s"><h3>Défi du jour</h3></div>';
-    html+='<div class="challenge-card stag" style="animation-delay:.13s" onclick="openRunSheet('+ps.id+')"><div class="ch-glow"></div>'+
+    html+='<div class="challenge-card stag" style="animation-delay:.13s" onclick="'+(ps._source==='perso'?"curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')":'openRunSheet('+ps.id+')')+'"><div class="ch-glow"></div>'+
       (delta!==0?'<div class="ch-badge" style="'+(delta<0?'background:rgba(255,92,108,.18);color:var(--bad)':'')+'">'+(delta>0?'+':'')+delta+'%</div>':'')+
       '<div class="ch-row"><div class="ch-ic">'+(ps.type==='Repos'?'😴':cardIcon('run',col))+'</div>'+
       '<div class="ch-body"><div class="ch-tag">'+ps.type+(XP&&XP.level?' · '+levelName(XP.level):'')+'</div><div class="ch-title">'+ps.title+'</div>'+
@@ -2701,7 +2720,8 @@ function renderPersoList(){
   if(!persoPlans.length){ h+='<div class="card"><div class="empty"><div class="em-ic">📋</div><div style="font-weight:700;color:var(--snow);margin-bottom:6px">Crée ton plan sur-mesure</div><div style="font-size:13px">Ajoute tes propres séances, choisis les dates, types et allures. Tout se synchronise avec ton accueil et tes stats.</div></div></div>'; }
   else persoPlans.forEach((p)=>{
     const done=p.sessions.filter(s=>s.done).length;
-    h+='<div class="card" style="padding:13px 14px"><div class="row" onclick="openPerso(\''+p.id+'\')" style="cursor:pointer"><div><div style="font-weight:700;font-size:14.5px">'+p.name+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+p.sessions.length+' séances · '+done+' terminées</div></div><span style="color:var(--e);font-size:18px">›</span></div>'+
+    const followBadge=P.followPerso===p.id?'<span class="chrome-chip" style="color:var(--ok);margin-left:6px">✅ Suivi</span>':'';
+    h+='<div class="card" style="padding:13px 14px"><div class="row" onclick="openPerso(\''+p.id+'\')" style="cursor:pointer"><div><div style="font-weight:700;font-size:14.5px">'+p.name+followBadge+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+p.sessions.length+' séances · '+done+' terminées</div></div><span style="color:var(--e);font-size:18px">›</span></div>'+
       '<div class="row" style="margin-top:9px;gap:8px"><div class="pbar" style="flex:1;margin-top:0"><div style="width:'+(p.sessions.length?done/p.sessions.length*100:0)+'%"></div></div>'+
       '<span class="mini-ic" onclick="dupPerso(\''+p.id+'\')" title="Dupliquer">⎘</span><span class="mini-ic" onclick="sharePlan(\''+p.name+'\')" title="Partager">↗</span><span class="mini-ic" style="color:var(--bad)" onclick="delPerso(\''+p.id+'\')" title="Supprimer">🗑</span></div></div>';
   });
@@ -2722,7 +2742,12 @@ function renderSport(){
 function persoDetailHTML(){
   const p=CUSTOM.find(x=>x.id===curPerso); if(!p) return renderPersoList();
   const tk=todayKey();
+  const following=P.followPerso===p.id;
   let h='<div class="row" style="margin-bottom:14px"><button class="x" onclick="curPerso=null;renderSport()">‹</button><div class="man" style="font-weight:800;font-size:18px">'+p.name+'</div><button class="x" onclick="renamePerso(\''+p.id+'\')">✏️</button></div>';
+  h+='<div class="chrome-box'+(following?' accent':'')+'" style="display:flex;align-items:center;gap:10px">'
+    +'<div style="flex:1"><div class="cb-head" style="margin-bottom:2px">'+(following?'✅ Plan suivi actuellement':'👤 Suivre ce plan à la place du plan IKORUN')+'</div>'
+    +'<div class="cb-body" style="font-size:12px;color:var(--muted)">'+(following?'Ton accueil et ton bilan utilisent ce plan. Le plan IKORUN continue de s\u2019ajuster en arrière-plan selon ce que tu fais ici.':'Ton accueil affichera les séances de ce plan au lieu du plan généré. Tu peux revenir au plan IKORUN quand tu veux.')+'</div></div>'
+    +'<button class="btn ghost sm" style="width:auto;white-space:nowrap" onclick="toggleFollowPerso(\''+p.id+'\')">'+(following?'Arrêter':'Suivre')+'</button></div>';
   h+='<button class="btn" style="margin-bottom:14px" onclick="addPersoSession()">＋ Ajouter une séance</button>';
   if(!p.sessions.length) h+='<div class="card"><div class="empty"><div class="em-ic">🏃</div><div style="font-size:13px">Aucune séance. Ajoute ta première !</div></div></div>';
   else {
@@ -2736,9 +2761,15 @@ function persoDetailHTML(){
   return h;
 }
 function renderPersoDetail(){}
+function toggleFollowPerso(id){
+  P.followPerso=(P.followPerso===id)?null:id;
+  DB.save('profile',P);
+  toast(P.followPerso?'Tu suis maintenant ce plan perso ✓':'Retour au plan IKORUN');
+  renderSport();
+}
 function renamePerso(id){ const p=CUSTOM.find(x=>x.id===id); const n=prompt('Nom :',p.name); if(n){p.name=n;saveAll();renderSport();} }
 function dupPerso(id){ const p=CUSTOM.find(x=>x.id===id); CUSTOM.push({...JSON.parse(JSON.stringify(p)),id:'P'+Date.now(),name:p.name+' (copie)'}); saveAll(); renderSport(); }
-function delPerso(id){ if(!confirm('Supprimer ce plan ?'))return; CUSTOM=CUSTOM.filter(x=>x.id!==id); curPerso=null; saveAll(); renderSport(); }
+function delPerso(id){ if(!confirm('Supprimer ce plan ?'))return; CUSTOM=CUSTOM.filter(x=>x.id!==id); if(P.followPerso===id) P.followPerso=null; curPerso=null; saveAll(); renderSport(); }
 let psType='EF';
 let psMode='simple'; // 'simple' (km+allure) ou 'intervals' (temps saisi à chaque répétition) — indépendant du type
 let psIntervals=[{dist:400,timeS:null}];
