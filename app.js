@@ -4843,10 +4843,20 @@ function setupPWA(){
     let link=document.querySelector('link[rel="manifest"]'); if(!link){ link=document.createElement('link'); link.rel='manifest'; document.head.appendChild(link); }
     link.href=url;
   }catch(e){}
-  // Service worker : cache la page courante pour fonctionner hors-ligne
+  // Service worker : fichier statique sw.js (une blob URL change à chaque chargement,
+  // ce qui empêchait le navigateur de détecter les mises à jour et laissait les
+  // téléphones bloqués sur une ancienne version en cache — surtout sur iOS/Safari).
   if('serviceWorker'in navigator && location.protocol.startsWith('http')){
-    const swCode="const C='ikorun-v4';self.addEventListener('install',e=>{self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(res=>{try{const c2=res.clone();caches.open(C).then(c=>c.put(e.request,c2))}catch(x){}return res}).catch(()=>caches.open(C).then(c=>c.match(e.request))))});";
-    try{ const b=new Blob([swCode],{type:'text/javascript'}); navigator.serviceWorker.register(URL.createObjectURL(b)).catch(()=>{}); }catch(e){}
+    // Nettoie les anciennes registrations blob: cassées, si elles existent encore.
+    navigator.serviceWorker.getRegistrations().then(regs=>{
+      regs.forEach(r=>{ const su=(r.active&&r.active.scriptURL)||(r.installing&&r.installing.scriptURL)||(r.waiting&&r.waiting.scriptURL)||'';
+        if(su.startsWith('blob:')) r.unregister(); });
+    }).catch(()=>{});
+    navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{
+      reg.update().catch(()=>{});
+      // Vérifie les mises à jour à chaque retour au premier plan.
+      document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') reg.update().catch(()=>{}); });
+    }).catch(()=>{});
   }
 }
 
