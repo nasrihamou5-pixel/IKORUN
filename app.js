@@ -2607,7 +2607,7 @@ function renderHome(){
     } else {
       pct=Math.round(Math.min(100,kmTarget?kmW/kmTarget*100:0));
     }
-    html+='<div class="gh-card stag" style="animation-delay:.02s" onclick="nav(\'sport\')">'+
+    html+='<div class="gh-card card-exceptional stag" style="animation-delay:.02s" onclick="nav(\'sport\')">'+
       '<div class="gh-top"><div class="gh-lab">Objectif principal</div>'+ICN('target',22,'var(--or)')+'</div>'+
       '<div class="gh-title">'+goalTitle+'</div>'+
       (compDays!==null&&compDays>=0?'<div class="gh-chip">J-'+compDays+'</div>':'')+
@@ -3672,7 +3672,7 @@ function statsBilan(){
   // RECORDS
   { const semiTime=P.pbSemi||(vdot?fmtTime(predictTime(vdot,21097)):null);
     h+='<div class="sec-lab">Records</div>';
-    h+='<div class="card"><div class="rec-row">'+
+    h+='<div class="card-important"><div class="rec-row">'+
       '<div class="rec-cell"><div class="rec-val">'+(P.pb5k||'—')+'</div><div class="rec-lab">5 km</div></div>'+
       '<div class="rec-cell"><div class="rec-val">'+(P.pb10k||'—')+'</div><div class="rec-lab">10 km</div></div>'+
       '<div class="rec-cell"><div class="rec-val">'+(semiTime||'—')+'</div><div class="rec-lab">Semi</div></div>'+
@@ -3985,7 +3985,7 @@ function outilsHome(){
   const favs=toolFav().filter(k=>TOOLS[k]);
   h+='<div class="row" style="margin:18px 0 10px"><span class="lab">Favoris</span><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="editFavs()">Modifier</span></div>';
   h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:22px">';
-  favs.slice(0,8).forEach(k=>{ const t=TOOLS[k]; h+='<div class="favtile" onclick="openTool(\''+k+'\')"><div style="color:var(--e);display:flex;justify-content:center">'+t.icon+'</div><div class="favlab">'+favShort(t.name)+'</div></div>'; });
+  favs.slice(0,8).forEach(k=>{ const t=TOOLS[k]; h+='<div class="favtile favtile-lg" onclick="openTool(\''+k+'\')"><div style="color:var(--e);display:flex;justify-content:center">'+t.icon+'</div><div class="favlab">'+favShort(t.name)+'</div></div>'; });
   h+='</div>';
   // OUTILS PRINCIPAUX
   h+='<div class="lab" style="margin:0 0 12px">Outils principaux</div>';
@@ -4533,37 +4533,31 @@ function renderProfile(){
   const compDays=P.compDate?daysBetween(new Date(),new Date(P.compDate)):null;
   const langInfo=LANGS.find(l=>l[0]===curLang())||LANGS[0];
   let h='';
-  // ===== HERO — avatar + nom + email/bio, épuré (image de référence : Profil) =====
+  // ===== HERO — avatar + nom + email/bio =====
   h+='<div class="card stag pf-hero" style="animation-delay:0s"><div class="pf-avwrap">'+avatarHTML(88,34)+
     '<div class="pf-cam" onclick="changePhoto()">📷</div></div>';
   h+='<div class="pf-name-row"><div class="man" style="font-weight:800;font-size:20px">'+(P.name||'Athlète')+'</div>'+
     '<div class="pf-edit" onclick="openProfileEdit()" title="'+t('editInfos')+'">✏️</div></div>';
   h+='<div style="font-size:12.5px;color:var(--muted);margin-top:3px" onclick="editBio()">'+(window.currentUserEmail||P.bio||'Ajoute une biographie ✍️')+'</div>';
-  h+='<div class="rankchip" style="margin-top:11px;background:'+rk.bg+';color:#fff">'+t('level')+' '+XP.level+' · '+rk.name+' · '+XP.total+' XP</div>';
   h+='</div>';
-  // ===== APERÇU RAPIDE — carte unique, une ligne par info (au lieu d'une grille + bannière séparées) =====
+  // ===== NIVEAU — bloc phare : on voit le joueur avant les données (badge lumineux, niveau, XP, titre) =====
+  { const curBadge=BADGE_TIERS.filter(b=>b.xp<=(XP.total||0)).slice(-1)[0]||BADGE_TIERS[0];
+    h+='<div class="card-exceptional pf-lvl-hero stag" style="animation-delay:.02s" onclick="openProgression()">'+
+      '<div class="bd-icon big '+curBadge.cls+'" style="margin:0 auto 12px">'+bdGlyph(curBadge.key)+'</div>'+
+      '<div style="text-align:center"><div class="pf-lvl-num">NIVEAU '+XP.level+'</div>'+
+      '<div class="pf-lvl-rank">'+rk.name+'</div>'+
+      '<div class="pf-lvl-xp mono">'+XP.total+' XP</div></div>'+
+      '<div class="pbar" style="height:8px;margin-top:14px"><div style="width:'+xp.pct+'%"></div></div>'+
+      '<div class="row" style="margin-top:7px"><span style="font-size:11px;color:var(--muted)" class="mono">'+xp.inLvl+' / '+xp.span+' XP</span><span style="font-size:11px;color:var(--e)">Voir mes progrès ›</span></div>'+
+    '</div>';
+  }
+  // ===== APERÇU RAPIDE — carte unique, une ligne par info =====
   h+='<div class="grp-card stag" style="animation-delay:.04s">'+
     '<div class="grp-row no-chev"><div class="lr-icon">📏</div><div class="lr-title">Taille / poids</div><div class="lr-val">'+(P.height||'—')+' cm · '+(P.weight||'—')+' kg</div></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">🎂</div><div class="lr-title">Âge</div><div class="lr-val">'+age()+' ans</div></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">📈</div><div class="lr-title">VDOT</div><div class="lr-val">'+(getUserVDOT()||'—')+'</div></div>'+
     '<div class="grp-row" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\';renderSport()"><div class="lr-icon">🎯</div><div class="lr-title">Objectif</div><div class="lr-val">'+(P.objRace||P.goal||'Aucun')+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
-  // ===== PROGRESSION — badges intégrés directement au profil =====
-  { const unlocked=unlockedBadges(); const recent=[...unlocked].sort((a,b)=>b.date<a.date?-1:1).slice(0,5).map(u=>findBadgeDef(u.key)).filter(Boolean);
-    h+='<div class="sec-head stag" style="animation-delay:.06s"><h3 class="grp-lab" style="margin:0">Progression</h3><span class="see" onclick="openBadges()">'+unlocked.length+' / '+ALL_BADGES.length+' · Voir tout ›</span></div>';
-    h+='<div class="card stag" style="animation-delay:.07s">';
-    if(recent.length){
-      h+='<div class="row" style="gap:10px;flex-wrap:wrap">'+recent.map(b=>'<div class="bd-icon '+b.cls+'" style="width:52px;height:52px;cursor:pointer" onclick="openBadgeDetail(\''+b.key+'\')">'+bdGlyph(b.key)+'</div>').join('')+'</div>';
-    } else {
-      h+='<div style="font-size:12px;color:var(--muted)">Aucun badge obtenu pour l\u2019instant — ta première séance te rapprochera du badge Initié.</div>';
-    }
-    const nb=nextBadge();
-    if(nb){
-      const prog=badgeProgress(nb);
-      h+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--hair)"><div class="row" style="margin-bottom:6px"><span style="font-size:12px;color:var(--muted)">Prochain badge · '+nb.name+'</span><span class="mono" style="font-size:12px;color:var(--e)">'+prog.pct+'%</span></div><div class="pbar" style="height:6px"><div style="width:'+prog.pct+'%"></div></div></div>';
-    }
-    h+='</div>';
-  }
   // ===== SECTIONS GROUPÉES — Compte / Préférences / Support, une seule carte par groupe =====
   h+='<div class="grp-lab stag" style="animation-delay:.09s">Compte</div>';
   h+='<div class="grp-card stag" style="animation-delay:.10s">'+
@@ -4585,6 +4579,36 @@ function renderProfile(){
   '</div>';
   h+='<div style="text-align:center;color:var(--dim);font-size:12px;margin:20px 0">IKORUN — Elite Athletic Intelligence · v2.0</div>';
   $('#s-profil').innerHTML=h;
+}
+/* ---- Fenêtre Progression — niveau en grand, XP, badges, prochaine récompense ---- */
+function openProgression(){
+  $('#ovProgTitle').textContent='Progression';
+  $('#progBody').innerHTML=progressionHTML();
+  openOv('ovProg');
+}
+function progressionHTML(){
+  const xp=xpProgress(); const rk=rankFor(XP.level||1);
+  const curBadge=BADGE_TIERS.filter(b=>b.xp<=(XP.total||0)).slice(-1)[0]||BADGE_TIERS[0];
+  const nextTier=BADGE_TIERS[BADGE_TIERS.indexOf(curBadge)+1];
+  const unlocked=unlockedBadges(); const ukeys=new Set(unlocked.map(u=>u.key));
+  let h='<div class="card-exceptional" style="text-align:center">'+
+    '<div class="bd-icon big '+curBadge.cls+'" style="margin:0 auto 14px">'+bdGlyph(curBadge.key)+'</div>'+
+    '<div class="pf-lvl-num">NIVEAU '+XP.level+'</div><div class="pf-lvl-rank">'+rk.name+'</div>'+
+    '<div class="pf-lvl-xp mono">'+xp.inLvl+' / '+xp.span+' XP</div>'+
+    '<div class="pbar" style="height:8px;margin-top:14px"><div style="width:'+xp.pct+'%"></div></div>'+
+  '</div>';
+  h+='<div class="row" style="gap:10px;flex-wrap:wrap;margin:16px 0">'+
+    BADGE_TIERS.map(b=>'<div class="bd-icon '+b.cls+(ukeys.has(b.key)?'':' locked')+'" style="width:52px;height:52px;cursor:pointer" onclick="openBadgeDetail(\''+b.key+'\')">'+bdGlyph(b.key)+(ukeys.has(b.key)?'':'<div class="bd-lock-chip">🔒</div>')+'</div>').join('')+
+  '</div>';
+  h+='<div class="card"><div class="lab" style="margin-bottom:8px">Prochaine récompense</div>'+
+    (nextTier?
+      '<div class="row"><div><div style="font-weight:700">'+nextTier.name+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+nextTier.xp+' XP requis</div></div>'+
+       '<div class="bd-icon '+nextTier.cls+' locked" style="width:44px;height:44px">'+bdGlyph(nextTier.key)+'</div></div>'+
+       '<div class="pbar" style="height:6px;margin-top:12px"><div style="width:'+Math.min(100,Math.round((XP.total||0)/nextTier.xp*100))+'%"></div></div>'
+      :'<div style="font-size:12px;color:var(--legende)">🏆 Palier maximal atteint !</div>')+
+  '</div>';
+  h+='<button class="btn ghost" style="margin-top:14px" onclick="openBadges()">Voir tous les badges</button>';
+  return h;
 }
 /* ---- Fiches de réglages du profil, ouvertes dans l'overlay générique ---- */
 let _pfSheet=null;
