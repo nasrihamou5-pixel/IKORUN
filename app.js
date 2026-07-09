@@ -80,32 +80,11 @@ async function deleteAccountCompletely(){
   location.reload();
 }
 
-/* ---------- STORAGE ----------
-   OPTIMISATION : l'écriture locale (localStorage) reste instantanée et
-   synchrone (aucun risque de perte de données), mais l'envoi au cloud
-   (requête réseau Supabase) est maintenant débité clé par clé : si la
-   même clé est sauvegardée plusieurs fois rapidement (ex: saisie dans un
-   champ texte, toggles répétés), on ne pousse qu'UNE seule requête réseau
-   après une courte pause, au lieu d'une requête par appel. Avant ce fix,
-   taper dans "Notes rapides" déclenchait 13 requêtes réseau par frappe. */
+/* ---------- STORAGE ---------- */
 const DB = {
   load(k){ try{ return JSON.parse(localStorage.getItem('vvv_'+k)); }catch(e){ return null; } },
-  save(k,v){ localStorage.setItem('vvv_'+k, JSON.stringify(v)); DB._queueCloudPush(k,v); },
-  _pending:{}, _timers:{},
-  _queueCloudPush(k,v){
-    DB._pending[k]=v;
-    clearTimeout(DB._timers[k]);
-    DB._timers[k]=setTimeout(()=>{ const val=DB._pending[k]; delete DB._pending[k]; delete DB._timers[k]; cloudPush(k,val); },900);
-  },
-  // Force l'envoi immédiat de tout ce qui est en attente (avant fermeture/masquage de l'app)
-  flushPending(){
-    Object.keys(DB._timers).forEach(k=>clearTimeout(DB._timers[k]));
-    Object.keys(DB._pending).forEach(k=>{ const val=DB._pending[k]; cloudPush(k,val); });
-    DB._pending={}; DB._timers={};
-  }
+  save(k,v){ localStorage.setItem('vvv_'+k, JSON.stringify(v)); cloudPush(k,v); }
 };
-document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') DB.flushPending(); });
-window.addEventListener('pagehide',()=>DB.flushPending());
 
 /* ---------- STATE ---------- */
 let P, SESS, MSESS, CUSTOM, PLAN, GOALS, AGENDA, XP, RECORDS, PREFS, WEIGHTLOG, TRACKER, SESSLOG, MUSCU_PR;
@@ -474,127 +453,47 @@ function addXP(amount,reason){
    derniers, de compétitions/préparations terminées — "aucune obtention
    rapide possible". */
 const BADGE_TIERS=[
-  {key:'debutant', name:'Débutant', cls:'bd-debutant', emoji:'🔰', xp:0,    desc:"Début du parcours."},
-  {key:'amateur',  name:'Amateur',  cls:'bd-amateur',  emoji:'🥉', xp:200,  desc:"Premiers pas."},
-  {key:'sportif',  name:'Sportif',  cls:'bd-sportif',  emoji:'⭐', xp:500,  desc:"L'habitude s'installe."},
-  {key:'athlete',  name:'Athlète',  cls:'bd-athlete',  emoji:'🏅', xp:1000, desc:"L'effort paie."},
-  {key:'expert',   name:'Expert',   cls:'bd-expert',   emoji:'💚', xp:2000, desc:"Dépasse tes limites."},
-  {key:'elite',    name:'Élite',    cls:'bd-elite',    emoji:'💎', xp:3500, desc:"Constante amélioration."},
-  {key:'maitre',   name:'Maître',   cls:'bd-maitre',   emoji:'🧊', xp:5000, desc:"Maîtrise ton art."},
-  {key:'legende',  name:'Légende',  cls:'bd-legende',  emoji:'👑', xp:7500, desc:"Devenu une référence."}
+  {key:'initie',       name:'Initié',       cls:'bd-initie',       emoji:'🪨', level:1,  km:0,    sess:0, desc:"Début du parcours."},
+  {key:'discipline',   name:'Discipliné',   cls:'bd-discipline',   emoji:'🥉', level:2,  km:10,   sess:1, desc:"Premiers pas."},
+  {key:'perseverant',  name:'Persévérant',  cls:'bd-perseverant',  emoji:'⭐', level:8,  km:40,   sess:6, desc:"L'habitude s'installe."},
+  {key:'determine',    name:'Déterminé',    cls:'bd-determine',    emoji:'🏅', level:10, km:50,   sess:8, desc:"L'effort paie."},
+  {key:'avance',       name:'Avancé',       cls:'bd-avance',       emoji:'💚', level:16, km:130,  sess:16,desc:"Dépasse tes limites."},
+  {key:'elite',        name:'Élite',        cls:'bd-elite',        emoji:'💎', level:25, km:370,  sess:36,desc:"Constante amélioration.",preps:1},
+  {key:'exceptionnel', name:'Exceptionnel', cls:'bd-exceptionnel', emoji:'🧊', level:38, km:1090, sess:78,desc:"Maîtrise ton corps.",preps:2},
+  {key:'legendaire',   name:'Légendaire',   cls:'bd-legendaire',   emoji:'🌌', level:46, km:1810, sess:112,desc:"Devenu une référence.",preps:2},
+  {key:'ultime',       name:'Ultime',       cls:'bd-ultime',       emoji:'✨', level:58, km:3390, sess:178,desc:"Au sommet de toi-même.",comps:3},
+  {key:'iconique',     name:'Iconique',     cls:'bd-iconique',     emoji:'👑', level:70, km:5700, sess:270,desc:"Inspiration pour tous.",preps:6,comps:5}
 ];
 function badgeStats(){
-  return { xp: XP.total||0 };
+  return {
+    level: XP.level||1,
+    km: Math.round(totalKm()),
+    sess: SESS.length+MSESS.length,
+    preps: XP.plansCompleted||0,
+    comps: RECORDS.filter(r=>r.competition).length
+  };
 }
 function badgeProgress(b){
-  if(b.check) return b.check();
   const s=badgeStats();
-  const parts=[{label:'XP', have:s.xp, need:b.xp, unit:'XP'}];
-  const pct=b.xp?Math.min(100,Math.round((s.xp/b.xp)*100)):100;
-  const unlocked=s.xp>=b.xp;
+  const parts=[
+    {label:'Niveau', have:s.level, need:b.level, unit:''},
+    {label:'Distance', have:s.km, need:b.km, unit:'km'},
+    {label:'Séances', have:s.sess, need:b.sess, unit:''}
+  ];
+  if(b.preps) parts.push({label:'Préparations terminées', have:s.preps, need:b.preps, unit:''});
+  if(b.comps) parts.push({label:'Compétitions', have:s.comps, need:b.comps, unit:''});
+  const pctEach=parts.map(p=>Math.min(1,p.need?p.have/p.need:1));
+  const pct=Math.round((pctEach.reduce((a,v)=>a+v,0)/pctEach.length)*100);
+  const unlocked=parts.every(p=>p.have>=p.need);
   return {parts,pct,unlocked};
 }
-/* ---------- Helpers pour les badges d'accomplissement / performance ---------- */
-function activeDaysSet(){ return new Set([...SESS,...MSESS].map(s=>s.date)); }
-function activeDaysCount(){ return activeDaysSet().size; }
-function longestRunKm(){ return SESS.reduce((m,s)=>Math.max(m,s.km||0),0); }
-function elevationTotal(){ return [...SESS,...MSESS].reduce((a,s)=>a+(s.elevation||0),0); }
-function hasPodiumRecord(){ return RECORDS.some(r=>r.place && /\b([1-3])(er|e|ère)?\b|top\s*3|podium/i.test(r.place)); }
-function hasPaceImprovement(){
-  const byDist={};
-  RECORDS.forEach(r=>{ if(!r.meters||!r.time) return; (byDist[r.meters]=byDist[r.meters]||[]).push(r); });
-  return Object.values(byDist).some(list=>{
-    if(list.length<2) return false;
-    const sorted=[...list].sort((a,b)=>a.date<b.date?-1:1);
-    const first=parseTime(sorted[0].time), last=parseTime(sorted[sorted.length-1].time);
-    return last<first;
-  });
-}
-function hasHardSessionDone(){
-  if(PLAN && PLAN.sessions && PLAN.sessions.some(s=>s.done && HARD_TYPES.includes(s.baseType))) return true;
-  if(Array.isArray(CUSTOM)) return CUSTOM.some(p=>p.sessions && p.sessions.some(s=>s.done && HARD_TYPES.includes(s.baseType)));
-  return false;
-}
-function vdotImproved(){
-  if(!RECORDS.length) return false;
-  return computeVDOTfromRecords()>computeVDOT();
-}
-/* Suivi léger de la régularité du sommeil : à chaque bascule de jour, si
-   l'objectif "Dormir 8h" était coché la veille, on l'ajoute à l'historique. */
-function sleepOkDays(){ return XP.sleepOkDays||[]; }
-function sleepStreak(){
-  const set=new Set(sleepOkDays());
-  let streak=0, d=new Date(); d.setHours(0,0,0,0);
-  if(!set.has(dateKey(d))){ d.setDate(d.getDate()-1); if(!set.has(dateKey(d))) return 0; }
-  while(set.has(dateKey(d))){ streak++; d.setDate(d.getDate()-1); }
-  return streak;
-}
-const ACHIEVEMENT_BADGES=[
-  {key:'premiere',  name:'Première course', cls:'bd-premiere',  emoji:'🏁', hint:'1ère séance',
-    check(){ const n=SESS.length+MSESS.length; return {parts:[{label:'Séances',have:n,need:1,unit:''}],pct:Math.min(100,n*100),unlocked:n>=1}; },
-    desc:"Termine ta 1ère séance."},
-  {key:'cinqk',     name:'5K',              cls:'bd-cinqk',     emoji:'5️⃣', hint:'5 km',
-    check(){ const v=longestRunKm(); return {parts:[{label:'Distance',have:v,need:5,unit:'km'}],pct:Math.min(100,Math.round(v/5*100)),unlocked:v>=5}; },
-    desc:"Cours 5 km d'une traite."},
-  {key:'dixk',      name:'10K',             cls:'bd-dixk',      emoji:'🔟', hint:'10 km',
-    check(){ const v=longestRunKm(); return {parts:[{label:'Distance',have:v,need:10,unit:'km'}],pct:Math.min(100,Math.round(v/10*100)),unlocked:v>=10}; },
-    desc:"Cours 10 km d'une traite."},
-  {key:'record',    name:'Record personnel',cls:'bd-record',    emoji:'🏅', hint:'1 record',
-    check(){ const n=RECORDS.length; return {parts:[{label:'Records enregistrés',have:n,need:1,unit:''}],pct:Math.min(100,n*100),unlocked:n>=1}; },
-    desc:"Bats ton record."},
-  {key:'serie',     name:'Série',           cls:'bd-serie',     emoji:'🔥', hint:'7 jours',
-    check(){ const v=bestStreak(); return {parts:[{label:'Jours d\u2019affilée',have:v,need:7,unit:'j'}],pct:Math.min(100,Math.round(v/7*100)),unlocked:v>=7}; },
-    desc:"7 jours d'affilée."},
-  {key:'regularite',name:'Régularité',      cls:'bd-regularite',emoji:'📅', hint:'30 jours actifs',
-    check(){ const v=activeDaysCount(); return {parts:[{label:'Jours actifs',have:v,need:30,unit:'j'}],pct:Math.min(100,Math.round(v/30*100)),unlocked:v>=30}; },
-    desc:"30 jours actifs."},
-  {key:'denivele',  name:'Dénivelé',        cls:'bd-denivele',  emoji:'⛰️', hint:'1000 m D+',
-    check(){ const v=Math.round(elevationTotal()); return {parts:[{label:'Dénivelé cumulé',have:v,need:1000,unit:'m'}],pct:Math.min(100,Math.round(v/1000*100)),unlocked:v>=1000}; },
-    desc:"1000 m de dénivelé positif cumulé."},
-  {key:'podium',    name:'Podium',          cls:'bd-podium',    emoji:'🏆', hint:'top 3',
-    check(){ const on=hasPodiumRecord(); return {parts:[{label:'Podium en compétition',have:on?1:0,need:1,unit:''}],pct:on?100:0,unlocked:on}; },
-    desc:"Finis dans le top 3 d'une compétition."},
-  {key:'assidu',    name:'Discipline',      cls:'bd-discipline',emoji:'📆', hint:'90 jours actifs',
-    check(){ const v=activeDaysCount(); return {parts:[{label:'Jours actifs',have:v,need:90,unit:'j'}],pct:Math.min(100,Math.round(v/90*100)),unlocked:v>=90}; },
-    desc:"90 jours actifs."},
-  {key:'objectif',  name:'Objectif atteint',cls:'bd-objectif',  emoji:'🎯', hint:'plan terminé',
-    check(){ const v=XP.plansCompleted||0; return {parts:[{label:'Plans terminés',have:v,need:1,unit:''}],pct:Math.min(100,v*100),unlocked:v>=1}; },
-    desc:"Ton objectif principal est terminé."}
-];
-const PERFORMANCE_BADGES=[
-  {key:'nouveaupb',   name:'Nouveau PB',    cls:'bd-nouveaupb',   emoji:'🆙', hint:'2 records',
-    check(){ const n=RECORDS.length; return {parts:[{label:'Records enregistrés',have:n,need:2,unit:''}],pct:Math.min(100,Math.round(n/2*100)),unlocked:n>=2}; },
-    desc:"Bats un nouveau record personnel."},
-  {key:'allure',      name:'Allure',        cls:'bd-allure',      emoji:'📈', hint:'progression',
-    check(){ const on=hasPaceImprovement(); return {parts:[{label:'Allure améliorée sur une distance',have:on?1:0,need:1,unit:''}],pct:on?100:0,unlocked:on}; },
-    desc:"Améliore ton allure moyenne sur une distance déjà chronométrée."},
-  {key:'endurance',   name:'Endurance',     cls:'bd-endurance',   emoji:'💚', hint:'15 km',
-    check(){ const v=longestRunKm(); return {parts:[{label:'Plus longue sortie',have:v,need:15,unit:'km'}],pct:Math.min(100,Math.round(v/15*100)),unlocked:v>=15}; },
-    desc:"Améliore ton endurance sur une longue sortie."},
-  {key:'puissance',   name:'Puissance',     cls:'bd-puissance',   emoji:'⚡', hint:'séance intensive',
-    check(){ const on=hasHardSessionDone(); return {parts:[{label:'Séance VMA/Seuil terminée',have:on?1:0,need:1,unit:''}],pct:on?100:0,unlocked:on}; },
-    desc:"Termine une séance de VMA, seuil ou intervalles."},
-  {key:'vo2max',      name:'VO2 Max',       cls:'bd-vo2max',      emoji:'🫁', hint:'VDOT amélioré',
-    check(){ const on=vdotImproved(); return {parts:[{label:'VDOT amélioré via un chrono réel',have:on?1:0,need:1,unit:''}],pct:on?100:0,unlocked:on}; },
-    desc:"Améliore ton VO2max estimé grâce à un chrono réel."},
-  {key:'force',       name:'Force',         cls:'bd-force',       emoji:'💪', hint:'1 séance muscu',
-    check(){ const n=MSESS.length; return {parts:[{label:'Séances musculation',have:n,need:1,unit:''}],pct:Math.min(100,n*100),unlocked:n>=1}; },
-    desc:"Termine une séance de musculation."},
-  {key:'recuperation',name:'Récupération',  cls:'bd-recuperation',emoji:'🌙', hint:'7 nuits',
-    check(){ const v=sleepStreak(); return {parts:[{label:'Nuits à 8h d\u2019affilée',have:v,need:7,unit:'nuits'}],pct:Math.min(100,Math.round(v/7*100)),unlocked:v>=7}; },
-    desc:"7 nuits d'affilée avec ton objectif sommeil atteint."}
-];
-const ALL_BADGES=[...BADGE_TIERS,...ACHIEVEMENT_BADGES,...PERFORMANCE_BADGES];
-function findBadgeDef(key){ return ALL_BADGES.find(b=>b.key===key); }
-/* Migration : les paliers ont été renommés (anciennes clés → nouvelles,
-   système à 8 paliers calé sur l'XP totale). On réécrit les enregistrements
-   déjà obtenus pour éviter les doublons et les paliers fantômes. */
+/* Migration : les paliers ont été renommés (anciennes clés → nouvelles).
+   On réécrit les enregistrements déjà obtenus pour éviter les doublons
+   et les paliers fantômes qui n'existent plus. */
 const BADGE_KEY_MIGRATION={
-  pierre:'debutant', bronze:'amateur', argent:'sportif', or:'athlete',
-  emeraude:'expert', diamant:'elite', cristal:'maitre', galaxie:'legende',
-  divin:'legende', vvvelite:'legende',
-  initie:'debutant', discipline:'amateur', perseverant:'sportif', determine:'athlete',
-  avance:'expert', exceptionnel:'maitre', legendaire:'legende', ultime:'legende', iconique:'legende'
+  pierre:'initie', bronze:'discipline', argent:'perseverant', or:'determine',
+  emeraude:'avance', diamant:'elite', cristal:'exceptionnel', galaxie:'legendaire',
+  divin:'ultime', vvvelite:'iconique'
 };
 function unlockedBadges(){
   const raw=DB.load('badges_unlocked')||[];
@@ -603,14 +502,14 @@ function unlockedBadges(){
     if(BADGE_KEY_MIGRATION[u.key]){ changed=true; return Object.assign({},u,{key:BADGE_KEY_MIGRATION[u.key]}); }
     return u;
   });
-  const validKeys=new Set(ALL_BADGES.map(b=>b.key));
+  const validKeys=new Set(BADGE_TIERS.map(b=>b.key));
   const byKey={};
   mapped.forEach(u=>{
     if(!validKeys.has(u.key)){ changed=true; return; }
     if(!byKey[u.key] || (u.date && u.date<byKey[u.key].date)) byKey[u.key]=u;
     else changed=true;
   });
-  const clean=ALL_BADGES.filter(b=>byKey[b.key]).map(b=>byKey[b.key]);
+  const clean=BADGE_TIERS.filter(b=>byKey[b.key]).map(b=>byKey[b.key]);
   if(changed) saveUnlockedBadges(clean);
   return clean;
 }
@@ -622,7 +521,7 @@ function checkNewBadges(animate){
   const unlocked=unlockedBadges();
   const already=new Set(unlocked.map(u=>u.key));
   let newest=null;
-  ALL_BADGES.forEach(b=>{
+  BADGE_TIERS.forEach(b=>{
     if(already.has(b.key)) return;
     const prog=badgeProgress(b);
     if(prog.unlocked){
@@ -640,7 +539,7 @@ function playBadgeUnlockQueue(){
   if(document.querySelector('.bd-unlock-ov')) return; // une animation à la fois
   const key=_badgeUnlockQueue.shift();
   if(!key) return;
-  const b=findBadgeDef(key);
+  const b=BADGE_TIERS.find(x=>x.key===key);
   if(b) showBadgeUnlockAnim(b);
 }
 function showBadgeUnlockAnim(b){
@@ -663,7 +562,7 @@ function showBadgeUnlockAnim(b){
 }
 /* Consultation "premium" d'un badge déjà obtenu (rejoue une version sans confettis) */
 function replayBadgeAnim(key){
-  const b=findBadgeDef(key); if(!b) return;
+  const b=BADGE_TIERS.find(x=>x.key===key); if(!b) return;
   sfx('goal'); if(navigator.vibrate) navigator.vibrate(60);
   const ov=document.createElement('div');
   ov.className='bd-unlock-ov';
@@ -681,7 +580,7 @@ function replayBadgeAnim(key){
 /* Aperçu d'un badge encore verrouillé : même show lumineux, en plus sobre,
    avec le rappel des conditions restantes pour ne rien laisser "mystérieux". */
 function previewBadgeAnim(key){
-  const b=findBadgeDef(key); if(!b) return;
+  const b=BADGE_TIERS.find(x=>x.key===key); if(!b) return;
   sfx('tap'); if(navigator.vibrate) navigator.vibrate(35);
   const prog=badgeProgress(b);
   const ov=document.createElement('div');
@@ -705,12 +604,6 @@ function previewBadgeAnim(key){
   document.body.appendChild(ov);
 }
 let badgeFilter='tous';
-let badgeCategory='niveaux';
-const BADGE_CATEGORIES={
-  niveaux:{label:'Niveaux', list:BADGE_TIERS},
-  accomplissement:{label:'Accomplissements', list:ACHIEVEMENT_BADGES},
-  performance:{label:'Performance', list:PERFORMANCE_BADGES}
-};
 function openBadges(){
   $('#ovBadgesTitle').textContent='Badges';
   renderBadgeGallery();
@@ -718,37 +611,31 @@ function openBadges(){
 }
 function renderBadgeGallery(){
   const unlocked=unlockedBadges(); const ukeys=new Set(unlocked.map(u=>u.key));
-  const cat=BADGE_CATEGORIES[badgeCategory]||BADGE_CATEGORIES.niveaux;
-  const list=cat.list.filter(b=> badgeFilter==='tous' ? true : (badgeFilter==='obtenus'? ukeys.has(b.key) : !ukeys.has(b.key)));
-  let h='<div class="pills" style="margin-bottom:10px;overflow-x:auto;flex-wrap:nowrap">'+
-    Object.entries(BADGE_CATEGORIES).map(([k,c])=>'<div class="pill '+(badgeCategory===k?'on':'')+'" onclick="badgeCategory=\''+k+'\';renderBadgeGallery()">'+c.label+'</div>').join('')+
-    '</div>';
-  h+='<div class="pills" style="margin-bottom:14px">'+
+  const list=BADGE_TIERS.filter(b=> badgeFilter==='tous' ? true : (badgeFilter==='obtenus'? ukeys.has(b.key) : !ukeys.has(b.key)));
+  let h='<div class="pills" style="margin-bottom:14px">'+
     [['tous','Tous'],['obtenus','Obtenus'],['verrouilles','Verrouillés']].map(f=>'<div class="pill '+(badgeFilter===f[0]?'on':'')+'" onclick="badgeFilter=\''+f[0]+'\';renderBadgeGallery()">'+f[1]+'</div>').join('')+
     '</div>';
-  const catUnlockedCount=cat.list.filter(b=>ukeys.has(b.key)).length;
-  h+='<div style="font-size:12px;color:var(--muted);margin-bottom:10px">'+catUnlockedCount+' / '+cat.list.length+' badges obtenus</div>';
+  h+='<div style="font-size:12px;color:var(--muted);margin-bottom:10px">'+unlocked.length+' / '+BADGE_TIERS.length+' badges obtenus</div>';
   h+='<div class="bd-grid">';
   list.forEach((b,i)=>{
     const on=ukeys.has(b.key);
     h+='<div class="bd-cell" onclick="openBadgeDetail(\''+b.key+'\')">'+
       '<div class="bd-icon '+b.cls+(on?'':' locked')+'" style="--sw:'+(i%5)+'">'+bdGlyph(b.key)+(on?'':'<div class="bd-lock-chip">🔒</div>')+'</div>'+
-      '<div class="bd-name">'+b.name+'</div><div class="bd-lvl">'+(b.xp!==undefined?b.xp+' XP':(b.hint||''))+'</div></div>';
+      '<div class="bd-name">'+b.name+'</div><div class="bd-lvl">Niv. '+b.level+'</div></div>';
   });
   h+='</div>';
   $('#badgesBody').innerHTML=h;
 }
 function openBadgeDetail(key){
-  const b=findBadgeDef(key); if(!b) return;
-  const cat=(BADGE_TIERS.includes(b)?BADGE_TIERS:ACHIEVEMENT_BADGES.includes(b)?ACHIEVEMENT_BADGES:PERFORMANCE_BADGES);
-  const idx=cat.findIndex(x=>x.key===key);
-  const prev=cat[idx-1], next=cat[idx+1];
+  const b=BADGE_TIERS.find(x=>x.key===key); if(!b) return;
+  const idx=BADGE_TIERS.findIndex(x=>x.key===key);
+  const prev=BADGE_TIERS[idx-1], next=BADGE_TIERS[idx+1];
   const unlocked=unlockedBadges(); const rec=unlocked.find(u=>u.key===key);
   const prog=badgeProgress(b);
   $('#ovBadgesTitle').textContent='Détails du badge';
   let h='<div class="row" style="margin-bottom:10px">'+
     '<span style="font-size:12px;color:'+(prev?'var(--e)':'var(--dim)')+';cursor:'+(prev?'pointer':'default')+'" '+(prev?'onclick="openBadgeDetail(\''+prev.key+'\')"':'')+'>‹ '+(prev?prev.name:'')+'</span>'+
-    '<span style="font-size:11px;color:var(--dim)">'+(idx+1)+' / '+cat.length+'</span>'+
+    '<span style="font-size:11px;color:var(--dim)">'+(idx+1)+' / '+BADGE_TIERS.length+'</span>'+
     '<span style="font-size:12px;color:'+(next?'var(--e)':'var(--dim)')+';cursor:'+(next?'pointer':'default')+'" '+(next?'onclick="openBadgeDetail(\''+next.key+'\')"':'')+'>'+(next?next.name:'')+' ›</span>'+
   '</div>';
   h+='<div style="text-align:center;margin-bottom:18px">'+
@@ -772,10 +659,10 @@ function openBadgeDetail(key){
 /* Bloc résumé badges affiché sur le profil (mini-galerie + prochaine récompense) */
 function badgeStripHTML(){
   const unlocked=unlockedBadges(); const ukeys=new Set(unlocked.map(u=>u.key));
-  const recent=[...unlocked].sort((a,b)=>b.date<a.date?-1:1).slice(0,4).map(u=>findBadgeDef(u.key)).filter(Boolean);
+  const recent=[...unlocked].sort((a,b)=>b.date<a.date?-1:1).slice(0,4).map(u=>BADGE_TIERS.find(b=>b.key===u.key)).filter(Boolean);
   const nb=nextBadge();
   let h='<div class="card stag" style="animation-delay:.12s">';
-  h+='<div class="row" style="margin-bottom:12px"><span class="card-t" style="margin:0">🏆 Mes badges</span><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="openBadges()">'+unlocked.length+' / '+ALL_BADGES.length+' · Voir tout ›</span></div>';
+  h+='<div class="row" style="margin-bottom:12px"><span class="card-t" style="margin:0">🏆 Mes badges</span><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="openBadges()">'+unlocked.length+' / '+BADGE_TIERS.length+' · Voir tout ›</span></div>';
   if(recent.length){
     h+='<div class="row" style="gap:10px;flex-wrap:wrap">'+recent.map(b=>'<div class="bd-icon '+b.cls+'" style="width:52px;height:52px;cursor:pointer" onclick="openBadgeDetail(\''+b.key+'\')">'+bdGlyph(b.key)+'</div>').join('')+'</div>';
   } else {
@@ -1163,7 +1050,7 @@ function boot(){
   checkConnectivity();
   if(P.notif!==false) ensureNotifPerm();
   positionNavPill(document.querySelector('.nb.on')||document.querySelector('.nb'));
-  { let _rzT; window.addEventListener('resize',()=>{ clearTimeout(_rzT); _rzT=setTimeout(()=>positionNavPill(document.querySelector('.nb.on')),120); }); }
+  window.addEventListener('resize',()=>positionNavPill(document.querySelector('.nb.on')));
   if(!P.setupDone){ startOnboarding(); return; }  // création profil
   initApp();                                      // app
 }
@@ -2516,12 +2403,6 @@ function getDailyGoals(){
       let earned=checked*XP_RULES.perGoal;
       if(GOALS.list.length && GOALS.list.every(g=>g.done)) earned+=XP_RULES.allGoalsBonus;
       XP.pastGoalXP=(XP.pastGoalXP||0)+earned;
-      const sleepGoal=GOALS.list.find(g=>g.id==='sleep');
-      if(sleepGoal && sleepGoal.done){
-        XP.sleepOkDays=XP.sleepOkDays||[];
-        if(!XP.sleepOkDays.includes(GOALS.date)) XP.sleepOkDays.push(GOALS.date);
-        XP.sleepOkDays=XP.sleepOkDays.slice(-60);
-      }
       DB.save('xp',XP);
     }
     const list=[
@@ -2589,75 +2470,80 @@ function fmtHM(mins){ mins=Math.round(mins||0); const h=Math.floor(mins/60), m=m
 
 /* ---------- RENDER HOME ---------- */
 function renderHome(){
+  const xp=xpProgress();
   const kmW=kmThisWeek(), kmTarget=P.kmWeek||40;
   const sessW=runCountWeek()+muscuCountWeek(), sessTarget=(P.days&&P.days.length)||4;
+  const form=formScore();
+  const vdot=getUserVDOT();
+  const goals=getDailyGoals();
   const ps=planSessionToday();
   const compDays=P.compDate?daysBetween(new Date(),new Date(P.compDate)):null;
 
   let html='';
 
-  // OBJECTIF PRINCIPAL — carte hero avec % de progression du plan
-  { const goalTitle=P.goal||P.objRace||'Définis ton objectif';
-    let pct;
-    if(PLAN && PLAN.created && PLAN.weeks){
-      const elapsed=daysBetween(new Date(PLAN.created),new Date());
-      pct=Math.max(0,Math.min(100,Math.round(elapsed/(PLAN.weeks*7)*100)));
-    } else if(compDays!==null){
-      pct=xpProgress().pct;
-    } else {
-      pct=Math.round(Math.min(100,kmTarget?kmW/kmTarget*100:0));
-    }
-    html+='<div class="gh-card card-exceptional stag" style="animation-delay:.02s" onclick="nav(\'sport\')">'+
-      '<div class="gh-top"><div class="gh-lab">Objectif principal</div>'+ICN('target',22,'var(--or)')+'</div>'+
-      '<div class="gh-title">'+goalTitle+'</div>'+
-      (compDays!==null&&compDays>=0?'<div class="gh-chip">J-'+compDays+'</div>':'')+
-      '<div class="gh-pct">'+pct+'%</div>'+
-      '<div class="pbar gh-bar"><div style="width:'+pct+'%"></div></div>'+
+  // RANK CARD — carte de rang (identité, en premier : c'est le hero de l'écran)
+  { const curBadge=BADGE_TIERS.filter(b=>b.level<=XP.level).slice(-1)[0]||BADGE_TIERS[0];
+    html+='<div class="rank-card stag" style="animation-delay:.02s">'+
+      '<div class="rk-stripe"></div><div class="rk-glow"></div>'+
+      '<div class="rk-top">'+
+        '<div class="bd-icon rk-crest '+curBadge.cls+'">'+bdGlyph(curBadge.key)+'</div>'+
+        '<div class="rk-info">'+
+          '<div class="rk-lvl">NIVEAU '+XP.level+'</div>'+
+          '<div class="rk-name">'+XP.name+'</div>'+
+        '</div>'+
+        '<div class="rk-xp mono">'+XP.total+'<span>XP</span></div>'+
+      '</div>'+
+      '<div class="pbar rk-bar"><div style="width:'+xp.pct+'%"></div></div>'+
+      '<div class="row" style="margin-top:6px;position:relative;z-index:1"><span class="rk-sub mono">'+xp.inLvl+' / '+xp.span+' XP</span><span class="rk-sub">NIV. '+(XP.level+1)+'</span></div>'+
     '</div>';
   }
 
-  // AUJOURD'HUI — séance du jour, en un coup d'œil
-  if(ps){
-    const col='var('+(TYPE_COLORS[ps.type]||'--e')+')';
-    html+='<div class="sec-lab stag" style="animation-delay:.03s">Aujourd\u2019hui</div>';
-    html+='<div class="today-card stag" style="animation-delay:.04s" onclick="'+(ps._source==='perso'?"curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')":'openRunSheet('+ps.id+')')+'">'+
-      '<div class="today-ic" style="background:'+tint(col)+';color:'+col+'">'+(ps.type==='Repos'?'😴':ICN('run',20,col))+'</div>'+
-      '<div class="today-body"><div class="today-title">'+ps.title+'</div>'+
-      '<div class="today-meta">'+(ps.km?ps.km+' km · '+ps.pace+'/km'+(ps.duration?' · ~'+ps.duration+' min':''):'Jour de récupération')+'</div>'+
-      (ps.rpe?'<div class="today-rpe">RPE '+ps.rpe+'</div>':'')+
-      '</div><div class="today-arrow">'+ICN('chevronR',18)+'</div></div>';
-  }
-
-  // PROGRESSION SEMAINE — barres L→D + % vs objectif hebdo
-  { const pct=Math.round(Math.min(100,kmTarget?kmW/kmTarget*100:0));
-    const ws=weekStart(); const labels=['L','M','M','J','V','S','D']; const week7=[];
-    for(let i=0;i<7;i++){ const d=new Date(ws); d.setDate(ws.getDate()+i); const k=dateKey(d);
-      week7.push([...SESS,...MSESS].filter(s=>s.date===k).reduce((a,s)=>a+(s.km||0),0)); }
-    html+='<div class="sec-lab stag" style="animation-delay:.05s">Progression semaine</div>';
-    html+='<div class="wk-card stag" style="animation-delay:.06s" onclick="nav(\'stats\')">'+
-      '<div class="wk-top"><div class="wk-val">'+kmW.toFixed(1)+' / '+kmTarget+' km</div><div class="wk-pill">'+pct+'%</div></div>'+
-      kBarsHTML(labels,week7)+
+  // AUJOURD'HUI — bague double (charge/séances) + 2 mini-cartes, façon home d'app mobile
+  { const kmPct=Math.min(100,kmW/kmTarget*100);
+    const sessPct=Math.min(100,sessW/sessTarget*100);
+    const week7=last7DaysKm(); const maxDay=Math.max(1,...week7);
+    html+='<div class="sec-head stag" style="animation-delay:.03s"><h3>Aujourd\u2019hui</h3><span class="see" onclick="nav(\'stats\')">Voir tout ›</span></div>';
+    html+='<div class="hero-ring-card stag" style="animation-delay:.04s" onclick="nav(\'stats\')">'+
+      donutSVG([{v:kmPct,color:'var(--e)'},{v:100-kmPct,color:'rgba(255,255,255,.06)'}],92,10,'<div style="font-family:\'Manrope\';font-weight:800;font-size:19px">'+Math.round(kmPct)+'%</div><div style="font-size:8.5px;color:var(--muted)">objectif</div>')+
+      '<div class="hr-legend">'+
+        '<div class="hr-item"><span class="hr-dot" style="background:var(--e)"></span><div class="hr-txt"><div class="hr-val">'+kmW.toFixed(0)+'/'+kmTarget+' km</div><div class="hr-lab">Charge semaine</div></div></div>'+
+        '<div class="hr-item"><span class="hr-dot" style="background:var(--ok)"></span><div class="hr-txt"><div class="hr-val">'+sessW+'/'+sessTarget+'</div><div class="hr-lab">Séances</div></div></div>'+
+      '</div></div>';
+    html+='<div class="today-grid stag" style="animation-delay:.05s">'+
+      '<div class="tg-cell"><div class="tg-top"><div class="tg-ic" style="background:rgba(var(--e-rgb),.16);color:var(--e2)">'+ICN('chart',13)+'</div><div class="tg-lab">7 DERNIERS JOURS</div></div>'+
+        '<div class="tg-val">'+week7.reduce((a,v)=>a+v,0).toFixed(0)+' <span style="font-size:11px;color:var(--muted);font-weight:600">km</span></div>'+
+        '<div class="spark">'+week7.map(v=>'<b style="height:'+Math.max(10,Math.round(v/maxDay*100))+'%"></b>').join('')+'</div></div>'+
+      '<div class="tg-cell"><div class="tg-top"><div class="tg-ic" style="background:rgba(242,184,75,.18);color:var(--or)">'+ICN('bolt',13)+'</div><div class="tg-lab">FORME & SÉRIE</div></div>'+
+        '<div class="tg-val">'+form+'<span style="font-size:11px;color:var(--muted);font-weight:600">/100</span></div>'+
+        '<div style="font-size:11px;color:var(--muted)">🔥 '+streakDays()+' jours de série</div></div>'+
     '</div>';
   }
 
-  // PROCHAINE SÉANCE — prochaine séance planifiée à venir
-  { const followedP=P.followPerso?CUSTOM.find(x=>x.id===P.followPerso):null;
-    const sessions=followedP?followedP.sessions:(PLAN?PLAN.sessions:[]);
-    const tk=todayKey();
-    const nextS=(sessions||[]).filter(s=>s.date>tk && s.type!=='Repos').sort((a,b)=>new Date(a.date)-new Date(b.date))[0];
-    if(nextS){
-      const col='var('+(TYPE_COLORS[nextS.type]||'--e')+')';
-      html+='<div class="sec-lab stag" style="animation-delay:.07s">Prochaine séance</div>';
-      html+='<div class="next-card stag" style="animation-delay:.08s">'+
-        '<div class="today-ic" style="background:'+tint(col)+';color:'+col+'" onclick="nav(\'sport\')">'+ICN('calendar',20,col)+'</div>'+
-        '<div class="today-body" onclick="nav(\'sport\')"><div class="today-title">'+nextS.type+' - '+nextS.title+'</div>'+
-        '<div class="today-meta">'+fmtDate(nextS.date)+'</div>'+
-        (nextS.km?'<div class="today-meta">'+nextS.km+' km · '+nextS.pace+'/km'+(nextS.duration?' · ~'+nextS.duration+' min':'')+'</div>':'')+
-        '</div><div class="next-btn" onclick="openTool(\'agenda\');nav(\'outils\')">'+ICN('calendar',16)+'</div></div>';
+  // DAY STRIP — bande horizontale des prochains jours avec type de séance
+  html+='<div class="daystrip-wrap stag" style="animation-delay:.06s"><div class="daystrip">';
+  { const labels=['D','L','M','M','J','V','S']; const doneDates=new Set([...SESS,...MSESS].map(s=>s.date));
+    const followedP=P.followPerso?CUSTOM.find(x=>x.id===P.followPerso):null;
+    const planByDate={};
+    if(followedP) followedP.sessions.forEach(s=>planByDate[s.date]=s);
+    else if(PLAN) PLAN.sessions.forEach(s=>planByDate[s.date]=s);
+    for(let i=-1;i<6;i++){
+      const d=new Date(); d.setDate(d.getDate()+i); const k=dateKey(d); const isToday=i===0;
+      const sess=planByDate[k]; const done=doneDates.has(k);
+      let dotCol='var(--hair2)', glyph='';
+      if(sess && sess.type!=='Repos'){ dotCol='var('+(TYPE_COLORS[sess.type]||'--e')+')'; glyph='<span class="ds-dot" style="background:'+dotCol+(done?';opacity:1':';opacity:.85')+'"></span>'; }
+      else if(sess) glyph='<span class="ds-dot" style="background:var(--hair2)"></span>';
+      html+='<div class="ds-day '+(isToday?'today':'')+'" onclick="nav(\'sport\')"><div class="ds-l">'+labels[d.getDay()]+'</div><div class="ds-n">'+d.getDate()+'</div>'+glyph+'</div>';
     }
   }
+  html+='</div></div>';
 
-  // CONSEIL IA
+  // OBJECTIF + CONSEIL — mosaïque 2 colonnes (au lieu de 2 blocs pleine largeur empilés)
+  html+='<div class="mosaic stag" style="animation-delay:.08s">';
+  if(P.compDate && compDays!==null && compDays>=0){
+    html+='<div class="ev-tile" onclick="nav(\'sport\')"><div class="ev-lab">OBJECTIF</div><div class="ev-title">'+(P.objRace||'Compétition')+'</div><div class="ev-days">J-'+compDays+'</div></div>';
+  } else {
+    html+='<div class="ev-tile alt" onclick="nav(\'sport\')"><div class="ev-lab">TON PLAN</div><div class="ev-title">'+(followedPlanLabel())+'</div><div class="ev-days">'+ICN('chevronR',16)+'</div></div>';
+  }
   { const TIPS=[
       "Un jour de récup bien géré vaut souvent plus qu'une séance forcée.",
       "La régularité sur 4 semaines compte plus qu'une séance parfaite.",
@@ -2667,29 +2553,78 @@ function renderHome(){
       "Écoute les signaux de fatigue — la charge s'ajuste, elle se force pas."
     ];
     const idx=(new Date().getDate()+new Date().getMonth())%TIPS.length;
-    html+='<div class="tip-row stag" style="animation-delay:.09s" onclick="nav(\'outils\');openTool(\'aio\')">'+
-      '<div class="tip-ic">'+ICN('bolt',20,'var(--or)')+'</div>'+
-      '<div class="tip-txt2"><b style="opacity:.65;font-size:10px;letter-spacing:.4px;display:block;margin-bottom:3px">CONSEIL IA</b>'+TIPS[idx]+'</div>'+
-      '<div class="tip-chev">'+ICN('chevronR',18)+'</div></div>';
+    html+='<div class="tip-tile"><div class="tip-lab">'+ICN('bolt',13,'var(--or)')+' CONSEIL</div><div class="tip-txt">'+TIPS[idx]+'</div></div>';
   }
+  html+='</div>';
 
-  // RÉSUMÉ RAPIDE — 4 stats clés de la semaine
-  { const q4=(icon,color,val,lab)=>'<div class="q4-cell"><div class="q4-ic" style="background:'+tint(color)+';color:'+color+'">'+ICN(icon,15,color)+'</div><div class="q4-val">'+val+'</div><div class="q4-lab">'+lab+'</div></div>';
-    html+='<div class="sec-lab stag" style="animation-delay:.10s">Résumé rapide</div>';
-    html+='<div class="quick4 stag" style="animation-delay:.11s">'+
-      q4('chart','var(--e2)',kmW.toFixed(1)+' km','Cette semaine')+
-      q4('run','var(--ok)',sessW,'Séances')+
-      q4('fire','var(--or)',streakDays()+'j','Série')+
-      q4('timer','var(--e2)',fmtHM(timeInPeriod('week')),'Temps')+
+  // QUICK ACTION PILLS
+  html+='<div class="qa-row stag" style="animation-delay:.10s">'+
+    '<div class="qa-pill" onclick="nav(\'outils\');openTool(\'aio\')">'+ICN('lab',16)+'<span>Performance Lab</span></div>'+
+    '<div class="qa-pill" onclick="nav(\'outils\');openTool(\'chrono\')">'+ICN('stopwatch',16)+'<span>Chrono</span></div>'+
     '</div>';
+
+  // CHECKLIST
+  { const gDone=goals.filter(g=>g.done).length;
+    const gPct=goals.length?Math.round(gDone/goals.length*100):0;
+    const GOAL_ICN={plan:'run',mobility:'bolt',hydra:'water',sleep:'moon'};
+    html+='<div class="card stag accent-ok goals-card" style="animation-delay:.10s">'+
+      '<div class="goals-head"><div class="card-t" style="margin:0">'+cardIcon('check','var(--ok)')+'Objectifs du jour</div>'+
+      '<div class="goals-count '+(gDone===goals.length&&goals.length?'all':'')+'">'+gDone+'/'+goals.length+'</div></div>'+
+      '<div class="goals-bar"><div style="width:'+gPct+'%"></div></div>';
+    goals.forEach(g=>{
+      html+='<div class="goal-item '+(g.done?'done':'')+'" onclick="toggleGoal(\''+g.id+'\')">'+
+        '<div class="goal-ic">'+ICN(GOAL_ICN[g.id]||'bolt',15)+'</div>'+
+        '<div class="txt">'+g.txt+'</div>'+
+        '<div class="goal-check"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div></div>';
+    });
+    html+='</div>';
   }
 
-  // CARTE PRIÈRES — élément conservé
+  // DÉFI DU JOUR — carte mise en avant façon "challenge" d'app mobile, détaillée
+  if(ps){
+    const col='var('+(TYPE_COLORS[ps.type]||'--e')+')';
+    const chPct=sessTarget?Math.min(100,Math.round(sessW/sessTarget*100)):0;
+    const lw=lastWeekKm(); const delta=lw>0?Math.round((kmW-lw)/lw*100):(kmW>0?100:0);
+    const dt=ps.detail;
+    html+='<div class="sec-head stag" style="animation-delay:.12s"><h3>Défi du jour</h3></div>';
+    html+='<div class="challenge-card stag" style="animation-delay:.13s" onclick="'+(ps._source==='perso'?"curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')":'openRunSheet('+ps.id+')')+'"><div class="ch-glow"></div>'+
+      (delta!==0?'<div class="ch-badge" style="'+(delta<0?'background:rgba(255,92,108,.18);color:var(--bad)':'')+'">'+(delta>0?'+':'')+delta+'%</div>':'')+
+      '<div class="ch-row"><div class="ch-ic">'+(ps.type==='Repos'?'😴':cardIcon('run',col))+'</div>'+
+      '<div class="ch-body"><div class="ch-tag">'+ps.type+(XP&&XP.level?' · '+levelName(XP.level):'')+'</div><div class="ch-title">'+ps.title+'</div>'+
+      '<div class="ch-meta">'+(ps.km?ps.km+' km · '+ps.pace+'/km · RPE '+ps.rpe+(ps.duration?' · ~'+ps.duration+' min':''):'Jour de récupération')+'</div></div>'+
+      '<div class="ch-cta">'+ICN('chevronR',16)+'</div></div>'+
+      (dt&&dt.objectif?'<div class="ch-obj">🎯 '+dt.objectif+'</div>':'')+
+      '<div class="ch-bar"><div style="width:'+chPct+'%"></div></div></div>';
+  }
+
+  // EN BREF — recentré sur ce qui n'apparaît nulle part ailleurs sur l'accueil
+  // (le km/séances de la semaine est déjà dans le bento, le J- est déjà dans la mosaïque)
+  html+='<div class="card stag accent-or" style="animation-delay:.15s"><div class="card-t">'+cardIcon('bolt','var(--or)')+'En bref</div><div class="sgrid">'+
+    '<div class="sbox"><div class="v">'+(vdot||'—')+'</div><div class="l">VDOT</div></div>'+
+    '<div class="sbox"><div class="v" style="font-size:18px">'+(P.pb5k||'—')+'</div><div class="l">PB 5000m</div></div>'+
+    '<div class="sbox"><div class="v">'+streakDays()+'</div><div class="l">Jours de série</div></div></div></div>';
+
+  // RECENT RECORD
+  const recent=[...SESS,...MSESS].sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+  if(recent){
+    html+='<div class="card stag accent-purple" style="animation-delay:.17s"><div class="card-t">'+cardIcon('medal','var(--maitre)')+'Activité récente</div>'+
+      '<div class="row"><div><div style="font-weight:700">'+(recent.title||recent.progName||'Séance')+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+fmtDate(recent.date)+'</div></div>'+
+      '<div class="mono" style="color:var(--e);font-weight:700">'+(recent.km?recent.km+' km':(recent.tonnage?Math.round(recent.tonnage)+' kg':''))+'</div></div></div>';
+  }
+
+  // CARTE AGENDA
+  const evts=[...AGENDA]; if(P.compDate) evts.push({date:P.compDate,title:'🏆 '+(P.goal||'Compétition')});
+  const upcoming=evts.filter(e=>new Date(e.date)>=new Date(todayKey())).sort((a,b)=>new Date(a.date)-new Date(b.date))[0];
+  html+='<div class="card stag" style="animation-delay:.19s"><div class="row" style="margin-bottom:10px"><div class="card-t" style="margin:0">'+ICN('calendar',18,'var(--e)')+' Agenda</div><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="openTool(\'agenda\');nav(\'outils\')">Voir tout</span></div>';
+  if(upcoming){ const dd=daysBetween(new Date(),new Date(upcoming.date)); html+='<div class="row"><div><div style="font-weight:700">'+upcoming.title+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+fmtDate(upcoming.date)+'</div></div><div class="badge">'+(dd<=0?'Aujourd\u2019hui':'J-'+dd)+'</div></div>'; }
+  else html+='<div style="font-size:13px;color:var(--dim)">Aucun événement à venir.</div>';
+  html+='</div>';
+  // CARTE PRIÈRES
   try{ const pt=prayerTimes(); const order=['Fajr','Dhuhr','Asr','Maghrib','Isha']; const now=new Date(),nm=now.getHours()*60+now.getMinutes();
     let next=null,nextT=null; for(const p of order){ const[hh,mm]=pt[p].split(':').map(Number); if(hh*60+mm>nm){ next=p; nextT=pt[p]; break; } }
     if(!next){ next='Fajr (demain)'; nextT=pt.Fajr; }
     const[nh,nmm]=nextT.split(':').map(Number); let diff=(nh*60+nmm)-(nm); if(diff<0)diff+=1440; const cd=Math.floor(diff/60)+'h'+String(diff%60).padStart(2,'0');
-    html+='<div class="card stag" style="animation-delay:.13s"><div class="row" style="margin-bottom:10px"><div class="card-t" style="margin:0">'+ICN('mosque',18,'var(--e)')+' Prochaine prière</div><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="openTool(\'priere\');nav(\'outils\')">Voir tout</span></div>';
+    html+='<div class="card stag" style="animation-delay:.21s"><div class="row" style="margin-bottom:10px"><div class="card-t" style="margin:0">'+ICN('mosque',18,'var(--e)')+' Prochaine prière</div><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="openTool(\'priere\');nav(\'outils\')">Voir tout</span></div>';
     html+='<div class="row"><div><div style="font-weight:700;font-size:16px">'+next+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">dans '+cd+'</div></div><div class="mono" style="font-size:24px;font-weight:700;color:var(--e)">'+nextT+'</div></div></div>';
   }catch(e){}
   $('#s-home').innerHTML=html;
@@ -3612,56 +3547,40 @@ function saveCfg(){
 let statsTab='bilan';
 function renderStats(){
   let h='<div class="pills" style="margin:6px 0 16px;overflow-x:auto;flex-wrap:nowrap">'+
-    [['bilan','Résumé'],['run','Run'],['muscu','Muscu'],['medals','Médailles']].map(t=>'<div class="pill '+(statsTab===t[0]?'on':'')+'" onclick="statsTab=\''+t[0]+'\';renderStats()">'+t[1]+'</div>').join('')+'</div>';
+    [['bilan','Bilan'],['run','Run'],['muscu','Muscu'],['medals','Médailles']].map(t=>'<div class="pill '+(statsTab===t[0]?'on':'')+'" onclick="statsTab=\''+t[0]+'\';renderStats()">'+t[1]+'</div>').join('')+'</div>';
   if(statsTab==='bilan') h+=statsBilan();
   if(statsTab==='run') h+=statsRun();
   if(statsTab==='muscu') h+=statsMuscu();
   if(statsTab==='medals') h+=statsMedals();
   $('#s-stats').innerHTML=h;
 }
-/* Charge chronique (42j) / aiguë (7j), à partir de la charge quotidienne km×RPE (+ tonnage muscu). */
-function trainingLoadNow(){
-  const days=42; const end=new Date(); end.setHours(0,0,0,0);
-  const load={}; SESS.forEach(s=>{ load[s.date]=(load[s.date]||0)+(s.km||0)*(s.rpe||5); });
-  MSESS.forEach(s=>{ load[s.date]=(load[s.date]||0)+(s.tonnage||0)/100; });
-  let ctl=0,atl=0;
-  for(let i=days-1;i>=0;i--){ const d=new Date(end); d.setDate(end.getDate()-i); const l=load[dateKey(d)]||0;
-    ctl=ctl+(l-ctl)/42; atl=atl+(l-atl)/7; }
-  return {ctl,atl};
-}
+let bilanPeriod='week';
 function statsBilan(){
-  const kmW=kmThisWeek(), lw=lastWeekKm();
-  const deltaPct=lw>0?Math.round((kmW-lw)/lw*100):(kmW>0?100:null);
-  const ws=weekStart(); const week7=[];
-  for(let i=0;i<7;i++){ const d=new Date(ws); d.setDate(ws.getDate()+i); const k=dateKey(d);
-    week7.push([...SESS,...MSESS].filter(s=>s.date===k).reduce((a,s)=>a+(s.km||0),0)); }
+  const per=bilanPeriod;
+  const {cur,prev}=periodRanges(per);
+  const km=sumKmBetween(cur[0],cur[1]);
+  const mins=sumMinsBetween(cur[0],cur[1]);
+  const cnt=countBetween(cur[0],cur[1]);
+  const prevKm=sumKmBetween(prev[0],prev[1]);
+  const prevCnt=countBetween(prev[0],prev[1]);
+  const deltaPct=prevKm>0?Math.round((km-prevKm)/prevKm*100):(km>0?100:null);
+  const bars=kmBarSeries(per);
   const trend=weeklyTrend8();
-  const vdot=getUserVDOT();
 
-  let h='';
-
-  // VOLUME (KM) — gros chiffre + delta vs semaine précédente + ligne
-  h+='<div class="kchart-card">'+
-    '<div class="kchart-top"><div><div class="kchart-lab">Volume (km)</div><div class="kchart-val">'+kmW.toFixed(1)+'<span>km</span></div></div>'+
-    (deltaPct!==null?'<div><div class="kchart-delta'+(deltaPct<0?' bad':'')+'">'+(deltaPct>0?'+':'')+deltaPct+'%</div><div class="kchart-delta-sub">vs semaine précédente</div></div>':'')+
-    '</div>'+
-    '<div style="margin-top:14px">'+lineChartSVG(week7,300,64,'var(--e)')+'</div>'+
+  // ONGLETS PÉRIODE — segmented control façon Kalo
+  let h='<div class="seg-ctrl">'+
+    ['week','month','3m','year'].map(p=>'<div class="seg-btn'+(per===p?' on':'')+'" onclick="bilanPeriod=\''+p+'\';renderStats()">'+periodTabLabel(p)+'</div>').join('')+
   '</div>';
 
-  // CHARGE / FORME / FATIGUE
-  { const load=trainingLoadNow();
-    const charge=Math.round(load.ctl*18), fatigue=Math.round(load.atl*4), forme=formScore();
-    const chargeTag=charge<250?['Faible','var(--ok)']:charge<550?['Modérée','var(--warn)']:['Élevée','var(--or)'];
-    const fatigueTag=fatigue<20?['Faible','var(--ok)']:fatigue<50?['Modérée','var(--warn)']:['Élevée','var(--bad)'];
-    const formeTag=forme<40?['Faible','var(--bad)']:forme<70?['Correcte','var(--warn)']:forme<90?['Bonne','var(--ok)']:['Excellente','var(--ok)'];
-    h+='<div class="triplet">'+
-      '<div class="trip-cell"><div class="trip-lab">Charge</div><div class="trip-val">'+charge+'</div><div class="trip-tag" style="color:'+chargeTag[1]+'">'+chargeTag[0]+'</div></div>'+
-      '<div class="trip-cell"><div class="trip-lab">Forme</div><div class="trip-val">'+forme+'</div><div class="trip-tag" style="color:'+formeTag[1]+'">'+formeTag[0]+'</div></div>'+
-      '<div class="trip-cell"><div class="trip-lab">Fatigue</div><div class="trip-val">'+fatigue+'</div><div class="trip-tag" style="color:'+fatigueTag[1]+'">'+fatigueTag[0]+'</div></div>'+
-    '</div>';
-  }
+  // CARTE KILOMÉTRAGE — gros chiffre + delta + barres avec ligne de moyenne
+  h+='<div class="kchart-card">'+
+    '<div class="kchart-top"><div><div class="kchart-lab">Kilométrage</div><div class="kchart-val">'+km.toFixed(1)+'<span>km cumulés</span></div></div>'+
+    (deltaPct!==null?'<div><div class="kchart-delta'+(deltaPct<0?' bad':'')+'">'+(deltaPct>0?'↑ ':deltaPct<0?'↓ ':'')+Math.abs(deltaPct)+'%</div><div class="kchart-delta-sub">vs période préc.</div></div>':'')+
+    '</div>'+
+    kBarsHTML(bars.labels,bars.values)+
+  '</div>';
 
-  // TENDANCE VOLUME — 8 dernières semaines
+  // CARTE TENDANCE — ligne sur les 8 dernières semaines, peu importe l'onglet actif
   h+='<div class="kchart-card">'+
     '<div class="kchart-top"><div><div class="kchart-lab">Tendance volume</div><div class="kchart-val">'+trend[trend.length-1].toFixed(1)+'<span>km cette sem.</span></div></div>'+
     '<div><div class="kchart-delta">8 sem.</div></div></div>'+
@@ -3669,30 +3588,49 @@ function statsBilan(){
     '<div class="kline-labs"><span>Il y a 8 sem.</span><span>Cette semaine</span></div>'+
   '</div>';
 
-  // RECORDS
-  { const semiTime=P.pbSemi||(vdot?fmtTime(predictTime(vdot,21097)):null);
-    h+='<div class="sec-lab">Records</div>';
-    h+='<div class="card-important"><div class="rec-row">'+
-      '<div class="rec-cell"><div class="rec-val">'+(P.pb5k||'—')+'</div><div class="rec-lab">5 km</div></div>'+
-      '<div class="rec-cell"><div class="rec-val">'+(P.pb10k||'—')+'</div><div class="rec-lab">10 km</div></div>'+
-      '<div class="rec-cell"><div class="rec-val">'+(semiTime||'—')+'</div><div class="rec-lab">Semi</div></div>'+
-    '</div></div>';
+  // DUO TEMPS / SÉANCES
+  const sessTarget=Math.round(((P.days&&P.days.length)||4)*weeksInPeriod(per));
+  const sessPct=sessTarget?Math.min(100,Math.round(cnt/sessTarget*100)):0;
+  h+='<div class="kduo">'+
+    '<div class="kduo-card"><div class="kduo-lab">Temps total</div><div class="kduo-val">'+fmtHM(mins)+'</div>'+
+      '<div class="kduo-sub" style="color:var(--muted)">sur la période</div></div>'+
+    '<div class="kduo-card"><div class="kduo-lab">Séances</div><div class="kduo-val">'+cnt+' <span style="font-size:12px;color:var(--muted);font-weight:600">/ '+sessTarget+'</span></div>'+
+      '<div class="kgoal-bar"><div style="width:'+sessPct+'%"></div></div>'+
+      '<div class="kduo-sub">'+(sessPct>=100?'Objectif atteint ! 🎉':sessPct+'% de la cible')+'</div></div>'+
+  '</div>';
+
+  // INSIGHTS — km/séance (delta), répartition des types (donut), meilleure fenêtre
+  const avgKmSess=cnt?(km/cnt):0;
+  const prevAvgKmSess=prevCnt?(prevKm/prevCnt):0;
+  const avgDelta=prevAvgKmSess>0?Math.round((avgKmSess-prevAvgKmSess)/prevAvgKmSess*100):null;
+  const periodSess=sessBetween(cur[0],cur[1]);
+  const byType={}; periodSess.forEach(s=>{ const ty=s.type||s.baseType||(s.tonnage?'Muscu':'Autre'); byType[ty]=(byType[ty]||0)+1; });
+  const typeSegs=Object.entries(byType).map(([ty,ct])=>({v:ct,color:'var('+(TYPE_COLORS[ty]||'--e')+')',ty,ct}));
+  if(!typeSegs.length) typeSegs.push({v:1,color:'rgba(255,255,255,.08)',ty:'—',ct:0});
+  const bestI=bars.values.reduce((bi,v,i)=>v>bars.values[bi]?i:bi,0);
+  const bestLab={week:'MEILLEUR JOUR',month:'MEILLEURE SEMAINE',['3m']:'MEILLEUR MOIS',year:'MEILLEUR MOIS'}[per];
+
+  h+='<div class="kinsights-head">Insights</div>';
+  h+='<div class="krow3">'+
+    '<div class="ktile"><div class="ktile-lab">KM / SÉANCE</div><div class="ktile-val">'+avgKmSess.toFixed(1)+' km</div>'+
+      (avgDelta!==null?'<div class="ktile-sub'+(avgDelta<0?' bad':'')+'">'+(avgDelta>0?'↑ ':avgDelta<0?'↓ ':'')+Math.abs(avgDelta)+'% vs préc.</div>':'<div class="ktile-sub" style="color:var(--muted)">—</div>')+
+    '</div>'+
+    '<div class="ktile" style="text-align:center"><div class="ktile-lab">TYPES DE SÉANCE</div>'+
+      '<div class="ktile-donut">'+donutSVG(typeSegs,50,9,'')+'</div>'+
+    '</div>'+
+    '<div class="ktile"><span class="ktile-star">⭐</span><div class="ktile-lab">'+bestLab+'</div>'+
+      '<div class="ktile-val">'+bars.labels[bestI]+'</div>'+
+      '<div class="ktile-sub">'+bars.values[bestI].toFixed(1)+' km</div>'+
+    '</div>'+
+  '</div>';
+  if(typeSegs[0].ty!=='—'){
+    h+='<div class="card" style="margin-top:2px"><div class="card-t">'+cardIcon('chart','var(--e)')+'Détail par type</div>'+
+      typeSegs.sort((a,b)=>b.ct-a.ct).map(s=>'<div class="row" style="gap:8px;margin-bottom:6px"><span class="zdot" style="background:'+s.color+'"></span><span style="flex:1;font-size:12.5px;font-weight:600">'+s.ty+'</span><span class="mono" style="font-size:12px;color:var(--muted)">'+s.ct+' · '+Math.round(s.ct/periodSess.length*100)+'%</span></div>').join('')+
+    '</div>';
   }
 
-  // RÉPARTITION ZONES
-  { const ZONE_MAP={EF:'Z2',Long:'Z2',Récup:'Z1',Tempo:'Z3',Seuil:'Z4',VMA:'Z5',Intervalle:'Z5',Course:'Z3'};
-    const ZCOL={Z1:'var(--dim)',Z2:'var(--e)',Z3:'var(--diamant)',Z4:'var(--or)',Z5:'var(--bad)'};
-    const zoneKm={Z1:0,Z2:0,Z3:0,Z4:0,Z5:0};
-    SESS.forEach(s=>{ const z=ZONE_MAP[s.type]||'Z2'; zoneKm[z]+=(s.km||0); });
-    const totalZ=Object.values(zoneKm).reduce((a,b)=>a+b,0)||1;
-    const segs=['Z1','Z2','Z3','Z4','Z5'].map(z=>({v:zoneKm[z],color:ZCOL[z]}));
-    h+='<div class="sec-lab">Répartition zones</div>';
-    h+='<div class="card"><div class="zones-row">'+
-      donutSVG(segs.some(s=>s.v>0)?segs:[{v:1,color:'rgba(255,255,255,.08)'}],104,14,'')+
-      '<div class="zones-list">'+['Z1','Z2','Z3','Z4','Z5'].map(z=>'<div class="zone-item"><span class="zdot" style="background:'+ZCOL[z]+'"></span><span class="zone-name">'+z+'</span><span class="zone-pctv">'+Math.round(zoneKm[z]/totalZ*100)+'%</span></div>').join('')+
-      '</div>'+
-    '</div></div>';
-  }
+  // 13 DERNIÈRES SEMAINES — heatmap, complément utile non présent chez Kalo
+  h+='<div class="card"><div class="card-t">'+cardIcon('fire','var(--or)')+'13 dernières semaines</div><div class="heat">'+heatmap13()+'</div><div class="row" style="margin-top:10px;font-size:11px;color:var(--dim)"><span>Moins</span><span>Plus</span></div></div>';
 
   return h;
 }
@@ -3815,7 +3753,6 @@ const ICONS={
   chevronR:'<path d="M9 5l7 7-7 7"/>',
   moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/>'
 };
-function tint(color,pct){ return 'color-mix(in srgb,'+color+' '+(pct||16)+'%,transparent)'; }
 function ICN(name,size,color){ const s=size||22; return '<svg viewBox="0 0 24 24" width="'+s+'" height="'+s+'" fill="none" stroke="'+(color||'currentColor')+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[name]||'')+'</svg>'; }
 /* colored rounded-square icon badge used in card headers, replaces flat emoji */
 function cardIcon(name,color){ color=color||'var(--e)'; return '<span class="icb" style="background:linear-gradient(145deg,'+color+'22,'+color+'0d);box-shadow:0 0 0 1px '+color+'33 inset,0 4px 10px -4px '+color+'55;color:'+color+'">'+ICN(name,15,color)+'</span>'; }
@@ -3878,48 +3815,35 @@ function _bdCrown(){
     '<circle cx="18" cy="15" r="2.2" fill="rgba(255,255,255,.95)"/><circle cx="32" cy="11" r="2.6" fill="rgba(255,255,255,.95)"/><circle cx="46" cy="15" r="2.2" fill="rgba(255,255,255,.95)"/>';
 }
 const BADGE_GLYPHS={
-  debutant: _bdWings(2)+_bdGem(36,3.6),
-  amateur:  _bdWings(3)+_bdGem(35,4.4),
-  sportif:  _bdWings(4)+_bdGem(34,5),
-  athlete:  _bdWings(4)+_bdGem(33,5.6),
-  expert:   _bdWings(5)+_bdGem(32,6.2),
-  elite:    _bdWings(5)+_bdGem(31,6.8),
-  maitre:   _bdWings(6)+_bdGem(30,7.4),
-  legende:  _bdWings(7)+_bdGem(29,8.6)+_bdCrown()
+  initie:      _bdWings(2)+_bdGem(36,3.6),
+  discipline:  _bdWings(3)+_bdGem(35,4.4),
+  perseverant: _bdWings(4)+_bdGem(34,5),
+  determine:   _bdWings(4)+_bdGem(33,5.6),
+  avance:      _bdWings(5)+_bdGem(32,6.2),
+  elite:       _bdWings(5)+_bdGem(31,6.8),
+  exceptionnel:_bdWings(6)+_bdGem(30,7.4),
+  legendaire:  _bdWings(6)+_bdGem(30,8),
+  ultime:      _bdWings(7)+_bdGem(29,8.6),
+  iconique:    _bdWings(8)+_bdGem(30,9)+_bdCrown()
 };
 const BADGE_IMG_FILES={
-  debutant:'debutant.png',
-  amateur:'amateur.png',
-  sportif:'sportif.png',
-  athlete:'athlete.png',
-  expert:'expert.png',
+  initie:'initie.png',
+  discipline:'discipline.png',
+  perseverant:'perseverant.png',
+  determine:'determine.png',
+  avance:'avance.png',
   elite:'elite.png',
-  maitre:'maitre.png',
-  legende:'legende.png',
-  premiere:'premiere.png',
-  cinqk:'cinqk.png',
-  dixk:'dixk.png',
-  record:'record.png',
-  serie:'serie.png',
-  regularite:'regularite.png',
-  denivele:'denivele.png',
-  podium:'podium.png',
-  assidu:'discipline.png',
-  objectif:'objectif.png',
-  nouveaupb:'nouveaupb.png',
-  allure:'allure.png',
-  endurance:'endurance.png',
-  puissance:'puissance.png',
-  vo2max:'vo2max.png',
-  force:'force.png',
-  recuperation:'recuperation.png'
+  exceptionnel:'exceptionnel.png',
+  legendaire:'legendaire.png',
+  ultime:'ultime.png',
+  iconique:'iconique.png'
 };
 function bdGlyph(key){
   const src=BADGE_IMG_FILES[key];
   if(!src) return '<span class="bd-emoji">'+badgeEmoji(key)+'</span>';
   return '<img class="bd-glyph" src="'+src+'" alt="" draggable="false" loading="lazy" data-key="'+key+'" data-stage="0" onerror="bdImgErr(this)">';
 }
-function badgeEmoji(key){ const b=findBadgeDef(key); return b?b.emoji:'🏅'; }
+function badgeEmoji(key){ const b=BADGE_TIERS.find(x=>x.key===key); return b?b.emoji:'🏅'; }
 function bdImgErr(img){
   const key=img.dataset.key; const stage=+img.dataset.stage;
   // Étape 0 → on retente dans un sous-dossier badges/, au cas où les PNG
@@ -3985,7 +3909,7 @@ function outilsHome(){
   const favs=toolFav().filter(k=>TOOLS[k]);
   h+='<div class="row" style="margin:18px 0 10px"><span class="lab">Favoris</span><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="editFavs()">Modifier</span></div>';
   h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:22px">';
-  favs.slice(0,8).forEach(k=>{ const t=TOOLS[k]; h+='<div class="favtile favtile-lg" onclick="openTool(\''+k+'\')"><div style="color:var(--e);display:flex;justify-content:center">'+t.icon+'</div><div class="favlab">'+favShort(t.name)+'</div></div>'; });
+  favs.slice(0,8).forEach(k=>{ const t=TOOLS[k]; h+='<div class="favtile" onclick="openTool(\''+k+'\')"><div style="color:var(--e);display:flex;justify-content:center">'+t.icon+'</div><div class="favlab">'+favShort(t.name)+'</div></div>'; });
   h+='</div>';
   // OUTILS PRINCIPAUX
   h+='<div class="lab" style="margin:0 0 12px">Outils principaux</div>';
@@ -4247,7 +4171,7 @@ function pomoToggle(){
 function pomoReset(){ clearInterval(pomoState.iv); pomoState={phase:'work',left:25*60,running:false,iv:null,count:pomoState.count}; renderPomodoro(); }
 function renderNotesTool(){
   const notes=PREFS.quickNotes||'';
-  let h='<div class="card"><div class="card-t">📝 Notes rapides</div><textarea class="inp" rows="12" id="qnotes" placeholder="Écris ici... (sauvegarde automatique)" oninput="PREFS.quickNotes=this.value;clearTimeout(window._notesSaveT);window._notesSaveT=setTimeout(saveAll,400)">'+notes+'</textarea><div style="font-size:11px;color:var(--dim);margin-top:8px">💾 Sauvegarde automatique en local.</div></div>';
+  let h='<div class="card"><div class="card-t">📝 Notes rapides</div><textarea class="inp" rows="12" id="qnotes" placeholder="Écris ici... (sauvegarde automatique)" oninput="PREFS.quickNotes=this.value;saveAll()">'+notes+'</textarea><div style="font-size:11px;color:var(--dim);margin-top:8px">💾 Sauvegarde automatique en local.</div></div>';
   $('#outBody').innerHTML=h;
 }
 let sleepH=8;
@@ -4533,31 +4457,37 @@ function renderProfile(){
   const compDays=P.compDate?daysBetween(new Date(),new Date(P.compDate)):null;
   const langInfo=LANGS.find(l=>l[0]===curLang())||LANGS[0];
   let h='';
-  // ===== HERO — avatar + nom + email/bio =====
+  // ===== HERO — avatar + nom + email/bio, épuré (image de référence : Profil) =====
   h+='<div class="card stag pf-hero" style="animation-delay:0s"><div class="pf-avwrap">'+avatarHTML(88,34)+
     '<div class="pf-cam" onclick="changePhoto()">📷</div></div>';
   h+='<div class="pf-name-row"><div class="man" style="font-weight:800;font-size:20px">'+(P.name||'Athlète')+'</div>'+
     '<div class="pf-edit" onclick="openProfileEdit()" title="'+t('editInfos')+'">✏️</div></div>';
   h+='<div style="font-size:12.5px;color:var(--muted);margin-top:3px" onclick="editBio()">'+(window.currentUserEmail||P.bio||'Ajoute une biographie ✍️')+'</div>';
+  h+='<div class="rankchip" style="margin-top:11px;background:'+rk.bg+';color:#fff">'+t('level')+' '+XP.level+' · '+rk.name+' · '+XP.total+' XP</div>';
   h+='</div>';
-  // ===== NIVEAU — bloc phare : on voit le joueur avant les données (badge lumineux, niveau, XP, titre) =====
-  { const curBadge=BADGE_TIERS.filter(b=>b.xp<=(XP.total||0)).slice(-1)[0]||BADGE_TIERS[0];
-    h+='<div class="card-exceptional pf-lvl-hero stag" style="animation-delay:.02s" onclick="openProgression()">'+
-      '<div class="bd-icon big '+curBadge.cls+'" style="margin:0 auto 12px">'+bdGlyph(curBadge.key)+'</div>'+
-      '<div style="text-align:center"><div class="pf-lvl-num">NIVEAU '+XP.level+'</div>'+
-      '<div class="pf-lvl-rank">'+rk.name+'</div>'+
-      '<div class="pf-lvl-xp mono">'+XP.total+' XP</div></div>'+
-      '<div class="pbar" style="height:8px;margin-top:14px"><div style="width:'+xp.pct+'%"></div></div>'+
-      '<div class="row" style="margin-top:7px"><span style="font-size:11px;color:var(--muted)" class="mono">'+xp.inLvl+' / '+xp.span+' XP</span><span style="font-size:11px;color:var(--e)">Voir mes progrès ›</span></div>'+
-    '</div>';
-  }
-  // ===== APERÇU RAPIDE — carte unique, une ligne par info =====
+  // ===== APERÇU RAPIDE — carte unique, une ligne par info (au lieu d'une grille + bannière séparées) =====
   h+='<div class="grp-card stag" style="animation-delay:.04s">'+
     '<div class="grp-row no-chev"><div class="lr-icon">📏</div><div class="lr-title">Taille / poids</div><div class="lr-val">'+(P.height||'—')+' cm · '+(P.weight||'—')+' kg</div></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">🎂</div><div class="lr-title">Âge</div><div class="lr-val">'+age()+' ans</div></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">📈</div><div class="lr-title">VDOT</div><div class="lr-val">'+(getUserVDOT()||'—')+'</div></div>'+
     '<div class="grp-row" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\';renderSport()"><div class="lr-icon">🎯</div><div class="lr-title">Objectif</div><div class="lr-val">'+(P.objRace||P.goal||'Aucun')+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
+  // ===== PROGRESSION — badges intégrés directement au profil =====
+  { const unlocked=unlockedBadges(); const recent=[...unlocked].sort((a,b)=>b.date<a.date?-1:1).slice(0,5).map(u=>BADGE_TIERS.find(b=>b.key===u.key)).filter(Boolean);
+    h+='<div class="sec-head stag" style="animation-delay:.06s"><h3 class="grp-lab" style="margin:0">Progression</h3><span class="see" onclick="openBadges()">'+unlocked.length+' / '+BADGE_TIERS.length+' · Voir tout ›</span></div>';
+    h+='<div class="card stag" style="animation-delay:.07s">';
+    if(recent.length){
+      h+='<div class="row" style="gap:10px;flex-wrap:wrap">'+recent.map(b=>'<div class="bd-icon '+b.cls+'" style="width:52px;height:52px;cursor:pointer" onclick="openBadgeDetail(\''+b.key+'\')">'+bdGlyph(b.key)+'</div>').join('')+'</div>';
+    } else {
+      h+='<div style="font-size:12px;color:var(--muted)">Aucun badge obtenu pour l\u2019instant — ta première séance te rapprochera du badge Initié.</div>';
+    }
+    const nb=nextBadge();
+    if(nb){
+      const prog=badgeProgress(nb);
+      h+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--hair)"><div class="row" style="margin-bottom:6px"><span style="font-size:12px;color:var(--muted)">Prochain badge · '+nb.name+'</span><span class="mono" style="font-size:12px;color:var(--e)">'+prog.pct+'%</span></div><div class="pbar" style="height:6px"><div style="width:'+prog.pct+'%"></div></div></div>';
+    }
+    h+='</div>';
+  }
   // ===== SECTIONS GROUPÉES — Compte / Préférences / Support, une seule carte par groupe =====
   h+='<div class="grp-lab stag" style="animation-delay:.09s">Compte</div>';
   h+='<div class="grp-card stag" style="animation-delay:.10s">'+
@@ -4579,36 +4509,6 @@ function renderProfile(){
   '</div>';
   h+='<div style="text-align:center;color:var(--dim);font-size:12px;margin:20px 0">IKORUN — Elite Athletic Intelligence · v2.0</div>';
   $('#s-profil').innerHTML=h;
-}
-/* ---- Fenêtre Progression — niveau en grand, XP, badges, prochaine récompense ---- */
-function openProgression(){
-  $('#ovProgTitle').textContent='Progression';
-  $('#progBody').innerHTML=progressionHTML();
-  openOv('ovProg');
-}
-function progressionHTML(){
-  const xp=xpProgress(); const rk=rankFor(XP.level||1);
-  const curBadge=BADGE_TIERS.filter(b=>b.xp<=(XP.total||0)).slice(-1)[0]||BADGE_TIERS[0];
-  const nextTier=BADGE_TIERS[BADGE_TIERS.indexOf(curBadge)+1];
-  const unlocked=unlockedBadges(); const ukeys=new Set(unlocked.map(u=>u.key));
-  let h='<div class="card-exceptional" style="text-align:center">'+
-    '<div class="bd-icon big '+curBadge.cls+'" style="margin:0 auto 14px">'+bdGlyph(curBadge.key)+'</div>'+
-    '<div class="pf-lvl-num">NIVEAU '+XP.level+'</div><div class="pf-lvl-rank">'+rk.name+'</div>'+
-    '<div class="pf-lvl-xp mono">'+xp.inLvl+' / '+xp.span+' XP</div>'+
-    '<div class="pbar" style="height:8px;margin-top:14px"><div style="width:'+xp.pct+'%"></div></div>'+
-  '</div>';
-  h+='<div class="row" style="gap:10px;flex-wrap:wrap;margin:16px 0">'+
-    BADGE_TIERS.map(b=>'<div class="bd-icon '+b.cls+(ukeys.has(b.key)?'':' locked')+'" style="width:52px;height:52px;cursor:pointer" onclick="openBadgeDetail(\''+b.key+'\')">'+bdGlyph(b.key)+(ukeys.has(b.key)?'':'<div class="bd-lock-chip">🔒</div>')+'</div>').join('')+
-  '</div>';
-  h+='<div class="card"><div class="lab" style="margin-bottom:8px">Prochaine récompense</div>'+
-    (nextTier?
-      '<div class="row"><div><div style="font-weight:700">'+nextTier.name+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+nextTier.xp+' XP requis</div></div>'+
-       '<div class="bd-icon '+nextTier.cls+' locked" style="width:44px;height:44px">'+bdGlyph(nextTier.key)+'</div></div>'+
-       '<div class="pbar" style="height:6px;margin-top:12px"><div style="width:'+Math.min(100,Math.round((XP.total||0)/nextTier.xp*100))+'%"></div></div>'
-      :'<div style="font-size:12px;color:var(--legende)">🏆 Palier maximal atteint !</div>')+
-  '</div>';
-  h+='<button class="btn ghost" style="margin-top:14px" onclick="openBadges()">Voir tous les badges</button>';
-  return h;
 }
 /* ---- Fiches de réglages du profil, ouvertes dans l'overlay générique ---- */
 let _pfSheet=null;
@@ -4867,20 +4767,10 @@ function setupPWA(){
     let link=document.querySelector('link[rel="manifest"]'); if(!link){ link=document.createElement('link'); link.rel='manifest'; document.head.appendChild(link); }
     link.href=url;
   }catch(e){}
-  // Service worker : fichier statique sw.js (une blob URL change à chaque chargement,
-  // ce qui empêchait le navigateur de détecter les mises à jour et laissait les
-  // téléphones bloqués sur une ancienne version en cache — surtout sur iOS/Safari).
+  // Service worker : cache la page courante pour fonctionner hors-ligne
   if('serviceWorker'in navigator && location.protocol.startsWith('http')){
-    // Nettoie les anciennes registrations blob: cassées, si elles existent encore.
-    navigator.serviceWorker.getRegistrations().then(regs=>{
-      regs.forEach(r=>{ const su=(r.active&&r.active.scriptURL)||(r.installing&&r.installing.scriptURL)||(r.waiting&&r.waiting.scriptURL)||'';
-        if(su.startsWith('blob:')) r.unregister(); });
-    }).catch(()=>{});
-    navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{
-      reg.update().catch(()=>{});
-      // Vérifie les mises à jour à chaque retour au premier plan.
-      document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') reg.update().catch(()=>{}); });
-    }).catch(()=>{});
+    const swCode="const C='ikorun-v4';self.addEventListener('install',e=>{self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(res=>{try{const c2=res.clone();caches.open(C).then(c=>c.put(e.request,c2))}catch(x){}return res}).catch(()=>caches.open(C).then(c=>c.match(e.request))))});";
+    try{ const b=new Blob([swCode],{type:'text/javascript'}); navigator.serviceWorker.register(URL.createObjectURL(b)).catch(()=>{}); }catch(e){}
   }
 }
 
