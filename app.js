@@ -452,40 +452,29 @@ function addXP(amount,reason){
    Les derniers paliers ajoutent une exigence de séances et, pour les tout
    derniers, de compétitions/préparations terminées — "aucune obtention
    rapide possible". */
+/* ============ NIVEAUX — 8 PALIERS DE PROGRESSION (basés sur l'XP total) ============ */
 const BADGE_TIERS=[
-  {key:'initie',       name:'Initié',       cls:'bd-initie',       emoji:'🪨', level:1,  km:0,    sess:0, desc:"Début du parcours."},
-  {key:'discipline',   name:'Discipliné',   cls:'bd-discipline',   emoji:'🥉', level:2,  km:10,   sess:1, desc:"Premiers pas."},
-  {key:'perseverant',  name:'Persévérant',  cls:'bd-perseverant',  emoji:'⭐', level:8,  km:40,   sess:6, desc:"L'habitude s'installe."},
-  {key:'determine',    name:'Déterminé',    cls:'bd-determine',    emoji:'🏅', level:10, km:50,   sess:8, desc:"L'effort paie."},
-  {key:'avance',       name:'Avancé',       cls:'bd-avance',       emoji:'💚', level:16, km:130,  sess:16,desc:"Dépasse tes limites."},
-  {key:'elite',        name:'Élite',        cls:'bd-elite',        emoji:'💎', level:25, km:370,  sess:36,desc:"Constante amélioration.",preps:1},
-  {key:'exceptionnel', name:'Exceptionnel', cls:'bd-exceptionnel', emoji:'🧊', level:38, km:1090, sess:78,desc:"Maîtrise ton corps.",preps:2},
-  {key:'legendaire',   name:'Légendaire',   cls:'bd-legendaire',   emoji:'🌌', level:46, km:1810, sess:112,desc:"Devenu une référence.",preps:2},
-  {key:'ultime',       name:'Ultime',       cls:'bd-ultime',       emoji:'✨', level:58, km:3390, sess:178,desc:"Au sommet de toi-même.",comps:3},
-  {key:'iconique',     name:'Iconique',     cls:'bd-iconique',     emoji:'👑', level:70, km:5700, sess:270,desc:"Inspiration pour tous.",preps:6,comps:5}
+  {key:'debutant', name:'Débutant', cls:'bd-debutant', emoji:'🌱', xpMin:0,    desc:"Le tout début de l\u2019aventure IKORUN."},
+  {key:'amateur',  name:'Amateur',  cls:'bd-amateur',  emoji:'🥉', xpMin:200,  desc:"Tu prends le rythme."},
+  {key:'sportif',  name:'Sportif',  cls:'bd-sportif',  emoji:'⭐', xpMin:500,  desc:"L\u2019entraînement devient une habitude."},
+  {key:'athlete',  name:'Athlète',  cls:'bd-athlete',  emoji:'🏅', xpMin:1000, desc:"Tu progresses avec sérieux."},
+  {key:'expert',   name:'Expert',   cls:'bd-expert',   emoji:'💚', xpMin:2000, desc:"Une vraie maîtrise de ton entraînement."},
+  {key:'elite',    name:'Élite',    cls:'bd-elite',    emoji:'💎', xpMin:3500, desc:"Constante amélioration."},
+  {key:'maitre',   name:'Maître',   cls:'bd-maitre',   emoji:'🛡️', xpMin:5000, desc:"Maîtrise ton corps et ton mental."},
+  {key:'legende',  name:'Légende',  cls:'bd-legende',  emoji:'👑', xpMin:7500, desc:"Devenu une référence."}
 ];
 function badgeStats(){
-  return {
-    level: XP.level||1,
-    km: Math.round(totalKm()),
-    sess: SESS.length+MSESS.length,
-    preps: XP.plansCompleted||0,
-    comps: RECORDS.filter(r=>r.competition).length
-  };
+  return { xp: XP.total||0 };
 }
 function badgeProgress(b){
-  const s=badgeStats();
-  const parts=[
-    {label:'Niveau', have:s.level, need:b.level, unit:''},
-    {label:'Distance', have:s.km, need:b.km, unit:'km'},
-    {label:'Séances', have:s.sess, need:b.sess, unit:''}
-  ];
-  if(b.preps) parts.push({label:'Préparations terminées', have:s.preps, need:b.preps, unit:''});
-  if(b.comps) parts.push({label:'Compétitions', have:s.comps, need:b.comps, unit:''});
-  const pctEach=parts.map(p=>Math.min(1,p.need?p.have/p.need:1));
-  const pct=Math.round((pctEach.reduce((a,v)=>a+v,0)/pctEach.length)*100);
-  const unlocked=parts.every(p=>p.have>=p.need);
-  return {parts,pct,unlocked};
+  const xp=XP.total||0;
+  const idx=BADGE_TIERS.findIndex(t=>t.key===b.key);
+  const next=BADGE_TIERS[idx+1];
+  const need=next?next.xpMin:b.xpMin;
+  const parts=[{label:'XP total', have:xp, need:need, unit:'XP'}];
+  const unlocked=xp>=b.xpMin;
+  const pct=next?Math.min(100,Math.round(((xp-b.xpMin)/(next.xpMin-b.xpMin))*100)):100;
+  return {parts,pct:Math.max(0,pct),unlocked};
 }
 /* Migration : les paliers ont été renommés (anciennes clés → nouvelles).
    On réécrit les enregistrements déjà obtenus pour éviter les doublons
@@ -621,7 +610,7 @@ function renderBadgeGallery(){
     const on=ukeys.has(b.key);
     h+='<div class="bd-cell" onclick="openBadgeDetail(\''+b.key+'\')">'+
       '<div class="bd-icon '+b.cls+(on?'':' locked')+'" style="--sw:'+(i%5)+'">'+bdGlyph(b.key)+(on?'':'<div class="bd-lock-chip">🔒</div>')+'</div>'+
-      '<div class="bd-name">'+b.name+'</div><div class="bd-lvl">Niv. '+b.level+'</div></div>';
+      '<div class="bd-name">'+b.name+'</div><div class="bd-lvl">'+b.xpMin+' XP</div></div>';
   });
   h+='</div>';
   $('#badgesBody').innerHTML=h;
@@ -2482,7 +2471,7 @@ function renderHome(){
   let html='';
 
   // RANK CARD — carte de rang (identité, en premier : c'est le hero de l'écran)
-  { const curBadge=BADGE_TIERS.filter(b=>b.level<=XP.level).slice(-1)[0]||BADGE_TIERS[0];
+  { const curBadge=BADGE_TIERS.filter(b=>b.xpMin<=(XP.total||0)).slice(-1)[0]||BADGE_TIERS[0];
     html+='<div class="rank-card stag" style="animation-delay:.02s">'+
       '<div class="rk-stripe"></div><div class="rk-glow"></div>'+
       '<div class="rk-top">'+
@@ -3697,6 +3686,66 @@ function statsMuscu(){
   else h+='<div class="card"><div class="card-t">📅 Dernières séances</div>'+MSESS.slice(-6).reverse().map(s=>'<div class="zrow"><div><div class="zname">'+s.progName+'</div><div style="font-size:11px;color:var(--dim)">'+fmtDate(s.date)+'</div></div><span class="zval mono">'+Math.round(s.tonnage)+' kg</span></div>').join('')+'</div>';
   return h;
 }
+/* ============ BADGES TROPHÉES (Accomplissement / Performance / Spécial) ============
+   21 badges nommés, distincts des paliers de niveau ci-dessus. Débloqués
+   automatiquement quand c'est mesurable dans les données réelles ; sinon
+   à cocher soi-même (podium en compétition, dénivelé, VO2max amélioré...). */
+const ACHIEVEMENTS=[
+  {key:'premiere',    name:'Première course',  img:'premiere.png',    cat:'Accomplissement', desc:'Termine ta première séance.',           auto:()=>SESS.length+MSESS.length>=1},
+  {key:'cinqk',       name:'5K',                img:'cinqk.png',       cat:'Accomplissement', desc:'Cours 5 km d\u2019une traite.',          auto:()=>SESS.some(s=>s.km>=5)},
+  {key:'dixk',        name:'10K',               img:'dixk.png',        cat:'Accomplissement', desc:'Cours 10 km d\u2019une traite.',         auto:()=>SESS.some(s=>s.km>=10)},
+  {key:'record',      name:'Record personnel',  img:'record.png',      cat:'Accomplissement', desc:'Bats un de tes records personnels.',     auto:()=>personalRecords().some(r=>r.time)},
+  {key:'serie',       name:'Série',             img:'serie.png',       cat:'Accomplissement', desc:'7 jours d\u2019affilée.',                auto:()=>bestStreak()>=7},
+  {key:'regularite',  name:'Régularité',        img:'regularite.png',  cat:'Accomplissement', desc:'30 jours actifs (cumulés).',             auto:()=>(SESS.length+MSESS.length)>=30},
+  {key:'denivele',    name:'Dénivelé',          img:'denivele.png',    cat:'Accomplissement', desc:'1000 m D+ cumulés en course.',           manual:true},
+  {key:'podium',      name:'Podium',            img:'podium.png',      cat:'Accomplissement', desc:'Finis dans le top 3 d\u2019une course officielle.', manual:true},
+  {key:'discipline',  name:'Discipline',        img:'discipline.png',  cat:'Accomplissement', desc:'90 jours actifs (cumulés).',             auto:()=>(SESS.length+MSESS.length)>=90},
+  {key:'objectif',    name:'Objectif atteint',  img:'objectif.png',    cat:'Accomplissement', desc:'Termine ton objectif principal.',        auto:()=>(XP.plansCompleted||0)>=1},
+  {key:'nouveaupb',   name:'Nouveau PB',        img:'nouveaupb.png',   cat:'Performance',      desc:'Nouveau record personnel dans les 60 derniers jours.', auto:()=>RECORDS.some(r=>r.date&&daysBetween(new Date(r.date),new Date())<=60)},
+  {key:'allure',      name:'Allure',            img:'allure.png',      cat:'Performance',      desc:'Allure moyenne améliorée.',              manual:true},
+  {key:'endurance',   name:'Endurance',         img:'endurance.png',   cat:'Performance',      desc:'Termine une sortie de 90 min ou plus.',  auto:()=>SESS.some(s=>s.duration>=90)},
+  {key:'puissance',   name:'Puissance',         img:'puissance.png',   cat:'Performance',      desc:'10 séances de musculation effectuées.',  auto:()=>MSESS.length>=10},
+  {key:'vo2max',      name:'VO2 Max',           img:'vo2max.png',      cat:'Performance',      desc:'Améliore ton VO\u2082max estimé.',       manual:true},
+  {key:'force',       name:'Force',             img:'force.png',       cat:'Performance',      desc:'Termine une séance de musculation.',     auto:()=>MSESS.length>=1},
+  {key:'recuperation',name:'Récupération',      img:'recuperation.png',cat:'Performance',      desc:'Sommeil optimal 7 jours d\u2019affilée.',manual:true},
+  {key:'leader',      name:'Leader',            img:null,              cat:'Spécial',          desc:'Top du classement (à venir).',           manual:true},
+  {key:'ambassadeur', name:'Ambassadeur',       img:null,              cat:'Spécial',          desc:'Membre premium (à venir).',              manual:true},
+  {key:'evenement',   name:'Événement',         img:null,              cat:'Spécial',          desc:'Participe à un événement IKORUN.',       manual:true},
+  {key:'fondateur',   name:'Fondateur',         img:null,              cat:'Spécial',          desc:'Membre fondateur de IKORUN.',            auto:()=>true}
+];
+function manualBadges(){ return DB.load('manual_badges')||{}; }
+function achievementUnlocked(a){ return a.auto ? !!a.auto() : !!manualBadges()[a.key]; }
+function toggleManualBadge(key){
+  const a=ACHIEVEMENTS.find(x=>x.key===key); if(!a||!a.manual) return;
+  const m=manualBadges(); m[key]=!m[key]; DB.save('manual_badges',m);
+  toast(m[key]?'🏵️ '+a.name+' débloqué !':'Badge retiré');
+  renderStats();
+}
+function achImgErr(img){ const span=document.createElement('span'); span.className='bd-glyph bd-emoji'; span.textContent='🏵️'; img.replaceWith(span); }
+function achImg(a){
+  if(!a.img) return '<span class="bd-emoji">🏵️</span>';
+  return '<img class="bd-glyph" src="'+a.img+'" alt="" draggable="false" loading="lazy" onerror="achImgErr(this)">';
+}
+function achievementsGridHTML(){
+  const cats=['Accomplissement','Performance','Spécial'];
+  const unlockedCount=ACHIEVEMENTS.filter(achievementUnlocked).length;
+  let h='<div class="card" style="margin-top:18px"><div class="row" style="margin-bottom:6px"><span class="card-t" style="margin:0">🏵️ Badges</span><span style="font-size:12px;color:var(--muted)">'+unlockedCount+' / '+ACHIEVEMENTS.length+'</span></div>'
+    +'<div style="font-size:11px;color:var(--dim);margin-bottom:8px">Ceux détectés automatiquement se débloquent seuls · les autres (podium, dénivelé...) se cochent à la main.</div>';
+  cats.forEach(cat=>{
+    const items=ACHIEVEMENTS.filter(a=>a.cat===cat);
+    if(!items.length) return;
+    h+='<div style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.5px;margin:14px 0 8px">'+cat.toUpperCase()+'</div><div class="bd-grid">';
+    items.forEach(a=>{
+      const on=achievementUnlocked(a);
+      h+='<div class="bd-cell" onclick="'+(a.manual?"toggleManualBadge('"+a.key+"')":"toast('"+a.desc.replace(/'/g,"\\'")+"')")+'">'
+        +'<div class="bd-icon'+(on?'':' locked')+'" style="background:rgba(255,255,255,.04)">'+achImg(a)+(on?'':'<div class="bd-lock-chip">🔒</div>')+'</div>'
+        +'<div class="bd-name">'+a.name+'</div></div>';
+    });
+    h+='</div>';
+  });
+  h+='</div>';
+  return h;
+}
 /* ---------- MEDALS ---------- */
 const TIERS=[['Bronze','--bronze'],['Argent','--argent'],['Or','--or'],['Platine','--platine'],['Diamant','--diamant'],['Maître','--maitre'],['Légende','--legende']];
 const MEDAL_CATS=[
@@ -3724,6 +3773,7 @@ function statsMedals(){
     else h+='<div style="font-size:11px;color:var(--legende)">🏆 Palier maximal atteint !</div>';
     h+='</div>';
   });
+  h+=achievementsGridHTML();
   return h;
 }
 
@@ -3827,16 +3877,14 @@ const BADGE_GLYPHS={
   iconique:    _bdWings(8)+_bdGem(30,9)+_bdCrown()
 };
 const BADGE_IMG_FILES={
-  initie:'initie.png',
-  discipline:'discipline.png',
-  perseverant:'perseverant.png',
-  determine:'determine.png',
-  avance:'avance.png',
+  debutant:'debutant.png',
+  amateur:'amateur.png',
+  sportif:'sportif.png',
+  athlete:'athlete.png',
+  expert:'expert.png',
   elite:'elite.png',
-  exceptionnel:'exceptionnel.png',
-  legendaire:'legendaire.png',
-  ultime:'ultime.png',
-  iconique:'iconique.png'
+  maitre:'maitre.png',
+  legende:'legende.png'
 };
 function bdGlyph(key){
   const src=BADGE_IMG_FILES[key];
