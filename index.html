@@ -260,8 +260,31 @@ html[data-mode="light"] .ch-bar{background:rgba(20,30,55,.1);}
 .tb-title{font-family:'Manrope';font-weight:800;font-size:19px;letter-spacing:-.5px;}
 .tb-sub{color:var(--muted);font-size:11.5px;margin-top:0px;font-weight:600;}
 .tb-gear{width:34px;height:34px;border-radius:var(--r-xs);background:var(--s1);border:1px solid var(--hair);
-  box-shadow:var(--sh-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s var(--ease-spring);}
+  box-shadow:var(--sh-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s var(--ease-spring);
+  position:relative;}
 .tb-gear:active{transform:scale(.92);}
+/* HALO — léger cercle chaleureux autour de l'avatar, façon "présence" */
+.tb-gear::before{content:'';position:absolute;inset:-4px;border-radius:calc(var(--r-xs) + 4px);
+  background:conic-gradient(from 0deg,var(--or),var(--e2),var(--or));opacity:.55;z-index:-1;
+  filter:blur(3px);animation:haloSpin 6s linear infinite;}
+@keyframes haloSpin{to{transform:rotate(360deg);}}
+.motion-settled .tb-gear::before{animation-play-state:paused;}
+
+/* WELCOME BACK — bannière chaleureuse de retour après une absence */
+.welcome-back{display:flex;align-items:center;gap:12px;padding:14px;margin-bottom:10px;border-radius:var(--r-md);
+  background:linear-gradient(135deg,rgba(242,184,75,.14),rgba(var(--e-rgb),.08));border:1px solid rgba(242,184,75,.28);
+  box-shadow:var(--float-sm);}
+.wb-ic{font-size:26px;flex-shrink:0;animation:wbWave 1.8s ease-in-out infinite;transform-origin:70% 70%;}
+@keyframes wbWave{0%,100%{transform:rotate(0deg);}20%{transform:rotate(14deg);}40%{transform:rotate(-8deg);}60%{transform:rotate(10deg);}80%{transform:rotate(0deg);}}
+.wb-title{font-family:'Manrope';font-weight:800;font-size:14.5px;}
+.wb-sub{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4;}
+
+/* STREAK FLAME — petite pulsation chaleureuse quand la série est active */
+.flame-live{display:inline-block;animation:flamePulse 1.6s ease-in-out infinite;}
+@keyframes flamePulse{0%,100%{transform:scale(1);}50%{transform:scale(1.18);}}
+
+/* BADGE CHEER — phrase chaleureuse sous le nom du badge débloqué */
+.bd-cheer{color:var(--or);font-size:12.5px;margin-top:10px;font-weight:600;max-width:280px;}
 
 /* CARDS */
 .card{background:var(--s1);background-image:var(--grad-card);border:1px solid var(--hair);border-radius:var(--r-md);
@@ -938,6 +961,8 @@ html[dir="rtl"] .nb span{direction:rtl;}
   background:var(--s1);border:1px solid var(--e);color:var(--snow);padding:12px 20px;border-radius:999px;
   font-size:14px;font-weight:600;opacity:0;transition:.3s;pointer-events:none;max-width:90%;text-align:center;}
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+/* variante chaleureuse pour les moments positifs (objectif atteint, encouragement...) */
+#toast.warm{border-color:var(--or);box-shadow:0 8px 24px -8px rgba(242,184,75,.4);}
 
 /* CONFETTI */
 #confetti{position:fixed;inset:0;z-index:13000;pointer-events:none;}

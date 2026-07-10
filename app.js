@@ -531,6 +531,12 @@ function playBadgeUnlockQueue(){
   const b=BADGE_TIERS.find(x=>x.key===key);
   if(b) showBadgeUnlockAnim(b);
 }
+/* Petite phrase chaleureuse et variée pour accompagner un badge, personnalisée si possible. */
+function badgeCheer(){
+  const n=P.name?', '+P.name:'';
+  const arr=['Bravo'+n+', chaque séance compte.','Tu progresses vraiment'+n+' 💪','Ce badge, tu l\u2019as mérité'+n+'.','Fier de ton parcours'+n+'.','Petit à petit, tu deviens plus fort'+(P.sexe==='Femme'?'e':'')+n+'.'];
+  return arr[Math.floor(Math.random()*arr.length)];
+}
 function showBadgeUnlockAnim(b){
   burst(); sfx('medal');
   if(navigator.vibrate) navigator.vibrate([120,60,120,60,260]);
@@ -544,6 +550,7 @@ function showBadgeUnlockAnim(b){
     '<div class="bd-unlock-badge">'+bdGlyph(b.key)+sparks+'</div></div>'+
     '<div class="man" style="font-weight:800;font-size:30px;margin-top:18px;letter-spacing:.5px">'+b.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+b.desc+'</div>'+
+    '<div class="bd-cheer">'+badgeCheer()+'</div>'+
     '<div style="color:var(--dim);font-size:12px;margin-top:18px">Touche pour continuer</div>';
   ov.onclick=()=>{ ov.remove(); playBadgeUnlockQueue(); };
   document.body.appendChild(ov);
@@ -702,7 +709,7 @@ const $$=s=>document.querySelectorAll(s);
 function todayKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function dateKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function daysBetween(a,b){ return Math.round((b-a)/86400000); }
-function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),2200); }
+function toast(m,warm){ const t=$('#toast'); t.textContent=m; t.classList.toggle('warm',!!warm); t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),2200); }
 
 /* ============ SONS PREMIUM (Web Audio, synthétisés, discrets) ============ */
 let _actx=null;
@@ -1021,9 +1028,33 @@ $$('.nb').forEach(b=>b.onclick=()=>nav(b.dataset.s));
   });
   navEl.addEventListener('click',e=>{ if(suppressClick){ e.stopImmediatePropagation(); e.preventDefault(); } },true);
 })();
-function greet(){ const h=new Date().getHours(); const l=curLang();
+/* Nombre de jours calendaires écoulés depuis la dernière ouverture connue de l'app. */
+function daysSinceLastOpen(){
+  if(!P.lastOpen) return 0;
+  const a=new Date(P.lastOpen+'T00:00:00'), b=new Date(todayKey()+'T00:00:00');
+  const d=Math.round((b-a)/86400000);
+  return isNaN(d)||d<0?0:d;
+}
+/* Marque l'app comme ouverte aujourd'hui, renvoie l'écart depuis la dernière visite
+   (appelé une fois par démarrage, avant que P.lastOpen ne soit mis à jour). */
+function markOpenToday(){
+  const gap=daysSinceLastOpen();
+  P.lastOpen=todayKey();
+  saveAll();
+  return gap;
+}
+function greet(){
+  const h=new Date().getHours(); const l=curLang();
   const G={fr:[h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir'],en:[h<12?'Good morning':h<18?'Good afternoon':'Good evening'],ar:['مرحباً']};
-  return (G[l]||G.fr)[0]+', '+(P.name||t('profil'))+' 👋'; }
+  const name=P.name||t('profil');
+  const base=(G[l]||G.fr)[0]+', '+name;
+  if(l!=='fr') return base+' 👋';
+  const streak=streakDays();
+  if(streak>=3) return base+' · 🔥 '+streak+' jours de suite, continue comme ça';
+  const idx=(new Date().getDate()+new Date().getMonth())%3;
+  const closers=[' 👋',' — prêt à avancer ?',' ✨'];
+  return base+closers[idx];
+}
 
 /* ---------- INIT ---------- */
 /* Fige les animations d'ambiance (icônes flottantes, halos, reflets...) une fois
@@ -1082,6 +1113,7 @@ async function startApp(){
 function logout(){ signOutUser(); }
 function switchAccount(){ signOutUser(); }
 function initApp(){
+  window._welcomeBackGap=markOpenToday();
   $('#ob').classList.remove('on');
   applyTheme();
   document.documentElement.lang=curLang();
@@ -2414,8 +2446,8 @@ function toggleGoal(id){
   // Recalcul COMPLET : cocher ajoute, décocher retire automatiquement
   refreshXP({animate:true});
   const isAll=GOALS.list.every(x=>x.done);
-  if(g.done && isAll && !wasAll){ burst(); sfx('finish'); toast('🎉 Tous les objectifs ! +'+XP_RULES.allGoalsBonus+' XP'); }
-  else if(g.done){ sfx('goal'); toast('+'+XP_RULES.perGoal+' XP'); }
+  if(g.done && isAll && !wasAll){ burst(); sfx('finish'); haptic(); toast('🎉 Journée complète, tous les objectifs cochés ! +'+XP_RULES.allGoalsBonus+' XP',true); }
+  else if(g.done){ sfx('goal'); haptic(); toast('+'+XP_RULES.perGoal+' XP · bien joué',true); }
   else toast('−'+XP_RULES.perGoal+' XP');
   renderHome();
 }
@@ -2470,6 +2502,20 @@ function renderHome(){
 
   let html='';
 
+  // RETOUR APRÈS ABSENCE — accueil chaleureux, jamais culpabilisant
+  if(window._welcomeBackGap>=3){
+    const gap=window._welcomeBackGap; window._welcomeBackGap=0;
+    const WB=[
+      'Ça fait '+gap+' jours — pas de pression, on reprend en douceur dès que tu es prêt.',
+      gap+' jours sans se voir. Ton profil et tes progrès sont toujours là, prêts à repartir.',
+      'Content de te revoir. Une petite séance aujourd\u2019hui suffit pour relancer la machine.'
+    ];
+    html+='<div class="welcome-back stag" style="animation-delay:.01s">'+
+      '<div class="wb-ic">👋</div>'+
+      '<div class="wb-txt"><div class="wb-title">Content de te revoir'+(P.name?', '+P.name:'')+'</div>'+
+      '<div class="wb-sub">'+WB[gap%WB.length]+'</div></div></div>';
+  }
+
   // RANK CARD — carte de rang (identité, en premier : c'est le hero de l'écran)
   { const curBadge=BADGE_TIERS.filter(b=>b.xpMin<=(XP.total||0)).slice(-1)[0]||BADGE_TIERS[0];
     html+='<div class="rank-card stag" style="animation-delay:.02s">'+
@@ -2504,7 +2550,7 @@ function renderHome(){
         '<div class="spark">'+week7.map(v=>'<b style="height:'+Math.max(10,Math.round(v/maxDay*100))+'%"></b>').join('')+'</div></div>'+
       '<div class="tg-cell"><div class="tg-top"><div class="tg-ic" style="background:rgba(242,184,75,.18);color:var(--or)">'+ICN('bolt',13)+'</div><div class="tg-lab">FORME & SÉRIE</div></div>'+
         '<div class="tg-val">'+form+'<span style="font-size:11px;color:var(--muted);font-weight:600">/100</span></div>'+
-        '<div style="font-size:11px;color:var(--muted)">🔥 '+streakDays()+' jours de série</div></div>'+
+        '<div style="font-size:11px;color:var(--muted)"><span class="'+(streakDays()>=1?'flame-live':'')+'">🔥</span> '+streakDays()+' jours de série</div></div>'+
     '</div>';
   }
 
@@ -2606,7 +2652,7 @@ function renderHome(){
   const upcoming=evts.filter(e=>new Date(e.date)>=new Date(todayKey())).sort((a,b)=>new Date(a.date)-new Date(b.date))[0];
   html+='<div class="card stag" style="animation-delay:.19s"><div class="row" style="margin-bottom:10px"><div class="card-t" style="margin:0">'+ICN('calendar',18,'var(--e)')+' Agenda</div><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="openTool(\'agenda\');nav(\'outils\')">Voir tout</span></div>';
   if(upcoming){ const dd=daysBetween(new Date(),new Date(upcoming.date)); html+='<div class="row"><div><div style="font-weight:700">'+upcoming.title+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+fmtDate(upcoming.date)+'</div></div><div class="badge">'+(dd<=0?'Aujourd\u2019hui':'J-'+dd)+'</div></div>'; }
-  else html+='<div style="font-size:13px;color:var(--dim)">Aucun événement à venir.</div>';
+  else html+='<div style="font-size:13px;color:var(--dim)">Rien de prévu pour l\u2019instant, ajoute ta prochaine échéance quand tu veux.</div>';
   html+='</div>';
   // CARTE PRIÈRES
   try{ const pt=prayerTimes(); const order=['Fajr','Dhuhr','Asr','Maghrib','Isha']; const now=new Date(),nm=now.getHours()*60+now.getMinutes();
@@ -2995,6 +3041,7 @@ function coachAnalyze(e){
   return {pos,errs,tips,adjust,motiv,e};
 }
 function renderCoachAnalysis(a){
+  if(navigator.vibrate) navigator.vibrate([60,40,100]);
   let h='<div style="text-align:center;margin-bottom:14px"><div style="font-size:40px">🧠</div><div class="man" style="font-weight:800;font-size:20px">Analyse du Coach</div><div style="font-size:12px;color:var(--muted)">'+a.e.title+'</div></div>';
   const blk=(icon,title,items,color)=>items.length?'<div class="card-t" style="margin-top:14px;'+(color?'color:'+color:'')+'">'+icon+' '+title+'</div>'+items.map(x=>'<div class="tip" style="margin-bottom:6px;'+(color?'border-color:'+color+'33;background:'+color+'11':'')+'">'+x+'</div>').join(''):'';
   h+=blk('✅','Points positifs',a.pos,'var(--ok)');
@@ -3377,8 +3424,9 @@ function finishLive(){
     if(vol>0){ if(!PREFS.exHist[e.name])PREFS.exHist[e.name]=[]; PREFS.exHist[e.name].push({date:todayKey(),vol}); PREFS.exHist[e.name]=PREFS.exHist[e.name].slice(-30); }
   }});
   localStorage.removeItem('vvv_live_active');
-  saveAll(); refreshXP({animate:true}); burst(); sfx('finish'); stopBgActivity();
-  let h='<div class="popin" style="text-align:center;padding:6px 0"><div style="font-size:50px">🏆</div><div class="man" style="font-weight:800;font-size:22px;margin:8px 0">Séance terminée !</div></div>';
+  saveAll(); refreshXP({animate:true}); burst(); sfx('finish'); if(navigator.vibrate) navigator.vibrate([100,50,180]); stopBgActivity();
+  let h='<div class="popin" style="text-align:center;padding:6px 0"><div style="font-size:50px">🏆</div><div class="man" style="font-weight:800;font-size:22px;margin:8px 0">Séance terminée !</div>'+
+    '<div style="color:var(--or);font-size:13px;font-weight:600">'+badgeCheer()+'</div></div>';
   h+='<div class="sgrid" style="margin-bottom:12px"><div class="sbox"><div class="v">'+Math.round(LIVE.tonnage)+'</div><div class="l">Tonnage (kg)</div></div><div class="sbox"><div class="v">'+fmtTime(dur)+'</div><div class="l">Durée</div></div><div class="sbox"><div class="v">'+LIVE.setsDone+'</div><div class="l">Séries</div></div><div class="sbox"><div class="v">'+totalReps+'</div><div class="l">Répétitions</div></div><div class="sbox"><div class="v">'+cal+'</div><div class="l">Calories</div></div><div class="sbox"><div class="v" style="color:var(--or)">'+prs.length+'</div><div class="l">Records battus</div></div></div>';
   // progression
   if(prevTon){ const diff=Math.round(LIVE.tonnage-prevTon); const up=diff>=0;
