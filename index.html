@@ -90,6 +90,116 @@ html[data-mode="light"] body::before{
     var(--bg);}
 html[data-mode="light"] body::after{opacity:.02;}
 
+/* ===== ACCUEIL — refonte fidèle à la maquette IKORUN ===== */
+.ik-header{display:flex;align-items:center;justify-content:space-between;padding:2px 0 18px;}
+.ik-logo{display:flex;align-items:center;gap:9px;}
+.ik-logo svg{width:26px;height:26px;flex-shrink:0;}
+.ik-logo span{font-family:'Manrope';font-weight:800;font-size:16px;letter-spacing:.5px;color:var(--snow);}
+.ik-bell{width:38px;height:38px;border-radius:50%;background:var(--s1);border:1px solid var(--hair);display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;position:relative;transition:transform .15s var(--ease-spring);}
+.ik-bell:active{transform:scale(.92);}
+.ik-bell .dot{position:absolute;top:8px;right:9px;width:7px;height:7px;border-radius:50%;background:var(--e);box-shadow:0 0 0 2px var(--s1);}
+.ik-greet{margin-bottom:16px;}
+.ik-greet h1{font-family:'Manrope';font-weight:800;font-size:23px;letter-spacing:-.4px;display:flex;align-items:center;gap:8px;}
+.ik-greet p{color:var(--muted);font-size:13px;margin-top:3px;font-weight:500;}
+
+.lvl-card{display:flex;align-items:center;gap:16px;cursor:pointer;}
+.lvl-lab{font-size:8.5px;letter-spacing:.4px;color:var(--muted);font-weight:700;}
+.lvl-n{font-family:'Manrope';font-weight:800;font-size:22px;margin-top:1px;}
+.lvl-info{flex:1;}
+.lvl-xp{font-family:'Manrope';font-weight:800;font-size:19px;}
+.lvl-next{color:var(--muted);font-size:12px;font-weight:600;margin-top:2px;}
+.lvl-delta{color:var(--e2);font-size:12.5px;font-weight:700;margin-top:3px;}
+
+.week-card{cursor:pointer;}
+.week-lab{font-size:10px;letter-spacing:.5px;color:var(--muted);font-weight:700;margin-bottom:12px;}
+.week-row{display:flex;align-items:center;justify-content:space-between;gap:14px;}
+.week-stats{flex:1;}
+.week-big{font-family:'Manrope';font-weight:800;font-size:20px;}
+.week-big span{font-size:13px;font-weight:600;color:var(--muted);}
+.week-sub{color:var(--muted);font-size:11.5px;font-weight:600;margin-top:1px;}
+.week-gap{height:12px;}
+.week-ring-v{font-family:'Manrope';font-weight:800;font-size:15px;}
+.week-ring-l{font-size:7.5px;color:var(--muted);font-weight:600;line-height:1.2;text-align:center;max-width:52px;}
+.week-spark-wrap{margin-top:16px;}
+.week-spark-days{display:flex;justify-content:space-between;margin-top:6px;padding:0 2px;}
+.week-spark-days span{font-size:10.5px;color:var(--dim);font-weight:600;width:14px;text-align:center;}
+
+.next-lab{font-size:10px;letter-spacing:.5px;color:var(--muted);font-weight:700;margin-bottom:2px;}
+.next-card{display:flex;align-items:center;gap:12px;cursor:pointer;}
+.next-body{flex:1;}
+.next-title{font-family:'Manrope';font-weight:700;font-size:15px;margin-top:4px;}
+.next-meta{color:var(--muted);font-size:12px;margin-top:3px;font-weight:500;}
+.next-when{color:var(--e2);font-size:12px;margin-top:2px;font-weight:600;}
+.next-ic{width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(51,211,153,.35),rgba(51,211,153,.12));border:1px solid rgba(51,211,153,.4);display:flex;align-items:center;justify-content:center;color:var(--ok);flex-shrink:0;}
+
+.plan-lab{font-size:10px;letter-spacing:.5px;color:var(--muted);font-weight:700;margin:14px 0 8px;}
+.plan-list{padding:6px 8px;}
+.plan-item{display:flex;align-items:center;gap:12px;padding:10px 6px;cursor:pointer;}
+.plan-item+.plan-item{border-top:1px solid var(--hair);}
+.plan-ic{width:38px;height:38px;border-radius:11px;background:var(--ed);color:var(--e2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.plan-body{flex:1;}
+.plan-title{font-weight:700;font-size:14px;}
+.plan-sub{color:var(--muted);font-size:11.5px;margin-top:2px;font-weight:500;line-height:1.3;}
+
+/* ===== FICHE SÉANCE — écran détail fidèle à la maquette ===== */
+.rs-badge{display:inline-flex;align-items:center;justify-content:center;padding:3px 9px;border-radius:7px;font-size:11px;font-weight:800;background:rgba(51,211,153,.16);color:var(--ok);margin-bottom:10px;}
+.rs-title{font-family:'Manrope';font-weight:800;font-size:24px;letter-spacing:-.4px;line-height:1.15;}
+.rs-sub{display:inline-block;margin-top:10px;padding:4px 12px;border-radius:20px;background:var(--s2);color:var(--muted);font-size:11.5px;font-weight:600;}
+.rs-stats{display:flex;align-items:center;justify-content:space-around;margin:20px 0 18px;}
+.rs-stat{text-align:center;}
+.rs-stat .v{font-family:'Manrope';font-weight:800;font-size:21px;}
+.rs-stat .l{color:var(--muted);font-size:11px;margin-top:3px;font-weight:600;}
+.rs-div{width:1px;height:30px;background:var(--hair);}
+.rs-cta{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:15px;border-radius:18px;border:none;cursor:pointer;
+  background:var(--grad-btn);color:#fff;font-family:'Manrope';font-weight:700;font-size:15px;box-shadow:var(--sh-e);margin-bottom:18px;}
+.rs-cta:active{transform:scale(.98);}
+.rs-obj-lab{font-size:10px;letter-spacing:.5px;color:var(--muted);font-weight:700;margin-bottom:6px;}
+.rs-obj-txt{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:16px;}
+.rs-list{padding:4px 8px;}
+.rs-row{display:flex;align-items:center;gap:12px;padding:11px 6px;cursor:pointer;}
+.rs-row+.rs-row{border-top:1px solid var(--hair);}
+.rs-ic{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rs-row-body{flex:1;min-width:0;}
+.rs-row-t{font-weight:700;font-size:14px;}
+.rs-row-m{color:var(--muted);font-size:12px;margin-top:2px;line-height:1.35;}
+.rs-target{margin-top:10px;}
+.rs-target-lab{color:var(--muted);font-size:11px;font-weight:600;margin-bottom:6px;}
+.rs-target-v{font-family:'Manrope';font-weight:800;font-size:17px;margin-bottom:8px;}
+.rs-target-spark{display:flex;align-items:flex-end;gap:3px;height:34px;}
+.rs-target-spark b{flex:1;border-radius:2px;background:linear-gradient(180deg,var(--e2),var(--e));min-height:3px;display:block;opacity:.85;}
+
+/* ===== SÉANCE EN COURS — écran live running fidèle à la maquette ===== */
+.rl-tag{text-align:center;font-size:10px;letter-spacing:.6px;color:var(--muted);font-weight:700;margin-top:2px;}
+.rl-title{text-align:center;font-family:'Manrope';font-weight:800;font-size:19px;margin-top:4px;}
+.rl-timerlab{text-align:center;font-size:9px;letter-spacing:.5px;color:var(--dim);font-weight:700;margin-top:18px;}
+.rl-timer{text-align:center;font-family:'JetBrains Mono';font-weight:700;font-size:38px;letter-spacing:.5px;margin-top:4px;}
+.rl-timersub{text-align:center;color:var(--muted);font-size:11px;font-weight:600;margin-top:2px;}
+.rl-list{margin-top:20px;padding:4px 8px;}
+.rl-row{display:flex;align-items:center;gap:12px;padding:11px 6px;}
+.rl-row+.rl-row{border-top:1px solid var(--hair);}
+.rl-ic{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rl-row-body{flex:1;}
+.rl-row-v{font-weight:700;font-size:15px;}
+.rl-row-v span{font-size:11.5px;color:var(--muted);font-weight:600;}
+.rl-row-l{color:var(--muted);font-size:11px;margin-top:1px;}
+.rl-map{margin-top:14px;border-radius:16px;overflow:hidden;border:1px solid var(--hair);background:
+  radial-gradient(120% 90% at 30% 20%,rgba(var(--e-rgb),.14),transparent 60%),
+  repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0 1px,transparent 1px 26px),
+  repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 1px,transparent 1px 26px),#0B0F16;height:180px;position:relative;}
+.rl-controls{display:flex;align-items:center;justify-content:center;gap:22px;margin-top:22px;}
+.rl-ctrl{width:60px;height:60px;border-radius:50%;background:var(--s1);border:1px solid var(--hair);display:flex;align-items:center;justify-content:center;color:var(--snow);cursor:pointer;box-shadow:var(--float-sm);transition:transform .15s var(--ease-spring);}
+.rl-ctrl:active{transform:scale(.9);}
+.rl-ctrl.main{width:72px;height:72px;background:var(--grad-btn);box-shadow:var(--sh-e);color:#fff;}
+.rl-ctrl.stop{color:var(--or);}
+
+/* ===== CALENDRIER ===== */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cal-head span{text-align:center;font-size:10.5px;color:var(--muted);font-weight:700;padding-bottom:8px;}
+.cal-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;border-radius:10px;position:relative;color:var(--snow);}
+.cal-cell.muted{color:var(--dim);opacity:.4;}
+.cal-cell.today{background:var(--e);color:#fff;font-weight:800;}
+.cal-dot{position:absolute;bottom:4px;width:4px;height:4px;border-radius:50%;background:var(--e2);}
+
 /* ===== NOUVEAUX ÉLÉMENTS ACCUEIL (inspirés pattern app mobile) ===== */
 .daystrip-wrap{margin-bottom:10px;}
 .daystrip{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
@@ -262,6 +372,7 @@ html[data-mode="light"] .ch-bar{background:rgba(20,30,55,.1);}
 .tb-gear{width:34px;height:34px;border-radius:var(--r-xs);background:var(--s1);border:1px solid var(--hair);
   box-shadow:var(--sh-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s var(--ease-spring);}
 .tb-gear:active{transform:scale(.92);}
+body[data-scr="home"] .topbar{display:none;}
 
 /* CARDS */
 .card{background:var(--s1);background-image:var(--grad-card);border:1px solid var(--hair);border-radius:var(--r-md);
@@ -1100,6 +1211,7 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
 <div class="ov" id="ovCfg"><div class="ov-card"><div class="ov-head"><h2>Configurer</h2><div class="x" onclick="closeOv('ovCfg')">✕</div></div><div id="cfgBody"></div></div></div>
 <div class="ov" id="ovProg"><div class="ov-card"><div class="ov-head"><h2 id="ovProgTitle">Programme</h2><div class="x" onclick="closeOv('ovProg')">✕</div></div><div id="progBody"></div></div></div>
 <div class="ov" id="ovLive"><div class="ov-card"><div class="ov-head"><h2 id="liveTitle">Séance</h2><div class="x" onclick="confirmCloseLive()">✕</div></div><div id="liveBody"></div></div></div>
+<div class="ov" id="ovRunLive"><div class="ov-card" style="max-width:430px;padding-bottom:24px"><div class="ov-head" style="justify-content:flex-end"><div class="x" onclick="confirmCloseRunLive()">⋯</div></div><div id="runLiveBody"></div></div></div>
 <div class="ov" id="ovSheet"><div class="ov-card"><div class="ov-head"><h2 id="sheetTitle">Séance</h2><div class="x" onclick="closeOv('ovSheet')">✕</div></div><div id="sheetBody"></div></div></div>
 <div class="ov" id="ovCreate"><div class="ov-card"><div class="ov-head"><h2>Nouveau programme</h2><div class="x" onclick="closeOv('ovCreate')">✕</div></div><div id="createBody"></div></div></div>
 <div class="ov" id="ovBadges"><div class="ov-card"><div class="ov-head"><h2 id="ovBadgesTitle">Badges</h2><div class="x" onclick="closeOv('ovBadges')">✕</div></div><div id="badgesBody"></div></div></div>
