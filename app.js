@@ -531,12 +531,6 @@ function playBadgeUnlockQueue(){
   const b=BADGE_TIERS.find(x=>x.key===key);
   if(b) showBadgeUnlockAnim(b);
 }
-/* Petite phrase chaleureuse et variée pour accompagner un badge, personnalisée si possible. */
-function badgeCheer(){
-  const n=P.name?', '+P.name:'';
-  const arr=['Bravo'+n+', chaque séance compte.','Tu progresses vraiment'+n+' 💪','Ce badge, tu l\u2019as mérité'+n+'.','Fier de ton parcours'+n+'.','Petit à petit, tu deviens plus fort'+(P.sexe==='Femme'?'e':'')+n+'.'];
-  return arr[Math.floor(Math.random()*arr.length)];
-}
 function showBadgeUnlockAnim(b){
   burst(); sfx('medal');
   if(navigator.vibrate) navigator.vibrate([120,60,120,60,260]);
@@ -550,7 +544,6 @@ function showBadgeUnlockAnim(b){
     '<div class="bd-unlock-badge">'+bdGlyph(b.key)+sparks+'</div></div>'+
     '<div class="man" style="font-weight:800;font-size:30px;margin-top:18px;letter-spacing:.5px">'+b.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+b.desc+'</div>'+
-    '<div class="bd-cheer">'+badgeCheer()+'</div>'+
     '<div style="color:var(--dim);font-size:12px;margin-top:18px">Touche pour continuer</div>';
   ov.onclick=()=>{ ov.remove(); playBadgeUnlockQueue(); };
   document.body.appendChild(ov);
@@ -709,7 +702,11 @@ const $$=s=>document.querySelectorAll(s);
 function todayKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function dateKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function daysBetween(a,b){ return Math.round((b-a)/86400000); }
-function toast(m,warm){ const t=$('#toast'); t.textContent=m; t.classList.toggle('warm',!!warm); t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),2200); }
+// Diff en jours calendaires pleins entre aujourd'hui (minuit local) et une date 'YYYY-MM-DD' (minuit local).
+// Évite le bug où new Date('YYYY-MM-DD') est parsé en UTC (décalage de fuseau) et où l'heure courante
+// fausse l'arrondi — cause du J-100 (Accueil) vs J-101 (Sport) pour le même objectif.
+function daysUntil(dateStr){ if(!dateStr) return null; const today=new Date(todayKey()+'T00:00:00'); const target=new Date(dateStr+'T00:00:00'); return Math.round((target-today)/86400000); }
+function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),2200); }
 
 /* ============ SONS PREMIUM (Web Audio, synthétisés, discrets) ============ */
 let _actx=null;
@@ -1028,33 +1025,9 @@ $$('.nb').forEach(b=>b.onclick=()=>nav(b.dataset.s));
   });
   navEl.addEventListener('click',e=>{ if(suppressClick){ e.stopImmediatePropagation(); e.preventDefault(); } },true);
 })();
-/* Nombre de jours calendaires écoulés depuis la dernière ouverture connue de l'app. */
-function daysSinceLastOpen(){
-  if(!P.lastOpen) return 0;
-  const a=new Date(P.lastOpen+'T00:00:00'), b=new Date(todayKey()+'T00:00:00');
-  const d=Math.round((b-a)/86400000);
-  return isNaN(d)||d<0?0:d;
-}
-/* Marque l'app comme ouverte aujourd'hui, renvoie l'écart depuis la dernière visite
-   (appelé une fois par démarrage, avant que P.lastOpen ne soit mis à jour). */
-function markOpenToday(){
-  const gap=daysSinceLastOpen();
-  P.lastOpen=todayKey();
-  saveAll();
-  return gap;
-}
-function greet(){
-  const h=new Date().getHours(); const l=curLang();
+function greet(){ const h=new Date().getHours(); const l=curLang();
   const G={fr:[h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir'],en:[h<12?'Good morning':h<18?'Good afternoon':'Good evening'],ar:['مرحباً']};
-  const name=P.name||t('profil');
-  const base=(G[l]||G.fr)[0]+', '+name;
-  if(l!=='fr') return base+' 👋';
-  const streak=streakDays();
-  if(streak>=3) return base+' · 🔥 '+streak+' jours de suite, continue comme ça';
-  const idx=(new Date().getDate()+new Date().getMonth())%3;
-  const closers=[' 👋',' — prêt à avancer ?',' ✨'];
-  return base+closers[idx];
-}
+  return (G[l]||G.fr)[0]+', '+(P.name||t('profil'))+' 👋'; }
 
 /* ---------- INIT ---------- */
 /* Fige les animations d'ambiance (icônes flottantes, halos, reflets...) une fois
@@ -1113,7 +1086,6 @@ async function startApp(){
 function logout(){ signOutUser(); }
 function switchAccount(){ signOutUser(); }
 function initApp(){
-  window._welcomeBackGap=markOpenToday();
   $('#ob').classList.remove('on');
   applyTheme();
   document.documentElement.lang=curLang();
@@ -1972,9 +1944,7 @@ function generatePlan(){
   if(!vdot){ toast('Profil incomplet : ajoute un chrono dans tes records'); return; }
   if(!P.compDate){ toast('Choisis une date de compétition'); return; }
   const days=(P.days&&P.days.length)?[...P.days].sort((a,b)=>a-b):[1,3,5,6];
-  const today=new Date(); today.setHours(0,0,0,0);
-  const comp=new Date(P.compDate); comp.setHours(0,0,0,0);
-  let weeks=Math.max(2,Math.min(28,Math.ceil(daysBetween(today,comp)/7)));
+  let weeks=Math.max(2,Math.min(28,Math.ceil(daysUntil(P.compDate)/7)));
   const phaseByWeek=phaseDistribution(weeks);
   // seed unique à chaque génération
   const seed=(Date.now()^Math.floor(Math.random()*1e9))>>>0;
@@ -2446,8 +2416,8 @@ function toggleGoal(id){
   // Recalcul COMPLET : cocher ajoute, décocher retire automatiquement
   refreshXP({animate:true});
   const isAll=GOALS.list.every(x=>x.done);
-  if(g.done && isAll && !wasAll){ burst(); sfx('finish'); haptic(); toast('🎉 Journée complète, tous les objectifs cochés ! +'+XP_RULES.allGoalsBonus+' XP',true); }
-  else if(g.done){ sfx('goal'); haptic(); toast('+'+XP_RULES.perGoal+' XP · bien joué',true); }
+  if(g.done && isAll && !wasAll){ burst(); sfx('finish'); toast('🎉 Tous les objectifs ! +'+XP_RULES.allGoalsBonus+' XP'); }
+  else if(g.done){ sfx('goal'); toast('+'+XP_RULES.perGoal+' XP'); }
   else toast('−'+XP_RULES.perGoal+' XP');
   renderHome();
 }
@@ -2498,23 +2468,9 @@ function renderHome(){
   const vdot=getUserVDOT();
   const goals=getDailyGoals();
   const ps=planSessionToday();
-  const compDays=P.compDate?daysBetween(new Date(),new Date(P.compDate)):null;
+  const compDays=daysUntil(P.compDate);
 
   let html='';
-
-  // RETOUR APRÈS ABSENCE — accueil chaleureux, jamais culpabilisant
-  if(window._welcomeBackGap>=3){
-    const gap=window._welcomeBackGap; window._welcomeBackGap=0;
-    const WB=[
-      'Ça fait '+gap+' jours — pas de pression, on reprend en douceur dès que tu es prêt.',
-      gap+' jours sans se voir. Ton profil et tes progrès sont toujours là, prêts à repartir.',
-      'Content de te revoir. Une petite séance aujourd\u2019hui suffit pour relancer la machine.'
-    ];
-    html+='<div class="welcome-back stag" style="animation-delay:.01s">'+
-      '<div class="wb-ic">👋</div>'+
-      '<div class="wb-txt"><div class="wb-title">Content de te revoir'+(P.name?', '+P.name:'')+'</div>'+
-      '<div class="wb-sub">'+WB[gap%WB.length]+'</div></div></div>';
-  }
 
   // RANK CARD — carte de rang (identité, en premier : c'est le hero de l'écran)
   { const curBadge=BADGE_TIERS.filter(b=>b.xpMin<=(XP.total||0)).slice(-1)[0]||BADGE_TIERS[0];
@@ -2534,12 +2490,12 @@ function renderHome(){
   }
 
   // AUJOURD'HUI — bague double (charge/séances) + 2 mini-cartes, façon home d'app mobile
-  { const kmPct=Math.min(100,kmW/kmTarget*100);
+  { const kmPctReal=kmW/kmTarget*100, kmPct=Math.min(100,kmPctReal), kmOver=kmPctReal>=100;
     const sessPct=Math.min(100,sessW/sessTarget*100);
     const week7=last7DaysKm(); const maxDay=Math.max(1,...week7);
     html+='<div class="sec-head stag" style="animation-delay:.03s"><h3>Aujourd\u2019hui</h3><span class="see" onclick="nav(\'stats\')">Voir tout ›</span></div>';
-    html+='<div class="hero-ring-card stag" style="animation-delay:.04s" onclick="nav(\'stats\')">'+
-      donutSVG([{v:kmPct,color:'var(--e)'},{v:100-kmPct,color:'rgba(255,255,255,.06)'}],92,10,'<div style="font-family:\'Manrope\';font-weight:800;font-size:19px">'+Math.round(kmPct)+'%</div><div style="font-size:8.5px;color:var(--muted)">objectif</div>')+
+    html+='<div class="hero-ring-card'+(kmOver?' over':'')+' stag" style="animation-delay:.04s" onclick="nav(\'stats\')">'+
+      donutSVG([{v:kmPct,color:kmOver?'var(--or)':'var(--e)'},{v:100-kmPct,color:'rgba(255,255,255,.06)'}],92,10,'<div style="font-family:\'Manrope\';font-weight:800;font-size:19px;'+(kmOver?'color:var(--or)':'')+'">'+Math.round(kmPctReal)+'%</div><div style="font-size:8.5px;color:var(--muted)">objectif'+(kmOver?' <span class="hr-overtag">🔥 +'+Math.round(kmPctReal-100)+'%</span>':'')+'</div>')+
       '<div class="hr-legend">'+
         '<div class="hr-item"><span class="hr-dot" style="background:var(--e)"></span><div class="hr-txt"><div class="hr-val">'+kmW.toFixed(0)+'/'+kmTarget+' km</div><div class="hr-lab">Charge semaine</div></div></div>'+
         '<div class="hr-item"><span class="hr-dot" style="background:var(--ok)"></span><div class="hr-txt"><div class="hr-val">'+sessW+'/'+sessTarget+'</div><div class="hr-lab">Séances</div></div></div>'+
@@ -2550,12 +2506,13 @@ function renderHome(){
         '<div class="spark">'+week7.map(v=>'<b style="height:'+Math.max(10,Math.round(v/maxDay*100))+'%"></b>').join('')+'</div></div>'+
       '<div class="tg-cell"><div class="tg-top"><div class="tg-ic" style="background:rgba(242,184,75,.18);color:var(--or)">'+ICN('bolt',13)+'</div><div class="tg-lab">FORME & SÉRIE</div></div>'+
         '<div class="tg-val">'+form+'<span style="font-size:11px;color:var(--muted);font-weight:600">/100</span></div>'+
-        '<div style="font-size:11px;color:var(--muted)"><span class="'+(streakDays()>=1?'flame-live':'')+'">🔥</span> '+streakDays()+' jours de série</div></div>'+
+        '<div style="font-size:11px;color:var(--muted)">🔥 '+streakDays()+' jours de série</div></div>'+
     '</div>';
   }
 
   // DAY STRIP — bande horizontale des prochains jours avec type de séance
   html+='<div class="daystrip-wrap stag" style="animation-delay:.06s"><div class="daystrip">';
+  const dsTypesSeen=new Set();
   { const labels=['D','L','M','M','J','V','S']; const doneDates=new Set([...SESS,...MSESS].map(s=>s.date));
     const followedP=P.followPerso?CUSTOM.find(x=>x.id===P.followPerso):null;
     const planByDate={};
@@ -2565,12 +2522,18 @@ function renderHome(){
       const d=new Date(); d.setDate(d.getDate()+i); const k=dateKey(d); const isToday=i===0;
       const sess=planByDate[k]; const done=doneDates.has(k);
       let dotCol='var(--hair2)', glyph='';
-      if(sess && sess.type!=='Repos'){ dotCol='var('+(TYPE_COLORS[sess.type]||'--e')+')'; glyph='<span class="ds-dot" style="background:'+dotCol+(done?';opacity:1':';opacity:.85')+'"></span>'; }
+      if(sess && sess.type!=='Repos'){ dotCol='var('+(TYPE_COLORS[sess.type]||'--e')+')'; glyph='<span class="ds-dot" style="background:'+dotCol+(done?';opacity:1':';opacity:.85')+'"></span>'; dsTypesSeen.add(sess.type); }
       else if(sess) glyph='<span class="ds-dot" style="background:var(--hair2)"></span>';
       html+='<div class="ds-day '+(isToday?'today':'')+'" onclick="nav(\'sport\')"><div class="ds-l">'+labels[d.getDay()]+'</div><div class="ds-n">'+d.getDate()+'</div>'+glyph+'</div>';
     }
   }
-  html+='</div></div>';
+  html+='</div>';
+  // Légende des couleurs de séance affichées cette semaine, pour que les points colorés
+  // ne restent pas énigmatiques (bleu/vert/orange sans explication).
+  if(dsTypesSeen.size){
+    html+='<div class="ds-legend">'+[...dsTypesSeen].map(ty=>'<span class="ds-leg-item"><span class="ds-leg-dot" style="background:var('+(TYPE_COLORS[ty]||'--e')+')"></span>'+ty+'</span>').join('')+'</div>';
+  }
+  html+='</div>';
 
   // OBJECTIF + CONSEIL — mosaïque 2 colonnes (au lieu de 2 blocs pleine largeur empilés)
   html+='<div class="mosaic stag" style="animation-delay:.08s">';
@@ -2651,8 +2614,8 @@ function renderHome(){
   const evts=[...AGENDA]; if(P.compDate) evts.push({date:P.compDate,title:'🏆 '+(P.goal||'Compétition')});
   const upcoming=evts.filter(e=>new Date(e.date)>=new Date(todayKey())).sort((a,b)=>new Date(a.date)-new Date(b.date))[0];
   html+='<div class="card stag" style="animation-delay:.19s"><div class="row" style="margin-bottom:10px"><div class="card-t" style="margin:0">'+ICN('calendar',18,'var(--e)')+' Agenda</div><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="openTool(\'agenda\');nav(\'outils\')">Voir tout</span></div>';
-  if(upcoming){ const dd=daysBetween(new Date(),new Date(upcoming.date)); html+='<div class="row"><div><div style="font-weight:700">'+upcoming.title+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+fmtDate(upcoming.date)+'</div></div><div class="badge">'+(dd<=0?'Aujourd\u2019hui':'J-'+dd)+'</div></div>'; }
-  else html+='<div style="font-size:13px;color:var(--dim)">Rien de prévu pour l\u2019instant, ajoute ta prochaine échéance quand tu veux.</div>';
+  if(upcoming){ const dd=daysUntil(upcoming.date); html+='<div class="row"><div><div style="font-weight:700">'+upcoming.title+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+fmtDate(upcoming.date)+'</div></div><div class="badge">'+(dd<=0?'Aujourd\u2019hui':'J-'+dd)+'</div></div>'; }
+  else html+='<div style="font-size:13px;color:var(--dim)">Aucun événement à venir.</div>';
   html+='</div>';
   // CARTE PRIÈRES
   try{ const pt=prayerTimes(); const order=['Fajr','Dhuhr','Asr','Maghrib','Isha']; const now=new Date(),nm=now.getHours()*60+now.getMinutes();
@@ -2679,8 +2642,7 @@ function planHeroHTML(){
   const phaseKey=weekSessions[0]?.phaseKey;
   const phaseWeeks=[...new Set(PLAN.sessions.filter(s=>s.phaseKey===phaseKey).map(s=>s.week))].sort((a,b)=>a-b);
   const phaseProgress=phaseWeeks.length>1?Math.round(((curWeekNum-phaseWeeks[0])/(phaseWeeks.length-1))*100):100;
-  const comp=new Date(P.compDate+'T00:00:00'), today=new Date(tk+'T00:00:00');
-  const daysLeft=Math.max(0,Math.round((comp-today)/86400000));
+  const daysLeft=Math.max(0,daysUntil(P.compDate));
 
   const byDow={}; weekSessions.forEach(s=>{ byDow[new Date(s.date+'T00:00:00').getDay()]=s; });
   const dowOrder=[1,2,3,4,5,6,0], dowLab=['L','M','M','J','V','S','D'];
@@ -3041,7 +3003,6 @@ function coachAnalyze(e){
   return {pos,errs,tips,adjust,motiv,e};
 }
 function renderCoachAnalysis(a){
-  if(navigator.vibrate) navigator.vibrate([60,40,100]);
   let h='<div style="text-align:center;margin-bottom:14px"><div style="font-size:40px">🧠</div><div class="man" style="font-weight:800;font-size:20px">Analyse du Coach</div><div style="font-size:12px;color:var(--muted)">'+a.e.title+'</div></div>';
   const blk=(icon,title,items,color)=>items.length?'<div class="card-t" style="margin-top:14px;'+(color?'color:'+color:'')+'">'+icon+' '+title+'</div>'+items.map(x=>'<div class="tip" style="margin-bottom:6px;'+(color?'border-color:'+color+'33;background:'+color+'11':'')+'">'+x+'</div>').join(''):'';
   h+=blk('✅','Points positifs',a.pos,'var(--ok)');
@@ -3424,9 +3385,8 @@ function finishLive(){
     if(vol>0){ if(!PREFS.exHist[e.name])PREFS.exHist[e.name]=[]; PREFS.exHist[e.name].push({date:todayKey(),vol}); PREFS.exHist[e.name]=PREFS.exHist[e.name].slice(-30); }
   }});
   localStorage.removeItem('vvv_live_active');
-  saveAll(); refreshXP({animate:true}); burst(); sfx('finish'); if(navigator.vibrate) navigator.vibrate([100,50,180]); stopBgActivity();
-  let h='<div class="popin" style="text-align:center;padding:6px 0"><div style="font-size:50px">🏆</div><div class="man" style="font-weight:800;font-size:22px;margin:8px 0">Séance terminée !</div>'+
-    '<div style="color:var(--or);font-size:13px;font-weight:600">'+badgeCheer()+'</div></div>';
+  saveAll(); refreshXP({animate:true}); burst(); sfx('finish'); stopBgActivity();
+  let h='<div class="popin" style="text-align:center;padding:6px 0"><div style="font-size:50px">🏆</div><div class="man" style="font-weight:800;font-size:22px;margin:8px 0">Séance terminée !</div></div>';
   h+='<div class="sgrid" style="margin-bottom:12px"><div class="sbox"><div class="v">'+Math.round(LIVE.tonnage)+'</div><div class="l">Tonnage (kg)</div></div><div class="sbox"><div class="v">'+fmtTime(dur)+'</div><div class="l">Durée</div></div><div class="sbox"><div class="v">'+LIVE.setsDone+'</div><div class="l">Séries</div></div><div class="sbox"><div class="v">'+totalReps+'</div><div class="l">Répétitions</div></div><div class="sbox"><div class="v">'+cal+'</div><div class="l">Calories</div></div><div class="sbox"><div class="v" style="color:var(--or)">'+prs.length+'</div><div class="l">Records battus</div></div></div>';
   // progression
   if(prevTon){ const diff=Math.round(LIVE.tonnage-prevTon); const up=diff>=0;
@@ -3731,7 +3691,7 @@ function statsMuscu(){
   const pr=MSESS.reduce((a,s)=>Math.max(a,s.tonnage||0),0);
   let h='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+MSESS.length+'</div><div class="l">Séances</div></div><div class="sbox"><div class="v">'+(totalTonnage()/1000).toFixed(1)+'t</div><div class="l">Tonnage</div></div><div class="sbox"><div class="v">'+Math.round(pr)+'</div><div class="l">PR (kg/séance)</div></div><div class="sbox"><div class="v">'+MSESS.reduce((a,s)=>a+(s.sets||0),0)+'</div><div class="l">Séries totales</div></div></div>';
   if(!MSESS.length) h+='<div class="card"><div class="empty"><div class="em-ic">🏋️</div><div style="font-size:13px">Lance ta première séance de muscu !</div></div></div>';
-  else h+='<div class="card"><div class="card-t">📅 Dernières séances</div>'+MSESS.slice(-6).reverse().map(s=>'<div class="zrow"><div><div class="zname">'+s.progName+'</div><div style="font-size:11px;color:var(--dim)">'+fmtDate(s.date)+'</div></div><span class="zval mono">'+Math.round(s.tonnage)+' kg</span></div>').join('')+'</div>';
+  else h+='<div class="card"><div class="card-t">📅 Dernières séances</div>'+MSESS.slice(-6).reverse().map(s=>'<div class="zrow"><div><div class="zname">'+s.progName+'</div><div style="font-size:11px;color:var(--dim)">'+fmtDate(s.date)+'</div></div><span class="zval mono"'+(s.tonnage?'':' style="color:var(--muted);font-weight:600"')+'>'+(s.tonnage?Math.round(s.tonnage)+' kg':'Poids du corps')+'</span></div>').join('')+'</div>';
   return h;
 }
 /* ============ BADGES TROPHÉES (Accomplissement / Performance / Spécial) ============
@@ -4490,7 +4450,7 @@ function renderAgenda(){
   if(P.compDate) evts.unshift({date:P.compDate,title:'🏆 '+(P.goal||'Compétition'),fixed:true});
   if(!evts.length) h+='<div class="card"><div class="empty"><div class="em-ic">📅</div><div style="font-size:13px">Aucun événement</div></div></div>';
   else evts.forEach((e,i)=>{
-    const dd=daysBetween(new Date(),new Date(e.date));
+    const dd=daysUntil(e.date);
     h+='<div class="card"><div class="row"><div><div style="font-weight:700">'+e.title+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+fmtDate(e.date)+' · '+(dd>=0?'J-'+dd:'passé')+'</div></div>'+(e.fixed?'':'<button class="x" onclick="delEvent('+(i-(P.compDate?1:0))+')">🗑</button>')+'</div></div>';
   });
   $('#outBody').innerHTML=h;
@@ -4550,7 +4510,7 @@ function avatarHTML(size,fs){
 function renderProfile(){
   const xp=xpProgress();
   const rk=rankFor(XP.level||1);
-  const compDays=P.compDate?daysBetween(new Date(),new Date(P.compDate)):null;
+  const compDays=daysUntil(P.compDate);
   const langInfo=LANGS.find(l=>l[0]===curLang())||LANGS[0];
   let h='';
   // ===== HERO — avatar + nom + email/bio, épuré (image de référence : Profil) =====
