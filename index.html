@@ -1132,6 +1132,55 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
 .act-tile:active{border-color:var(--e);background:var(--ed);transform:scale(.96);}
 .act-tile .ic{font-size:24px;margin-bottom:6px;}
 .act-tile .lb{font-size:11px;font-weight:700;color:var(--snow);line-height:1.2;}
+
+/* ============ ACCUEIL A — nouveaux blocs (streak, VDOT/tonnage, records, objectif, badges) ============ */
+.streak{display:inline-flex;align-items:center;gap:5px;background:rgba(255,150,50,.12);border:1px solid rgba(255,150,50,.3);
+  border-radius:999px;padding:5px 11px;font-size:11px;font-weight:700;color:#ffb35c;margin:8px 0 4px;}
+.streak b{font-weight:800;}
+
+.sec-lab{font-size:11px;letter-spacing:1px;color:var(--muted);font-weight:700;margin:16px 0 8px;text-transform:uppercase;
+  display:flex;justify-content:space-between;align-items:center;}
+.sec-lab .link{color:var(--e2);font-weight:600;text-transform:none;letter-spacing:0;font-size:12px;}
+
+.hero-quip{font-size:11.5px;color:var(--e2);font-weight:600;margin-top:4px;}
+
+/* Séances / VDOT / Tonnage / Forme */
+.stat-quatro{display:flex;gap:8px;margin-top:8px;}
+.stat-card{flex:1;padding:12px 6px;text-align:center;cursor:pointer;}
+.stat-ic{width:26px;height:26px;border-radius:8px;background:rgba(var(--e-rgb),.14);color:var(--e2);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 8px;}
+.stat-v{font-weight:700;font-size:14.5px;letter-spacing:-.3px;}
+.stat-l{font-size:7.5px;color:var(--muted);margin-top:4px;font-weight:600;letter-spacing:.2px;text-transform:uppercase;}
+
+/* Records perso */
+.pb-row{display:flex;gap:9px;}
+.pb-card{flex:1;padding:14px 10px;text-align:center;cursor:pointer;}
+.pb-dist{font-size:9px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;font-weight:600;}
+.pb-time{font-weight:800;font-size:19px;margin-top:7px;letter-spacing:-.4px;}
+.pb-pace{font-size:9.5px;color:var(--e2);margin-top:4px;font-weight:600;}
+
+/* Objectif + countdown */
+.goal-card{padding:20px;cursor:pointer;position:relative;overflow:hidden;}
+.goal-top{display:flex;justify-content:space-between;align-items:flex-start;}
+.goal-lab{font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;font-weight:600;}
+.goal-race{font-weight:700;font-size:15px;margin-top:6px;}
+.goal-target{font-size:11px;color:var(--e2);margin-top:4px;font-weight:600;}
+.goal-count{text-align:right;}
+.goal-count .n{font-weight:900;font-size:30px;background:linear-gradient(180deg,#fff,var(--e2));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.goal-count .u{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.goal-bar{height:6px;border-radius:4px;background:rgba(255,255,255,.08);margin-top:16px;overflow:hidden;}
+.goal-bar div{height:100%;background:linear-gradient(90deg,var(--e),var(--e2));border-radius:4px;}
+
+/* Progression (badges) */
+.badge-mini-row{display:flex;gap:8px;align-items:center;}
+.badge-mini{width:38px;height:38px;border-radius:12px;background:linear-gradient(150deg,rgba(var(--e-rgb),.3),rgba(var(--e-rgb),.06));
+  border:1px solid rgba(var(--e-rgb),.35);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--e2);cursor:pointer;}
+.badge-mini.locked{opacity:.28;background:rgba(255,255,255,.04);border-color:var(--hair);color:var(--dim);}
+.badge-progress-txt{flex:1;}
+.badge-progress-txt .t{font-weight:600;font-size:11.5px;}
+.badge-progress-txt .b{height:5px;border-radius:3px;background:rgba(255,255,255,.08);margin-top:6px;overflow:hidden;}
+.badge-progress-txt .b div{height:100%;background:linear-gradient(90deg,var(--e),var(--e2));}
 </style>
 </head>
 <body>
