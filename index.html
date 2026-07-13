@@ -381,8 +381,13 @@ html[data-mode="light"] .ch-bar{background:rgba(20,30,55,.1);}
 body[data-scr="home"] .topbar{display:none;}
 
 /* CARDS */
-.card{background:var(--s1);background-image:var(--grad-card);border:1px solid var(--hair);border-radius:var(--r-md);
-  padding:13px 14px;margin-bottom:8px;box-shadow:var(--float-md);position:relative;}
+.card{background:var(--glass-bg);background-image:var(--glass-shine),var(--grad-card);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
+  border:1px solid var(--glass-border);border-radius:var(--r-md);
+  padding:13px 14px;margin-bottom:8px;box-shadow:var(--glass-shadow);position:relative;}
+/* L'onglet Outils garde son style de carte d'origine (opaque, sans effet verre) */
+#s-outils .card{background:var(--s1);background-image:var(--grad-card);-webkit-backdrop-filter:none;backdrop-filter:none;
+  border-color:var(--hair);box-shadow:var(--float-md);}
 .card-t{font-family:'Unbounded';font-weight:700;font-size:13.5px;margin-bottom:9px;display:flex;align-items:center;gap:9px;letter-spacing:-.1px;}
 .icb{width:26px;height:26px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
 .lab{font-family:'Unbounded';font-weight:700;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;color:var(--dim);}
