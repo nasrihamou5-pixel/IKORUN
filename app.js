@@ -2458,12 +2458,85 @@ function donutSVG(segs,size,stroke,centerHTML){
 }
 function fmtHM(mins){ mins=Math.round(mins||0); const h=Math.floor(mins/60), m=mins%60; return h>0?(h+'h '+String(m).padStart(2,'0')+'min'):(m+'min'); }
 
+/* ---------- RENDER HOME HELPERS (Accueil A) ---------- */
+// Variation de charge hebdo vs la semaine passée, pour le quip sous le gros chiffre
+function homeLoadQuip(kmW){
+  const prev=lastWeekKm();
+  if(!prev) return 'Continue sur ta lancée.';
+  const delta=Math.round((kmW-prev)/prev*100);
+  if(delta>0) return '↑ '+delta+'% vs semaine dernière. Rythme tenu.';
+  if(delta<0) return '↓ '+Math.abs(delta)+'% vs semaine dernière.';
+  return 'Charge stable vs semaine dernière.';
+}
+// Bandeau streak (série de jours consécutifs) — n'apparaît que si une série est en cours
+function homeStreakBadge(){
+  const s=streakDays();
+  if(s<2) return '';
+  const isPR=s>=bestStreak();
+  return '<div class="streak">'+ICN('fire',13,'#ffb35c')+' <b>'+s+'</b> jours de suite'+(isPR?' — record perso':'')+'</div>';
+}
+// Ligne des 3 records perso les plus emblématiques (3000m / 5000m / 10km)
+function homePBRow(){
+  const defs=[['3000 m',3000,P.pb3k||P.t3k],['5000 m',5000,P.pb5k||P.t5k],['10 km',10000,P.pb10k||P.t10k]];
+  const cells=defs.map(([label,meters,time])=>{
+    if(!time) return '<div class="card pb-card"><div class="pb-dist">'+label+'</div><div class="pb-time" style="color:var(--dim);font-size:14px">—</div></div>';
+    const spk=parseTime(time)/(meters/1000);
+    return '<div class="card pb-card"><div class="pb-dist">'+label+'</div><div class="pb-time">'+time+'</div><div class="pb-pace">'+spkToStr(spk)+'/km</div></div>';
+  });
+  return '<div class="pb-row">'+cells.join('')+'</div>';
+}
+// Carte objectif + compte à rebours vers la course visée
+function homeGoalCard(){
+  if(!P.compDate) return '';
+  const today=new Date(); today.setHours(0,0,0,0);
+  const comp=new Date(P.compDate+'T00:00:00');
+  const daysLeft=Math.max(0,daysBetween(today,comp));
+  let pct=58;
+  if(PLAN && PLAN.sessions && PLAN.sessions.length){
+    const tk=todayKey();
+    const todaySess=PLAN.sessions.find(s=>s.date===tk);
+    const upcoming=PLAN.sessions.find(s=>s.date>=tk);
+    const curWeekNum=(todaySess||upcoming||PLAN.sessions[PLAN.sessions.length-1]).week;
+    pct=PLAN.weeks?Math.min(100,Math.round((curWeekNum/PLAN.weeks)*100)):pct;
+  }
+  return '<div class="card goal-card stag" style="animation-delay:.1s" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\'">'+
+    '<div class="goal-top">'+
+      '<div><div class="goal-lab">Objectif</div><div class="goal-race">'+(P.objRace||P.goal||'Ta prochaine course')+(P.objTime?' — sub '+P.objTime:'')+'</div>'+
+      '<div class="goal-target">Course le '+fmtDate(P.compDate)+'</div></div>'+
+      '<div class="goal-count"><div class="n">'+daysLeft+'</div><div class="u">jours</div></div>'+
+    '</div>'+
+    '<div class="goal-bar"><div style="width:'+pct+'%"></div></div>'+
+  '</div>';
+}
+// Ligne "Progression" — badges de médailles (séances / régularité / distance)
+function homeBadgesRow(){
+  const icons={'Séances':'medal','Régularité':'fire','Distance':'chart'};
+  let bestCat=null, bestPct=-1, bestTier=-1;
+  const cells=MEDAL_CATS.map(c=>{
+    const v=Math.floor(c.val());
+    let tierIdx=-1; c.thr.forEach((t,i)=>{ if(v>=t)tierIdx=i; });
+    const next=tierIdx<c.thr.length-1?c.thr[tierIdx+1]:null;
+    const prevT=tierIdx>=0?c.thr[tierIdx]:0;
+    const pct=next?Math.min(100,Math.round(((v-prevT)/(next-prevT))*100)):100;
+    if(next && pct>bestPct){ bestPct=pct; bestCat=c; bestTier=tierIdx; }
+    const locked=tierIdx<0;
+    return '<div class="badge-mini'+(locked?' locked':'')+'" onclick="nav(\'stats\')">'+ICN(icons[c.name]||'medal',18)+'</div>';
+  });
+  const label=bestCat?(TIERS[bestTier+1]?TIERS[bestTier+1][0]:bestCat.name)+' · '+bestPct+'%':'Continue pour débloquer tes badges';
+  return '<div class="card stag" style="padding:16px;animation-delay:.12s" onclick="nav(\'stats\')">'+
+    '<div class="badge-mini-row">'+cells.join('')+
+      '<div class="badge-progress-txt"><div class="t">'+label+'</div><div class="b"><div style="width:'+Math.max(0,bestPct)+'%"></div></div></div>'+
+    '</div></div>';
+}
+
 /* ---------- RENDER HOME ---------- */
 function renderHome(){
   const xp=xpProgress();
   const kmW=kmThisWeek(), kmTarget=P.kmWeek||40;
   const sessW=runCountWeek()+muscuCountWeek(), sessTarget=(P.days&&P.days.length)||4;
   const form=formScore();
+  const vdot=getUserVDOT();
+  const tonnage=Math.round(totalTonnage());
   const ps=planSessionToday();
   const first=(P.name||'').split(' ')[0]||'';
 
@@ -2475,10 +2548,14 @@ function renderHome(){
     '<span>IKORUN</span></div>'+
     '<div class="ik-bell" onclick="toast(\'Aucune nouvelle notification\')">'+ICN('bell',18)+'<span class="dot"></span></div></div>';
 
-  // SALUTATION
-  html+='<div class="ik-greet"><h1>Bonjour '+(first||'toi')+' 👋</h1><p>Prêt à dépasser tes limites aujourd\u2019hui ?</p></div>';
+  // STREAK (série de jours consécutifs)
+  html+=homeStreakBadge();
 
-  // HERO FUSIONNÉ — charge hebdo (gros chiffre) + niveau/XP + forme + sparkline
+  // SALUTATION — quip dynamique sur l'objectif si défini
+  const quip=P.objTime?'On chasse le '+P.objTime+' ?':(P.goal?'On avance vers : '+P.goal+' ?':'Prêt à dépasser tes limites aujourd\u2019hui ?');
+  html+='<div class="ik-greet"><h1>Salut '+(first||'toi')+'.<br>'+quip+'</h1></div>';
+
+  // HERO FUSIONNÉ — charge hebdo (gros chiffre) + quip + niveau/XP + forme + sparkline
   { const xpv=xp; const ws=weekStart(); const dowLabels=['L','M','M','J','V','S','D'];
     const week=[]; for(let i=0;i<7;i++){ const d=new Date(ws); d.setDate(ws.getDate()+i); const k=dateKey(d);
       week.push([...SESS,...MSESS].filter(s=>s.date===k).reduce((a,s)=>a+(s.km||0),0)); }
@@ -2486,6 +2563,7 @@ function renderHome(){
     html+='<div class="card ik-hero stag" style="animation-delay:.02s" onclick="nav(\'stats\')">'+
       '<div class="ik-hero-lab">Charge hebdomadaire</div>'+
       '<div class="ik-hero-big"><div class="n">'+kmW.toFixed(2).replace('.',',')+'</div><div class="u">km</div></div>'+
+      '<div class="hero-quip">'+homeLoadQuip(kmW)+'</div>'+
       '<div class="ik-hero-mid">'+
         '<div class="ik-hero-ring-wrap">'+donutSVG([{v:xpv.pct,color:'var(--e)'},{v:100-xpv.pct,color:'rgba(255,255,255,.08)'}],52,6,'<div class="lvl-lab">NIV.</div><div class="lvl-n">'+XP.level+'</div>')+'</div>'+
         '<div class="ik-hero-mid-txt"><div class="v">Niveau '+XP.level+' — '+XP.total+' XP</div><div class="l">+'+Math.max(0,xpv.span-xpv.inLvl)+' XP avant niveau '+(XP.level+1)+'</div></div>'+
@@ -2499,6 +2577,14 @@ function renderHome(){
       '<div class="week-spark-days">'+dowLabels.map(l=>'<span>'+l+'</span>').join('')+'</div></div>'+
     '</div>';
   }
+
+  // STAT QUATRO — séances / VDOT / tonnage / forme
+  html+='<div class="stat-quatro">'+
+    '<div class="card stat-card" onclick="nav(\'stats\')"><div class="stat-ic">'+ICN('run',14)+'</div><div class="stat-v">'+sessW+'/'+sessTarget+'</div><div class="stat-l">Séances</div></div>'+
+    '<div class="card stat-card" onclick="nav(\'outils\');openTool(\'vdot\')"><div class="stat-ic">'+ICN('lung',14)+'</div><div class="stat-v">'+(vdot||'—')+'</div><div class="stat-l">VDOT</div></div>'+
+    '<div class="card stat-card" onclick="nav(\'sport\');sportTab=\'muscu\'"><div class="stat-ic">'+ICN('chart',14)+'</div><div class="stat-v">'+tonnage.toLocaleString('fr-FR')+'</div><div class="stat-l">Tonnage kg</div></div>'+
+    '<div class="card stat-card" onclick="nav(\'stats\')"><div class="stat-ic">'+ICN('heart',14)+'</div><div class="stat-v">'+form+'%</div><div class="stat-l">Forme</div></div>'+
+  '</div>';
 
   // CARTE PROCHAINE SÉANCE
   html+='<div class="next-lab">PROCHAINE SÉANCE</div>';
@@ -2514,6 +2600,19 @@ function renderHome(){
       '<div class="next-meta">Aucune séance planifiée aujourd\u2019hui</div></div>'+
       '<div class="next-ic">'+ICN('moon',20)+'</div></div>';
   }
+
+  // RECORDS PERSO
+  if(P.pb3k||P.pb5k||P.pb10k||P.t3k||P.t5k||P.t10k){
+    html+='<div class="sec-lab">Records perso <span class="link" onclick="openRecords()" style="cursor:pointer">Voir tout ›</span></div>';
+    html+=homePBRow();
+  }
+
+  // OBJECTIF + COUNTDOWN
+  html+=homeGoalCard();
+
+  // PROGRESSION (badges)
+  html+='<div class="sec-lab">Progression</div>';
+  html+=homeBadgesRow();
 
   // PLAN DU JOUR
   html+='<div class="plan-lab">PLAN DU JOUR</div>';
