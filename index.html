@@ -593,11 +593,13 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
    une ombre discrète. Le "glass" givré ne reste que sur les pills
    et la nav (voir CARBON GLASS plus bas).
    ============================================================ */
-.card,.sbox,.favtile,.bt,.ds-day,.qa-pill,.ov-card,.tb-gear,.gbtn.dark,.perfcard,.perfdel,.x{
+.sbox,.favtile,.bt,.ds-day,.qa-pill,.ov-card,.tb-gear,.gbtn.dark,.perfcard,.perfdel,.x{
   background:var(--s1);
   border:1px solid var(--hair);
   box-shadow:var(--sh-md);
 }
+/* .card est géré plus haut (glass everywhere, sauf #s-outils) — volontairement exclu d'ici */
+#s-outils .card{border:1px solid var(--hair);box-shadow:var(--sh-md);}
 .inp,select.inp,.pkfield,.setcell{
   background:var(--s2);
   border:1px solid var(--hair);
