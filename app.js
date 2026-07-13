@@ -3407,9 +3407,9 @@ function renderLive(){
   // Progression (mini graphe basé sur l'historique)
   h+=liveProgressChart(e.name);
   // Actions
-  h+='<div class="row" style="gap:8px;margin-top:8px"><button class="btn ghost sm" onclick="liveNav(-1)" '+(LIVE.idx===0?'disabled style="opacity:.4"':'')+'>◀</button>';
+  h+='<div class="row" style="gap:8px;margin-top:8px"><button class="btn ghost sm icon-only" onclick="liveNav(-1)" '+(LIVE.idx===0?'disabled style="opacity:.4"':'')+'>◀</button>';
   h+='<button class="btn ghost sm" onclick="skipExercise()">Passer</button>';
-  if(LIVE.idx<p.ex.length-1) h+='<button class="btn sm" onclick="liveNav(1)">Exercice suivant ▶</button>';
+  if(LIVE.idx<p.ex.length-1) h+='<button class="btn sm" style="flex:1.6 1 0" onclick="liveNav(1)">Suivant ▶</button>';
   else h+='<button class="btn sm" onclick="finishLive()" style="background:linear-gradient(135deg,var(--e),var(--e2))">🏁 Terminer</button>';
   h+='</div>';
   h+='<button class="btn" style="margin-top:8px;background:var(--ok)" onclick="finishLive()">✓ Terminer l\u2019exercice</button>';

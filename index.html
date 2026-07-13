@@ -552,6 +552,8 @@ body[data-scr="home"] .topbar{display:none;}
 .btn.ghost::before{display:none;}
 .btn.ghost:active{background:var(--s3);box-shadow:none;}
 .btn.sm{padding:10px;font-size:13px;border-radius:var(--r-xs);}
+.row .btn{width:auto;white-space:nowrap;flex:1 1 0;}
+.row .btn.icon-only{flex:0 0 44px;padding-left:8px;padding-right:8px;}
 .btn:disabled{opacity:.45;filter:grayscale(.3);}
 .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.35);transform:scale(0);animation:rip .6s var(--ease-out);pointer-events:none;}
 @keyframes rip{to{transform:scale(4);opacity:0;}}
@@ -587,6 +589,7 @@ body[data-scr="home"] .topbar{display:none;}
 .addperf{width:100%;background:transparent;border:1.5px dashed var(--hair);border-radius:14px;padding:13px;color:var(--e);font-family:'Unbounded';font-weight:700;font-size:14px;cursor:pointer;margin-top:4px;transition:border-color .15s;}
 .addperf:active{border-color:var(--e);background:var(--ed);}
 select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238993A6' stroke-width='2'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;}
+input.inp[type="date"],input.inp[type="time"]{min-width:0;max-width:100%;padding-right:8px;}
 
 /* ============================================================
    SURFACES SOBRES — cartes, champs, feuilles : plates, un bord fin,
