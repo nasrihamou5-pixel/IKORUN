@@ -1193,8 +1193,14 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
 .ex-swipe-action span{font-size:19px;line-height:1;}
 .ex-swipe-action.left{left:0;}
 .ex-swipe-action.right{right:0;}
+/* La carte doit être OPAQUE ici : le glassmorphism (fond semi-transparent + flou 26px) laissait le rouge
+   baver sur toute la carte au lieu de rester caché sur ses 88px. On repasse donc en fond plein, comme
+   le fait déjà #s-outils .card ailleurs dans l'app pour la même raison. */
 .ex-swipe-card{position:relative;z-index:1;touch-action:pan-y;margin-bottom:0 !important;
-  transition:transform .28s cubic-bezier(.2,.85,.3,1);will-change:transform;}
+  transition:transform .28s cubic-bezier(.2,.85,.3,1);will-change:transform;
+  background:var(--s1);background-image:var(--grad-card);
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+  border:1px solid var(--hair);box-shadow:var(--float-md);}
 .ex-swipe-card.dragging{transition:none;}
 </style>
 </head>
