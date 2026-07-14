@@ -68,6 +68,30 @@ html[data-mode="light"] #nav{background:rgba(255,255,255,.92);}
 html[data-mode="light"] .ov{background:rgba(120,130,150,.35);}
 html[data-mode="light"] .tb-gear{background:var(--s2);}
 html[data-mode="light"] .topbar{background:linear-gradient(180deg,rgba(var(--bg-rgb),.5) 0%,rgba(var(--bg-rgb),.26) 65%,rgba(var(--bg-rgb),0) 100%);}
+
+/* ===== MODE SIMPLIFIÉ — pour les utilisateurs peu à l'aise avec la technologie :
+   supprime le flou "liquid glass", grossit les textes/boutons, réduit les animations. ===== */
+html.easy-mode{
+  --glass-blur:0px; --glass-sat:1;
+  --glass-bg:var(--s1); --glass-bg-2:var(--s1);
+  --glass-border:var(--hair); --glass-border-soft:var(--hair);
+  --glass-shine:none; --glass-sheen:none;
+  --glass-shadow:none;
+  zoom:1.16;
+}
+html.easy-mode *{ -webkit-backdrop-filter:none!important; backdrop-filter:none!important; text-shadow:none!important; transition-duration:.15s!important; }
+html.easy-mode .stag{ opacity:1!important; animation:none!important; }
+html.easy-mode .icb svg,html.easy-mode .lr-icon svg,html.easy-mode .qa-pill svg,html.easy-mode .favtile svg,html.easy-mode .perfcard .pcl svg{ animation:none!important; }
+html.easy-mode .tip-tile::before,html.easy-mode .tip-glow,html.easy-mode .hero-glow,html.easy-mode .bd-ring,html.easy-mode .bd-spark,html.easy-mode .bd-unlock-badge::after{ animation:none!important; opacity:0!important; }
+html.easy-mode .card,html.easy-mode .grp-card,html.easy-mode .favtile,html.easy-mode .sbox,html.easy-mode .inp,html.easy-mode .pill,html.easy-mode .btn{
+  background:var(--s1)!important; box-shadow:none!important; border:2px solid var(--hair)!important;
+}
+html.easy-mode .btn{ font-weight:800; min-height:52px; }
+html.easy-mode .man,html.easy-mode .lr-title,html.easy-mode .card-t{ font-weight:800!important; }
+html.easy-mode #nav{ background:var(--s1)!important; border-top:2px solid var(--hair); }
+html.easy-mode .topbar{ background:var(--bg)!important; border-bottom:2px solid var(--hair); }
+html.easy-mode .ov{ background:rgba(0,0,0,.6)!important; }
+
 html{transition:background .25s ease;}
 .card,.btn,.pill,.inp,.favtile,.sbox{transition:background .25s ease,border-color .25s ease,color .25s ease;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}

@@ -1238,7 +1238,13 @@ function effectiveMode(){ return P.mode==='light' ? 'light' : 'dark'; }
 function applyTheme(){
   const mode=effectiveMode();
   document.documentElement.setAttribute('data-mode',mode);
-  const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.content=mode==='light'?'#F2F4F8':'#0A0D12';
+  document.documentElement.classList.toggle('easy-mode',!!P.easyMode);
+  const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.content=(P.easyMode?(mode==='light'?'#FFFFFF':'#000000'):(mode==='light'?'#F2F4F8':'#0A0D12'));
+}
+function toggleEasyMode(){
+  P.easyMode=!P.easyMode; saveAll(); applyTheme();
+  if($('#s-profil')&&$('#s-profil').classList.contains('on')) renderProfile();
+  toast(P.easyMode?'Mode simplifié activé ✓':'Mode simplifié désactivé');
 }
 function setMode(m){ P.mode=(m==='light')?'light':'dark'; saveAll(); applyTheme(); if($('#s-profil')&&$('#s-profil').classList.contains('on'))renderProfile(); refreshPfSheet(); }
 // suit le thème du téléphone en mode auto
@@ -4899,6 +4905,7 @@ function renderProfile(){
     '<div class="grp-row" onclick="openRecords()"><div class="lr-icon">🏅</div><div class="lr-title">Historique & records</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">📊</div><div class="lr-title">Statistiques</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">🎨</div><div class="lr-title">Thème</div>'+pfThemeSwitchHTML()+'</div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">🧓</div><div><div class="lr-title">Mode simplifié</div><div style="font-size:11px;color:var(--muted);margin-top:2px;max-width:200px">Textes plus grands, sans effets visuels — plus facile à lire</div></div><div class="toggle'+(P.easyMode?' on':'')+'" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
   '</div>';
   h+='<div class="grp-lab stag" style="animation-delay:.15s">Support</div>';
   h+='<div class="grp-card stag" style="animation-delay:.16s">'+
