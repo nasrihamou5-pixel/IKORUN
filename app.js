@@ -1113,6 +1113,7 @@ function maybeResumeLive(){
   if(mins>180){ DB.remove('live_active'); return; } // trop vieux
   if(confirm('Une séance « '+prog.name+' » était en cours ('+mins+' min). Reprendre ?')){
     LIVE={prog,idx:snap.idx,start:snap.start,state:snap.state,tonnage:snap.tonnage,setsDone:snap.setsDone};
+    liveOpenEx=snap.idx||0;
     renderLive(); openOv('ovLive'); liveTimer=setInterval(updateLiveTimer,500); startBgActivity('Séance : '+prog.name);
   } else { DB.remove('live_active'); }
 }
@@ -3357,7 +3358,7 @@ function toggleExDemo(){
 }
 
 /* ---------- LIVE MUSCU SESSION ---------- */
-let LIVE=null,liveTimer=null,restTimer=null;
+let LIVE=null,liveTimer=null,restTimer=null,liveOpenEx=0;
 function startLive(id,startIdx){
   const p=allProgs().find(x=>x.id===id); if(!p) return;
   if(_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; }
@@ -3367,6 +3368,7 @@ function startLive(id,startIdx){
   LIVE={prog:{...p,ex:p.ex.slice()},idx:startIdx||0,start:Date.now(),
     state:p.ex.map(e=>({weight:e.weight||20,reps:parseInt(e.reps)||10,sets:Array.from({length:e.sets},()=>false),log:[]})),
     tonnage:0,setsDone:0};
+  liveOpenEx=startIdx||0;
   renderLive(); openOv('ovLive');
   liveTimer=setInterval(updateLiveTimer,500);
   sfx('start'); startBgActivity('Séance : '+p.name);
@@ -3406,21 +3408,23 @@ function renderLive(){
     '<div style="flex:1;border-right:1px solid var(--hair)"><div class="lab" style="margin:0 0 4px">Volume</div><div style="font-weight:800;font-size:16px">'+Math.round(LIVE.tonnage)+' kg</div></div>'+
     '<div style="flex:1"><div class="lab" style="margin:0 0 4px">Séries</div><div style="font-weight:800;font-size:16px">'+LIVE.setsDone+'/'+totalSets+'</div></div>'+
     '</div></div>';
-  // Une carte complète par exercice, tout est visible et modifiable d'un coup — plus besoin de naviguer un par un
+  // Une carte par exercice, repliée sur le nom par défaut — on tape dessus pour dérouler les séries.
+  // Un seul exercice ouvert à la fois (accordéon), et tout est animé en douceur (transition CSS).
   p.ex.forEach((e,i)=>{
     const st=LIVE.state[i];
     const allDone=st.sets.length&&st.sets.every(x=>x);
+    const open=liveOpenEx===i;
     h+='<div class="card" style="padding:14px;margin-bottom:12px'+(allDone?';border-color:rgba(51,211,153,.35)':'')+'">';
-    // Entête exercice : vignette, nom, "..." (options)
-    h+='<div class="row" style="align-items:flex-start;margin-bottom:10px">'+exThumb(e.name,48)+
+    // Entête exercice (tapable) : vignette, nom, chevron, "..." (options)
+    h+='<div class="row" style="align-items:flex-start;cursor:pointer" onclick="toggleLiveEx('+i+')">'+exThumb(e.name,48)+
       '<div style="flex:1;min-width:0;margin-left:10px"><div style="font-weight:700;font-size:15.5px;line-height:1.25">'+e.name+'</div>'+
       '<div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+(allDone?'✓ Terminé':st.sets.filter(Boolean).length+'/'+st.sets.length+' séries faites')+'</div></div>'+
-      '<span onclick="openLiveExOptions('+i+')" style="color:var(--muted);font-size:20px;padding:4px 8px;cursor:pointer;letter-spacing:1px">⋯</span></div>';
-    // Notes
+      '<span id="exChev'+i+'" style="color:var(--muted);font-size:14px;padding:6px 4px;transition:transform .25s ease;transform:rotate('+(open?'180':'0')+'deg)">⌄</span>'+
+      '<span onclick="event.stopPropagation();openLiveExOptions('+i+')" style="color:var(--muted);font-size:20px;padding:4px 4px 4px 8px;cursor:pointer;letter-spacing:1px">⋯</span></div>';
+    // Contenu repliable : notes, repos, tableau des séries
+    h+='<div id="exBody'+i+'" style="max-height:'+(open?'1400px':'0')+'px;opacity:'+(open?'1':'0')+';overflow:hidden;transition:max-height .32s ease,opacity .22s ease,margin-top .32s ease;margin-top:'+(open?'12':'0')+'px">';
     h+='<textarea class="inp" rows="1" style="margin-bottom:10px;font-size:13px" placeholder="Notes..." oninput="LIVE.state['+i+'].note=this.value">'+(st.note||'')+'</textarea>';
-    // Repos
     h+='<div class="row" style="margin-bottom:10px;font-size:12.5px"><span style="color:var(--e);cursor:pointer" onclick="changeRest('+i+')">⏱ Minuteur de repos : '+(e.rest?e.rest+'s':'Désactivé')+'</span></div>';
-    // Tableau séries
     h+='<div style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:8px;text-align:center">'+
       '<div>Set</div><div>Précédent</div><div>Kg</div><div>Reps</div><div>✓</div></div>';
     st.log.forEach((s,j)=>{
@@ -3432,11 +3436,28 @@ function renderLive(){
         '<div onclick="toggleSet('+i+','+j+')" style="width:32px;height:32px;border-radius:50%;margin:0 auto;cursor:pointer;display:flex;align-items:center;justify-content:center;background:'+(s.done?'var(--e)':'var(--s2)')+';border:1px solid '+(s.done?'var(--e)':'var(--hair)')+';color:#fff;font-size:14px">'+(s.done?'✓':'')+'</div></div>';
     });
     h+='<button class="btn ghost sm" style="margin-top:4px" onclick="addLiveSet('+i+')">＋ Ajouter une série</button>';
+    h+='</div>'; // fin exBody
     h+='</div>';
   });
   h+='<button class="btn ghost" style="margin:6px 0 10px" onclick="liveAddExercise()">＋ Ajouter un exercice</button>';
   h+='<button class="btn ghost sm" style="margin-bottom:8px;color:var(--bad)" onclick="confirmCloseLive()">🗑 Annuler la séance</button>';
   $('#liveBody').innerHTML=h;
+}
+function toggleLiveEx(i){
+  const prev=liveOpenEx;
+  const willOpen=prev!==i;
+  liveOpenEx=willOpen?i:-1;
+  // Toggle direct des styles (pas de renderLive() ici) pour que la transition CSS s'anime réellement.
+  if(prev>=0 && prev!==i){
+    const pb=$('#exBody'+prev); if(pb){ pb.style.maxHeight='0px'; pb.style.opacity='0'; pb.style.marginTop='0px'; }
+    const pc=$('#exChev'+prev); if(pc) pc.style.transform='rotate(0deg)';
+  }
+  const b=$('#exBody'+i);
+  if(b){
+    if(willOpen){ b.style.maxHeight='1400px'; b.style.opacity='1'; b.style.marginTop='12px'; }
+    else { b.style.maxHeight='0px'; b.style.opacity='0'; b.style.marginTop='0px'; }
+  }
+  const c=$('#exChev'+i); if(c) c.style.transform=willOpen?'rotate(180deg)':'rotate(0deg)';
 }
 function setLog(i,j,k,v){ const st=LIVE.state[i]; st.log[j][k]=+v||0; if(k==='kg')st.weight=+v||st.weight; persistLive(); }
 function changeRest(i){ const e=LIVE.prog.ex[i]; pickInt('Repos (secondes)',15,300,e.rest||90,'s',v=>{ e.rest=v; renderLive(); },15); }
@@ -3476,6 +3497,7 @@ function doDeleteLiveEx(i){
   const o=$('#delExOv'); if(o) o.remove();
   LIVE.prog.ex.splice(i,1); LIVE.state.splice(i,1);
   if(LIVE.idx>=LIVE.prog.ex.length) LIVE.idx=Math.max(0,LIVE.prog.ex.length-1);
+  if(liveOpenEx===i) liveOpenEx=-1; else if(liveOpenEx>i) liveOpenEx--;
   persistLive(); renderLive();
   toast('Exercice retiré ✓');
 }
@@ -3489,6 +3511,7 @@ function openLiveCfgAdd(e){
   openCfg(e,(cfg)=>{
     LIVE.prog.ex.push(cfg);
     LIVE.state.push({weight:cfg.weight||20,reps:parseInt(cfg.reps)||10,sets:Array.from({length:cfg.sets},()=>false),log:[]});
+    liveOpenEx=LIVE.prog.ex.length-1;
     persistLive(); toast('Exercice ajouté ✓'); renderLive();
   });
 }
@@ -3505,6 +3528,7 @@ function resumeLive(){
   LIVE=saved; // on garde saved.prog tel quel (avec les exos ajoutés/retirés pendant la séance),
   // on ne va PAS le remplacer par la routine d'origine sinon ces changements seraient perdus.
   LIVE.start=Date.now()-(saved.savedElapsed||0);
+  liveOpenEx=saved.idx||0;
   DB.remove('live_paused');
   renderLive(); openOv('ovLive'); liveTimer=setInterval(updateLiveTimer,500);
 }
