@@ -3294,7 +3294,7 @@ function openProg(id){
       '<span style="color:var(--dim);font-size:18px;align-self:center">›</span></div></div>';
   });
   h+='<button class="btn ghost" style="margin:4px 0 12px" onclick="openLibFor(addExToProg.bind(null,\''+p.id+'\'))">＋ Ajouter un exercice</button>';
-  h+='<button class="btn" style="position:sticky;bottom:8px" onclick="startLive(\''+p.id+'\')">▶ Commencer l\u2019entraînement</button>';
+  h+='<button class="btn" style="position:sticky;bottom:8px;background:#fff;color:#111;border-radius:26px" onclick="startLive(\''+p.id+'\')">Commencer l\u2019entraînement</button>';
   $('#progBody').innerHTML=h;
   openOv('ovProg');
 }
@@ -3385,139 +3385,99 @@ function persistLive(){
   DB.save('live_active',snap);
 }
 function renderLive(){
-  const p=LIVE.prog, e=p.ex[LIVE.idx], st=LIVE.state[LIVE.idx];
-  if(!st.log||st.log.length!==st.sets.length){ st.log=st.sets.map((d,i)=>(st.log&&st.log[i])||{kg:e.weight||st.weight||20,reps:parseInt(e.reps)||st.reps||10,rpe:8,done:!!d}); }
-  $('#liveTitle').textContent=e.name;
-  const totalSets=p.ex.reduce((a,x)=>a+x.sets,0);
-  const prog=LIVE.setsDone/totalSets*100;
-  const g=exGif(e.name);
-  // Header : temps + progression + pastilles
-  let h='<div class="row" style="margin-bottom:10px"><span class="mono" id="liveTime" style="font-size:17px;font-weight:700;color:var(--e)">0:00</span><div style="display:flex;gap:6px"><button class="btn ghost sm" style="width:auto;padding:6px 10px" onclick="pauseLive()">⏸ Plus tard</button><span class="lab" style="align-self:center;cursor:pointer;padding:6px 11px;border-radius:20px;background:var(--s2);border:1px solid var(--hair);display:flex;align-items:center;gap:5px" onclick="openLiveExList()">'+(LIVE.idx+1)+'/'+p.ex.length+'<span style="color:var(--e);font-size:13px">☰</span></span></div></div>';
-  h+='<div class="pbar" style="margin-bottom:12px"><div style="width:'+prog+'%"></div></div>';
-  h+='<div style="display:flex;gap:5px;overflow-x:auto;margin-bottom:14px;padding-bottom:4px">';
-  p.ex.forEach((ex2,i)=>{ const allDone=LIVE.state[i].sets.every(x=>x); const cur=i===LIVE.idx;
-    h+='<div onclick="jumpLive('+i+')" style="flex-shrink:0;width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer;border:1px solid '+(cur?'var(--e)':'var(--hair)')+';background:'+(cur?'var(--ed)':allDone?'rgba(51,211,153,.18)':'var(--s2)')+';color:'+(allDone?'var(--ok)':cur?'var(--e)':'var(--muted)')+'">'+(allDone&&!cur?'✓':(i+1))+'</div>'; });
-  h+='</div>';
-  // Média
-  if(g){ h+='<div style="position:relative;background:#0c0f15;border:1px solid var(--hair);border-radius:14px;overflow:hidden;margin-bottom:12px"><img id="exDemo" src="'+g[0]+'" style="width:100%;display:block;aspect-ratio:16/10;object-fit:cover"><div onclick="toggleExDemoLive()" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><div id="exPlayBtn" style="width:50px;height:50px;border-radius:50%;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;backdrop-filter:blur(4px)">▶</div></div></div>'; }
-  // Repos
-  h+='<div class="card" style="padding:12px;margin-bottom:10px"><div class="row"><div class="row" style="gap:10px"><span style="font-size:16px">⏱</span><div><div style="font-size:11px;color:var(--muted)">Repos entre séries</div><div style="font-weight:700">'+(e.rest||90)+'s</div></div></div><span style="color:var(--e);font-size:12px;cursor:pointer" onclick="changeRest()">Modifier</span></div></div>';
-  // Tableau Séries effectuées
-  h+='<div class="card" style="padding:14px"><div class="card-t" style="margin-bottom:10px">Séries effectuées</div>';
-  h+='<div style="display:grid;grid-template-columns:38px 1fr 1fr 1fr 44px;gap:6px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:8px;text-align:center"><div>Série</div><div>KG</div><div>RÉPS</div><div>RPE</div><div>✓</div></div>';
-  st.log.forEach((s,i)=>{
-    h+='<div style="display:grid;grid-template-columns:38px 1fr 1fr 1fr 44px;gap:6px;align-items:center;margin-bottom:7px">'+
-      '<div style="text-align:center;font-weight:700;color:var(--muted)">'+(i+1)+'</div>'+
-      '<input class="setcell" type="number" inputmode="decimal" value="'+s.kg+'" onchange="setLog('+i+',\'kg\',this.value)">'+
-      '<input class="setcell" type="number" inputmode="numeric" value="'+s.reps+'" onchange="setLog('+i+',\'reps\',this.value)">'+
-      '<input class="setcell" type="number" inputmode="numeric" value="'+s.rpe+'" onchange="setLog('+i+',\'rpe\',this.value)">'+
-      '<div onclick="toggleSet('+i+')" style="width:34px;height:34px;border-radius:50%;margin:0 auto;cursor:pointer;display:flex;align-items:center;justify-content:center;background:'+(s.done?'var(--e)':'var(--s2)')+';border:1px solid '+(s.done?'var(--e)':'var(--hair)')+';color:#fff;font-size:15px">'+(s.done?'✓':'')+'</div></div>';
-  });
-  h+='<button class="btn ghost sm" style="margin-top:6px" onclick="addLiveSet()">＋ Ajouter une série</button></div>';
-  // Notes
-  h+='<div class="card" style="padding:14px"><div class="row" style="margin-bottom:6px"><span class="lab" style="margin:0">Notes (optionnel)</span><span style="color:var(--e)">✎</span></div><textarea class="inp" rows="2" placeholder="Comment s\u2019est passée cette série ?" oninput="LIVE.state['+LIVE.idx+'].note=this.value">'+(st.note||'')+'</textarea></div>';
-  // Progression (mini graphe basé sur l'historique)
-  h+=liveProgressChart(e.name);
-  // Actions
-  h+='<div class="row" style="gap:8px;margin-top:8px"><button class="btn ghost sm icon-only" onclick="liveNav(-1)" '+(LIVE.idx===0?'disabled style="opacity:.4"':'')+'>◀</button>';
-  h+='<button class="btn ghost sm" onclick="skipExercise()">Passer</button>';
-  if(LIVE.idx<p.ex.length-1) h+='<button class="btn sm" style="flex:1.6 1 0" onclick="liveNav(1)">Suivant ▶</button>';
-  else h+='<button class="btn sm" onclick="finishLive()" style="background:linear-gradient(135deg,var(--e),var(--e2))">🏁 Terminer</button>';
-  h+='</div>';
-  h+='<button class="btn" style="margin-top:8px;background:var(--ok)" onclick="finishLive()">✓ Terminer l\u2019exercice</button>';
-  h+='<button class="btn ghost sm" style="margin-top:8px;color:var(--bad)" onclick="confirmCloseLive()">🗑 Annuler la séance</button>';
-  $('#liveBody').innerHTML=h;
-}
-function liveProgressChart(name){
-  // historique des volumes pour cet exercice
-  const hist=(PREFS.exHist&&PREFS.exHist[name])||[];
-  if(hist.length<2) return '<div class="card" style="padding:14px"><div class="card-t">Progression</div><div style="font-size:12px;color:var(--dim)">L\u2019historique de progression apparaîtra après quelques séances.</div></div>';
-  const data=hist.slice(-8).map(x=>x.vol); const min=Math.min(...data),max=Math.max(...data),rng=(max-min)||1;
-  const W=300,H=80; const pts=data.map((v,i)=>(i/(data.length-1)*W).toFixed(0)+','+(H-(v-min)/rng*H).toFixed(0));
-  const best=Math.max(...hist.map(x=>x.vol)), avg=Math.round(hist.reduce((a,x)=>a+x.vol,0)/hist.length);
-  const prog=hist.length>=2?Math.round((data[data.length-1]-data[0])/(data[0]||1)*100):0;
-  let h='<div class="card" style="padding:14px"><div class="card-t">📈 Progression</div>';
-  h+='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:80px"><polyline points="'+pts.join(' ')+'" fill="none" stroke="var(--e)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  h+='<div style="display:flex;text-align:center;margin-top:8px"><div style="flex:1"><div class="lab" style="margin:0">Meilleur</div><div class="man" style="font-weight:700;font-size:14px">'+best+' kg</div></div><div style="flex:1"><div class="lab" style="margin:0">Moyen</div><div class="man" style="font-weight:700;font-size:14px">'+avg+' kg</div></div><div style="flex:1"><div class="lab" style="margin:0">Évolution</div><div class="man" style="font-weight:700;font-size:14px;color:'+(prog>=0?'var(--ok)':'var(--bad)')+'">'+(prog>=0?'+':'')+prog+'%</div></div></div></div>';
-  return h;
-}
-function toggleExDemoLive(){
-  const e=LIVE.prog.ex[LIVE.idx]; const g=exGif(e.name); if(!g)return;
-  const btn=$('#exPlayBtn');
-  if(_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; if(btn)btn.textContent='▶'; return; }
-  g.forEach(s=>{const im=new Image();im.src=s;}); let i=0; if(btn)btn.textContent='⏸';
-  _exDemo2=setInterval(()=>{ const im=$('#exDemo'); if(!im){clearInterval(_exDemo2);_exDemo2=null;return;} i=1-i; im.src=g[i]; },650);
-}
-function setLog(i,k,v){ const st=LIVE.state[LIVE.idx]; st.log[i][k]=+v||0; if(k==='kg')st.weight=+v||st.weight; persistLive(); }
-function changeRest(){ const e=LIVE.prog.ex[LIVE.idx]; pickInt('Repos (secondes)',15,300,e.rest||90,'s',v=>{ e.rest=v; renderLive(); },15); }
-function addLiveSet(){ const st=LIVE.state[LIVE.idx]; const last=st.log[st.log.length-1]||{kg:20,reps:10,rpe:8}; st.sets.push(false); st.log.push({kg:last.kg,reps:last.reps,rpe:last.rpe,done:false}); renderLive(); }
-function jumpLive(i){ LIVE.idx=i; renderLive(); }
-function skipExercise(){ if(LIVE.idx<LIVE.prog.ex.length-1){ LIVE.idx++; renderLive(); toast('Exercice passé'); } else toast('Dernier exercice'); }
-
-/* ---------- LIVE : liste des exercices de la séance (voir / ajouter / retirer) ---------- */
-let liveExListMode=false, liveExListSel=new Set();
-function openLiveExList(){
-  if(!LIVE) return;
-  liveExListMode=false; liveExListSel=new Set();
-  const old=$('#liveExListOv'); if(old) old.remove();
-  const ov=document.createElement('div'); ov.className='ov on'; ov.id='liveExListOv'; ov.style.zIndex='13600';
-  ov.innerHTML='<div class="ov-card" style="max-height:88vh">'+
-    '<div class="ov-head"><h2>Exercices de la séance</h2><div class="x" onclick="closeLiveExList()">✕</div></div>'+
-    '<div id="liveExListBody"></div></div>';
-  document.body.appendChild(ov);
-  renderLiveExListBody();
-}
-function closeLiveExList(){ const o=$('#liveExListOv'); if(o) o.remove(); }
-function renderLiveExListBody(){
-  if(!LIVE || !$('#liveExListBody')) return;
   const p=LIVE.prog;
-  let h='<div class="row" style="margin-bottom:12px"><span style="font-size:12px;color:var(--muted)">'+p.ex.length+' exercice'+(p.ex.length>1?'s':'')+'</span><span style="color:var(--e);font-size:13px;font-weight:700;cursor:pointer" onclick="liveExListToggleMode()">'+(liveExListMode?'Annuler':'Sélectionner')+'</span></div>';
   p.ex.forEach((e,i)=>{
     const st=LIVE.state[i];
-    const allDone = st && st.sets.length && st.sets.every(x=>x);
-    const cur=i===LIVE.idx;
-    const sel=liveExListSel.has(i);
-    h+='<div class="card" style="padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;cursor:pointer;'+(cur?'border-color:var(--e)':'')+'" onclick="'+(liveExListMode?('liveExListToggleItem('+i+')'):('liveExListJump('+i+')'))+'">';
-    if(liveExListMode){
-      h+='<div style="width:22px;height:22px;border-radius:7px;flex-shrink:0;border:1px solid '+(sel?'var(--e)':'var(--hair)')+';background:'+(sel?'var(--e)':'transparent')+';display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px">'+(sel?'✓':'')+'</div>';
-    } else {
-      h+='<div style="width:26px;height:26px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:'+(cur?'var(--ed)':allDone?'rgba(51,211,153,.18)':'var(--s2)')+';color:'+(allDone?'var(--ok)':cur?'var(--e)':'var(--muted)')+'">'+(allDone&&!cur?'✓':(i+1))+'</div>';
-    }
-    h+='<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14px">'+e.name+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+e.sets+' séries · '+e.reps+' reps</div></div>';
-    if(!liveExListMode) h+='<span onclick="event.stopPropagation();liveExListDeleteOne('+i+')" style="color:var(--bad);font-size:16px;padding:4px;flex-shrink:0">🗑</span>';
+    if(!st.log||st.log.length!==st.sets.length){ st.log=st.sets.map((d,j)=>(st.log&&st.log[j])||{kg:e.weight||st.weight||20,reps:parseInt(e.reps)||st.reps||10,rpe:8,done:!!d}); }
+  });
+  $('#liveTitle').textContent=p.name;
+  const totalSets=p.ex.reduce((a,x)=>a+x.sets,0);
+  const dur=fmtTime((Date.now()-LIVE.start)/1000);
+  // Barre du haut façon Hevy : chevron (mettre de côté) / minuteur rapide / Terminer
+  let h='<div class="row" style="margin-bottom:12px">'+
+    '<span onclick="pauseLive()" style="font-size:20px;color:var(--muted);cursor:pointer;padding:4px 8px">⌄</span>'+
+    '<div style="flex:1"></div>'+
+    '<span onclick="openRest(90)" style="font-size:17px;color:var(--muted);cursor:pointer;padding:4px 8px">⏱</span>'+
+    '<button class="btn sm" style="width:auto;padding:8px 18px;background:linear-gradient(135deg,var(--e),var(--e2))" onclick="finishLive()">Terminer</button>'+
+    '</div>';
+  // Stats : Durée / Volume / Séries
+  h+='<div class="card" style="padding:14px 6px;margin-bottom:16px"><div style="display:flex;text-align:center">'+
+    '<div style="flex:1;border-right:1px solid var(--hair)"><div class="lab" style="margin:0 0 4px">Durée</div><div class="mono" id="liveTime" style="font-weight:800;font-size:16px;color:var(--e)">'+dur+'</div></div>'+
+    '<div style="flex:1;border-right:1px solid var(--hair)"><div class="lab" style="margin:0 0 4px">Volume</div><div style="font-weight:800;font-size:16px">'+Math.round(LIVE.tonnage)+' kg</div></div>'+
+    '<div style="flex:1"><div class="lab" style="margin:0 0 4px">Séries</div><div style="font-weight:800;font-size:16px">'+LIVE.setsDone+'/'+totalSets+'</div></div>'+
+    '</div></div>';
+  // Une carte complète par exercice, tout est visible et modifiable d'un coup — plus besoin de naviguer un par un
+  p.ex.forEach((e,i)=>{
+    const st=LIVE.state[i];
+    const allDone=st.sets.length&&st.sets.every(x=>x);
+    h+='<div class="card" style="padding:14px;margin-bottom:12px'+(allDone?';border-color:rgba(51,211,153,.35)':'')+'">';
+    // Entête exercice : vignette, nom, "..." (options)
+    h+='<div class="row" style="align-items:flex-start;margin-bottom:10px">'+exThumb(e.name,48)+
+      '<div style="flex:1;min-width:0;margin-left:10px"><div style="font-weight:700;font-size:15.5px;line-height:1.25">'+e.name+'</div>'+
+      '<div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+(allDone?'✓ Terminé':st.sets.filter(Boolean).length+'/'+st.sets.length+' séries faites')+'</div></div>'+
+      '<span onclick="openLiveExOptions('+i+')" style="color:var(--muted);font-size:20px;padding:4px 8px;cursor:pointer;letter-spacing:1px">⋯</span></div>';
+    // Notes
+    h+='<textarea class="inp" rows="1" style="margin-bottom:10px;font-size:13px" placeholder="Notes..." oninput="LIVE.state['+i+'].note=this.value">'+(st.note||'')+'</textarea>';
+    // Repos
+    h+='<div class="row" style="margin-bottom:10px;font-size:12.5px"><span style="color:var(--e);cursor:pointer" onclick="changeRest('+i+')">⏱ Minuteur de repos : '+(e.rest?e.rest+'s':'Désactivé')+'</span></div>';
+    // Tableau séries
+    h+='<div style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:8px;text-align:center">'+
+      '<div>Set</div><div>Précédent</div><div>Kg</div><div>Reps</div><div>✓</div></div>';
+    st.log.forEach((s,j)=>{
+      h+='<div style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;align-items:center;margin-bottom:7px">'+
+        '<div style="text-align:center;font-weight:700;color:var(--muted)">'+(j+1)+'</div>'+
+        '<div style="text-align:center;font-size:11px;color:var(--dim)">'+(e.weight||20)+'kg×'+(parseInt(e.reps)||10)+'</div>'+
+        '<input class="setcell" type="number" inputmode="decimal" value="'+s.kg+'" onchange="setLog('+i+','+j+',\'kg\',this.value)">'+
+        '<input class="setcell" type="number" inputmode="numeric" value="'+s.reps+'" onchange="setLog('+i+','+j+',\'reps\',this.value)">'+
+        '<div onclick="toggleSet('+i+','+j+')" style="width:32px;height:32px;border-radius:50%;margin:0 auto;cursor:pointer;display:flex;align-items:center;justify-content:center;background:'+(s.done?'var(--e)':'var(--s2)')+';border:1px solid '+(s.done?'var(--e)':'var(--hair)')+';color:#fff;font-size:14px">'+(s.done?'✓':'')+'</div></div>';
+    });
+    h+='<button class="btn ghost sm" style="margin-top:4px" onclick="addLiveSet('+i+')">＋ Ajouter une série</button>';
     h+='</div>';
   });
-  h+='<button class="btn ghost sm" style="margin:6px 0 10px" onclick="liveAddExercise()">＋ Ajouter un exercice</button>';
-  if(liveExListMode) h+='<button class="btn" style="background:var(--bad)'+(liveExListSel.size?'':';opacity:.4;pointer-events:none')+'" onclick="liveExListDeleteSelected()">🗑 Retirer ('+liveExListSel.size+')</button>';
-  $('#liveExListBody').innerHTML=h;
+  h+='<button class="btn ghost" style="margin:6px 0 10px" onclick="liveAddExercise()">＋ Ajouter un exercice</button>';
+  h+='<button class="btn ghost sm" style="margin-bottom:8px;color:var(--bad)" onclick="confirmCloseLive()">🗑 Annuler la séance</button>';
+  $('#liveBody').innerHTML=h;
 }
-function liveExListToggleMode(){ liveExListMode=!liveExListMode; liveExListSel=new Set(); renderLiveExListBody(); }
-function liveExListToggleItem(i){ if(liveExListSel.has(i)) liveExListSel.delete(i); else liveExListSel.add(i); renderLiveExListBody(); }
-function liveExListJump(i){ jumpLive(i); closeLiveExList(); }
-function liveExListDeleteOne(i){ confirmDeleteLiveEx([i]); }
-function liveExListDeleteSelected(){ if(!liveExListSel.size) return; confirmDeleteLiveEx([...liveExListSel]); }
-function confirmDeleteLiveEx(indices){
-  if(LIVE.prog.ex.length-indices.length<1){ toast('Il doit rester au moins un exercice'); return; }
-  const names=indices.map(i=>LIVE.prog.ex[i].name);
+function setLog(i,j,k,v){ const st=LIVE.state[i]; st.log[j][k]=+v||0; if(k==='kg')st.weight=+v||st.weight; persistLive(); }
+function changeRest(i){ const e=LIVE.prog.ex[i]; pickInt('Repos (secondes)',15,300,e.rest||90,'s',v=>{ e.rest=v; renderLive(); },15); }
+function addLiveSet(i){ const st=LIVE.state[i]; const last=st.log[st.log.length-1]||{kg:20,reps:10,rpe:8}; st.sets.push(false); st.log.push({kg:last.kg,reps:last.reps,rpe:last.rpe,done:false}); persistLive(); renderLive(); }
+
+/* ---------- LIVE : options par exercice ("⋯") — voir la démo, modifier le repos, retirer ---------- */
+function openLiveExOptions(i){
+  const e=LIVE.prog.ex[i];
+  const old=$('#liveExOptOv'); if(old) old.remove();
+  const ov=document.createElement('div'); ov.className='ov on'; ov.id='liveExOptOv'; ov.style.zIndex='13600';
+  const g=exGif(e.name);
+  let h='<div class="ov-card" style="text-align:center">';
+  h+='<div class="card-t" style="justify-content:center;margin-bottom:14px">'+e.name+'</div>';
+  if(g) h+='<img src="'+g[0]+'" style="width:100%;border-radius:14px;margin-bottom:14px;aspect-ratio:16/10;object-fit:cover">';
+  h+='<button class="btn ghost" style="margin-bottom:8px" onclick="document.getElementById(\'liveExOptOv\').remove();changeRest('+i+')">⏱ Modifier le repos</button>';
+  h+='<button class="btn ghost" style="margin-bottom:8px;color:var(--bad)" onclick="document.getElementById(\'liveExOptOv\').remove();confirmDeleteLiveEx('+i+')">🗑 Retirer cet exercice</button>';
+  h+='<button class="btn ghost" onclick="document.getElementById(\'liveExOptOv\').remove()">Annuler</button>';
+  h+='</div>';
+  ov.innerHTML=h;
+  document.body.appendChild(ov);
+}
+function confirmDeleteLiveEx(i){
+  if(LIVE.prog.ex.length<=1){ toast('Il doit rester au moins un exercice'); return; }
+  const name=LIVE.prog.ex[i].name;
   const old=$('#delExOv'); if(old) old.remove();
   const ov=document.createElement('div'); ov.className='ov on'; ov.id='delExOv'; ov.style.zIndex='13650';
   ov.innerHTML='<div class="ov-card" style="text-align:center">'+
-    '<div class="card-t" style="justify-content:center;margin-bottom:10px">⚠️ Retirer '+(names.length>1?'ces exercices':'cet exercice')+' ?</div>'+
-    '<div style="font-size:13px;color:var(--muted);margin-bottom:18px">'+names.join(', ')+'</div>'+
+    '<div class="card-t" style="justify-content:center;margin-bottom:10px">⚠️ Retirer cet exercice ?</div>'+
+    '<div style="font-size:13px;color:var(--muted);margin-bottom:18px">'+name+'</div>'+
     '<div class="row" style="gap:10px">'+
       '<button class="btn ghost" style="flex:1" onclick="document.getElementById(\'delExOv\').remove()">Annuler</button>'+
-      '<button class="btn" style="flex:1;background:var(--bad)" onclick="doDeleteLiveEx('+JSON.stringify(indices)+')">Retirer</button>'+
+      '<button class="btn" style="flex:1;background:var(--bad)" onclick="doDeleteLiveEx('+i+')">Retirer</button>'+
     '</div></div>';
   document.body.appendChild(ov);
 }
-function doDeleteLiveEx(indices){
+function doDeleteLiveEx(i){
   const o=$('#delExOv'); if(o) o.remove();
-  const sorted=[...indices].sort((a,b)=>b-a);
-  sorted.forEach(i=>{ LIVE.prog.ex.splice(i,1); LIVE.state.splice(i,1); });
-  if(LIVE.idx>=LIVE.prog.ex.length) LIVE.idx=LIVE.prog.ex.length-1;
-  liveExListMode=false; liveExListSel=new Set();
-  persistLive(); renderLive(); renderLiveExListBody();
-  toast('Exercice(s) retiré(s) ✓');
+  LIVE.prog.ex.splice(i,1); LIVE.state.splice(i,1);
+  if(LIVE.idx>=LIVE.prog.ex.length) LIVE.idx=Math.max(0,LIVE.prog.ex.length-1);
+  persistLive(); renderLive();
+  toast('Exercice retiré ✓');
 }
 function liveAddExercise(){
   libCallback=(e)=>{ closeOv('ovLib'); openLiveCfgAdd(e); };
@@ -3529,9 +3489,10 @@ function openLiveCfgAdd(e){
   openCfg(e,(cfg)=>{
     LIVE.prog.ex.push(cfg);
     LIVE.state.push({weight:cfg.weight||20,reps:parseInt(cfg.reps)||10,sets:Array.from({length:cfg.sets},()=>false),log:[]});
-    persistLive(); toast('Exercice ajouté ✓'); renderLive(); renderLiveExListBody();
+    persistLive(); toast('Exercice ajouté ✓'); renderLive();
   });
 }
+
 function pauseLive(){
   clearInterval(liveTimer);
   LIVE.savedElapsed=Date.now()-LIVE.start;
@@ -3547,22 +3508,15 @@ function resumeLive(){
   DB.remove('live_paused');
   renderLive(); openOv('ovLive'); liveTimer=setInterval(updateLiveTimer,500);
 }
-function liveAdj(k,v){ const st=LIVE.state[LIVE.idx]; st[k]=Math.max(0,st[k]+v); $(k==='weight'?'#lvW':'#lvR').textContent=st[k]; }
-function toggleSet(i){
-  const st=LIVE.state[LIVE.idx];
+function toggleSet(exIdx,setIdx){
+  const st=LIVE.state[exIdx];
   if(!st.log) st.log=st.sets.map(()=>({kg:st.weight,reps:st.reps,rpe:8}));
-  const s=st.log[i]||{kg:st.weight,reps:st.reps};
-  st.sets[i]=!st.sets[i]; st.log[i].done=st.sets[i];
+  const s=st.log[setIdx]||{kg:st.weight,reps:st.reps};
+  st.sets[setIdx]=!st.sets[setIdx]; st.log[setIdx].done=st.sets[setIdx];
   const vol=(s.kg||0)*(s.reps||0);
-  if(st.sets[i]){ LIVE.setsDone++; LIVE.tonnage+=vol; openRest(st.log[i].rest||LIVE.prog.ex[LIVE.idx].rest||90); sfx('tick'); toast('+5 XP'); }
+  if(st.sets[setIdx]){ LIVE.setsDone++; LIVE.tonnage+=vol; openRest(st.log[setIdx].rest||LIVE.prog.ex[exIdx].rest||90); sfx('tick'); toast('+5 XP'); }
   else { LIVE.setsDone--; LIVE.tonnage-=vol; }
   persistLive(); renderLive();
-}
-function validSet(){
-  const st=LIVE.state[LIVE.idx];
-  const idx=st.sets.findIndex(x=>!x);
-  if(idx<0){ toast('Toutes les séries faites !'); return; }
-  toggleSet(idx);
 }
 function openRest(secs){
   let t=secs||90; const total=t; const endAt=Date.now()+t*1000;
@@ -3598,7 +3552,8 @@ function confirmCloseLive(){
 }
 function doCancelLive(){
   const ov=$('#cancelLiveOv'); if(ov) ov.remove();
-  closeLiveExList(); const de=$('#delExOv'); if(de) de.remove();
+  const eo=$('#liveExOptOv'); if(eo) eo.remove();
+  const de=$('#delExOv'); if(de) de.remove();
   clearInterval(liveTimer); clearInterval(restTimer); skipRest();
   LIVE=null; DB.remove('live_active'); DB.remove('live_paused');
   closeOv('ovLive'); stopBgActivity(); toast('Séance annulée'); renderSport();
