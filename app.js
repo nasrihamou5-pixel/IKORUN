@@ -3265,26 +3265,26 @@ function addExToProg(progId,e){
 }
 /* ===== ANATOMIE — zones de muscles pour l'onglet "Muscles" ===== */
 const ANATOMY_FRONT_ZONES={
-  'Cou':[{type:'rect',x:90,y:46,w:20,h:14,rx:6}],
-  'Épaules':[{type:'ellipse',cx:52,cy:70,rx:15,ry:14},{type:'ellipse',cx:148,cy:70,rx:15,ry:14}],
-  'Pectoraux':[{type:'rect',x:66,y:64,w:68,h:34,rx:14}],
-  'Abdominaux':[{type:'rect',x:76,y:102,w:48,h:55,rx:10}],
-  'Biceps':[{type:'rect',x:38,y:80,w:20,h:48,rx:10},{type:'rect',x:142,y:80,w:20,h:48,rx:10}],
-  'Avant-bras':[{type:'rect',x:34,y:130,w:18,h:48,rx:9},{type:'rect',x:148,y:130,w:18,h:48,rx:9}],
-  'Adducteurs':[{type:'rect',x:92,y:190,w:8,h:70,rx:4},{type:'rect',x:100,y:190,w:8,h:70,rx:4}],
-  'Quadriceps':[{type:'rect',x:70,y:185,w:26,h:78,rx:13},{type:'rect',x:104,y:185,w:26,h:78,rx:13}]
+  'Cou':[{type:'rect',x:88,y:58,w:24,h:14,rx:6}],
+  'Épaules':[{type:'ellipse',cx:52,cy:82,rx:17,ry:15},{type:'ellipse',cx:148,cy:82,rx:17,ry:15}],
+  'Pectoraux':[{type:'rect',x:68,y:74,w:64,h:30,rx:16}],
+  'Abdominaux':[{type:'rect',x:74,y:106,w:52,h:46,rx:14}],
+  'Biceps':[{type:'ellipse',cx:40,cy:112,rx:15,ry:34},{type:'ellipse',cx:160,cy:112,rx:15,ry:34}],
+  'Avant-bras':[{type:'rect',x:26,y:144,w:20,h:50,rx:10},{type:'rect',x:154,y:144,w:20,h:50,rx:10}],
+  'Adducteurs':[{type:'rect',x:90,y:212,w:8,h:64,rx:4},{type:'rect',x:102,y:212,w:8,h:64,rx:4}],
+  'Quadriceps':[{type:'rect',x:66,y:206,w:30,h:78,rx:15},{type:'rect',x:104,y:206,w:30,h:78,rx:15}]
 };
 const ANATOMY_BACK_ZONES={
-  'Trapèzes':[{type:'rect',x:74,y:56,w:52,h:26,rx:10}],
-  'Épaules':[{type:'ellipse',cx:52,cy:70,rx:15,ry:14},{type:'ellipse',cx:148,cy:70,rx:15,ry:14}],
-  'Dos':[{type:'rect',x:66,y:82,w:68,h:56,rx:14}],
-  'Triceps':[{type:'rect',x:38,y:80,w:20,h:48,rx:10},{type:'rect',x:142,y:80,w:20,h:48,rx:10}],
-  'Avant-bras':[{type:'rect',x:34,y:130,w:18,h:48,rx:9},{type:'rect',x:148,y:130,w:18,h:48,rx:9}],
-  'Lombaires':[{type:'rect',x:76,y:138,w:48,h:24,rx:10}],
-  'Fessiers':[{type:'rect',x:70,y:162,w:60,h:36,rx:16}],
-  'Ischios':[{type:'rect',x:70,y:198,w:26,h:66,rx:13},{type:'rect',x:104,y:198,w:26,h:66,rx:13}],
-  'Abducteurs':[{type:'rect',x:60,y:198,w:10,h:66,rx:5},{type:'rect',x:130,y:198,w:10,h:66,rx:5}],
-  'Mollets':[{type:'rect',x:74,y:264,w:22,h:70,rx:11},{type:'rect',x:104,y:264,w:22,h:70,rx:11}]
+  'Trapèzes':[{type:'path',d:'M76,62 L124,62 L136,106 L100,120 L64,106 Z'}],
+  'Épaules':[{type:'ellipse',cx:52,cy:82,rx:17,ry:15},{type:'ellipse',cx:148,cy:82,rx:17,ry:15}],
+  'Dos':[{type:'path',d:'M64,106 L136,106 L126,166 Q100,176 74,166 Z'}],
+  'Triceps':[{type:'ellipse',cx:40,cy:112,rx:15,ry:34},{type:'ellipse',cx:160,cy:112,rx:15,ry:34}],
+  'Avant-bras':[{type:'rect',x:26,y:144,w:20,h:50,rx:10},{type:'rect',x:154,y:144,w:20,h:50,rx:10}],
+  'Lombaires':[{type:'rect',x:82,y:166,w:36,h:22,rx:10}],
+  'Fessiers':[{type:'path',d:'M68,178 Q100,170 132,178 L128,210 Q100,220 72,210 Z'}],
+  'Ischios':[{type:'rect',x:66,y:208,w:30,h:78,rx:15},{type:'rect',x:104,y:208,w:30,h:78,rx:15}],
+  'Abducteurs':[{type:'rect',x:58,y:212,w:10,h:64,rx:5},{type:'rect',x:132,y:212,w:10,h:64,rx:5}],
+  'Mollets':[{type:'rect',x:72,y:282,w:24,h:68,rx:12},{type:'rect',x:104,y:282,w:24,h:68,rx:12}]
 };
 function anatomyZoneKey(raw){
   if(!raw) return null;
@@ -3300,39 +3300,69 @@ function anatomyZonesFor(f){
   const back=zones.some(z=>ANATOMY_BACK_ZONES[z.key] && !ANATOMY_FRONT_ZONES[z.key]);
   return {zones,view:back?'back':'front'};
 }
-function anatomyShapeSVG(s,fill,opacity){
-  if(s.type==='rect') return '<rect x="'+s.x+'" y="'+s.y+'" width="'+s.w+'" height="'+s.h+'" rx="'+s.rx+'" fill="'+fill+'" opacity="'+opacity+'"/>';
-  return '<ellipse cx="'+s.cx+'" cy="'+s.cy+'" rx="'+s.rx+'" ry="'+s.ry+'" fill="'+fill+'" opacity="'+opacity+'"/>';
+/* Défs (dégradés peau + glow rouge/bleu) — suffixées par vue pour éviter les collisions d'id entre les 2 SVG face/dos */
+function bodyDefsSVG(view){
+  const id=view;
+  return '<defs>'+
+    '<linearGradient id="skin-'+id+'" x1="0.1" y1="0" x2="0.9" y2="1">'+
+      '<stop offset="0%" stop-color="var(--s3)"/>'+
+      '<stop offset="55%" stop-color="var(--s2)"/>'+
+      '<stop offset="100%" stop-color="var(--s1)"/>'+
+    '</linearGradient>'+
+    '<radialGradient id="glowRed-'+id+'" cx="35%" cy="28%" r="80%">'+
+      '<stop offset="0%" stop-color="#FF9AA2"/>'+
+      '<stop offset="55%" stop-color="var(--bad)"/>'+
+      '<stop offset="100%" stop-color="var(--bad)" stop-opacity=".72"/>'+
+    '</radialGradient>'+
+    '<radialGradient id="glowBlue-'+id+'" cx="35%" cy="28%" r="80%">'+
+      '<stop offset="0%" stop-color="var(--e2)"/>'+
+      '<stop offset="55%" stop-color="var(--e)"/>'+
+      '<stop offset="100%" stop-color="var(--e)" stop-opacity=".72"/>'+
+    '</radialGradient>'+
+    '<filter id="glow-'+id+'" x="-80%" y="-80%" width="260%" height="260%">'+
+      '<feGaussianBlur stdDeviation="3.2" result="b"/>'+
+      '<feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>'+
+    '</filter>'+
+  '</defs>';
 }
-const ANATOMY_STRENGTH_COLOR={primary:'var(--bad)',secondary:'var(--e)'};
-function bodySilhouetteSVG(){
-  return '<circle cx="100" cy="30" r="20" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<rect x="90" y="46" width="20" height="16" rx="6" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<rect x="64" y="60" width="72" height="80" rx="20" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<rect x="38" y="66" width="20" height="62" rx="10" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<rect x="142" y="66" width="20" height="62" rx="10" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<rect x="34" y="126" width="18" height="52" rx="9" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<rect x="148" y="126" width="18" height="52" rx="9" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<circle cx="43" cy="184" r="9" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<circle cx="157" cy="184" r="9" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<rect x="68" y="158" width="64" height="30" rx="14" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<rect x="70" y="185" width="26" height="80" rx="13" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<rect x="104" y="185" width="26" height="80" rx="13" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<rect x="74" y="264" width="22" height="72" rx="11" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<rect x="104" y="264" width="22" height="72" rx="11" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<ellipse cx="85" cy="342" rx="14" ry="8" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<ellipse cx="115" cy="342" rx="14" ry="8" fill="var(--s3)" stroke="var(--hair2)"/>';
+function anatomyShapeSVG(s,strength,view,opacity){
+  const fill='url(#'+(strength==='primary'?'glowRed-':'glowBlue-')+view+')';
+  const filt=' filter="url(#glow-'+view+')"';
+  if(s.type==='rect') return '<rect x="'+s.x+'" y="'+s.y+'" width="'+s.w+'" height="'+s.h+'" rx="'+s.rx+'" fill="'+fill+'" opacity="'+opacity+'"'+filt+'/>';
+  if(s.type==='path') return '<path d="'+s.d+'" fill="'+fill+'" opacity="'+opacity+'"'+filt+'/>';
+  return '<ellipse cx="'+s.cx+'" cy="'+s.cy+'" rx="'+s.rx+'" ry="'+s.ry+'" fill="'+fill+'" opacity="'+opacity+'"'+filt+'/>';
 }
-function bodyAnatomySVG(zoneInfo,view){
-  const ZONES=view==='back'?ANATOMY_BACK_ZONES:ANATOMY_FRONT_ZONES;
-  let overlays='';
-  zoneInfo.zones.forEach(z=>{
-    const shapes=ZONES[z.key]; if(!shapes) return;
-    const fill=ANATOMY_STRENGTH_COLOR[z.strength]||'var(--e)';
-    const opacity=z.strength==='primary'?0.95:0.75;
-    shapes.forEach(s=>{ overlays+=anatomyShapeSVG(s,fill,opacity); });
-  });
-  return '<svg viewBox="0 0 200 360" style="width:100%;max-width:260px;display:block;margin:0 auto">'+bodySilhouetteSVG()+overlays+'</svg>';
+/* Silhouette réaliste segmentée (peau en dégradé, articulations arrondies, halo de sol) */
+function bodySilhouetteSVG(view){
+  const sk='fill="url(#skin-'+view+')" stroke="var(--hair2)" stroke-width="1"';
+  return bodyDefsSVG(view)+
+    '<ellipse cx="100" cy="366" rx="46" ry="8" fill="#000" opacity=".22"/>'+
+    '<circle cx="100" cy="42" r="17" '+sk+'/>'+
+    '<rect x="88" y="58" width="24" height="14" rx="6" '+sk+'/>'+
+    '<path d="M76,62 Q100,56 124,62 L130,76 Q100,68 70,76 Z" '+sk+'/>'+
+    '<ellipse cx="52" cy="82" rx="17" ry="15" '+sk+'/>'+
+    '<ellipse cx="148" cy="82" rx="17" ry="15" '+sk+'/>'+
+    '<rect x="68" y="74" width="64" height="30" rx="16" '+sk+'/>'+
+    '<rect x="74" y="106" width="52" height="46" rx="14" '+sk+'/>'+
+    '<rect x="78" y="154" width="44" height="26" rx="12" '+sk+'/>'+
+    '<rect x="66" y="178" width="68" height="30" rx="16" '+sk+'/>'+
+    '<ellipse cx="40" cy="112" rx="15" ry="34" '+sk+'/>'+
+    '<ellipse cx="160" cy="112" rx="15" ry="34" '+sk+'/>'+
+    '<circle cx="36" cy="144" r="8" '+sk+'/>'+
+    '<circle cx="164" cy="144" r="8" '+sk+'/>'+
+    '<rect x="26" y="144" width="20" height="50" rx="10" '+sk+'/>'+
+    '<rect x="154" y="144" width="20" height="50" rx="10" '+sk+'/>'+
+    '<ellipse cx="36" cy="200" rx="10" ry="8" '+sk+'/>'+
+    '<ellipse cx="164" cy="200" rx="10" ry="8" '+sk+'/>'+
+    '<rect x="66" y="206" width="30" height="78" rx="15" '+sk+'/>'+
+    '<rect x="104" y="206" width="30" height="78" rx="15" '+sk+'/>'+
+    '<circle cx="81" cy="282" r="10" '+sk+'/>'+
+    '<circle cx="119" cy="282" r="10" '+sk+'/>'+
+    '<rect x="72" y="282" width="24" height="68" rx="12" '+sk+'/>'+
+    '<rect x="104" y="282" width="24" height="68" rx="12" '+sk+'/>'+
+    '<ellipse cx="84" cy="360" rx="16" ry="9" '+sk+'/>'+
+    '<ellipse cx="116" cy="360" rx="16" ry="9" '+sk+'/>'+
+    '<ellipse cx="82" cy="80" rx="28" ry="14" fill="#fff" opacity=".05"/>';
 }
 /* Double silhouette face+dos côte à côte, façon fiche "Muscles ciblés" */
 function bodyAnatomyDualSVG(zoneInfo){
@@ -3348,11 +3378,11 @@ function bodyAnatomySVGView(zoneInfo,view){
   let overlays='';
   zoneInfo.zones.forEach(z=>{
     const shapes=ZONES[z.key]; if(!shapes) return;
-    const fill=ANATOMY_STRENGTH_COLOR[z.strength]||'var(--e)';
-    const opacity=z.strength==='primary'?0.95:0.75;
-    shapes.forEach(s=>{ overlays+=anatomyShapeSVG(s,fill,opacity); });
+    const opacity=z.strength==='primary'?0.92:0.8;
+    shapes.forEach(s=>{ overlays+=anatomyShapeSVG(s,z.strength,view,opacity); });
   });
-  return '<svg viewBox="0 0 200 360" style="width:100%;display:block">'+bodySilhouetteSVG()+overlays+'</svg>';
+  const lab='<text x="100" y="14" text-anchor="middle" font-size="10" font-weight="700" letter-spacing="1.5" fill="var(--muted)" font-family="\'JetBrains Mono\',monospace">'+(view==='back'?'DOS':'FACE')+'</text>';
+  return '<svg viewBox="0 0 200 380" style="width:100%;display:block">'+lab+bodySilhouetteSVG(view)+overlays+'</svg>';
 }
 
 /* ===== VUE EXERCICE DÉTAILLÉE (onglets) ===== */
