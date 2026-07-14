@@ -3298,6 +3298,7 @@ function anatomyShapeSVG(s,fill,opacity){
   if(s.type==='rect') return '<rect x="'+s.x+'" y="'+s.y+'" width="'+s.w+'" height="'+s.h+'" rx="'+s.rx+'" fill="'+fill+'" opacity="'+opacity+'"/>';
   return '<ellipse cx="'+s.cx+'" cy="'+s.cy+'" rx="'+s.rx+'" ry="'+s.ry+'" fill="'+fill+'" opacity="'+opacity+'"/>';
 }
+const ANATOMY_STRENGTH_COLOR={primary:'var(--bad)',secondary:'var(--e)'};
 function bodySilhouetteSVG(){
   return '<circle cx="100" cy="30" r="20" fill="var(--s3)" stroke="var(--hair2)"/>'+
     '<rect x="90" y="46" width="20" height="16" rx="6" fill="var(--s3)" stroke="var(--hair2)"/>'+
@@ -3321,10 +3322,31 @@ function bodyAnatomySVG(zoneInfo,view){
   let overlays='';
   zoneInfo.zones.forEach(z=>{
     const shapes=ZONES[z.key]; if(!shapes) return;
-    const opacity=z.strength==='primary'?0.9:0.4;
-    shapes.forEach(s=>{ overlays+=anatomyShapeSVG(s,'var(--e)',opacity); });
+    const fill=ANATOMY_STRENGTH_COLOR[z.strength]||'var(--e)';
+    const opacity=z.strength==='primary'?0.95:0.75;
+    shapes.forEach(s=>{ overlays+=anatomyShapeSVG(s,fill,opacity); });
   });
   return '<svg viewBox="0 0 200 360" style="width:100%;max-width:260px;display:block;margin:0 auto">'+bodySilhouetteSVG()+overlays+'</svg>';
+}
+/* Double silhouette face+dos côte à côte, façon fiche "Muscles ciblés" */
+function bodyAnatomyDualSVG(zoneInfo){
+  const frontSVG=bodyAnatomySVGView(zoneInfo,'front');
+  const backSVG=bodyAnatomySVGView(zoneInfo,'back');
+  return '<div style="display:flex;gap:6px;align-items:flex-start">'+
+    '<div style="flex:1;min-width:0">'+frontSVG+'</div>'+
+    '<div style="flex:1;min-width:0">'+backSVG+'</div>'+
+    '</div>';
+}
+function bodyAnatomySVGView(zoneInfo,view){
+  const ZONES=view==='back'?ANATOMY_BACK_ZONES:ANATOMY_FRONT_ZONES;
+  let overlays='';
+  zoneInfo.zones.forEach(z=>{
+    const shapes=ZONES[z.key]; if(!shapes) return;
+    const fill=ANATOMY_STRENGTH_COLOR[z.strength]||'var(--e)';
+    const opacity=z.strength==='primary'?0.95:0.75;
+    shapes.forEach(s=>{ overlays+=anatomyShapeSVG(s,fill,opacity); });
+  });
+  return '<svg viewBox="0 0 200 360" style="width:100%;display:block">'+bodySilhouetteSVG()+overlays+'</svg>';
 }
 
 /* ===== VUE EXERCICE DÉTAILLÉE (onglets) ===== */
@@ -3355,16 +3377,17 @@ function renderExDetail(){
     const vol=(e.sets||3)*(parseInt(e.reps)||10)*(e.weight||0);
     h+='<div class="card" style="padding:0;overflow:hidden"><div style="display:flex;text-align:center"><div style="flex:1;padding:13px 4px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0">Séries</div><div class="man" style="font-weight:800;font-size:18px">'+e.sets+'</div></div><div style="flex:1;padding:13px 4px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0">Volume</div><div class="man" style="font-weight:800;font-size:18px">'+vol+' kg</div></div><div style="flex:1;padding:13px 4px"><div class="lab" style="margin:0">Durée</div><div class="man" style="font-weight:800;font-size:18px">~'+Math.round(e.sets*1.8)+'min</div></div></div></div>';
   } else if(exDetailTab==='muscles'){
-    // Schéma d'anatomie à la place du tutoriel vidéo
+    // Schéma d'anatomie double (face + dos) à la place du tutoriel vidéo
     const zoneInfo=anatomyZonesFor(f);
-    if(exAnatomyView===null) exAnatomyView=zoneInfo.view;
-    h+='<div style="position:relative;background:linear-gradient(135deg,var(--s2),var(--s1));border:1px solid var(--hair);border-radius:16px;padding:14px;margin-bottom:14px">'+
-       bodyAnatomySVG(zoneInfo,exAnatomyView)+
-       '<div style="position:absolute;top:10px;right:10px;font-size:11px;font-weight:700;padding:6px 10px;border-radius:20px;background:rgba(0,0,0,.35);color:#fff;backdrop-filter:blur(4px);cursor:pointer" onclick="toggleAnatomyView()">🔄 '+(exAnatomyView==='front'?'Face':'Dos')+'</div>'+
+    h+='<div class="card"><div class="card-t">Muscles ciblés</div>'+
+       bodyAnatomyDualSVG(zoneInfo)+
        '</div>';
-    h+='<div class="card"><div class="card-t">🎯 Muscles principaux</div><div class="muscle-tags">'+(f.primary||[]).map(m=>'<span class="mtag" style="background:var(--ed);color:var(--e);border-color:var(--e)">'+m+'</span>').join('')+'</div>';
-    if(f.secondary&&f.secondary.length) h+='<div class="card-t" style="margin-top:14px">Muscles secondaires</div><div class="muscle-tags">'+f.secondary.map(m=>'<span class="mtag">'+m+'</span>').join('')+'</div>';
-    h+='</div>';
+    h+='<div class="card">'+
+       '<div class="row" style="gap:8px;margin-bottom:6px"><span style="width:9px;height:9px;border-radius:50%;background:var(--bad);flex:0 0 9px"></span><span style="font-weight:800;font-size:14px">Muscles primaires</span></div>'+
+       '<div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:'+(f.secondary&&f.secondary.length?'14px':'0')+'">'+((f.primary||[]).join(', ')||'—')+'</div>'+
+       (f.secondary&&f.secondary.length?('<div class="row" style="gap:8px;margin-bottom:6px"><span style="width:9px;height:9px;border-radius:50%;background:var(--e);flex:0 0 9px"></span><span style="font-weight:800;font-size:14px">Muscles secondaires</span></div>'+
+       '<div style="font-size:13px;color:var(--muted);line-height:1.6">'+f.secondary.join(', ')+'</div>'):'')+
+       '</div>';
     if(f.equip) h+='<div class="card"><div class="row"><span class="lab">Matériel</span><span style="font-weight:600">'+f.equip+'</span></div></div>';
   } else {
     // Instructions + Conseils réunis dans le même onglet
