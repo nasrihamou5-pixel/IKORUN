@@ -3146,7 +3146,7 @@ function openRunSheet(id){
 
   // CTA
   if(s.done) h+='<div class="badge" style="background:rgba(51,211,153,.18);color:var(--ok);width:100%;justify-content:center;padding:14px;border-radius:18px;margin-bottom:18px">✓ Séance terminée</div>';
-  else if(s.type!=='Repos') h+='<button class="rs-cta" onclick="closeOv(\'ovSheet\');startLiveRun('+id+')">'+ICN('chevronR',15)+' Démarrer la séance</button>';
+  else if(s.type!=='Repos') h+='<button class="btn" style="margin-bottom:18px" onclick="markRunDone()">✓ Marquer terminée</button>';
 
   if(dt){
     h+='<div class="rs-obj-lab">OBJECTIF</div><div class="rs-obj-txt">'+dt.objectif+'</div>';
@@ -3183,7 +3183,6 @@ function openRunSheet(id){
     h+=seriesTableHTML(s.series);
     h+='<div class="chrome-box"><div class="cb-head">💪 Corps de séance</div><div class="cb-body">'+s.desc+'</div></div>';
   }
-  if(!s.done && s.type!=='Repos') h+='<button class="btn" style="margin-top:4px" onclick="markRunDone()">✓ Marquer terminée</button>';
   $('#sheetBody').innerHTML=h;
   openOv('ovSheet');
 }
@@ -3196,64 +3195,6 @@ function markRunDone(){
   SESS.push({sessRef,provisional:true,date:s.date,title:s.title,km:s.km,pace:s.pace,type:s.type,duration:s.duration,rpe:s.rpe});
   saveAll(); refreshXP({animate:true}); closeOv('ovSheet'); renderSport();
   openSessionDebrief({date:s.date,title:s.title,km:s.km,pace:s.pace,type:s.type,duration:s.duration,plannedRpe:s.rpe,planSessionId:s.id,sessRef,series:s.series||null});
-}
-
-/* ---------- SÉANCE EN COURS (live running) ---------- */
-let RUNLIVE=null, runLiveTimer=null;
-function startLiveRun(id){
-  const s=PLAN?PLAN.sessions.find(x=>x.id===id):null; if(!s) return;
-  RUNLIVE={id,s,start:Date.now(),paused:false,pausedAt:0,pausedTotal:0,locked:false};
-  openOv('ovRunLive'); renderRunLive();
-  runLiveTimer=setInterval(updateRunLiveTimer,1000);
-  startBgActivity('Séance : '+s.title);
-}
-function runLiveElapsed(){ if(!RUNLIVE) return 0; const end=RUNLIVE.paused?RUNLIVE.pausedAt:Date.now(); return Math.max(0,Math.round((end-RUNLIVE.start-RUNLIVE.pausedTotal)/1000)); }
-function renderRunLive(){
-  if(!RUNLIVE) return;
-  const s=RUNLIVE.s, sec=runLiveElapsed();
-  const paceSpk=parseTime(s.pace)||270;
-  const km=sec/paceSpk;
-  const bpm=150+Math.round(Math.sin(sec/25)*6);
-  let h='<div class="rl-tag">SÉANCE EN COURS</div><div class="rl-title">'+s.title+'</div>';
-  h+='<div class="rl-timerlab">TEMPS</div><div class="rl-timer mono" id="rlTimer">'+fmtTime(sec)+'</div>';
-  h+='<div class="rl-list card">';
-  h+='<div class="rl-row"><div class="rl-ic" style="background:rgba(242,184,75,.18);color:var(--or)">'+ICN('run',17)+'</div><div class="rl-row-body"><div class="rl-row-v" id="rlKm">'+km.toFixed(2).replace('.',',')+' <span>km</span></div><div class="rl-row-l">Distance</div></div>'+ICN('chevronR',16,'var(--dim)')+'</div>';
-  h+='<div class="rl-row"><div class="rl-ic" style="background:rgba(var(--e-rgb),.16);color:var(--e2)">'+ICN('stopwatch',17)+'</div><div class="rl-row-body"><div class="rl-row-v">'+s.pace+' <span>/km</span></div><div class="rl-row-l">Allure moyenne</div></div>'+ICN('chevronR',16,'var(--dim)')+'</div>';
-  h+='<div class="rl-row"><div class="rl-ic" style="background:rgba(255,92,108,.16);color:var(--bad)">'+ICN('heart',16)+'</div><div class="rl-row-body"><div class="rl-row-v" id="rlBpm">'+bpm+' <span>bpm</span></div><div class="rl-row-l">Fréquence cardiaque</div></div>'+ICN('chevronR',16,'var(--dim)')+'</div>';
-  h+='<div class="rl-row"><div class="rl-ic" style="background:rgba(51,211,153,.16);color:var(--ok)">'+ICN('run',17)+'</div><div class="rl-row-body"><div class="rl-row-v">Zone 2 <span>70% FCmax</span></div><div class="rl-row-l">Zone d\u2019effort</div></div>'+ICN('chevronR',16,'var(--dim)')+'</div>';
-  h+='</div>';
-  h+='<div class="rl-map"><svg viewBox="0 0 300 180" width="100%" height="100%"><polyline points="30,150 60,120 55,90 90,95 120,70 150,85 180,55 210,60 240,40 260,70 230,110 190,130 150,140 100,145 30,150" fill="none" stroke="var(--e)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/><circle cx="30" cy="150" r="6" fill="var(--e2)"/><circle cx="260" cy="70" r="6" fill="#fff"/></svg></div>';
-  h+='<div class="rl-controls">'+
-    '<div class="rl-ctrl" onclick="toggleLockRunLive()">'+ICN(RUNLIVE.locked?'lock':'lock',22)+'</div>'+
-    '<div class="rl-ctrl main" onclick="toggleRunLivePause()">'+ICN(RUNLIVE.paused?'play':'pause',26,'#fff')+'</div>'+
-    '<div class="rl-ctrl stop" onclick="stopRunLive()">'+ICN('stop',22)+'</div>'+
-  '</div>';
-  $('#runLiveBody').innerHTML=h;
-}
-function updateRunLiveTimer(){
-  if(!RUNLIVE || RUNLIVE.paused) return;
-  const el=$('#rlTimer'); if(el) el.textContent=fmtTime(runLiveElapsed());
-  const s=RUNLIVE.s, sec=runLiveElapsed(), paceSpk=parseTime(s.pace)||270;
-  const kmEl=$('#rlKm'); if(kmEl) kmEl.innerHTML=(sec/paceSpk).toFixed(2).replace('.',',')+' <span>km</span>';
-  const bpmEl=$('#rlBpm'); if(bpmEl) bpmEl.innerHTML=(150+Math.round(Math.sin(sec/25)*6))+' <span>bpm</span>';
-}
-function toggleRunLivePause(){
-  if(!RUNLIVE) return;
-  if(RUNLIVE.paused){ RUNLIVE.pausedTotal+=Date.now()-RUNLIVE.pausedAt; RUNLIVE.paused=false; }
-  else { RUNLIVE.paused=true; RUNLIVE.pausedAt=Date.now(); }
-  renderRunLive(); haptic();
-}
-function toggleLockRunLive(){ RUNLIVE.locked=!RUNLIVE.locked; toast(RUNLIVE.locked?'Écran verrouillé':'Écran déverrouillé'); }
-function confirmCloseRunLive(){ if(RUNLIVE) stopRunLive(); else closeOv('ovRunLive'); }
-function stopRunLive(){
-  if(!RUNLIVE) return;
-  clearInterval(runLiveTimer);
-  const s=RUNLIVE.s, sec=runLiveElapsed();
-  RUNLIVE=null; closeOv('ovRunLive'); stopBgActivity();
-  markRunDoneFromLive(s,sec);
-}
-function markRunDoneFromLive(s,sec){
-  curRunId=s.id; markRunDone();
 }
 
 /* ---------- MUSCULATION ---------- */
@@ -3439,17 +3380,20 @@ function renderLive(){
       '<span onclick="event.stopPropagation();openLiveExOptions('+i+')" style="color:var(--muted);font-size:20px;padding:4px 4px 4px 8px;cursor:pointer;letter-spacing:1px">⋯</span></div>';
     // Contenu repliable : notes, repos, tableau des séries
     h+='<div id="exBody'+i+'" style="max-height:'+(open?'1400px':'0')+'px;opacity:'+(open?'1':'0')+';overflow:hidden;transition:max-height .32s ease,opacity .22s ease,margin-top .32s ease;margin-top:'+(open?'12':'0')+'px">';
-    h+='<textarea class="inp" rows="1" style="margin-bottom:10px;font-size:13px" placeholder="Notes..." oninput="LIVE.state['+i+'].note=this.value">'+(st.note||'')+'</textarea>';
     h+='<div class="row" style="margin-bottom:10px;font-size:12.5px"><span style="color:var(--e);cursor:pointer" onclick="changeRest('+i+')">⏱ Minuteur de repos : '+(e.rest?e.rest+'s':'Désactivé')+'</span></div>';
     h+='<div style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:8px;text-align:center">'+
       '<div>Set</div><div>Précédent</div><div>Kg</div><div>Reps</div><div>✓</div></div>';
     st.log.forEach((s,j)=>{
-      h+='<div style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;align-items:center;margin-bottom:7px">'+
+      h+='<div class="set-swipe-wrap" data-i="'+i+'" data-j="'+j+'">'+
+        '<div class="set-swipe-action left" onclick="deleteLiveSet('+i+','+j+')"><span>🗑</span></div>'+
+        '<div class="set-swipe-action right" onclick="deleteLiveSet('+i+','+j+')"><span>🗑</span></div>'+
+        '<div class="set-swipe-row" data-i="'+i+'" data-j="'+j+'" style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;align-items:center">'+
         '<div style="text-align:center;font-weight:700;color:var(--muted)">'+(j+1)+'</div>'+
         '<div style="text-align:center;font-size:11px;color:var(--dim)">'+(e.weight||20)+'kg×'+(parseInt(e.reps)||10)+'</div>'+
         '<input class="setcell" type="number" inputmode="decimal" value="'+s.kg+'" onchange="setLog('+i+','+j+',\'kg\',this.value)">'+
         '<input class="setcell" type="number" inputmode="numeric" value="'+s.reps+'" onchange="setLog('+i+','+j+',\'reps\',this.value)">'+
-        '<div onclick="toggleSet('+i+','+j+')" style="width:32px;height:32px;border-radius:50%;margin:0 auto;cursor:pointer;display:flex;align-items:center;justify-content:center;background:'+(s.done?'var(--e)':'var(--s2)')+';border:1px solid '+(s.done?'var(--e)':'var(--hair)')+';color:#fff;font-size:14px">'+(s.done?'✓':'')+'</div></div>';
+        '<div onclick="toggleSet('+i+','+j+')" style="width:32px;height:32px;border-radius:50%;margin:0 auto;cursor:pointer;display:flex;align-items:center;justify-content:center;background:'+(s.done?'var(--e)':'var(--s2)')+';border:1px solid '+(s.done?'var(--e)':'var(--hair)')+';color:#fff;font-size:14px">'+(s.done?'✓':'')+'</div></div>'+
+        '</div>'; // fin .set-swipe-wrap
     });
     h+='<button class="btn ghost sm" style="margin-top:4px" onclick="addLiveSet('+i+')">＋ Ajouter une série</button>';
     h+='</div>'; // fin exBody
@@ -3462,8 +3406,9 @@ function renderLive(){
   initLiveSwipe();
 }
 /* ---------- LIVE : swipe gauche/droite sur une carte exercice pour révéler "Supprimer" ---------- */
-const SWIPE_W=88; // largeur de la zone rouge révélée
-let liveSwipe={el:null,i:null,startX:0,startY:0,baseX:0,curX:0,dir:null,dragging:false};
+const SWIPE_W_EX=88, SWIPE_W_SET=64; // largeurs de la zone rouge révélée (carte exercice / ligne série)
+const SWIPE_SEL='.ex-swipe-card, .set-swipe-row';
+let liveSwipe={el:null,w:0,startX:0,startY:0,baseX:0,curX:0,dragging:false};
 function initLiveSwipe(){
   const box=$('#liveBody'); if(!box||box._swipeBound) return;
   box._swipeBound=true;
@@ -3472,13 +3417,15 @@ function initLiveSwipe(){
   box.addEventListener('pointerup',liveSwipeUp);
   box.addEventListener('pointercancel',liveSwipeUp);
 }
+function swipeWidthFor(el){ return el.classList.contains('ex-swipe-card')?SWIPE_W_EX:SWIPE_W_SET; }
 function liveSwipeDown(e){
-  const card=e.target.closest('.ex-swipe-card'); if(!card) return;
-  // un swipe déjà ouvert ailleurs se referme dès qu'on touche une autre carte
-  document.querySelectorAll('.ex-swipe-card.open').forEach(c=>{ if(c!==card) closeSwipeCard(c); });
-  liveSwipe={el:card,i:+card.dataset.i,startX:e.clientX,startY:e.clientY,
-    baseX:card.classList.contains('open')?(card._openDir==='right'?SWIPE_W:-SWIPE_W):0,
-    curX:0,dir:null,dragging:false};
+  const el=e.target.closest(SWIPE_SEL); if(!el) return;
+  // un swipe déjà ouvert ailleurs (carte OU ligne série) se referme dès qu'on touche un autre élément
+  document.querySelectorAll(SWIPE_SEL+'.open').forEach(c=>{ if(c!==el) closeSwipeCard(c); });
+  const w=swipeWidthFor(el);
+  liveSwipe={el,w,startX:e.clientX,startY:e.clientY,
+    baseX:el.classList.contains('open')?(el._openDir==='right'?w:-w):0,
+    curX:0,dragging:false};
 }
 function liveSwipeMove(e){
   const s=liveSwipe; if(!s.el) return;
@@ -3489,7 +3436,7 @@ function liveSwipeMove(e){
     s.dragging=true; s.el.classList.add('dragging'); s.el.setPointerCapture&&s.el.setPointerCapture(e.pointerId);
   }
   let x=s.baseX+dx;
-  x=Math.max(-SWIPE_W,Math.min(SWIPE_W,x));
+  x=Math.max(-s.w,Math.min(s.w,x));
   s.curX=x;
   s.el.style.transform='translateX('+x+'px)';
 }
@@ -3497,8 +3444,8 @@ function liveSwipeUp(e){
   const s=liveSwipe; if(!s.el){ liveSwipe={el:null}; return; }
   if(s.dragging){
     s.el.classList.remove('dragging');
-    if(s.curX<=-40){ s.el.style.transform='translateX(-'+SWIPE_W+'px)'; s.el.classList.add('open'); s.el._openDir='left'; }
-    else if(s.curX>=40){ s.el.style.transform='translateX('+SWIPE_W+'px)'; s.el.classList.add('open'); s.el._openDir='right'; }
+    if(s.curX<=-40){ s.el.style.transform='translateX(-'+s.w+'px)'; s.el.classList.add('open'); s.el._openDir='left'; }
+    else if(s.curX>=40){ s.el.style.transform='translateX('+s.w+'px)'; s.el.classList.add('open'); s.el._openDir='right'; }
     else { s.el.style.transform='translateX(0px)'; s.el.classList.remove('open'); s.el._openDir=null; }
   }
   liveSwipe={el:null};
@@ -3526,6 +3473,12 @@ function toggleLiveEx(i){
 function setLog(i,j,k,v){ const st=LIVE.state[i]; st.log[j][k]=+v||0; if(k==='kg')st.weight=+v||st.weight; persistLive(); }
 function changeRest(i){ const e=LIVE.prog.ex[i]; pickInt('Repos (secondes)',15,300,e.rest||90,'s',v=>{ e.rest=v; renderLive(); },15); }
 function addLiveSet(i){ const st=LIVE.state[i]; const last=st.log[st.log.length-1]||{kg:20,reps:10,rpe:8}; st.sets.push(false); st.log.push({kg:last.kg,reps:last.reps,rpe:last.rpe,done:false}); persistLive(); renderLive(); }
+function deleteLiveSet(i,j){
+  const st=LIVE.state[i];
+  if(st.log.length<=1){ toast('Il doit rester au moins une série'); return; }
+  st.sets.splice(j,1); st.log.splice(j,1);
+  persistLive(); renderLive();
+}
 
 /* ---------- LIVE : options par exercice ("⋯") — voir la démo, modifier le repos, retirer ---------- */
 function openLiveExOptions(i){

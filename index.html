@@ -1202,6 +1202,17 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
   -webkit-backdrop-filter:none;backdrop-filter:none;
   border:1px solid var(--hair);box-shadow:var(--float-md);}
 .ex-swipe-card.dragging{transition:none;}
+
+/* Swipe sur une ligne de série (dans le tableau Set/Kg/Reps) — même logique, plus compact */
+.set-swipe-wrap{position:relative;border-radius:10px;overflow:hidden;margin-bottom:7px;}
+.set-swipe-action{position:absolute;top:0;height:100%;width:64px;display:flex;align-items:center;
+  justify-content:center;color:#fff;font-size:16px;cursor:pointer;z-index:0;user-select:none;
+  background:linear-gradient(135deg,var(--bad),#B7303D);}
+.set-swipe-action.left{left:0;}
+.set-swipe-action.right{right:0;}
+.set-swipe-row{position:relative;z-index:1;touch-action:pan-y;background:var(--s1);
+  transition:transform .28s cubic-bezier(.2,.85,.3,1);will-change:transform;border-radius:10px;}
+.set-swipe-row.dragging{transition:none;}
 </style>
 </head>
 <body>
@@ -1294,7 +1305,6 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
 <div class="ov" id="ovCfg"><div class="ov-card"><div class="ov-head"><h2>Configurer</h2><div class="x" onclick="closeOv('ovCfg')">✕</div></div><div id="cfgBody"></div></div></div>
 <div class="ov" id="ovProg"><div class="ov-card"><div class="ov-head"><h2 id="ovProgTitle">Programme</h2><div class="x" onclick="closeOv('ovProg')">✕</div></div><div id="progBody"></div></div></div>
 <div class="ov" id="ovLive"><div class="ov-card"><div class="ov-head"><h2 id="liveTitle">Séance</h2><div class="x" onclick="confirmCloseLive()">✕</div></div><div id="liveBody"></div></div></div>
-<div class="ov" id="ovRunLive"><div class="ov-card" style="max-width:430px;padding-bottom:24px"><div class="ov-head" style="justify-content:flex-end"><div class="x" onclick="confirmCloseRunLive()">⋯</div></div><div id="runLiveBody"></div></div></div>
 <div class="ov" id="ovSheet"><div class="ov-card"><div class="ov-head"><h2 id="sheetTitle">Séance</h2><div class="x" onclick="closeOv('ovSheet')">✕</div></div><div id="sheetBody"></div></div></div>
 <div class="ov" id="ovCreate"><div class="ov-card"><div class="ov-head"><h2>Nouveau programme</h2><div class="x" onclick="closeOv('ovCreate')">✕</div></div><div id="createBody"></div></div></div>
 <div class="ov" id="ovBadges"><div class="ov-card"><div class="ov-head"><h2 id="ovBadgesTitle">Badges</h2><div class="x" onclick="closeOv('ovBadges')">✕</div></div><div id="badgesBody"></div></div></div>
