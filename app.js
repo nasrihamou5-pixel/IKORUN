@@ -3414,7 +3414,11 @@ function renderLive(){
     const st=LIVE.state[i];
     const allDone=st.sets.length&&st.sets.every(x=>x);
     const open=liveOpenEx===i;
-    h+='<div class="card" style="padding:14px;margin-bottom:12px'+(allDone?';border-color:rgba(51,211,153,.35)':'')+'">';
+    // Swipe à gauche OU à droite pour révéler "Supprimer" — wrap + 2 actions rouges dessous, carte au-dessus qui glisse.
+    h+='<div class="ex-swipe-wrap" data-i="'+i+'">'+
+      '<div class="ex-swipe-action left" onclick="confirmDeleteLiveEx('+i+')"><span>🗑</span>Supprimer</div>'+
+      '<div class="ex-swipe-action right" onclick="confirmDeleteLiveEx('+i+')"><span>🗑</span>Supprimer</div>';
+    h+='<div class="card ex-swipe-card" data-i="'+i+'" style="padding:14px'+(allDone?';border-color:rgba(51,211,153,.35)':'')+'">';
     // Entête exercice (tapable) : vignette, nom, chevron, "..." (options)
     h+='<div class="row" style="align-items:flex-start;cursor:pointer" onclick="toggleLiveEx('+i+')">'+exThumb(e.name,48)+
       '<div style="flex:1;min-width:0;margin-left:10px"><div style="font-weight:700;font-size:15.5px;line-height:1.25">'+e.name+'</div>'+
@@ -3437,13 +3441,61 @@ function renderLive(){
     });
     h+='<button class="btn ghost sm" style="margin-top:4px" onclick="addLiveSet('+i+')">＋ Ajouter une série</button>';
     h+='</div>'; // fin exBody
-    h+='</div>';
+    h+='</div>'; // fin .ex-swipe-card
+    h+='</div>'; // fin .ex-swipe-wrap
   });
   h+='<button class="btn ghost" style="margin:6px 0 10px" onclick="liveAddExercise()">＋ Ajouter un exercice</button>';
   h+='<button class="btn ghost sm" style="margin-bottom:8px;color:var(--bad)" onclick="confirmCloseLive()">🗑 Annuler la séance</button>';
   $('#liveBody').innerHTML=h;
+  initLiveSwipe();
 }
+/* ---------- LIVE : swipe gauche/droite sur une carte exercice pour révéler "Supprimer" ---------- */
+const SWIPE_W=88; // largeur de la zone rouge révélée
+let liveSwipe={el:null,i:null,startX:0,startY:0,baseX:0,curX:0,dir:null,dragging:false};
+function initLiveSwipe(){
+  const box=$('#liveBody'); if(!box||box._swipeBound) return;
+  box._swipeBound=true;
+  box.addEventListener('pointerdown',liveSwipeDown);
+  box.addEventListener('pointermove',liveSwipeMove);
+  box.addEventListener('pointerup',liveSwipeUp);
+  box.addEventListener('pointercancel',liveSwipeUp);
+}
+function liveSwipeDown(e){
+  const card=e.target.closest('.ex-swipe-card'); if(!card) return;
+  // un swipe déjà ouvert ailleurs se referme dès qu'on touche une autre carte
+  document.querySelectorAll('.ex-swipe-card.open').forEach(c=>{ if(c!==card) closeSwipeCard(c); });
+  liveSwipe={el:card,i:+card.dataset.i,startX:e.clientX,startY:e.clientY,
+    baseX:card.classList.contains('open')?(card._openDir==='right'?SWIPE_W:-SWIPE_W):0,
+    curX:0,dir:null,dragging:false};
+}
+function liveSwipeMove(e){
+  const s=liveSwipe; if(!s.el) return;
+  const dx=e.clientX-s.startX, dy=e.clientY-s.startY;
+  if(!s.dragging){
+    if(Math.abs(dx)<6 && Math.abs(dy)<6) return;
+    if(Math.abs(dy)>Math.abs(dx)){ s.el=null; return; } // scroll vertical → on laisse faire, pas de swipe
+    s.dragging=true; s.el.classList.add('dragging'); s.el.setPointerCapture&&s.el.setPointerCapture(e.pointerId);
+  }
+  let x=s.baseX+dx;
+  x=Math.max(-SWIPE_W,Math.min(SWIPE_W,x));
+  s.curX=x;
+  s.el.style.transform='translateX('+x+'px)';
+}
+function liveSwipeUp(e){
+  const s=liveSwipe; if(!s.el){ liveSwipe={el:null}; return; }
+  if(s.dragging){
+    s.el.classList.remove('dragging');
+    if(s.curX<=-40){ s.el.style.transform='translateX(-'+SWIPE_W+'px)'; s.el.classList.add('open'); s.el._openDir='left'; }
+    else if(s.curX>=40){ s.el.style.transform='translateX('+SWIPE_W+'px)'; s.el.classList.add('open'); s.el._openDir='right'; }
+    else { s.el.style.transform='translateX(0px)'; s.el.classList.remove('open'); s.el._openDir=null; }
+  }
+  liveSwipe={el:null};
+}
+function closeSwipeCard(card){ card.style.transform='translateX(0px)'; card.classList.remove('open'); card._openDir=null; }
 function toggleLiveEx(i){
+  // Si la carte est ouverte en mode swipe (Supprimer révélé), un tap la referme au lieu de la déplier.
+  const card=document.querySelector('.ex-swipe-card[data-i="'+i+'"]');
+  if(card && card.classList.contains('open')){ closeSwipeCard(card); return; }
   const prev=liveOpenEx;
   const willOpen=prev!==i;
   liveOpenEx=willOpen?i:-1;
