@@ -3257,26 +3257,97 @@ function addExToProg(progId,e){
   if(!p.kind){ toast('Les programmes par défaut ne sont pas modifiables'); return; }
   closeOv('ovLib'); openCfg(e,(cfg)=>{ p.ex.push(cfg); saveAll(); openProg(progId); });
 }
+/* ===== ANATOMIE — zones de muscles pour l'onglet "Muscles" ===== */
+const ANATOMY_FRONT_ZONES={
+  'Cou':[{type:'rect',x:90,y:46,w:20,h:14,rx:6}],
+  'Épaules':[{type:'ellipse',cx:52,cy:70,rx:15,ry:14},{type:'ellipse',cx:148,cy:70,rx:15,ry:14}],
+  'Pectoraux':[{type:'rect',x:66,y:64,w:68,h:34,rx:14}],
+  'Abdominaux':[{type:'rect',x:76,y:102,w:48,h:55,rx:10}],
+  'Biceps':[{type:'rect',x:38,y:80,w:20,h:48,rx:10},{type:'rect',x:142,y:80,w:20,h:48,rx:10}],
+  'Avant-bras':[{type:'rect',x:34,y:130,w:18,h:48,rx:9},{type:'rect',x:148,y:130,w:18,h:48,rx:9}],
+  'Adducteurs':[{type:'rect',x:92,y:190,w:8,h:70,rx:4},{type:'rect',x:100,y:190,w:8,h:70,rx:4}],
+  'Quadriceps':[{type:'rect',x:70,y:185,w:26,h:78,rx:13},{type:'rect',x:104,y:185,w:26,h:78,rx:13}]
+};
+const ANATOMY_BACK_ZONES={
+  'Trapèzes':[{type:'rect',x:74,y:56,w:52,h:26,rx:10}],
+  'Épaules':[{type:'ellipse',cx:52,cy:70,rx:15,ry:14},{type:'ellipse',cx:148,cy:70,rx:15,ry:14}],
+  'Dos':[{type:'rect',x:66,y:82,w:68,h:56,rx:14}],
+  'Triceps':[{type:'rect',x:38,y:80,w:20,h:48,rx:10},{type:'rect',x:142,y:80,w:20,h:48,rx:10}],
+  'Avant-bras':[{type:'rect',x:34,y:130,w:18,h:48,rx:9},{type:'rect',x:148,y:130,w:18,h:48,rx:9}],
+  'Lombaires':[{type:'rect',x:76,y:138,w:48,h:24,rx:10}],
+  'Fessiers':[{type:'rect',x:70,y:162,w:60,h:36,rx:16}],
+  'Ischios':[{type:'rect',x:70,y:198,w:26,h:66,rx:13},{type:'rect',x:104,y:198,w:26,h:66,rx:13}],
+  'Abducteurs':[{type:'rect',x:60,y:198,w:10,h:66,rx:5},{type:'rect',x:130,y:198,w:10,h:66,rx:5}],
+  'Mollets':[{type:'rect',x:74,y:264,w:22,h:70,rx:11},{type:'rect',x:104,y:264,w:22,h:70,rx:11}]
+};
+function anatomyZoneKey(raw){
+  if(!raw) return null;
+  const keys=Object.keys(ANATOMY_FRONT_ZONES).concat(Object.keys(ANATOMY_BACK_ZONES));
+  let best=null;
+  keys.forEach(k=>{ if(raw.indexOf(k)!==-1 && (!best||k.length>best.length)) best=k; });
+  return best;
+}
+function anatomyZonesFor(f){
+  const zones=[];
+  (f.primary||[]).forEach(m=>{ const k=anatomyZoneKey(m); if(k && !zones.find(z=>z.key===k)) zones.push({key:k,strength:'primary'}); });
+  (f.secondary||[]).forEach(m=>{ const k=anatomyZoneKey(m); if(k && !zones.find(z=>z.key===k)) zones.push({key:k,strength:'secondary'}); });
+  const back=zones.some(z=>ANATOMY_BACK_ZONES[z.key] && !ANATOMY_FRONT_ZONES[z.key]);
+  return {zones,view:back?'back':'front'};
+}
+function anatomyShapeSVG(s,fill,opacity){
+  if(s.type==='rect') return '<rect x="'+s.x+'" y="'+s.y+'" width="'+s.w+'" height="'+s.h+'" rx="'+s.rx+'" fill="'+fill+'" opacity="'+opacity+'"/>';
+  return '<ellipse cx="'+s.cx+'" cy="'+s.cy+'" rx="'+s.rx+'" ry="'+s.ry+'" fill="'+fill+'" opacity="'+opacity+'"/>';
+}
+function bodySilhouetteSVG(){
+  return '<circle cx="100" cy="30" r="20" fill="var(--s3)" stroke="var(--hair2)"/>'+
+    '<rect x="90" y="46" width="20" height="16" rx="6" fill="var(--s3)" stroke="var(--hair2)"/>'+
+    '<rect x="64" y="60" width="72" height="80" rx="20" fill="var(--s3)" stroke="var(--hair2)"/>'+
+    '<rect x="38" y="66" width="20" height="62" rx="10" fill="var(--s3)" stroke="var(--hair2)"/>'+
+    '<rect x="142" y="66" width="20" height="62" rx="10" fill="var(--s3)" stroke="var(--hair2)"/>'+
+    '<rect x="34" y="126" width="18" height="52" rx="9" fill="var(--s3)" stroke="var(--hair2)"/>'+
+    '<rect x="148" y="126" width="18" height="52" rx="9" fill="var(--s3)" stroke="var(--hair2)"/>'+
+    '<circle cx="43" cy="184" r="9" fill="var(--s3)" stroke="var(--hair2)"/>'+
+    '<circle cx="157" cy="184" r="9" fill="var(--s3)" stroke="var(--hair2)"/>'+
+    '<rect x="68" y="158" width="64" height="30" rx="14" fill="var(--s3)" stroke="var(--hair2)"/>'+
+    '<rect x="70" y="185" width="26" height="80" rx="13" fill="var(--s3)" stroke="var(--hair2)"/>'+
+    '<rect x="104" y="185" width="26" height="80" rx="13" fill="var(--s3)" stroke="var(--hair2)"/>'+
+    '<rect x="74" y="264" width="22" height="72" rx="11" fill="var(--s3)" stroke="var(--hair2)"/>'+
+    '<rect x="104" y="264" width="22" height="72" rx="11" fill="var(--s3)" stroke="var(--hair2)"/>'+
+    '<ellipse cx="85" cy="342" rx="14" ry="8" fill="var(--s3)" stroke="var(--hair2)"/>'+
+    '<ellipse cx="115" cy="342" rx="14" ry="8" fill="var(--s3)" stroke="var(--hair2)"/>';
+}
+function bodyAnatomySVG(zoneInfo,view){
+  const ZONES=view==='back'?ANATOMY_BACK_ZONES:ANATOMY_FRONT_ZONES;
+  let overlays='';
+  zoneInfo.zones.forEach(z=>{
+    const shapes=ZONES[z.key]; if(!shapes) return;
+    const opacity=z.strength==='primary'?0.9:0.4;
+    shapes.forEach(s=>{ overlays+=anatomyShapeSVG(s,'var(--e)',opacity); });
+  });
+  return '<svg viewBox="0 0 200 360" style="width:100%;max-width:260px;display:block;margin:0 auto">'+bodySilhouetteSVG()+overlays+'</svg>';
+}
+
 /* ===== VUE EXERCICE DÉTAILLÉE (onglets) ===== */
-let exDetailTab='exo', exDetailCtx=null;
+let exDetailTab='exo', exDetailCtx=null, exAnatomyView=null;
 function openExDetail(progId,idx){
-  exDetailCtx={progId,idx}; exDetailTab='exo';
+  exDetailCtx={progId,idx}; exDetailTab='exo'; exAnatomyView=null;
   renderExDetail();
 }
+function toggleAnatomyView(){ exAnatomyView=exAnatomyView==='front'?'back':'front'; renderExDetail(); }
 function renderExDetail(){
   const p=allProgs().find(x=>x.id===exDetailCtx.progId); const e=p.ex[exDetailCtx.idx];
   const f=exMeta(e.name)||{primary:e.muscles||[],secondary:[],steps:[],tips:[],mistakes:[],safety:[],equip:'',level:''};
   $('#ovProgTitle').textContent=e.name;
   const g=exGif(e.name);
   let h='<div class="pills" style="margin-bottom:14px;overflow-x:auto;flex-wrap:nowrap">'+
-    [['exo','Exercice'],['muscles','Muscles'],['instr','Instructions'],['tips','Conseils']].map(t=>'<div class="pill '+(exDetailTab===t[0]?'on':'')+'" onclick="exDetailTab=\''+t[0]+'\';renderExDetail()">'+t[1]+'</div>').join('')+'</div>';
-  // Média animé
-  if(g){
-    h+='<div style="position:relative;background:#0c0f15;border:1px solid var(--hair);border-radius:16px;overflow:hidden;margin-bottom:14px"><img id="exDemo" src="'+g[0]+'" style="width:100%;display:block;aspect-ratio:16/11;object-fit:cover"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center" onclick="toggleExDemo()"><div id="exPlayBtn" style="width:56px;height:56px;border-radius:50%;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;backdrop-filter:blur(4px)">▶</div></div></div>';
-  } else {
-    h+='<div style="background:linear-gradient(135deg,var(--s2),var(--s1));border:1px solid var(--hair);border-radius:16px;padding:36px;text-align:center;margin-bottom:14px"><div style="font-size:64px;animation:demoFloat 1.5s infinite">'+(e.anim||'🏋️')+'</div></div>';
-  }
+    [['exo','Exercice'],['muscles','Muscles'],['instr','Instructions']].map(t=>'<div class="pill '+(exDetailTab===t[0]?'on':'')+'" onclick="exDetailTab=\''+t[0]+'\';renderExDetail()">'+t[1]+'</div>').join('')+'</div>';
   if(exDetailTab==='exo'){
+    // Média animé — démarre directement le tuto, sans bouton lecture/pause
+    if(g){
+      h+='<div style="position:relative;background:#0c0f15;border:1px solid var(--hair);border-radius:16px;overflow:hidden;margin-bottom:14px"><img id="exDemo" src="'+g[0]+'" style="width:100%;display:block;aspect-ratio:16/11;object-fit:cover"></div>';
+    } else {
+      h+='<div style="background:linear-gradient(135deg,var(--s2),var(--s1));border:1px solid var(--hair);border-radius:16px;padding:36px;text-align:center;margin-bottom:14px"><div style="font-size:64px;animation:demoFloat 1.5s infinite">'+(e.anim||'🏋️')+'</div></div>';
+    }
     h+='<div class="card"><div class="card-t">À propos de l\u2019exercice</div><div style="font-size:13px;color:var(--muted);line-height:1.55">Le <b style="color:var(--snow)">'+e.name+'</b> sollicite principalement '+((f.primary||[]).join(', ')||'plusieurs groupes musculaires')+(f.secondary&&f.secondary.length?', ainsi que '+f.secondary.join(', ')+' en secondaire':'')+'.</div></div>';
     // Repos
     h+='<div class="card"><div class="row"><div class="row" style="gap:10px"><span style="font-size:18px">⏱</span><div><div style="font-size:11px;color:var(--muted)">Repos entre les séries</div><div style="font-weight:700">'+(e.rest||90)+'s</div></div></div></div></div>';
@@ -3284,14 +3355,21 @@ function renderExDetail(){
     const vol=(e.sets||3)*(parseInt(e.reps)||10)*(e.weight||0);
     h+='<div class="card" style="padding:0;overflow:hidden"><div style="display:flex;text-align:center"><div style="flex:1;padding:13px 4px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0">Séries</div><div class="man" style="font-weight:800;font-size:18px">'+e.sets+'</div></div><div style="flex:1;padding:13px 4px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0">Volume</div><div class="man" style="font-weight:800;font-size:18px">'+vol+' kg</div></div><div style="flex:1;padding:13px 4px"><div class="lab" style="margin:0">Durée</div><div class="man" style="font-weight:800;font-size:18px">~'+Math.round(e.sets*1.8)+'min</div></div></div></div>';
   } else if(exDetailTab==='muscles'){
+    // Schéma d'anatomie à la place du tutoriel vidéo
+    const zoneInfo=anatomyZonesFor(f);
+    if(exAnatomyView===null) exAnatomyView=zoneInfo.view;
+    h+='<div style="position:relative;background:linear-gradient(135deg,var(--s2),var(--s1));border:1px solid var(--hair);border-radius:16px;padding:14px;margin-bottom:14px">'+
+       bodyAnatomySVG(zoneInfo,exAnatomyView)+
+       '<div style="position:absolute;top:10px;right:10px;font-size:11px;font-weight:700;padding:6px 10px;border-radius:20px;background:rgba(0,0,0,.35);color:#fff;backdrop-filter:blur(4px);cursor:pointer" onclick="toggleAnatomyView()">🔄 '+(exAnatomyView==='front'?'Face':'Dos')+'</div>'+
+       '</div>';
     h+='<div class="card"><div class="card-t">🎯 Muscles principaux</div><div class="muscle-tags">'+(f.primary||[]).map(m=>'<span class="mtag" style="background:var(--ed);color:var(--e);border-color:var(--e)">'+m+'</span>').join('')+'</div>';
     if(f.secondary&&f.secondary.length) h+='<div class="card-t" style="margin-top:14px">Muscles secondaires</div><div class="muscle-tags">'+f.secondary.map(m=>'<span class="mtag">'+m+'</span>').join('')+'</div>';
     h+='</div>';
     if(f.equip) h+='<div class="card"><div class="row"><span class="lab">Matériel</span><span style="font-weight:600">'+f.equip+'</span></div></div>';
-  } else if(exDetailTab==='instr'){
+  } else {
+    // Instructions + Conseils réunis dans le même onglet
     h+='<div class="card"><div class="card-t">📋 Exécution</div>'+((f.steps&&f.steps.length)?f.steps.map((s,i)=>'<div class="tip" style="margin-bottom:6px"><b style="color:var(--e)">'+(i+1)+'.</b> '+s+'</div>').join(''):'<div style="font-size:13px;color:var(--muted)">Réalise le mouvement de façon contrôlée, amplitude complète.</div>')+'</div>';
     if(f.breathing) h+='<div class="card"><div class="card-t">🌬️ Respiration</div><div class="tip">'+f.breathing+'</div></div>';
-  } else {
     if(f.tips&&f.tips.length) h+='<div class="card"><div class="card-t">✅ Conseils</div>'+f.tips.map(x=>'<div class="tip" style="margin-bottom:6px">'+x+'</div>').join('')+'</div>';
     if(f.mistakes&&f.mistakes.length) h+='<div class="card"><div class="card-t" style="color:var(--bad)">⚠️ Erreurs fréquentes</div>'+f.mistakes.map(x=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(255,92,108,.3);background:rgba(255,92,108,.08)">✗ '+x+'</div>').join('')+'</div>';
     if(f.safety&&f.safety.length) h+='<div class="card"><div class="card-t">🛡️ Sécurité</div>'+f.safety.map(x=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(51,211,153,.3);background:rgba(51,211,153,.08)">'+x+'</div>').join('')+'</div>';
@@ -3299,14 +3377,12 @@ function renderExDetail(){
   h+='<div class="row" style="gap:10px;margin-top:8px"><button class="btn ghost" onclick="openProg(\''+exDetailCtx.progId+'\')">‹ Retour</button><button class="btn" onclick="startLive(\''+exDetailCtx.progId+'\','+exDetailCtx.idx+')">▶ Démarrer</button></div>';
   $('#progBody').innerHTML=h;
   openOv('ovProg');
+  if(exDetailTab==='exo' && g){ startExDemoAuto(g); } else if(_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; }
 }
 let _exDemo2=null;
-function toggleExDemo(){
-  const g=exGif(allProgs().find(x=>x.id===exDetailCtx.progId).ex[exDetailCtx.idx].name); if(!g)return;
-  const img=$('#exDemo'), btn=$('#exPlayBtn');
-  if(_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; if(btn)btn.textContent='▶'; return; }
+function startExDemoAuto(g){
+  if(_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; }
   g.forEach(s=>{const im=new Image();im.src=s;}); let i=0;
-  if(btn)btn.textContent='⏸';
   _exDemo2=setInterval(()=>{ const im=$('#exDemo'); if(!im){clearInterval(_exDemo2);_exDemo2=null;return;} i=1-i; im.src=g[i]; },650);
 }
 
