@@ -83,7 +83,12 @@ async function deleteAccountCompletely(){
 /* ---------- STORAGE ---------- */
 const DB = {
   load(k){ try{ return JSON.parse(localStorage.getItem('vvv_'+k)); }catch(e){ return null; } },
-  save(k,v){ localStorage.setItem('vvv_'+k, JSON.stringify(v)); cloudPush(k,v); }
+  save(k,v){ localStorage.setItem('vvv_'+k, JSON.stringify(v)); cloudPush(k,v); },
+  // IMPORTANT : toujours utiliser DB.remove() (et jamais localStorage.removeItem direct) pour les clés
+  // synchronisées avec le cloud. Sinon la valeur locale est bien supprimée mais la copie cloud
+  // reste présente en base → au prochain cloudPullAll() elle écrase le local et "ressuscite" la donnée
+  // (c'était la cause du bug "Annuler la séance" qui ne l'annulait pas vraiment).
+  remove(k){ localStorage.removeItem('vvv_'+k); cloudPush(k, null); }
 };
 
 /* ---------- STATE ---------- */
@@ -1100,13 +1105,16 @@ function initApp(){
 }
 function maybeResumeLive(){
   const snap=DB.load('live_active'); if(!snap||LIVE) return;
-  const prog=allProgs().find(x=>x.id===snap.progId); if(!prog){ localStorage.removeItem('vvv_live_active'); return; }
+  const base=allProgs().find(x=>x.id===snap.progId); if(!base){ DB.remove('live_active'); return; }
+  // On repart de la liste d'exercices sauvegardée dans la séance (progEx) si elle existe,
+  // pour ne pas perdre les ajouts/suppressions faits en pleine séance avant le rechargement.
+  const prog={...base,ex:snap.progEx||base.ex};
   const mins=Math.round((Date.now()-snap.start)/60000);
-  if(mins>180){ localStorage.removeItem('vvv_live_active'); return; } // trop vieux
+  if(mins>180){ DB.remove('live_active'); return; } // trop vieux
   if(confirm('Une séance « '+prog.name+' » était en cours ('+mins+' min). Reprendre ?')){
     LIVE={prog,idx:snap.idx,start:snap.start,state:snap.state,tonnage:snap.tonnage,setsDone:snap.setsDone};
     renderLive(); openOv('ovLive'); liveTimer=setInterval(updateLiveTimer,500); startBgActivity('Séance : '+prog.name);
-  } else { localStorage.removeItem('vvv_live_active'); }
+  } else { DB.remove('live_active'); }
 }
 
 /* ---------- ONBOARDING ---------- */
@@ -3354,7 +3362,9 @@ function startLive(id,startIdx){
   const p=allProgs().find(x=>x.id===id); if(!p) return;
   if(_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; }
   closeOv('ovProg');
-  LIVE={prog:p,idx:startIdx||0,start:Date.now(),
+  // On clone le tableau d'exercices (pas les objets exercice eux-mêmes) : ajouter/retirer un exo
+  // en pleine séance ne modifie donc que cette séance, jamais la routine enregistrée.
+  LIVE={prog:{...p,ex:p.ex.slice()},idx:startIdx||0,start:Date.now(),
     state:p.ex.map(e=>({weight:e.weight||20,reps:parseInt(e.reps)||10,sets:Array.from({length:e.sets},()=>false),log:[]})),
     tonnage:0,setsDone:0};
   renderLive(); openOv('ovLive');
@@ -3369,7 +3379,9 @@ function updateLiveTimer(){
 }
 function persistLive(){
   if(!LIVE) return;
-  const snap={progId:LIVE.prog.id,idx:LIVE.idx,start:LIVE.start,state:LIVE.state,tonnage:LIVE.tonnage,setsDone:LIVE.setsDone};
+  // On sauvegarde aussi la liste d'exercices de la séance (LIVE.prog.ex) et pas que le progId :
+  // sinon un exo ajouté/retiré en pleine séance serait perdu si l'app se recharge (iOS aime bien le faire).
+  const snap={progId:LIVE.prog.id,progName:LIVE.prog.name,progEx:LIVE.prog.ex,idx:LIVE.idx,start:LIVE.start,state:LIVE.state,tonnage:LIVE.tonnage,setsDone:LIVE.setsDone};
   DB.save('live_active',snap);
 }
 function renderLive(){
@@ -3380,7 +3392,7 @@ function renderLive(){
   const prog=LIVE.setsDone/totalSets*100;
   const g=exGif(e.name);
   // Header : temps + progression + pastilles
-  let h='<div class="row" style="margin-bottom:10px"><span class="mono" id="liveTime" style="font-size:17px;font-weight:700;color:var(--e)">0:00</span><div style="display:flex;gap:6px"><button class="btn ghost sm" style="width:auto;padding:6px 10px" onclick="pauseLive()">⏸ Plus tard</button><span class="lab" style="align-self:center">'+(LIVE.idx+1)+'/'+p.ex.length+'</span></div></div>';
+  let h='<div class="row" style="margin-bottom:10px"><span class="mono" id="liveTime" style="font-size:17px;font-weight:700;color:var(--e)">0:00</span><div style="display:flex;gap:6px"><button class="btn ghost sm" style="width:auto;padding:6px 10px" onclick="pauseLive()">⏸ Plus tard</button><span class="lab" style="align-self:center;cursor:pointer;padding:6px 11px;border-radius:20px;background:var(--s2);border:1px solid var(--hair);display:flex;align-items:center;gap:5px" onclick="openLiveExList()">'+(LIVE.idx+1)+'/'+p.ex.length+'<span style="color:var(--e);font-size:13px">☰</span></span></div></div>';
   h+='<div class="pbar" style="margin-bottom:12px"><div style="width:'+prog+'%"></div></div>';
   h+='<div style="display:flex;gap:5px;overflow-x:auto;margin-bottom:14px;padding-bottom:4px">';
   p.ex.forEach((ex2,i)=>{ const allDone=LIVE.state[i].sets.every(x=>x); const cur=i===LIVE.idx;
@@ -3441,18 +3453,98 @@ function changeRest(){ const e=LIVE.prog.ex[LIVE.idx]; pickInt('Repos (secondes)
 function addLiveSet(){ const st=LIVE.state[LIVE.idx]; const last=st.log[st.log.length-1]||{kg:20,reps:10,rpe:8}; st.sets.push(false); st.log.push({kg:last.kg,reps:last.reps,rpe:last.rpe,done:false}); renderLive(); }
 function jumpLive(i){ LIVE.idx=i; renderLive(); }
 function skipExercise(){ if(LIVE.idx<LIVE.prog.ex.length-1){ LIVE.idx++; renderLive(); toast('Exercice passé'); } else toast('Dernier exercice'); }
+
+/* ---------- LIVE : liste des exercices de la séance (voir / ajouter / retirer) ---------- */
+let liveExListMode=false, liveExListSel=new Set();
+function openLiveExList(){
+  if(!LIVE) return;
+  liveExListMode=false; liveExListSel=new Set();
+  const old=$('#liveExListOv'); if(old) old.remove();
+  const ov=document.createElement('div'); ov.className='ov on'; ov.id='liveExListOv'; ov.style.zIndex='13600';
+  ov.innerHTML='<div class="ov-card" style="max-height:88vh">'+
+    '<div class="ov-head"><h2>Exercices de la séance</h2><div class="x" onclick="closeLiveExList()">✕</div></div>'+
+    '<div id="liveExListBody"></div></div>';
+  document.body.appendChild(ov);
+  renderLiveExListBody();
+}
+function closeLiveExList(){ const o=$('#liveExListOv'); if(o) o.remove(); }
+function renderLiveExListBody(){
+  if(!LIVE || !$('#liveExListBody')) return;
+  const p=LIVE.prog;
+  let h='<div class="row" style="margin-bottom:12px"><span style="font-size:12px;color:var(--muted)">'+p.ex.length+' exercice'+(p.ex.length>1?'s':'')+'</span><span style="color:var(--e);font-size:13px;font-weight:700;cursor:pointer" onclick="liveExListToggleMode()">'+(liveExListMode?'Annuler':'Sélectionner')+'</span></div>';
+  p.ex.forEach((e,i)=>{
+    const st=LIVE.state[i];
+    const allDone = st && st.sets.length && st.sets.every(x=>x);
+    const cur=i===LIVE.idx;
+    const sel=liveExListSel.has(i);
+    h+='<div class="card" style="padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;cursor:pointer;'+(cur?'border-color:var(--e)':'')+'" onclick="'+(liveExListMode?('liveExListToggleItem('+i+')'):('liveExListJump('+i+')'))+'">';
+    if(liveExListMode){
+      h+='<div style="width:22px;height:22px;border-radius:7px;flex-shrink:0;border:1px solid '+(sel?'var(--e)':'var(--hair)')+';background:'+(sel?'var(--e)':'transparent')+';display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px">'+(sel?'✓':'')+'</div>';
+    } else {
+      h+='<div style="width:26px;height:26px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:'+(cur?'var(--ed)':allDone?'rgba(51,211,153,.18)':'var(--s2)')+';color:'+(allDone?'var(--ok)':cur?'var(--e)':'var(--muted)')+'">'+(allDone&&!cur?'✓':(i+1))+'</div>';
+    }
+    h+='<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14px">'+e.name+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+e.sets+' séries · '+e.reps+' reps</div></div>';
+    if(!liveExListMode) h+='<span onclick="event.stopPropagation();liveExListDeleteOne('+i+')" style="color:var(--bad);font-size:16px;padding:4px;flex-shrink:0">🗑</span>';
+    h+='</div>';
+  });
+  h+='<button class="btn ghost sm" style="margin:6px 0 10px" onclick="liveAddExercise()">＋ Ajouter un exercice</button>';
+  if(liveExListMode) h+='<button class="btn" style="background:var(--bad)'+(liveExListSel.size?'':';opacity:.4;pointer-events:none')+'" onclick="liveExListDeleteSelected()">🗑 Retirer ('+liveExListSel.size+')</button>';
+  $('#liveExListBody').innerHTML=h;
+}
+function liveExListToggleMode(){ liveExListMode=!liveExListMode; liveExListSel=new Set(); renderLiveExListBody(); }
+function liveExListToggleItem(i){ if(liveExListSel.has(i)) liveExListSel.delete(i); else liveExListSel.add(i); renderLiveExListBody(); }
+function liveExListJump(i){ jumpLive(i); closeLiveExList(); }
+function liveExListDeleteOne(i){ confirmDeleteLiveEx([i]); }
+function liveExListDeleteSelected(){ if(!liveExListSel.size) return; confirmDeleteLiveEx([...liveExListSel]); }
+function confirmDeleteLiveEx(indices){
+  if(LIVE.prog.ex.length-indices.length<1){ toast('Il doit rester au moins un exercice'); return; }
+  const names=indices.map(i=>LIVE.prog.ex[i].name);
+  const old=$('#delExOv'); if(old) old.remove();
+  const ov=document.createElement('div'); ov.className='ov on'; ov.id='delExOv'; ov.style.zIndex='13650';
+  ov.innerHTML='<div class="ov-card" style="text-align:center">'+
+    '<div class="card-t" style="justify-content:center;margin-bottom:10px">⚠️ Retirer '+(names.length>1?'ces exercices':'cet exercice')+' ?</div>'+
+    '<div style="font-size:13px;color:var(--muted);margin-bottom:18px">'+names.join(', ')+'</div>'+
+    '<div class="row" style="gap:10px">'+
+      '<button class="btn ghost" style="flex:1" onclick="document.getElementById(\'delExOv\').remove()">Annuler</button>'+
+      '<button class="btn" style="flex:1;background:var(--bad)" onclick="doDeleteLiveEx('+JSON.stringify(indices)+')">Retirer</button>'+
+    '</div></div>';
+  document.body.appendChild(ov);
+}
+function doDeleteLiveEx(indices){
+  const o=$('#delExOv'); if(o) o.remove();
+  const sorted=[...indices].sort((a,b)=>b-a);
+  sorted.forEach(i=>{ LIVE.prog.ex.splice(i,1); LIVE.state.splice(i,1); });
+  if(LIVE.idx>=LIVE.prog.ex.length) LIVE.idx=LIVE.prog.ex.length-1;
+  liveExListMode=false; liveExListSel=new Set();
+  persistLive(); renderLive(); renderLiveExListBody();
+  toast('Exercice(s) retiré(s) ✓');
+}
+function liveAddExercise(){
+  libCallback=(e)=>{ closeOv('ovLib'); openLiveCfgAdd(e); };
+  libBrowseMode=false; renderLib();
+  $('#ovLib').style.zIndex='13700'; openOv('ovLib');
+}
+function openLiveCfgAdd(e){
+  $('#ovCfg').style.zIndex='13750';
+  openCfg(e,(cfg)=>{
+    LIVE.prog.ex.push(cfg);
+    LIVE.state.push({weight:cfg.weight||20,reps:parseInt(cfg.reps)||10,sets:Array.from({length:cfg.sets},()=>false),log:[]});
+    persistLive(); toast('Exercice ajouté ✓'); renderLive(); renderLiveExListBody();
+  });
+}
 function pauseLive(){
   clearInterval(liveTimer);
   LIVE.savedElapsed=Date.now()-LIVE.start;
-  DB.save('live_paused',LIVE); localStorage.removeItem('vvv_live_active');
+  DB.save('live_paused',LIVE); DB.remove('live_active');
   closeOv('ovLive'); LIVE=null; toast('Séance sauvegardée — reprends quand tu veux');
   stopBgActivity(); renderSport();
 }
 function resumeLive(){
   const saved=DB.load('live_paused'); if(!saved) return;
-  LIVE=saved; LIVE.prog=allProgs().find(x=>x.id===saved.prog.id)||saved.prog;
+  LIVE=saved; // on garde saved.prog tel quel (avec les exos ajoutés/retirés pendant la séance),
+  // on ne va PAS le remplacer par la routine d'origine sinon ces changements seraient perdus.
   LIVE.start=Date.now()-(saved.savedElapsed||0);
-  localStorage.removeItem('vvv_live_paused');
+  DB.remove('live_paused');
   renderLive(); openOv('ovLive'); liveTimer=setInterval(updateLiveTimer,500);
 }
 function liveAdj(k,v){ const st=LIVE.state[LIVE.idx]; st[k]=Math.max(0,st[k]+v); $(k==='weight'?'#lvW':'#lvR').textContent=st[k]; }
@@ -3506,7 +3598,9 @@ function confirmCloseLive(){
 }
 function doCancelLive(){
   const ov=$('#cancelLiveOv'); if(ov) ov.remove();
-  clearInterval(liveTimer); LIVE=null; localStorage.removeItem('vvv_live_active');
+  closeLiveExList(); const de=$('#delExOv'); if(de) de.remove();
+  clearInterval(liveTimer); clearInterval(restTimer); skipRest();
+  LIVE=null; DB.remove('live_active'); DB.remove('live_paused');
   closeOv('ovLive'); stopBgActivity(); toast('Séance annulée'); renderSport();
 }
 function finishLive(){
@@ -3531,7 +3625,7 @@ function finishLive(){
     const vol=(st.log||[]).reduce((a,s)=>a+(s.done?(s.kg||0)*(s.reps||0):0),0);
     if(vol>0){ if(!PREFS.exHist[e.name])PREFS.exHist[e.name]=[]; PREFS.exHist[e.name].push({date:todayKey(),vol}); PREFS.exHist[e.name]=PREFS.exHist[e.name].slice(-30); }
   }});
-  localStorage.removeItem('vvv_live_active');
+  DB.remove('live_active');
   saveAll(); refreshXP({animate:true}); burst(); sfx('finish'); stopBgActivity();
   let h='<div class="popin" style="text-align:center;padding:6px 0"><div style="font-size:50px">🏆</div><div class="man" style="font-weight:800;font-size:22px;margin:8px 0">Séance terminée !</div></div>';
   h+='<div class="sgrid" style="margin-bottom:12px"><div class="sbox"><div class="v">'+Math.round(LIVE.tonnage)+'</div><div class="l">Tonnage (kg)</div></div><div class="sbox"><div class="v">'+fmtTime(dur)+'</div><div class="l">Durée</div></div><div class="sbox"><div class="v">'+LIVE.setsDone+'</div><div class="l">Séries</div></div><div class="sbox"><div class="v">'+totalReps+'</div><div class="l">Répétitions</div></div><div class="sbox"><div class="v">'+cal+'</div><div class="l">Calories</div></div><div class="sbox"><div class="v" style="color:var(--or)">'+prs.length+'</div><div class="l">Records battus</div></div></div>';
