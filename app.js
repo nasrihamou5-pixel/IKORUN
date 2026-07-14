@@ -5,6 +5,12 @@ window.currentUserId = null;
 window.currentUserEmail = null;
 
 const VVV_ARRAY_KEYS = ['sessions','muscu_sessions','records','weightlog','sesslog','agenda','custom_progs'];
+// Clés d'état "séance en cours" : purement locales, JAMAIS envoyées/lues sur le cloud.
+// Avant, elles étaient synchronisées comme le reste → si le push de suppression (cloudPush(k,null))
+// n'avait pas le temps de partir (app fermée/mise en veille juste après "Terminer"), l'ancienne
+// séance restait en base côté cloud et revenait "ressusciter" en local au prochain cloudPullAll(),
+// d'où le popup "Reprendre ?" qui réapparaissait sans cesse. On les sort entièrement du circuit.
+const VVV_LOCAL_ONLY_KEYS = ['live_active','live_paused'];
 
 function mergeStorageValue(key, localVal, cloudVal){
   if(VVV_ARRAY_KEYS.includes(key)){
@@ -29,6 +35,11 @@ async function cloudPullAll(uid){
     if(error){ console.error('cloud pull error', error); return; }
     if(!data) return;
     data.forEach(row => {
+      if(VVV_LOCAL_ONLY_KEYS.includes(row.key)){
+        // Nettoyage définitif d'une éventuelle séance fantôme laissée avant ce correctif.
+        window.supabaseClient.from('user_data').delete().eq('user_id', uid).eq('key', row.key).then(()=>{}).catch(()=>{});
+        return; // on ne rapatrie jamais ces clés depuis le cloud
+      }
       let localVal = null;
       try{ const raw = localStorage.getItem('vvv_'+row.key); localVal = raw ? JSON.parse(raw) : null; }catch(e){}
       const merged = mergeStorageValue(row.key, localVal, row.value);
@@ -38,6 +49,7 @@ async function cloudPullAll(uid){
 }
 
 async function cloudPush(key, value){
+  if(VVV_LOCAL_ONLY_KEYS.includes(key)) return; // état de séance en cours : jamais envoyé au cloud
   if(!window.supabaseClient || !window.currentUserId) return;
   try{
     await window.supabaseClient.from('user_data').upsert(
