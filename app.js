@@ -1263,8 +1263,24 @@ function effectiveMode(){ return P.mode==='light' ? 'light' : 'dark'; }
 function applyTheme(){
   const mode=effectiveMode();
   document.documentElement.setAttribute('data-mode',mode);
+  document.documentElement.setAttribute('data-accent',P.theme||'blue');
   document.documentElement.classList.toggle('easy-mode',!!P.easyMode);
   const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.content=(P.easyMode?(mode==='light'?'#FFFFFF':'#000000'):(mode==='light'?'#F2F4F8':'#0A0D12'));
+}
+/* Couleur d'accent de l'app : bleu (défaut) / vert militaire chromé / marron boisé chromé */
+const ACCENTS=[{key:'blue',name:'Bleu'},{key:'green',name:'Vert militaire'},{key:'brown',name:'Marron boisé'}];
+function setAccent(c){
+  P.theme=c; saveAll(); applyTheme();
+  if($('#s-profil')&&$('#s-profil').classList.contains('on')) renderProfile();
+  refreshPfSheet();
+  sfx&&sfx('tap');
+  toast('Couleur appliquée ✓');
+}
+function pfAccentPickerHTML(){
+  const cur=P.theme||'blue';
+  return '<div class="accent-picker">'+ACCENTS.map(a=>
+    '<div class="accent-dot'+(cur===a.key?' on':'')+'" data-a="'+a.key+'" title="'+a.name+'" onclick="event.stopPropagation();setAccent(\''+a.key+'\')"></div>'
+  ).join('')+'</div>';
 }
 function toggleEasyMode(){
   P.easyMode=!P.easyMode; saveAll(); applyTheme();
@@ -4930,6 +4946,7 @@ function renderProfile(){
     '<div class="grp-row" onclick="openRecords()"><div class="lr-icon">🏅</div><div class="lr-title">Historique & records</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">📊</div><div class="lr-title">Statistiques</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">🎨</div><div class="lr-title">Thème</div>'+pfThemeSwitchHTML()+'</div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">🖌️</div><div class="lr-title">Couleur de l\u2019app</div>'+pfAccentPickerHTML()+'</div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">🧓</div><div><div class="lr-title">Mode simplifié</div><div style="font-size:11px;color:var(--muted);margin-top:2px;max-width:200px">Textes plus grands, sans effets visuels — plus facile à lire</div></div><div class="toggle'+(P.easyMode?' on':'')+'" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
   '</div>';
   h+='<div class="grp-lab stag" style="animation-delay:.15s">Support</div>';

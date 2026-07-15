@@ -69,6 +69,28 @@ html[data-mode="light"] .ov{background:rgba(120,130,150,.35);}
 html[data-mode="light"] .tb-gear{background:var(--s2);}
 html[data-mode="light"] .topbar{background:linear-gradient(180deg,rgba(var(--bg-rgb),.5) 0%,rgba(var(--bg-rgb),.26) 65%,rgba(var(--bg-rgb),0) 100%);}
 
+/* ===== COULEURS D'ACCENT — Bleu (défaut) / Vert militaire chromé / Marron boisé chromé ===== */
+html[data-accent="green"]{
+  --e:#7FB856; --e2:#A6D687; --e-rgb:127,184,86; --e2-rgb:166,214,135;
+  --grad-btn:linear-gradient(180deg,#9FCB73,#74AC4A 60%,#5E9339);
+  --marineL:#24361F;
+}
+html[data-mode="light"][data-accent="green"]{ --marineL:#DCEBD0; }
+html[data-accent="brown"]{
+  --e:#B9793E; --e2:#DDA873; --e-rgb:185,121,62; --e2-rgb:221,168,115;
+  --grad-btn:linear-gradient(180deg,#D6A66E,#B97A3F 60%,#98602E);
+  --marineL:#3A2A1C;
+}
+html[data-mode="light"][data-accent="brown"]{ --marineL:#F0DFC9; }
+.accent-picker{display:flex;gap:10px;align-items:center;}
+.accent-dot{width:24px;height:24px;border-radius:50%;cursor:pointer;flex-shrink:0;
+  border:2px solid transparent;box-shadow:var(--sh-sm);transition:transform .2s var(--ease-spring),border-color .2s ease;}
+.accent-dot:active{transform:scale(.88);}
+.accent-dot.on{border-color:var(--snow);transform:scale(1.14);}
+.accent-dot[data-a="blue"]{background:linear-gradient(135deg,#6FA0FF,#2660DB);}
+.accent-dot[data-a="green"]{background:linear-gradient(135deg,#A6D687,#5E9339);}
+.accent-dot[data-a="brown"]{background:linear-gradient(135deg,#DDA873,#98602E);}
+
 /* ===== MODE SIMPLIFIÉ — pour les utilisateurs peu à l'aise avec la technologie :
    supprime le flou "liquid glass", grossit les textes/boutons, réduit les animations. ===== */
 html.easy-mode{
