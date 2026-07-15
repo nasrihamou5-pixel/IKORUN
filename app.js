@@ -2623,7 +2623,7 @@ function renderHome(){
       '<div class="ik-hero-divider"></div>'+
       '<div class="ik-hero-row3">'+
         '<div><div class="hstat-v">'+sessW+'<span>/'+sessTarget+'</span></div><div class="hstat-l">Séances</div></div>'+
-        donutSVG([{v:form,color:'var(--ok)'},{v:100-form,color:'rgba(255,255,255,.08)'}],46,6,'<div class="week-ring-v">'+form+'%</div><div class="week-ring-l">Forme</div>')+
+        donutSVG([{v:form,color:'var(--ok)'},{v:100-form,color:'rgba(255,255,255,.08)'}],50,6,'<div class="week-ring-v'+(form>=100?' v-sm':'')+'">'+form+'%</div><div class="week-ring-l">Forme</div>')+
       '</div>'+
       '<div class="week-spark-wrap"><div class="spark" style="height:36px">'+week.map(v=>'<b style="height:'+Math.max(8,Math.round(v/maxDay*100))+'%"></b>').join('')+'</div>'+
       '<div class="week-spark-days">'+dowLabels.map(l=>'<span>'+l+'</span>').join('')+'</div></div>'+
