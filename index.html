@@ -115,7 +115,7 @@ html[data-mode="light"] body::before{
 html[data-mode="light"] body::after{opacity:.02;}
 
 /* ===== ACCUEIL — refonte fidèle à la maquette IKORUN ===== */
-.ik-header{display:flex;align-items:center;justify-content:space-between;padding:2px 0 18px;}
+.ik-header{display:flex;align-items:center;justify-content:space-between;padding:max(10px,env(safe-area-inset-top)) 0 18px;}
 .ik-logo{display:flex;align-items:center;gap:9px;}
 .ik-logo svg{width:26px;height:26px;flex-shrink:0;}
 .ik-logo span{font-family:'Unbounded';font-weight:800;font-size:16px;letter-spacing:.5px;color:var(--snow);}
@@ -742,6 +742,30 @@ html[data-mode="light"]{
   display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:16px;transition:transform .15s var(--ease-spring),background .15s;}
 .x:active{transform:scale(.9);background:var(--s3);}
 
+/* ===== SKELETON — écran de chargement au tout premier lancement ===== */
+#appSkeleton{position:fixed;inset:0;z-index:20000;background:var(--bg);max-width:430px;margin:0 auto;
+  overflow:hidden;padding:max(14px,env(safe-area-inset-top)) 20px max(20px,env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;transition:opacity .38s ease;}
+#appSkeleton.out{opacity:0;pointer-events:none;}
+@keyframes sklShimmer{0%{background-position:-360px 0;}100%{background-position:360px 0;}}
+.skl{border-radius:var(--r-sm);background-color:var(--s2);
+  background-image:linear-gradient(90deg,var(--s2) 20%,var(--s3) 45%,var(--s2) 70%);
+  background-size:360px 100%;background-repeat:no-repeat;animation:sklShimmer 1.5s ease-in-out infinite;}
+.skl-header{display:flex;align-items:center;justify-content:space-between;padding:2px 0 18px;}
+.skl-logo{width:88px;height:26px;border-radius:var(--r-xs);}
+.skl-bell{width:38px;height:38px;border-radius:50%;flex-shrink:0;}
+.skl-streak{width:132px;height:26px;border-radius:var(--r-pill);margin-bottom:16px;}
+.skl-greet{margin-bottom:16px;}
+.skl-line{height:22px;margin-bottom:8px;border-radius:8px;}
+.skl-line.w70{width:70%;}
+.skl-line.w50{width:50%;}
+.skl-hero{height:230px;margin-bottom:8px;border-radius:var(--r-md);}
+.skl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px;}
+.skl-stat{height:78px;border-radius:var(--r-md);}
+.skl-session{height:96px;border-radius:var(--r-md);margin-bottom:12px;}
+.skl-nav{margin-top:auto;display:flex;justify-content:space-between;padding:14px 10px;border-radius:var(--r-pill);background:var(--s1);border:1px solid var(--hair);}
+.skl-navicon{width:26px;height:26px;border-radius:8px;}
+
 /* ONBOARDING */
 /* ===== LOGIN — Liquid Glass ===== */
 #login{position:fixed;inset:0;z-index:11500;background:#050709;
@@ -1240,6 +1264,17 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
 </style>
 </head>
 <body>
+
+<!-- SKELETON — visible instantanément, masqué dès que login/app est prêt -->
+<div id="appSkeleton">
+  <div class="skl-header"><div class="skl skl-logo"></div><div class="skl skl-bell"></div></div>
+  <div class="skl skl-streak"></div>
+  <div class="skl-greet"><div class="skl skl-line w70"></div><div class="skl skl-line w50"></div></div>
+  <div class="skl skl-hero"></div>
+  <div class="skl-grid"><div class="skl skl-stat"></div><div class="skl skl-stat"></div><div class="skl skl-stat"></div><div class="skl skl-stat"></div></div>
+  <div class="skl skl-session"></div>
+  <div class="skl-nav"><div class="skl skl-navicon"></div><div class="skl skl-navicon"></div><div class="skl skl-navicon"></div><div class="skl skl-navicon"></div><div class="skl skl-navicon"></div></div>
+</div>
 
 <!-- LOGIN / AUTH -->
 <div id="login">
