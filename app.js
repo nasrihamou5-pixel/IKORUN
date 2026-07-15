@@ -1259,12 +1259,42 @@ function finishOnboarding(){
 }
 
 /* ---------- THEME ---------- */
+/* Palettes de couleur d'accent — chaque thème fournit une teinte primaire (--e) et
+   une teinte secondaire plus claire (--e2) piochées dans la palette associée. */
+const ACCENT_THEMES={
+  bleu:  {name:'Bleu',   e:'#5483B3', e2:'#7DA0CA', swatches:['#052659','#5483B3','#C1E8FF']},
+  violet:{name:'Violet', e:'#6E3482', e2:'#A56ABD', swatches:['#49225B','#6E3482','#E7DBEF']},
+  marron:{name:'Marron', e:'#6E473B', e2:'#A78D78', swatches:['#291C0E','#6E473B','#E1D4C2']},
+  vert:  {name:'Vert',   e:'#728156', e2:'#98A77C', swatches:['#728156','#98A77C','#E7F5DC']},
+  noir:  {name:'Noir',   e:'#775144', e2:'#C09891', swatches:['#2A0800','#775144','#F4D8D8']}
+};
+function hexToRgbStr(hex){
+  const h=hex.replace('#','');
+  const r=parseInt(h.substring(0,2),16), g=parseInt(h.substring(2,4),16), b=parseInt(h.substring(4,6),16);
+  return r+','+g+','+b;
+}
 function effectiveMode(){ return P.mode==='light' ? 'light' : 'dark'; }
+function applyAccent(){
+  const key=(P.accent && ACCENT_THEMES[P.accent])?P.accent:'bleu';
+  const th=ACCENT_THEMES[key];
+  const s=document.documentElement.style;
+  s.setProperty('--e',th.e); s.setProperty('--e2',th.e2);
+  s.setProperty('--e-rgb',hexToRgbStr(th.e)); s.setProperty('--e2-rgb',hexToRgbStr(th.e2));
+}
+function setAccent(key){
+  if(!ACCENT_THEMES[key]) return;
+  P.accent=key; saveAll(); applyAccent();
+  if($('#s-profil')&&$('#s-profil').classList.contains('on')) renderProfile();
+  refreshPfSheet();
+  sfx&&sfx('tap');
+  toast('Couleur d\u2019accent : '+ACCENT_THEMES[key].name+' ✓');
+}
 function applyTheme(){
   const mode=effectiveMode();
   document.documentElement.setAttribute('data-mode',mode);
   document.documentElement.classList.toggle('easy-mode',!!P.easyMode);
   const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.content=(P.easyMode?(mode==='light'?'#FFFFFF':'#000000'):(mode==='light'?'#F2F4F8':'#0A0D12'));
+  applyAccent();
 }
 function toggleEasyMode(){
   P.easyMode=!P.easyMode; saveAll(); applyTheme();
@@ -4930,6 +4960,7 @@ function renderProfile(){
     '<div class="grp-row" onclick="openRecords()"><div class="lr-icon">🏅</div><div class="lr-title">Historique & records</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">📊</div><div class="lr-title">Statistiques</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">🎨</div><div class="lr-title">Thème</div>'+pfThemeSwitchHTML()+'</div>'+
+    '<div class="grp-row no-chev" style="align-items:flex-start"><div class="lr-icon">🌈</div><div style="flex:1"><div class="lr-title" style="margin-bottom:10px">Couleur d\u2019accent</div>'+pfAccentSwatchesHTML()+'</div></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">🧓</div><div><div class="lr-title">Mode simplifié</div><div style="font-size:11px;color:var(--muted);margin-top:2px;max-width:200px">Textes plus grands, sans effets visuels — plus facile à lire</div></div><div class="toggle'+(P.easyMode?' on':'')+'" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
   '</div>';
   h+='<div class="grp-lab stag" style="animation-delay:.15s">Support</div>';
@@ -4984,6 +5015,18 @@ function pfThemeSwitchHTML(){
     '<div class="ts-ray"></div>'+
     '<div class="ts-thumb">'+(isLight?ICN_SUN:ICN_MOON)+'</div></div>';
 }
+/* Rangée de pastilles de couleur pour choisir le thème d'accent (bleu/violet/marron/vert/noir) */
+function pfAccentSwatchesHTML(){
+  const cur=(P.accent&&ACCENT_THEMES[P.accent])?P.accent:'bleu';
+  return '<div style="display:flex;gap:14px;flex-wrap:wrap">'+Object.keys(ACCENT_THEMES).map(k=>{
+    const th=ACCENT_THEMES[k]; const on=(k===cur);
+    const grad='linear-gradient(135deg,'+th.swatches[0]+' 0%,'+th.swatches[1]+' 50%,'+th.swatches[2]+' 100%)';
+    return '<div onclick="setAccent(\''+k+'\')" style="cursor:pointer;text-align:center;width:52px">'+
+      '<div style="width:40px;height:40px;border-radius:50%;margin:0 auto;background:'+grad+';border:2.5px solid '+(on?'var(--e)':'transparent')+';box-shadow:'+(on?'0 0 0 2px var(--bg),0 4px 12px -3px rgba(var(--e-rgb),.6)':'0 2px 6px -2px rgba(0,0,0,.4)')+';transition:all .25s var(--ease-spring)">'+(on?'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;text-shadow:0 1px 3px rgba(0,0,0,.5)">✓</div>':'')+'</div>'+
+      '<div style="font-size:10px;color:'+(on?'var(--snow)':'var(--muted)')+';margin-top:5px;font-weight:'+(on?'700':'500')+'">'+th.name+'</div>'+
+    '</div>';
+  }).join('')+'</div>';
+}
 function pfAppearanceHTML(){
   const mode=P.mode||'dark';
   const isLight=mode==='light';
@@ -4992,6 +5035,8 @@ function pfAppearanceHTML(){
      '<span style="font-size:14px;color:var(--muted)">'+(isLight?'☀️ Clair':'🌙 Sombre')+'</span>'+
      pfThemeSwitchHTML().replace('theme-switch sm','theme-switch')+
    '</div>';
+  s+='<div class="lab" style="margin:18px 0 10px">Couleur d\u2019accent</div>';
+  s+=pfAccentSwatchesHTML();
   return s;
 }
 /* Bascule le thème avec une petite animation (glissement + pulse + halo qui explose) */
