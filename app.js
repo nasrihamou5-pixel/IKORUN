@@ -1268,7 +1268,7 @@ function applyTheme(){
   const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.content=(P.easyMode?(mode==='light'?'#FFFFFF':'#000000'):(mode==='light'?'#F2F4F8':'#0A0D12'));
 }
 /* Couleur d'accent de l'app : bleu (défaut) / vert militaire chromé / marron boisé chromé */
-const ACCENTS=[{key:'blue',name:'Bleu'},{key:'green',name:'Vert militaire'},{key:'brown',name:'Marron boisé'}];
+const ACCENTS=[{key:'blue',name:'Bleu'},{key:'green',name:'Vert militaire'},{key:'brown',name:'Marron boisé'},{key:'yellow',name:'Jaune'},{key:'carbon',name:'Fibre de carbone'}];
 function setAccent(c){
   P.theme=c; saveAll(); applyTheme();
   if($('#s-profil')&&$('#s-profil').classList.contains('on')) renderProfile();
