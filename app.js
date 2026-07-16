@@ -1157,7 +1157,9 @@ function maybeResumeLive(){
 
 /* ---------- ONBOARDING ---------- */
 let obStep=1; const OB_MAX=7;
+let obEasy=false; // true si >26 ans → onboarding allégé (niveau, objectif, date, record seulement) + mode simplifié auto
 function startOnboarding(){
+  obEasy=false;
   $('#ob').classList.add('on');
   const prog=$('#obProg'); prog.innerHTML='';
   for(let i=1;i<=OB_MAX;i++){ const d=document.createElement('div'); if(i===1)d.classList.add('on'); prog.appendChild(d); }
@@ -1218,17 +1220,28 @@ function obShow(n){
   $('#obNext').textContent=n===OB_MAX?'Terminer 🚀':'Continuer';
   $('#ob').scrollTop=0;
 }
-$('#obPrev').onclick=()=>{ if(obStep>1) obShow(obStep-1); };
+$('#obPrev').onclick=()=>{
+  if(obStep<=1) return;
+  const prev=(obEasy&&obStep===4)?2:obStep-1; // saute l'étape taille/poids en retour aussi
+  obShow(prev);
+};
 $('#obNext').onclick=()=>{
   if(!obValidate(obStep)) return;
-  if(obStep<OB_MAX) obShow(obStep+1);
-  else finishOnboarding();
+  if(obStep===OB_MAX){ finishOnboarding(); return; }
+  const next=(obEasy&&obStep===2)?4:obStep+1; // profil rapide : on saute taille/poids
+  obShow(next);
 };
 function obv(id){ const el=$('#'+id); return el.dataset.v!==undefined&&el.classList.contains('pkfield')?el.dataset.v:el.value; }
 function setObPk(id,val,label){ const el=$('#'+id); el.dataset.v=val; el.textContent=label; el.classList.add('set'); }
 function pickWeightOb(){ openPicker({title:'Poids (kg)',cols:[{values:range(30,200),sel:30},{values:range(0,9),sel:0,unit:'kg'}],seps:['.'],onOk:idx=>{ const w=(idx[0]+30)+idx[1]/10; setObPk('ob_w',w,w+' kg'); }}); }
 function obValidate(n){
-  if(n===2){ if(!$('#ob_name').value.trim()||!$('#ob_bday').value||!$('#ob_sex').value||!$('#ob_city').value.trim()){ toast('Remplis les champs requis'); return false; } }
+  if(n===2){
+    if(!$('#ob_name').value.trim()||!$('#ob_bday').value||!$('#ob_sex').value||!$('#ob_city').value.trim()){ toast('Remplis les champs requis'); return false; }
+    const bd=new Date($('#ob_bday').value);
+    const ageYears=Math.floor((Date.now()-bd)/31557600000);
+    obEasy = ageYears>26;
+    if(obEasy) toast('Profil rapide activé — on va droit à l\u2019essentiel ✓');
+  }
   if(n===3){ if(!obv('ob_h')||!obv('ob_w')){ toast('Taille et poids requis'); return false; } }
   if(n===4){ if(!$('#ob_level').querySelector('.pill.on')){ toast('Choisis un niveau'); return false; } if(!obv('ob_km')){ toast('Choisis ton volume'); return false; } }
   if(n===5){ if(!$('#ob_goal').value.trim()||!$('#ob_compdate').value){ toast('Objectif et date requis'); return false; } }
@@ -1250,7 +1263,8 @@ function finishOnboarding(){
     goal:$('#ob_goal').value.trim(), compDate:$('#ob_compdate').value,
     t5k:find(5000), t3k:find(3000), t1500:find(1500), t10k:find(10000),
     days, sessionTime:+obv('ob_time')||60, coach:$('#ob_coach').value.trim(),
-    theme:'blue', pb5k:find(5000), pb1500:find(1500), pb10k:find(10000)
+    theme:'blue', pb5k:find(5000), pb1500:find(1500), pb10k:find(10000),
+    easyMode:obEasy // >26 ans → mode simplifié activé auto (modifiable ensuite dans Profil > Mode simplifié)
   };
   P.vdot=computeVDOTfromRecords()||computeVDOT();
   DB.save('profile',P); DB.save('records',RECORDS); DB.save('xp',XP);
