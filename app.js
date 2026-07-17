@@ -2715,15 +2715,16 @@ function renderHomeSimple(ps,sessW,sessTarget,vdot,form,first){
   h+='<div class="ik-header"><div class="ik-logo">'+
     '<svg viewBox="0 0 24 24" fill="none"><path d="M4 20L14 3l1.5 3.2L9 18.5z" fill="var(--e2)"/><path d="M9 18.5L15.5 6.2 20 9.5 12 20z" fill="var(--e)"/></svg>'+
     '<span>IKORUN</span></div></div>';
+  h+=homeStreakBadge();
   h+='<div class="ik-greet"><h1>Salut '+(first||'toi')+' 👋</h1></div>';
 
   h+='<div class="next-lab">AUJOURD\u2019HUI</div>';
   if(ps && ps.type!=='Repos'){
     h+='<div class="card next-card stag" onclick="'+(ps._source==='perso'?"curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')":'openRunSheet('+ps.id+')')+'">'+
       '<div class="next-body"><div class="next-title">'+ps.title+'</div>'+
-      '<div class="next-meta">'+(ps.km?ps.km+' km · '+ps.pace+'/km'+(ps.duration?' · '+ps.duration+' min':''):'')+'</div></div>'+
-      '<div class="next-ic">'+ICN('run',20)+'</div></div>'+
-      '<button class="btn" style="width:100%;margin-top:-4px" onclick="'+(ps._source==='perso'?"curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')":'openRunSheet('+ps.id+')')+'">Démarrer la séance</button>';
+      '<div class="next-meta">'+(ps.km?ps.km+' km · '+ps.pace+'/km'+(ps.duration?' · '+ps.duration+' min':''):'')+'</div>'+
+      '<div class="next-when">Toucher pour démarrer ›</div></div>'+
+      '<div class="next-ic">'+ICN('run',20)+'</div></div>';
   } else {
     h+='<div class="card next-card stag" onclick="nav(\'sport\')">'+
       '<div class="next-body"><div class="next-title">Jour de repos</div>'+
@@ -2736,6 +2737,10 @@ function renderHomeSimple(ps,sessW,sessTarget,vdot,form,first){
     '<div class="card stat-card" onclick="nav(\'profil\')"><div class="stat-ic">'+ICN('lung',14)+'</div><div class="stat-v">'+(vdot||'—')+'</div><div class="stat-l">VDOT</div></div>'+
     '<div class="card stat-card" onclick="nav(\'profil\')"><div class="stat-ic">'+ICN('heart',14)+'</div><div class="stat-v">'+form+'%</div><div class="stat-l">Forme</div></div>'+
   '</div>';
+
+  if(P.objRace||P.goal||P.compDate){
+    h+='<div class="sec-lab" style="margin-top:16px">Objectif</div>'+homeGoalCard();
+  }
   return h;
 }
 function fmtDate(s){ const d=new Date(s); return d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}); }
@@ -2800,10 +2805,22 @@ function renderRunning(){
       h+='<div class="card"><div class="empty"><div class="em-ic">⚡</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">Plan IKORUN — moteur scientifique</div><div style="font-size:13px;margin-bottom:16px">Génère un plan périodisé sur-mesure (méthode norvégienne + VDOT/Daniels) basé sur ton VDOT ('+(getUserVDOT()||'?')+'), ton objectif, tes préférences et ta date de course. Le plan se réajuste automatiquement si tu rates une séance.</div><button class="btn" onclick="openPlanSetup()">⚙️ Configurer & générer</button></div></div>';
     } else {
       h+=planHeroHTML();
-      // group by phase puis semaine
+      // group by phase puis semaine — seule la semaine en cours est affichée par défaut
       let curPhase=null, curWeek=null;
       const tk=todayKey();
+      const todaySess=PLAN.sessions.find(s=>s.date===tk);
+      const upcoming=PLAN.sessions.find(s=>s.date>=tk);
+      const featuredWeek=(todaySess||upcoming||PLAN.sessions[PLAN.sessions.length-1]).week;
+      let toggleShown=false;
       PLAN.sessions.forEach(s=>{
+        if(!sportShowAllWeeks && s.week!==featuredWeek){
+          if(!toggleShown){
+            const remaining=[...new Set(PLAN.sessions.filter(x=>x.week!==featuredWeek).map(x=>x.week))].length;
+            h+='<button class="btn ghost" style="margin:14px 0 4px" onclick="sportShowAllWeeks=true;renderSport()">Afficher le reste du plan · '+remaining+' semaines ↓</button>';
+            toggleShown=true;
+          }
+          return;
+        }
         if(s.phase!==curPhase){ curPhase=s.phase; h+='<div class="phase-head" style="color:var('+(s.color||'--e')+')">▸ '+s.phase+'</div>'; }
         if(s.week!==curWeek){ curWeek=s.week; h+='<div class="lab" style="margin:8px 0 6px">Semaine '+s.week+(s.deload?' · 🟢 allégée':'')+'</div>'; }
         const isToday=s.date===tk;
@@ -2815,6 +2832,7 @@ function renderRunning(){
         const line2=fmtDate(s.date)+(s.km?' · '+s.km+' km':' · Repos')+(s.km&&!ssum?' · '+s.pace+'/km':'');
         h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'" onclick="openRunSheet('+s.id+')" style="'+(s.missed?'border-color:rgba(255,92,108,.35)':'')+'"><div class="row"><div><div style="font-weight:700;font-size:14px">'+s.title+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+line2+'</div>'+(ssum?'<div style="color:var(--e);font-size:12px;font-weight:700;margin-top:3px">⏱ '+ssum+'</div>':'')+'</div>'+qb+'</div></div>';
       });
+      if(sportShowAllWeeks) h+='<button class="btn ghost" style="margin:14px 0 4px" onclick="sportShowAllWeeks=false;renderSport()">Réduire ↑</button>';
     }
   } else {
     h+=renderPersoList();
@@ -2843,6 +2861,7 @@ function addPersoPlan(){
 }
 function openPerso(id){ curPerso=id; renderSport(); setTimeout(()=>renderPersoDetail(),0); }
 let sportView='list';
+let sportShowAllWeeks=false; // n'affiche que la semaine en cours par défaut, dans les deux modes
 function renderSport(){
   document.body.dataset.scr = sportView==='calendar' ? 'calendrier' : 'sport';
   $('#tbTitle').textContent = sportView==='calendar' ? 'Calendrier' : t('sport');
@@ -4942,6 +4961,7 @@ function avatarHTML(size,fs){
   return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:linear-gradient(135deg,var(--e),var(--marineL));display:flex;align-items:center;justify-content:center;margin:0 auto;font-family:Unbounded;font-weight:800;font-size:'+fs+'px;border:2.5px solid rgba(var(--e-rgb),.35);box-shadow:0 6px 18px -6px rgba(var(--e-rgb),.4)">'+(P.name?P.name[0].toUpperCase():'?')+'</div>';
 }
 function renderProfile(){
+  if(P.easyMode){ $('#s-profil').innerHTML=renderProfileSimple(); return; }
   const xp=xpProgress();
   const rk=rankFor(XP.level||1);
   const compDays=P.compDate?daysBetween(new Date(),new Date(P.compDate)):null;
@@ -4962,13 +4982,6 @@ function renderProfile(){
     '<div class="grp-row no-chev"><div class="lr-icon">📈</div><div class="lr-title">VDOT</div><div class="lr-val">'+(getUserVDOT()||'—')+'</div></div>'+
     '<div class="grp-row" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\';renderSport()"><div class="lr-icon">🎯</div><div class="lr-title">Objectif</div><div class="lr-val">'+(P.objRace||P.goal||'Aucun')+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
-  if(P.easyMode){
-    h+='<div class="grp-lab stag" style="animation-delay:.05s">Plus</div>';
-    h+='<div class="grp-card stag" style="animation-delay:.055s">'+
-      '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">📊</div><div class="lr-title">Statistiques détaillées</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-      '<div class="grp-row" onclick="nav(\'outils\')"><div class="lr-icon">🧮</div><div class="lr-title">Outils & calculateurs</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '</div>';
-  }
   // ===== PROGRESSION — badges intégrés directement au profil =====
   { const unlocked=unlockedBadges(); const recent=[...unlocked].sort((a,b)=>b.date<a.date?-1:1).slice(0,5).map(u=>BADGE_TIERS.find(b=>b.key===u.key)).filter(Boolean);
     h+='<div class="sec-head stag" style="animation-delay:.06s"><h3 class="grp-lab" style="margin:0">Progression</h3><span class="see" onclick="openBadges()">'+unlocked.length+' / '+BADGE_TIERS.length+' · Voir tout ›</span></div>';
@@ -5008,6 +5021,30 @@ function renderProfile(){
   '</div>';
   h+='<div style="text-align:center;color:var(--dim);font-size:12px;margin:20px 0">IKORUN — Elite Athletic Intelligence · v2.0</div>';
   $('#s-profil').innerHTML=h;
+}
+function renderProfileSimple(){
+  const rk=rankFor(XP.level||1);
+  const compDays=P.compDate?daysBetween(new Date(),new Date(P.compDate)):null;
+  let h='';
+  h+='<div class="card stag pf-hero" style="animation-delay:0s;text-align:center"><div class="pf-avwrap">'+avatarHTML(72,28)+'</div>'+
+    '<div class="man" style="font-weight:800;font-size:18px;margin-top:8px">'+(P.name||'Athlète')+'</div>'+
+    '<div style="font-size:12px;color:var(--muted);margin-top:2px">'+age()+' ans · VDOT '+(getUserVDOT()||'—')+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div>'+
+    '<div class="rankchip" style="margin-top:10px;background:'+rk.bg+';color:#fff;display:inline-block">'+t('level')+' '+XP.level+' · '+rk.name+'</div></div>';
+
+  h+='<div class="grp-lab stag" style="animation-delay:.05s">Ton espace</div>';
+  h+='<div class="grp-card stag" style="animation-delay:.06s">'+
+    '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">📊</div><div class="lr-title">Statistiques</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openBadges()"><div class="lr-icon">🏆</div><div class="lr-title">Badges</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="nav(\'outils\')"><div class="lr-icon">🧮</div><div class="lr-title">Outils & calculateurs</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileEdit()"><div class="lr-icon">✏️</div><div class="lr-title">Modifier mon profil</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+  '</div>';
+
+  h+='<div class="grp-lab stag" style="animation-delay:.08s">Réglages</div>';
+  h+='<div class="grp-card stag" style="animation-delay:.09s">'+
+    '<div class="grp-row no-chev"><div class="lr-icon">🧓</div><div class="lr-title">Mode simplifié</div><div class="toggle on" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'account\')"><div class="lr-icon">🔐</div><div class="lr-title">Compte</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+  '</div>';
+  return h;
 }
 /* ---- Fiches de réglages du profil, ouvertes dans l'overlay générique ---- */
 let _pfSheet=null;
