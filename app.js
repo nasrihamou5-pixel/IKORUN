@@ -284,10 +284,10 @@ async function loadFriendsData(){
 function renderFriends(){
   if(friendsTab==='profile'){ $('#friendsBody').innerHTML=renderFriendProfileHTML(); return; }
 
-  let h='<div class="pills" style="margin-bottom:14px">'+
-    '<div class="pill '+(friendsTab==='list'?'on':'')+'" onclick="friendsTab=\'list\';renderFriends()">👥 Amis</div>'+
-    '<div class="pill '+(friendsTab==='rank'?'on':'')+'" onclick="friendsTab=\'rank\';renderFriends()">🏆 Classement</div>'+
-    '<div class="pill '+(friendsTab==='refer'?'on':'')+'" onclick="friendsTab=\'refer\';renderFriends()">🎁 Parrainage</div>'+
+  let h='<div class="fr-tabs">'+
+    '<div class="fr-tab '+(friendsTab==='list'?'on':'')+'" onclick="friendsTab=\'list\';renderFriends()">👥 Amis</div>'+
+    '<div class="fr-tab '+(friendsTab==='rank'?'on':'')+'" onclick="friendsTab=\'rank\';renderFriends()">🏆 Classement</div>'+
+    '<div class="fr-tab '+(friendsTab==='refer'?'on':'')+'" onclick="friendsTab=\'refer\';renderFriends()">🎁 Parrainage</div>'+
   '</div>';
 
   if(!window.supabaseClient || !window.currentUserId){
@@ -296,37 +296,49 @@ function renderFriends(){
   }
 
   if(friendsTab==='list'){
-    h+='<div class="field"><label>Chercher un ami par pseudo</label><input class="inp" id="addFriendSearch" placeholder="@pseudo" autocapitalize="off" autocorrect="off" spellcheck="false" oninput="onFriendSearchInput()"><div id="friendSearchResults" style="margin-top:8px"></div></div>';
+    h+='<div class="fr-search">'+ICN('search',16)+'<input id="addFriendSearch" placeholder="Chercher un ami par pseudo" autocapitalize="off" autocorrect="off" spellcheck="false" oninput="onFriendSearchInput()"></div>';
+    h+='<div id="friendSearchResults"></div>';
     if(friendsCache.pending.length){
       h+='<div class="sec-lab">Demandes reçues</div>';
       friendsCache.pending.forEach(p=>{
-        h+='<div class="card" style="padding:12px 14px"><div class="row"><div style="font-weight:700">'+p.username+'</div><div class="row" style="gap:6px"><button class="btn sm" style="width:auto" onclick="respondFriend('+p.reqId+',true)">✓ Accepter</button><button class="btn ghost sm" style="width:auto" onclick="respondFriend('+p.reqId+',false)">✕</button></div></div></div>';
+        h+='<div class="fr-req-card"><div class="row"><div style="font-weight:700">'+p.username+'</div><div class="row" style="gap:6px"><button class="btn sm" style="width:auto" onclick="respondFriend('+p.reqId+',true)">✓ Accepter</button><button class="btn ghost sm" style="width:auto" onclick="respondFriend('+p.reqId+',false)">✕</button></div></div></div>';
       });
     }
     h+='<div class="sec-lab">Tes amis ('+friendsCache.friends.length+')</div>';
     if(!friendsCache.friends.length) h+='<div class="card"><div class="empty"><div class="em-ic">👋</div><div style="font-size:13px">Pas encore d\u2019amis — cherche quelqu\u2019un par son pseudo !</div></div></div>';
-    else friendsCache.friends.forEach(f=>{
-      const av=f.photo_url?'<div style="width:40px;height:40px;border-radius:50%;background:url(\''+f.photo_url+'\') center/cover;flex-shrink:0"></div>':'<div style="width:40px;height:40px;border-radius:50%;background:var(--ed);color:var(--e);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0">'+(f.username?f.username[0].toUpperCase():'?')+'</div>';
-      h+='<div class="card" style="padding:12px 14px" onclick="openFriendProfile(\''+f.id+'\')"><div class="row" style="gap:10px"><div class="row" style="gap:10px;flex:1;min-width:0">'+av+'<div style="min-width:0"><div style="font-weight:700">'+f.username+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">Niv. '+f.level+' · '+f.km_week+' km cette semaine</div></div></div><span class="mini-ic" style="color:var(--bad)" onclick="event.stopPropagation();removeFriend(\''+f.id+'\')" title="Retirer">🗑</span><span class="lr-chev">'+ICN('chevronR',16)+'</span></div></div>';
-    });
+    else h+='<div class="card" style="padding:2px 6px">'+friendsCache.friends.map((f,i)=>{
+      const av=f.photo_url?'<div class="fr-avatar" style="background-image:url(\''+f.photo_url+'\')"></div>':'<div class="fr-avatar">'+(f.username?f.username[0].toUpperCase():'?')+'</div>';
+      return '<div class="fr-row" style="border-bottom:'+(i<friendsCache.friends.length-1?'1px solid var(--hair)':'none')+'" onclick="openFriendProfile(\''+f.id+'\')">'+av+
+        '<div class="fr-info"><div class="fr-name">'+f.username+'</div><div class="fr-meta"><span class="fr-lvl-chip">Niv. '+f.level+'</span><span class="fr-km-txt">'+f.km_week+' km cette semaine</span></div></div>'+
+        '<span class="fr-del" onclick="event.stopPropagation();removeFriend(\''+f.id+'\')" title="Retirer">🗑</span>'+
+        '<span class="lr-chev">'+ICN('chevronR',16)+'</span></div>';
+    }).join('')+'</div>';
     if(friendsCache.sent.length){
       h+='<div class="sec-lab">Demandes envoyées</div>';
-      friendsCache.sent.forEach(p=>{ h+='<div class="card" style="padding:10px 14px;opacity:.7"><div style="font-size:13px">'+p.username+' · en attente</div></div>'; });
+      h+='<div class="card" style="padding:2px 6px">'+friendsCache.sent.map((p,i)=>'<div class="fr-row" style="opacity:.65;cursor:default;border-bottom:'+(i<friendsCache.sent.length-1?'1px solid var(--hair)':'none')+'"><div class="fr-avatar">'+(p.username?p.username[0].toUpperCase():'?')+'</div><div class="fr-info"><div class="fr-name">'+p.username+'</div><div class="fr-km-txt" style="margin-top:3px">En attente de réponse…</div></div></div>').join('')+'</div>';
     }
   }
 
   if(friendsTab==='rank'){
-    const me={username:(P.name||'Toi')+' (toi)',xp:(XP&&XP.total)||0,level:(XP&&XP.level)||1};
+    const me={username:(P.name||'Toi')+' (toi)',xp:(XP&&XP.total)||0,level:(XP&&XP.level)||1,photo_url:P.photo};
     const all=[...friendsCache.friends,me].sort((a,b)=>b.xp-a.xp);
     h+='<div class="sec-lab">Classement XP entre amis</div>';
     if(all.length===1) h+='<div class="card"><div class="empty"><div class="em-ic">🏆</div><div style="font-size:13px">Ajoute des amis pour débloquer le classement !</div></div></div>';
-    else h+='<div class="card" style="padding:6px 14px">'+all.map((f,i)=>
-      '<div class="row" style="padding:10px 0;border-bottom:'+(i<all.length-1?'1px solid var(--hair)':'none')+(f.id?';cursor:pointer':'')+'"'+(f.id?' onclick="openFriendProfile(\''+f.id+'\')"':'')+'><div style="font-weight:800;width:24px;color:var(--e2)">#'+(i+1)+'</div><div style="flex:1;font-weight:700">'+f.username+'</div><div style="font-size:12.5px;color:var(--muted)">'+f.xp+' XP · Niv.'+f.level+'</div></div>'
-    ).join('')+'</div>';
+    else {
+      const top3=all.slice(0,3), rest=all.slice(3);
+      const medals=['🥇','🥈','🥉'];
+      h+='<div class="fr-podium">'+top3.map((f,i)=>{
+        const av=f.photo_url?'<div class="fr-pod-av" style="background-image:url(\''+f.photo_url+'\')"></div>':'<div class="fr-pod-av">'+(f.username?f.username[0].toUpperCase():'?')+'</div>';
+        return '<div class="fr-pod-card p'+(i+1)+'"'+(f.id?' onclick="openFriendProfile(\''+f.id+'\')" style="cursor:pointer"':'')+'><div class="fr-pod-medal">'+medals[i]+'</div>'+av+'<div class="fr-pod-name">'+f.username+'</div><div class="fr-pod-xp">'+f.xp+' XP</div></div>';
+      }).join('')+'</div>';
+      if(rest.length) h+='<div class="card" style="padding:4px 14px">'+rest.map((f,i)=>
+        '<div class="fr-rank-row'+(f.id?'':' me')+'" style="border-bottom:'+(i<rest.length-1?'1px solid var(--hair)':'none')+(f.id?';cursor:pointer':'')+'"'+(f.id?' onclick="openFriendProfile(\''+f.id+'\')"':'')+'><div class="fr-rank-num">#'+(i+4)+'</div><div style="flex:1;font-weight:700;font-size:13.5px">'+f.username+'</div><div style="font-size:12.5px;color:var(--muted);font-weight:600">'+f.xp+' XP · Niv.'+f.level+'</div></div>'
+      ).join('')+'</div>';
+    }
   }
 
   if(friendsTab==='refer'){
-    h+='<div class="card" style="text-align:center;padding:20px"><div style="font-size:12px;color:var(--muted);margin-bottom:8px">Ton code de parrainage</div><div id="myRefCode" style="font-family:\'JetBrains Mono\',monospace;font-size:26px;font-weight:800;letter-spacing:.1em;color:var(--e2)">···</div><button class="btn ghost sm" style="margin-top:12px;width:auto" onclick="shareReferralCode()">↗ Partager mon code</button></div>';
+    h+='<div class="fr-ref-card"><div class="fr-ref-lab">Ton code de parrainage</div><div id="myRefCode" class="fr-ref-code">···</div><button class="btn ghost sm" style="margin-top:14px;width:auto" onclick="shareReferralCode()">↗ Partager mon code</button></div>';
     h+='<div class="field" style="margin-top:16px"><label>J\u2019ai un code</label><div class="row" style="gap:8px"><input class="inp" id="applyCodeInput" placeholder="Ex: A3F9K2" style="flex:1"><button class="btn sm" style="width:auto" onclick="submitReferralCode()">Valider</button></div></div>';
     h+='<div style="font-size:11.5px;color:var(--dim);margin-top:10px">🎁 Toi et ton parrain gagnez chacun +50 XP après ta 1\u1d49\u02b3\u1d49 séance.</div>';
     myReferralCode().then(c=>{ const el=$('#myRefCode'); if(el) el.textContent=c||'—'; });
@@ -404,11 +416,12 @@ function renderFriendProfileHTML(){
   const f=[...friendsCache.friends,...friendsCache.pending,...friendsCache.sent].find(x=>x.id===friendsSelected);
   const back='<div class="row" style="margin-bottom:14px;cursor:pointer" onclick="backToFriendsList()">'+ICN('chevronR',16).replace('<path','<path transform="rotate(180 12 12)"')+' <span style="font-weight:700;margin-left:4px">Retour aux amis</span></div>';
   if(!f) return back+'<div class="card"><div class="empty"><div class="em-ic">🤷</div><div style="font-size:13px">Profil introuvable.</div></div></div>';
-  const av=f.photo_url?'<div style="width:84px;height:84px;border-radius:50%;background:url(\''+f.photo_url+'\') center/cover;margin:0 auto"></div>':'<div style="width:84px;height:84px;border-radius:50%;background:var(--ed);color:var(--e);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:32px;margin:0 auto">'+(f.username?f.username[0].toUpperCase():'?')+'</div>';
+  const av=f.photo_url?'<div class="fr-profile-av" style="background-image:url(\''+f.photo_url+'\')"></div>':'<div class="fr-profile-av">'+(f.username?f.username[0].toUpperCase():'?')+'</div>';
   let h=back;
-  h+='<div class="card" style="text-align:center;padding:20px">'+av+
-    '<div style="font-weight:800;font-size:18px;margin-top:12px">'+f.username+'</div>'+
-    '<div style="font-size:12.5px;color:var(--muted);margin-top:2px">Niveau '+(f.level||1)+' · '+(f.xp||0)+' XP</div>'+
+  h+='<div class="fr-profile-hero">'+
+    '<div style="position:relative;display:inline-block">'+av+'<span class="fr-profile-lvl">Niv. '+(f.level||1)+'</span></div>'+
+    '<div style="font-weight:800;font-size:18px;margin-top:16px">'+f.username+'</div>'+
+    '<div style="font-size:12.5px;color:var(--muted);margin-top:2px">'+(f.xp||0)+' XP</div>'+
   '</div>';
   h+='<div class="stat-quatro" style="margin-top:12px">'+
     '<div class="card stat-card"><div class="stat-ic">'+ICN('lung',14)+'</div><div class="stat-v">'+(f.vdot||'—')+'</div><div class="stat-l">VDOT</div></div>'+
