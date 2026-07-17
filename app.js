@@ -59,12 +59,25 @@ async function cloudPush(key, value){
   }catch(e){ console.error('cloud push error', e); }
 }
 
-function signInWithGoogle(){
+let _googleAuthing=false;
+async function signInWithGoogle(){
   if(!window.supabaseClient) return;
-  window.supabaseClient.auth.signInWithOAuth({
-    provider:'google',
-    options:{ redirectTo: window.location.href }
-  });
+  if(_googleAuthing) return; // évite les doubles-taps qui donnent l'impression que rien ne se passe
+  _googleAuthing=true;
+  toast('Connexion à Google…');
+  try{
+    const { error } = await window.supabaseClient.auth.signInWithOAuth({
+      provider:'google',
+      options:{
+        redirectTo: window.location.href,
+        // force Google à toujours proposer le choix du compte (ou "en créer un")
+        // au lieu de se reconnecter automatiquement avec le dernier compte utilisé
+        queryParams:{ prompt:'select_account' }
+      }
+    });
+    if(error){ toast('Connexion impossible, réessaie'); console.error('signInWithGoogle error',error); _googleAuthing=false; }
+    // si pas d'erreur, la page va rediriger vers Google : pas besoin de repasser _googleAuthing à false
+  }catch(e){ toast('Connexion impossible, réessaie'); console.error('signInWithGoogle exception',e); _googleAuthing=false; }
 }
 
 function signOutUser(){
@@ -150,11 +163,12 @@ async function checkUsernameLive(rawValue, statusEl, inputEl){
     return true;
   }
   try{
-    let q=window.supabaseClient.from('public_profiles').select('user_id').eq('username_lower',v.toLowerCase()).limit(1);
-    if(window.currentUserId) q=q.neq('user_id',window.currentUserId);
-    const { data } = await q.maybeSingle();
+    const { data, error } = await window.supabaseClient.rpc('username_available',{
+      p_username: v, p_uid: window.currentUserId||null
+    });
     if(seq!==_unameSeq) return false; // réponse obsolète (l'utilisateur a retapé entre temps)
-    if(data){
+    if(error){ console.error('username_available error',error); if(statusEl){ statusEl.textContent=''; statusEl.className='uname-status'; } return false; }
+    if(!data){
       if(statusEl){ statusEl.textContent='✕ Déjà pris'; statusEl.className='uname-status bad'; }
       inputEl && inputEl.classList.add('uname-bad');
       return false;
@@ -163,6 +177,7 @@ async function checkUsernameLive(rawValue, statusEl, inputEl){
     inputEl && inputEl.classList.add('uname-ok');
     return true;
   }catch(e){
+    console.error('checkUsernameLive error',e);
     if(statusEl){ statusEl.textContent=''; statusEl.className='uname-status'; }
     return false;
   }
@@ -183,9 +198,10 @@ async function claimUsername(username){
   if(!window.supabaseClient || !window.currentUserId) { P.username=username; return true; }
   try{
     const { data, error } = await window.supabaseClient.rpc('claim_username',{ p_uid:window.currentUserId, p_username:username });
-    if(error || !data) return false;
+    if(error){ console.error('claim_username error',error); return false; }
+    if(!data) return false;
     P.username=username; return true;
-  }catch(e){ return false; }
+  }catch(e){ console.error('claim_username exception',e); return false; }
 }
 let _myRefCodeCache=null;
 async function myReferralCode(){
