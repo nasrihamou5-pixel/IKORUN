@@ -92,7 +92,222 @@ async function deleteAccountCompletely(){
   location.reload();
 }
 
-/* ---------- STORAGE ---------- */
+/* ---------- AMIS / CLASSEMENT / PARRAINAGE / PARTAGE ---------- */
+function genReferralCode(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let c=''; for(let i=0;i<6;i++) c+=chars[Math.floor(Math.random()*chars.length)];
+  return c;
+}
+async function ensurePublicProfile(){
+  if(!window.supabaseClient || !window.currentUserId) return;
+  try{
+    const { data } = await window.supabaseClient.from('public_profiles').select('user_id').eq('user_id',window.currentUserId).maybeSingle();
+    if(!data){
+      let code=genReferralCode(), tries=0, ok=false;
+      while(tries<5 && !ok){
+        const { error } = await window.supabaseClient.from('public_profiles').insert({
+          user_id:window.currentUserId, username:(P.name||'Athlète'), referral_code:code
+        });
+        if(!error) ok=true; else { code=genReferralCode(); tries++; }
+      }
+    }
+  }catch(e){ console.error('ensurePublicProfile error', e); }
+}
+async function syncPublicProfile(){
+  if(!window.supabaseClient || !window.currentUserId) return;
+  try{
+    await window.supabaseClient.from('public_profiles').update({
+      username: P.name||'Athlète',
+      xp: (XP&&XP.total)||0,
+      level: (XP&&XP.level)||1,
+      km_week: Math.round((kmThisWeek()||0)*10)/10,
+      sessions_week: runCountWeek()+muscuCountWeek(),
+      updated_at: new Date().toISOString()
+    }).eq('user_id', window.currentUserId);
+  }catch(e){ /* silencieux : pas bloquant pour l'app */ }
+}
+let _myRefCodeCache=null;
+async function myReferralCode(){
+  if(_myRefCodeCache) return _myRefCodeCache;
+  if(!window.supabaseClient || !window.currentUserId) return null;
+  const { data } = await window.supabaseClient.from('public_profiles').select('referral_code').eq('user_id',window.currentUserId).maybeSingle();
+  _myRefCodeCache = data ? data.referral_code : null;
+  return _myRefCodeCache;
+}
+async function applyReferralCode(code){
+  if(!window.supabaseClient || !window.currentUserId || !code) return false;
+  code=code.trim().toUpperCase();
+  const { data:me } = await window.supabaseClient.from('public_profiles').select('referred_by').eq('user_id',window.currentUserId).maybeSingle();
+  if(me && me.referred_by){ toast('Tu as déjà un parrain'); return false; }
+  const { data:owner } = await window.supabaseClient.from('public_profiles').select('user_id').eq('referral_code',code).maybeSingle();
+  if(!owner || owner.user_id===window.currentUserId){ toast('Code invalide'); return false; }
+  const { error } = await window.supabaseClient.from('public_profiles').update({referred_by:owner.user_id}).eq('user_id',window.currentUserId);
+  if(error){ toast('Erreur, réessaie'); return false; }
+  toast('Parrainage validé ✓ Bonus après ta 1\u1d49\u02b3\u1d49 séance');
+  return true;
+}
+// Appelé une fois qu'une séance est marquée terminée (voir hook dans finishSession / debrief)
+async function grantReferralBonusIfNeeded(){
+  if(!window.supabaseClient || !window.currentUserId) return;
+  if(DB.load('referral_bonus_done')) return;
+  try{
+    const { data:me } = await window.supabaseClient.from('public_profiles').select('referred_by').eq('user_id',window.currentUserId).maybeSingle();
+    if(me && me.referred_by){
+      addXP(50,'Bonus de parrainage 🎉'); DB.save('referral_bonus_done', true);
+      window.supabaseClient.rpc('increment_referrer_xp',{ p_uid: me.referred_by, p_amount: 50 }).then(()=>{}).catch(()=>{});
+      toast('+50 XP — bonus de parrainage débloqué 🎉');
+    }
+  }catch(e){}
+}
+
+let friendsTab='list';
+let friendsCache={friends:[],pending:[],sent:[]};
+function openFriends(){
+  friendsTab='list';
+  $('#ovProgTitle').textContent='👥 Amis & Classement';
+  $('#progBody').innerHTML='<div id="friendsBody"></div>';
+  openOv('ovProg');
+  loadFriendsData();
+}
+async function loadFriendsData(){
+  if(!window.supabaseClient || !window.currentUserId){ renderFriends(); return; }
+  try{
+    const uid=window.currentUserId;
+    const { data:rows } = await window.supabaseClient.from('friendships').select('*').or('user_id.eq.'+uid+',friend_id.eq.'+uid);
+    const ids=new Set(); (rows||[]).forEach(r=>{ ids.add(r.user_id); ids.add(r.friend_id); }); ids.delete(uid);
+    let profiles={};
+    if(ids.size){
+      const { data:profs } = await window.supabaseClient.from('public_profiles').select('user_id,username,xp,level,km_week,sessions_week').in('user_id',[...ids]);
+      (profs||[]).forEach(p=>profiles[p.user_id]=p);
+    }
+    friendsCache={friends:[],pending:[],sent:[]};
+    (rows||[]).forEach(r=>{
+      const otherId = r.user_id===uid ? r.friend_id : r.user_id;
+      const prof = profiles[otherId] || {username:'?',xp:0,level:1,km_week:0,sessions_week:0};
+      if(r.status==='accepted') friendsCache.friends.push({...prof,id:otherId});
+      else if(r.status==='pending' && r.friend_id===uid) friendsCache.pending.push({...prof,id:otherId,reqId:r.id});
+      else if(r.status==='pending' && r.user_id===uid) friendsCache.sent.push({...prof,id:otherId,reqId:r.id});
+    });
+  }catch(e){ console.error('loadFriendsData error',e); }
+  renderFriends();
+}
+function renderFriends(){
+  let h='<div class="pills" style="margin-bottom:14px">'+
+    '<div class="pill '+(friendsTab==='list'?'on':'')+'" onclick="friendsTab=\'list\';renderFriends()">👥 Amis</div>'+
+    '<div class="pill '+(friendsTab==='rank'?'on':'')+'" onclick="friendsTab=\'rank\';renderFriends()">🏆 Classement</div>'+
+    '<div class="pill '+(friendsTab==='refer'?'on':'')+'" onclick="friendsTab=\'refer\';renderFriends()">🎁 Parrainage</div>'+
+  '</div>';
+
+  if(!window.supabaseClient || !window.currentUserId){
+    h+='<div class="card"><div class="empty"><div class="em-ic">🔒</div><div style="font-size:13px">Connecte-toi avec Google pour ajouter des amis, te comparer et te parrainer.</div></div></div>';
+    $('#friendsBody').innerHTML=h; return;
+  }
+
+  if(friendsTab==='list'){
+    h+='<div class="field"><label>Ajouter un ami (code ou pseudo)</label><div class="row" style="gap:8px"><input class="inp" id="addFriendCode" placeholder="Ex: A3F9K2" style="flex:1"><button class="btn sm" style="width:auto" onclick="addFriendByCode()">Ajouter</button></div></div>';
+    if(friendsCache.pending.length){
+      h+='<div class="sec-lab">Demandes reçues</div>';
+      friendsCache.pending.forEach(p=>{
+        h+='<div class="card" style="padding:12px 14px"><div class="row"><div style="font-weight:700">'+p.username+'</div><div class="row" style="gap:6px"><button class="btn sm" style="width:auto" onclick="respondFriend('+p.reqId+',true)">✓ Accepter</button><button class="btn ghost sm" style="width:auto" onclick="respondFriend('+p.reqId+',false)">✕</button></div></div></div>';
+      });
+    }
+    h+='<div class="sec-lab">Tes amis ('+friendsCache.friends.length+')</div>';
+    if(!friendsCache.friends.length) h+='<div class="card"><div class="empty"><div class="em-ic">👋</div><div style="font-size:13px">Pas encore d\u2019amis — ajoute quelqu\u2019un avec son code !</div></div></div>';
+    else friendsCache.friends.forEach(f=>{
+      h+='<div class="card" style="padding:12px 14px"><div class="row"><div><div style="font-weight:700">'+f.username+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">Niv. '+f.level+' · '+f.km_week+' km cette semaine</div></div><span class="mini-ic" style="color:var(--bad)" onclick="removeFriend(\''+f.id+'\')" title="Retirer">🗑</span></div></div>';
+    });
+    if(friendsCache.sent.length){
+      h+='<div class="sec-lab">Demandes envoyées</div>';
+      friendsCache.sent.forEach(p=>{ h+='<div class="card" style="padding:10px 14px;opacity:.7"><div style="font-size:13px">'+p.username+' · en attente</div></div>'; });
+    }
+  }
+
+  if(friendsTab==='rank'){
+    const me={username:(P.name||'Toi')+' (toi)',xp:(XP&&XP.total)||0,level:(XP&&XP.level)||1};
+    const all=[...friendsCache.friends,me].sort((a,b)=>b.xp-a.xp);
+    h+='<div class="sec-lab">Classement XP entre amis</div>';
+    if(all.length===1) h+='<div class="card"><div class="empty"><div class="em-ic">🏆</div><div style="font-size:13px">Ajoute des amis pour débloquer le classement !</div></div></div>';
+    else h+='<div class="card" style="padding:6px 14px">'+all.map((f,i)=>
+      '<div class="row" style="padding:10px 0;border-bottom:'+(i<all.length-1?'1px solid var(--hair)':'none')+'"><div style="font-weight:800;width:24px;color:var(--e2)">#'+(i+1)+'</div><div style="flex:1;font-weight:700">'+f.username+'</div><div style="font-size:12.5px;color:var(--muted)">'+f.xp+' XP · Niv.'+f.level+'</div></div>'
+    ).join('')+'</div>';
+  }
+
+  if(friendsTab==='refer'){
+    h+='<div class="card" style="text-align:center;padding:20px"><div style="font-size:12px;color:var(--muted);margin-bottom:8px">Ton code de parrainage</div><div id="myRefCode" style="font-family:\'JetBrains Mono\',monospace;font-size:26px;font-weight:800;letter-spacing:.1em;color:var(--e2)">···</div><button class="btn ghost sm" style="margin-top:12px;width:auto" onclick="shareReferralCode()">↗ Partager mon code</button></div>';
+    h+='<div class="field" style="margin-top:16px"><label>J\u2019ai un code</label><div class="row" style="gap:8px"><input class="inp" id="applyCodeInput" placeholder="Ex: A3F9K2" style="flex:1"><button class="btn sm" style="width:auto" onclick="submitReferralCode()">Valider</button></div></div>';
+    h+='<div style="font-size:11.5px;color:var(--dim);margin-top:10px">🎁 Toi et ton parrain gagnez chacun +50 XP après ta 1\u1d49\u02b3\u1d49 séance.</div>';
+    myReferralCode().then(c=>{ const el=$('#myRefCode'); if(el) el.textContent=c||'—'; });
+  }
+
+  $('#friendsBody').innerHTML=h;
+}
+async function addFriendByCode(){
+  const el=$('#addFriendCode'); const v=el?el.value.trim():''; if(!v) return;
+  const isCode=/^[A-Z0-9]{6}$/i.test(v);
+  let target=null;
+  if(isCode){
+    const { data } = await window.supabaseClient.from('public_profiles').select('user_id').eq('referral_code',v.toUpperCase()).maybeSingle();
+    target=data;
+  } else {
+    const { data } = await window.supabaseClient.from('public_profiles').select('user_id').ilike('username',v).limit(1).maybeSingle();
+    target=data;
+  }
+  if(!target || target.user_id===window.currentUserId){ toast('Introuvable'); return; }
+  const { error } = await window.supabaseClient.from('friendships').insert({user_id:window.currentUserId, friend_id:target.user_id, status:'pending'});
+  if(error) toast('Déjà envoyé ou déjà ami'); else { toast('Demande envoyée ✓'); loadFriendsData(); }
+}
+async function respondFriend(reqId,accept){
+  if(accept) await window.supabaseClient.from('friendships').update({status:'accepted'}).eq('id',reqId);
+  else await window.supabaseClient.from('friendships').delete().eq('id',reqId);
+  loadFriendsData();
+}
+async function removeFriend(otherId){
+  if(!confirm('Retirer cet ami ?')) return;
+  const uid=window.currentUserId;
+  await window.supabaseClient.from('friendships').delete().or('and(user_id.eq.'+uid+',friend_id.eq.'+otherId+'),and(user_id.eq.'+otherId+',friend_id.eq.'+uid+')');
+  loadFriendsData();
+}
+async function submitReferralCode(){ const el=$('#applyCodeInput'); const v=el?el.value:''; if(await applyReferralCode(v)) renderFriends(); }
+async function shareReferralCode(){
+  const code=await myReferralCode(); if(!code){ toast('Connecte-toi d\u2019abord'); return; }
+  const text='Rejoins-moi sur IKORUN avec mon code '+code+' 🏃';
+  if(navigator.share){ try{ await navigator.share({text}); }catch(e){} }
+  else { navigator.clipboard&&navigator.clipboard.writeText(text); toast('Copié dans le presse-papier ✓'); }
+}
+/* ---- Carte image partageable (badge / séance) — générée en canvas, sans dépendance externe ---- */
+function shareCardImage(title,subtitle,emoji){
+  const cv=document.createElement('canvas'); cv.width=1080; cv.height=1080;
+  const ctx=cv.getContext('2d');
+  const grad=ctx.createLinearGradient(0,0,1080,1080);
+  grad.addColorStop(0,'#0B1220'); grad.addColorStop(1,'#152040');
+  ctx.fillStyle=grad; ctx.fillRect(0,0,1080,1080);
+  ctx.fillStyle='rgba(61,127,255,.25)'; ctx.beginPath(); ctx.arc(850,150,320,0,Math.PI*2); ctx.fill();
+  ctx.textAlign='center';
+  ctx.font='140px sans-serif'; ctx.fillText(emoji||'🏅',540,420);
+  ctx.fillStyle='#F4F6F9'; ctx.font='800 60px Unbounded, sans-serif'; ctx.fillText(title,540,620);
+  ctx.fillStyle='#8993A6'; ctx.font='400 34px Inter, sans-serif'; ctx.fillText(subtitle||'',540,680);
+  ctx.fillStyle='#3D7FFF'; ctx.font='800 30px Unbounded, sans-serif'; ctx.fillText('IKORUN',540,970);
+  cv.toBlob(blob=>{
+    if(!blob) return;
+    const file=new File([blob],'ikorun-partage.png',{type:'image/png'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      navigator.share({files:[file],title:'IKORUN'}).catch(()=>{});
+    } else {
+      const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='ikorun-partage.png'; a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),4000);
+    }
+  });
+}
+function shareBadge(key){
+  const b=BADGE_TIERS.find(x=>x.key===key); if(!b) return;
+  shareCardImage(b.name,'Badge débloqué sur IKORUN','🏅');
+}
+function shareSessionImg(id){
+  const s=[...SESS,...MSESS].find(x=>x.id===id); if(!s) return;
+  shareCardImage(s.title||s.type,(s.km?s.km+' km':'')+(s.duration?' · '+s.duration+' min':''),'🏃');
+}
+
+
 const DB = {
   load(k){ try{ return JSON.parse(localStorage.getItem('vvv_'+k)); }catch(e){ return null; } },
   save(k,v){ localStorage.setItem('vvv_'+k, JSON.stringify(v)); cloudPush(k,v); },
@@ -130,6 +345,7 @@ function saveAll(){
   DB.save('agenda',AGENDA); DB.save('xp',XP);
   DB.save('records',RECORDS); DB.save('prefs',PREFS); DB.save('weightlog',WEIGHTLOG);
   DB.save('tracker',TRACKER); DB.save('sesslog',SESSLOG);
+  if(window.currentUserId) syncPublicProfile();
 }
 
 /* ============ INTERNATIONALISATION (FR / EN / AR) ============ */
@@ -658,6 +874,7 @@ function openBadgeDetail(key){
     h+='<div style="margin-bottom:12px"><div class="row" style="margin-bottom:5px"><span style="font-size:13px">'+(done?'✅ ':'⬜ ')+p.label+'</span><span class="mono" style="font-size:12px;color:var(--muted)">'+Math.min(p.have,p.need)+' / '+p.need+' '+p.unit+'</span></div><div class="pbar" style="height:6px"><div style="width:'+pc+'%"></div></div></div>';
   });
   h+='<div class="row" style="margin-top:6px"><span class="lab">Progression globale</span><span class="mono" style="color:var(--e)">'+prog.pct+'%</span></div></div>';
+  if(rec) h+='<button class="btn" style="margin-top:12px" onclick="shareBadge(\''+b.key+'\')">↗ Partager ce badge</button>';
   h+='<button class="btn ghost" onclick="closeOv(\'ovBadges\')">Fermer</button>';
   $('#badgesBody').innerHTML=h;
   openOv('ovBadges');
@@ -1102,6 +1319,7 @@ async function startApp(){
     saveAll();
     endLogin();
     boot();
+    ensurePublicProfile().then(syncPublicProfile);
   } else {
     startLogin();
   }
@@ -1116,6 +1334,7 @@ async function startApp(){
       toast('Bienvenue 👋');
       sfx&&sfx('goal');
       boot();
+      ensurePublicProfile().then(syncPublicProfile);
     } else if(event === 'SIGNED_OUT'){
       location.reload();
     }
@@ -3169,6 +3388,7 @@ function submitDebrief(){
   applyProgressiveOverload(entry);
   weeklyAdaptiveRegen();
   renderCoachAnalysis(analysis);
+  grantReferralBonusIfNeeded();
 }
 function coachAnalyze(e){
   const pos=[],errs=[],tips=[],adjust=[];
@@ -5001,6 +5221,7 @@ function renderProfile(){
   // ===== SECTIONS GROUPÉES — Compte / Préférences / Support, une seule carte par groupe =====
   h+='<div class="grp-lab stag" style="animation-delay:.09s">Compte</div>';
   h+='<div class="grp-card stag" style="animation-delay:.10s">'+
+    '<div class="grp-row" onclick="openFriends()"><div class="lr-icon">👥</div><div class="lr-title">Amis & Classement</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileEdit()"><div class="lr-icon">👤</div><div class="lr-title">Gérer le profil</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileSection(\'account\')"><div class="lr-icon">🔐</div><div class="lr-title">Mot de passe & sécurité</div><div class="lr-val">'+(window.currentUserEmail||'Non connecté')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileSection(\'notif\')"><div class="lr-icon">🔔</div><div class="lr-title">Notifications</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
@@ -5033,6 +5254,7 @@ function renderProfileSimple(){
 
   h+='<div class="grp-lab stag" style="animation-delay:.05s">Ton espace</div>';
   h+='<div class="grp-card stag" style="animation-delay:.06s">'+
+    '<div class="grp-row" onclick="openFriends()"><div class="lr-icon">👥</div><div class="lr-title">Amis & Classement</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">📊</div><div class="lr-title">Statistiques</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openBadges()"><div class="lr-icon">🏆</div><div class="lr-title">Badges</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="nav(\'outils\')"><div class="lr-icon">🧮</div><div class="lr-title">Outils & calculateurs</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
