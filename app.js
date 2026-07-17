@@ -144,6 +144,11 @@ async function syncPublicProfile(){
       level: (XP&&XP.level)||1,
       km_week: Math.round((kmThisWeek()||0)*10)/10,
       sessions_week: runCountWeek()+muscuCountWeek(),
+      vdot: getUserVDOT()||null,
+      total_sessions: totalSessions(),
+      streak_days: streakDays(),
+      total_km: Math.round((totalKm()||0)*10)/10,
+      photo_url: P.photo||null,
       updated_at: new Date().toISOString()
     }).eq('user_id', window.currentUserId);
   }catch(e){ /* silencieux : pas bloquant pour l'app */ }
@@ -243,9 +248,11 @@ async function grantReferralBonusIfNeeded(){
 }
 
 let friendsTab='list';
+let friendsSelected=null;
 let friendsCache={friends:[],pending:[],sent:[]};
 function openFriends(){
   friendsTab='list';
+  friendsSelected=null;
   $('#ovProgTitle').textContent='👥 Amis & Classement';
   $('#progBody').innerHTML='<div id="friendsBody"></div>';
   openOv('ovProg');
@@ -259,7 +266,7 @@ async function loadFriendsData(){
     const ids=new Set(); (rows||[]).forEach(r=>{ ids.add(r.user_id); ids.add(r.friend_id); }); ids.delete(uid);
     let profiles={};
     if(ids.size){
-      const { data:profs } = await window.supabaseClient.from('public_profiles').select('user_id,username,xp,level,km_week,sessions_week').in('user_id',[...ids]);
+      const { data:profs } = await window.supabaseClient.from('public_profiles').select('user_id,username,xp,level,km_week,sessions_week,vdot,total_sessions,streak_days,total_km,photo_url').in('user_id',[...ids]);
       (profs||[]).forEach(p=>profiles[p.user_id]=p);
     }
     friendsCache={friends:[],pending:[],sent:[]};
@@ -274,6 +281,8 @@ async function loadFriendsData(){
   renderFriends();
 }
 function renderFriends(){
+  if(friendsTab==='profile'){ $('#friendsBody').innerHTML=renderFriendProfileHTML(); return; }
+
   let h='<div class="pills" style="margin-bottom:14px">'+
     '<div class="pill '+(friendsTab==='list'?'on':'')+'" onclick="friendsTab=\'list\';renderFriends()">👥 Amis</div>'+
     '<div class="pill '+(friendsTab==='rank'?'on':'')+'" onclick="friendsTab=\'rank\';renderFriends()">🏆 Classement</div>'+
@@ -296,7 +305,8 @@ function renderFriends(){
     h+='<div class="sec-lab">Tes amis ('+friendsCache.friends.length+')</div>';
     if(!friendsCache.friends.length) h+='<div class="card"><div class="empty"><div class="em-ic">👋</div><div style="font-size:13px">Pas encore d\u2019amis — cherche quelqu\u2019un par son pseudo !</div></div></div>';
     else friendsCache.friends.forEach(f=>{
-      h+='<div class="card" style="padding:12px 14px"><div class="row"><div><div style="font-weight:700">'+f.username+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">Niv. '+f.level+' · '+f.km_week+' km cette semaine</div></div><span class="mini-ic" style="color:var(--bad)" onclick="removeFriend(\''+f.id+'\')" title="Retirer">🗑</span></div></div>';
+      const av=f.photo_url?'<div style="width:40px;height:40px;border-radius:50%;background:url(\''+f.photo_url+'\') center/cover;flex-shrink:0"></div>':'<div style="width:40px;height:40px;border-radius:50%;background:var(--ed);color:var(--e);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0">'+(f.username?f.username[0].toUpperCase():'?')+'</div>';
+      h+='<div class="card" style="padding:12px 14px" onclick="openFriendProfile(\''+f.id+'\')"><div class="row" style="gap:10px"><div class="row" style="gap:10px;flex:1;min-width:0">'+av+'<div style="min-width:0"><div style="font-weight:700">'+f.username+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">Niv. '+f.level+' · '+f.km_week+' km cette semaine</div></div></div><span class="mini-ic" style="color:var(--bad)" onclick="event.stopPropagation();removeFriend(\''+f.id+'\')" title="Retirer">🗑</span><span class="lr-chev">'+ICN('chevronR',16)+'</span></div></div>';
     });
     if(friendsCache.sent.length){
       h+='<div class="sec-lab">Demandes envoyées</div>';
@@ -310,7 +320,7 @@ function renderFriends(){
     h+='<div class="sec-lab">Classement XP entre amis</div>';
     if(all.length===1) h+='<div class="card"><div class="empty"><div class="em-ic">🏆</div><div style="font-size:13px">Ajoute des amis pour débloquer le classement !</div></div></div>';
     else h+='<div class="card" style="padding:6px 14px">'+all.map((f,i)=>
-      '<div class="row" style="padding:10px 0;border-bottom:'+(i<all.length-1?'1px solid var(--hair)':'none')+'"><div style="font-weight:800;width:24px;color:var(--e2)">#'+(i+1)+'</div><div style="flex:1;font-weight:700">'+f.username+'</div><div style="font-size:12.5px;color:var(--muted)">'+f.xp+' XP · Niv.'+f.level+'</div></div>'
+      '<div class="row" style="padding:10px 0;border-bottom:'+(i<all.length-1?'1px solid var(--hair)':'none')+(f.id?';cursor:pointer':'')+'"'+(f.id?' onclick="openFriendProfile(\''+f.id+'\')"':'')+'><div style="font-weight:800;width:24px;color:var(--e2)">#'+(i+1)+'</div><div style="flex:1;font-weight:700">'+f.username+'</div><div style="font-size:12.5px;color:var(--muted)">'+f.xp+' XP · Niv.'+f.level+'</div></div>'
     ).join('')+'</div>';
   }
 
@@ -361,6 +371,52 @@ async function respondFriend(reqId,accept){
   if(accept) await window.supabaseClient.from('friendships').update({status:'accepted'}).eq('id',reqId);
   else await window.supabaseClient.from('friendships').delete().eq('id',reqId);
   loadFriendsData();
+}
+function openFriendProfile(id){
+  friendsSelected=id; friendsTab='profile';
+  $('#ovProgTitle').textContent='👤 Profil';
+  renderFriends();
+}
+function backToFriendsList(){
+  friendsTab='list'; friendsSelected=null;
+  $('#ovProgTitle').textContent='👥 Amis & Classement';
+  renderFriends();
+}
+function friendBadgesHTML(f){
+  // Réutilise les mêmes paliers que MEDAL_CATS, mais calculés à partir des stats
+  // synchronisées de l'ami (total_sessions / streak_days / total_km) plutôt que
+  // des données locales (SESS/MSESS), qui n'existent que pour l'utilisateur courant.
+  const icons={'Séances':'medal','Régularité':'fire','Distance':'chart'};
+  const vals={'Séances':f.total_sessions||0,'Régularité':f.streak_days||0,'Distance':f.total_km||0};
+  let cells='', anyUnlocked=false;
+  MEDAL_CATS.forEach(c=>{
+    const v=Math.floor(vals[c.name]||0);
+    let tierIdx=-1; c.thr.forEach((t,i)=>{ if(v>=t)tierIdx=i; });
+    const locked=tierIdx<0; if(!locked) anyUnlocked=true;
+    const tierLab=locked?'':TIERS[tierIdx][0];
+    cells+='<div class="badge-mini'+(locked?' locked':'')+'" title="'+c.name+(tierLab?' · '+tierLab:'')+'">'+ICN(icons[c.name]||'medal',18)+'</div>';
+  });
+  return '<div class="card" style="padding:16px"><div class="lab" style="margin-bottom:10px">Badges</div><div class="badge-mini-row">'+cells+'</div>'+
+    (anyUnlocked?'':'<div style="font-size:11.5px;color:var(--dim);margin-top:8px">Aucun badge débloqué pour l\u2019instant.</div>')+'</div>';
+}
+function renderFriendProfileHTML(){
+  const f=[...friendsCache.friends,...friendsCache.pending,...friendsCache.sent].find(x=>x.id===friendsSelected);
+  const back='<div class="row" style="margin-bottom:14px;cursor:pointer" onclick="backToFriendsList()">'+ICN('chevronR',16).replace('<path','<path transform="rotate(180 12 12)"')+' <span style="font-weight:700;margin-left:4px">Retour aux amis</span></div>';
+  if(!f) return back+'<div class="card"><div class="empty"><div class="em-ic">🤷</div><div style="font-size:13px">Profil introuvable.</div></div></div>';
+  const av=f.photo_url?'<div style="width:84px;height:84px;border-radius:50%;background:url(\''+f.photo_url+'\') center/cover;margin:0 auto"></div>':'<div style="width:84px;height:84px;border-radius:50%;background:var(--ed);color:var(--e);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:32px;margin:0 auto">'+(f.username?f.username[0].toUpperCase():'?')+'</div>';
+  let h=back;
+  h+='<div class="card" style="text-align:center;padding:20px">'+av+
+    '<div style="font-weight:800;font-size:18px;margin-top:12px">'+f.username+'</div>'+
+    '<div style="font-size:12.5px;color:var(--muted);margin-top:2px">Niveau '+(f.level||1)+' · '+(f.xp||0)+' XP</div>'+
+  '</div>';
+  h+='<div class="stat-quatro" style="margin-top:12px">'+
+    '<div class="card stat-card"><div class="stat-ic">'+ICN('lung',14)+'</div><div class="stat-v">'+(f.vdot||'—')+'</div><div class="stat-l">VDOT</div></div>'+
+    '<div class="card stat-card"><div class="stat-ic">'+ICN('run',14)+'</div><div class="stat-v">'+(f.km_week||0)+'</div><div class="stat-l">km/sem.</div></div>'+
+    '<div class="card stat-card"><div class="stat-ic">'+ICN('fire',14)+'</div><div class="stat-v">'+(f.streak_days||0)+'</div><div class="stat-l">Jours de suite</div></div>'+
+    '<div class="card stat-card"><div class="stat-ic">'+ICN('chart',14)+'</div><div class="stat-v">'+(f.total_km||0)+'</div><div class="stat-l">km au total</div></div>'+
+  '</div>';
+  h+='<div style="margin-top:12px">'+friendBadgesHTML(f)+'</div>';
+  return h;
 }
 async function removeFriend(otherId){
   if(!confirm('Retirer cet ami ?')) return;
@@ -2965,11 +3021,12 @@ function renderHome(){
 
   let html='';
 
-  // HEADER — logo IKORUN + cloche notifications
-  html+='<div class="ik-header"><div class="ik-logo">'+
+  // HEADER — icône amis (haut gauche) + logo IKORUN
+  html+='<div class="ik-header"><div class="ik-header-left">'+
+    '<div class="ik-people" onclick="openFriends()">'+ICN('users',18)+'</div>'+
+    '<div class="ik-logo">'+
     '<svg viewBox="0 0 24 24" fill="none"><path d="M4 20L14 3l1.5 3.2L9 18.5z" fill="var(--e2)"/><path d="M9 18.5L15.5 6.2 20 9.5 12 20z" fill="var(--e)"/></svg>'+
-    '<span>IKORUN</span></div>'+
-    '<div class="ik-bell" onclick="toast(\'Aucune nouvelle notification\')">'+ICN('bell',18)+'<span class="dot"></span></div></div>';
+    '<span>IKORUN</span></div></div></div>';
 
   // STREAK (série de jours consécutifs)
   html+=homeStreakBadge();
@@ -4586,6 +4643,7 @@ const ICONS={
   search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/>',
   star:'<path d="M12 3l2.5 6 6.5.5-5 4 1.7 6.5L12 16l-5.7 4 1.7-6.5-5-4 6.5-.5z"/>',
   bell:'<path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6zM10 20a2 2 0 0 0 4 0"/>',
+  users:'<path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
   calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/>',
   mosque:'<path d="M4 21V11a8 8 0 0 1 16 0v10M12 3c-1.5 1-1.5 3 0 4M9 21v-4a3 3 0 0 1 6 0v4"/>',
   chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
