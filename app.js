@@ -4433,7 +4433,9 @@ function saveCfg(){
 /* ---------- STATS ---------- */
 let statsTab='bilan';
 function renderStats(){
-  let h='';
+  let h='<div class="seg-ctrl">'+
+    [['bilan','Bilan'],['run','Course'],['muscu','Muscu'],['medals','Trophées']].map(t=>'<div class="seg-btn'+(statsTab===t[0]?' on':'')+'" onclick="statsTab=\''+t[0]+'\';renderStats()">'+t[1]+'</div>').join('')+
+  '</div>';
   if(statsTab==='bilan') h+=statsBilan();
   if(statsTab==='run') h+=statsRun();
   if(statsTab==='muscu') h+=statsMuscu();
@@ -4603,8 +4605,8 @@ function statsMuscu(){
    à cocher soi-même (podium en compétition, dénivelé, VO2max amélioré...). */
 const ACHIEVEMENTS=[
   {key:'premiere',    name:'Première course',  img:'premiere.png',    cat:'Accomplissement', desc:'Termine ta première séance.',           auto:()=>SESS.length+MSESS.length>=1},
-  {key:'cinqk',       name:'5K',                img:'cinqk.png',       cat:'Accomplissement', desc:'Cours 5 km d\u2019une traite.',          auto:()=>SESS.some(s=>s.km>=5)},
-  {key:'dixk',        name:'10K',               img:'dixk.png',        cat:'Accomplissement', desc:'Cours 10 km d\u2019une traite.',         auto:()=>SESS.some(s=>s.km>=10)},
+  {key:'cinqk',       name:'5K',                emoji:'🏃',            cat:'Accomplissement', desc:'Cours 5 km d\u2019une traite.',          auto:()=>SESS.some(s=>s.km>=5)},
+  {key:'dixk',        name:'10K',               emoji:'🏁',            cat:'Accomplissement', desc:'Cours 10 km d\u2019une traite.',         auto:()=>SESS.some(s=>s.km>=10)},
   {key:'record',      name:'Record personnel',  img:'record.png',      cat:'Accomplissement', desc:'Bats un de tes records personnels.',     auto:()=>personalRecords().some(r=>r.time)},
   {key:'serie',       name:'Série',             img:'serie.png',       cat:'Accomplissement', desc:'7 jours d\u2019affilée.',                auto:()=>bestStreak()>=7},
   {key:'regularite',  name:'Régularité',        img:'regularite.png',  cat:'Accomplissement', desc:'30 jours actifs (cumulés).',             auto:()=>(SESS.length+MSESS.length)>=30},
@@ -4612,17 +4614,17 @@ const ACHIEVEMENTS=[
   {key:'podium',      name:'Podium',            img:'podium.png',      cat:'Accomplissement', desc:'Finis dans le top 3 d\u2019une course officielle.', manual:true},
   {key:'discipline',  name:'Discipline',        img:'discipline.png',  cat:'Accomplissement', desc:'90 jours actifs (cumulés).',             auto:()=>(SESS.length+MSESS.length)>=90},
   {key:'objectif',    name:'Objectif atteint',  img:'objectif.png',    cat:'Accomplissement', desc:'Termine ton objectif principal.',        auto:()=>(XP.plansCompleted||0)>=1},
-  {key:'nouveaupb',   name:'Nouveau PB',        img:'nouveaupb.png',   cat:'Performance',      desc:'Nouveau record personnel dans les 60 derniers jours.', auto:()=>RECORDS.some(r=>r.date&&daysBetween(new Date(r.date),new Date())<=60)},
+  {key:'nouveaupb',   name:'Nouveau PB',        emoji:'🥇',            cat:'Performance',      desc:'Nouveau record personnel dans les 60 derniers jours.', auto:()=>RECORDS.some(r=>r.date&&daysBetween(new Date(r.date),new Date())<=60)},
   {key:'allure',      name:'Allure',            img:'allure.png',      cat:'Performance',      desc:'Allure moyenne améliorée.',              manual:true},
   {key:'endurance',   name:'Endurance',         img:'endurance.png',   cat:'Performance',      desc:'Termine une sortie de 90 min ou plus.',  auto:()=>SESS.some(s=>s.duration>=90)},
   {key:'puissance',   name:'Puissance',         img:'puissance.png',   cat:'Performance',      desc:'10 séances de musculation effectuées.',  auto:()=>MSESS.length>=10},
-  {key:'vo2max',      name:'VO2 Max',           img:'vo2max.png',      cat:'Performance',      desc:'Améliore ton VO\u2082max estimé.',       manual:true},
+  {key:'vo2max',      name:'VO2 Max',           emoji:'🫁',            cat:'Performance',      desc:'Améliore ton VO\u2082max estimé.',       manual:true},
   {key:'force',       name:'Force',             img:'force.png',       cat:'Performance',      desc:'Termine une séance de musculation.',     auto:()=>MSESS.length>=1},
   {key:'recuperation',name:'Récupération',      img:'recuperation.png',cat:'Performance',      desc:'Sommeil optimal 7 jours d\u2019affilée.',manual:true},
-  {key:'leader',      name:'Leader',            img:null,              cat:'Spécial',          desc:'Top du classement (à venir).',           manual:true},
-  {key:'ambassadeur', name:'Ambassadeur',       img:null,              cat:'Spécial',          desc:'Membre premium (à venir).',              manual:true},
-  {key:'evenement',   name:'Événement',         img:null,              cat:'Spécial',          desc:'Participe à un événement IKORUN.',       manual:true},
-  {key:'fondateur',   name:'Fondateur',         img:null,              cat:'Spécial',          desc:'Membre fondateur de IKORUN.',            auto:()=>true}
+  {key:'leader',      name:'Leader',            img:'leader.png',      cat:'Spécial',          desc:'Top du classement (à venir).',           manual:true},
+  {key:'ambassadeur', name:'Ambassadeur',       img:'ambassadeur.png', cat:'Spécial',          desc:'Membre premium (à venir).',              manual:true},
+  {key:'evenement',   name:'Événement',         img:'evenement.png',   cat:'Spécial',          desc:'Participe à un événement IKORUN.',       manual:true},
+  {key:'fondateur',   name:'Fondateur',         img:'fondateur.png',   cat:'Spécial',          desc:'Membre fondateur de IKORUN.',            auto:()=>true}
 ];
 function manualBadges(){ return DB.load('manual_badges')||{}; }
 function achievementUnlocked(a){ const on = a.auto ? !!a.auto() : !!manualBadges()[a.key]; if(on) recordAchDate(a.key); return on; }
@@ -4647,10 +4649,13 @@ function toggleManualBadge(key){
   toast(m[key]?'🏵️ '+a.name+' débloqué !':'Badge retiré');
   renderStats();
 }
-function achImgErr(img){ const span=document.createElement('span'); span.className='bd-glyph bd-emoji'; span.textContent='🏵️'; img.replaceWith(span); }
+function achImgErr(img){
+  if(img.dataset.stage!=='1'){ img.dataset.stage='1'; img.src='badges/'+img.dataset.file; return; }
+  const span=document.createElement('span'); span.className='bd-glyph bd-emoji'; span.textContent='🏵️'; img.replaceWith(span);
+}
 function achImg(a){
-  if(!a.img) return '<span class="bd-emoji">🏵️</span>';
-  return '<img class="bd-glyph" src="'+a.img+'" alt="" draggable="false" loading="lazy" onerror="achImgErr(this)">';
+  if(!a.img) return '<span class="bd-emoji">'+(a.emoji||'🏵️')+'</span>';
+  return '<img class="bd-glyph" src="'+a.img+'" data-file="'+a.img+'" data-stage="0" alt="" draggable="false" loading="lazy" onerror="achImgErr(this)">';
 }
 function achievementsGridHTML(){
   const cats=['Accomplissement','Performance','Spécial'];
