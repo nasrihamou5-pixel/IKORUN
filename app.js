@@ -1544,8 +1544,8 @@ function maybeResumeLive(){
 }
 
 /* ---------- ONBOARDING ---------- */
-let obStep=1; const OB_MAX=7;
-let obEasy=false; // true si >26 ans → onboarding allégé (niveau, objectif, date, record seulement) + mode simplifié auto
+let obStep=1; const OB_MAX=6;
+let obEasy=false; // true si >26 ans → mode simplifié activé auto (n'affecte plus la navigation de l'onboarding)
 function startOnboarding(){
   obEasy=false;
   $('#ob').classList.add('on');
@@ -1557,10 +1557,45 @@ function startOnboarding(){
   OB_PERFS=[{dist:null,meters:null,timeS:null}];
   renderPerfRows();
   obUsernameOk=false;
+  obUsernameAuto=true;
   wireUsernameField('ob_username','ob_username_status',ok=>{ obUsernameOk=ok; });
+  wireAutoUsername();
   obShow(1);
 }
 let obUsernameOk=false;
+let obUsernameAuto=true; // tant que vrai, le pseudo se génère automatiquement à partir du prénom
+function wireAutoUsername(){
+  const nameInp=$('#ob_name'); if(!nameInp) return;
+  let deb=null;
+  nameInp.oninput=()=>{
+    if(!obUsernameAuto) return;
+    clearTimeout(deb);
+    deb=setTimeout(()=>{
+      const name=nameInp.value.trim();
+      if(!name) return;
+      const u=suggestUsername(name);
+      const uInp=$('#ob_username'); if(!uInp) return;
+      uInp.value=u;
+      checkUsernameLive(u,$('#ob_username_status'),uInp).then(ok=>{ obUsernameOk=ok; });
+    },350);
+  };
+  const uInp=$('#ob_username');
+  if(uInp) uInp.addEventListener('input',()=>{ obUsernameAuto=false; },{once:true});
+}
+function slugifyUsername(name){
+  let s=(name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  s=s.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+  if(s.length>14) s=s.slice(0,14);
+  return s;
+}
+function suggestUsername(name){
+  let base=slugifyUsername(name);
+  if(base.length<2) base='runner';
+  const suffix=String(Math.floor(Math.random()*900)+100);
+  let u=(base+'_'+suffix).slice(0,20);
+  if(u.length<3) u=(u+'000').slice(0,3);
+  return u;
+}
 /* ===== Étape Performances : lignes Distance | Temps ===== */
 let OB_PERFS=[{dist:null,meters:null,timeS:null}];
 function renderPerfRows(){
@@ -1613,33 +1648,29 @@ function obShow(n){
 }
 $('#obPrev').onclick=()=>{
   if(obStep<=1) return;
-  const prev=(obEasy&&obStep===4)?2:obStep-1; // saute l'étape taille/poids en retour aussi
-  obShow(prev);
+  obShow(obStep-1);
 };
 $('#obNext').onclick=()=>{
   if(!obValidate(obStep)) return;
   if(obStep===OB_MAX){ finishOnboarding(); return; }
-  const next=(obEasy&&obStep===2)?4:obStep+1; // profil rapide : on saute taille/poids
-  obShow(next);
+  obShow(obStep+1);
 };
 function obv(id){ const el=$('#'+id); return el.dataset.v!==undefined&&el.classList.contains('pkfield')?el.dataset.v:el.value; }
 function setObPk(id,val,label){ const el=$('#'+id); el.dataset.v=val; el.textContent=label; el.classList.add('set'); }
-function pickWeightOb(){ openPicker({title:'Poids (kg)',cols:[{values:range(30,200),sel:30},{values:range(0,9),sel:0,unit:'kg'}],seps:['.'],onOk:idx=>{ const w=(idx[0]+30)+idx[1]/10; setObPk('ob_w',w,w+' kg'); }}); }
 function obValidate(n){
   if(n===2){
-    if(!$('#ob_name').value.trim()||!$('#ob_bday').value||!$('#ob_sex').value||!$('#ob_city').value.trim()){ toast('Remplis les champs requis'); return false; }
+    if(!$('#ob_name').value.trim()||!$('#ob_bday').value||!$('#ob_sex').value){ toast('Remplis les champs requis'); return false; }
     if(!$('#ob_username').value.trim()){ toast('Choisis un nom d\u2019utilisateur'); return false; }
     if(!obUsernameOk){ toast('Ce nom d\u2019utilisateur n\u2019est pas disponible'); return false; }
     const bd=new Date($('#ob_bday').value);
     const ageYears=Math.floor((Date.now()-bd)/31557600000);
     obEasy = ageYears>26;
-    if(obEasy) toast('Profil rapide activé — on va droit à l\u2019essentiel ✓');
+    if(obEasy) toast('Profil rapide activé — mode simplifié activé ✓');
   }
-  if(n===3){ if(!obv('ob_h')||!obv('ob_w')){ toast('Taille et poids requis'); return false; } }
-  if(n===4){ if(!$('#ob_level').querySelector('.pill.on')){ toast('Choisis un niveau'); return false; } if(!obv('ob_km')){ toast('Choisis ton volume'); return false; } }
-  if(n===5){ if(!$('#ob_goal').value.trim()||!$('#ob_compdate').value){ toast('Objectif et date requis'); return false; } }
-  if(n===6){ const valid=OB_PERFS.filter(p=>p.meters&&p.timeS); if(!valid.length){ toast('Ajoute au moins une performance'); return false; } }
-  if(n===7){ if(!$('#ob_days').querySelector('.pill.on')||!obv('ob_time')){ toast('Jours et temps requis'); return false; } }
+  if(n===3){ if(!$('#ob_level').querySelector('.pill.on')){ toast('Choisis un niveau'); return false; } if(!obv('ob_km')){ toast('Choisis ton volume'); return false; } }
+  if(n===4){ if(!$('#ob_goal').value.trim()||!$('#ob_compdate').value){ toast('Objectif et date requis'); return false; } }
+  if(n===5){ const valid=OB_PERFS.filter(p=>p.meters&&p.timeS); if(!valid.length){ toast('Ajoute au moins une performance'); return false; } }
+  if(n===6){ if(!$('#ob_days').querySelector('.pill.on')||!obv('ob_time')){ toast('Jours et temps requis'); return false; } }
   return true;
 }
 function finishOnboarding(){
@@ -1651,7 +1682,6 @@ function finishOnboarding(){
   P={
     setupDone:true,
     name:$('#ob_name').value.trim(), username:$('#ob_username').value.trim(), bday:$('#ob_bday').value, sex:$('#ob_sex').value, city:$('#ob_city').value.trim(),
-    height:+obv('ob_h'), weight:+obv('ob_w'),
     level:$('#ob_level').querySelector('.pill.on').dataset.v, kmWeek:+obv('ob_km')||40,
     goal:$('#ob_goal').value.trim(), compDate:$('#ob_compdate').value,
     t5k:find(5000), t3k:find(3000), t1500:find(1500), t10k:find(10000),
@@ -4398,6 +4428,17 @@ function renderStats(){
   $('#s-stats').innerHTML=h;
 }
 let bilanPeriod='week';
+function bodyInfoCard(){
+  if(P.height&&P.weight) return '';
+  return '<div class="card" style="margin-bottom:14px">'+
+    '<div class="card-t">📏 Complète ton profil</div>'+
+    '<div style="font-size:13px;color:var(--muted);margin-bottom:12px">Ta taille et ton poids servent à calculer ton IMC, tes calories et tes besoins.</div>'+
+    '<div class="field" style="margin-bottom:10px"><label>Taille</label><div class="inp pkfield" onclick="pickBodyHeight()">'+(P.height?P.height+' cm':'Choisir ta taille')+'</div></div>'+
+    '<div class="field" style="margin-bottom:0"><label>Poids</label><div class="inp pkfield" onclick="pickBodyWeight()">'+(P.weight?P.weight+' kg':'Choisir ton poids')+'</div></div>'+
+  '</div>';
+}
+function pickBodyHeight(){ pickInt('Taille (cm)',120,220,P.height||170,'cm',v=>{ P.height=v; saveAll(); renderStats(); toast('Taille enregistrée ✓'); }); }
+function pickBodyWeight(){ openPicker({title:'Poids (kg)',cols:[{values:range(30,200),sel:Math.max(0,(P.weight||65)-30)},{values:range(0,9),sel:0,unit:'kg'}],seps:['.'],onOk:idx=>{ const w=(idx[0]+30)+idx[1]/10; P.weight=w; saveAll(); renderStats(); toast('Poids enregistré ✓'); }}); }
 function statsBilan(){
   const per=bilanPeriod;
   const {cur,prev}=periodRanges(per);
@@ -4410,8 +4451,11 @@ function statsBilan(){
   const bars=kmBarSeries(per);
   const trend=weeklyTrend8();
 
+  // TAILLE / POIDS — demandés ici plutôt qu'à l'inscription
+  let h=bodyInfoCard();
+
   // ONGLETS PÉRIODE — segmented control façon Kalo
-  let h='<div class="seg-ctrl">'+
+  h+='<div class="seg-ctrl">'+
     ['week','month','3m','year'].map(p=>'<div class="seg-btn'+(per===p?' on':'')+'" onclick="bilanPeriod=\''+p+'\';renderStats()">'+periodTabLabel(p)+'</div>').join('')+
   '</div>';
 
