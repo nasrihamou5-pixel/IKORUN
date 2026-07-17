@@ -1406,6 +1406,32 @@ function endLogin(){ $('#login').classList.remove('on'); }
 
 async function startApp(){
   if(!window.supabaseClient){ boot(); return; }
+
+  // ---- DIAGNOSTIC TEMPORAIRE : à retirer une fois le bug identifié ----
+  (function diagOAuth(){
+    const raw = window.location.hash ? window.location.hash.slice(1) : window.location.search.slice(1);
+    const params = new URLSearchParams(raw);
+    console.log('[DIAG] URL complète au retour :', window.location.href);
+    if(params.get('error') || params.get('error_description') || params.get('error_code')){
+      console.error('[DIAG] Erreur OAuth trouvée dans l\'URL :', {
+        error: params.get('error'),
+        code: params.get('error_code'),
+        description: params.get('error_description')
+      });
+      alert('DIAG erreur OAuth :\n' + (params.get('error_description') || params.get('error') || params.get('error_code')));
+    } else if(params.get('code')){
+      console.log('[DIAG] Un code d\'échange PKCE est présent dans l\'URL.');
+      const verifierKeys = Object.keys(localStorage).filter(k=>k.includes('code-verifier')||k.includes('code_verifier'));
+      console.log('[DIAG] Clés code-verifier trouvées dans localStorage :', verifierKeys);
+      if(verifierKeys.length===0){
+        alert('DIAG : un code Google est présent mais AUCUN code_verifier en localStorage → la session ne peut pas être établie (probablement un souci de stockage / navigateur in-app / PWA).');
+      }
+    } else {
+      console.log('[DIAG] Pas de code ni d\'erreur dans l\'URL au chargement (retour normal hors flux OAuth, ou déjà consommé).');
+    }
+  })();
+  // ---- FIN DIAGNOSTIC TEMPORAIRE ----
+
   const { data:{ session } } = await window.supabaseClient.auth.getSession();
   if(session && session.user){
     window.currentUserId = session.user.id;
