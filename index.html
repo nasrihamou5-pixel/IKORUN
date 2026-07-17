@@ -925,6 +925,15 @@ html[data-mode="light"]{
 .ob-step.on{display:flex;}
 .ob-step h1{font-family:'Unbounded';font-weight:800;font-size:27px;line-height:1.15;margin-bottom:8px;letter-spacing:-.6px;}
 .ob-step p.intro{color:var(--muted);font-size:14.5px;margin-bottom:24px;line-height:1.5;}
+.uname-wrap{position:relative;}
+.uname-wrap .inp{padding-left:28px;}
+.uname-at{position:absolute;left:12px;top:38px;color:var(--muted);font-weight:700;pointer-events:none;}
+.field .inp.uname-ok{border-color:var(--ok);}
+.field .inp.uname-bad{border-color:var(--bad);}
+.uname-status{font-size:12px;margin-top:6px;font-weight:600;min-height:15px;color:var(--muted);}
+.uname-status.ok{color:var(--ok);}
+.uname-status.bad{color:var(--bad);}
+.uname-status.checking{color:var(--muted);}
 .ob-foot{display:flex;gap:10px;margin-top:14px;}
 
 /* MEDAL TIERS */
@@ -1404,6 +1413,10 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
   <div class="ob-step" data-step="2">
     <h1>Qui es-tu ?</h1><p class="intro">Tes informations de base.</p>
     <div class="field"><label>Prénom *</label><input class="inp" id="ob_name" placeholder="Ton prénom"></div>
+    <div class="field"><label>Nom d'utilisateur *</label>
+      <div class="uname-wrap"><span class="uname-at">@</span><input class="inp" id="ob_username" placeholder="pseudo_unique" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
+      <div class="uname-status" id="ob_username_status">3 à 20 caractères : lettres, chiffres, _</div>
+    </div>
     <div class="field"><label>Date de naissance *</label><input class="inp" id="ob_bday" type="date"></div>
     <div class="field"><label>Sexe *</label><select class="inp" id="ob_sex"><option value="">Sélectionner</option><option>Homme</option><option>Femme</option></select></div>
     <div class="field"><label>Ville *</label><input class="inp" id="ob_city" placeholder="Ta ville"></div>

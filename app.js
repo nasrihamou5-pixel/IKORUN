@@ -103,10 +103,13 @@ async function ensurePublicProfile(){
   try{
     const { data } = await window.supabaseClient.from('public_profiles').select('user_id').eq('user_id',window.currentUserId).maybeSingle();
     if(!data){
+      // pseudo technique unique par défaut (ex: athlete_1a2b3c4d) tant que l'utilisateur
+      // n'a pas encore validé son vrai nom d'utilisateur unique.
+      const placeholder='athlete_'+String(window.currentUserId).replace(/-/g,'').slice(0,10);
       let code=genReferralCode(), tries=0, ok=false;
       while(tries<5 && !ok){
         const { error } = await window.supabaseClient.from('public_profiles').insert({
-          user_id:window.currentUserId, username:(P.name||'Athlète'), referral_code:code
+          user_id:window.currentUserId, username:(P.username||placeholder), username_set:!!P.username, referral_code:code
         });
         if(!error) ok=true; else { code=genReferralCode(); tries++; }
       }
@@ -116,8 +119,9 @@ async function ensurePublicProfile(){
 async function syncPublicProfile(){
   if(!window.supabaseClient || !window.currentUserId) return;
   try{
+    // Le pseudo n'est JAMAIS écrasé ici : il est géré uniquement via claimUsername()
+    // pour garantir son unicité (onboarding + modification dans le profil).
     await window.supabaseClient.from('public_profiles').update({
-      username: P.name||'Athlète',
       xp: (XP&&XP.total)||0,
       level: (XP&&XP.level)||1,
       km_week: Math.round((kmThisWeek()||0)*10)/10,
@@ -125,6 +129,63 @@ async function syncPublicProfile(){
       updated_at: new Date().toISOString()
     }).eq('user_id', window.currentUserId);
   }catch(e){ /* silencieux : pas bloquant pour l'app */ }
+}
+/* ---------- Nom d'utilisateur unique (vérif en direct + réservation) ---------- */
+function usernameFormatOk(v){ return /^[a-zA-Z0-9_]{3,20}$/.test(v||''); }
+let _unameSeq=0;
+async function checkUsernameLive(rawValue, statusEl, inputEl){
+  const seq=++_unameSeq;
+  const v=(rawValue||'').trim();
+  inputEl && inputEl.classList.remove('uname-ok','uname-bad');
+  if(!v){ if(statusEl){ statusEl.textContent="3 à 20 caractères : lettres, chiffres, _"; statusEl.className='uname-status'; } return false; }
+  if(!usernameFormatOk(v)){
+    if(statusEl){ statusEl.textContent='✕ 3 à 20 caractères : lettres, chiffres, _'; statusEl.className='uname-status bad'; }
+    inputEl && inputEl.classList.add('uname-bad');
+    return false;
+  }
+  if(statusEl){ statusEl.textContent='Vérification…'; statusEl.className='uname-status checking'; }
+  if(!window.supabaseClient){
+    if(statusEl){ statusEl.textContent='✓ Disponible'; statusEl.className='uname-status ok'; }
+    inputEl && inputEl.classList.add('uname-ok');
+    return true;
+  }
+  try{
+    let q=window.supabaseClient.from('public_profiles').select('user_id').eq('username_lower',v.toLowerCase()).limit(1);
+    if(window.currentUserId) q=q.neq('user_id',window.currentUserId);
+    const { data } = await q.maybeSingle();
+    if(seq!==_unameSeq) return false; // réponse obsolète (l'utilisateur a retapé entre temps)
+    if(data){
+      if(statusEl){ statusEl.textContent='✕ Déjà pris'; statusEl.className='uname-status bad'; }
+      inputEl && inputEl.classList.add('uname-bad');
+      return false;
+    }
+    if(statusEl){ statusEl.textContent='✓ Disponible'; statusEl.className='uname-status ok'; }
+    inputEl && inputEl.classList.add('uname-ok');
+    return true;
+  }catch(e){
+    if(statusEl){ statusEl.textContent=''; statusEl.className='uname-status'; }
+    return false;
+  }
+}
+function wireUsernameField(inputId, statusId, onResult){
+  const inp=$('#'+inputId), st=$('#'+statusId); if(!inp||!st) return;
+  let deb=null;
+  inp.addEventListener('input',()=>{
+    clearTimeout(deb);
+    deb=setTimeout(async ()=>{
+      const ok=await checkUsernameLive(inp.value, st, inp);
+      if(onResult) onResult(ok);
+    },400);
+  });
+}
+// Réserve/renomme le pseudo côté serveur de façon atomique (source de vérité anti-doublon)
+async function claimUsername(username){
+  if(!window.supabaseClient || !window.currentUserId) { P.username=username; return true; }
+  try{
+    const { data, error } = await window.supabaseClient.rpc('claim_username',{ p_uid:window.currentUserId, p_username:username });
+    if(error || !data) return false;
+    P.username=username; return true;
+  }catch(e){ return false; }
 }
 let _myRefCodeCache=null;
 async function myReferralCode(){
@@ -204,7 +265,7 @@ function renderFriends(){
   }
 
   if(friendsTab==='list'){
-    h+='<div class="field"><label>Ajouter un ami (code ou pseudo)</label><div class="row" style="gap:8px"><input class="inp" id="addFriendCode" placeholder="Ex: A3F9K2" style="flex:1"><button class="btn sm" style="width:auto" onclick="addFriendByCode()">Ajouter</button></div></div>';
+    h+='<div class="field"><label>Chercher un ami par pseudo</label><input class="inp" id="addFriendSearch" placeholder="@pseudo" autocapitalize="off" autocorrect="off" spellcheck="false" oninput="onFriendSearchInput()"><div id="friendSearchResults" style="margin-top:8px"></div></div>';
     if(friendsCache.pending.length){
       h+='<div class="sec-lab">Demandes reçues</div>';
       friendsCache.pending.forEach(p=>{
@@ -212,7 +273,7 @@ function renderFriends(){
       });
     }
     h+='<div class="sec-lab">Tes amis ('+friendsCache.friends.length+')</div>';
-    if(!friendsCache.friends.length) h+='<div class="card"><div class="empty"><div class="em-ic">👋</div><div style="font-size:13px">Pas encore d\u2019amis — ajoute quelqu\u2019un avec son code !</div></div></div>';
+    if(!friendsCache.friends.length) h+='<div class="card"><div class="empty"><div class="em-ic">👋</div><div style="font-size:13px">Pas encore d\u2019amis — cherche quelqu\u2019un par son pseudo !</div></div></div>';
     else friendsCache.friends.forEach(f=>{
       h+='<div class="card" style="padding:12px 14px"><div class="row"><div><div style="font-weight:700">'+f.username+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">Niv. '+f.level+' · '+f.km_week+' km cette semaine</div></div><span class="mini-ic" style="color:var(--bad)" onclick="removeFriend(\''+f.id+'\')" title="Retirer">🗑</span></div></div>';
     });
@@ -241,20 +302,39 @@ function renderFriends(){
 
   $('#friendsBody').innerHTML=h;
 }
-async function addFriendByCode(){
-  const el=$('#addFriendCode'); const v=el?el.value.trim():''; if(!v) return;
-  const isCode=/^[A-Z0-9]{6}$/i.test(v);
-  let target=null;
-  if(isCode){
-    const { data } = await window.supabaseClient.from('public_profiles').select('user_id').eq('referral_code',v.toUpperCase()).maybeSingle();
-    target=data;
-  } else {
-    const { data } = await window.supabaseClient.from('public_profiles').select('user_id').ilike('username',v).limit(1).maybeSingle();
-    target=data;
-  }
-  if(!target || target.user_id===window.currentUserId){ toast('Introuvable'); return; }
-  const { error } = await window.supabaseClient.from('friendships').insert({user_id:window.currentUserId, friend_id:target.user_id, status:'pending'});
-  if(error) toast('Déjà envoyé ou déjà ami'); else { toast('Demande envoyée ✓'); loadFriendsData(); }
+let _friendSearchDeb=null;
+function escLike(s){ return s.replace(/[\\%_]/g,'\\$&'); }
+function onFriendSearchInput(){
+  clearTimeout(_friendSearchDeb);
+  const el=$('#addFriendSearch'); const v=el?el.value.trim():'';
+  const box=$('#friendSearchResults'); if(!box) return;
+  if(!v){ box.innerHTML=''; return; }
+  box.innerHTML='<div style="font-size:12px;color:var(--muted);padding:6px 2px">Recherche…</div>';
+  _friendSearchDeb=setTimeout(()=>searchFriendCandidates(v),350);
+}
+async function searchFriendCandidates(v){
+  const box=$('#friendSearchResults'); if(!box) return;
+  if(!window.supabaseClient || !window.currentUserId){ box.innerHTML='<div style="font-size:12px;color:var(--muted);padding:6px 2px">Connecte-toi pour chercher des amis</div>'; return; }
+  try{
+    const { data } = await window.supabaseClient.from('public_profiles')
+      .select('user_id,username,level')
+      .ilike('username_lower','%'+escLike(v.toLowerCase())+'%')
+      .neq('user_id',window.currentUserId)
+      .limit(8);
+    const results=data||[];
+    if(!results.length){ box.innerHTML='<div style="font-size:12px;color:var(--muted);padding:6px 2px">Aucun pseudo trouvé</div>'; return; }
+    const known=new Set([...friendsCache.friends,...friendsCache.pending,...friendsCache.sent].map(f=>f.id));
+    box.innerHTML=results.map(r=>{
+      const already=known.has(r.user_id);
+      return '<div class="card" style="padding:10px 14px;margin-top:6px"><div class="row"><div style="font-weight:700">@'+r.username+'</div>'+
+        (already?'<span style="font-size:11.5px;color:var(--muted)">déjà lié</span>':'<button class="btn sm" style="width:auto" onclick="sendFriendRequest(\''+r.user_id+'\')">＋ Ajouter</button>')+
+        '</div></div>';
+    }).join('');
+  }catch(e){ box.innerHTML='<div style="font-size:12px;color:var(--bad);padding:6px 2px">Erreur de recherche</div>'; }
+}
+async function sendFriendRequest(targetId){
+  const { error } = await window.supabaseClient.from('friendships').insert({user_id:window.currentUserId, friend_id:targetId, status:'pending'});
+  if(error) toast('Déjà envoyé ou déjà ami'); else { toast('Demande envoyée ✓'); $('#friendSearchResults').innerHTML=''; $('#addFriendSearch').value=''; loadFriendsData(); }
 }
 async function respondFriend(reqId,accept){
   if(accept) await window.supabaseClient.from('friendships').update({status:'accepted'}).eq('id',reqId);
@@ -1387,8 +1467,11 @@ function startOnboarding(){
   $('#ob_days').querySelectorAll('.pill').forEach(p=>p.onclick=()=>p.classList.toggle('on'));
   OB_PERFS=[{dist:null,meters:null,timeS:null}];
   renderPerfRows();
+  obUsernameOk=false;
+  wireUsernameField('ob_username','ob_username_status',ok=>{ obUsernameOk=ok; });
   obShow(1);
 }
+let obUsernameOk=false;
 /* ===== Étape Performances : lignes Distance | Temps ===== */
 let OB_PERFS=[{dist:null,meters:null,timeS:null}];
 function renderPerfRows(){
@@ -1456,6 +1539,8 @@ function pickWeightOb(){ openPicker({title:'Poids (kg)',cols:[{values:range(30,2
 function obValidate(n){
   if(n===2){
     if(!$('#ob_name').value.trim()||!$('#ob_bday').value||!$('#ob_sex').value||!$('#ob_city').value.trim()){ toast('Remplis les champs requis'); return false; }
+    if(!$('#ob_username').value.trim()){ toast('Choisis un nom d\u2019utilisateur'); return false; }
+    if(!obUsernameOk){ toast('Ce nom d\u2019utilisateur n\u2019est pas disponible'); return false; }
     const bd=new Date($('#ob_bday').value);
     const ageYears=Math.floor((Date.now()-bd)/31557600000);
     obEasy = ageYears>26;
@@ -1476,7 +1561,7 @@ function finishOnboarding(){
   const find=m=>{ const r=valid.find(x=>x.meters===m); return r?fmtTime(r.timeS):''; };
   P={
     setupDone:true,
-    name:$('#ob_name').value.trim(), bday:$('#ob_bday').value, sex:$('#ob_sex').value, city:$('#ob_city').value.trim(),
+    name:$('#ob_name').value.trim(), username:$('#ob_username').value.trim(), bday:$('#ob_bday').value, sex:$('#ob_sex').value, city:$('#ob_city').value.trim(),
     height:+obv('ob_h'), weight:+obv('ob_w'),
     level:$('#ob_level').querySelector('.pill.on').dataset.v, kmWeek:+obv('ob_km')||40,
     goal:$('#ob_goal').value.trim(), compDate:$('#ob_compdate').value,
@@ -1488,6 +1573,11 @@ function finishOnboarding(){
   P.vdot=computeVDOTfromRecords()||computeVDOT();
   DB.save('profile',P); DB.save('records',RECORDS); DB.save('xp',XP);
   burst();
+  if(P.username){
+    claimUsername(P.username).then(ok=>{
+      if(!ok) toast('⚠️ Pseudo pris entre-temps, modifie-le dans Profil');
+    });
+  }
   setTimeout(initApp,400);
 }
 
@@ -5470,15 +5560,27 @@ function computeVDOTfromRecords(){
 function openProfileEdit(){
   $('#ovProfile').querySelector('h2').textContent='Modifier le profil';
   const f=(l,id,v,t)=>'<div class="field"><label>'+l+'</label><input class="inp" id="'+id+'" value="'+(v||'')+'" '+(t?'type="'+t+'"':'')+'></div>';
-  let h=f('Prénom','pe_name',P.name)+f('Ville','pe_city',P.city)+f('Date de naissance','pe_bday',P.bday,'date')+
+  let h='<div class="field"><label>Nom d\u2019utilisateur</label><div class="uname-wrap"><span class="uname-at">@</span><input class="inp" id="pe_username" value="'+(P.username||'')+'" autocapitalize="off" autocorrect="off" spellcheck="false"></div><div class="uname-status" id="pe_username_status">Utilisé par tes amis pour te retrouver</div></div>';
+  h+=f('Prénom','pe_name',P.name)+f('Ville','pe_city',P.city)+f('Date de naissance','pe_bday',P.bday,'date')+
     f('Taille (cm)','pe_h',P.height,'number')+f('Poids (kg)','pe_w',P.weight,'number')+
     f('FC max','pe_hrmax',P.hrMax,'number')+f('FC repos','pe_hrrest',P.hrRest,'number')+
     f('Km / semaine','pe_km',P.kmWeek,'number')+f('Objectif','pe_goal',P.goal)+f('Date compétition','pe_comp',P.compDate,'date')+
     f('5000m','pe_5k',P.t5k)+f('3000m','pe_3k',P.t3k)+f('1500m','pe_1500',P.t1500)+f('10km','pe_10k',P.t10k)+f('Coach','pe_coach',P.coach);
   h+='<button class="btn" onclick="saveProfileEdit()">💾 Sauver</button>';
   $('#profileEditBody').innerHTML=h; openOv('ovProfile');
+  peUsernameOk=true; // on ne bloque pas si le champ n'a pas changé
+  wireUsernameField('pe_username','pe_username_status',ok=>{ peUsernameOk=ok; });
 }
-function saveProfileEdit(){
+let peUsernameOk=true;
+async function saveProfileEdit(){
+  const newUsername=$('#pe_username').value.trim();
+  if(newUsername && newUsername!==P.username){
+    if(!usernameFormatOk(newUsername)){ toast('Pseudo invalide (3-20, lettres/chiffres/_)'); return; }
+    if(!peUsernameOk){ toast('Ce pseudo n\u2019est pas disponible'); return; }
+    const ok=await claimUsername(newUsername);
+    if(!ok){ toast('Ce pseudo vient d\u2019être pris, choisis-en un autre'); return; }
+    toast('Pseudo mis à jour ✓');
+  }
   P.name=$('#pe_name').value.trim()||P.name; P.city=$('#pe_city').value.trim(); P.bday=$('#pe_bday').value;
   P.height=+$('#pe_h').value||P.height; P.weight=+$('#pe_w').value||P.weight;
   P.hrMax=+$('#pe_hrmax').value||P.hrMax; P.hrRest=+$('#pe_hrrest').value||P.hrRest;
