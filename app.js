@@ -1409,9 +1409,12 @@ async function startApp(){
 
   // ---- DIAGNOSTIC TEMPORAIRE : à retirer une fois le bug identifié ----
   (function diagOAuth(){
-    const raw = window.location.hash ? window.location.hash.slice(1) : window.location.search.slice(1);
+    const entryUrl = window.__rawEntryUrl || window.location.href;
+    const u = new URL(entryUrl);
+    const raw = u.hash ? u.hash.slice(1) : u.search.slice(1);
     const params = new URLSearchParams(raw);
-    console.log('[DIAG] URL complète au retour :', window.location.href);
+    console.log('[DIAG] URL brute capturée à l\'entrée :', entryUrl);
+    console.log('[DIAG] URL actuelle (après nettoyage éventuel) :', window.location.href);
     if(params.get('error') || params.get('error_description') || params.get('error_code')){
       console.error('[DIAG] Erreur OAuth trouvée dans l\'URL :', {
         error: params.get('error'),
@@ -1427,7 +1430,8 @@ async function startApp(){
         alert('DIAG : un code Google est présent mais AUCUN code_verifier en localStorage → la session ne peut pas être établie (probablement un souci de stockage / navigateur in-app / PWA).');
       }
     } else {
-      console.log('[DIAG] Pas de code ni d\'erreur dans l\'URL au chargement (retour normal hors flux OAuth, ou déjà consommé).');
+      console.log('[DIAG] Pas de code ni d\'erreur dans l\'URL au chargement.');
+      alert('DIAG : URL d\'entrée = ' + entryUrl + '\n\n(aucun code ni erreur dedans)');
     }
   })();
   // ---- FIN DIAGNOSTIC TEMPORAIRE ----
