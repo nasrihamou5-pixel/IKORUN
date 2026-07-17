@@ -1566,7 +1566,6 @@ function startOnboarding(){
   for(let i=1;i<=OB_MAX;i++){ const d=document.createElement('div'); if(i===1)d.classList.add('on'); prog.appendChild(d); }
   // pill selectors
   $('#ob_level').querySelectorAll('.pill').forEach(p=>p.onclick=()=>{ $('#ob_level').querySelectorAll('.pill').forEach(x=>x.classList.remove('on')); p.classList.add('on'); });
-  $('#ob_days').querySelectorAll('.pill').forEach(p=>p.onclick=()=>p.classList.toggle('on'));
   OB_PERFS=[{dist:null,meters:null,timeS:null}];
   renderPerfRows();
   obUsernameOk=false;
@@ -1683,11 +1682,12 @@ function obValidate(n){
   if(n===3){ if(!$('#ob_level').querySelector('.pill.on')){ toast('Choisis un niveau'); return false; } if(!obv('ob_km')){ toast('Choisis ton volume'); return false; } }
   if(n===4){ if(!$('#ob_goal').value.trim()||!$('#ob_compdate').value){ toast('Objectif et date requis'); return false; } }
   if(n===5){ const valid=OB_PERFS.filter(p=>p.meters&&p.timeS); if(!valid.length){ toast('Ajoute au moins une performance'); return false; } }
-  if(n===6){ if(!$('#ob_days').querySelector('.pill.on')||!obv('ob_time')){ toast('Jours et temps requis'); return false; } }
+  if(n===6){ if(!obv('ob_time')){ toast('Temps par séance requis'); return false; } }
   return true;
 }
 function finishOnboarding(){
-  const days=[...$('#ob_days').querySelectorAll('.pill.on')].map(p=>+p.dataset.v);
+  // Les jours d'entraînement ne sont plus demandés ici : ils sont choisis
+  // au moment de la génération du plan (openPlanSetup), pour rester à jour.
   // Enregistre les performances saisies
   const valid=OB_PERFS.filter(p=>p.meters&&p.timeS!=null);
   RECORDS=valid.map(p=>({dist:p.dist,meters:p.meters,time:fmtTime(p.timeS),date:todayKey()}));
@@ -1698,7 +1698,7 @@ function finishOnboarding(){
     level:$('#ob_level').querySelector('.pill.on').dataset.v, kmWeek:+obv('ob_km')||40,
     goal:$('#ob_goal').value.trim(), compDate:$('#ob_compdate').value,
     t5k:find(5000), t3k:find(3000), t1500:find(1500), t10k:find(10000),
-    days, sessionTime:+obv('ob_time')||60, coach:$('#ob_coach').value.trim(),
+    sessionTime:+obv('ob_time')||60, coach:$('#ob_coach').value.trim(),
     theme:'blue', pb5k:find(5000), pb1500:find(1500), pb10k:find(10000),
     easyMode:obEasy // >26 ans → mode simplifié activé auto (modifiable ensuite dans Profil > Mode simplifié)
   };
@@ -4625,10 +4625,25 @@ const ACHIEVEMENTS=[
   {key:'fondateur',   name:'Fondateur',         img:null,              cat:'Spécial',          desc:'Membre fondateur de IKORUN.',            auto:()=>true}
 ];
 function manualBadges(){ return DB.load('manual_badges')||{}; }
-function achievementUnlocked(a){ return a.auto ? !!a.auto() : !!manualBadges()[a.key]; }
+function achievementUnlocked(a){ const on = a.auto ? !!a.auto() : !!manualBadges()[a.key]; if(on) recordAchDate(a.key); return on; }
+/* Date d'obtention de chaque badge d'accomplissement (inconnue avant cette
+   version : on l'enregistre au moment où on détecte le badge débloqué pour
+   la première fois — pour le rétroactif exact, l'utilisateur peut la
+   corriger à la main via editAchDate). */
+function achDates(){ return DB.load('ach_dates')||{}; }
+function recordAchDate(key){
+  const d=achDates(); if(d[key]) return d[key];
+  d[key]=todayKey(); DB.save('ach_dates',d); return d[key];
+}
+function achYears(){
+  const d=achDates(); const ys=new Set(Object.values(d).map(v=>+String(v).slice(0,4)));
+  return [...ys].sort((a,b)=>b-a);
+}
+let achYearFilter='toutes';
 function toggleManualBadge(key){
   const a=ACHIEVEMENTS.find(x=>x.key===key); if(!a||!a.manual) return;
   const m=manualBadges(); m[key]=!m[key]; DB.save('manual_badges',m);
+  if(m[key]) recordAchDate(key); else { const d=achDates(); delete d[key]; DB.save('ach_dates',d); }
   toast(m[key]?'🏵️ '+a.name+' débloqué !':'Badge retiré');
   renderStats();
 }
@@ -4640,20 +4655,32 @@ function achImg(a){
 function achievementsGridHTML(){
   const cats=['Accomplissement','Performance','Spécial'];
   const unlockedCount=ACHIEVEMENTS.filter(achievementUnlocked).length;
+  const years=achYears();
   let h='<div class="card" style="margin-top:18px"><div class="row" style="margin-bottom:6px"><span class="card-t" style="margin:0">🏵️ Badges</span><span style="font-size:12px;color:var(--muted)">'+unlockedCount+' / '+ACHIEVEMENTS.length+'</span></div>'
     +'<div style="font-size:11px;color:var(--dim);margin-bottom:8px">Ceux détectés automatiquement se débloquent seuls · les autres (podium, dénivelé...) se cochent à la main.</div>';
+  if(years.length){
+    h+='<div class="pills" style="margin-bottom:10px">'
+      +'<div class="pill '+(achYearFilter==='toutes'?'on':'')+'" onclick="achYearFilter=\'toutes\';renderStats()">Toutes</div>'
+      +years.map(y=>'<div class="pill '+(achYearFilter===y?'on':'')+'" onclick="achYearFilter='+y+';renderStats()">'+y+'</div>').join('')
+      +'</div>';
+  }
+  const dates=achDates();
   cats.forEach(cat=>{
-    const items=ACHIEVEMENTS.filter(a=>a.cat===cat);
+    let items=ACHIEVEMENTS.filter(a=>a.cat===cat);
+    if(achYearFilter!=='toutes') items=items.filter(a=>achievementUnlocked(a) && +String(dates[a.key]||'').slice(0,4)===achYearFilter);
     if(!items.length) return;
     h+='<div style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.5px;margin:14px 0 8px">'+cat.toUpperCase()+'</div><div class="bd-grid">';
     items.forEach(a=>{
       const on=achievementUnlocked(a);
       h+='<div class="bd-cell" onclick="'+(a.manual?"toggleManualBadge('"+a.key+"')":"toast('"+a.desc.replace(/'/g,"\\'")+"')")+'">'
         +'<div class="bd-icon'+(on?'':' locked')+'" style="background:rgba(255,255,255,.04)">'+achImg(a)+(on?'':'<div class="bd-lock-chip">🔒</div>')+'</div>'
-        +'<div class="bd-name">'+a.name+'</div></div>';
+        +'<div class="bd-name">'+a.name+'</div>'+(on&&dates[a.key]?'<div style="font-size:9.5px;color:var(--dim);margin-top:2px">'+dates[a.key].slice(0,4)+'</div>':'')+'</div>';
     });
     h+='</div>';
   });
+  if(achYearFilter!=='toutes' && !ACHIEVEMENTS.some(a=>cats.includes(a.cat)&&achievementUnlocked(a)&&+String(dates[a.key]||'').slice(0,4)===achYearFilter)){
+    h+='<div style="font-size:12px;color:var(--muted);margin-top:8px">Aucun badge obtenu en '+achYearFilter+'.</div>';
+  }
   h+='</div>';
   return h;
 }

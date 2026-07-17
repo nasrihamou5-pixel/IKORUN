@@ -1508,14 +1508,8 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
     <button class="addperf" id="ob_addperf" onclick="addPerfRow()">＋ Ajouter une autre performance</button>
   </div>
   <div class="ob-step" data-step="6">
-    <h1>Ta disponibilité</h1><p class="intro">Quand peux-tu t'entraîner ?</p>
-    <div class="note">💡 <span>Choisis les <b>jours</b> où tu peux courir : le Coach IA y placera les bonnes séances. Plus tu as de jours, plus le plan est complet.</span></div>
-    <div class="field"><label>Jours disponibles *</label>
-      <div class="pills" id="ob_days">
-        <div class="pill" data-v="1">Lun</div><div class="pill" data-v="2">Mar</div><div class="pill" data-v="3">Mer</div>
-        <div class="pill" data-v="4">Jeu</div><div class="pill" data-v="5">Ven</div><div class="pill" data-v="6">Sam</div><div class="pill" data-v="0">Dim</div>
-      </div>
-    </div>
+    <h1>Ta disponibilité</h1><p class="intro">Combien de temps par séance ?</p>
+    <div class="note">💡 <span>Tes jours d'entraînement seront choisis au moment de générer ton plan, pour rester toujours à jour selon ton emploi du temps.</span></div>
     <div class="field"><label>Temps par séance *</label><div class="inp pkfield" id="ob_time" data-v="" onclick="pickInt('Minutes / séance',20,180,60,'min',v=>setObPk('ob_time',v,v+' min'),5)">Choisir une durée</div></div>
     <div class="field"><label>Coach — optionnel</label><input class="inp" id="ob_coach" placeholder="Nom de ton coach"></div>
   </div>
