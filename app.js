@@ -1299,6 +1299,7 @@ function pfAccentPickerHTML(){
 function toggleEasyMode(){
   P.easyMode=!P.easyMode; saveAll(); applyTheme();
   if($('#s-profil')&&$('#s-profil').classList.contains('on')) renderProfile();
+  if($('#s-home')&&$('#s-home').classList.contains('on')) renderHome();
   toast(P.easyMode?'Mode simplifié activé ✓':'Mode simplifié désactivé');
 }
 function setMode(m){ P.mode=(m==='light')?'light':'dark'; saveAll(); applyTheme(); if($('#s-profil')&&$('#s-profil').classList.contains('on'))renderProfile(); refreshPfSheet(); }
@@ -2622,6 +2623,8 @@ function renderHome(){
   const ps=planSessionToday();
   const first=(P.name||'').split(' ')[0]||'';
 
+  if(P.easyMode){ $('#s-home').innerHTML=renderHomeSimple(ps,sessW,sessTarget,vdot,form,first); return; }
+
   let html='';
 
   // HEADER — logo IKORUN + cloche notifications
@@ -2706,6 +2709,34 @@ function renderHome(){
   '</div>';
 
   $('#s-home').innerHTML=html;
+}
+function renderHomeSimple(ps,sessW,sessTarget,vdot,form,first){
+  let h='';
+  h+='<div class="ik-header"><div class="ik-logo">'+
+    '<svg viewBox="0 0 24 24" fill="none"><path d="M4 20L14 3l1.5 3.2L9 18.5z" fill="var(--e2)"/><path d="M9 18.5L15.5 6.2 20 9.5 12 20z" fill="var(--e)"/></svg>'+
+    '<span>IKORUN</span></div></div>';
+  h+='<div class="ik-greet"><h1>Salut '+(first||'toi')+' 👋</h1></div>';
+
+  h+='<div class="next-lab">AUJOURD\u2019HUI</div>';
+  if(ps && ps.type!=='Repos'){
+    h+='<div class="card next-card stag" onclick="'+(ps._source==='perso'?"curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')":'openRunSheet('+ps.id+')')+'">'+
+      '<div class="next-body"><div class="next-title">'+ps.title+'</div>'+
+      '<div class="next-meta">'+(ps.km?ps.km+' km · '+ps.pace+'/km'+(ps.duration?' · '+ps.duration+' min':''):'')+'</div></div>'+
+      '<div class="next-ic">'+ICN('run',20)+'</div></div>'+
+      '<button class="btn" style="width:100%;margin-top:-4px" onclick="'+(ps._source==='perso'?"curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')":'openRunSheet('+ps.id+')')+'">Démarrer la séance</button>';
+  } else {
+    h+='<div class="card next-card stag" onclick="nav(\'sport\')">'+
+      '<div class="next-body"><div class="next-title">Jour de repos</div>'+
+      '<div class="next-meta">Aucune séance planifiée aujourd\u2019hui</div></div>'+
+      '<div class="next-ic">'+ICN('moon',20)+'</div></div>';
+  }
+
+  h+='<div class="stat-quatro" style="grid-template-columns:repeat(3,1fr);margin-top:14px">'+
+    '<div class="card stat-card" onclick="nav(\'sport\')"><div class="stat-ic">'+ICN('run',14)+'</div><div class="stat-v">'+sessW+'/'+sessTarget+'</div><div class="stat-l">Séances</div></div>'+
+    '<div class="card stat-card" onclick="nav(\'profil\')"><div class="stat-ic">'+ICN('lung',14)+'</div><div class="stat-v">'+(vdot||'—')+'</div><div class="stat-l">VDOT</div></div>'+
+    '<div class="card stat-card" onclick="nav(\'profil\')"><div class="stat-ic">'+ICN('heart',14)+'</div><div class="stat-v">'+form+'%</div><div class="stat-l">Forme</div></div>'+
+  '</div>';
+  return h;
 }
 function fmtDate(s){ const d=new Date(s); return d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}); }
 
@@ -4931,6 +4962,13 @@ function renderProfile(){
     '<div class="grp-row no-chev"><div class="lr-icon">📈</div><div class="lr-title">VDOT</div><div class="lr-val">'+(getUserVDOT()||'—')+'</div></div>'+
     '<div class="grp-row" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\';renderSport()"><div class="lr-icon">🎯</div><div class="lr-title">Objectif</div><div class="lr-val">'+(P.objRace||P.goal||'Aucun')+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
+  if(P.easyMode){
+    h+='<div class="grp-lab stag" style="animation-delay:.05s">Plus</div>';
+    h+='<div class="grp-card stag" style="animation-delay:.055s">'+
+      '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">📊</div><div class="lr-title">Statistiques détaillées</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+      '<div class="grp-row" onclick="nav(\'outils\')"><div class="lr-icon">🧮</div><div class="lr-title">Outils & calculateurs</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '</div>';
+  }
   // ===== PROGRESSION — badges intégrés directement au profil =====
   { const unlocked=unlockedBadges(); const recent=[...unlocked].sort((a,b)=>b.date<a.date?-1:1).slice(0,5).map(u=>BADGE_TIERS.find(b=>b.key===u.key)).filter(Boolean);
     h+='<div class="sec-head stag" style="animation-delay:.06s"><h3 class="grp-lab" style="margin:0">Progression</h3><span class="see" onclick="openBadges()">'+unlocked.length+' / '+BADGE_TIERS.length+' · Voir tout ›</span></div>';
@@ -4961,7 +4999,7 @@ function renderProfile(){
     '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">📊</div><div class="lr-title">Statistiques</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">🎨</div><div class="lr-title">Thème</div>'+pfThemeSwitchHTML()+'</div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">🖌️</div><div class="lr-title">Couleur de l\u2019app</div>'+pfAccentPickerHTML()+'</div>'+
-    '<div class="grp-row no-chev"><div class="lr-icon">🧓</div><div><div class="lr-title">Mode simplifié</div><div style="font-size:11px;color:var(--muted);margin-top:2px;max-width:200px">Textes plus grands, sans effets visuels — plus facile à lire</div></div><div class="toggle'+(P.easyMode?' on':'')+'" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">🧓</div><div><div class="lr-title">Mode simplifié</div><div style="font-size:11px;color:var(--muted);margin-top:2px;max-width:200px">3 onglets, écrans allégés, textes plus grands — l\u2019essentiel seulement</div></div><div class="toggle'+(P.easyMode?' on':'')+'" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
   '</div>';
   h+='<div class="grp-lab stag" style="animation-delay:.15s">Support</div>';
   h+='<div class="grp-card stag" style="animation-delay:.16s">'+
