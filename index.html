@@ -1,7 +1,17 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<script>window.__rawEntryUrl = location.href;</script>
+<script>
+  window.__rawEntryUrl = location.href;
+  // Filet de sécurité : si l'URL contient un "##" résiduel (icône PWA déjà
+  // "polluée" par un ancien essai de connexion Google), on le nettoie avant
+  // que quoi que ce soit ne lise l'URL, pour éviter que ça bloque le prochain
+  // vrai retour de connexion.
+  if(location.href.includes('##')){
+    const fixed = location.href.replace('##', '#');
+    history.replaceState(null, '', fixed);
+  }
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">

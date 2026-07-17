@@ -69,7 +69,12 @@ async function signInWithGoogle(){
     const { error } = await window.supabaseClient.auth.signInWithOAuth({
       provider:'google',
       options:{
-        redirectTo: window.location.href,
+        // On reconstruit une URL propre (origine + chemin) au lieu de réutiliser
+        // window.location.href tel quel : si l'URL courante contient déjà un "#"
+        // résiduel (ex: ancien essai OAuth), Google/Supabase rajoutait son propre
+        // "#access_token=..." par-dessus, ce qui donnait "##access_token=..." et
+        // empêchait Supabase de lire le token au retour (boucle silencieuse).
+        redirectTo: window.location.origin + window.location.pathname,
         // force Google à toujours proposer le choix du compte (ou "en créer un")
         // au lieu de se reconnecter automatiquement avec le dernier compte utilisé
         queryParams:{ prompt:'select_account' }
@@ -1407,34 +1412,12 @@ function endLogin(){ $('#login').classList.remove('on'); }
 async function startApp(){
   if(!window.supabaseClient){ boot(); return; }
 
-  // ---- DIAGNOSTIC TEMPORAIRE : à retirer une fois le bug identifié ----
+  // ---- Diagnostic silencieux (console uniquement, pas d'alerte) ----
   (function diagOAuth(){
     const entryUrl = window.__rawEntryUrl || window.location.href;
-    const u = new URL(entryUrl);
-    const raw = u.hash ? u.hash.slice(1) : u.search.slice(1);
-    const params = new URLSearchParams(raw);
     console.log('[DIAG] URL brute capturée à l\'entrée :', entryUrl);
-    console.log('[DIAG] URL actuelle (après nettoyage éventuel) :', window.location.href);
-    if(params.get('error') || params.get('error_description') || params.get('error_code')){
-      console.error('[DIAG] Erreur OAuth trouvée dans l\'URL :', {
-        error: params.get('error'),
-        code: params.get('error_code'),
-        description: params.get('error_description')
-      });
-      alert('DIAG erreur OAuth :\n' + (params.get('error_description') || params.get('error') || params.get('error_code')));
-    } else if(params.get('code')){
-      console.log('[DIAG] Un code d\'échange PKCE est présent dans l\'URL.');
-      const verifierKeys = Object.keys(localStorage).filter(k=>k.includes('code-verifier')||k.includes('code_verifier'));
-      console.log('[DIAG] Clés code-verifier trouvées dans localStorage :', verifierKeys);
-      if(verifierKeys.length===0){
-        alert('DIAG : un code Google est présent mais AUCUN code_verifier en localStorage → la session ne peut pas être établie (probablement un souci de stockage / navigateur in-app / PWA).');
-      }
-    } else {
-      console.log('[DIAG] Pas de code ni d\'erreur dans l\'URL au chargement.');
-      alert('DIAG : URL d\'entrée = ' + entryUrl + '\n\n(aucun code ni erreur dedans)');
-    }
   })();
-  // ---- FIN DIAGNOSTIC TEMPORAIRE ----
+  // ---- FIN DIAGNOSTIC ----
 
   const { data:{ session } } = await window.supabaseClient.auth.getSession();
   if(session && session.user){
