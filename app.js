@@ -148,6 +148,7 @@ async function syncPublicProfile(){
       total_sessions: totalSessions(),
       streak_days: streakDays(),
       total_km: Math.round((totalKm()||0)*10)/10,
+      total_tonnage: Math.round(totalTonnage()||0),
       photo_url: P.photo||null,
       updated_at: new Date().toISOString()
     }).eq('user_id', window.currentUserId);
@@ -266,13 +267,13 @@ async function loadFriendsData(){
     const ids=new Set(); (rows||[]).forEach(r=>{ ids.add(r.user_id); ids.add(r.friend_id); }); ids.delete(uid);
     let profiles={};
     if(ids.size){
-      const { data:profs } = await window.supabaseClient.from('public_profiles').select('user_id,username,xp,level,km_week,sessions_week,vdot,total_sessions,streak_days,total_km,photo_url').in('user_id',[...ids]);
+      const { data:profs } = await window.supabaseClient.from('public_profiles').select('user_id,username,xp,level,km_week,sessions_week,vdot,total_sessions,streak_days,total_km,total_tonnage,photo_url').in('user_id',[...ids]);
       (profs||[]).forEach(p=>profiles[p.user_id]=p);
     }
     friendsCache={friends:[],pending:[],sent:[]};
     (rows||[]).forEach(r=>{
       const otherId = r.user_id===uid ? r.friend_id : r.user_id;
-      const prof = profiles[otherId] || {username:'?',xp:0,level:1,km_week:0,sessions_week:0};
+      const prof = profiles[otherId] || {username:'?',xp:0,level:1,km_week:0,sessions_week:0,total_tonnage:0};
       if(r.status==='accepted') friendsCache.friends.push({...prof,id:otherId});
       else if(r.status==='pending' && r.friend_id===uid) friendsCache.pending.push({...prof,id:otherId,reqId:r.id});
       else if(r.status==='pending' && r.user_id===uid) friendsCache.sent.push({...prof,id:otherId,reqId:r.id});
@@ -413,7 +414,10 @@ function renderFriendProfileHTML(){
     '<div class="card stat-card"><div class="stat-ic">'+ICN('lung',14)+'</div><div class="stat-v">'+(f.vdot||'—')+'</div><div class="stat-l">VDOT</div></div>'+
     '<div class="card stat-card"><div class="stat-ic">'+ICN('run',14)+'</div><div class="stat-v">'+(f.km_week||0)+'</div><div class="stat-l">km/sem.</div></div>'+
     '<div class="card stat-card"><div class="stat-ic">'+ICN('fire',14)+'</div><div class="stat-v">'+(f.streak_days||0)+'</div><div class="stat-l">Jours de suite</div></div>'+
+  '</div>';
+  h+='<div class="stat-quatro" style="margin-top:8px">'+
     '<div class="card stat-card"><div class="stat-ic">'+ICN('chart',14)+'</div><div class="stat-v">'+(f.total_km||0)+'</div><div class="stat-l">km au total</div></div>'+
+    '<div class="card stat-card"><div class="stat-ic">'+ICN('chart',14)+'</div><div class="stat-v">'+((f.total_tonnage||0).toLocaleString('fr-FR'))+'</div><div class="stat-l">Tonnage kg</div></div>'+
   '</div>';
   h+='<div style="margin-top:12px">'+friendBadgesHTML(f)+'</div>';
   return h;
