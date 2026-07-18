@@ -4661,7 +4661,7 @@ function achievementsGridHTML(){
   const cats=['Accomplissement','Performance','Spécial'];
   const unlockedCount=ACHIEVEMENTS.filter(achievementUnlocked).length;
   const years=achYears();
-  let h='<div class="card" style="margin-top:18px"><div class="row" style="margin-bottom:6px"><span class="card-t" style="margin:0">🏵️ Badges</span><span style="font-size:12px;color:var(--muted)">'+unlockedCount+' / '+ACHIEVEMENTS.length+'</span></div>'
+  let h='<div class="card" style="margin-top:18px"><div class="row" style="margin-bottom:6px"><span class="card-t" style="margin:0">🏆 Trophées</span><span style="font-size:12px;color:var(--muted)">'+unlockedCount+' / '+ACHIEVEMENTS.length+'</span></div>'
     +'<div style="font-size:11px;color:var(--dim);margin-bottom:8px">Ceux détectés automatiquement se débloquent seuls · les autres (podium, dénivelé...) se cochent à la main.</div>';
   if(years.length){
     h+='<div class="pills" style="margin-bottom:10px">'
@@ -4684,7 +4684,7 @@ function achievementsGridHTML(){
     h+='</div>';
   });
   if(achYearFilter!=='toutes' && !ACHIEVEMENTS.some(a=>cats.includes(a.cat)&&achievementUnlocked(a)&&+String(dates[a.key]||'').slice(0,4)===achYearFilter)){
-    h+='<div style="font-size:12px;color:var(--muted);margin-top:8px">Aucun badge obtenu en '+achYearFilter+'.</div>';
+    h+='<div style="font-size:12px;color:var(--muted);margin-top:8px">Aucun trophée obtenu en '+achYearFilter+'.</div>';
   }
   h+='</div>';
   return h;
@@ -4697,25 +4697,7 @@ const MEDAL_CATS=[
   {name:'Distance',icon:'🛣️',val:()=>totalKm(),thr:[25,50,100,250,500,1000,2000],unit:'km'}
 ];
 function statsMedals(){
-  let total=0;
-  MEDAL_CATS.forEach(c=>{ const v=c.val(); c.thr.forEach(t=>{ if(v>=t) total++; }); });
-  let h='<div class="card" style="text-align:center"><div class="man" style="font-weight:800;font-size:32px;color:var(--or)">'+total+'</div><div class="lab">médailles débloquées / 21</div></div>';
-  MEDAL_CATS.forEach(c=>{
-    const v=Math.floor(c.val());
-    let tierIdx=-1; c.thr.forEach((t,i)=>{ if(v>=t)tierIdx=i; });
-    const cur=tierIdx>=0?TIERS[tierIdx]:null;
-    const next=tierIdx<6?c.thr[tierIdx+1]:null;
-    const prevT=tierIdx>=0?c.thr[tierIdx]:0;
-    const pct=next?Math.min(100,((v-prevT)/(next-prevT))*100):100;
-    h+='<div class="card"><div class="row"><div class="row" style="gap:10px"><span style="font-size:26px">'+c.icon+'</span><div><div style="font-weight:700">'+c.name+'</div><div class="mono" style="font-size:12px;'+(cur?'color:var('+cur[1]+')':'color:var(--dim)')+'">'+(cur?cur[0]:'Aucun palier')+'</div></div></div><div class="mono" style="font-weight:700">'+v+(c.unit||'')+'</div></div>';
-    // pips
-    h+='<div class="row" style="gap:4px;margin:12px 0">';
-    c.thr.forEach((t,i)=>{ const ok=v>=t; h+='<div style="flex:1;height:6px;border-radius:3px;background:'+(ok?'var('+TIERS[i][1]+')':'var(--s2)')+'"></div>'; });
-    h+='</div>';
-    if(next) h+='<div class="pbar"><div style="width:'+pct+'%"></div></div><div style="font-size:11px;color:var(--muted);margin-top:6px">Prochain : '+next+(c.unit||'')+' ('+TIERS[tierIdx+1][0]+')</div>';
-    else h+='<div style="font-size:11px;color:var(--legende)">🏆 Palier maximal atteint !</div>';
-    h+='</div>';
-  });
+  let h='';
   h+=achievementsGridHTML();
   return h;
 }
