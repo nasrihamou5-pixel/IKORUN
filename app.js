@@ -4623,19 +4623,23 @@ const ACHIEVEMENTS=[
   {key:'premiere',    name:'Première course',  img:'premiere.png',    cat:'Accomplissement', desc:'Termine ta première séance.',           auto:()=>SESS.length+MSESS.length>=1},
   {key:'cinqk',       name:'5K',                img:'cinqk.png',       emoji:'🏃',            cat:'Accomplissement', desc:'Cours 5 km d\u2019une traite.',          auto:()=>SESS.some(s=>s.km>=5)},
   {key:'dixk',        name:'10K',               img:'dixk.png',        emoji:'🏁',            cat:'Accomplissement', desc:'Cours 10 km d\u2019une traite.',         auto:()=>SESS.some(s=>s.km>=10)},
-  {key:'record',      name:'Record personnel',  img:'record.png',      cat:'Accomplissement', desc:'Bats un de tes records personnels.',     auto:()=>personalRecords().some(r=>r.time)},
   {key:'serie',       name:'Série',             img:'serie.png',       cat:'Accomplissement', desc:'7 jours d\u2019affilée.',                auto:()=>bestStreak()>=7},
   {key:'regularite',  name:'Régularité',        img:'regularite.png',  cat:'Accomplissement', desc:'30 jours actifs (cumulés).',             auto:()=>(SESS.length+MSESS.length)>=30},
   {key:'denivele',    name:'Dénivelé',          img:'denivele.png',    cat:'Accomplissement', desc:'1000 m D+ cumulés en course.',           manual:true},
+  {key:'podium',      name:'Podium',            img:'podium.png',      cat:'Accomplissement', desc:'Finis dans le top 3 d\\u2019une course.', manual:true},
   {key:'discipline',  name:'Discipline',        img:'discipline.png',  cat:'Accomplissement', desc:'90 jours actifs (cumulés).',             auto:()=>(SESS.length+MSESS.length)>=90},
   {key:'objectif',    name:'Objectif atteint',  img:'objectif.png',    cat:'Accomplissement', desc:'Termine ton objectif principal.',        auto:()=>(XP.plansCompleted||0)>=1},
-  {key:'nouveaupb',   name:'Nouveau PB',        img:'nouveaupb.png',   emoji:'🥇',            cat:'Performance',      desc:'Nouveau record personnel dans les 60 derniers jours.', auto:()=>RECORDS.some(r=>r.date&&daysBetween(new Date(r.date),new Date())<=60)},
+  {key:'nouveaupb',   name:'Nouveau PB',        img:'nouveaupb.png',   emoji:'🥇',            cat:'Performance',      desc:'Bats 3 records personnels différents.', auto:()=>RECORDS.length>=3},
   {key:'allure',      name:'Allure',            img:'allure.png',      cat:'Performance',      desc:'Allure moyenne améliorée.',              manual:true},
   {key:'endurance',   name:'Endurance',         img:'endurance.png',   cat:'Performance',      desc:'Termine une sortie de 90 min ou plus.',  auto:()=>SESS.some(s=>s.duration>=90)},
   {key:'puissance',   name:'Puissance',         img:'puissance.png',   cat:'Performance',      desc:'10 séances de musculation effectuées.',  auto:()=>MSESS.length>=10},
   {key:'vo2max',      name:'VO2 Max',           img:'vo2max.png',      emoji:'🫁',            cat:'Performance',      desc:'Améliore ton VO\u2082max estimé.',       manual:true},
   {key:'force',       name:'Force',             img:'force.png',       cat:'Performance',      desc:'Termine une séance de musculation.',     auto:()=>MSESS.length>=1},
-  {key:'recuperation',name:'Récupération',      img:'recuperation.png',cat:'Performance',      desc:'Sommeil optimal 7 jours d\u2019affilée.',manual:true}
+  {key:'recuperation',name:'Récupération',      img:'recuperation.png',cat:'Performance',      desc:'Sommeil optimal 7 jours d\u2019affilée.',manual:true},
+  {key:'leader',      name:'Leader',            img:'leader.png',      cat:'Spécial',          desc:'Top du classement.',        manual:true},
+  {key:'ambassadeur', name:'Ambassadeur',       img:'ambassadeur.png', cat:'Spécial',          desc:'Membre premium.',           manual:true},
+  {key:'evenement',   name:'Événement',         img:'evenement.png',   cat:'Spécial',          desc:'Participe à un événement.', manual:true},
+  {key:'fondateur',   name:'Fondateur',         img:'fondateur.png',   cat:'Spécial',          desc:'Membre fondateur IKORUN.',  manual:true}
 ];
 function manualBadges(){ return DB.load('manual_badges')||{}; }
 function achievementUnlocked(a){ const on = a.auto ? !!a.auto() : !!manualBadges()[a.key]; if(on) recordAchDate(a.key); return on; }
@@ -4669,7 +4673,7 @@ function achImg(a){
   return '<img class="bd-glyph" src="'+a.img+'" data-file="'+a.img+'" data-stage="0" alt="" draggable="false" loading="lazy" onerror="achImgErr(this)">';
 }
 function achievementsGridHTML(){
-  const cats=['Accomplissement','Performance'];
+  const cats=['Accomplissement','Performance','Spécial'];
   const unlockedCount=ACHIEVEMENTS.filter(achievementUnlocked).length;
   const years=achYears();
   let h='<div class="card" style="margin-top:18px"><div class="row" style="margin-bottom:6px"><span class="card-t" style="margin:0">🏆 Trophées</span><span style="font-size:12px;color:var(--muted)">'+unlockedCount+' / '+ACHIEVEMENTS.length+'</span></div>'
