@@ -1460,6 +1460,15 @@ let _lastScrollTouch=0;
   const mark=()=>{ _lastScrollTouch=Date.now(); };
   sc.addEventListener('touchstart',mark,{passive:true});
   sc.addEventListener('touchmove',mark,{passive:true});
+  // Pendant un scroll actif, on coupe les animations décoratives en boucle
+  // (reflet des badges, etc.) qui saturent le compositeur et causent des
+  // saccades / blocages sur iOS Safari quand la liste est longue.
+  let _scrollEndT=null;
+  sc.addEventListener('scroll',()=>{
+    sc.classList.add('is-scrolling');
+    clearTimeout(_scrollEndT);
+    _scrollEndT=setTimeout(()=>{ sc.classList.remove('is-scrolling'); },200);
+  },{passive:true});
 })();
 function nudgeScroll(){
   const sc=document.getElementById('scroll'); if(!sc) return;
@@ -3072,7 +3081,9 @@ function renderHome(){
   html+='<div class="ik-header"><div class="ik-header-left">'+
     '<div class="ik-people" onclick="openFriends()">'+ICN('users',18)+'</div>'+
     '<div class="ik-logo">'+
-    '<svg viewBox="0 0 24 24" fill="none"><path d="M4 20L14 3l1.5 3.2L9 18.5z" fill="var(--e2)"/><path d="M9 18.5L15.5 6.2 20 9.5 12 20z" fill="var(--e)"/></svg>'+
+    '<svg viewBox="0 0 24 24" fill="none"><defs><linearGradient id="ikLogoGrad" x1="4" y1="2" x2="18" y2="22" gradientUnits="userSpaceOnUse">'+
+    '<stop offset="0" stop-color="var(--e2)"/><stop offset="1" stop-color="var(--e)"/></linearGradient></defs>'+
+    '<path d="M13 2 4 13.5h5.4L9.2 22 20 9.2h-6L13 2z" fill="url(#ikLogoGrad)"/></svg>'+
     '<span>IKORUN</span></div></div></div>';
 
   // STREAK (série de jours consécutifs)
@@ -3155,7 +3166,9 @@ function renderHome(){
 function renderHomeSimple(ps,sessW,sessTarget,vdot,form,first){
   let h='';
   h+='<div class="ik-header"><div class="ik-logo">'+
-    '<svg viewBox="0 0 24 24" fill="none"><path d="M4 20L14 3l1.5 3.2L9 18.5z" fill="var(--e2)"/><path d="M9 18.5L15.5 6.2 20 9.5 12 20z" fill="var(--e)"/></svg>'+
+    '<svg viewBox="0 0 24 24" fill="none"><defs><linearGradient id="ikLogoGrad2" x1="4" y1="2" x2="18" y2="22" gradientUnits="userSpaceOnUse">'+
+    '<stop offset="0" stop-color="var(--e2)"/><stop offset="1" stop-color="var(--e)"/></linearGradient></defs>'+
+    '<path d="M13 2 4 13.5h5.4L9.2 22 20 9.2h-6L13 2z" fill="url(#ikLogoGrad2)"/></svg>'+
     '<span>IKORUN</span></div></div>';
   h+=homeStreakBadge();
   h+='<div class="ik-greet"><h1>Salut '+(first||'toi')+' 👋</h1></div>';
@@ -3247,39 +3260,45 @@ function renderRunning(){
       h+='<div class="card"><div class="empty"><div class="em-ic">⚡</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">Plan IKORUN — moteur scientifique</div><div style="font-size:13px;margin-bottom:16px">Génère un plan périodisé sur-mesure (méthode norvégienne + VDOT/Daniels) basé sur ton VDOT ('+(getUserVDOT()||'?')+'), ton objectif, tes préférences et ta date de course. Le plan se réajuste automatiquement si tu rates une séance.</div><button class="btn" onclick="openPlanSetup()">⚙️ Configurer & générer</button></div></div>';
     } else {
       h+=planHeroHTML();
-      // group by phase puis semaine — seule la semaine en cours est affichée par défaut
-      let curPhase=null, curWeek=null;
+      // Seule la semaine en cours est affichée sur la page ; le reste du plan
+      // s'ouvre dans une page à part (overlay plein écran) pour ne pas dérouler
+      // la liste jusqu'en bas.
       const tk=todayKey();
       const todaySess=PLAN.sessions.find(s=>s.date===tk);
       const upcoming=PLAN.sessions.find(s=>s.date>=tk);
       const featuredWeek=(todaySess||upcoming||PLAN.sessions[PLAN.sessions.length-1]).week;
-      let toggleShown=false;
-      PLAN.sessions.forEach(s=>{
-        if(!sportShowAllWeeks && s.week!==featuredWeek){
-          if(!toggleShown){
-            const remaining=[...new Set(PLAN.sessions.filter(x=>x.week!==featuredWeek).map(x=>x.week))].length;
-            h+='<button class="btn ghost" style="margin:14px 0 4px" onclick="sportShowAllWeeks=true;renderSport()">Afficher le reste du plan · '+remaining+' semaines ↓</button>';
-            toggleShown=true;
-          }
-          return;
-        }
-        if(s.phase!==curPhase){ curPhase=s.phase; h+='<div class="phase-head" style="color:var('+(s.color||'--e')+')">▸ '+s.phase+'</div>'; }
-        if(s.week!==curWeek){ curWeek=s.week; h+='<div class="lab" style="margin:8px 0 6px">Semaine '+s.week+(s.deload?' · 🟢 allégée':'')+'</div>'; }
-        const isToday=s.date===tk;
-        const col='var('+(s.color||'--e')+')';
-        const isHard=HARD_TYPES.includes(s.baseType);
-        const qb=s.missed?'<div class="qbadge" style="background:rgba(255,92,108,.16);color:var(--bad)">⚠ Manquée</div>'
-          :(s.km===0?'<div class="qbadge rest">Repos</div>':'<div class="chrome-chip" style="color:'+baseTypeColor(s.baseType)+'">'+s.type+'</div>');
-        const ssum=seriesSummary(s);
-        const line2=fmtDate(s.date)+(s.km?' · '+s.km+' km':' · Repos')+(s.km&&!ssum?' · '+s.pace+'/km':'');
-        h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'" onclick="openRunSheet('+s.id+')" style="'+(s.missed?'border-color:rgba(255,92,108,.35)':'')+'"><div class="row"><div><div style="font-weight:700;font-size:14px">'+s.title+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+line2+'</div>'+(ssum?'<div style="color:var(--e);font-size:12px;font-weight:700;margin-top:3px">⏱ '+ssum+'</div>':'')+'</div>'+qb+'</div></div>';
-      });
-      if(sportShowAllWeeks) h+='<button class="btn ghost" style="margin:14px 0 4px" onclick="sportShowAllWeeks=false;renderSport()">Réduire ↑</button>';
+      h+=renderPlanRows(PLAN.sessions.filter(s=>s.week===featuredWeek),tk);
+      const remaining=[...new Set(PLAN.sessions.filter(x=>x.week!==featuredWeek).map(x=>x.week))].length;
+      if(remaining>0) h+='<button class="btn ghost" style="margin:14px 0 4px" onclick="openFullPlan()">Afficher le reste du plan · '+remaining+' semaines ↓</button>';
     }
   } else {
     h+=renderPersoList();
   }
   return h;
+}
+/* Rendu des lignes de séances d'un plan (groupées par phase puis semaine).
+   Réutilisé à la fois pour l'aperçu "semaine en cours" et pour la page
+   plein écran qui affiche tout le programme. */
+function renderPlanRows(sessions,tk){
+  tk=tk||todayKey();
+  let h='', curPhase=null, curWeek=null;
+  sessions.forEach(s=>{
+    if(s.phase!==curPhase){ curPhase=s.phase; h+='<div class="phase-head" style="color:var('+(s.color||'--e')+')">▸ '+s.phase+'</div>'; }
+    if(s.week!==curWeek){ curWeek=s.week; h+='<div class="lab" style="margin:8px 0 6px">Semaine '+s.week+(s.deload?' · 🟢 allégée':'')+'</div>'; }
+    const isToday=s.date===tk;
+    const qb=s.missed?'<div class="qbadge" style="background:rgba(255,92,108,.16);color:var(--bad)">⚠ Manquée</div>'
+      :(s.km===0?'<div class="qbadge rest">Repos</div>':'<div class="chrome-chip" style="color:'+baseTypeColor(s.baseType)+'">'+s.type+'</div>');
+    const ssum=seriesSummary(s);
+    const line2=fmtDate(s.date)+(s.km?' · '+s.km+' km':' · Repos')+(s.km&&!ssum?' · '+s.pace+'/km':'');
+    h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'" onclick="openRunSheet('+s.id+')" style="'+(s.missed?'border-color:rgba(255,92,108,.35)':'')+'"><div class="row"><div><div style="font-weight:700;font-size:14px">'+s.title+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+line2+'</div>'+(ssum?'<div style="color:var(--e);font-size:12px;font-weight:700;margin-top:3px">⏱ '+ssum+'</div>':'')+'</div>'+qb+'</div></div>';
+  });
+  return h;
+}
+/* Page plein écran affichant le programme complet (toutes les semaines) */
+function openFullPlan(){
+  if(!PLAN) return;
+  $('#fullPlanBody').innerHTML=renderPlanRows(PLAN.sessions);
+  openOv('ovFullPlan');
 }
 /* ---------- PLAN PERSONNEL (fonctionnel) ---------- */
 let curPerso=null;

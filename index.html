@@ -625,6 +625,7 @@ body[data-scr="home"] .topbar{display:none;}
 .bd-icon:not(.locked)::before{content:'';position:absolute;top:-30%;left:-60%;width:60%;height:160%;pointer-events:none;
   background:linear-gradient(100deg,transparent 20%,rgba(255,255,255,.55) 45%,transparent 70%);
   transform:rotate(20deg);animation:bdIdleSweep 3.8s ease-in-out infinite;animation-delay:calc(var(--sw,0)*.22s);}
+#scroll.is-scrolling .bd-icon:not(.locked)::before{animation-play-state:paused;}
 @keyframes bdIdleSweep{0%,42%{transform:translateX(0) rotate(20deg);}58%,100%{transform:translateX(260%) rotate(20deg);}}
 
 .bd-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:6px;}
@@ -1529,6 +1530,7 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
 <div class="ov" id="ovSheet"><div class="ov-card"><div class="ov-head"><h2 id="sheetTitle">Séance</h2><div class="x" onclick="closeOv('ovSheet')">✕</div></div><div id="sheetBody"></div></div></div>
 <div class="ov" id="ovCreate"><div class="ov-card"><div class="ov-head"><h2>Nouveau programme</h2><div class="x" onclick="closeOv('ovCreate')">✕</div></div><div id="createBody"></div></div></div>
 <div class="ov" id="ovBadges"><div class="ov-card"><div class="ov-head"><h2 id="ovBadgesTitle">Badges</h2><div class="x" onclick="closeOv('ovBadges')">✕</div></div><div id="badgesBody"></div></div></div>
+<div class="ov" id="ovFullPlan"><div class="ov-card"><div class="ov-head"><h2>IKORUN</h2><div class="x" onclick="closeOv('ovFullPlan')">✕</div></div><div id="fullPlanBody"></div></div></div>
 
 <!-- SCROLL ZONE -->
 <div id="scroll">
