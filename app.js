@@ -783,7 +783,7 @@ function computeXPTotal(){
   xp += SESS.length*XP_RULES.perRunSession;
   xp += MSESS.length*XP_RULES.perMuscuSession;
   xp += MSESS.reduce((a,s)=>a+(s.sets||0),0)*XP_RULES.perMuscuSet;
-  const totMin = SESS.reduce((a,s)=>a+(s.duration||0),0) + MSESS.reduce((a,s)=>a+(s.duration||0)/60,0);
+  const totMin = SESS.reduce((a,s)=>a+(s.duration||0),0) + MSESS.reduce((a,s)=>a+(s.duration||0),0);
   xp += Math.round(totMin*XP_RULES.perMinTraining);
   // Objectifs du jour cochés (presque rien, comme demandé)
   if(GOALS.list){
@@ -3082,7 +3082,7 @@ function renderHome(){
   html+='<div class="ik-header"><div class="ik-header-left">'+
     '<div class="ik-people" onclick="openFriends()">'+ICN('users',18)+'</div>'+
     '<div class="ik-logo">'+
-    '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKkAAAB4CAMAAAC+aSKXAAAA/1BMVEUKCg309PQBXPUHlPoAOOtZWVoWKV3n6ekiZd3Z2topUqEnUF6io6QYXt0XZtwFKaYQXqlOpuggN20WyvphpPwUouvO0NGn1PpdqtcHneIAFOpOoaykqag3TWdeVyJvn5oElbAElddTIBIAOeRVVFi0y8oA//9EOkgfPYZIbeh5lGdSktyHmnuMvfsrXLwckbAFw+hkeZpBfelBe/94xdKlzuoAPN8AVSoAqgBBf+hTxd5Jyd+OsMm7w7u2wsL//wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABdROR3AAAAQHRSTlMO9Pb47Rcbmp5eXyAYXiUGDZ1J9PimKfFnYQJfU0QWLRQsEJ5DYQEhXRUjNyz4h2CuCLr/XqtYBgNajcI0eRUBx/V/MAAABKJJREFUeNrV3AlzqjoUAOAjmACCgPtWa2u32/bu+9v//796CWBRTDBRQ45nxrYztePXswSwpAB4In5+PP6H50CeiDxCyj8Q9hHWAE/ZFzSkIQmzIMXnPJb8sVx29qLLI34mmTY+QplZmPRcKaP8sRV9HgX2o8+jG39hT0n0nfe0ydpT2smwxe+kGNeEUCutmmGJupXcE3tz1fG//gEQzpXqTu2uAR2/98qsh5339terjtNLIT0ExbG2+l9f65sVC5SndVpHxQNl4+/32FFEBgVUwakUe0JL6hx/RgtqeBFQRp3uL1YkxCgFp1vN6hPKlAL0nec0xF/7/NC6m1S0UNaq3e0jgO1zkvr6pyFcRvh+Of8EtZT68SO9jKR+9CEpL8WQJxUeL6RTu3mnEvTSjh8irLvwjK4oPybu2PMicflvMKUzCrxWayw5pMZo2pRwpgTKp3+OJJ05syUsfdGoGNr0Kmcy6JjI1ykEzdnahDSjrFG7GGboDVozMnalO0wGrbs2ZsNve4aUMmpRWmVyaG0kvuUZKqE0qj+d6tha4Fs6pbcgFTMVoA1Lr8RMDo0Aj1TUnMoZbU4aBV7rJGgz0lqmIrQBKalnqkKNSw8xlYbJvLRmhrShBqXR4XSql55L39lpTm2oEakqUwtqQPqgytSDAu03PkP6w3R+aeC1jEHPKtVy6pX+rFJiFgrQv4yMnlEamIaeSxoZh55JSs1DzyTVatLguNfoN96kgTyjad17ebThJg0iEZQrlou/FoZzStSZYylj0RsMZvWzcPIwqTZp9tboWlT55afRgEUHzErVmtQL+EFe9F7ecpExB59DMCyNVJhfJEzImK7rDj4rFM9wk8qzCaw33TwGIzAu9Q4w/5Uwrxd/umXMwLg0ODab7nZ8AuPS6Bjmajrccbo3YF4qZY4lzPVquptO1x2FYF7qaTJfvleZ6tCTpIEOE95P95lqs3SyNJIcLaNQlakDPUFavXCSZ5N8FzM5tIm/hHoCpmjhzLLpOI4AetsINKice5BIwHxZFMw8KrN0o/WC9NQm9bJsRsLD0A6z6tWEHtujRe29gEiKvn4VM9+kI2gmgrfDkDCbq6mMuZHOGoPKmetaZiGdNXX7w5g3ZyRyrqajWmYOvW3wPg0Js3eAmUtv7d5Q8sKy6ShEQ0Mvi+uHnhKTQ3/ZzGgwGTqqUJsJBW/iqEJnNp2kNdSAWqz8lQbU7tC33MuAqreoM7oY6I1FqEaLOr7NodeBzi6k8pcDja1BKdxrVN4iVHOWUqtQ5eXej20O/U6LtmuUfhwCJCig7TyEzG78mz05sVf5cpbaZewzU/bUNLV5QrKZpXZbCs2ZSWL37vt/JvvObSmreZgxbe+8y1u0vQfNscV/s0jsb2Ug3gcRdMNMM2aKYGdQfhkicrJkpihqXszSZNh2xEz+7TnFstnmYeK0HQGzmHM8u8FYi1agZc0BU3jDSj7fao5rJ+D7Sotu5pxi27B4NflWKu/ymtME4a7qhw/OFhNjzTfQTYveFXOe4tycfP1juFXzJMG7hfrHN7Yc/US2tgvi76Fzh29tF8RqGlMkZ0eH4z88yfwfe/pJ6p2UwzUAAAAASUVORK5CYII=" alt="IKORUN">'+
+    '<img src="logo-mark.png" alt="IKORUN">'+
     '<span>IKORUN</span></div></div></div>';
 
   // STREAK (série de jours consécutifs)
@@ -3165,7 +3165,7 @@ function renderHome(){
 function renderHomeSimple(ps,sessW,sessTarget,vdot,form,first){
   let h='';
   h+='<div class="ik-header"><div class="ik-logo">'+
-    '<img src="data:image/png;base64,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" alt="IKORUN">'+
+    '<img src="logo-mark.png" alt="IKORUN">'+
     '<span>IKORUN</span></div></div>';
   h+=homeStreakBadge();
   h+='<div class="ik-greet"><h1>Salut '+(first||'toi')+' 👋</h1></div>';
@@ -4283,7 +4283,7 @@ function finishLive(){
   const prevTon=prevSess?prevSess.tonnage:0;
   // muscles travaillés
   const muscles={}; LIVE.prog.ex.forEach((e,i)=>{ if(LIVE.state[i].sets.some(Boolean)) (e.muscles||[]).forEach(m=>muscles[m]=(muscles[m]||0)+1); });
-  MSESS.push({date:todayKey(),progName:LIVE.prog.name,tonnage:LIVE.tonnage,sets:LIVE.setsDone,reps:totalReps,duration:dur,calories:cal,muscles:Object.keys(muscles)});
+  MSESS.push({date:todayKey(),progName:LIVE.prog.name,tonnage:LIVE.tonnage,sets:LIVE.setsDone,reps:totalReps,duration:Math.round(dur/60),calories:cal,muscles:Object.keys(muscles)});
   // Historique par exercice (pour les graphiques de progression)
   if(!PREFS.exHist) PREFS.exHist={};
   LIVE.prog.ex.forEach((e,i)=>{ const st=LIVE.state[i]; if(st.sets.some(Boolean)){
@@ -4873,7 +4873,6 @@ function toggleFav(k){ let f=toolFav(); f=f.includes(k)?f.filter(x=>x!==k):[...f
 let toolSearch='';
 function recentTools(){ return PREFS.recentTools||[]; }
 function pushRecent(k){ let r=recentTools().filter(x=>x!==k); r.unshift(k); PREFS.recentTools=r.slice(0,4); saveAll(); }
-function openTool(k){ pushRecent(k); outilsTab=k; renderOutils(); }
 function renderOutils(){
   let h='';
   if(outilsTab==='home'){ h=outilsHome(); $('#s-outils').innerHTML=h; bindToolSearch(); return; }
