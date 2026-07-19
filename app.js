@@ -517,6 +517,15 @@ function reloadState(){
   TRACKER = DB.load('tracker') || null;
   SESSLOG = DB.load('sesslog') || [];
   MUSCU_PR = DB.load('muscu_pr') || {};
+  /* Migration : les comptes créés avant l'ajout du critère "ancienneté"
+     n'ont pas de joinedAt. On le reconstitue à partir de leur toute
+     première séance connue (run ou muscu) pour ne pas leur faire perdre
+     l'ancienneté déjà acquise ; à défaut, on part d'aujourd'hui. */
+  if(P.setupDone && !P.joinedAt){
+    const dates=[...SESS,...MSESS].map(s=>s.date).filter(Boolean).sort();
+    P.joinedAt = dates.length ? new Date(dates[0]+'T00:00:00').getTime() : Date.now();
+    DB.save('profile',P);
+  }
 }
 reloadState();
 
@@ -867,28 +876,73 @@ function addXP(amount,reason){
    derniers, de compétitions/préparations terminées — "aucune obtention
    rapide possible". */
 /* ============ NIVEAUX — 8 PALIERS DE PROGRESSION (basés sur l'XP total) ============ */
+/* Chaque palier exige désormais 3 conditions cumulatives, pas seulement
+   de l'XP : un volume de kilomètres courus, ET une ancienneté minimale
+   du compte (pour que rien ne se débloque "trop vite" en enchaînant les
+   séances les tout premiers jours).
+
+   Unité de référence : 1 "semaine bien remplie" = 30 km / 200 XP, cohérent
+   avec le rythme réel de ~100-120 km/mois visé ailleurs dans le fichier.
+   Le kmMin/xpMin de chaque palier est un multiple exact de cette semaine
+   de référence (le temps qu'il faudrait pour l'atteindre en s'entraînant
+   sérieusement) ; le daysMin (ancienneté minimale du compte) est lui
+   toujours plus court que cet équivalent, pour qu'il soit impossible de
+   débloquer un palier en se contentant d'attendre — il faut vraiment
+   avoir rempli les séances :
+     - Amateur  : ≥3 jours depuis le 1er run,  objectif = 1 semaine  (30 km / 200 XP)
+     - Sportif  : ≥1 semaine et demie (11 j),  objectif = 2 semaines (60 km / 400 XP)
+     - Athlète  : ≥2 semaines (14 j),          objectif = 2 mois     (240 km / 1600 XP)
+     - Expert   : ≥1 mois (30 j),              objectif = 5 mois     (600 km / 4000 XP)
+     - Élite    : ≥2 mois (60 j),              objectif = 12 mois    (1440 km / 9600 XP)
+     - Maître   : ≥4 mois (120 j),             objectif = 18 mois    (2160 km / 14400 XP)
+     - Légende  : ≥8 mois (240 j),             objectif = 2 ans      (2880 km / 19200 XP) */
 const BADGE_TIERS=[
-  {key:'debutant', name:'Débutant', cls:'bd-debutant', emoji:'🌱', xpMin:0,    desc:"Le tout début de l\u2019aventure IKORUN."},
-  {key:'amateur',  name:'Amateur',  cls:'bd-amateur',  emoji:'🥉', xpMin:200,  desc:"Tu prends le rythme."},
-  {key:'sportif',  name:'Sportif',  cls:'bd-sportif',  emoji:'⭐', xpMin:500,  desc:"L\u2019entraînement devient une habitude."},
-  {key:'athlete',  name:'Athlète',  cls:'bd-athlete',  emoji:'🏅', xpMin:1000, desc:"Tu progresses avec sérieux."},
-  {key:'expert',   name:'Expert',   cls:'bd-expert',   emoji:'💚', xpMin:2000, desc:"Une vraie maîtrise de ton entraînement."},
-  {key:'elite',    name:'Élite',    cls:'bd-elite',    emoji:'💎', xpMin:3500, desc:"Constante amélioration."},
-  {key:'maitre',   name:'Maître',   cls:'bd-maitre',   emoji:'🛡️', xpMin:5000, desc:"Maîtrise ton corps et ton mental."},
-  {key:'legende',  name:'Légende',  cls:'bd-legende',  emoji:'👑', xpMin:7500, desc:"Devenu une référence."}
+  {key:'debutant', name:'Débutant', cls:'bd-debutant', emoji:'🌱', xpMin:0,     kmMin:0,    daysMin:0,   desc:"Le tout début de l\u2019aventure IKORUN."},
+  {key:'amateur',  name:'Amateur',  cls:'bd-amateur',  emoji:'🥉', xpMin:200,   kmMin:30,   daysMin:3,   desc:"Tu prends le rythme."},
+  {key:'sportif',  name:'Sportif',  cls:'bd-sportif',  emoji:'⭐', xpMin:400,   kmMin:60,   daysMin:11,  desc:"L\u2019entraînement devient une habitude."},
+  {key:'athlete',  name:'Athlète',  cls:'bd-athlete',  emoji:'🏅', xpMin:1600,  kmMin:240,  daysMin:14,  desc:"Tu progresses avec sérieux."},
+  {key:'expert',   name:'Expert',   cls:'bd-expert',   emoji:'💚', xpMin:4000,  kmMin:600,  daysMin:30,  desc:"Une vraie maîtrise de ton entraînement."},
+  {key:'elite',    name:'Élite',    cls:'bd-elite',    emoji:'💎', xpMin:9600,  kmMin:1440, daysMin:60,  desc:"Constante amélioration."},
+  {key:'maitre',   name:'Maître',   cls:'bd-maitre',   emoji:'🛡️', xpMin:14400, kmMin:2160, daysMin:120, desc:"Maîtrise ton corps et ton mental."},
+  {key:'legende',  name:'Légende',  cls:'bd-legende',  emoji:'👑', xpMin:19200, kmMin:2880, daysMin:240, desc:"Devenu une référence."}
 ];
 function badgeStats(){
-  return { xp: XP.total||0 };
+  return { xp: XP.total||0, km: totalKm(), days: daysSinceJoin() };
+}
+/* Ancienneté du compte, en jours pleins depuis la fin de l'onboarding.
+   P.joinedAt est posé une seule fois (finishOnboarding) ; pour les comptes
+   déjà existants avant cet ajout, reloadState() le reconstitue à partir
+   de la toute première séance connue (voir plus bas). */
+function daysSinceJoin(){
+  if(!P||!P.joinedAt) return 0;
+  return Math.max(0, Math.floor((Date.now()-P.joinedAt)/86400000));
 }
 function badgeProgress(b){
-  const xp=XP.total||0;
-  const idx=BADGE_TIERS.findIndex(t=>t.key===b.key);
-  const next=BADGE_TIERS[idx+1];
-  const need=next?next.xpMin:b.xpMin;
-  const parts=[{label:'XP total', have:xp, need:need, unit:'XP'}];
-  const unlocked=xp>=b.xpMin;
-  const pct=next?Math.min(100,Math.round(((xp-b.xpMin)/(next.xpMin-b.xpMin))*100)):100;
+  const parts=[
+    {label:'XP total',             have:XP.total||0,                  need:b.xpMin,   unit:'XP'},
+    {label:'Distance cumulée',     have:Math.round(totalKm()*10)/10,  need:b.kmMin,   unit:'km'},
+    {label:'Ancienneté du compte', have:daysSinceJoin(),               need:b.daysMin, unit:'j'}
+  ];
+  const ratio=p=> p.need ? Math.min(100,(p.have/p.need)*100) : 100;
+  const unlocked=parts.every(p=>p.have>=p.need);
+  const pct=Math.round(Math.min.apply(null,parts.map(ratio)));
   return {parts,pct:Math.max(0,pct),unlocked};
+}
+/* Le critère le plus en retard (celui qui bloque réellement l'obtention),
+   pour afficher un indice concret ("encore 12 jours") plutôt qu'un % sec. */
+function badgeBottleneck(prog){
+  return prog.parts.reduce((worst,p)=>{
+    const r=p.need?p.have/p.need:1, rw=worst.need?worst.have/worst.need:1;
+    return r<rw?p:worst;
+  }, prog.parts[0]);
+}
+function badgeHintText(prog){
+  if(prog.unlocked) return 'Palier atteint 🎉';
+  const p=badgeBottleneck(prog);
+  const remain=Math.ceil(p.need-p.have);
+  if(remain<=0) return 'Continue, tu y es presque.';
+  if(p.unit==='j') return 'Encore '+remain+' jour'+(remain>1?'s':'')+' avant de pouvoir débloquer ce badge.';
+  return 'Encore '+remain+' '+p.unit+' avant de débloquer ce badge.';
 }
 /* Migration : les paliers ont été renommés (anciennes clés → nouvelles).
    On réécrit les enregistrements déjà obtenus pour éviter les doublons
@@ -1040,7 +1094,7 @@ function renderBadgeGallery(){
     const on=ukeys.has(b.key);
     h+='<div class="bd-cell" onclick="openBadgeQuick(\''+b.key+'\')">'+
       '<div class="bd-icon '+b.cls+(on?'':' locked')+'" style="--sw:'+(i%5)+'">'+bdGlyph(b.key)+(on?'':'<div class="bd-lock-chip">🔒</div>')+'</div>'+
-      '<div class="bd-name">'+b.name+'</div><div class="bd-lvl">'+b.xpMin+' XP</div></div>';
+      '<div class="bd-name">'+b.name+'</div><div class="bd-lvl">'+(b.kmMin?b.kmMin+' km':'—')+'</div></div>';
   });
   h+='</div>';
   $('#badgesBody').innerHTML=h;
@@ -1048,31 +1102,54 @@ function renderBadgeGallery(){
 function openBadgeDetail(key){
   const b=BADGE_TIERS.find(x=>x.key===key); if(!b) return;
   const idx=BADGE_TIERS.findIndex(x=>x.key===key);
-  const prev=BADGE_TIERS[idx-1], next=BADGE_TIERS[idx+1];
-  const unlocked=unlockedBadges(); const rec=unlocked.find(u=>u.key===key);
+  const unlocked=unlockedBadges(); const ukeys=new Set(unlocked.map(u=>u.key));
+  const rec=unlocked.find(u=>u.key===key);
   const prog=badgeProgress(b);
   $('#ovBadgesTitle').textContent='Détails du badge';
-  let h='<div class="row" style="margin-bottom:10px">'+
-    '<span style="font-size:12px;color:'+(prev?'var(--e)':'var(--dim)')+';cursor:'+(prev?'pointer':'default')+'" '+(prev?'onclick="openBadgeDetail(\''+prev.key+'\')"':'')+'>‹ '+(prev?prev.name:'')+'</span>'+
-    '<span style="font-size:11px;color:var(--dim)">'+(idx+1)+' / '+BADGE_TIERS.length+'</span>'+
-    '<span style="font-size:12px;color:'+(next?'var(--e)':'var(--dim)')+';cursor:'+(next?'pointer':'default')+'" '+(next?'onclick="openBadgeDetail(\''+next.key+'\')"':'')+'>'+(next?next.name:'')+' ›</span>'+
+
+  /* Rail des 8 paliers — la progression IKORUN est une vraie séquence,
+     donc la montrer dans son ensemble (obtenus / palier actuel / à venir)
+     a plus de sens qu'un simple prev/next textuel. */
+  let h='<div class="bd-detail-rail">'+BADGE_TIERS.map(t=>{
+    const on=ukeys.has(t.key), cur=t.key===key;
+    return '<div class="bd-icon xs '+t.cls+(cur?' cur':'')+(on?'':' locked')+'" onclick="openBadgeDetail(\''+t.key+'\')" title="'+t.name+'">'+bdGlyph(t.key)+'</div>';
+  }).join('')+'</div>';
+  h+='<div class="row" style="justify-content:center;margin:8px 0 16px"><span class="lab">Palier '+(idx+1)+' sur '+BADGE_TIERS.length+'</span></div>';
+
+  /* Hero : le halo reprend la couleur matière propre au badge (--glow),
+     posé via la classe de palier (b.cls) qui définit --c1/--c2/--glow. */
+  h+='<div class="bd-detail-hero '+b.cls+(rec?'':' locked')+'">'+
+    '<div class="bd-icon big'+(rec?'':' locked')+'" style="margin:0 auto;cursor:pointer" onclick="'+(rec?'replayBadgeAnim':'previewBadgeAnim')+'(\''+b.key+'\')">'+bdGlyph(b.key)+(rec?'':'<div class="bd-lock-chip big">🔒</div>')+'</div>'+
+    '<div class="man" style="font-weight:800;font-size:24px;margin-top:16px">'+b.name+'</div>'+
+    '<div style="color:var(--muted);font-size:13px;margin-top:6px;padding:0 14px">'+b.desc+'</div>'+
+    '<div class="row" style="justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap">'+
+      '<div class="bd-status-chip'+(rec?' on':'')+'">'+(rec?'✅ Obtenu le '+fmtDate(rec.date):'🔒 Verrouillé')+'</div>'+
+      '<div class="bd-status-chip ghost" onclick="'+(rec?'replayBadgeAnim':'previewBadgeAnim')+'(\''+b.key+'\')">↻ '+(rec?'Revivre l\u2019animation':'Voir un aperçu')+'</div>'+
+    '</div>'+
   '</div>';
-  h+='<div style="text-align:center;margin-bottom:18px">'+
-    '<div class="bd-icon big '+b.cls+(rec?'':' locked')+'" style="margin:0 auto 14px;cursor:pointer" onclick="'+(rec?'replayBadgeAnim':'previewBadgeAnim')+'(\''+b.key+'\')">'+bdGlyph(b.key)+(rec?'':'<div class="bd-lock-chip big">🔒</div>')+'</div>'+
-    '<div class="man" style="font-weight:800;font-size:24px">'+b.name+'</div>'+
-    '<div style="color:var(--muted);font-size:13px;margin-top:6px;padding:0 10px">'+b.desc+'</div>'+
-    (rec?'<div style="color:var(--e);font-size:12px;margin-top:8px">Obtenu le '+fmtDate(rec.date)+' · <span style="text-decoration:underline;cursor:pointer" onclick="replayBadgeAnim(\''+b.key+'\')">revivre l\u2019animation</span></div>'
-        :'<div style="color:var(--muted);font-size:12px;margin-top:8px">🔒 Verrouillé · <span style="text-decoration:underline;cursor:pointer;color:var(--e)" onclick="previewBadgeAnim(\''+b.key+'\')">voir un aperçu</span></div>')+
-    '</div>';
-  h+='<div class="card"><div class="lab" style="margin-bottom:12px">Conditions d\u2019obtention</div>';
+
+  h+='<div class="card '+b.cls+'"><div class="lab" style="margin-bottom:12px">Conditions d\u2019obtention</div>';
   prog.parts.forEach(p=>{
     const pc=Math.min(100,Math.round((p.need?p.have/p.need:1)*100));
     const done=p.have>=p.need;
-    h+='<div style="margin-bottom:12px"><div class="row" style="margin-bottom:5px"><span style="font-size:13px">'+(done?'✅ ':'⬜ ')+p.label+'</span><span class="mono" style="font-size:12px;color:var(--muted)">'+Math.min(p.have,p.need)+' / '+p.need+' '+p.unit+'</span></div><div class="pbar" style="height:6px"><div style="width:'+pc+'%"></div></div></div>';
+    h+='<div style="margin-bottom:12px"><div class="row" style="margin-bottom:5px"><span style="font-size:13px">'+(done?'✅ ':'⬜ ')+p.label+'</span><span class="mono" style="font-size:12px;color:var(--muted)">'+Math.min(p.have,p.need)+' / '+p.need+' '+p.unit+'</span></div><div class="pbar bd-pbar" style="height:7px"><div style="width:'+pc+'%"></div></div></div>';
   });
-  h+='<div class="row" style="margin-top:6px"><span class="lab">Progression globale</span><span class="mono" style="color:var(--e)">'+prog.pct+'%</span></div></div>';
+  const R=40,C=+(2*Math.PI*R).toFixed(1),OFF=+(C*(1-prog.pct/100)).toFixed(1);
+  h+='<div class="card-divider"></div>'+
+    '<div class="row" style="align-items:center;gap:14px">'+
+      '<div class="ringwrap" style="width:82px;height:82px;flex-shrink:0">'+
+        '<svg viewBox="0 0 96 96" width="82" height="82">'+
+          '<circle cx="48" cy="48" r="'+R+'" fill="none" stroke="var(--s3)" stroke-width="8"/>'+
+          '<circle cx="48" cy="48" r="'+R+'" fill="none" stroke="var(--glow)" stroke-width="8" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+OFF+'" style="transition:stroke-dashoffset .7s var(--ease)"/>'+
+        '</svg>'+
+        '<div class="rc"><span class="mono" style="font-size:17px;font-weight:800">'+prog.pct+'%</span></div>'+
+      '</div>'+
+      '<div style="flex:1"><div class="lab">Progression globale</div>'+
+      '<div style="font-size:12px;color:var(--muted);margin-top:4px">'+badgeHintText(prog)+'</div></div>'+
+    '</div></div>';
+
   if(rec) h+='<button class="btn" style="margin-top:12px" onclick="shareBadge(\''+b.key+'\')">↗ Partager ce badge</button>';
-  h+='<button class="btn ghost" onclick="closeOv(\'ovBadges\')">Fermer</button>';
+  h+='<button class="btn ghost" style="margin-top:8px" onclick="closeOv(\'ovBadges\')">Fermer</button>';
   $('#badgesBody').innerHTML=h;
   openOv('ovBadges');
 }
@@ -1090,7 +1167,7 @@ function badgeStripHTML(){
   }
   if(nb){
     const prog=badgeProgress(nb);
-    h+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--hair)"><div class="row" style="margin-bottom:6px"><span style="font-size:12px;color:var(--muted)">Prochain badge · '+nb.name+'</span><span class="mono" style="font-size:12px;color:var(--e)">'+prog.pct+'%</span></div><div class="pbar" style="height:6px"><div style="width:'+prog.pct+'%"></div></div></div>';
+    h+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--hair)"><div class="row" style="margin-bottom:6px"><span style="font-size:12px;color:var(--muted)">Prochain badge · '+nb.name+'</span><span class="mono" style="font-size:12px;color:var(--e)">'+prog.pct+'%</span></div><div class="pbar" style="height:6px;margin-bottom:6px"><div style="width:'+prog.pct+'%"></div></div><div style="font-size:11px;color:var(--dim)">'+badgeHintText(prog)+'</div></div>';
   }
   h+='</div>';
   return h;
@@ -1726,7 +1803,7 @@ function finishOnboarding(){
   RECORDS=valid.map(p=>({dist:p.dist,meters:p.meters,time:fmtTime(p.timeS),date:todayKey()}));
   const find=m=>{ const r=valid.find(x=>x.meters===m); return r?fmtTime(r.timeS):''; };
   P={
-    setupDone:true,
+    setupDone:true, joinedAt:Date.now(),
     name:$('#ob_name').value.trim(), username:$('#ob_username').value.trim(), bday:$('#ob_bday').value, sex:$('#ob_sex').value, city:$('#ob_city').value.trim(),
     level:$('#ob_level').querySelector('.pill.on').dataset.v, kmWeek:+obv('ob_km')||40,
     goal:$('#ob_goal').value.trim(), compDate:$('#ob_compdate').value,
