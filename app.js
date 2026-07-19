@@ -206,10 +206,30 @@ function wireUsernameField(inputId, statusId, onResult){
   inp.addEventListener('input',()=>{
     clearTimeout(deb);
     deb=setTimeout(async ()=>{
-      const ok=await checkUsernameLive(inp.value, st, inp);
+      const val=inp.value;
+      const ok=await checkUsernameLive(val, st, inp);
+      // Si le champ a changé pendant la vérification (une saisie plus récente
+      // a démarré son propre check), ce résultat est obsolète : on ne doit
+      // surtout pas laisser sa réponse écraser l'état d'un check plus récent
+      // — c'est exactement ça qui causait le bug « ✓ Disponible » affiché
+      // alors que le pseudo est en fait refusé au clic sur Continuer.
+      if(inp.value!==val) return;
       if(onResult) onResult(ok);
     },400);
   });
+}
+// Vérifie la disponibilité d'un pseudo sans toucher au DOM (utilisé pour
+// tester silencieusement plusieurs candidats lors de la suggestion auto).
+async function isUsernameAvailable(v){
+  if(!usernameFormatOk(v)) return false;
+  if(!window.supabaseClient) return true;
+  try{
+    const { data, error } = await window.supabaseClient.rpc('username_available',{
+      p_username: v, p_uid: window.currentUserId||null
+    });
+    if(error) return false;
+    return !!data;
+  }catch(e){ return false; }
 }
 // Réserve/renomme le pseudo côté serveur de façon atomique (source de vérité anti-doublon)
 async function claimUsername(username){
@@ -1668,7 +1688,7 @@ function maybeResumeLive(){
 }
 
 /* ---------- ONBOARDING ---------- */
-let obStep=1; const OB_MAX=6;
+let obStep=1; const OB_MAX=5;
 let obEasy=false; // true si >26 ans → mode simplifié activé auto (n'affecte plus la navigation de l'onboarding)
 function startOnboarding(){
   obEasy=false;
@@ -1687,19 +1707,27 @@ function startOnboarding(){
 }
 let obUsernameOk=false;
 let obUsernameAuto=true; // tant que vrai, le pseudo se génère automatiquement à partir du prénom
+let _obAutoSeq=0;
 function wireAutoUsername(){
   const nameInp=$('#ob_name'); if(!nameInp) return;
   let deb=null;
   nameInp.oninput=()=>{
     if(!obUsernameAuto) return;
     clearTimeout(deb);
-    deb=setTimeout(()=>{
+    deb=setTimeout(async ()=>{
       const name=nameInp.value.trim();
       if(!name) return;
-      const u=suggestUsername(name);
-      const uInp=$('#ob_username'); if(!uInp) return;
+      const mySeq=++_obAutoSeq;
+      const uInp=$('#ob_username'), st=$('#ob_username_status'); if(!uInp) return;
+      if(st){ st.textContent='Vérification…'; st.className='uname-status checking'; }
+      const u=await suggestUsername(name);
+      // Le prénom (ou le pseudo) a pu changer pendant la recherche : on ignore
+      // ce résultat s'il n'est plus le plus récent, pour éviter qu'une
+      // réponse tardive écrase l'état d'une vérification plus fraîche.
+      if(mySeq!==_obAutoSeq || !obUsernameAuto) return;
       uInp.value=u;
-      checkUsernameLive(u,$('#ob_username_status'),uInp).then(ok=>{ obUsernameOk=ok; });
+      const ok=await checkUsernameLive(u,st,uInp);
+      if(uInp.value===u && mySeq===_obAutoSeq) obUsernameOk=ok;
     },350);
   };
   const uInp=$('#ob_username');
@@ -1711,13 +1739,21 @@ function slugifyUsername(name){
   if(s.length>14) s=s.slice(0,14);
   return s;
 }
-function suggestUsername(name){
+// Propose le pseudo le plus simple et le plus proche du prénom donné à
+// l'inscription : d'abord le nom tel quel, puis seulement s'il est déjà
+// pris, de petits suffixes incrémentaux (2, 3, 4…) — jamais un nombre
+// aléatoire du premier coup, pour éviter de proposer "hamou_896" quand
+// "hamou" est disponible.
+async function suggestUsername(name){
   let base=slugifyUsername(name);
-  if(base.length<2) base='runner';
-  const suffix=String(Math.floor(Math.random()*900)+100);
-  let u=(base+'_'+suffix).slice(0,20);
-  if(u.length<3) u=(u+'000').slice(0,3);
-  return u;
+  if(base.length<3) base=(base+'runner').slice(0,14);
+  if(await isUsernameAvailable(base)) return base;
+  for(let i=2;i<=99;i++){
+    const c=(base+i).slice(0,20);
+    if(await isUsernameAvailable(c)) return c;
+  }
+  // Repli très improbable si tout est pris : suffixe aléatoire
+  return (base+Math.floor(Math.random()*9000+1000)).slice(0,20);
 }
 /* ===== Étape Performances : lignes Distance | Temps ===== */
 let OB_PERFS=[{dist:null,meters:null,timeS:null}];
@@ -1790,11 +1826,23 @@ function obValidate(n){
     obEasy = ageYears>26;
     if(obEasy) toast('Profil rapide activé — mode simplifié activé ✓');
   }
-  if(n===3){ if(!$('#ob_level').querySelector('.pill.on')){ toast('Choisis un niveau'); return false; } if(!obv('ob_km')){ toast('Choisis ton volume'); return false; } }
+  if(n===3){ if(!$('#ob_level').querySelector('.pill.on')){ toast('Choisis un niveau'); return false; } }
   if(n===4){ if(!$('#ob_goal').value.trim()||!$('#ob_compdate').value){ toast('Objectif et date requis'); return false; } }
   if(n===5){ const valid=OB_PERFS.filter(p=>p.meters&&p.timeS); if(!valid.length){ toast('Ajoute au moins une performance'); return false; } }
-  if(n===6){ if(!obv('ob_time')){ toast('Temps par séance requis'); return false; } }
   return true;
+}
+// Le kilométrage hebdo cible et le temps par séance ne sont plus demandés à
+// l'utilisateur : c'est le moteur de l'app qui les déduit du niveau choisi
+// (affinable ensuite automatiquement par l'algorithme adaptatif basé sur le VDOT).
+function autoTargetsForLevel(level){
+  const map={
+    'Débutant':      {km:20, time:40},
+    'Intermédiaire': {km:35, time:50},
+    'Confirmé':      {km:55, time:65},
+    'Très avancé':   {km:75, time:80},
+    'Élite':         {km:100,time:95}
+  };
+  return map[level]||map['Intermédiaire'];
 }
 function finishOnboarding(){
   // Les jours d'entraînement ne sont plus demandés ici : ils sont choisis
@@ -1803,13 +1851,15 @@ function finishOnboarding(){
   const valid=OB_PERFS.filter(p=>p.meters&&p.timeS!=null);
   RECORDS=valid.map(p=>({dist:p.dist,meters:p.meters,time:fmtTime(p.timeS),date:todayKey()}));
   const find=m=>{ const r=valid.find(x=>x.meters===m); return r?fmtTime(r.timeS):''; };
+  const level=$('#ob_level').querySelector('.pill.on').dataset.v;
+  const auto=autoTargetsForLevel(level);
   P={
     setupDone:true, joinedAt:Date.now(),
-    name:$('#ob_name').value.trim(), username:$('#ob_username').value.trim(), bday:$('#ob_bday').value, sex:$('#ob_sex').value, city:$('#ob_city').value.trim(),
-    level:$('#ob_level').querySelector('.pill.on').dataset.v, kmWeek:+obv('ob_km')||40,
+    name:$('#ob_name').value.trim(), username:$('#ob_username').value.trim(), bday:$('#ob_bday').value, sex:$('#ob_sex').value, city:'',
+    level:level, kmWeek:auto.km,
     goal:$('#ob_goal').value.trim(), compDate:$('#ob_compdate').value,
     t5k:find(5000), t3k:find(3000), t1500:find(1500), t10k:find(10000),
-    sessionTime:+obv('ob_time')||60, coach:$('#ob_coach').value.trim(),
+    sessionTime:auto.time, coach:$('#ob_coach').value.trim(),
     theme:'blue', pb5k:find(5000), pb1500:find(1500), pb10k:find(10000),
     easyMode:obEasy // >26 ans → mode simplifié activé auto (modifiable ensuite dans Profil > Mode simplifié)
   };

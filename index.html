@@ -1526,18 +1526,17 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
     </div>
     <div class="field"><label>Date de naissance *</label><input class="inp" id="ob_bday" type="date"></div>
     <div class="field"><label>Sexe *</label><select class="inp" id="ob_sex"><option value="">Sélectionner</option><option>Homme</option><option>Femme</option></select></div>
-    <div class="field"><label>Ville</label><input class="inp" id="ob_city" placeholder="Ta ville"></div>
+    <div class="field"><label>Coach — optionnel</label><input class="inp" id="ob_coach" placeholder="Nom de ton coach"></div>
   </div>
   <div class="ob-step" data-step="3">
     <h1>Ton niveau</h1><p class="intro">Sois honnête, le plan s'adapte.</p>
-    <div class="note">💡 <span>Le <b>niveau</b> ajuste l'intensité de ton plan. Pas sûr ? Touche <b>« Comment choisir ? »</b>. Le <b>kilométrage hebdo</b> est ce que tu cours actuellement par semaine.</span></div>
+    <div class="note">💡 <span>Le <b>niveau</b> ajuste l'intensité de ton plan : volume, allures et charge d'entraînement en découlent automatiquement. Pas sûr ? Touche <b>« Comment choisir ? »</b>.</span></div>
     <div class="field"><label style="display:flex;align-items:center;justify-content:space-between">Niveau *<span style="color:var(--e);font-size:12px;font-weight:600;cursor:pointer" onclick="openLevelGuide()">ℹ️ Comment choisir ?</span></label>
       <div class="pills" id="ob_level">
         <div class="pill" data-v="Débutant">Débutant</div><div class="pill" data-v="Intermédiaire">Intermédiaire</div>
         <div class="pill" data-v="Confirmé">Confirmé</div><div class="pill" data-v="Très avancé">Très avancé</div><div class="pill" data-v="Élite">Élite</div>
       </div>
     </div>
-    <div class="field"><label>Kilométrage hebdo *</label><div class="inp pkfield" id="ob_km" data-v="" onclick="pickInt('Km / semaine',0,200,40,'km',v=>setObPk('ob_km',v,v+' km/sem'),5)">Choisir ton volume</div></div>
   </div>
   <div class="ob-step" data-step="4">
     <h1>Ton objectif</h1><p class="intro">Ce qui te fait courir.</p>
@@ -1549,12 +1548,6 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
     <div class="note">💡 <span>Tes chronos calculent ton <b>VDOT</b> (ta « cylindrée ») et toutes tes <b>allures d'entraînement</b>. Donne au moins un chrono récent et fiable. Choisis la distance puis le temps avec les roues.</span></div>
     <div id="ob_perfs"></div>
     <button class="addperf" id="ob_addperf" onclick="addPerfRow()">＋ Ajouter une autre performance</button>
-  </div>
-  <div class="ob-step" data-step="6">
-    <h1>Ta disponibilité</h1><p class="intro">Combien de temps par séance ?</p>
-    <div class="note">💡 <span>Tes jours d'entraînement seront choisis au moment de générer ton plan, pour rester toujours à jour selon ton emploi du temps.</span></div>
-    <div class="field"><label>Temps par séance *</label><div class="inp pkfield" id="ob_time" data-v="" onclick="pickInt('Minutes / séance',20,180,60,'min',v=>setObPk('ob_time',v,v+' min'),5)">Choisir une durée</div></div>
-    <div class="field"><label>Coach — optionnel</label><input class="inp" id="ob_coach" placeholder="Nom de ton coach"></div>
   </div>
   <div class="ob-foot">
     <button class="btn ghost" id="obPrev" style="flex:0 0 90px;">Retour</button>
