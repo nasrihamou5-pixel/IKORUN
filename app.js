@@ -101,6 +101,9 @@ function addAnotherAccount(){
   else location.reload();
 }
 
+function clearLocalCache(){
+  Object.keys(localStorage).filter(k=>k.startsWith('vvv_')).forEach(k=>localStorage.removeItem(k));
+}
 async function deleteAccountCompletely(){
   if(!confirm('⚠️ Cette action va supprimer TOUTES tes données (séances, records, XP, profil...) de façon définitive, sur le cloud et sur cet appareil. Continuer ?')) return;
   if(!confirm('Dernière confirmation : es-tu vraiment sûr(e) ? Cette action est irréversible.')) return;
@@ -112,7 +115,8 @@ async function deleteAccountCompletely(){
       await window.supabaseClient.from('public_profiles').delete().eq('user_id', window.currentUserId);
     }
   }catch(e){ console.error('delete account data error', e); }
-  Object.keys(localStorage).filter(k=>k.startsWith('vvv_')).forEach(k=>localStorage.removeItem(k));
+  clearLocalCache();
+  localStorage.removeItem('ikorun_last_uid');
   if(window.supabaseClient) await window.supabaseClient.auth.signOut();
   location.reload();
 }
@@ -1625,6 +1629,7 @@ async function startApp(){
 
   const { data:{ session } } = await window.supabaseClient.auth.getSession();
   if(session && session.user){
+    guardAgainstStaleLocalAccount(session.user.id);
     window.currentUserId = session.user.id;
     window.currentUserEmail = session.user.email;
     await cloudPullAll(session.user.id);
@@ -1638,6 +1643,7 @@ async function startApp(){
   }
   window.supabaseClient.auth.onAuthStateChange(async (event, session) => {
     if(event === 'SIGNED_IN' && session){
+      guardAgainstStaleLocalAccount(session.user.id);
       window.currentUserId = session.user.id;
       window.currentUserEmail = session.user.email;
       await cloudPullAll(session.user.id);
@@ -1652,6 +1658,21 @@ async function startApp(){
       location.reload();
     }
   });
+}
+// PROBLÈME CORRIGÉ : le cache local (localStorage 'vvv_*') n'était jamais lié à un
+// compte précis. Si un compte A s'était déjà connecté sur cet appareil (même
+// après déconnexion, puisque le cache n'est volontairement pas vidé au logout),
+// et qu'un compte B tout neuf se connectait ensuite, cloudPullAll(B) ne trouvait
+// aucune ligne côté cloud (compte neuf) et ne touchait donc jamais au cache local
+// → reloadState() rechargeait alors les données de A en les faisant passer pour
+// celles de B. Ici, on compare l'utilisateur qui se connecte au dernier utilisateur
+// connu sur cet appareil ; s'il diffère, on vide le cache AVANT tout chargement.
+function guardAgainstStaleLocalAccount(newUid){
+  try{
+    const lastUid = localStorage.getItem('ikorun_last_uid');
+    if(lastUid && lastUid!==newUid){ clearLocalCache(); }
+    localStorage.setItem('ikorun_last_uid', newUid);
+  }catch(e){ console.error('guardAgainstStaleLocalAccount error', e); }
 }
 
 function logout(){ signOutUser(); }
