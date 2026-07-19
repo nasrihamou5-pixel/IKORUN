@@ -84,6 +84,7 @@ html[data-mode="light"] .topbar{background:linear-gradient(180deg,rgba(var(--bg-
    comme texte/icône sur blanc tout en gardant l'identité "bleu". */
 html[data-mode="light"][data-accent="blue"]{
   --e:#2864E8; --e2:#1A4BB8; --e-rgb:40,100,232; --e2-rgb:26,75,184;
+  --grad-btn:linear-gradient(180deg,#3E78F5,#2864E8 55%,#1A4BB8);
 }
 
 /* ===== COULEURS D'ACCENT — Bleu (défaut) / Vert militaire chromé / Marron boisé chromé / Jaune chromé / Fibre de carbone ===== */
@@ -99,6 +100,7 @@ html[data-mode="light"][data-accent="green"]{
   --bg:#F3F7EF; --s1:#FFFFFF; --s2:#E9F1E3; --bg-rgb:243,247,239; --s1-rgb:255,255,255; --s2-rgb:233,241,227; --s3-rgb:216,229,206;
   /* vert clair/pâle du dark mode illisible sur fond clair → vert forêt assombri */
   --e:#3F7A26; --e2:#2E5C1B; --e-rgb:63,122,38; --e2-rgb:46,92,27;
+  --grad-btn:linear-gradient(180deg,#4F9530,#3F7A26 55%,#2E5C1B);
 }
 html[data-accent="brown"]{
   --e:#B9793E; --e2:#DDA873; --e-rgb:185,121,62; --e2-rgb:221,168,115;
@@ -112,6 +114,7 @@ html[data-mode="light"][data-accent="brown"]{
   --bg:#FAF4EC; --s1:#FFFFFF; --s2:#F1E4D3; --bg-rgb:250,244,236; --s1-rgb:255,255,255; --s2-rgb:241,228,211; --s3-rgb:230,210,183;
   /* marron/beige clair du dark mode illisible sur fond crème → café assombri */
   --e:#8C5726; --e2:#6E3F17; --e-rgb:140,87,38; --e2-rgb:110,63,23;
+  --grad-btn:linear-gradient(180deg,#A66B32,#8C5726 55%,#6E3F17);
 }
 html[data-accent="yellow"]{
   --e:#F4C430; --e2:#FFDD75; --e-rgb:244,196,48; --e2-rgb:255,221,117;
@@ -125,55 +128,66 @@ html[data-mode="light"][data-accent="yellow"]{
   --bg:#FAF6E8; --s1:#FFFFFF; --s2:#F3EBCC; --bg-rgb:250,246,232; --s1-rgb:255,255,255; --s2-rgb:243,235,204; --s3-rgb:235,220,171;
   /* jaune vif du dark mode quasi invisible sur fond clair → miel/moutarde assombri */
   --e:#8C6209; --e2:#6B4A06; --e-rgb:140,98,9; --e2-rgb:107,74,6;
+  --grad-btn:linear-gradient(180deg,#A97A0C,#8C6209 55%,#6B4A06);
 }
 
-/* ===== FIBRE DE CARBONE — mode intégral, poussé au maximum ===== */
+/* ===== FIBRE DE CARBONE — vrai tressage twill + reflets chromés ===== */
 html[data-accent="carbon"]{
-  --e:#D5DAE1; --e2:#F5F7F9; --e-rgb:213,218,225; --e2-rgb:245,247,249;
-  --grad-btn:linear-gradient(180deg,#EDF0F3,#C3C9D1 50%,#8A9099);
+  --e:#C3C9D1; --e2:#F0F3F6; --e-rgb:195,201,209; --e2-rgb:240,243,246;
+  --grad-btn:linear-gradient(108deg,#0a0b0d 0%,#1c1e22 20%,#4a4e55 34%,#eef1f4 45%,#ffffff 49%,#c7cdd4 54%,#2a2c30 70%,#0e0f11 100%);
   --marineL:#1B1D21; --hair:#2A2D32; --hair2:#3D4147;
-  --bg:#050506; --s1:#101113; --s2:#18191C; --s3:#232529;
-  --bg-rgb:5,5,6; --s1-rgb:16,17,19; --s2-rgb:24,25,28; --s3-rgb:35,37,41;
-  --sh-e:0 8px 24px -6px rgba(213,218,225,.5),0 2px 8px -2px rgba(213,218,225,.32);
-  --glass-border:rgba(220,224,229,.24); --glass-border-soft:rgba(220,224,229,.1);
+  --bg:#040404; --s1:#0D0E10; --s2:#151619; --s3:#1F2023;
+  --bg-rgb:4,4,4; --s1-rgb:13,14,16; --s2-rgb:21,22,25; --s3-rgb:31,32,35;
+  --sh-e:0 8px 24px -6px rgba(195,201,209,.45),0 2px 8px -2px rgba(195,201,209,.28);
+  --glass-border:rgba(220,224,229,.22); --glass-border-soft:rgba(220,224,229,.09);
+  /* tressage twill 2×2 (deux nappes croisées à haut contraste) + filet chromé qui balaie la carte */
   --glass-shine:
-    repeating-linear-gradient(45deg,rgba(0,0,0,.55) 0 3px,rgba(255,255,255,.05) 3px 6px),
-    repeating-linear-gradient(-45deg,rgba(0,0,0,.4) 0 3px,transparent 3px 6px),
-    linear-gradient(155deg,rgba(255,255,255,.18) 0%,rgba(255,255,255,.04) 22%,rgba(255,255,255,0) 45%);
+    linear-gradient(112deg,rgba(255,255,255,.20) 6%,rgba(255,255,255,.03) 18%,transparent 34%),
+    repeating-linear-gradient(45deg,rgba(255,255,255,.07) 0 2px,rgba(0,0,0,.62) 2px 4px,rgba(255,255,255,.03) 4px 6px,rgba(0,0,0,.5) 6px 8px),
+    repeating-linear-gradient(-45deg,rgba(255,255,255,.04) 0 2px,rgba(0,0,0,.46) 2px 4px,transparent 4px 6px,rgba(0,0,0,.3) 6px 8px);
   --chrome-base:
-    repeating-linear-gradient(45deg,rgba(0,0,0,.6) 0 3px,rgba(255,255,255,.045) 3px 6px),
-    repeating-linear-gradient(-45deg,rgba(0,0,0,.45) 0 3px,transparent 3px 6px),
-    linear-gradient(165deg,#3f434a 0%,#1c1e22 38%,#08090a 62%,#2a2d32 100%);
-  --chrome-border:rgba(216,221,227,.3);
-  --chrome-edge:linear-gradient(180deg,rgba(230,234,238,.55),rgba(230,234,238,0) 30%);
-  --chrome-sheen:linear-gradient(100deg,transparent 26%,rgba(230,234,238,.6) 46%,rgba(230,234,238,.06) 54%,transparent 70%);
+    repeating-linear-gradient(45deg,rgba(255,255,255,.06) 0 2px,rgba(0,0,0,.65) 2px 4px,rgba(255,255,255,.02) 4px 6px,rgba(0,0,0,.5) 6px 8px),
+    repeating-linear-gradient(-45deg,rgba(255,255,255,.03) 0 2px,rgba(0,0,0,.5) 2px 4px,transparent 4px 6px,rgba(0,0,0,.32) 6px 8px),
+    linear-gradient(165deg,#34373c 0%,#17181b 38%,#060607 62%,#212327 100%);
+  --chrome-border:rgba(216,221,227,.32);
+  --chrome-edge:linear-gradient(180deg,rgba(230,234,238,.6),rgba(230,234,238,0) 30%);
+  --chrome-sheen:linear-gradient(100deg,transparent 24%,rgba(230,234,238,.7) 46%,rgba(230,234,238,.08) 55%,transparent 72%);
 }
 html[data-mode="light"][data-accent="carbon"]{
   --marineL:#DDE1E6; --hair:#D2D6DB; --hair2:#BFC4CB;
   --bg:#EEF0F2; --s1:#FFFFFF; --s2:#E4E7EB; --bg-rgb:238,240,242; --s1-rgb:255,255,255; --s2-rgb:228,231,235; --s3-rgb:210,215,221;
-  /* chrome/argent quasi blanc du dark mode invisible sur fond clair → acier brossé foncé */
-  --e:#4B4F56; --e2:#2E3237; --e-rgb:75,79,86; --e2-rgb:46,50,55;
-  --sh-e:0 8px 22px -6px rgba(75,79,86,.32),0 2px 6px -2px rgba(75,79,86,.22);
+  /* chrome/argent quasi blanc du dark mode invisible sur fond clair → acier brossé foncé, lisible */
+  --e:#43474E; --e2:#22252A; --e-rgb:67,71,78; --e2-rgb:34,37,42;
+  --sh-e:0 8px 22px -6px rgba(67,71,78,.3),0 2px 6px -2px rgba(67,71,78,.2);
+  /* le tressage sombre du dark mode écraserait le texte sur fond clair → reflet chromé doux, sans nappes noires */
+  --glass-shine:
+    linear-gradient(112deg,rgba(255,255,255,.55) 6%,rgba(255,255,255,.1) 20%,transparent 38%),
+    repeating-linear-gradient(45deg,rgba(20,22,26,.05) 0 2px,transparent 2px 6px),
+    repeating-linear-gradient(-45deg,rgba(20,22,26,.04) 0 2px,transparent 2px 6px);
 }
 html[data-accent="carbon"] body::before{
   background:
-    radial-gradient(140% 60% at 50% -6%, rgba(var(--e-rgb),.16), transparent 58%),
-    radial-gradient(90% 50% at 82% 4%, rgba(var(--e2-rgb),.08), transparent 60%),
-    radial-gradient(80% 45% at 8% 96%, rgba(var(--e-rgb),.06), transparent 62%),
+    radial-gradient(140% 60% at 50% -6%, rgba(var(--e-rgb),.14), transparent 58%),
+    radial-gradient(90% 50% at 82% 4%, rgba(var(--e2-rgb),.07), transparent 60%),
+    radial-gradient(80% 45% at 8% 96%, rgba(var(--e-rgb),.05), transparent 62%),
     var(--bg);
 }
 html[data-accent="carbon"] body::after{
-  opacity:.24; mix-blend-mode:overlay;
+  opacity:.4; mix-blend-mode:overlay;
   background-image:
-    repeating-linear-gradient(45deg, rgba(255,255,255,.55) 0 2px, rgba(0,0,0,.55) 2px 4px),
-    repeating-linear-gradient(-45deg, rgba(255,255,255,.36) 0 2px, rgba(0,0,0,.36) 2px 4px);
-  background-size:7px 7px,7px 7px;
+    repeating-linear-gradient(45deg, rgba(255,255,255,.5) 0 2px, rgba(0,0,0,.6) 2px 4px),
+    repeating-linear-gradient(-45deg, rgba(255,255,255,.32) 0 2px, rgba(0,0,0,.4) 2px 4px);
+  background-size:6px 6px,6px 6px;
 }
+html[data-mode="light"][data-accent="carbon"] body::after{opacity:.05;}
 html[data-accent="carbon"] .card,html[data-accent="carbon"] #s-outils .card,
 html[data-accent="carbon"] .grp-card,html[data-accent="carbon"] .chrome-box,
 html[data-accent="carbon"] .chrome-sbox,html[data-accent="carbon"] .chrome-chip,
 html[data-accent="carbon"] #nav{border-color:var(--chrome-border);}
 html[data-accent="carbon"] .nb.on{color:var(--e2);text-shadow:0 0 12px rgba(var(--e-rgb),.5);}
+/* bouton carbone : filet chromé mobile sur nappe carbone — texte protégé par une ombre nette */
+html[data-accent="carbon"] .btn{text-shadow:0 1px 3px rgba(0,0,0,.85),0 0 10px rgba(0,0,0,.55);}
+html[data-accent="carbon"] .accent-dot.on{box-shadow:var(--sh-sm),0 0 0 1px rgba(230,234,238,.5);}
 
 .accent-picker{display:flex;gap:9px;align-items:center;flex-wrap:wrap;}
 .accent-dot{width:24px;height:24px;border-radius:50%;cursor:pointer;flex-shrink:0;
@@ -185,10 +199,9 @@ html[data-accent="carbon"] .nb.on{color:var(--e2);text-shadow:0 0 12px rgba(var(
 .accent-dot[data-a="brown"]{background:linear-gradient(135deg,#DDA873,#98602E);}
 .accent-dot[data-a="yellow"]{background:linear-gradient(135deg,#FFDD75,#D9A518);}
 .accent-dot[data-a="carbon"]{background:
-    repeating-linear-gradient(45deg,#4a4e55 0 2px,#0a0b0c 2px 4px),
-    repeating-linear-gradient(-45deg,#4a4e55 0 2px,#0a0b0c 2px 4px);
-  background-blend-mode:screen;}
-  background-blend-mode:screen;}
+    linear-gradient(115deg,transparent 32%,rgba(255,255,255,.95) 48%,transparent 64%),
+    repeating-linear-gradient(45deg,#2b2d31 0 2px,#050506 2px 4px),
+    repeating-linear-gradient(-45deg,#2b2d31 0 2px,#050506 2px 4px);}
 
 /* ===== MODE SIMPLIFIÉ — pour les utilisateurs peu à l'aise avec la technologie :
    supprime le flou "liquid glass", grossit les textes/boutons, réduit les animations. ===== */

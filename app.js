@@ -553,7 +553,25 @@ const I18N={
     photo:'Photo',bio:'Biographie',addPhoto:'Ajouter une photo',changePhoto:'Changer',removePhoto:'Supprimer',
     height:'Taille',weight:'Poids',age:'Âge',level:'Niveau',logout:'Déconnexion',
     levelGuide:'Comment choisir mon niveau ?',xpProgress:'Progression XP',coach:'Coach',
-    todayGoals:'Objectifs du jour',weekLoad:'Charge de la semaine',sessions:'séances',form:'forme'
+    todayGoals:'Objectifs du jour',weekLoad:'Charge de la semaine',sessions:'séances',form:'forme',
+    quipTime:'On chasse le {0} ?',quipGoal:'On avance vers : {0} ?',quipDefault:'Prêt à dépasser tes limites aujourd\u2019hui ?',
+    weekLoadTitle:'Charge hebdomadaire',levelXp:'Niveau {0} — {1} XP',xpBeforeLevel:'+{0} XP avant niveau {1}',
+    sessionsCap:'Séances',tonnageKg:'Tonnage kg',formCap:'Forme',nextSession:'PROCHAINE SÉANCE',today:'Aujourd\u2019hui',
+    restDay:'Jour de repos',noSessionToday:'Aucune séance planifiée aujourd\u2019hui',recordsPerso:'Records perso',
+    progression:'Progression',planOfDay:'PLAN DU JOUR',planIkorunDesc:'Plans d\u2019entraînement conçus par des coaches',
+    myPlanDesc:'Crée ton propre plan sur mesure',todayCap:'AUJOURD\u2019HUI',tapToStart:'Toucher pour démarrer ›',
+    goalCap:'OBJECTIF',courseDefault:'Course',goalTimeColon:'Objectif : {0} · ',raceOn:'Course le {0}',raceDay:'Jour de course',
+    currentVdot:'VDOT actuel',currentPhase:'Phase actuelle',thisWeek:'Cette semaine',weekOf:'Semaine {0}/{1}',
+    weeklyLoad:'Charge hebdo',regenConfirm:'Régénérer un nouveau plan ? Tes séances faites restent dans tes stats.',
+    regenBtn:'🔄 Régénérer / reconfigurer',planIkorunPill:'⚡ Plan IKORUN',myPlanPill:'📋 Plan personnel',
+    planIkorunTitle:'Plan IKORUN — moteur scientifique',
+    planIkorunDescLong:'Génère un plan périodisé sur-mesure (méthode norvégienne + VDOT/Daniels) basé sur ton VDOT ({0}), ton objectif, tes préférences et ta date de course. Le plan se réajuste automatiquement si tu rates une séance.',
+    configureGenerate:'⚙️ Configurer & générer',weekN:'Semaine {0}',deloadTag:' · 🟢 allégée',missedTag:'⚠ Manquée',restTag:'Repos',
+    newPersoPlan:'＋ Nouveau plan personnel',createCustomPlan:'Crée ton plan sur-mesure',
+    createCustomPlanDesc:'Ajoute tes propres séances, choisis les dates, types et allures. Tout se synchronise avec ton accueil et tes stats.',
+    sessionsCount:'{0} séances · {1} terminées',followedTag:'✅ Suivi',duplicate:'Dupliquer',share:'Partager',
+    planNamePrompt:'Nom du plan :',myPersoPlanDefault:'Mon plan perso',
+    you:'toi',dowShort:'L,M,M,J,V,S,D',greet:'Salut'
   },
   en:{
     nav_home:'Home',nav_sport:'Sport',nav_stats:'Stats',nav_outils:'Tools',nav_profil:'Profile',
@@ -568,7 +586,25 @@ const I18N={
     photo:'Photo',bio:'Biography',addPhoto:'Add a photo',changePhoto:'Change',removePhoto:'Remove',
     height:'Height',weight:'Weight',age:'Age',level:'Level',logout:'Log out',
     levelGuide:'How to choose my level?',xpProgress:'XP progress',coach:'Coach',
-    todayGoals:'Today\u2019s goals',weekLoad:'Weekly load',sessions:'sessions',form:'form'
+    todayGoals:'Today\u2019s goals',weekLoad:'Weekly load',sessions:'sessions',form:'form',
+    quipTime:'Chasing that {0}?',quipGoal:'Working toward: {0}?',quipDefault:'Ready to push your limits today?',
+    weekLoadTitle:'Weekly load',levelXp:'Level {0} — {1} XP',xpBeforeLevel:'+{0} XP before level {1}',
+    sessionsCap:'Sessions',tonnageKg:'Tonnage kg',formCap:'Form',nextSession:'NEXT SESSION',today:'Today',
+    restDay:'Rest day',noSessionToday:'No session planned today',recordsPerso:'Personal records',
+    progression:'Progress',planOfDay:'PLAN OF THE DAY',planIkorunDesc:'Training plans designed by coaches',
+    myPlanDesc:'Build your own custom plan',todayCap:'TODAY',tapToStart:'Tap to start ›',
+    goalCap:'GOAL',courseDefault:'Race',goalTimeColon:'Goal: {0} · ',raceOn:'Race on {0}',raceDay:'Race day',
+    currentVdot:'Current VDOT',currentPhase:'Current phase',thisWeek:'This week',weekOf:'Week {0}/{1}',
+    weeklyLoad:'Weekly load',regenConfirm:'Regenerate a new plan? Completed sessions stay in your stats.',
+    regenBtn:'🔄 Regenerate / reconfigure',planIkorunPill:'⚡ IKORUN Plan',myPlanPill:'📋 Custom plan',
+    planIkorunTitle:'IKORUN Plan — scientific engine',
+    planIkorunDescLong:'Generates a custom periodized plan (Norwegian method + VDOT/Daniels) based on your VDOT ({0}), goal, preferences and race date. The plan auto-adjusts if you miss a session.',
+    configureGenerate:'⚙️ Configure & generate',weekN:'Week {0}',deloadTag:' · 🟢 deload',missedTag:'⚠ Missed',restTag:'Rest',
+    newPersoPlan:'＋ New custom plan',createCustomPlan:'Build your custom plan',
+    createCustomPlanDesc:'Add your own sessions, pick dates, types and paces. Everything syncs with your home and stats.',
+    sessionsCount:'{0} sessions · {1} done',followedTag:'✅ Following',duplicate:'Duplicate',share:'Share',
+    planNamePrompt:'Plan name:',myPersoPlanDefault:'My custom plan',
+    you:'there',dowShort:'M,T,W,T,F,S,S',greet:'Hi'
   },
   ar:{
     nav_home:'الرئيسية',nav_sport:'رياضة',nav_stats:'إحصائيات',nav_outils:'أدوات',nav_profil:'الملف',
@@ -583,11 +619,31 @@ const I18N={
     photo:'الصورة',bio:'نبذة',addPhoto:'إضافة صورة',changePhoto:'تغيير',removePhoto:'حذف',
     height:'الطول',weight:'الوزن',age:'العمر',level:'المستوى',logout:'تسجيل الخروج',
     levelGuide:'كيف أختار مستواي؟',xpProgress:'تقدم النقاط',coach:'المدرب',
-    todayGoals:'أهداف اليوم',weekLoad:'حمل الأسبوع',sessions:'حصص',form:'اللياقة'
+    todayGoals:'أهداف اليوم',weekLoad:'حمل الأسبوع',sessions:'حصص',form:'اللياقة',
+    quipTime:'نلاحق {0}؟',quipGoal:'نتقدم نحو: {0}؟',quipDefault:'مستعد لتجاوز حدودك اليوم؟',
+    weekLoadTitle:'الحمل الأسبوعي',levelXp:'المستوى {0} — {1} نقطة خبرة',xpBeforeLevel:'+{0} نقطة قبل المستوى {1}',
+    sessionsCap:'الحصص',tonnageKg:'الحمولة كغ',formCap:'اللياقة',nextSession:'الحصة القادمة',today:'اليوم',
+    restDay:'يوم راحة',noSessionToday:'لا توجد حصة مخططة اليوم',recordsPerso:'الأرقام الشخصية',
+    progression:'التقدم',planOfDay:'خطة اليوم',planIkorunDesc:'خطط تدريبية صممها مدربون',
+    myPlanDesc:'أنشئ خطتك الخاصة',todayCap:'اليوم',tapToStart:'اضغط للبدء ›',
+    goalCap:'الهدف',courseDefault:'سباق',goalTimeColon:'الهدف: {0} · ',raceOn:'السباق يوم {0}',raceDay:'يوم السباق',
+    currentVdot:'VDOT الحالي',currentPhase:'المرحلة الحالية',thisWeek:'هذا الأسبوع',weekOf:'الأسبوع {0}/{1}',
+    weeklyLoad:'الحمل الأسبوعي',regenConfirm:'إعادة توليد خطة جديدة؟ الحصص المنجزة تبقى في إحصائياتك.',
+    regenBtn:'🔄 إعادة التوليد / الإعداد',planIkorunPill:'⚡ خطة IKORUN',myPlanPill:'📋 خطة شخصية',
+    planIkorunTitle:'خطة IKORUN — محرك علمي',
+    planIkorunDescLong:'يولّد خطة مرحلية مخصصة (الطريقة النرويجية + VDOT/Daniels) بناءً على VDOT الخاص بك ({0})، هدفك، تفضيلاتك وتاريخ سباقك. تتعدل الخطة تلقائيًا إذا فاتتك حصة.',
+    configureGenerate:'⚙️ إعداد وتوليد',weekN:'الأسبوع {0}',deloadTag:' · 🟢 مخففة',missedTag:'⚠ فائتة',restTag:'راحة',
+    newPersoPlan:'＋ خطة شخصية جديدة',createCustomPlan:'أنشئ خطتك المخصصة',
+    createCustomPlanDesc:'أضف حصصك الخاصة، اختر التواريخ والأنواع والوتيرة. كل شيء يتزامن مع صفحتك الرئيسية وإحصائياتك.',
+    sessionsCount:'{0} حصص · {1} منجزة',followedTag:'✅ متابَعة',duplicate:'نسخ',share:'مشاركة',
+    planNamePrompt:'اسم الخطة:',myPersoPlanDefault:'خطتي الشخصية',
+    you:'أنت',dowShort:'ن,ث,ر,خ,ج,س,ح',greet:'مرحبا'
   }
 };
 function curLang(){ return (P&&P.lang)||'fr'; }
 function t(key){ const l=curLang(); return (I18N[l]&&I18N[l][key])||I18N.fr[key]||key; }
+function tp(key,...args){ let s=t(key); args.forEach((a,i)=>{ s=s.split('{'+i+'}').join(a); }); return s; }
+function localeCode(){ return curLang()==='en'?'en-US':(curLang()==='ar'?'ar-DZ':'fr-FR'); }
 const LANGS=[['fr','🇫🇷','Français'],['en','🇬🇧','English'],['ar','🇩🇿','العربية']];
 function setLang(l){
   P.lang=l; saveAll();
@@ -3215,26 +3271,26 @@ function renderHome(){
   html+=homeStreakBadge();
 
   // SALUTATION — quip dynamique sur l'objectif si défini
-  const quip=P.objTime?'On chasse le '+P.objTime+' ?':(P.goal?'On avance vers : '+P.goal+' ?':'Prêt à dépasser tes limites aujourd\u2019hui ?');
-  html+='<div class="ik-greet"><h1>Salut '+(first||'toi')+'.<br>'+quip+'</h1></div>';
+  const quip=P.objTime?tp('quipTime',P.objTime):(P.goal?tp('quipGoal',P.goal):t('quipDefault'));
+  html+='<div class="ik-greet"><h1>'+t('greet')+' '+(first||t('you'))+'.<br>'+quip+'</h1></div>';
 
   // HERO FUSIONNÉ — charge hebdo (gros chiffre) + quip + niveau/XP + forme + sparkline
-  { const xpv=xp; const ws=weekStart(); const dowLabels=['L','M','M','J','V','S','D'];
+  { const xpv=xp; const ws=weekStart(); const dowLabels=t('dowShort').split(',');
     const week=[]; for(let i=0;i<7;i++){ const d=new Date(ws); d.setDate(ws.getDate()+i); const k=dateKey(d);
       week.push([...SESS,...MSESS].filter(s=>s.date===k).reduce((a,s)=>a+(s.km||0),0)); }
     const maxDay=Math.max(1,...week);
     html+='<div class="card ik-hero stag" style="animation-delay:.02s" onclick="nav(\'stats\')">'+
-      '<div class="ik-hero-lab">Charge hebdomadaire</div>'+
+      '<div class="ik-hero-lab">'+t('weekLoadTitle')+'</div>'+
       '<div class="ik-hero-big"><div class="n">'+kmW.toFixed(2).replace('.',',')+'</div><div class="u">km</div></div>'+
       '<div class="hero-quip">'+homeLoadQuip(kmW)+'</div>'+
       '<div class="ik-hero-mid">'+
         '<div class="ik-hero-ring-wrap">'+donutSVG([{v:xpv.pct,color:'var(--e)'},{v:100-xpv.pct,color:'rgba(255,255,255,.08)'}],52,6,'<div class="lvl-lab">NIV.</div><div class="lvl-n">'+XP.level+'</div>')+'</div>'+
-        '<div class="ik-hero-mid-txt"><div class="v">Niveau '+XP.level+' — '+XP.total+' XP</div><div class="l">+'+Math.max(0,xpv.span-xpv.inLvl)+' XP avant niveau '+(XP.level+1)+'</div></div>'+
+        '<div class="ik-hero-mid-txt"><div class="v">'+tp('levelXp',XP.level,XP.total)+'</div><div class="l">'+tp('xpBeforeLevel',Math.max(0,xpv.span-xpv.inLvl),XP.level+1)+'</div></div>'+
       '</div>'+
       '<div class="ik-hero-divider"></div>'+
       '<div class="ik-hero-row3">'+
-        '<div><div class="hstat-v">'+sessW+'<span>/'+sessTarget+'</span></div><div class="hstat-l">Séances</div></div>'+
-        donutSVG([{v:form,color:'var(--ok)'},{v:100-form,color:'rgba(255,255,255,.08)'}],50,6,'<div class="week-ring-v'+(form>=100?' v-sm':'')+'">'+form+'%</div><div class="week-ring-l">Forme</div>')+
+        '<div><div class="hstat-v">'+sessW+'<span>/'+sessTarget+'</span></div><div class="hstat-l">'+t('sessionsCap')+'</div></div>'+
+        donutSVG([{v:form,color:'var(--ok)'},{v:100-form,color:'rgba(255,255,255,.08)'}],50,6,'<div class="week-ring-v'+(form>=100?' v-sm':'')+'">'+form+'%</div><div class="week-ring-l">'+t('formCap')+'</div>')+
       '</div>'+
       '<div class="week-spark-wrap"><div class="spark" style="height:36px">'+week.map(v=>'<b style="height:'+Math.max(8,Math.round(v/maxDay*100))+'%"></b>').join('')+'</div>'+
       '<div class="week-spark-days">'+dowLabels.map(l=>'<span>'+l+'</span>').join('')+'</div></div>'+
@@ -3243,30 +3299,30 @@ function renderHome(){
 
   // STAT QUATRO — séances / VDOT / tonnage / forme
   html+='<div class="stat-quatro">'+
-    '<div class="card stat-card" onclick="nav(\'stats\')"><div class="stat-ic">'+ICN('run',14)+'</div><div class="stat-v">'+sessW+'/'+sessTarget+'</div><div class="stat-l">Séances</div></div>'+
+    '<div class="card stat-card" onclick="nav(\'stats\')"><div class="stat-ic">'+ICN('run',14)+'</div><div class="stat-v">'+sessW+'/'+sessTarget+'</div><div class="stat-l">'+t('sessionsCap')+'</div></div>'+
     '<div class="card stat-card" onclick="nav(\'outils\');openTool(\'vdot\')"><div class="stat-ic">'+ICN('lung',14)+'</div><div class="stat-v">'+(vdot||'—')+'</div><div class="stat-l">VDOT</div></div>'+
-    '<div class="card stat-card" onclick="nav(\'sport\');sportTab=\'muscu\'"><div class="stat-ic">'+ICN('chart',14)+'</div><div class="stat-v">'+tonnage.toLocaleString('fr-FR')+'</div><div class="stat-l">Tonnage kg</div></div>'+
-    '<div class="card stat-card" onclick="nav(\'stats\')"><div class="stat-ic">'+ICN('heart',14)+'</div><div class="stat-v">'+form+'%</div><div class="stat-l">Forme</div></div>'+
+    '<div class="card stat-card" onclick="nav(\'sport\');sportTab=\'muscu\'"><div class="stat-ic">'+ICN('chart',14)+'</div><div class="stat-v">'+tonnage.toLocaleString(localeCode())+'</div><div class="stat-l">'+t('tonnageKg')+'</div></div>'+
+    '<div class="card stat-card" onclick="nav(\'stats\')"><div class="stat-ic">'+ICN('heart',14)+'</div><div class="stat-v">'+form+'%</div><div class="stat-l">'+t('formCap')+'</div></div>'+
   '</div>';
 
   // CARTE PROCHAINE SÉANCE
-  html+='<div class="next-lab">PROCHAINE SÉANCE</div>';
+  html+='<div class="next-lab">'+t('nextSession')+'</div>';
   if(ps && ps.type!=='Repos'){
     html+='<div class="card next-card stag" style="animation-delay:.06s" onclick="'+(ps._source==='perso'?"curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')":'openRunSheet('+ps.id+')')+'">'+
       '<div class="next-body"><div class="next-title">'+ps.title+'</div>'+
       '<div class="next-meta">'+(ps.km?ps.km+' km · '+ps.pace+'/km'+(ps.duration?' · '+ps.duration+' min':''):'')+'</div>'+
-      '<div class="next-when">Aujourd\u2019hui</div></div>'+
+      '<div class="next-when">'+t('today')+'</div></div>'+
       '<div class="next-ic">'+ICN('run',20)+'</div></div>';
   } else {
     html+='<div class="card next-card stag" style="animation-delay:.06s" onclick="nav(\'sport\')">'+
-      '<div class="next-body"><div class="next-title">Jour de repos</div>'+
-      '<div class="next-meta">Aucune séance planifiée aujourd\u2019hui</div></div>'+
+      '<div class="next-body"><div class="next-title">'+t('restDay')+'</div>'+
+      '<div class="next-meta">'+t('noSessionToday')+'</div></div>'+
       '<div class="next-ic">'+ICN('moon',20)+'</div></div>';
   }
 
   // RECORDS PERSO
   if(P.pb3k||P.pb5k||P.pb10k||P.t3k||P.t5k||P.t10k){
-    html+='<div class="sec-lab">Records perso <span class="link" onclick="openRecords()" style="cursor:pointer">Voir tout ›</span></div>';
+    html+='<div class="sec-lab">'+t('recordsPerso')+' <span class="link" onclick="openRecords()" style="cursor:pointer">'+t('seeAll')+' ›</span></div>';
     html+=homePBRow();
   }
 
@@ -3274,16 +3330,16 @@ function renderHome(){
   html+=homeGoalCard();
 
   // PROGRESSION (badges)
-  html+='<div class="sec-lab">Progression</div>';
+  html+='<div class="sec-lab">'+t('progression')+'</div>';
   html+=homeBadgesRow();
 
   // PLAN DU JOUR
-  html+='<div class="plan-lab">PLAN DU JOUR</div>';
+  html+='<div class="plan-lab">'+t('planOfDay')+'</div>';
   html+='<div class="card plan-list stag" style="animation-delay:.08s">'+
     '<div class="plan-item" onclick="nav(\'sport\')"><div class="plan-ic">'+ICN('run',18)+'</div>'+
-      '<div class="plan-body"><div class="plan-title">Plan IKORUN</div><div class="plan-sub">Plans d\u2019entraînement conçus par des coaches</div></div>'+ICN('chevronR',18,'var(--dim)')+'</div>'+
+      '<div class="plan-body"><div class="plan-title">'+t('coachIA')+'</div><div class="plan-sub">'+t('planIkorunDesc')+'</div></div>'+ICN('chevronR',18,'var(--dim)')+'</div>'+
     '<div class="plan-item" onclick="runSub=\'perso\';sportTab=\'run\';nav(\'sport\')"><div class="plan-ic">'+ICN('edit',18)+'</div>'+
-      '<div class="plan-body"><div class="plan-title">Plan personnel</div><div class="plan-sub">Crée ton propre plan sur mesure</div></div>'+ICN('chevronR',18,'var(--dim)')+'</div>'+
+      '<div class="plan-body"><div class="plan-title">'+t('myPlan')+'</div><div class="plan-sub">'+t('myPlanDesc')+'</div></div>'+ICN('chevronR',18,'var(--dim)')+'</div>'+
   '</div>';
 
   $('#s-home').innerHTML=html;
@@ -3294,34 +3350,34 @@ function renderHomeSimple(ps,sessW,sessTarget,vdot,form,first){
     '<img src="'+LOGO_MARK_URI+'" alt="IKORUN">'+
     '<span>IKORUN</span></div></div>';
   h+=homeStreakBadge();
-  h+='<div class="ik-greet"><h1>Salut '+(first||'toi')+' 👋</h1></div>';
+  h+='<div class="ik-greet"><h1>'+t('greet')+' '+(first||t('you'))+' 👋</h1></div>';
 
-  h+='<div class="next-lab">AUJOURD\u2019HUI</div>';
+  h+='<div class="next-lab">'+t('todayCap')+'</div>';
   if(ps && ps.type!=='Repos'){
     h+='<div class="card next-card stag" onclick="'+(ps._source==='perso'?"curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')":'openRunSheet('+ps.id+')')+'">'+
       '<div class="next-body"><div class="next-title">'+ps.title+'</div>'+
       '<div class="next-meta">'+(ps.km?ps.km+' km · '+ps.pace+'/km'+(ps.duration?' · '+ps.duration+' min':''):'')+'</div>'+
-      '<div class="next-when">Toucher pour démarrer ›</div></div>'+
+      '<div class="next-when">'+t('tapToStart')+'</div></div>'+
       '<div class="next-ic">'+ICN('run',20)+'</div></div>';
   } else {
     h+='<div class="card next-card stag" onclick="nav(\'sport\')">'+
-      '<div class="next-body"><div class="next-title">Jour de repos</div>'+
-      '<div class="next-meta">Aucune séance planifiée aujourd\u2019hui</div></div>'+
+      '<div class="next-body"><div class="next-title">'+t('restDay')+'</div>'+
+      '<div class="next-meta">'+t('noSessionToday')+'</div></div>'+
       '<div class="next-ic">'+ICN('moon',20)+'</div></div>';
   }
 
   h+='<div class="stat-quatro" style="grid-template-columns:repeat(3,1fr);margin-top:14px">'+
-    '<div class="card stat-card" onclick="nav(\'sport\')"><div class="stat-ic">'+ICN('run',14)+'</div><div class="stat-v">'+sessW+'/'+sessTarget+'</div><div class="stat-l">Séances</div></div>'+
+    '<div class="card stat-card" onclick="nav(\'sport\')"><div class="stat-ic">'+ICN('run',14)+'</div><div class="stat-v">'+sessW+'/'+sessTarget+'</div><div class="stat-l">'+t('sessionsCap')+'</div></div>'+
     '<div class="card stat-card" onclick="nav(\'profil\')"><div class="stat-ic">'+ICN('lung',14)+'</div><div class="stat-v">'+(vdot||'—')+'</div><div class="stat-l">VDOT</div></div>'+
-    '<div class="card stat-card" onclick="nav(\'profil\')"><div class="stat-ic">'+ICN('heart',14)+'</div><div class="stat-v">'+form+'%</div><div class="stat-l">Forme</div></div>'+
+    '<div class="card stat-card" onclick="nav(\'profil\')"><div class="stat-ic">'+ICN('heart',14)+'</div><div class="stat-v">'+form+'%</div><div class="stat-l">'+t('formCap')+'</div></div>'+
   '</div>';
 
   if(P.objRace||P.goal||P.compDate){
-    h+='<div class="sec-lab" style="margin-top:16px">Objectif</div>'+homeGoalCard();
+    h+='<div class="sec-lab" style="margin-top:16px">'+t('objective')+'</div>'+homeGoalCard();
   }
   return h;
 }
-function fmtDate(s){ const d=new Date(s); return d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}); }
+function fmtDate(s){ const d=new Date(s); return d.toLocaleDateString(localeCode(),{weekday:'short',day:'numeric',month:'short'}); }
 
 /* ---------- SPORT ---------- */
 let sportTab='run', runSub='ia';
@@ -3340,7 +3396,7 @@ function planHeroHTML(){
   const daysLeft=Math.max(0,Math.round((comp-today)/86400000));
 
   const byDow={}; weekSessions.forEach(s=>{ byDow[new Date(s.date+'T00:00:00').getDay()]=s; });
-  const dowOrder=[1,2,3,4,5,6,0], dowLab=['L','M','M','J','V','S','D'];
+  const dowOrder=[1,2,3,4,5,6,0], dowLab=t('dowShort').split(',');
   let dots='';
   dowOrder.forEach((dow,i)=>{
     const s=byDow[dow];
@@ -3360,27 +3416,27 @@ function planHeroHTML(){
   const vdotDelta=Math.round((curVdot-PLAN.vdot)*10)/10;
 
   let h='<div class="card plan-hero">';
-  h+='<div class="lab">OBJECTIF</div><div class="plan-race">'+(P.objRace||'Course')+'</div>';
-  h+='<div class="plan-sub">'+(P.objTime?'Objectif : '+P.objTime+' · ':'')+'Course le '+fmtDate(P.compDate)+'</div>';
+  h+='<div class="lab">'+t('goalCap')+'</div><div class="plan-race">'+(P.objRace||t('courseDefault'))+'</div>';
+  h+='<div class="plan-sub">'+(P.objTime?tp('goalTimeColon',P.objTime):'')+tp('raceOn',fmtDate(P.compDate))+'</div>';
   h+='<div class="row" style="gap:10px;margin-top:16px">';
-  h+='<div class="minicard"><div class="lab">Jour de course</div><div class="v" style="color:var(--e)">J-'+daysLeft+'</div></div>';
-  h+='<div class="minicard"><div class="lab">VDOT actuel</div><div class="v">'+curVdot+(vdotDelta?' <span class="'+(vdotDelta>0?'delta-up':'delta-down')+'">'+(vdotDelta>0?'+':'')+vdotDelta+'</span>':'')+'</div></div>';
+  h+='<div class="minicard"><div class="lab">'+t('raceDay')+'</div><div class="v" style="color:var(--e)">J-'+daysLeft+'</div></div>';
+  h+='<div class="minicard"><div class="lab">'+t('currentVdot')+'</div><div class="v">'+curVdot+(vdotDelta?' <span class="'+(vdotDelta>0?'delta-up':'delta-down')+'">'+(vdotDelta>0?'+':'')+vdotDelta+'</span>':'')+'</div></div>';
   h+='</div>';
-  h+='<div style="margin-top:16px"><div class="lab">Phase actuelle</div><div class="man" style="font-weight:700;font-size:16px;margin:2px 0 8px">'+(weekSessions[0]?.phase||'')+'</div><div class="pbar"><div style="width:'+phaseProgress+'%"></div></div></div>';
-  h+='<div style="margin-top:16px"><div class="row" style="margin-bottom:8px"><div class="lab">Cette semaine</div><div class="lab">Semaine '+curWeekNum+'/'+PLAN.weeks+'</div></div><div class="dotrow">'+dots+'</div></div>';
+  h+='<div style="margin-top:16px"><div class="lab">'+t('currentPhase')+'</div><div class="man" style="font-weight:700;font-size:16px;margin:2px 0 8px">'+(weekSessions[0]?.phase||'')+'</div><div class="pbar"><div style="width:'+phaseProgress+'%"></div></div></div>';
+  h+='<div style="margin-top:16px"><div class="row" style="margin-bottom:8px"><div class="lab">'+t('thisWeek')+'</div><div class="lab">'+tp('weekOf',curWeekNum,PLAN.weeks)+'</div></div><div class="dotrow">'+dots+'</div></div>';
   h+='<div class="row" style="gap:10px;margin-top:16px">';
-  h+='<div class="minicard"><div class="lab">Charge hebdo</div><div class="v">'+curKm+' km'+(kmDelta!==null?' <span class="'+(kmDelta>=0?'delta-up':'delta-down')+'">'+(kmDelta>=0?'+':'')+kmDelta+'%</span>':'')+'</div></div>';
-  h+='<div class="minicard"><div class="lab">Séances</div><div class="v">'+done+'/'+PLAN.sessions.length+'</div></div>';
+  h+='<div class="minicard"><div class="lab">'+t('weeklyLoad')+'</div><div class="v">'+curKm+' km'+(kmDelta!==null?' <span class="'+(kmDelta>=0?'delta-up':'delta-down')+'">'+(kmDelta>=0?'+':'')+kmDelta+'%</span>':'')+'</div></div>';
+  h+='<div class="minicard"><div class="lab">'+t('sessionsCap')+'</div><div class="v">'+done+'/'+PLAN.sessions.length+'</div></div>';
   h+='</div>';
-  h+='<button class="btn ghost sm" style="margin-top:16px" onclick="if(confirm(\'Régénérer un nouveau plan ? Tes séances faites restent dans tes stats.\')){PLAN=null;openPlanSetup()}">🔄 Régénérer / reconfigurer</button>';
+  h+='<button class="btn ghost sm" style="margin-top:16px" onclick="if(confirm(\''+t('regenConfirm')+'\')){PLAN=null;openPlanSetup()}">'+t('regenBtn')+'</button>';
   h+='</div>';
   return h;
 }
 function renderRunning(){
-  let h='<div class="pills" style="margin-bottom:14px"><div class="pill '+(runSub==='ia'?'on':'')+'" onclick="runSub=\'ia\';renderSport()">⚡ Plan IKORUN</div><div class="pill '+(runSub==='perso'?'on':'')+'" onclick="runSub=\'perso\';renderSport()">📋 Plan personnel</div></div>';
+  let h='<div class="pills" style="margin-bottom:14px"><div class="pill '+(runSub==='ia'?'on':'')+'" onclick="runSub=\'ia\';renderSport()">'+t('planIkorunPill')+'</div><div class="pill '+(runSub==='perso'?'on':'')+'" onclick="runSub=\'perso\';renderSport()">'+t('myPlanPill')+'</div></div>';
   if(runSub==='ia'){
     if(!PLAN){
-      h+='<div class="card"><div class="empty"><div class="em-ic">⚡</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">Plan IKORUN — moteur scientifique</div><div style="font-size:13px;margin-bottom:16px">Génère un plan périodisé sur-mesure (méthode norvégienne + VDOT/Daniels) basé sur ton VDOT ('+(getUserVDOT()||'?')+'), ton objectif, tes préférences et ta date de course. Le plan se réajuste automatiquement si tu rates une séance.</div><button class="btn" onclick="openPlanSetup()">⚙️ Configurer & générer</button></div></div>';
+      h+='<div class="card"><div class="empty"><div class="em-ic">⚡</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">'+t('planIkorunTitle')+'</div><div style="font-size:13px;margin-bottom:16px">'+tp('planIkorunDescLong',(getUserVDOT()||'?'))+'</div><button class="btn" onclick="openPlanSetup()">'+t('configureGenerate')+'</button></div></div>';
     } else {
       h+=planHeroHTML();
       // Seule la semaine en cours est affichée sur la page ; le reste du plan
@@ -3407,10 +3463,10 @@ function renderPlanRows(sessions,tk){
   let h='', curPhase=null, curWeek=null;
   sessions.forEach(s=>{
     if(s.phase!==curPhase){ curPhase=s.phase; h+='<div class="phase-head" style="color:var('+(s.color||'--e')+')">▸ '+s.phase+'</div>'; }
-    if(s.week!==curWeek){ curWeek=s.week; h+='<div class="lab" style="margin:8px 0 6px">Semaine '+s.week+(s.deload?' · 🟢 allégée':'')+'</div>'; }
+    if(s.week!==curWeek){ curWeek=s.week; h+='<div class="lab" style="margin:8px 0 6px">'+tp('weekN',s.week)+(s.deload?t('deloadTag'):'')+'</div>'; }
     const isToday=s.date===tk;
-    const qb=s.missed?'<div class="qbadge" style="background:rgba(255,92,108,.16);color:var(--bad)">⚠ Manquée</div>'
-      :(s.km===0?'<div class="qbadge rest">Repos</div>':'<div class="chrome-chip" style="color:'+baseTypeColor(s.baseType)+'">'+s.type+'</div>');
+    const qb=s.missed?'<div class="qbadge" style="background:rgba(255,92,108,.16);color:var(--bad)">'+t('missedTag')+'</div>'
+      :(s.km===0?'<div class="qbadge rest">'+t('restTag')+'</div>':'<div class="chrome-chip" style="color:'+baseTypeColor(s.baseType)+'">'+s.type+'</div>');
     const ssum=seriesSummary(s);
     const line2=fmtDate(s.date)+(s.km?' · '+s.km+' km':' · Repos')+(s.km&&!ssum?' · '+s.pace+'/km':'');
     h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'" onclick="openRunSheet('+s.id+')" style="'+(s.missed?'border-color:rgba(255,92,108,.35)':'')+'"><div class="row"><div><div style="font-weight:700;font-size:14px">'+s.title+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+line2+'</div>'+(ssum?'<div style="color:var(--e);font-size:12px;font-weight:700;margin-top:3px">⏱ '+ssum+'</div>':'')+'</div>'+qb+'</div></div>';
@@ -3427,19 +3483,19 @@ function openFullPlan(){
 let curPerso=null;
 function renderPersoList(){
   const persoPlans=CUSTOM.filter(p=>p.kind==='run');
-  let h='<button class="btn" style="margin-bottom:14px" onclick="addPersoPlan()">＋ Nouveau plan personnel</button>';
-  if(!persoPlans.length){ h+='<div class="card"><div class="empty"><div class="em-ic">📋</div><div style="font-weight:700;color:var(--snow);margin-bottom:6px">Crée ton plan sur-mesure</div><div style="font-size:13px">Ajoute tes propres séances, choisis les dates, types et allures. Tout se synchronise avec ton accueil et tes stats.</div></div></div>'; }
+  let h='<button class="btn" style="margin-bottom:14px" onclick="addPersoPlan()">'+t('newPersoPlan')+'</button>';
+  if(!persoPlans.length){ h+='<div class="card"><div class="empty"><div class="em-ic">📋</div><div style="font-weight:700;color:var(--snow);margin-bottom:6px">'+t('createCustomPlan')+'</div><div style="font-size:13px">'+t('createCustomPlanDesc')+'</div></div></div>'; }
   else persoPlans.forEach((p)=>{
     const done=p.sessions.filter(s=>s.done).length;
-    const followBadge=P.followPerso===p.id?'<span class="chrome-chip" style="color:var(--ok);margin-left:6px">✅ Suivi</span>':'';
-    h+='<div class="card" style="padding:13px 14px"><div class="row" onclick="openPerso(\''+p.id+'\')" style="cursor:pointer"><div><div style="font-weight:700;font-size:14.5px">'+p.name+followBadge+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+p.sessions.length+' séances · '+done+' terminées</div></div><span style="color:var(--e);font-size:18px">›</span></div>'+
+    const followBadge=P.followPerso===p.id?'<span class="chrome-chip" style="color:var(--ok);margin-left:6px">'+t('followedTag')+'</span>':'';
+    h+='<div class="card" style="padding:13px 14px"><div class="row" onclick="openPerso(\''+p.id+'\')" style="cursor:pointer"><div><div style="font-weight:700;font-size:14.5px">'+p.name+followBadge+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+tp('sessionsCount',p.sessions.length,done)+'</div></div><span style="color:var(--e);font-size:18px">›</span></div>'+
       '<div class="row" style="margin-top:9px;gap:8px"><div class="pbar" style="flex:1;margin-top:0"><div style="width:'+(p.sessions.length?done/p.sessions.length*100:0)+'%"></div></div>'+
-      '<span class="mini-ic" onclick="dupPerso(\''+p.id+'\')" title="Dupliquer">⎘</span><span class="mini-ic" onclick="sharePlan(\''+p.name+'\')" title="Partager">↗</span><span class="mini-ic" style="color:var(--bad)" onclick="delPerso(\''+p.id+'\')" title="Supprimer">🗑</span></div></div>';
+      '<span class="mini-ic" onclick="dupPerso(\''+p.id+'\')" title="'+t('duplicate')+'">⎘</span><span class="mini-ic" onclick="sharePlan(\''+p.name+'\')" title="'+t('share')+'">↗</span><span class="mini-ic" style="color:var(--bad)" onclick="delPerso(\''+p.id+'\')" title="'+t('delete')+'">🗑</span></div></div>';
   });
   return h;
 }
 function addPersoPlan(){
-  const n=prompt('Nom du plan :','Mon plan perso'); if(!n) return;
+  const n=prompt(t('planNamePrompt'),t('myPersoPlanDefault')); if(!n) return;
   const id='P'+Date.now();
   CUSTOM.push({id,kind:'run',name:n,sessions:[]}); saveAll(); openPerso(id);
 }
