@@ -1503,6 +1503,13 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
       <p class="login-sub">Connecte-toi pour sauvegarder ta progression, tes séances et tes records — synchronisés sur tous tes appareils.</p>
       <button class="gbtn" onclick="signInWithGoogle()"><span class="gicon"><svg viewBox="0 0 48 48" width="20" height="20"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.6 30.2 0 24 0 14.6 0 6.4 5.4 2.5 13.3l7.8 6C12.2 13.5 17.6 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.5 3-2.2 5.5-4.7 7.2l7.3 5.7c4.3-4 6.9-9.9 6.9-17.4z"/><path fill="#FBBC05" d="M10.3 28.3c-.5-1.4-.8-2.9-.8-4.3s.3-3 .8-4.3l-7.8-6C.9 16.9 0 20.3 0 24s.9 7.1 2.5 10.3l7.8-6z"/><path fill="#34A853" d="M24 48c6.2 0 11.5-2 15.3-5.5l-7.3-5.7c-2 1.4-4.7 2.3-8 2.3-6.4 0-11.8-4-13.7-9.8l-7.8 6C6.4 42.6 14.6 48 24 48z"/></svg></span>Continuer avec Google</button>
     </div>
+    <div id="inappWarn" style="display:none;background:rgba(255,80,80,.1);border:1px solid rgba(255,80,80,.3);border-radius:14px;padding:16px;margin-top:14px;text-align:center;">
+      <div style="font-size:26px;margin-bottom:8px;">⚠️</div>
+      <div style="font-size:13px;color:#fff;font-weight:600;margin-bottom:6px;">Navigateur intégré détecté</div>
+      <div style="font-size:12.5px;color:rgba(244,246,249,.7);line-height:1.5;margin-bottom:14px;">Google bloque la connexion depuis Messenger, Instagram ou TikTok. Touche le bouton ci-dessous pour ouvrir IKORUN dans ton navigateur (Safari / Chrome).</div>
+      <button class="gbtn dark" style="margin-bottom:8px;" onclick="openInRealBrowser()">🌐 Ouvrir dans le navigateur</button>
+      <div style="font-size:11px;color:rgba(244,246,249,.5);">Ou : menu ⋮ / ••• en haut à droite → « Ouvrir dans le navigateur »</div>
+    </div>
     <div class="login-legal">En continuant, tu acceptes nos conditions.<br>Tes données sont synchronisées de façon sécurisée via ton compte.</div>
   </div>
 </div>
@@ -1526,17 +1533,18 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
     </div>
     <div class="field"><label>Date de naissance *</label><input class="inp" id="ob_bday" type="date"></div>
     <div class="field"><label>Sexe *</label><select class="inp" id="ob_sex"><option value="">Sélectionner</option><option>Homme</option><option>Femme</option></select></div>
-    <div class="field"><label>Coach — optionnel</label><input class="inp" id="ob_coach" placeholder="Nom de ton coach"></div>
+    <div class="field"><label>Ville</label><input class="inp" id="ob_city" placeholder="Ta ville"></div>
   </div>
   <div class="ob-step" data-step="3">
     <h1>Ton niveau</h1><p class="intro">Sois honnête, le plan s'adapte.</p>
-    <div class="note">💡 <span>Le <b>niveau</b> ajuste l'intensité de ton plan : volume, allures et charge d'entraînement en découlent automatiquement. Pas sûr ? Touche <b>« Comment choisir ? »</b>.</span></div>
+    <div class="note">💡 <span>Le <b>niveau</b> ajuste l'intensité de ton plan. Pas sûr ? Touche <b>« Comment choisir ? »</b>. Le <b>kilométrage hebdo</b> est ce que tu cours actuellement par semaine.</span></div>
     <div class="field"><label style="display:flex;align-items:center;justify-content:space-between">Niveau *<span style="color:var(--e);font-size:12px;font-weight:600;cursor:pointer" onclick="openLevelGuide()">ℹ️ Comment choisir ?</span></label>
       <div class="pills" id="ob_level">
         <div class="pill" data-v="Débutant">Débutant</div><div class="pill" data-v="Intermédiaire">Intermédiaire</div>
         <div class="pill" data-v="Confirmé">Confirmé</div><div class="pill" data-v="Très avancé">Très avancé</div><div class="pill" data-v="Élite">Élite</div>
       </div>
     </div>
+    <div class="field"><label>Kilométrage hebdo *</label><div class="inp pkfield" id="ob_km" data-v="" onclick="pickInt('Km / semaine',0,200,40,'km',v=>setObPk('ob_km',v,v+' km/sem'),5)">Choisir ton volume</div></div>
   </div>
   <div class="ob-step" data-step="4">
     <h1>Ton objectif</h1><p class="intro">Ce qui te fait courir.</p>
@@ -1548,6 +1556,12 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
     <div class="note">💡 <span>Tes chronos calculent ton <b>VDOT</b> (ta « cylindrée ») et toutes tes <b>allures d'entraînement</b>. Donne au moins un chrono récent et fiable. Choisis la distance puis le temps avec les roues.</span></div>
     <div id="ob_perfs"></div>
     <button class="addperf" id="ob_addperf" onclick="addPerfRow()">＋ Ajouter une autre performance</button>
+  </div>
+  <div class="ob-step" data-step="6">
+    <h1>Ta disponibilité</h1><p class="intro">Combien de temps par séance ?</p>
+    <div class="note">💡 <span>Tes jours d'entraînement seront choisis au moment de générer ton plan, pour rester toujours à jour selon ton emploi du temps.</span></div>
+    <div class="field"><label>Temps par séance *</label><div class="inp pkfield" id="ob_time" data-v="" onclick="pickInt('Minutes / séance',20,180,60,'min',v=>setObPk('ob_time',v,v+' min'),5)">Choisir une durée</div></div>
+    <div class="field"><label>Coach — optionnel</label><input class="inp" id="ob_coach" placeholder="Nom de ton coach"></div>
   </div>
   <div class="ob-foot">
     <button class="btn ghost" id="obPrev" style="flex:0 0 90px;">Retour</button>

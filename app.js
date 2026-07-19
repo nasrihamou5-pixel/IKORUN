@@ -63,8 +63,50 @@ async function cloudPush(key, value){
   }catch(e){ console.error('cloud push error', e); }
 }
 
+/* ============ DÉTECTION NAVIGATEUR INTÉGRÉ (in-app browser) ============
+   Google bloque l'OAuth (erreur 403 disallowed_useragent) quand la page
+   s'ouvre dans le webview d'une appli tierce (Messenger, Instagram, FB,
+   TikTok, LinkedIn...). Impossible à contourner côté code : il faut faire
+   sortir l'utilisateur vers Safari/Chrome. */
+function isInAppBrowser(){
+  const ua = navigator.userAgent || navigator.vendor || window.opera || '';
+  return /FBAN|FBAV|FB_IAB|Instagram|Line\/|MicroMessenger|TikTok|Snapchat|Twitter|LinkedInApp|\bGSA\/|WhatsApp/i.test(ua)
+    || (/wv\)/i.test(ua)) // webview Android générique
+    || (window.navigator.standalone === false && /iPhone|iPad/i.test(ua) && !/Safari/i.test(ua) && !/CriOS/i.test(ua)); // fallback iOS webview sans "Safari" ni Chrome
+}
+function openInRealBrowser(){
+  const url = window.location.href;
+  // Android : tente de forcer l'ouverture via un intent Chrome (marche depuis
+  // la plupart des webviews Android type Messenger/Instagram)
+  if(/Android/i.test(navigator.userAgent)){
+    const stripped = url.replace(/^https?:\/\//,'');
+    window.location.href = 'intent://'+stripped+'#Intent;scheme=https;package=com.android.chrome;end';
+    setTimeout(()=>{ window.location.href = url; }, 800);
+  } else {
+    // iOS : pas d'intent équivalent fiable, on copie le lien + on guide vers le menu "•••"
+    if(navigator.clipboard){ navigator.clipboard.writeText(url).catch(()=>{}); }
+    toast('Lien copié — ouvre Safari et colle-le, ou touche ••• en haut à droite');
+  }
+}
+(function checkInAppBrowser(){
+  if(isInAppBrowser()){
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const warn = document.getElementById('inappWarn');
+      const main = document.getElementById('loginMain');
+      if(warn) warn.style.display='block';
+      if(main) main.querySelector('.gbtn')?.setAttribute('style','opacity:.35;pointer-events:none;');
+    });
+  }
+})();
+
 let _googleAuthing=false;
 async function signInWithGoogle(){
+  if(isInAppBrowser()){
+    toast('Ouvre IKORUN dans Safari/Chrome pour te connecter');
+    const warn = document.getElementById('inappWarn');
+    if(warn) warn.style.display='block';
+    return;
+  }
   if(!window.supabaseClient) return;
   if(_googleAuthing) return; // évite les doubles-taps qui donnent l'impression que rien ne se passe
   _googleAuthing=true;
@@ -101,9 +143,6 @@ function addAnotherAccount(){
   else location.reload();
 }
 
-function clearLocalCache(){
-  Object.keys(localStorage).filter(k=>k.startsWith('vvv_')).forEach(k=>localStorage.removeItem(k));
-}
 async function deleteAccountCompletely(){
   if(!confirm('⚠️ Cette action va supprimer TOUTES tes données (séances, records, XP, profil...) de façon définitive, sur le cloud et sur cet appareil. Continuer ?')) return;
   if(!confirm('Dernière confirmation : es-tu vraiment sûr(e) ? Cette action est irréversible.')) return;
@@ -115,8 +154,7 @@ async function deleteAccountCompletely(){
       await window.supabaseClient.from('public_profiles').delete().eq('user_id', window.currentUserId);
     }
   }catch(e){ console.error('delete account data error', e); }
-  clearLocalCache();
-  localStorage.removeItem('ikorun_last_uid');
+  Object.keys(localStorage).filter(k=>k.startsWith('vvv_')).forEach(k=>localStorage.removeItem(k));
   if(window.supabaseClient) await window.supabaseClient.auth.signOut();
   location.reload();
 }
@@ -210,30 +248,10 @@ function wireUsernameField(inputId, statusId, onResult){
   inp.addEventListener('input',()=>{
     clearTimeout(deb);
     deb=setTimeout(async ()=>{
-      const val=inp.value;
-      const ok=await checkUsernameLive(val, st, inp);
-      // Si le champ a changé pendant la vérification (une saisie plus récente
-      // a démarré son propre check), ce résultat est obsolète : on ne doit
-      // surtout pas laisser sa réponse écraser l'état d'un check plus récent
-      // — c'est exactement ça qui causait le bug « ✓ Disponible » affiché
-      // alors que le pseudo est en fait refusé au clic sur Continuer.
-      if(inp.value!==val) return;
+      const ok=await checkUsernameLive(inp.value, st, inp);
       if(onResult) onResult(ok);
     },400);
   });
-}
-// Vérifie la disponibilité d'un pseudo sans toucher au DOM (utilisé pour
-// tester silencieusement plusieurs candidats lors de la suggestion auto).
-async function isUsernameAvailable(v){
-  if(!usernameFormatOk(v)) return false;
-  if(!window.supabaseClient) return true;
-  try{
-    const { data, error } = await window.supabaseClient.rpc('username_available',{
-      p_username: v, p_uid: window.currentUserId||null
-    });
-    if(error) return false;
-    return !!data;
-  }catch(e){ return false; }
 }
 // Réserve/renomme le pseudo côté serveur de façon atomique (source de vérité anti-doublon)
 async function claimUsername(username){
@@ -1629,7 +1647,6 @@ async function startApp(){
 
   const { data:{ session } } = await window.supabaseClient.auth.getSession();
   if(session && session.user){
-    guardAgainstStaleLocalAccount(session.user.id);
     window.currentUserId = session.user.id;
     window.currentUserEmail = session.user.email;
     await cloudPullAll(session.user.id);
@@ -1643,7 +1660,6 @@ async function startApp(){
   }
   window.supabaseClient.auth.onAuthStateChange(async (event, session) => {
     if(event === 'SIGNED_IN' && session){
-      guardAgainstStaleLocalAccount(session.user.id);
       window.currentUserId = session.user.id;
       window.currentUserEmail = session.user.email;
       await cloudPullAll(session.user.id);
@@ -1658,21 +1674,6 @@ async function startApp(){
       location.reload();
     }
   });
-}
-// PROBLÈME CORRIGÉ : le cache local (localStorage 'vvv_*') n'était jamais lié à un
-// compte précis. Si un compte A s'était déjà connecté sur cet appareil (même
-// après déconnexion, puisque le cache n'est volontairement pas vidé au logout),
-// et qu'un compte B tout neuf se connectait ensuite, cloudPullAll(B) ne trouvait
-// aucune ligne côté cloud (compte neuf) et ne touchait donc jamais au cache local
-// → reloadState() rechargeait alors les données de A en les faisant passer pour
-// celles de B. Ici, on compare l'utilisateur qui se connecte au dernier utilisateur
-// connu sur cet appareil ; s'il diffère, on vide le cache AVANT tout chargement.
-function guardAgainstStaleLocalAccount(newUid){
-  try{
-    const lastUid = localStorage.getItem('ikorun_last_uid');
-    if(lastUid && lastUid!==newUid){ clearLocalCache(); }
-    localStorage.setItem('ikorun_last_uid', newUid);
-  }catch(e){ console.error('guardAgainstStaleLocalAccount error', e); }
 }
 
 function logout(){ signOutUser(); }
@@ -1709,7 +1710,7 @@ function maybeResumeLive(){
 }
 
 /* ---------- ONBOARDING ---------- */
-let obStep=1; const OB_MAX=5;
+let obStep=1; const OB_MAX=6;
 let obEasy=false; // true si >26 ans → mode simplifié activé auto (n'affecte plus la navigation de l'onboarding)
 function startOnboarding(){
   obEasy=false;
@@ -1728,27 +1729,19 @@ function startOnboarding(){
 }
 let obUsernameOk=false;
 let obUsernameAuto=true; // tant que vrai, le pseudo se génère automatiquement à partir du prénom
-let _obAutoSeq=0;
 function wireAutoUsername(){
   const nameInp=$('#ob_name'); if(!nameInp) return;
   let deb=null;
   nameInp.oninput=()=>{
     if(!obUsernameAuto) return;
     clearTimeout(deb);
-    deb=setTimeout(async ()=>{
+    deb=setTimeout(()=>{
       const name=nameInp.value.trim();
       if(!name) return;
-      const mySeq=++_obAutoSeq;
-      const uInp=$('#ob_username'), st=$('#ob_username_status'); if(!uInp) return;
-      if(st){ st.textContent='Vérification…'; st.className='uname-status checking'; }
-      const u=await suggestUsername(name);
-      // Le prénom (ou le pseudo) a pu changer pendant la recherche : on ignore
-      // ce résultat s'il n'est plus le plus récent, pour éviter qu'une
-      // réponse tardive écrase l'état d'une vérification plus fraîche.
-      if(mySeq!==_obAutoSeq || !obUsernameAuto) return;
+      const u=suggestUsername(name);
+      const uInp=$('#ob_username'); if(!uInp) return;
       uInp.value=u;
-      const ok=await checkUsernameLive(u,st,uInp);
-      if(uInp.value===u && mySeq===_obAutoSeq) obUsernameOk=ok;
+      checkUsernameLive(u,$('#ob_username_status'),uInp).then(ok=>{ obUsernameOk=ok; });
     },350);
   };
   const uInp=$('#ob_username');
@@ -1760,21 +1753,13 @@ function slugifyUsername(name){
   if(s.length>14) s=s.slice(0,14);
   return s;
 }
-// Propose le pseudo le plus simple et le plus proche du prénom donné à
-// l'inscription : d'abord le nom tel quel, puis seulement s'il est déjà
-// pris, de petits suffixes incrémentaux (2, 3, 4…) — jamais un nombre
-// aléatoire du premier coup, pour éviter de proposer "hamou_896" quand
-// "hamou" est disponible.
-async function suggestUsername(name){
+function suggestUsername(name){
   let base=slugifyUsername(name);
-  if(base.length<3) base=(base+'runner').slice(0,14);
-  if(await isUsernameAvailable(base)) return base;
-  for(let i=2;i<=99;i++){
-    const c=(base+i).slice(0,20);
-    if(await isUsernameAvailable(c)) return c;
-  }
-  // Repli très improbable si tout est pris : suffixe aléatoire
-  return (base+Math.floor(Math.random()*9000+1000)).slice(0,20);
+  if(base.length<2) base='runner';
+  const suffix=String(Math.floor(Math.random()*900)+100);
+  let u=(base+'_'+suffix).slice(0,20);
+  if(u.length<3) u=(u+'000').slice(0,3);
+  return u;
 }
 /* ===== Étape Performances : lignes Distance | Temps ===== */
 let OB_PERFS=[{dist:null,meters:null,timeS:null}];
@@ -1847,23 +1832,11 @@ function obValidate(n){
     obEasy = ageYears>26;
     if(obEasy) toast('Profil rapide activé — mode simplifié activé ✓');
   }
-  if(n===3){ if(!$('#ob_level').querySelector('.pill.on')){ toast('Choisis un niveau'); return false; } }
+  if(n===3){ if(!$('#ob_level').querySelector('.pill.on')){ toast('Choisis un niveau'); return false; } if(!obv('ob_km')){ toast('Choisis ton volume'); return false; } }
   if(n===4){ if(!$('#ob_goal').value.trim()||!$('#ob_compdate').value){ toast('Objectif et date requis'); return false; } }
   if(n===5){ const valid=OB_PERFS.filter(p=>p.meters&&p.timeS); if(!valid.length){ toast('Ajoute au moins une performance'); return false; } }
+  if(n===6){ if(!obv('ob_time')){ toast('Temps par séance requis'); return false; } }
   return true;
-}
-// Le kilométrage hebdo cible et le temps par séance ne sont plus demandés à
-// l'utilisateur : c'est le moteur de l'app qui les déduit du niveau choisi
-// (affinable ensuite automatiquement par l'algorithme adaptatif basé sur le VDOT).
-function autoTargetsForLevel(level){
-  const map={
-    'Débutant':      {km:20, time:40},
-    'Intermédiaire': {km:35, time:50},
-    'Confirmé':      {km:55, time:65},
-    'Très avancé':   {km:75, time:80},
-    'Élite':         {km:100,time:95}
-  };
-  return map[level]||map['Intermédiaire'];
 }
 function finishOnboarding(){
   // Les jours d'entraînement ne sont plus demandés ici : ils sont choisis
@@ -1872,15 +1845,13 @@ function finishOnboarding(){
   const valid=OB_PERFS.filter(p=>p.meters&&p.timeS!=null);
   RECORDS=valid.map(p=>({dist:p.dist,meters:p.meters,time:fmtTime(p.timeS),date:todayKey()}));
   const find=m=>{ const r=valid.find(x=>x.meters===m); return r?fmtTime(r.timeS):''; };
-  const level=$('#ob_level').querySelector('.pill.on').dataset.v;
-  const auto=autoTargetsForLevel(level);
   P={
     setupDone:true, joinedAt:Date.now(),
-    name:$('#ob_name').value.trim(), username:$('#ob_username').value.trim(), bday:$('#ob_bday').value, sex:$('#ob_sex').value, city:'',
-    level:level, kmWeek:auto.km,
+    name:$('#ob_name').value.trim(), username:$('#ob_username').value.trim(), bday:$('#ob_bday').value, sex:$('#ob_sex').value, city:$('#ob_city').value.trim(),
+    level:$('#ob_level').querySelector('.pill.on').dataset.v, kmWeek:+obv('ob_km')||40,
     goal:$('#ob_goal').value.trim(), compDate:$('#ob_compdate').value,
     t5k:find(5000), t3k:find(3000), t1500:find(1500), t10k:find(10000),
-    sessionTime:auto.time, coach:$('#ob_coach').value.trim(),
+    sessionTime:+obv('ob_time')||60, coach:$('#ob_coach').value.trim(),
     theme:'blue', pb5k:find(5000), pb1500:find(1500), pb10k:find(10000),
     easyMode:obEasy // >26 ans → mode simplifié activé auto (modifiable ensuite dans Profil > Mode simplifié)
   };
