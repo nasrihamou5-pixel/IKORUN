@@ -1261,7 +1261,7 @@ function burst(){
 }
 
 /* ---------- OVERLAYS ---------- */
-let _ovZTop=10000;
+let _ovZTop=12000;
 function openOv(id){ const el=$('#'+id); _ovZTop++; el.style.zIndex=_ovZTop; el.classList.add('on'); }
 function closeOv(id){ const el=$('#'+id); el.classList.remove('on'); el.style.zIndex=''; if(id==='ovProg') _pfSheet=null; if(id==='ovLib'&&typeof _exDemoTimer!=='undefined'){ clearInterval(_exDemoTimer); } if((id==='ovProg'||id==='ovLive')&&typeof _exDemo2!=='undefined'&&_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; } }
 
