@@ -103,6 +103,9 @@ async function deleteAccountCompletely(){
   try{
     if(window.supabaseClient && window.currentUserId){
       await window.supabaseClient.from('user_data').delete().eq('user_id', window.currentUserId);
+      // Le profil public (pseudo, xp, streak, km, tonnage, photo, code parrainage...) est ce que voient
+      // les amis / classements : sans cette suppression, le compte "supprimé" restait visible de tous.
+      await window.supabaseClient.from('public_profiles').delete().eq('user_id', window.currentUserId);
     }
   }catch(e){ console.error('delete account data error', e); }
   Object.keys(localStorage).filter(k=>k.startsWith('vvv_')).forEach(k=>localStorage.removeItem(k));
@@ -3082,7 +3085,7 @@ function renderHome(){
   html+='<div class="ik-header"><div class="ik-header-left">'+
     '<div class="ik-people" onclick="openFriends()">'+ICN('users',18)+'</div>'+
     '<div class="ik-logo">'+
-    '<img src="logo-mark.png" alt="IKORUN">'+
+    '<img src="logo-mark.png" alt="IKORUN" onerror="this.onerror=null;this.src=\'icon-192.png\'">'+
     '<span>IKORUN</span></div></div></div>';
 
   // STREAK (série de jours consécutifs)
@@ -3165,7 +3168,7 @@ function renderHome(){
 function renderHomeSimple(ps,sessW,sessTarget,vdot,form,first){
   let h='';
   h+='<div class="ik-header"><div class="ik-logo">'+
-    '<img src="logo-mark.png" alt="IKORUN">'+
+    '<img src="logo-mark.png" alt="IKORUN" onerror="this.onerror=null;this.src=\'icon-192.png\'">'+
     '<span>IKORUN</span></div></div>';
   h+=homeStreakBadge();
   h+='<div class="ik-greet"><h1>Salut '+(first||'toi')+' 👋</h1></div>';
@@ -5554,16 +5557,23 @@ function pfSectionHTML(key){
 }
 function pfAccountHTML(){
   if(window.currentUserEmail){
-    return '<div class="row"><div class="row" style="gap:12px">'+
-      '<div style="width:44px;height:44px;border-radius:50%;background:var(--ed);color:var(--e);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px">'+(P.name?P.name[0].toUpperCase():'?')+'</div>'+
-      '<div><div style="font-weight:700">'+(P.name||'Athlète')+'</div><div style="font-size:12px;color:var(--muted)">'+window.currentUserEmail+'</div></div></div>'+
-      '<span class="badge" style="font-size:10px">🔴 Google</span></div>'+
-      '<div style="font-size:11px;color:var(--dim);margin-top:10px">☁️ Synchronisé sur le cloud</div>'+
-      '<div class="row" style="gap:8px;margin-top:12px;flex-wrap:wrap">'+
-        '<button class="btn ghost sm" onclick="addAnotherAccount()">➕ Ajouter un compte</button>'+
-        '<button class="btn ghost sm" style="color:var(--bad)" onclick="logout()">🚪 '+t('logout')+'</button>'+
+    return '<div class="card" style="padding:16px">'+
+      '<div class="row" style="justify-content:space-between;align-items:center">'+
+        '<div class="row" style="gap:12px">'+
+          '<div style="width:44px;height:44px;border-radius:50%;background:var(--ed);color:var(--e);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0">'+(P.name?P.name[0].toUpperCase():'?')+'</div>'+
+          '<div><div style="font-weight:700">'+(P.name||'Athlète')+'</div><div style="font-size:12px;color:var(--muted)">'+window.currentUserEmail+'</div></div>'+
+        '</div>'+
+        '<span class="badge" style="font-size:10px;flex-shrink:0">🔴 Google</span>'+
       '</div>'+
-      '<button class="btn ghost sm" style="margin-top:10px;color:var(--bad);width:100%" onclick="deleteAccountCompletely()">🗑 Supprimer mon compte et mes données</button>';
+      '<div style="font-size:11px;color:var(--dim);margin-top:12px">☁️ Synchronisé sur le cloud</div>'+
+      '<div class="row" style="gap:8px;margin-top:14px"><button class="btn ghost sm" style="flex:1" onclick="addAnotherAccount()">➕ Ajouter un compte</button>'+
+      '<button class="btn ghost sm" style="flex:1;color:var(--bad)" onclick="logout()">🚪 '+t('logout')+'</button></div>'+
+    '</div>'+
+    '<div class="card" style="padding:16px;margin-top:12px;border-color:rgba(255,92,108,.35);background:rgba(255,92,108,.05)">'+
+      '<div class="card-t" style="color:var(--bad)">⚠️ Zone de danger</div>'+
+      '<div style="font-size:11.5px;color:var(--muted);margin-bottom:12px;line-height:1.5">Supprime définitivement ton compte et toutes tes données, sur le cloud et sur cet appareil.</div>'+
+      '<button class="btn ghost sm" style="color:var(--bad);width:100%" onclick="deleteAccountCompletely()">🗑 Supprimer mon compte et mes données</button>'+
+    '</div>';
   }
   return '<button class="btn" onclick="signInWithGoogle()">🔐 Se connecter</button>';
 }
@@ -5609,9 +5619,16 @@ function pfNotifHTML(){
     '<div class="row"><span style="font-size:14px">'+t('units')+'</span><div class="toggle on"></div></div>';
 }
 function pfDataHTML(){
-  return '<button class="btn ghost sm" style="margin-bottom:8px" onclick="exportData()">📤 '+t('exportData')+'</button>'+
-    '<button class="btn ghost sm" style="margin-bottom:8px" onclick="importData()">📥 '+t('importData')+'</button>'+
-    '<button class="btn ghost sm" style="color:var(--bad)" onclick="resetAll()">🗑 '+t('resetApp')+'</button>';
+  return '<div class="card" style="padding:16px">'+
+      '<div style="font-size:11.5px;color:var(--muted);margin-bottom:14px;line-height:1.5">Exporte une copie de tes données ou importe une sauvegarde existante.</div>'+
+      '<button class="btn ghost sm" style="width:100%;margin-bottom:8px" onclick="exportData()">📤 '+t('exportData')+'</button>'+
+      '<button class="btn ghost sm" style="width:100%" onclick="importData()">📥 '+t('importData')+'</button>'+
+    '</div>'+
+    '<div class="card" style="padding:16px;margin-top:12px;border-color:rgba(255,92,108,.35);background:rgba(255,92,108,.05)">'+
+      '<div class="card-t" style="color:var(--bad)">⚠️ Zone de danger</div>'+
+      '<div style="font-size:11.5px;color:var(--muted);margin-bottom:12px;line-height:1.5">Efface toutes les données de l\u2019application sur cet appareil.</div>'+
+      '<button class="btn ghost sm" style="width:100%;color:var(--bad)" onclick="resetAll()">🗑 '+t('resetApp')+'</button>'+
+    '</div>';
 }
 /* ---- Photo & Bio ---- */
 function changePhoto(){
@@ -5697,7 +5714,7 @@ function openRecords(){
     const best=bestRecord();
     if(best) h+='<div class="card" style="border-color:var(--or);text-align:center"><div class="lab" style="color:var(--or)">🏆 Meilleure perf</div><div class="man" style="font-weight:800;font-size:18px;margin-top:4px">'+best.dist+' — '+best.time+'</div><div style="font-size:12px;color:var(--muted)">VDOT '+vdotFromRace(best.meters,parseTime(best.time)).toFixed(1)+'</div></div>';
   }
-  $('#profileEditBody').innerHTML=h; $('#ovProfile').querySelector('h2').textContent='Historique des performances'; openOv('ovProfile');
+  $('#profileEditBody').innerHTML=h; $('#profileEditFoot').innerHTML=''; $('#ovProfile').querySelector('h2').textContent='Historique des performances'; openOv('ovProfile');
 }
 let recTmp={};
 function addRecord(){
@@ -5718,7 +5735,7 @@ function recordForm(d){
   h+='<div class="row" style="margin:14px 0"><span>🏁 Compétition officielle</span><div class="toggle" id="rc_comp" onclick="recTmp.competition=!recTmp.competition;this.classList.toggle(\'on\')"></div></div>';
   h+='<button class="btn" onclick="saveRecord()">💾 Enregistrer cette performance</button>';
   h+='<button class="btn ghost" style="margin-top:10px" onclick="openRecords()">‹ Retour</button>';
-  $('#profileEditBody').innerHTML=h;
+  $('#profileEditBody').innerHTML=h; $('#profileEditFoot').innerHTML='';
 }
 function saveRecord(){
   const time=fmtTime(recTmp.timeS);
@@ -5742,8 +5759,9 @@ function openProfileEdit(){
     f('FC max','pe_hrmax',P.hrMax,'number')+f('FC repos','pe_hrrest',P.hrRest,'number')+
     f('Km / semaine','pe_km',P.kmWeek,'number')+f('Objectif','pe_goal',P.goal)+f('Date compétition','pe_comp',P.compDate,'date')+
     f('5000m','pe_5k',P.t5k)+f('3000m','pe_3k',P.t3k)+f('1500m','pe_1500',P.t1500)+f('10km','pe_10k',P.t10k)+f('Coach','pe_coach',P.coach);
-  h+='<button class="btn" onclick="saveProfileEdit()">💾 Sauver</button>';
-  $('#profileEditBody').innerHTML=h; openOv('ovProfile');
+  $('#profileEditBody').innerHTML=h;
+  $('#profileEditFoot').innerHTML='<button class="btn" onclick="saveProfileEdit()">💾 Sauver</button>';
+  openOv('ovProfile');
   peUsernameOk=true; // on ne bloque pas si le champ n'a pas changé
   wireUsernameField('pe_username','pe_username_status',ok=>{ peUsernameOk=ok; });
 }

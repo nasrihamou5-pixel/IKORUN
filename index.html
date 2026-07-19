@@ -851,6 +851,12 @@ html[data-mode="light"]{
 @keyframes sheetUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
 .ov-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
 .ov-head h2{font-family:'Unbounded';font-weight:800;font-size:19px;letter-spacing:-.3px;}
+/* Modifier le profil : header + bouton Sauver toujours visibles, seule la liste des champs défile */
+#ovProfile .ov-card{display:flex;flex-direction:column;max-height:92vh;}
+#ovProfile .ov-head{flex:0 0 auto;}
+#ovProfile #profileEditBody{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;margin:0 -4px;padding:0 4px;}
+#ovProfile .ov-foot-save{flex:0 0 auto;}
+#ovProfile .ov-foot-save:not(:empty){margin-top:12px;padding-top:12px;border-top:1px solid var(--hair);}
 .x{width:32px;height:32px;border-radius:var(--r-xs);background:var(--s2);border:1px solid var(--hair);
   display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:16px;transition:transform .15s var(--ease-spring),background .15s;}
 .x:active{transform:scale(.9);background:var(--s3);}
@@ -1523,7 +1529,7 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
 
 <!-- GENERIC OVERLAYS -->
 <div class="ov" id="ovSettings"><div class="ov-card"><div class="ov-head"><h2>Paramètres</h2><div class="x" onclick="closeOv('ovSettings')">✕</div></div><div id="settingsBody"></div></div></div>
-<div class="ov" id="ovProfile"><div class="ov-card"><div class="ov-head"><h2>Modifier le profil</h2><div class="x" onclick="closeOv('ovProfile')">✕</div></div><div id="profileEditBody"></div></div></div>
+<div class="ov" id="ovProfile"><div class="ov-card"><div class="ov-head"><h2>Modifier le profil</h2><div class="x" onclick="closeOv('ovProfile')">✕</div></div><div id="profileEditBody"></div><div class="ov-foot-save" id="profileEditFoot"></div></div></div>
 <div class="ov" id="ovLib"><div class="ov-card"><div class="ov-head"><h2>Bibliothèque</h2><div class="x" onclick="closeOv('ovLib')">✕</div></div><div id="libBody"></div></div></div>
 <div class="ov" id="ovCfg"><div class="ov-card"><div class="ov-head"><h2>Configurer</h2><div class="x" onclick="closeOv('ovCfg')">✕</div></div><div id="cfgBody"></div></div></div>
 <div class="ov" id="ovProg"><div class="ov-card"><div class="ov-head"><h2 id="ovProgTitle">Programme</h2><div class="x" onclick="closeOv('ovProg')">✕</div></div><div id="progBody"></div></div></div>
