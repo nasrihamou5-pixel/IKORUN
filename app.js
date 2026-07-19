@@ -984,10 +984,10 @@ function replayBadgeAnim(key){
     '<div class="bd-unlock-badge">'+bdGlyph(b.key)+sparks+'</div></div>'+
     '<div class="man" style="font-weight:800;font-size:26px;margin-top:18px">'+b.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+b.desc+'</div>'+
-    '<div style="color:var(--e);font-size:12px;margin-top:16px;text-decoration:underline;cursor:pointer" data-details>Voir les détails</div>'+
-    '<div style="color:var(--dim);font-size:12px;margin-top:8px">Touche pour fermer</div>';
+    '<button type="button" class="btn sm" style="width:auto;margin-top:20px;padding:11px 26px" data-details>Voir les détails</button>'+
+    '<div style="color:var(--dim);font-size:12px;margin-top:12px">Touche pour fermer</div>';
   ov.onclick=(e)=>{
-    if(e.target.hasAttribute('data-details')){ ov.remove(); openBadgeDetail(key); return; }
+    if(e.target.closest('[data-details]')){ ov.remove(); openBadgeDetail(key); return; }
     ov.remove();
   };
   document.body.appendChild(ov);
@@ -1014,10 +1014,10 @@ function previewBadgeAnim(key){
     '<div class="man" style="font-weight:800;font-size:26px;margin-top:18px">'+b.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+b.desc+'</div>'+
     condHtml+
-    '<div style="color:var(--e);font-size:12px;margin-top:16px;text-decoration:underline;cursor:pointer" data-details>Voir les détails</div>'+
-    '<div style="color:var(--dim);font-size:12px;margin-top:8px">Touche pour fermer</div>';
+    '<button type="button" class="btn sm" style="width:auto;margin-top:20px;padding:11px 26px" data-details>Voir les détails</button>'+
+    '<div style="color:var(--dim);font-size:12px;margin-top:12px">Touche pour fermer</div>';
   ov.onclick=(e)=>{
-    if(e.target.hasAttribute('data-details')){ ov.remove(); openBadgeDetail(key); return; }
+    if(e.target.closest('[data-details]')){ ov.remove(); openBadgeDetail(key); return; }
     ov.remove();
   };
   document.body.appendChild(ov);
