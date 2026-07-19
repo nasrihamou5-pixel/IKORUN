@@ -857,6 +857,7 @@ function refreshXP(opts){
   document.documentElement.setAttribute('data-rank-theme', rank.slug||'novice');
   if(opts&&opts.animate&&info.level>prevLevel){ levelUpAnimation(info.level); }
   checkNewBadges(opts&&opts.animate);
+  checkNewAchievements(opts&&opts.animate);
   return XP;
 }
 function xpProgress(){
@@ -3643,7 +3644,7 @@ function sharePlan(n){ if(navigator.share) navigator.share({title:'IKORUN Plan',
 let debriefData=null, debriefCtx=null, debriefReps=[];
 function openSessionDebrief(ctx){
   debriefCtx=ctx;
-  debriefData={ done:true, duration:ctx.duration||'', distance:ctx.km||'', pace:ctx.pace||'',
+  debriefData={ done:true, duration:ctx.duration||'', distance:ctx.km||'', pace:ctx.pace||'', deniv:ctx.deniv||'',
     rpe:5, pain:'Aucune', fatigue:3, weather:'\u2600\ufe0f', feel:3, sleep:3, nutrition:3, note:'' };
   // Si la seance prevue est une serie de repetitions (400, 1000, pyramide simple...),
   // on propose une ligne par repetition : temps reel ou bouton rapide "Respecte"
@@ -3696,6 +3697,7 @@ function renderDebrief(){
   }
   h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>Durée (min)</label><input class="inp" type="number" value="'+(d.duration||'')+'" oninput="debriefData.duration=+this.value"></div><div class="field" style="flex:1"><label>Distance (km)</label><input class="inp" type="number" value="'+(d.distance||'')+'" oninput="debriefData.distance=+this.value"></div></div>';
   h+='<div class="field"><label>Allure moyenne /km</label><input class="inp" value="'+(d.pace||'')+'" oninput="debriefData.pace=this.value" placeholder="4:30"></div>';
+  h+='<div class="field"><label>Dénivelé D+ (m, optionnel)</label><input class="inp" type="number" value="'+(d.deniv||'')+'" oninput="debriefData.deniv=+this.value" placeholder="0"></div>';
   h+='<div class="field"><label>RPE — difficulté ressentie : '+d.rpe+'/10</label><input type="range" min="1" max="10" value="'+d.rpe+'" style="width:100%" oninput="debriefData.rpe=+this.value;renderDebrief()"></div>';
   h+='<div class="field"><label>Douleurs</label><div class="pills">'+['Aucune','Légères','Gênantes','Importantes'].map(p=>'<div class="pill '+(d.pain===p?'on':'')+'" onclick="debriefData.pain=\''+p+'\';renderDebrief()">'+p+'</div>').join('')+'</div></div>';
   h+=scale('fatigue','Fatigue',['\ud83d\ude00','\ud83d\ude42','\ud83d\ude10','\ud83d\ude13','\ud83d\ude35']);
@@ -3718,11 +3720,13 @@ function submitDebrief(){
     date:debriefCtx.date, title:debriefCtx.title, type:debriefCtx.type,
     km:+debriefData.distance||0, pace:debriefData.pace||'—',
     duration:+debriefData.duration||0, rpe:+debriefData.rpe||5,
+    deniv:+debriefData.deniv||0,
     planSessionId:debriefCtx.planSessionId||null, repsLog
   };
   const idx=debriefCtx.sessRef?SESS.findIndex(s=>s.sessRef===debriefCtx.sessRef):-1;
   if(idx>=0) SESS[idx]=real; else SESS.push(real);
   DB.save('sessions',SESS);
+  refreshXP({animate:true});
   const analysis=coachAnalyze(entry);
   applyProgressiveOverload(entry);
   weeklyAdaptiveRegen();
@@ -4719,27 +4723,51 @@ function statsMuscu(){
    16 badges nommés, distincts des paliers de niveau ci-dessus. Débloqués
    automatiquement quand c'est mesurable dans les données réelles ; sinon
    à cocher soi-même (dénivelé, VO2max amélioré...). */
+/* ---- Helpers de détection pour les trophées (conditions réelles, mesurables) ---- */
+function weekKeyOf(dateStr){
+  if(!dateStr) return '';
+  const d=new Date(dateStr+'T00:00:00'); if(isNaN(d)) return '';
+  const day=(d.getDay()+6)%7; // lundi=0
+  const monday=new Date(d); monday.setDate(d.getDate()-day);
+  return monday.toISOString().slice(0,10);
+}
+function achWeeklyCount(list,n){
+  const byWeek={};
+  list.forEach(s=>{ if(!s.date) return; const wk=weekKeyOf(s.date); byWeek[wk]=(byWeek[wk]||0)+1; });
+  return Object.values(byWeek).some(c=>c>=n);
+}
+function achWeeklySum(list,field,min){
+  const byWeek={};
+  list.forEach(s=>{ if(!s.date) return; const wk=weekKeyOf(s.date); byWeek[wk]=(byWeek[wk]||0)+(s[field]||0); });
+  return Object.values(byWeek).some(v=>v>=min);
+}
+function achObjectifReached(){
+  if(!P.objTime) return false;
+  const race=SESS.find(s=>s.type==='Course' && s.duration);
+  if(!race) return false;
+  return (race.duration*60)<=parseTime(P.objTime);
+}
+function pbTrack(){ return DB.load('pb_track')||{best:0,unlocked:false}; }
+function achNouveauPB(){
+  const v=(typeof computeVDOTfromRecords==='function')?(computeVDOTfromRecords()||0):0;
+  const store=pbTrack();
+  if(v>store.best){ if(store.best>0) store.unlocked=true; store.best=v; DB.save('pb_track',store); }
+  return store.unlocked;
+}
 const ACHIEVEMENTS=[
-  {key:'premiere',    name:'Première course',  img:'premiere.png',    cat:'Accomplissement', desc:'Termine ta première séance.',           auto:()=>SESS.length+MSESS.length>=1},
-  {key:'cinqk',       name:'5K',                img:'cinqk.png',       emoji:'🏃',            cat:'Accomplissement', desc:'Cours 5 km d\u2019une traite.',          auto:()=>SESS.some(s=>s.km>=5)},
-  {key:'dixk',        name:'10K',               img:'dixk.png',        emoji:'🏁',            cat:'Accomplissement', desc:'Cours 10 km d\u2019une traite.',         auto:()=>SESS.some(s=>s.km>=10)},
-  {key:'serie',       name:'Série',             img:'serie.png',       cat:'Accomplissement', desc:'7 jours d\u2019affilée.',                auto:()=>bestStreak()>=7},
-  {key:'regularite',  name:'Régularité',        img:'regularite.png',  cat:'Accomplissement', desc:'30 jours actifs (cumulés).',             auto:()=>(SESS.length+MSESS.length)>=30},
-  {key:'denivele',    name:'Dénivelé',          img:'denivele.png',    cat:'Accomplissement', desc:'1000 m D+ cumulés en course.',           manual:true},
-  {key:'podium',      name:'Podium',            img:'podium.png',      cat:'Accomplissement', desc:'Finis dans le top 3 d\\u2019une course.', manual:true},
-  {key:'discipline',  name:'Discipline',        img:'discipline.png',  cat:'Accomplissement', desc:'90 jours actifs (cumulés).',             auto:()=>(SESS.length+MSESS.length)>=90},
-  {key:'objectif',    name:'Objectif atteint',  img:'objectif.png',    cat:'Accomplissement', desc:'Termine ton objectif principal.',        auto:()=>(XP.plansCompleted||0)>=1},
-  {key:'nouveaupb',   name:'Nouveau PB',        img:'nouveaupb.png',   emoji:'🥇',            cat:'Performance',      desc:'Bats 3 records personnels différents.', auto:()=>RECORDS.length>=3},
-  {key:'allure',      name:'Allure',            img:'allure.png',      cat:'Performance',      desc:'Allure moyenne améliorée.',              manual:true},
-  {key:'endurance',   name:'Endurance',         img:'endurance.png',   cat:'Performance',      desc:'Termine une sortie de 90 min ou plus.',  auto:()=>SESS.some(s=>s.duration>=90)},
-  {key:'puissance',   name:'Puissance',         img:'puissance.png',   cat:'Performance',      desc:'10 séances de musculation effectuées.',  auto:()=>MSESS.length>=10},
-  {key:'vo2max',      name:'VO2 Max',           img:'vo2max.png',      emoji:'🫁',            cat:'Performance',      desc:'Améliore ton VO\u2082max estimé.',       manual:true},
-  {key:'force',       name:'Force',             img:'force.png',       cat:'Performance',      desc:'Termine une séance de musculation.',     auto:()=>MSESS.length>=1},
-  {key:'recuperation',name:'Récupération',      img:'recuperation.png',cat:'Performance',      desc:'Sommeil optimal 7 jours d\u2019affilée.',manual:true},
-  {key:'leader',      name:'Leader',            img:'leader.png',      cat:'Spécial',          desc:'Top du classement.',        manual:true},
-  {key:'ambassadeur', name:'Ambassadeur',       img:'ambassadeur.png', cat:'Spécial',          desc:'Membre premium.',           manual:true},
-  {key:'evenement',   name:'Événement',         img:'evenement.png',   cat:'Spécial',          desc:'Participe à un événement.', manual:true},
-  {key:'fondateur',   name:'Fondateur',         img:'fondateur.png',   cat:'Spécial',          desc:'Membre fondateur IKORUN.',  manual:true}
+  {key:'premiere',    name:'Première course',  img:'premiere.png',    cat:'Accomplissement', cls:'bd-debutant', desc:'Termine la course que tu préparais.',            auto:()=>SESS.some(s=>s.type==='Course')},
+  {key:'cinqk',       name:'5K',                img:'cinqk.png',       emoji:'🏃',            cat:'Accomplissement', cls:'bd-amateur',  desc:'Cours plus de 5 km d\u2019une traite.',   auto:()=>SESS.some(s=>s.km>5)},
+  {key:'dixk',        name:'10K',               img:'dixk.png',        emoji:'🏁',            cat:'Accomplissement', cls:'bd-sportif',  desc:'Cours plus de 10 km d\u2019une traite.',  auto:()=>SESS.some(s=>s.km>10)},
+  {key:'serie',       name:'Série',             img:'serie.png',       cat:'Accomplissement', cls:'bd-athlete',  desc:'Tiens un mois de régularité (30 jours d\u2019affilée).', auto:()=>bestStreak()>=30},
+  {key:'denivele',    name:'Dénivelé',          img:'denivele.png',    cat:'Accomplissement', cls:'bd-expert',   desc:'Plus de 200 m de D+ sur une séance ou une course.',      auto:()=>SESS.some(s=>(s.deniv||0)>200)},
+  {key:'podium',      name:'Podium',            img:'podium.png',      cat:'Accomplissement', cls:'bd-elite',    desc:'Finis dans le top 3 d\u2019une course.', manual:true},
+  {key:'objectif',    name:'Objectif atteint',  img:'objectif.png',    cat:'Accomplissement', cls:'bd-maitre',   desc:'Réalise ton chrono visé (ou plus vite) sur la course préparée.', auto:achObjectifReached},
+  {key:'nouveaupb',   name:'Nouveau PB',        img:'nouveaupb.png',   emoji:'🥇',            cat:'Performance',      cls:'bd-legende', desc:'Bats un nouveau record avec un VDOT supérieur à ton précédent record.', auto:achNouveauPB},
+  {key:'allure',      name:'Allure',            img:'allure.png',      cat:'Performance',      cls:'bd-sportif',  desc:'Cours au moins 3 km à une allure de 10:00/km ou plus rapide.', auto:()=>SESS.some(s=>s.km>=3 && s.pace && s.pace!=='—' && parseTime(s.pace)>0 && parseTime(s.pace)<=600)},
+  {key:'endurance',   name:'Endurance',         img:'endurance.png',   cat:'Performance',      cls:'bd-athlete',  desc:'Termine une sortie d\u2019au moins 15 km.',  auto:()=>SESS.some(s=>s.km>=15)},
+  {key:'puissance',   name:'Puissance',         img:'puissance.png',   cat:'Performance',      cls:'bd-expert',   desc:'Fais au moins 3 séances de musculation en une seule semaine.', auto:()=>achWeeklyCount(MSESS,3)},
+  {key:'vo2max',      name:'VO2 Max',           img:'vo2max.png',      emoji:'🫁',            cat:'Performance',      cls:'bd-elite',    desc:'Atteins un VO\u2082max estimé supérieur à 50.', auto:()=>(getUserVDOT()||0)>50},
+  {key:'force',       name:'Force',             img:'force.png',       cat:'Performance',      cls:'bd-maitre',   desc:'Soulève plus de 20 000 kg cumulés en une seule semaine.', auto:()=>achWeeklySum(MSESS,'tonnage',20000)}
 ];
 function manualBadges(){ return DB.load('manual_badges')||{}; }
 function achievementUnlocked(a){ const on = a.auto ? !!a.auto() : !!manualBadges()[a.key]; if(on) recordAchDate(a.key); return on; }
@@ -4764,6 +4792,96 @@ function toggleManualBadge(key){
   toast(m[key]?'🏵️ '+a.name+' débloqué !':'Badge retiré');
   renderStats();
 }
+/* ---- Clic sur un trophée : même effet visuel que les badges de progression ----
+   Obtenu → on rejoue l'animation. Verrouillé → aperçu lumineux qui rappelle
+   directement la condition à remplir (a.desc). Un simple tap n'a plus jamais
+   pour effet de débloquer/reverrouiller le trophée : ce n'est plus qu'une
+   consultation. Seul le bouton dédié à l'intérieur de l'aperçu (pour les
+   trophées encore manuels comme Podium) permet de le cocher. */
+function openAchQuick(key){
+  const a=ACHIEVEMENTS.find(x=>x.key===key); if(!a) return;
+  if(achievementUnlocked(a)) replayAchAnim(key); else previewAchAnim(key);
+}
+let _achUnlockQueue=[];
+function checkNewAchievements(animate){
+  const hadKeys=new Set(Object.keys(achDates()));
+  const newKeys=[];
+  ACHIEVEMENTS.forEach(a=>{
+    if(hadKeys.has(a.key)) return;
+    const on=a.auto ? !!a.auto() : !!manualBadges()[a.key];
+    if(on){ recordAchDate(a.key); newKeys.push(a.key); }
+  });
+  if(newKeys.length){
+    if(animate){ _achUnlockQueue.push(...newKeys); playAchUnlockQueue(); }
+  }
+}
+function playAchUnlockQueue(){
+  if(document.querySelector('.bd-unlock-ov')) return; // une animation à la fois
+  const key=_achUnlockQueue.shift();
+  if(!key) return;
+  const a=ACHIEVEMENTS.find(x=>x.key===key);
+  if(a) showAchUnlockAnim(a);
+}
+function showAchUnlockAnim(a){
+  burst(); sfx('medal'); if(navigator.vibrate) navigator.vibrate([120,60,120,60,260]);
+  const ov=document.createElement('div');
+  ov.className='bd-unlock-ov';
+  let sparks=''; for(let i=0;i<26;i++){ const ang=Math.random()*Math.PI*2, d=90+Math.random()*110;
+    sparks+='<span class="bd-spark" style="--tx:'+(Math.cos(ang)*d)+'px;--ty:'+(Math.sin(ang)*d)+'px;animation-delay:'+(Math.random()*1.2)+'s"></span>'; }
+  ov.innerHTML='<div class="bd-flash"></div>'+
+    '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded;margin-bottom:6px">NOUVEAU TROPHÉE DÉBLOQUÉ</div>'+
+    '<div class="bd-unlock-stage '+(a.cls||'bd-athlete')+'"><div class="bd-rays"></div><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div><div class="bd-ring r4"></div>'+
+    '<div class="bd-unlock-badge">'+achImg(a)+sparks+'</div></div>'+
+    '<div class="man" style="font-weight:800;font-size:30px;margin-top:18px;letter-spacing:.5px">'+a.name+'</div>'+
+    '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+a.desc+'</div>'+
+    '<div style="color:var(--dim);font-size:12px;margin-top:18px">Touche pour continuer</div>';
+  ov.onclick=()=>{ ov.remove(); playAchUnlockQueue(); };
+  document.body.appendChild(ov);
+  setTimeout(()=>{ if(ov.parentNode){ ov.remove(); playAchUnlockQueue(); } },4200);
+}
+/* Consultation d'un trophée déjà obtenu (rejoue une version sans confettis) */
+function replayAchAnim(key){
+  const a=ACHIEVEMENTS.find(x=>x.key===key); if(!a) return;
+  sfx('goal'); if(navigator.vibrate) navigator.vibrate(60);
+  const ov=document.createElement('div');
+  ov.className='bd-unlock-ov';
+  let sparks=''; for(let i=0;i<20;i++){ const ang=Math.random()*Math.PI*2, d=80+Math.random()*90;
+    sparks+='<span class="bd-spark" style="--tx:'+(Math.cos(ang)*d)+'px;--ty:'+(Math.sin(ang)*d)+'px;animation-delay:'+(Math.random()*1.4)+'s"></span>'; }
+  const dt=achDates()[key];
+  ov.innerHTML='<div class="bd-flash"></div>'+
+    '<div class="bd-unlock-stage '+(a.cls||'bd-athlete')+'"><div class="bd-rays"></div><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div>'+
+    '<div class="bd-unlock-badge">'+achImg(a)+sparks+'</div></div>'+
+    '<div class="man" style="font-weight:800;font-size:26px;margin-top:18px">'+a.name+'</div>'+
+    '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+a.desc+'</div>'+
+    (dt?'<div style="color:var(--dim);font-size:11.5px;margin-top:8px">Obtenu le '+fmtDate(dt)+'</div>':'')+
+    '<div style="color:var(--dim);font-size:12px;margin-top:16px">Touche pour fermer</div>';
+  ov.onclick=()=>{ ov.remove(); };
+  document.body.appendChild(ov);
+}
+/* Aperçu d'un trophée encore verrouillé : même show lumineux, avec la
+   condition à remplir affichée directement (pas de mystère). Pour les
+   trophées encore manuels (Podium), un bouton permet de le cocher soi-même. */
+function previewAchAnim(key){
+  const a=ACHIEVEMENTS.find(x=>x.key===key); if(!a) return;
+  sfx('tap'); if(navigator.vibrate) navigator.vibrate(35);
+  const ov=document.createElement('div');
+  ov.className='bd-unlock-ov preview';
+  let sparks=''; for(let i=0;i<16;i++){ const ang=Math.random()*Math.PI*2, d=80+Math.random()*90;
+    sparks+='<span class="bd-spark" style="--tx:'+(Math.cos(ang)*d)+'px;--ty:'+(Math.sin(ang)*d)+'px;animation-delay:'+(Math.random()*1.4)+'s"></span>'; }
+  ov.innerHTML='<div class="bd-flash"></div>'+
+    '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded;margin-bottom:6px">APERÇU · VERROUILLÉ</div>'+
+    '<div class="bd-unlock-stage '+(a.cls||'bd-athlete')+'"><div class="bd-rays"></div><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div>'+
+    '<div class="bd-unlock-badge">'+achImg(a)+sparks+'<div class="bd-lock-chip big">🔒</div></div></div>'+
+    '<div class="man" style="font-weight:800;font-size:26px;margin-top:18px">'+a.name+'</div>'+
+    '<div class="bd-preview-cond" style="text-align:center;color:var(--muted);font-size:13px;margin-top:8px;max-width:280px">'+a.desc+'</div>'+
+    (a.manual?'<button type="button" class="btn sm" style="width:auto;margin-top:20px;padding:11px 26px" data-mark>✓ Marquer comme obtenu</button>':'')+
+    '<div style="color:var(--dim);font-size:12px;margin-top:12px">Touche pour fermer</div>';
+  ov.onclick=(e)=>{
+    if(e.target.closest('[data-mark]')){ ov.remove(); toggleManualBadge(key); return; }
+    ov.remove();
+  };
+  document.body.appendChild(ov);
+}
 function achImgErr(img){
   if(img.dataset.stage!=='1'){ img.dataset.stage='1'; img.src='badges/'+img.dataset.file; return; }
   const span=document.createElement('span'); span.className='bd-glyph bd-emoji'; span.textContent='🏵️'; img.replaceWith(span);
@@ -4773,11 +4891,11 @@ function achImg(a){
   return '<img class="bd-glyph" src="'+a.img+'" data-file="'+a.img+'" data-stage="0" alt="" draggable="false" loading="lazy" onerror="achImgErr(this)">';
 }
 function achievementsGridHTML(){
-  const cats=['Accomplissement','Performance','Spécial'];
+  const cats=['Accomplissement','Performance'];
   const unlockedCount=ACHIEVEMENTS.filter(achievementUnlocked).length;
   const years=achYears();
   let h='<div class="card" style="margin-top:18px"><div class="row" style="margin-bottom:6px"><span class="card-t" style="margin:0">🏆 Trophées</span><span style="font-size:12px;color:var(--muted)">'+unlockedCount+' / '+ACHIEVEMENTS.length+'</span></div>'
-    +'<div style="font-size:11px;color:var(--dim);margin-bottom:8px">Ceux détectés automatiquement se débloquent seuls · les autres (podium, dénivelé...) se cochent à la main.</div>';
+    +'<div style="font-size:11px;color:var(--dim);margin-bottom:8px">Touche un trophée pour voir l\u2019animation ou la condition à remplir pour l\u2019obtenir.</div>';
   if(years.length){
     h+='<div class="pills" style="margin-bottom:10px">'
       +'<div class="pill '+(achYearFilter==='toutes'?'on':'')+'" onclick="achYearFilter=\'toutes\';renderStats()">Toutes</div>'
@@ -4792,7 +4910,7 @@ function achievementsGridHTML(){
     h+='<div style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.5px;margin:14px 0 8px">'+cat.toUpperCase()+'</div><div class="bd-grid">';
     items.forEach(a=>{
       const on=achievementUnlocked(a);
-      h+='<div class="bd-cell" onclick="'+(a.manual?"toggleManualBadge('"+a.key+"')":"toast('"+a.desc.replace(/'/g,"\\'")+"')")+'">'
+      h+='<div class="bd-cell" onclick="openAchQuick(\''+a.key+'\')">'
         +'<div class="bd-icon'+(on?'':' locked')+'" style="background:rgba(255,255,255,.04)">'+achImg(a)+(on?'':'<div class="bd-lock-chip">🔒</div>')+'</div>'
         +'<div class="bd-name">'+a.name+'</div>'+(on&&dates[a.key]?'<div style="font-size:9.5px;color:var(--dim);margin-top:2px">'+dates[a.key].slice(0,4)+'</div>':'')+'</div>';
     });
