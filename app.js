@@ -571,7 +571,44 @@ const I18N={
     createCustomPlanDesc:'Ajoute tes propres séances, choisis les dates, types et allures. Tout se synchronise avec ton accueil et tes stats.',
     sessionsCount:'{0} séances · {1} terminées',followedTag:'✅ Suivi',duplicate:'Dupliquer',share:'Partager',
     planNamePrompt:'Nom du plan :',myPersoPlanDefault:'Mon plan perso',
-    you:'toi',dowShort:'L,M,M,J,V,S,D',greet:'Salut'
+    you:'toi',dowShort:'L,M,M,J,V,S,D',greet:'Salut',
+    // --- Outils ---
+    searchTool:'Rechercher un outil...',favorites:'Favoris',mainTools:'Outils principaux',otherTools:'Autres outils',
+    resultsCount:'{0} résultat(s)',editFavsTitle:'Modifier les favoris',tapStarHint:'Touche une étoile pour ajouter/retirer un outil de tes favoris.',
+    toolAioName:'Performance Lab',toolAioSub:'Distance · Temps · Allure · Vitesse',
+    toolSanteName:'Tableau de bord Santé',toolSanteSub:'Poids, IMC, sommeil, nutrition...',
+    toolChronoName:'Chronomètre',toolChronoSub:'Tours, splits & statistiques',
+    toolConvertName:'Convertisseur',toolConvertSub:'Allure, distance, poids...',
+    toolNotesName:'Notes',toolNotesSub:'Bloc-notes rapide',
+    toolVdotName:'VDOT & VO₂max',toolVdotSub:'Estimer ta cylindrée',
+    toolImcName:'IMC',toolImcSub:'Indice de masse corporelle',
+    toolHydraName:'Hydratation',toolHydraSub:'Tes besoins en eau',
+    toolBmrName:'Calories & Métabolisme',toolBmrSub:'Besoins quotidiens',
+    toolAgendaName:'Agenda',toolAgendaSub:'Tous vos événements',
+    toolPriereName:'Prières',toolPriereSub:'Tous les horaires',
+    // --- Profil ---
+    athleteDefault:'Athlète',addBioPrompt:'Ajoute une biographie ✍️',heightWeight:'Taille / poids',
+    noObjective:'Aucun',noBadgeYet:'Aucun badge obtenu pour l\u2019instant — ta première séance te rapprochera du badge Initié.',
+    seeAllProgress:'{0} / {1} · Voir tout ›',nextBadgeLab:'Prochain badge · {0}',
+    account:'Compte',friendsRanking:'Amis & Classement',manageProfile:'Gérer le profil',passwordSecurity:'Mot de passe & sécurité',
+    notConnected:'Non connecté',notifLabel:'Notifications',preferences:'Préférences',historyRecords:'Historique & records',
+    statistics:'Statistiques',theme:'Thème',appColor:'Couleur de l\u2019app',simplifiedMode:'Mode simplifié',
+    simplifiedModeDesc:'3 onglets, écrans allégés, textes plus grands — l\u2019essentiel seulement',
+    support:'Support',helpCenter:'Centre d\u2019aide',footerTag:'IKORUN — Elite Athletic Intelligence · v2.0',
+    yourSpace:'Ton espace',settings:'Réglages',badgesLabel:'Badges',toolsCalc:'Outils & calculateurs',editMyProfile:'Modifier mon profil',
+    // --- Stats ---
+    tabBilan:'Bilan',tabRun:'Course',tabMuscu:'Muscu',tabTrophies:'Trophées',
+    perWeek:'Semaine',perMonth:'Mois',per3Month:'3 Mois',perYear:'Année',
+    completeProfileTitle:'📏 Complète ton profil',completeProfileDesc:'Ta taille et ton poids servent à calculer ton IMC, tes calories et tes besoins.',
+    chooseHeight:'Choisir ta taille',chooseWeight:'Choisir ton poids',
+    mileage:'Kilométrage',kmCumulated:'km cumulés',vsPrevPeriod:'vs période préc.',
+    volumeTrend:'Tendance volume',kmThisWeek:'km cette sem.',eightWeeksLab:'8 sem.',weeksAgoLab:'Il y a 8 sem.',
+    totalTime:'Temps total',overPeriod:'sur la période',goalReached:'Objectif atteint ! 🎉',ofTarget:'{0}% de la cible',
+    quickTimer:'Minuteur',lvlShort:'NIV.',
+    vdotReal:'VDOT réel',sessionsRun:'Séances run',kmTotal:'km totaux',paceZones:'🎯 Zones d\u2019allure',
+    predictions:'🔮 Prédictions',formFatigue:'📈 Forme / Fatigue',personalRecords:'🏅 Records personnels',
+    chronic:'Chronique',acute:'Aiguë',tonnageLab:'Tonnage',prPerSession:'PR (kg/séance)',totalSets:'Séries totales',
+    startFirstMuscu:'Lance ta première séance de muscu !',lastSessions:'📅 Dernières séances'
   },
   en:{
     nav_home:'Home',nav_sport:'Sport',nav_stats:'Stats',nav_outils:'Tools',nav_profil:'Profile',
@@ -604,7 +641,44 @@ const I18N={
     createCustomPlanDesc:'Add your own sessions, pick dates, types and paces. Everything syncs with your home and stats.',
     sessionsCount:'{0} sessions · {1} done',followedTag:'✅ Following',duplicate:'Duplicate',share:'Share',
     planNamePrompt:'Plan name:',myPersoPlanDefault:'My custom plan',
-    you:'there',dowShort:'M,T,W,T,F,S,S',greet:'Hi'
+    you:'there',dowShort:'M,T,W,T,F,S,S',greet:'Hi',
+    // --- Tools ---
+    searchTool:'Search for a tool...',favorites:'Favorites',mainTools:'Main tools',otherTools:'Other tools',
+    resultsCount:'{0} result(s)',editFavsTitle:'Edit favorites',tapStarHint:'Tap a star to add/remove a tool from your favorites.',
+    toolAioName:'Performance Lab',toolAioSub:'Distance · Time · Pace · Speed',
+    toolSanteName:'Health Dashboard',toolSanteSub:'Weight, BMI, sleep, nutrition...',
+    toolChronoName:'Stopwatch',toolChronoSub:'Laps, splits & statistics',
+    toolConvertName:'Converter',toolConvertSub:'Pace, distance, weight...',
+    toolNotesName:'Notes',toolNotesSub:'Quick notepad',
+    toolVdotName:'VDOT & VO₂max',toolVdotSub:'Estimate your engine',
+    toolImcName:'BMI',toolImcSub:'Body mass index',
+    toolHydraName:'Hydration',toolHydraSub:'Your water needs',
+    toolBmrName:'Calories & Metabolism',toolBmrSub:'Daily needs',
+    toolAgendaName:'Agenda',toolAgendaSub:'All your events',
+    toolPriereName:'Prayers',toolPriereSub:'All the times',
+    // --- Profile ---
+    athleteDefault:'Athlete',addBioPrompt:'Add a bio ✍️',heightWeight:'Height / weight',
+    noObjective:'None',noBadgeYet:'No badge earned yet — your first session will bring you closer to the Initiate badge.',
+    seeAllProgress:'{0} / {1} · See all ›',nextBadgeLab:'Next badge · {0}',
+    account:'Account',friendsRanking:'Friends & Leaderboard',manageProfile:'Manage profile',passwordSecurity:'Password & security',
+    notConnected:'Not signed in',notifLabel:'Notifications',preferences:'Preferences',historyRecords:'History & records',
+    statistics:'Statistics',theme:'Theme',appColor:'App color',simplifiedMode:'Simplified mode',
+    simplifiedModeDesc:'3 tabs, lighter screens, bigger text — the essentials only',
+    support:'Support',helpCenter:'Help center',footerTag:'IKORUN — Elite Athletic Intelligence · v2.0',
+    yourSpace:'Your space',settings:'Settings',badgesLabel:'Badges',toolsCalc:'Tools & calculators',editMyProfile:'Edit my profile',
+    // --- Stats ---
+    tabBilan:'Overview',tabRun:'Running',tabMuscu:'Strength',tabTrophies:'Trophies',
+    perWeek:'Week',perMonth:'Month',per3Month:'3 Months',perYear:'Year',
+    completeProfileTitle:'📏 Complete your profile',completeProfileDesc:'Your height and weight are used to calculate your BMI, calories and needs.',
+    chooseHeight:'Choose your height',chooseWeight:'Choose your weight',
+    mileage:'Mileage',kmCumulated:'km total',vsPrevPeriod:'vs previous period',
+    volumeTrend:'Volume trend',kmThisWeek:'km this week',eightWeeksLab:'8 wks',weeksAgoLab:'8 weeks ago',
+    totalTime:'Total time',overPeriod:'over the period',goalReached:'Goal reached! 🎉',ofTarget:'{0}% of target',
+    quickTimer:'Timer',lvlShort:'LVL',
+    vdotReal:'Actual VDOT',sessionsRun:'Run sessions',kmTotal:'Total km',paceZones:'🎯 Pace zones',
+    predictions:'🔮 Predictions',formFatigue:'📈 Form / Fatigue',personalRecords:'🏅 Personal records',
+    chronic:'Chronic',acute:'Acute',tonnageLab:'Tonnage',prPerSession:'PR (kg/session)',totalSets:'Total sets',
+    startFirstMuscu:'Start your first strength session!',lastSessions:'📅 Recent sessions'
   },
   ar:{
     nav_home:'الرئيسية',nav_sport:'رياضة',nav_stats:'إحصائيات',nav_outils:'أدوات',nav_profil:'الملف',
@@ -637,7 +711,44 @@ const I18N={
     createCustomPlanDesc:'أضف حصصك الخاصة، اختر التواريخ والأنواع والوتيرة. كل شيء يتزامن مع صفحتك الرئيسية وإحصائياتك.',
     sessionsCount:'{0} حصص · {1} منجزة',followedTag:'✅ متابَعة',duplicate:'نسخ',share:'مشاركة',
     planNamePrompt:'اسم الخطة:',myPersoPlanDefault:'خطتي الشخصية',
-    you:'أنت',dowShort:'ن,ث,ر,خ,ج,س,ح',greet:'مرحبا'
+    you:'أنت',dowShort:'ن,ث,ر,خ,ج,س,ح',greet:'مرحبا',
+    // --- الأدوات ---
+    searchTool:'ابحث عن أداة...',favorites:'المفضلة',mainTools:'الأدوات الرئيسية',otherTools:'أدوات أخرى',
+    resultsCount:'{0} نتيجة',editFavsTitle:'تعديل المفضلة',tapStarHint:'اضغط على النجمة لإضافة/إزالة أداة من مفضلتك.',
+    toolAioName:'مختبر الأداء',toolAioSub:'المسافة · الوقت · الوتيرة · السرعة',
+    toolSanteName:'لوحة الصحة',toolSanteSub:'الوزن، كتلة الجسم، النوم، التغذية...',
+    toolChronoName:'ساعة توقيت',toolChronoSub:'الأشواط والإحصائيات',
+    toolConvertName:'المحوّل',toolConvertSub:'الوتيرة، المسافة، الوزن...',
+    toolNotesName:'ملاحظات',toolNotesSub:'مفكرة سريعة',
+    toolVdotName:'VDOT وVO₂max',toolVdotSub:'قيّم قدرتك',
+    toolImcName:'كتلة الجسم',toolImcSub:'مؤشر كتلة الجسم',
+    toolHydraName:'الترطيب',toolHydraSub:'احتياجاتك من الماء',
+    toolBmrName:'السعرات والأيض',toolBmrSub:'الاحتياجات اليومية',
+    toolAgendaName:'الأجندة',toolAgendaSub:'كل أحداثك',
+    toolPriereName:'الصلوات',toolPriereSub:'كل الأوقات',
+    // --- الملف الشخصي ---
+    athleteDefault:'رياضي',addBioPrompt:'أضف نبذة ✍️',heightWeight:'الطول / الوزن',
+    noObjective:'لا يوجد',noBadgeYet:'لم تحصل على أي وسام بعد — حصتك الأولى ستقربك من وسام المبتدئ.',
+    seeAllProgress:'{0} / {1} · عرض الكل ›',nextBadgeLab:'الوسام القادم · {0}',
+    account:'الحساب',friendsRanking:'الأصدقاء والترتيب',manageProfile:'إدارة الملف الشخصي',passwordSecurity:'كلمة المرور والأمان',
+    notConnected:'غير متصل',notifLabel:'الإشعارات',preferences:'التفضيلات',historyRecords:'السجل والأرقام',
+    statistics:'الإحصائيات',theme:'المظهر',appColor:'لون التطبيق',simplifiedMode:'الوضع المبسّط',
+    simplifiedModeDesc:'3 تبويبات، شاشات أخف، نص أكبر — الأساسيات فقط',
+    support:'الدعم',helpCenter:'مركز المساعدة',footerTag:'IKORUN — Elite Athletic Intelligence · v2.0',
+    yourSpace:'مساحتك',settings:'الإعدادات',badgesLabel:'الأوسمة',toolsCalc:'الأدوات والحاسبات',editMyProfile:'تعديل ملفي الشخصي',
+    // --- الإحصائيات ---
+    tabBilan:'الحصيلة',tabRun:'الجري',tabMuscu:'كمال الأجسام',tabTrophies:'الأوسمة',
+    perWeek:'أسبوع',perMonth:'شهر',per3Month:'3 أشهر',perYear:'سنة',
+    completeProfileTitle:'📏 أكمل ملفك الشخصي',completeProfileDesc:'يُستخدم طولك ووزنك لحساب مؤشر كتلة جسمك وسعراتك واحتياجاتك.',
+    chooseHeight:'اختر طولك',chooseWeight:'اختر وزنك',
+    mileage:'المسافة المقطوعة',kmCumulated:'كم متراكمة',vsPrevPeriod:'مقارنة بالفترة السابقة',
+    volumeTrend:'اتجاه الحجم',kmThisWeek:'كم هذا الأسبوع',eightWeeksLab:'8 أسابيع',weeksAgoLab:'قبل 8 أسابيع',
+    totalTime:'الوقت الإجمالي',overPeriod:'خلال الفترة',goalReached:'تم بلوغ الهدف! 🎉',ofTarget:'{0}% من الهدف',
+    quickTimer:'المؤقت',lvlShort:'مستوى',
+    vdotReal:'VDOT الحقيقي',sessionsRun:'حصص الجري',kmTotal:'كم إجمالية',paceZones:'🎯 مناطق الوتيرة',
+    predictions:'🔮 توقعات',formFatigue:'📈 اللياقة / التعب',personalRecords:'🏅 الأرقام الشخصية',
+    chronic:'مزمن',acute:'حاد',tonnageLab:'الحمولة',prPerSession:'أفضل رقم (كغ/حصة)',totalSets:'إجمالي المجموعات',
+    startFirstMuscu:'ابدأ أول حصة كمال أجسام لك!',lastSessions:'📅 آخر الحصص'
   }
 };
 function curLang(){ return (P&&P.lang)||'fr'; }
@@ -2493,7 +2604,7 @@ function renderMissedMuscuForm(){
 }
 function selMuscuCat(c,el){ missedCtx.muscuCat=c; document.querySelectorAll('#mm_cats .pill').forEach(x=>x.classList.remove('on')); el.classList.add('on'); }
 function saveMissedMuscu(){
-  const dur=+$('#mm_dur').value||0, rpe=+$('#mm_rpe').value;
+  const dur=Math.min(1440,+$('#mm_dur').value||0), rpe=+$('#mm_rpe').value;
   missedCtx.replData={cat:missedCtx.muscuCat,dur,rpe};
   MSESS.push({date:todayKey(),progName:'Remplacement — '+missedCtx.muscuCat,tonnage:0,sets:0,reps:0,duration:dur,calories:0,muscles:{}});
   finalizeMissedSession();
@@ -2506,7 +2617,7 @@ function renderMissedCardioForm(kind){
   $('#progBody').innerHTML=h;
 }
 function saveMissedCardio(kind){
-  const dur=+$('#mc_dur').value||0, km=+$('#mc_km').value||0, rpe=+$('#mc_rpe').value;
+  const dur=Math.min(1440,+$('#mc_dur').value||0), km=+$('#mc_km').value||0, rpe=+$('#mc_rpe').value;
   missedCtx.replData={kind,dur,km,rpe};
   finalizeMissedSession();
 }
@@ -2985,7 +3096,7 @@ function periodRanges(per){
   return {cur:[ws,en],prev:[pst,ws]};
 }
 function weeksInPeriod(per){ return per==='month'?4:per==='3m'?13:per==='year'?52:1; }
-function periodTabLabel(per){ return {week:'Semaine',month:'Mois',['3m']:'3 Mois',year:'Année'}[per]||'Semaine'; }
+function periodTabLabel(per){ return {week:t('perWeek'),month:t('perMonth'),['3m']:t('per3Month'),year:t('perYear')}[per]||t('perWeek'); }
 /* Séries de barres pour le bloc "Progression" de l'accueil, façon Kalo :
    change de résolution selon l'onglet actif (semaine/mois/3 mois/année). */
 function kmBarSeries(period){
@@ -3284,7 +3395,7 @@ function renderHome(){
       '<div class="ik-hero-big"><div class="n">'+kmW.toFixed(2).replace('.',',')+'</div><div class="u">km</div></div>'+
       '<div class="hero-quip">'+homeLoadQuip(kmW)+'</div>'+
       '<div class="ik-hero-mid">'+
-        '<div class="ik-hero-ring-wrap">'+donutSVG([{v:xpv.pct,color:'var(--e)'},{v:100-xpv.pct,color:'rgba(255,255,255,.08)'}],52,6,'<div class="lvl-lab">NIV.</div><div class="lvl-n">'+XP.level+'</div>')+'</div>'+
+        '<div class="ik-hero-ring-wrap">'+donutSVG([{v:xpv.pct,color:'var(--e)'},{v:100-xpv.pct,color:'rgba(255,255,255,.08)'}],52,6,'<div class="lvl-lab">'+t('lvlShort')+'</div><div class="lvl-n">'+XP.level+'</div>')+'</div>'+
         '<div class="ik-hero-mid-txt"><div class="v">'+tp('levelXp',XP.level,XP.total)+'</div><div class="l">'+tp('xpBeforeLevel',Math.max(0,xpv.span-xpv.inLvl),XP.level+1)+'</div></div>'+
       '</div>'+
       '<div class="ik-hero-divider"></div>'+
@@ -3776,7 +3887,7 @@ function renderDebrief(){
     });
     h+='<div style="font-size:11px;color:var(--muted);margin-top:2px">\u23f1 = saisir le temps réel · \u2713 = "j\u2019ai respecté l\u2019allure" (remplit automatiquement avec le temps cible)</div></div>';
   }
-  h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>Durée (min)</label><input class="inp" type="number" value="'+(d.duration||'')+'" oninput="debriefData.duration=+this.value"></div><div class="field" style="flex:1"><label>Distance (km)</label><input class="inp" type="number" value="'+(d.distance||'')+'" oninput="debriefData.distance=+this.value"></div></div>';
+  h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>Durée (min)</label><input class="inp" type="number" max="1440" value="'+(d.duration||'')+'" oninput="debriefData.duration=Math.min(1440,+this.value||0)"></div><div class="field" style="flex:1"><label>Distance (km)</label><input class="inp" type="number" value="'+(d.distance||'')+'" oninput="debriefData.distance=+this.value"></div></div>';
   h+='<div class="field"><label>Allure moyenne /km</label><input class="inp" value="'+(d.pace||'')+'" oninput="debriefData.pace=this.value" placeholder="4:30"></div>';
   h+='<div class="field"><label>Dénivelé D+ (m, optionnel)</label><input class="inp" type="number" value="'+(d.deniv||'')+'" oninput="debriefData.deniv=+this.value" placeholder="0"></div>';
   h+='<div class="field"><label>RPE — difficulté ressentie : '+d.rpe+'/10</label><input type="range" min="1" max="10" value="'+d.rpe+'" style="width:100%" oninput="debriefData.rpe=+this.value;renderDebrief()"></div>';
@@ -4635,7 +4746,7 @@ function saveCfg(){
 let statsTab='bilan';
 function renderStats(){
   let h='<div class="seg-ctrl">'+
-    [['bilan','Bilan'],['run','Course'],['muscu','Muscu'],['medals','Trophées']].map(t=>'<div class="seg-btn'+(statsTab===t[0]?' on':'')+'" onclick="statsTab=\''+t[0]+'\';renderStats()">'+t[1]+'</div>').join('')+
+    [['bilan',t('tabBilan')],['run',t('tabRun')],['muscu',t('tabMuscu')],['medals',t('tabTrophies')]].map(tt=>'<div class="seg-btn'+(statsTab===tt[0]?' on':'')+'" onclick="statsTab=\''+tt[0]+'\';renderStats()">'+tt[1]+'</div>').join('')+
   '</div>';
   if(statsTab==='bilan') h+=statsBilan();
   if(statsTab==='run') h+=statsRun();
@@ -4647,10 +4758,10 @@ let bilanPeriod='week';
 function bodyInfoCard(){
   if(P.height&&P.weight) return '';
   return '<div class="card" style="margin-bottom:14px">'+
-    '<div class="card-t">📏 Complète ton profil</div>'+
-    '<div style="font-size:13px;color:var(--muted);margin-bottom:12px">Ta taille et ton poids servent à calculer ton IMC, tes calories et tes besoins.</div>'+
-    '<div class="field" style="margin-bottom:10px"><label>Taille</label><div class="inp pkfield" onclick="pickBodyHeight()">'+(P.height?P.height+' cm':'Choisir ta taille')+'</div></div>'+
-    '<div class="field" style="margin-bottom:0"><label>Poids</label><div class="inp pkfield" onclick="pickBodyWeight()">'+(P.weight?P.weight+' kg':'Choisir ton poids')+'</div></div>'+
+    '<div class="card-t">'+t('completeProfileTitle')+'</div>'+
+    '<div style="font-size:13px;color:var(--muted);margin-bottom:12px">'+t('completeProfileDesc')+'</div>'+
+    '<div class="field" style="margin-bottom:10px"><label>'+t('height')+'</label><div class="inp pkfield" onclick="pickBodyHeight()">'+(P.height?P.height+' cm':t('chooseHeight'))+'</div></div>'+
+    '<div class="field" style="margin-bottom:0"><label>'+t('weight')+'</label><div class="inp pkfield" onclick="pickBodyWeight()">'+(P.weight?P.weight+' kg':t('chooseWeight'))+'</div></div>'+
   '</div>';
 }
 function pickBodyHeight(){ pickInt('Taille (cm)',120,220,P.height||170,'cm',v=>{ P.height=v; saveAll(); renderStats(); toast('Taille enregistrée ✓'); }); }
@@ -4677,29 +4788,29 @@ function statsBilan(){
 
   // CARTE KILOMÉTRAGE — gros chiffre + delta + barres avec ligne de moyenne
   h+='<div class="kchart-card">'+
-    '<div class="kchart-top"><div><div class="kchart-lab">Kilométrage</div><div class="kchart-val">'+km.toFixed(1)+'<span>km cumulés</span></div></div>'+
-    (deltaPct!==null?'<div><div class="kchart-delta'+(deltaPct<0?' bad':'')+'">'+(deltaPct>0?'↑ ':deltaPct<0?'↓ ':'')+Math.abs(deltaPct)+'%</div><div class="kchart-delta-sub">vs période préc.</div></div>':'')+
+    '<div class="kchart-top"><div><div class="kchart-lab">'+t('mileage')+'</div><div class="kchart-val">'+km.toFixed(1)+'<span>'+t('kmCumulated')+'</span></div></div>'+
+    (deltaPct!==null?'<div><div class="kchart-delta'+(deltaPct<0?' bad':'')+'">'+(deltaPct>0?'↑ ':deltaPct<0?'↓ ':'')+Math.abs(deltaPct)+'%</div><div class="kchart-delta-sub">'+t('vsPrevPeriod')+'</div></div>':'')+
     '</div>'+
     kBarsHTML(bars.labels,bars.values,per==='week'?((new Date().getDay()+6)%7):null)+
   '</div>';
 
   // CARTE TENDANCE — ligne sur les 8 dernières semaines, peu importe l'onglet actif
   h+='<div class="kchart-card">'+
-    '<div class="kchart-top"><div><div class="kchart-lab">Tendance volume</div><div class="kchart-val">'+trend[trend.length-1].toFixed(1)+'<span>km cette sem.</span></div></div>'+
-    '<div><div class="kchart-delta">8 sem.</div></div></div>'+
+    '<div class="kchart-top"><div><div class="kchart-lab">'+t('volumeTrend')+'</div><div class="kchart-val">'+trend[trend.length-1].toFixed(1)+'<span>'+t('kmThisWeek')+'</span></div></div>'+
+    '<div><div class="kchart-delta">'+t('eightWeeksLab')+'</div></div></div>'+
     '<div style="margin-top:14px">'+lineChartSVG(trend,300,60,'var(--e2)')+'</div>'+
-    '<div class="kline-labs"><span>Il y a 8 sem.</span><span>Cette semaine</span></div>'+
+    '<div class="kline-labs"><span>'+t('weeksAgoLab')+'</span><span>'+t('thisWeek')+'</span></div>'+
   '</div>';
 
   // DUO TEMPS / SÉANCES
   const sessTarget=Math.round(((P.days&&P.days.length)||4)*weeksInPeriod(per));
   const sessPct=sessTarget?Math.min(100,Math.round(cnt/sessTarget*100)):0;
   h+='<div class="kduo">'+
-    '<div class="kduo-card"><div class="kduo-lab">Temps total</div><div class="kduo-val">'+fmtHM(mins)+'</div>'+
-      '<div class="kduo-sub" style="color:var(--muted)">sur la période</div></div>'+
-    '<div class="kduo-card"><div class="kduo-lab">Séances</div><div class="kduo-val">'+cnt+' <span style="font-size:12px;color:var(--muted);font-weight:600">/ '+sessTarget+'</span></div>'+
+    '<div class="kduo-card"><div class="kduo-lab">'+t('totalTime')+'</div><div class="kduo-val">'+fmtHM(mins)+'</div>'+
+      '<div class="kduo-sub" style="color:var(--muted)">'+t('overPeriod')+'</div></div>'+
+    '<div class="kduo-card"><div class="kduo-lab">'+t('sessionsCap')+'</div><div class="kduo-val">'+cnt+' <span style="font-size:12px;color:var(--muted);font-weight:600">/ '+sessTarget+'</span></div>'+
       '<div class="kgoal-bar"><div style="width:'+sessPct+'%"></div></div>'+
-      '<div class="kduo-sub">'+(sessPct>=100?'Objectif atteint ! 🎉':sessPct+'% de la cible')+'</div></div>'+
+      '<div class="kduo-sub">'+(sessPct>=100?t('goalReached'):tp('ofTarget',sessPct))+'</div></div>'+
   '</div>';
 
   // INSIGHTS — km/séance (delta), répartition des types (donut), meilleure fenêtre
@@ -4750,23 +4861,23 @@ function heatmap13(){
 }
 function statsRun(){
   const vdot=getUserVDOT();
-  let h='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+(vdot||'—')+'</div><div class="l">VDOT réel</div></div><div class="sbox"><div class="v">'+SESS.length+'</div><div class="l">Séances run</div></div><div class="sbox"><div class="v">'+totalKm().toFixed(0)+'</div><div class="l">km totaux</div></div><div class="sbox"><div class="v">'+(SESS.reduce((a,s)=>a+(s.duration||0),0)/60).toFixed(1)+'h</div><div class="l">Temps total</div></div></div>';
+  let h='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+(vdot||'—')+'</div><div class="l">'+t('vdotReal')+'</div></div><div class="sbox"><div class="v">'+SESS.length+'</div><div class="l">'+t('sessionsRun')+'</div></div><div class="sbox"><div class="v">'+totalKm().toFixed(0)+'</div><div class="l">'+t('kmTotal')+'</div></div><div class="sbox"><div class="v">'+(SESS.reduce((a,s)=>a+(s.duration||0),0)/60).toFixed(1)+'h</div><div class="l">'+t('totalTime')+'</div></div></div>';
   // zones
   if(vdot){
     const zones=[['EF',.70,'--ok'],['Tempo',.83,'--warn'],['Seuil',.88,'--or'],['VMA',.97,'--bad'],['Sprint',1.05,'--maitre']];
-    h+='<div class="card"><div class="card-t">🎯 Zones d\u2019allure</div>';
+    h+='<div class="card"><div class="card-t">'+t('paceZones')+'</div>';
     zones.forEach(z=>{ h+='<div class="zrow"><span class="zdot" style="background:var('+z[2]+')"></span><span class="zname">'+z[0]+'</span><span class="zval">'+spkToStr(paceFromPct(vdot,z[1]))+' /km</span></div>'; });
     h+='</div>';
     // predictions
     const dists=[['1500m',1500],['3000m',3000],['5000m',5000],['10km',10000],['Semi',21097],['Marathon',42195]];
-    h+='<div class="card"><div class="card-t">🔮 Prédictions</div>';
+    h+='<div class="card"><div class="card-t">'+t('predictions')+'</div>';
     dists.forEach(d=>{ h+='<div class="zrow"><span class="zname">'+d[0]+'</span><span class="zval mono" style="color:var(--snow)">'+fmtTime(predictTime(vdot,d[1]))+'</span></div>'; });
     h+='</div>';
     // form/fatigue SVG
-    h+='<div class="card"><div class="card-t">📈 Forme / Fatigue</div>'+formChart()+'</div>';
+    h+='<div class="card"><div class="card-t">'+t('formFatigue')+'</div>'+formChart()+'</div>';
   }
   // records
-  h+='<div class="card"><div class="card-t">🏅 Records personnels</div>'+
+  h+='<div class="card"><div class="card-t">'+t('personalRecords')+'</div>'+
     [['5000m',P.pb5k],['3000m',P.pb3k],['1500m',P.pb1500],['10km',P.pb10k]].map(r=>'<div class="zrow"><span class="zname">'+r[0]+'</span><span class="zval mono" style="color:var(--snow)">'+(r[1]||'—')+'</span></div>').join('')+'</div>';
   return h;
 }
@@ -4790,14 +4901,14 @@ function formChart(){
     '<path d="'+path(atlA)+'" fill="none" stroke="var(--maitre)" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 5"/>'+
     '</svg>'+
     '<div class="row" style="margin-top:10px;font-size:11.5px;gap:14px;justify-content:flex-start">'+
-    '<span style="display:flex;align-items:center;gap:5px"><span class="zdot" style="background:var(--e)"></span>Chronique</span>'+
-    '<span style="display:flex;align-items:center;gap:5px"><span class="zdot" style="background:var(--maitre)"></span>Aiguë</span></div>';
+    '<span style="display:flex;align-items:center;gap:5px"><span class="zdot" style="background:var(--e)"></span>'+t('chronic')+'</span>'+
+    '<span style="display:flex;align-items:center;gap:5px"><span class="zdot" style="background:var(--maitre)"></span>'+t('acute')+'</span></div>';
 }
 function statsMuscu(){
   const pr=MSESS.reduce((a,s)=>Math.max(a,s.tonnage||0),0);
-  let h='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+MSESS.length+'</div><div class="l">Séances</div></div><div class="sbox"><div class="v">'+(totalTonnage()/1000).toFixed(1)+'t</div><div class="l">Tonnage</div></div><div class="sbox"><div class="v">'+Math.round(pr)+'</div><div class="l">PR (kg/séance)</div></div><div class="sbox"><div class="v">'+MSESS.reduce((a,s)=>a+(s.sets||0),0)+'</div><div class="l">Séries totales</div></div></div>';
-  if(!MSESS.length) h+='<div class="card"><div class="empty"><div class="em-ic">🏋️</div><div style="font-size:13px">Lance ta première séance de muscu !</div></div></div>';
-  else h+='<div class="card"><div class="card-t">📅 Dernières séances</div>'+MSESS.slice(-6).reverse().map(s=>'<div class="zrow"><div><div class="zname">'+s.progName+'</div><div style="font-size:11px;color:var(--dim)">'+fmtDate(s.date)+'</div></div><span class="zval mono">'+Math.round(s.tonnage)+' kg</span></div>').join('')+'</div>';
+  let h='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+MSESS.length+'</div><div class="l">'+t('sessionsCap')+'</div></div><div class="sbox"><div class="v">'+(totalTonnage()/1000).toFixed(1)+'t</div><div class="l">'+t('tonnageLab')+'</div></div><div class="sbox"><div class="v">'+Math.round(pr)+'</div><div class="l">'+t('prPerSession')+'</div></div><div class="sbox"><div class="v">'+MSESS.reduce((a,s)=>a+(s.sets||0),0)+'</div><div class="l">'+t('totalSets')+'</div></div></div>';
+  if(!MSESS.length) h+='<div class="card"><div class="empty"><div class="em-ic">🏋️</div><div style="font-size:13px">'+t('startFirstMuscu')+'</div></div></div>';
+  else h+='<div class="card"><div class="card-t">'+t('lastSessions')+'</div>'+MSESS.slice(-6).reverse().map(s=>'<div class="zrow"><div><div class="zname">'+s.progName+'</div><div style="font-size:11px;color:var(--dim)">'+fmtDate(s.date)+'</div></div><span class="zval mono">'+Math.round(s.tonnage)+' kg</span></div>').join('')+'</div>';
   return h;
 }
 /* ============ BADGES TROPHÉES (Accomplissement / Performance) ============
@@ -4975,7 +5086,7 @@ function achievementsGridHTML(){
   const cats=['Accomplissement','Performance'];
   const unlockedCount=ACHIEVEMENTS.filter(achievementUnlocked).length;
   const years=achYears();
-  let h='<div class="card" style="margin-top:18px"><div class="row" style="margin-bottom:6px"><span class="card-t" style="margin:0">🏆 Trophées</span><span style="font-size:12px;color:var(--muted)">'+unlockedCount+' / '+ACHIEVEMENTS.length+'</span></div>'
+  let h='<div class="card" style="margin-top:18px"><div class="row" style="margin-bottom:6px"><span class="card-t" style="margin:0">🏆 '+t('tabTrophies')+'</span><span style="font-size:12px;color:var(--muted)">'+unlockedCount+' / '+ACHIEVEMENTS.length+'</span></div>'
     +'<div style="font-size:11px;color:var(--dim);margin-bottom:8px">Touche un trophée pour voir l\u2019animation ou la condition à remplir pour l\u2019obtenir.</div>';
   if(years.length){
     h+='<div class="pills" style="margin-bottom:10px">'
@@ -5151,20 +5262,22 @@ function bdImgErr(img){
 
 /* ---------- OUTILS — HUB ÉPURÉ ---------- */
 let outilsTab='home';
-const TOOLS={
-  aio:{name:'Performance Lab',sub:'Distance · Temps · Allure · Vitesse',icon:ICN('lab'),fn:'renderAIO'},
-  sante:{name:'Tableau de bord Santé',sub:'Poids, IMC, sommeil, nutrition...',icon:ICN('health'),fn:'renderSanteTool'},
-  chrono:{name:'Chronomètre',sub:'Tours, splits & statistiques',icon:ICN('stopwatch'),fn:'renderChrono'},
-  convert:{name:'Convertisseur',sub:'Allure, distance, poids...',icon:ICN('convert'),fn:'renderConvertTool'},
-  notes:{name:'Notes',sub:'Bloc-notes rapide',icon:ICN('note'),fn:'renderNotesTool'},
+function TOOLS_DEF(){ return {
+  aio:{name:t('toolAioName'),sub:t('toolAioSub'),icon:ICN('lab'),fn:'renderAIO'},
+  sante:{name:t('toolSanteName'),sub:t('toolSanteSub'),icon:ICN('health'),fn:'renderSanteTool'},
+  chrono:{name:t('toolChronoName'),sub:t('toolChronoSub'),icon:ICN('stopwatch'),fn:'renderChrono'},
+  convert:{name:t('toolConvertName'),sub:t('toolConvertSub'),icon:ICN('convert'),fn:'renderConvertTool'},
+  notes:{name:t('toolNotesName'),sub:t('toolNotesSub'),icon:ICN('note'),fn:'renderNotesTool'},
   // accessibles via recherche
-  vdot:{name:'VDOT & VO₂max',sub:'Estimer ta cylindrée',icon:ICN('lung'),fn:'renderVDOTtool'},
-  imc:{name:'IMC',sub:'Indice de masse corporelle',icon:ICN('scale'),fn:'renderIMC'},
-  hydra:{name:'Hydratation',sub:'Tes besoins en eau',icon:ICN('water'),fn:'renderHydraTool'},
-  bmr:{name:'Calories & Métabolisme',sub:'Besoins quotidiens',icon:ICN('fire'),fn:'renderBMRtool'},
-  agenda:{name:'Agenda',sub:'Tous vos événements',icon:ICN('calendar'),fn:'renderAgenda',hidden:true},
-  priere:{name:'Prières',sub:'Tous les horaires',icon:ICN('mosque'),fn:'renderPriere',hidden:true}
-};
+  vdot:{name:t('toolVdotName'),sub:t('toolVdotSub'),icon:ICN('lung'),fn:'renderVDOTtool'},
+  imc:{name:t('toolImcName'),sub:t('toolImcSub'),icon:ICN('scale'),fn:'renderIMC'},
+  hydra:{name:t('toolHydraName'),sub:t('toolHydraSub'),icon:ICN('water'),fn:'renderHydraTool'},
+  bmr:{name:t('toolBmrName'),sub:t('toolBmrSub'),icon:ICN('fire'),fn:'renderBMRtool'},
+  agenda:{name:t('toolAgendaName'),sub:t('toolAgendaSub'),icon:ICN('calendar'),fn:'renderAgenda',hidden:true},
+  priere:{name:t('toolPriereName'),sub:t('toolPriereSub'),icon:ICN('mosque'),fn:'renderPriere',hidden:true}
+}; }
+// TOOLS est recalculé à chaque affichage pour suivre la langue active (voir renderOutils/outilsHome)
+let TOOLS=TOOLS_DEF();
 const MAIN_TOOLS=['aio','sante','chrono'];
 const OTHER_TOOLS=['convert','notes'];
 function toolFav(){ return PREFS.favTools||['aio','sante','chrono','convert']; }
@@ -5173,13 +5286,14 @@ let toolSearch='';
 function recentTools(){ return PREFS.recentTools||[]; }
 function pushRecent(k){ let r=recentTools().filter(x=>x!==k); r.unshift(k); PREFS.recentTools=r.slice(0,4); saveAll(); }
 function renderOutils(){
+  TOOLS=TOOLS_DEF();
   let h='';
   if(outilsTab==='home'){ h=outilsHome(); $('#s-outils').innerHTML=h; bindToolSearch(); return; }
   if(outilsTab==='_timer'){ renderOutilsTimer(); return; }
-  const t=TOOLS[outilsTab]; if(!t){ outilsTab='home'; return renderOutils(); }
-  h='<div class="row" style="margin-bottom:14px"><button class="x" onclick="outilsBack()">‹</button><div class="man" style="font-weight:800;font-size:17px;flex:1;text-align:center;margin:0 8px">'+t.name+'</div><button class="x" onclick="toggleFav(\''+outilsTab+'\')" style="color:'+(toolFav().includes(outilsTab)?'var(--or)':'var(--dim)')+'">★</button></div><div id="outBody"></div>';
+  const tl=TOOLS[outilsTab]; if(!tl){ outilsTab='home'; return renderOutils(); }
+  h='<div class="row" style="margin-bottom:14px"><button class="x" onclick="outilsBack()">‹</button><div class="man" style="font-weight:800;font-size:17px;flex:1;text-align:center;margin:0 8px">'+tl.name+'</div><button class="x" onclick="toggleFav(\''+outilsTab+'\')" style="color:'+(toolFav().includes(outilsTab)?'var(--or)':'var(--dim)')+'">★</button></div><div id="outBody"></div>';
   $('#s-outils').innerHTML=h;
-  window[t.fn] && window[t.fn]();
+  window[tl.fn] && window[tl.fn]();
 }
 let outilsFrom='home';
 function outilsBack(){ outilsTab=outilsFrom||'home'; outilsFrom='home'; renderOutils(); }
@@ -5190,42 +5304,44 @@ function vdotBadge(){ const v=getUserVDOT()||'—'; return '<div onclick="openTo
 function outilsHome(){
   let h='<div class="row" style="margin:2px 0 14px;justify-content:flex-end">'+vdotBadge()+'</div>';
   // Raccourcis rapides Chrono + Minuteur
-  h+='<div style="display:flex;gap:10px;margin-bottom:16px"><div class="card" style="flex:1;padding:14px;margin:0;cursor:pointer;text-align:center" onclick="openTool(\'chrono\')"><div style="color:var(--e);display:flex;justify-content:center">'+ICN('stopwatch',26)+'</div><div style="font-weight:700;font-size:13px;margin-top:6px">Chronomètre</div></div><div class="card" style="flex:1;padding:14px;margin:0;cursor:pointer;text-align:center" onclick="openQuickTimer()"><div style="color:var(--warn);display:flex;justify-content:center">'+ICN('timer',26)+'</div><div style="font-weight:700;font-size:13px;margin-top:6px">Minuteur</div></div></div>';
-  h+='<div class="searchbox"><span class="searchic">'+ICN('search',18,'var(--muted)')+'</span><input class="inp" id="toolSearchInp" style="padding-left:42px" placeholder="Rechercher un outil..." value="'+toolSearch+'"></div>';
+  h+='<div style="display:flex;gap:10px;margin-bottom:16px"><div class="card" style="flex:1;padding:14px;margin:0;cursor:pointer;text-align:center" onclick="openTool(\'chrono\')"><div style="color:var(--e);display:flex;justify-content:center">'+ICN('stopwatch',26)+'</div><div style="font-weight:700;font-size:13px;margin-top:6px">'+t('toolChronoName')+'</div></div><div class="card" style="flex:1;padding:14px;margin:0;cursor:pointer;text-align:center" onclick="openQuickTimer()"><div style="color:var(--warn);display:flex;justify-content:center">'+ICN('timer',26)+'</div><div style="font-weight:700;font-size:13px;margin-top:6px">'+t('quickTimer')+'</div></div></div>';
+  h+='<div class="searchbox"><span class="searchic">'+ICN('search',18,'var(--muted)')+'</span><input class="inp" id="toolSearchInp" style="padding-left:42px" placeholder="'+t('searchTool')+'" value="'+toolSearch+'"></div>';
   const q=toolSearch.toLowerCase().trim();
   if(q){
-    const res=Object.entries(TOOLS).filter(([k,t])=>t.name.toLowerCase().includes(q));
-    h+='<div class="lab" style="margin:14px 0 10px">'+res.length+' résultat(s)</div>';
-    res.forEach(([k,t])=>{ h+=toolRow(k,t); });
+    const res=Object.entries(TOOLS).filter(([k,tl])=>tl.name.toLowerCase().includes(q));
+    h+='<div class="lab" style="margin:14px 0 10px">'+tp('resultsCount',res.length)+'</div>';
+    res.forEach(([k,tl])=>{ h+=toolRow(k,tl); });
     return h;
   }
   // FAVORIS
   const favs=toolFav().filter(k=>TOOLS[k]);
-  h+='<div class="row" style="margin:18px 0 10px"><span class="lab">Favoris</span><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="editFavs()">Modifier</span></div>';
+  h+='<div class="row" style="margin:18px 0 10px"><span class="lab">'+t('favorites')+'</span><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="editFavs()">'+t('edit')+'</span></div>';
   h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:22px">';
-  favs.slice(0,8).forEach(k=>{ const t=TOOLS[k]; h+='<div class="favtile" onclick="openTool(\''+k+'\')"><div style="color:var(--e);display:flex;justify-content:center">'+t.icon+'</div><div class="favlab">'+favShort(t.name)+'</div></div>'; });
+  favs.slice(0,8).forEach(k=>{ const tl=TOOLS[k]; h+='<div class="favtile" onclick="openTool(\''+k+'\')"><div style="color:var(--e);display:flex;justify-content:center">'+tl.icon+'</div><div class="favlab">'+favShort(k)+'</div></div>'; });
   h+='</div>';
   // OUTILS PRINCIPAUX
-  h+='<div class="lab" style="margin:0 0 12px">Outils principaux</div>';
-  MAIN_TOOLS.forEach(k=>{ const t=TOOLS[k];
-    h+='<div class="list-row" onclick="openTool(\''+k+'\')"><div class="lr-icon">'+t.icon+'</div><div class="lr-txt"><div class="lr-title">'+t.name+'</div><div class="lr-sub">'+t.sub+'</div></div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>';
+  h+='<div class="lab" style="margin:0 0 12px">'+t('mainTools')+'</div>';
+  MAIN_TOOLS.forEach(k=>{ const tl=TOOLS[k];
+    h+='<div class="list-row" onclick="openTool(\''+k+'\')"><div class="lr-icon">'+tl.icon+'</div><div class="lr-txt"><div class="lr-title">'+tl.name+'</div><div class="lr-sub">'+tl.sub+'</div></div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>';
   });
   // AUTRES OUTILS
-  h+='<div class="lab" style="margin:18px 0 12px">Autres outils</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px">';
-  OTHER_TOOLS.forEach(k=>{ const t=TOOLS[k]; h+='<div class="favtile" style="padding:12px 4px" onclick="openTool(\''+k+'\')"><div style="color:var(--e);display:flex;justify-content:center">'+t.icon+'</div><div class="favlab">'+favShort(t.name)+'</div></div>'; });
+  h+='<div class="lab" style="margin:18px 0 12px">'+t('otherTools')+'</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px">';
+  OTHER_TOOLS.forEach(k=>{ const tl=TOOLS[k]; h+='<div class="favtile" style="padding:12px 4px" onclick="openTool(\''+k+'\')"><div style="color:var(--e);display:flex;justify-content:center">'+tl.icon+'</div><div class="favlab">'+favShort(k)+'</div></div>'; });
   h+='</div>';
   return h;
 }
-function favShort(n){ const m={'Performance Lab':'Perf. Lab','Tableau de bord Santé':'Santé','Chronomètre':'Chrono','Convertisseur':'Convert.','VDOT & VO₂max':'VDOT','Calories & Métabolisme':'Calories','Hydratation':'Eau'}; return m[n]||n; }
+// Labels courts pour les tuiles, par clé d'outil (indépendant de la langue affichée dans le nom complet)
+function favShort(k){ const m={aio:{fr:'Perf. Lab',en:'Perf. Lab',ar:'مختبر'},sante:{fr:'Santé',en:'Health',ar:'الصحة'},chrono:{fr:'Chrono',en:'Timer',ar:'ساعة'},convert:{fr:'Convert.',en:'Convert.',ar:'تحويل'},vdot:{fr:'VDOT',en:'VDOT',ar:'VDOT'},bmr:{fr:'Calories',en:'Calories',ar:'سعرات'},hydra:{fr:'Eau',en:'Water',ar:'ماء'}};
+  return (m[k]&&m[k][curLang()])||(TOOLS[k]?TOOLS[k].name:k); }
 function editFavs(){
-  let h='<div class="tip" style="margin-bottom:14px">Touche une étoile pour ajouter/retirer un outil de tes favoris.</div>';
-  Object.entries(TOOLS).forEach(([k,t])=>{ h+=toolRow(k,t); });
-  $('#settingsBody').innerHTML=h; $('#ovSettings').querySelector('h2').textContent='Modifier les favoris'; openOv('ovSettings');
+  let h='<div class="tip" style="margin-bottom:14px">'+t('tapStarHint')+'</div>';
+  Object.entries(TOOLS).forEach(([k,tl])=>{ h+=toolRow(k,tl); });
+  $('#settingsBody').innerHTML=h; $('#ovSettings').querySelector('h2').textContent=t('editFavsTitle'); openOv('ovSettings');
 }
-function toolRow(k,t){ const fav=toolFav().includes(k);
-  return '<div class="list-row"><div class="lr-icon" style="cursor:pointer" onclick="openTool(\''+k+'\')">'+t.icon+'</div><div class="lr-txt" style="cursor:pointer" onclick="openTool(\''+k+'\')"><div class="lr-title">'+t.name+'</div>'+(t.sub?'<div class="lr-sub">'+t.sub+'</div>':'')+'</div><span onclick="event.stopPropagation();toggleFav(\''+k+'\')" style="color:'+(fav?'var(--or)':'var(--dim)')+';font-size:17px;cursor:pointer;padding:4px">★</span></div>'; }
+function toolRow(k,tl){ const fav=toolFav().includes(k);
+  return '<div class="list-row"><div class="lr-icon" style="cursor:pointer" onclick="openTool(\''+k+'\')">'+tl.icon+'</div><div class="lr-txt" style="cursor:pointer" onclick="openTool(\''+k+'\')"><div class="lr-title">'+tl.name+'</div>'+(tl.sub?'<div class="lr-sub">'+tl.sub+'</div>':'')+'</div><span onclick="event.stopPropagation();toggleFav(\''+k+'\')" style="color:'+(fav?'var(--or)':'var(--dim)')+';font-size:17px;cursor:pointer;padding:4px">★</span></div>'; }
 function openQuickTimer(){ outilsFrom='home'; outilsTab='_timer'; renderOutilsTimer(); }
-function renderOutilsTimer(){ $('#s-outils').innerHTML='<div class="row" style="margin-bottom:14px"><button class="x" onclick="outilsTab=\'home\';renderOutils()">‹</button><div class="man" style="font-weight:800;font-size:17px;flex:1;text-align:center">Minuteur</div><div style="width:34px"></div></div><div id="outBody"></div>'; renderTimer(); }
+function renderOutilsTimer(){ $('#s-outils').innerHTML='<div class="row" style="margin-bottom:14px"><button class="x" onclick="outilsTab=\'home\';renderOutils()">‹</button><div class="man" style="font-weight:800;font-size:17px;flex:1;text-align:center">'+t('quickTimer')+'</div><div style="width:34px"></div></div><div id="outBody"></div>'; renderTimer(); }
 
 /* ============ TABLEAU DE BORD SANTÉ ============ */
 function renderSanteTool(){
@@ -5755,57 +5871,57 @@ function renderProfile(){
   // ===== HERO — avatar + nom + email/bio, épuré (image de référence : Profil) =====
   h+='<div class="card stag pf-hero" style="animation-delay:0s"><div class="pf-avwrap">'+avatarHTML(88,34)+
     '<div class="pf-cam" onclick="changePhoto()">📷</div></div>';
-  h+='<div class="pf-name-row"><div class="man" style="font-weight:800;font-size:20px">'+(P.name||'Athlète')+'</div>'+
+  h+='<div class="pf-name-row"><div class="man" style="font-weight:800;font-size:20px">'+(P.name||t('athleteDefault'))+'</div>'+
     '<div class="pf-edit" onclick="openProfileEdit()" title="'+t('editInfos')+'">✏️</div></div>';
-  h+='<div style="font-size:12.5px;color:var(--muted);margin-top:3px" onclick="editBio()">'+(window.currentUserEmail||P.bio||'Ajoute une biographie ✍️')+'</div>';
+  h+='<div style="font-size:12.5px;color:var(--muted);margin-top:3px" onclick="editBio()">'+(window.currentUserEmail||P.bio||t('addBioPrompt'))+'</div>';
   h+='<div class="rankchip" style="margin-top:11px;background:'+rk.bg+';color:#fff">'+t('level')+' '+XP.level+' · '+rk.name+' · '+XP.total+' XP</div>';
   h+='</div>';
   // ===== APERÇU RAPIDE — carte unique, une ligne par info (au lieu d'une grille + bannière séparées) =====
   h+='<div class="grp-card stag" style="animation-delay:.04s">'+
-    '<div class="grp-row no-chev"><div class="lr-icon">📏</div><div class="lr-title">Taille / poids</div><div class="lr-val">'+(P.height||'—')+' cm · '+(P.weight||'—')+' kg</div></div>'+
-    '<div class="grp-row no-chev"><div class="lr-icon">🎂</div><div class="lr-title">Âge</div><div class="lr-val">'+age()+' ans</div></div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">📏</div><div class="lr-title">'+t('heightWeight')+'</div><div class="lr-val">'+(P.height||'—')+' cm · '+(P.weight||'—')+' kg</div></div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">🎂</div><div class="lr-title">'+t('age')+'</div><div class="lr-val">'+age()+' '+(curLang()==='en'?'yo':curLang()==='ar'?'سنة':'ans')+'</div></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">📈</div><div class="lr-title">VDOT</div><div class="lr-val">'+(getUserVDOT()||'—')+'</div></div>'+
-    '<div class="grp-row" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\';renderSport()"><div class="lr-icon">🎯</div><div class="lr-title">Objectif</div><div class="lr-val">'+(P.objRace||P.goal||'Aucun')+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\';renderSport()"><div class="lr-icon">🎯</div><div class="lr-title">'+t('objective')+'</div><div class="lr-val">'+(P.objRace||P.goal||t('noObjective'))+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
   // ===== PROGRESSION — badges intégrés directement au profil =====
   { const unlocked=unlockedBadges(); const recent=[...unlocked].sort((a,b)=>b.date<a.date?-1:1).slice(0,5).map(u=>BADGE_TIERS.find(b=>b.key===u.key)).filter(Boolean);
-    h+='<div class="sec-head stag" style="animation-delay:.06s"><h3 class="grp-lab" style="margin:0">Progression</h3><span class="see" onclick="openBadges()">'+unlocked.length+' / '+BADGE_TIERS.length+' · Voir tout ›</span></div>';
+    h+='<div class="sec-head stag" style="animation-delay:.06s"><h3 class="grp-lab" style="margin:0">'+t('progression')+'</h3><span class="see" onclick="openBadges()">'+tp('seeAllProgress',unlocked.length,BADGE_TIERS.length)+'</span></div>';
     h+='<div class="card stag" style="animation-delay:.07s">';
     if(recent.length){
       h+='<div class="row" style="gap:10px;flex-wrap:wrap">'+recent.map(b=>'<div class="bd-icon '+b.cls+'" style="width:52px;height:52px;cursor:pointer" onclick="openBadgeQuick(\''+b.key+'\')">'+bdGlyph(b.key)+'</div>').join('')+'</div>';
     } else {
-      h+='<div style="font-size:12px;color:var(--muted)">Aucun badge obtenu pour l\u2019instant — ta première séance te rapprochera du badge Initié.</div>';
+      h+='<div style="font-size:12px;color:var(--muted)">'+t('noBadgeYet')+'</div>';
     }
     const nb=nextBadge();
     if(nb){
       const prog=badgeProgress(nb);
-      h+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--hair)"><div class="row" style="margin-bottom:6px"><span style="font-size:12px;color:var(--muted)">Prochain badge · '+nb.name+'</span><span class="mono" style="font-size:12px;color:var(--e)">'+prog.pct+'%</span></div><div class="pbar" style="height:6px"><div style="width:'+prog.pct+'%"></div></div></div>';
+      h+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--hair)"><div class="row" style="margin-bottom:6px"><span style="font-size:12px;color:var(--muted)">'+tp('nextBadgeLab',nb.name)+'</span><span class="mono" style="font-size:12px;color:var(--e)">'+prog.pct+'%</span></div><div class="pbar" style="height:6px"><div style="width:'+prog.pct+'%"></div></div></div>';
     }
     h+='</div>';
   }
   // ===== SECTIONS GROUPÉES — Compte / Préférences / Support, une seule carte par groupe =====
-  h+='<div class="grp-lab stag" style="animation-delay:.09s">Compte</div>';
+  h+='<div class="grp-lab stag" style="animation-delay:.09s">'+t('account')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.10s">'+
-    '<div class="grp-row" onclick="openFriends()"><div class="lr-icon">👥</div><div class="lr-title">Amis & Classement</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileEdit()"><div class="lr-icon">👤</div><div class="lr-title">Gérer le profil</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'account\')"><div class="lr-icon">🔐</div><div class="lr-title">Mot de passe & sécurité</div><div class="lr-val">'+(window.currentUserEmail||'Non connecté')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'notif\')"><div class="lr-icon">🔔</div><div class="lr-title">Notifications</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'lang\')"><div class="lr-icon">🌍</div><div class="lr-title">Langue</div><div class="lr-val">'+langInfo[1]+' '+langInfo[2]+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openFriends()"><div class="lr-icon">👥</div><div class="lr-title">'+t('friendsRanking')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileEdit()"><div class="lr-icon">👤</div><div class="lr-title">'+t('manageProfile')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'account\')"><div class="lr-icon">🔐</div><div class="lr-title">'+t('passwordSecurity')+'</div><div class="lr-val">'+(window.currentUserEmail||t('notConnected'))+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'notif\')"><div class="lr-icon">🔔</div><div class="lr-title">'+t('notifLabel')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'lang\')"><div class="lr-icon">🌍</div><div class="lr-title">'+t('language')+'</div><div class="lr-val">'+langInfo[1]+' '+langInfo[2]+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
-  h+='<div class="grp-lab stag" style="animation-delay:.12s">Préférences</div>';
+  h+='<div class="grp-lab stag" style="animation-delay:.12s">'+t('preferences')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.13s">'+
-    '<div class="grp-row" onclick="openRecords()"><div class="lr-icon">🏅</div><div class="lr-title">Historique & records</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">📊</div><div class="lr-title">Statistiques</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row no-chev"><div class="lr-icon">🎨</div><div class="lr-title">Thème</div>'+pfThemeSwitchHTML()+'</div>'+
-    '<div class="grp-row no-chev"><div class="lr-icon">🖌️</div><div class="lr-title">Couleur de l\u2019app</div>'+pfAccentPickerHTML()+'</div>'+
-    '<div class="grp-row no-chev"><div class="lr-icon">🧓</div><div><div class="lr-title">Mode simplifié</div><div style="font-size:11px;color:var(--muted);margin-top:2px;max-width:200px">3 onglets, écrans allégés, textes plus grands — l\u2019essentiel seulement</div></div><div class="toggle'+(P.easyMode?' on':'')+'" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
+    '<div class="grp-row" onclick="openRecords()"><div class="lr-icon">🏅</div><div class="lr-title">'+t('historyRecords')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">📊</div><div class="lr-title">'+t('statistics')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">🎨</div><div class="lr-title">'+t('theme')+'</div>'+pfThemeSwitchHTML()+'</div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">🖌️</div><div class="lr-title">'+t('appColor')+'</div>'+pfAccentPickerHTML()+'</div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">🧓</div><div><div class="lr-title">'+t('simplifiedMode')+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px;max-width:200px">'+t('simplifiedModeDesc')+'</div></div><div class="toggle'+(P.easyMode?' on':'')+'" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
   '</div>';
-  h+='<div class="grp-lab stag" style="animation-delay:.15s">Support</div>';
+  h+='<div class="grp-lab stag" style="animation-delay:.15s">'+t('support')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.16s">'+
-    '<div class="grp-row" onclick="openProfileSection(\'data\')"><div class="lr-icon">🔒</div><div class="lr-title">Données & confidentialité</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'data\')"><div class="lr-icon">❓</div><div class="lr-title">Centre d\u2019aide</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'data\')"><div class="lr-icon">🔒</div><div class="lr-title">'+t('dataPrivacy')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'data\')"><div class="lr-icon">❓</div><div class="lr-title">'+t('helpCenter')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
-  h+='<div style="text-align:center;color:var(--dim);font-size:12px;margin:20px 0">IKORUN — Elite Athletic Intelligence · v2.0</div>';
+  h+='<div style="text-align:center;color:var(--dim);font-size:12px;margin:20px 0">'+t('footerTag')+'</div>';
   $('#s-profil').innerHTML=h;
 }
 function renderProfileSimple(){
@@ -5813,23 +5929,23 @@ function renderProfileSimple(){
   const compDays=P.compDate?daysBetween(new Date(),new Date(P.compDate)):null;
   let h='';
   h+='<div class="card stag pf-hero" style="animation-delay:0s;text-align:center"><div class="pf-avwrap">'+avatarHTML(72,28)+'</div>'+
-    '<div class="man" style="font-weight:800;font-size:18px;margin-top:8px">'+(P.name||'Athlète')+'</div>'+
-    '<div style="font-size:12px;color:var(--muted);margin-top:2px">'+age()+' ans · VDOT '+(getUserVDOT()||'—')+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div>'+
+    '<div class="man" style="font-weight:800;font-size:18px;margin-top:8px">'+(P.name||t('athleteDefault'))+'</div>'+
+    '<div style="font-size:12px;color:var(--muted);margin-top:2px">'+age()+' '+(curLang()==='en'?'yo':curLang()==='ar'?'سنة':'ans')+' · VDOT '+(getUserVDOT()||'—')+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div>'+
     '<div class="rankchip" style="margin-top:10px;background:'+rk.bg+';color:#fff;display:inline-block">'+t('level')+' '+XP.level+' · '+rk.name+'</div></div>';
 
-  h+='<div class="grp-lab stag" style="animation-delay:.05s">Ton espace</div>';
+  h+='<div class="grp-lab stag" style="animation-delay:.05s">'+t('yourSpace')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.06s">'+
-    '<div class="grp-row" onclick="openFriends()"><div class="lr-icon">👥</div><div class="lr-title">Amis & Classement</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">📊</div><div class="lr-title">Statistiques</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openBadges()"><div class="lr-icon">🏆</div><div class="lr-title">Badges</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="nav(\'outils\')"><div class="lr-icon">🧮</div><div class="lr-title">Outils & calculateurs</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileEdit()"><div class="lr-icon">✏️</div><div class="lr-title">Modifier mon profil</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openFriends()"><div class="lr-icon">👥</div><div class="lr-title">'+t('friendsRanking')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">📊</div><div class="lr-title">'+t('statistics')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openBadges()"><div class="lr-icon">🏆</div><div class="lr-title">'+t('badgesLabel')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="nav(\'outils\')"><div class="lr-icon">🧮</div><div class="lr-title">'+t('toolsCalc')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileEdit()"><div class="lr-icon">✏️</div><div class="lr-title">'+t('editMyProfile')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
 
-  h+='<div class="grp-lab stag" style="animation-delay:.08s">Réglages</div>';
+  h+='<div class="grp-lab stag" style="animation-delay:.08s">'+t('settings')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.09s">'+
-    '<div class="grp-row no-chev"><div class="lr-icon">🧓</div><div class="lr-title">Mode simplifié</div><div class="toggle on" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'account\')"><div class="lr-icon">🔐</div><div class="lr-title">Compte</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">🧓</div><div class="lr-title">'+t('simplifiedMode')+'</div><div class="toggle on" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'account\')"><div class="lr-icon">🔐</div><div class="lr-title">'+t('account')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
   return h;
 }
@@ -5838,7 +5954,7 @@ let _pfSheet=null;
 function openProfileSection(key){
   _pfSheet=key;
   const titles={account:'👤 Compte',lang:'🌍 '+t('language'),appearance:'🎨 '+t('appearance'),notif:'🔔 '+t('notifsApp'),data:'🔒 '+t('dataPrivacy')};
-  $('#ovProgTitle').textContent=titles[key]||'Réglages';
+  $('#ovProgTitle').textContent=titles[key]||t('settings');
   $('#progBody').innerHTML=pfSectionHTML(key);
   openOv('ovProg');
 }
