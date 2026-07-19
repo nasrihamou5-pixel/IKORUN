@@ -63,50 +63,8 @@ async function cloudPush(key, value){
   }catch(e){ console.error('cloud push error', e); }
 }
 
-/* ============ DÉTECTION NAVIGATEUR INTÉGRÉ (in-app browser) ============
-   Google bloque l'OAuth (erreur 403 disallowed_useragent) quand la page
-   s'ouvre dans le webview d'une appli tierce (Messenger, Instagram, FB,
-   TikTok, LinkedIn...). Impossible à contourner côté code : il faut faire
-   sortir l'utilisateur vers Safari/Chrome. */
-function isInAppBrowser(){
-  const ua = navigator.userAgent || navigator.vendor || window.opera || '';
-  return /FBAN|FBAV|FB_IAB|Instagram|Line\/|MicroMessenger|TikTok|Snapchat|Twitter|LinkedInApp|\bGSA\/|WhatsApp/i.test(ua)
-    || (/wv\)/i.test(ua)) // webview Android générique
-    || (window.navigator.standalone === false && /iPhone|iPad/i.test(ua) && !/Safari/i.test(ua) && !/CriOS/i.test(ua)); // fallback iOS webview sans "Safari" ni Chrome
-}
-function openInRealBrowser(){
-  const url = window.location.href;
-  // Android : tente de forcer l'ouverture via un intent Chrome (marche depuis
-  // la plupart des webviews Android type Messenger/Instagram)
-  if(/Android/i.test(navigator.userAgent)){
-    const stripped = url.replace(/^https?:\/\//,'');
-    window.location.href = 'intent://'+stripped+'#Intent;scheme=https;package=com.android.chrome;end';
-    setTimeout(()=>{ window.location.href = url; }, 800);
-  } else {
-    // iOS : pas d'intent équivalent fiable, on copie le lien + on guide vers le menu "•••"
-    if(navigator.clipboard){ navigator.clipboard.writeText(url).catch(()=>{}); }
-    toast('Lien copié — ouvre Safari et colle-le, ou touche ••• en haut à droite');
-  }
-}
-(function checkInAppBrowser(){
-  if(isInAppBrowser()){
-    document.addEventListener('DOMContentLoaded', ()=>{
-      const warn = document.getElementById('inappWarn');
-      const main = document.getElementById('loginMain');
-      if(warn) warn.style.display='block';
-      if(main) main.querySelector('.gbtn')?.setAttribute('style','opacity:.35;pointer-events:none;');
-    });
-  }
-})();
-
 let _googleAuthing=false;
 async function signInWithGoogle(){
-  if(isInAppBrowser()){
-    toast('Ouvre IKORUN dans Safari/Chrome pour te connecter');
-    const warn = document.getElementById('inappWarn');
-    if(warn) warn.style.display='block';
-    return;
-  }
   if(!window.supabaseClient) return;
   if(_googleAuthing) return; // évite les doubles-taps qui donnent l'impression que rien ne se passe
   _googleAuthing=true;
@@ -226,8 +184,8 @@ async function checkUsernameLive(rawValue, statusEl, inputEl){
     const { data, error } = await window.supabaseClient.rpc('username_available',{
       p_username: v, p_uid: window.currentUserId||null
     });
-    if(seq!==_unameSeq) return false; // réponse obsolète (l'utilisateur a retapé entre temps)
-    if(error){ console.error('username_available error',error); if(statusEl){ statusEl.textContent=''; statusEl.className='uname-status'; } return false; }
+    if(seq!==_unameSeq) return null; // réponse obsolète (retapé entretemps) : on l'ignore, on ne touche pas au résultat affiché
+    if(error){ console.error('username_available error',error); if(statusEl){ statusEl.textContent=''; statusEl.className='uname-status'; } return null; }
     if(!data){
       if(statusEl){ statusEl.textContent='✕ Déjà pris'; statusEl.className='uname-status bad'; }
       inputEl && inputEl.classList.add('uname-bad');
@@ -239,7 +197,7 @@ async function checkUsernameLive(rawValue, statusEl, inputEl){
   }catch(e){
     console.error('checkUsernameLive error',e);
     if(statusEl){ statusEl.textContent=''; statusEl.className='uname-status'; }
-    return false;
+    return null;
   }
 }
 function wireUsernameField(inputId, statusId, onResult){
@@ -249,7 +207,7 @@ function wireUsernameField(inputId, statusId, onResult){
     clearTimeout(deb);
     deb=setTimeout(async ()=>{
       const ok=await checkUsernameLive(inp.value, st, inp);
-      if(onResult) onResult(ok);
+      if(ok!==null && onResult) onResult(ok);
     },400);
   });
 }
@@ -1710,7 +1668,7 @@ function maybeResumeLive(){
 }
 
 /* ---------- ONBOARDING ---------- */
-let obStep=1; const OB_MAX=6;
+let obStep=1; const OB_MAX=5;
 let obEasy=false; // true si >26 ans → mode simplifié activé auto (n'affecte plus la navigation de l'onboarding)
 function startOnboarding(){
   obEasy=false;
@@ -1729,19 +1687,46 @@ function startOnboarding(){
 }
 let obUsernameOk=false;
 let obUsernameAuto=true; // tant que vrai, le pseudo se génère automatiquement à partir du prénom
+async function isUsernameAvailableRaw(v){
+  if(!usernameFormatOk(v)) return false;
+  if(!window.supabaseClient) return true;
+  try{
+    const { data, error } = await window.supabaseClient.rpc('username_available',{ p_username:v, p_uid:window.currentUserId||null });
+    if(error){ console.error('username_available error',error); return false; }
+    return !!data;
+  }catch(e){ console.error('username_available exception',e); return false; }
+}
+// Propose d'abord le pseudo le plus simple et le plus proche du prénom donné
+// (le prénom tel quel), et ne rajoute un suffixe que si c'est vraiment nécessaire.
+async function suggestAvailableUsername(name){
+  let base=slugifyUsername(name);
+  if(base.length<3) base=(base||'runner').padEnd(3,'0');
+  if(base.length>20) base=base.slice(0,20);
+  if(await isUsernameAvailableRaw(base)) return base;
+  for(let i=2;i<=99;i++){
+    const c=(base+i).slice(0,20);
+    if(await isUsernameAvailableRaw(c)) return c;
+  }
+  return (base+Math.floor(Math.random()*900+100)).slice(0,20);
+}
+let _autoUnameGen=0;
 function wireAutoUsername(){
   const nameInp=$('#ob_name'); if(!nameInp) return;
   let deb=null;
   nameInp.oninput=()=>{
     if(!obUsernameAuto) return;
     clearTimeout(deb);
-    deb=setTimeout(()=>{
+    deb=setTimeout(async ()=>{
       const name=nameInp.value.trim();
       if(!name) return;
-      const u=suggestUsername(name);
+      const mySeq=++_autoUnameGen;
       const uInp=$('#ob_username'); if(!uInp) return;
+      const stEl=$('#ob_username_status');
+      if(stEl){ stEl.textContent='Vérification…'; stEl.className='uname-status checking'; }
+      const u=await suggestAvailableUsername(name);
+      if(mySeq!==_autoUnameGen || !obUsernameAuto) return; // le prénom a changé ou l'utilisateur a repris la main entretemps
       uInp.value=u;
-      checkUsernameLive(u,$('#ob_username_status'),uInp).then(ok=>{ obUsernameOk=ok; });
+      checkUsernameLive(u,stEl,uInp).then(ok=>{ if(ok!==null) obUsernameOk=ok; });
     },350);
   };
   const uInp=$('#ob_username');
@@ -1752,14 +1737,6 @@ function slugifyUsername(name){
   s=s.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
   if(s.length>14) s=s.slice(0,14);
   return s;
-}
-function suggestUsername(name){
-  let base=slugifyUsername(name);
-  if(base.length<2) base='runner';
-  const suffix=String(Math.floor(Math.random()*900)+100);
-  let u=(base+'_'+suffix).slice(0,20);
-  if(u.length<3) u=(u+'000').slice(0,3);
-  return u;
 }
 /* ===== Étape Performances : lignes Distance | Temps ===== */
 let OB_PERFS=[{dist:null,meters:null,timeS:null}];
@@ -1832,11 +1809,16 @@ function obValidate(n){
     obEasy = ageYears>26;
     if(obEasy) toast('Profil rapide activé — mode simplifié activé ✓');
   }
-  if(n===3){ if(!$('#ob_level').querySelector('.pill.on')){ toast('Choisis un niveau'); return false; } if(!obv('ob_km')){ toast('Choisis ton volume'); return false; } }
+  if(n===3){ if(!$('#ob_level').querySelector('.pill.on')){ toast('Choisis un niveau'); return false; } }
   if(n===4){ if(!$('#ob_goal').value.trim()||!$('#ob_compdate').value){ toast('Objectif et date requis'); return false; } }
   if(n===5){ const valid=OB_PERFS.filter(p=>p.meters&&p.timeS); if(!valid.length){ toast('Ajoute au moins une performance'); return false; } }
-  if(n===6){ if(!obv('ob_time')){ toast('Temps par séance requis'); return false; } }
   return true;
+}
+/* Volume hebdo initial déduit du niveau déclaré (l'utilisateur n'a plus à
+   deviner un chiffre) : affiné ensuite automatiquement par le moteur au fil
+   des séances réelles, et ajustable dans Profil / lors de la génération d'un plan. */
+function kmWeekFromLevel(level){
+  return ({'Débutant':20,'Intermédiaire':35,'Confirmé':50,'Très avancé':70,'Élite':90})[level]||35;
 }
 function finishOnboarding(){
   // Les jours d'entraînement ne sont plus demandés ici : ils sont choisis
@@ -1845,13 +1827,14 @@ function finishOnboarding(){
   const valid=OB_PERFS.filter(p=>p.meters&&p.timeS!=null);
   RECORDS=valid.map(p=>({dist:p.dist,meters:p.meters,time:fmtTime(p.timeS),date:todayKey()}));
   const find=m=>{ const r=valid.find(x=>x.meters===m); return r?fmtTime(r.timeS):''; };
+  const level=$('#ob_level').querySelector('.pill.on').dataset.v;
   P={
     setupDone:true, joinedAt:Date.now(),
-    name:$('#ob_name').value.trim(), username:$('#ob_username').value.trim(), bday:$('#ob_bday').value, sex:$('#ob_sex').value, city:$('#ob_city').value.trim(),
-    level:$('#ob_level').querySelector('.pill.on').dataset.v, kmWeek:+obv('ob_km')||40,
+    name:$('#ob_name').value.trim(), username:$('#ob_username').value.trim(), bday:$('#ob_bday').value, sex:$('#ob_sex').value,
+    level, kmWeek:kmWeekFromLevel(level),
     goal:$('#ob_goal').value.trim(), compDate:$('#ob_compdate').value,
     t5k:find(5000), t3k:find(3000), t1500:find(1500), t10k:find(10000),
-    sessionTime:+obv('ob_time')||60, coach:$('#ob_coach').value.trim(),
+    coach:$('#ob_coach').value.trim(),
     theme:'blue', pb5k:find(5000), pb1500:find(1500), pb10k:find(10000),
     easyMode:obEasy // >26 ans → mode simplifié activé auto (modifiable ensuite dans Profil > Mode simplifié)
   };
