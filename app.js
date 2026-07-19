@@ -898,6 +898,14 @@ const BADGE_KEY_MIGRATION={
   emeraude:'avance', diamant:'elite', cristal:'exceptionnel', galaxie:'legendaire',
   divin:'ultime', vvvelite:'iconique'
 };
+/* Ouverture rapide au clic sur une icône badge (gallerie, bandeau profil/accueil) :
+   va directement à l'écran lumineux (obtenu → replay, verrouillé → aperçu),
+   sans passer par la fiche "Détails du badge". Cette dernière reste accessible
+   via le lien "Voir les détails" affiché sur l'écran lumineux. */
+function openBadgeQuick(key){
+  const unlocked=unlockedBadges(); const rec=unlocked.find(u=>u.key===key);
+  if(rec) replayBadgeAnim(key); else previewBadgeAnim(key);
+}
 function unlockedBadges(){
   const raw=DB.load('badges_unlocked')||[];
   let changed=false;
@@ -976,8 +984,12 @@ function replayBadgeAnim(key){
     '<div class="bd-unlock-badge">'+bdGlyph(b.key)+sparks+'</div></div>'+
     '<div class="man" style="font-weight:800;font-size:26px;margin-top:18px">'+b.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+b.desc+'</div>'+
-    '<div style="color:var(--dim);font-size:12px;margin-top:16px">Touche pour fermer</div>';
-  ov.onclick=()=>ov.remove();
+    '<div style="color:var(--e);font-size:12px;margin-top:16px;text-decoration:underline;cursor:pointer" data-details>Voir les détails</div>'+
+    '<div style="color:var(--dim);font-size:12px;margin-top:8px">Touche pour fermer</div>';
+  ov.onclick=(e)=>{
+    if(e.target.hasAttribute('data-details')){ ov.remove(); openBadgeDetail(key); return; }
+    ov.remove();
+  };
   document.body.appendChild(ov);
 }
 /* Aperçu d'un badge encore verrouillé : même show lumineux, en plus sobre,
@@ -1002,8 +1014,12 @@ function previewBadgeAnim(key){
     '<div class="man" style="font-weight:800;font-size:26px;margin-top:18px">'+b.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+b.desc+'</div>'+
     condHtml+
-    '<div style="color:var(--dim);font-size:12px;margin-top:18px">Touche pour fermer</div>';
-  ov.onclick=()=>ov.remove();
+    '<div style="color:var(--e);font-size:12px;margin-top:16px;text-decoration:underline;cursor:pointer" data-details>Voir les détails</div>'+
+    '<div style="color:var(--dim);font-size:12px;margin-top:8px">Touche pour fermer</div>';
+  ov.onclick=(e)=>{
+    if(e.target.hasAttribute('data-details')){ ov.remove(); openBadgeDetail(key); return; }
+    ov.remove();
+  };
   document.body.appendChild(ov);
 }
 let badgeFilter='tous';
@@ -1022,7 +1038,7 @@ function renderBadgeGallery(){
   h+='<div class="bd-grid">';
   list.forEach((b,i)=>{
     const on=ukeys.has(b.key);
-    h+='<div class="bd-cell" onclick="openBadgeDetail(\''+b.key+'\')">'+
+    h+='<div class="bd-cell" onclick="openBadgeQuick(\''+b.key+'\')">'+
       '<div class="bd-icon '+b.cls+(on?'':' locked')+'" style="--sw:'+(i%5)+'">'+bdGlyph(b.key)+(on?'':'<div class="bd-lock-chip">🔒</div>')+'</div>'+
       '<div class="bd-name">'+b.name+'</div><div class="bd-lvl">'+b.xpMin+' XP</div></div>';
   });
@@ -1068,7 +1084,7 @@ function badgeStripHTML(){
   let h='<div class="card stag" style="animation-delay:.12s">';
   h+='<div class="row" style="margin-bottom:12px"><span class="card-t" style="margin:0">🏆 Mes badges</span><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="openBadges()">'+unlocked.length+' / '+BADGE_TIERS.length+' · Voir tout ›</span></div>';
   if(recent.length){
-    h+='<div class="row" style="gap:10px;flex-wrap:wrap">'+recent.map(b=>'<div class="bd-icon '+b.cls+'" style="width:52px;height:52px;cursor:pointer" onclick="openBadgeDetail(\''+b.key+'\')">'+bdGlyph(b.key)+'</div>').join('')+'</div>';
+    h+='<div class="row" style="gap:10px;flex-wrap:wrap">'+recent.map(b=>'<div class="bd-icon '+b.cls+'" style="width:52px;height:52px;cursor:pointer" onclick="openBadgeQuick(\''+b.key+'\')">'+bdGlyph(b.key)+'</div>').join('')+'</div>';
   } else {
     h+='<div style="font-size:12px;color:var(--muted)">Aucun badge obtenu pour l\u2019instant — ta première séance te rapprochera du badge Initié.</div>';
   }
@@ -5480,7 +5496,7 @@ function renderProfile(){
     h+='<div class="sec-head stag" style="animation-delay:.06s"><h3 class="grp-lab" style="margin:0">Progression</h3><span class="see" onclick="openBadges()">'+unlocked.length+' / '+BADGE_TIERS.length+' · Voir tout ›</span></div>';
     h+='<div class="card stag" style="animation-delay:.07s">';
     if(recent.length){
-      h+='<div class="row" style="gap:10px;flex-wrap:wrap">'+recent.map(b=>'<div class="bd-icon '+b.cls+'" style="width:52px;height:52px;cursor:pointer" onclick="openBadgeDetail(\''+b.key+'\')">'+bdGlyph(b.key)+'</div>').join('')+'</div>';
+      h+='<div class="row" style="gap:10px;flex-wrap:wrap">'+recent.map(b=>'<div class="bd-icon '+b.cls+'" style="width:52px;height:52px;cursor:pointer" onclick="openBadgeQuick(\''+b.key+'\')">'+bdGlyph(b.key)+'</div>').join('')+'</div>';
     } else {
       h+='<div style="font-size:12px;color:var(--muted)">Aucun badge obtenu pour l\u2019instant — ta première séance te rapprochera du badge Initié.</div>';
     }
