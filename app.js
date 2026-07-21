@@ -261,7 +261,7 @@ let friendsCache={friends:[],pending:[],sent:[]};
 function openFriends(){
   friendsTab='list';
   friendsSelected=null;
-  $('#ovProgTitle').textContent='👥 Amis & Classement';
+  $('#ovProgTitle').textContent=t('friendsTitle');
   $('#progBody').innerHTML='<div id="friendsBody"></div>';
   openOv('ovProg');
   loadFriendsData();
@@ -292,45 +292,45 @@ function renderFriends(){
   if(friendsTab==='profile'){ $('#friendsBody').innerHTML=renderFriendProfileHTML(); return; }
 
   let h='<div class="fr-tabs">'+
-    '<div class="fr-tab '+(friendsTab==='list'?'on':'')+'" onclick="friendsTab=\'list\';renderFriends()">👥 Amis</div>'+
-    '<div class="fr-tab '+(friendsTab==='rank'?'on':'')+'" onclick="friendsTab=\'rank\';renderFriends()">🏆 Classement</div>'+
-    '<div class="fr-tab '+(friendsTab==='refer'?'on':'')+'" onclick="friendsTab=\'refer\';renderFriends()">🎁 Parrainage</div>'+
+    '<div class="fr-tab '+(friendsTab==='list'?'on':'')+'" onclick="friendsTab=\'list\';renderFriends()">'+t('tabFriendsList')+'</div>'+
+    '<div class="fr-tab '+(friendsTab==='rank'?'on':'')+'" onclick="friendsTab=\'rank\';renderFriends()">'+t('tabRank')+'</div>'+
+    '<div class="fr-tab '+(friendsTab==='refer'?'on':'')+'" onclick="friendsTab=\'refer\';renderFriends()">'+t('tabRefer')+'</div>'+
   '</div>';
 
   if(!window.supabaseClient || !window.currentUserId){
-    h+='<div class="card"><div class="empty"><div class="em-ic">🔒</div><div style="font-size:13px">Connecte-toi avec Google pour ajouter des amis, te comparer et te parrainer.</div></div></div>';
+    h+='<div class="card"><div class="empty"><div class="em-ic">🔒</div><div style="font-size:13px">'+t('loginToAddFriends')+'</div></div></div>';
     $('#friendsBody').innerHTML=h; return;
   }
 
   if(friendsTab==='list'){
-    h+='<div class="fr-search">'+ICN('search',16)+'<input id="addFriendSearch" placeholder="Chercher un ami par pseudo" autocapitalize="off" autocorrect="off" spellcheck="false" oninput="onFriendSearchInput()"></div>';
+    h+='<div class="fr-search">'+ICN('search',16)+'<input id="addFriendSearch" placeholder="'+t('searchFriendPlaceholder')+'" autocapitalize="off" autocorrect="off" spellcheck="false" oninput="onFriendSearchInput()"></div>';
     h+='<div id="friendSearchResults"></div>';
     if(friendsCache.pending.length){
-      h+='<div class="sec-lab">Demandes reçues</div>';
+      h+='<div class="sec-lab">'+t('receivedRequests')+'</div>';
       friendsCache.pending.forEach(p=>{
-        h+='<div class="fr-req-card"><div class="row"><div style="font-weight:700">'+p.username+'</div><div class="row" style="gap:6px"><button class="btn sm" style="width:auto" onclick="respondFriend('+p.reqId+',true)">✓ Accepter</button><button class="btn ghost sm" style="width:auto" onclick="respondFriend('+p.reqId+',false)">✕</button></div></div></div>';
+        h+='<div class="fr-req-card"><div class="row"><div style="font-weight:700">'+p.username+'</div><div class="row" style="gap:6px"><button class="btn sm" style="width:auto" onclick="respondFriend('+p.reqId+',true)">'+t('acceptBtn')+'</button><button class="btn ghost sm" style="width:auto" onclick="respondFriend('+p.reqId+',false)">✕</button></div></div></div>';
       });
     }
-    h+='<div class="sec-lab">Tes amis ('+friendsCache.friends.length+')</div>';
-    if(!friendsCache.friends.length) h+='<div class="card"><div class="empty"><div class="em-ic">👋</div><div style="font-size:13px">Pas encore d\u2019amis — cherche quelqu\u2019un par son pseudo !</div></div></div>';
+    h+='<div class="sec-lab">'+tp('yourFriendsCount',friendsCache.friends.length)+'</div>';
+    if(!friendsCache.friends.length) h+='<div class="card"><div class="empty"><div class="em-ic">👋</div><div style="font-size:13px">'+t('noFriendsYet')+'</div></div></div>';
     else h+='<div class="card" style="padding:2px 6px">'+friendsCache.friends.map((f,i)=>{
       const av=f.photo_url?'<div class="fr-avatar" style="background-image:url(\''+f.photo_url+'\')"></div>':'<div class="fr-avatar">'+(f.username?f.username[0].toUpperCase():'?')+'</div>';
       return '<div class="fr-row" style="border-bottom:'+(i<friendsCache.friends.length-1?'1px solid var(--hair)':'none')+'" onclick="openFriendProfile(\''+f.id+'\')">'+av+
-        '<div class="fr-info"><div class="fr-name">'+f.username+'</div><div class="fr-meta"><span class="fr-lvl-chip">Niv. '+f.level+'</span><span class="fr-km-txt">'+f.km_week+' km cette semaine</span></div></div>'+
-        '<span class="fr-del" onclick="event.stopPropagation();removeFriend(\''+f.id+'\')" title="Retirer">🗑</span>'+
+        '<div class="fr-info"><div class="fr-name">'+f.username+'</div><div class="fr-meta"><span class="fr-lvl-chip">'+t('lvlDot')+' '+f.level+'</span><span class="fr-km-txt">'+tp('kmThisWeekShort',f.km_week)+'</span></div></div>'+
+        '<span class="fr-del" onclick="event.stopPropagation();removeFriend(\''+f.id+'\')" title="'+t('removeLab')+'">🗑</span>'+
         '<span class="lr-chev">'+ICN('chevronR',16)+'</span></div>';
     }).join('')+'</div>';
     if(friendsCache.sent.length){
-      h+='<div class="sec-lab">Demandes envoyées</div>';
-      h+='<div class="card" style="padding:2px 6px">'+friendsCache.sent.map((p,i)=>'<div class="fr-row" style="opacity:.65;cursor:default;border-bottom:'+(i<friendsCache.sent.length-1?'1px solid var(--hair)':'none')+'"><div class="fr-avatar">'+(p.username?p.username[0].toUpperCase():'?')+'</div><div class="fr-info"><div class="fr-name">'+p.username+'</div><div class="fr-km-txt" style="margin-top:3px">En attente de réponse…</div></div></div>').join('')+'</div>';
+      h+='<div class="sec-lab">'+t('sentRequests')+'</div>';
+      h+='<div class="card" style="padding:2px 6px">'+friendsCache.sent.map((p,i)=>'<div class="fr-row" style="opacity:.65;cursor:default;border-bottom:'+(i<friendsCache.sent.length-1?'1px solid var(--hair)':'none')+'"><div class="fr-avatar">'+(p.username?p.username[0].toUpperCase():'?')+'</div><div class="fr-info"><div class="fr-name">'+p.username+'</div><div class="fr-km-txt" style="margin-top:3px">'+t('awaitingResponse')+'</div></div></div>').join('')+'</div>';
     }
   }
 
   if(friendsTab==='rank'){
-    const me={username:(P.name||'Toi')+' (toi)',xp:(XP&&XP.total)||0,level:(XP&&XP.level)||1,photo_url:P.photo};
+    const me={username:(P.name||t('youDefaultName'))+t('youParen'),xp:(XP&&XP.total)||0,level:(XP&&XP.level)||1,photo_url:P.photo};
     const all=[...friendsCache.friends,me].sort((a,b)=>b.xp-a.xp);
-    h+='<div class="sec-lab">Classement XP entre amis</div>';
-    if(all.length===1) h+='<div class="card"><div class="empty"><div class="em-ic">🏆</div><div style="font-size:13px">Ajoute des amis pour débloquer le classement !</div></div></div>';
+    h+='<div class="sec-lab">'+t('xpRanking')+'</div>';
+    if(all.length===1) h+='<div class="card"><div class="empty"><div class="em-ic">🏆</div><div style="font-size:13px">'+t('addFriendsUnlock')+'</div></div></div>';
     else {
       const top3=all.slice(0,3), rest=all.slice(3);
       const medals=['🥇','🥈','🥉'];
@@ -339,15 +339,15 @@ function renderFriends(){
         return '<div class="fr-pod-card p'+(i+1)+'"'+(f.id?' onclick="openFriendProfile(\''+f.id+'\')" style="cursor:pointer"':'')+'><div class="fr-pod-medal">'+medals[i]+'</div>'+av+'<div class="fr-pod-name">'+f.username+'</div><div class="fr-pod-xp">'+f.xp+' XP</div></div>';
       }).join('')+'</div>';
       if(rest.length) h+='<div class="card" style="padding:4px 14px">'+rest.map((f,i)=>
-        '<div class="fr-rank-row'+(f.id?'':' me')+'" style="border-bottom:'+(i<rest.length-1?'1px solid var(--hair)':'none')+(f.id?';cursor:pointer':'')+'"'+(f.id?' onclick="openFriendProfile(\''+f.id+'\')"':'')+'><div class="fr-rank-num">#'+(i+4)+'</div><div style="flex:1;font-weight:700;font-size:13.5px">'+f.username+'</div><div style="font-size:12.5px;color:var(--muted);font-weight:600">'+f.xp+' XP · Niv.'+f.level+'</div></div>'
+        '<div class="fr-rank-row'+(f.id?'':' me')+'" style="border-bottom:'+(i<rest.length-1?'1px solid var(--hair)':'none')+(f.id?';cursor:pointer':'')+'"'+(f.id?' onclick="openFriendProfile(\''+f.id+'\')"':'')+'><div class="fr-rank-num">#'+(i+4)+'</div><div style="flex:1;font-weight:700;font-size:13.5px">'+f.username+'</div><div style="font-size:12.5px;color:var(--muted);font-weight:600">'+f.xp+' XP · '+t('lvlDot')+f.level+'</div></div>'
       ).join('')+'</div>';
     }
   }
 
   if(friendsTab==='refer'){
-    h+='<div class="fr-ref-card"><div class="fr-ref-lab">Ton code de parrainage</div><div id="myRefCode" class="fr-ref-code">···</div><button class="btn ghost sm" style="margin-top:14px;width:auto" onclick="shareReferralCode()">↗ Partager mon code</button></div>';
-    h+='<div class="field" style="margin-top:16px"><label>J\u2019ai un code</label><div class="row" style="gap:8px"><input class="inp" id="applyCodeInput" placeholder="Ex: A3F9K2" style="flex:1"><button class="btn sm" style="width:auto" onclick="submitReferralCode()">Valider</button></div></div>';
-    h+='<div style="font-size:11.5px;color:var(--dim);margin-top:10px">🎁 Toi et ton parrain gagnez chacun +50 XP après ta 1\u1d49\u02b3\u1d49 séance.</div>';
+    h+='<div class="fr-ref-card"><div class="fr-ref-lab">'+t('referralCodeLabel')+'</div><div id="myRefCode" class="fr-ref-code">···</div><button class="btn ghost sm" style="margin-top:14px;width:auto" onclick="shareReferralCode()">'+t('shareCode')+'</button></div>';
+    h+='<div class="field" style="margin-top:16px"><label>'+t('haveCode')+'</label><div class="row" style="gap:8px"><input class="inp" id="applyCodeInput" placeholder="Ex: A3F9K2" style="flex:1"><button class="btn sm" style="width:auto" onclick="submitReferralCode()">'+t('validateBtn')+'</button></div></div>';
+    h+='<div style="font-size:11.5px;color:var(--dim);margin-top:10px">'+t('referralRewardText')+'</div>';
     myReferralCode().then(c=>{ const el=$('#myRefCode'); if(el) el.textContent=c||'—'; });
   }
 
@@ -360,12 +360,12 @@ function onFriendSearchInput(){
   const el=$('#addFriendSearch'); const v=el?el.value.trim():'';
   const box=$('#friendSearchResults'); if(!box) return;
   if(!v){ box.innerHTML=''; return; }
-  box.innerHTML='<div style="font-size:12px;color:var(--muted);padding:6px 2px">Recherche…</div>';
+  box.innerHTML='<div style="font-size:12px;color:var(--muted);padding:6px 2px">'+t('searchingLab')+'</div>';
   _friendSearchDeb=setTimeout(()=>searchFriendCandidates(v),350);
 }
 async function searchFriendCandidates(v){
   const box=$('#friendSearchResults'); if(!box) return;
-  if(!window.supabaseClient || !window.currentUserId){ box.innerHTML='<div style="font-size:12px;color:var(--muted);padding:6px 2px">Connecte-toi pour chercher des amis</div>'; return; }
+  if(!window.supabaseClient || !window.currentUserId){ box.innerHTML='<div style="font-size:12px;color:var(--muted);padding:6px 2px">'+t('loginToSearchFriends')+'</div>'; return; }
   try{
     const { data } = await window.supabaseClient.from('public_profiles')
       .select('user_id,username,level')
@@ -373,19 +373,19 @@ async function searchFriendCandidates(v){
       .neq('user_id',window.currentUserId)
       .limit(8);
     const results=data||[];
-    if(!results.length){ box.innerHTML='<div style="font-size:12px;color:var(--muted);padding:6px 2px">Aucun pseudo trouvé</div>'; return; }
+    if(!results.length){ box.innerHTML='<div style="font-size:12px;color:var(--muted);padding:6px 2px">'+t('noUsernameFound')+'</div>'; return; }
     const known=new Set([...friendsCache.friends,...friendsCache.pending,...friendsCache.sent].map(f=>f.id));
     box.innerHTML=results.map(r=>{
       const already=known.has(r.user_id);
       return '<div class="card" style="padding:10px 14px;margin-top:6px"><div class="row"><div style="font-weight:700">@'+r.username+'</div>'+
-        (already?'<span style="font-size:11.5px;color:var(--muted)">déjà lié</span>':'<button class="btn sm" style="width:auto" onclick="sendFriendRequest(\''+r.user_id+'\')">＋ Ajouter</button>')+
+        (already?'<span style="font-size:11.5px;color:var(--muted)">'+t('alreadyLinked')+'</span>':'<button class="btn sm" style="width:auto" onclick="sendFriendRequest(\''+r.user_id+'\')">'+t('addBtn')+'</button>')+
         '</div></div>';
     }).join('');
-  }catch(e){ box.innerHTML='<div style="font-size:12px;color:var(--bad);padding:6px 2px">Erreur de recherche</div>'; }
+  }catch(e){ box.innerHTML='<div style="font-size:12px;color:var(--bad);padding:6px 2px">'+t('searchError')+'</div>'; }
 }
 async function sendFriendRequest(targetId){
   const { error } = await window.supabaseClient.from('friendships').insert({user_id:window.currentUserId, friend_id:targetId, status:'pending'});
-  if(error) toast('Déjà envoyé ou déjà ami'); else { toast('Demande envoyée ✓'); $('#friendSearchResults').innerHTML=''; $('#addFriendSearch').value=''; loadFriendsData(); }
+  if(error) toast(t('alreadySentOrFriend')); else { toast(t('requestSent')); $('#friendSearchResults').innerHTML=''; $('#addFriendSearch').value=''; loadFriendsData(); }
 }
 async function respondFriend(reqId,accept){
   if(accept) await window.supabaseClient.from('friendships').update({status:'accepted'}).eq('id',reqId);
@@ -394,50 +394,50 @@ async function respondFriend(reqId,accept){
 }
 function openFriendProfile(id){
   friendsSelected=id; friendsTab='profile';
-  $('#ovProgTitle').textContent='👤 Profil';
+  $('#ovProgTitle').textContent=t('friendProfileTitle');
   renderFriends();
 }
 function backToFriendsList(){
   friendsTab='list'; friendsSelected=null;
-  $('#ovProgTitle').textContent='👥 Amis & Classement';
+  $('#ovProgTitle').textContent=t('friendsTitle');
   renderFriends();
 }
 function friendBadgesHTML(f){
   // Réutilise les mêmes paliers que MEDAL_CATS, mais calculés à partir des stats
   // synchronisées de l'ami (total_sessions / streak_days / total_km) plutôt que
   // des données locales (SESS/MSESS), qui n'existent que pour l'utilisateur courant.
-  const icons={'Séances':'medal','Régularité':'fire','Distance':'chart'};
-  const vals={'Séances':f.total_sessions||0,'Régularité':f.streak_days||0,'Distance':f.total_km||0};
+  const icons={sessions:'medal',streak:'fire',distance:'chart'};
+  const vals={sessions:f.total_sessions||0,streak:f.streak_days||0,distance:f.total_km||0};
   let cells='', anyUnlocked=false;
   MEDAL_CATS.forEach(c=>{
-    const v=Math.floor(vals[c.name]||0);
-    let tierIdx=-1; c.thr.forEach((t,i)=>{ if(v>=t)tierIdx=i; });
+    const v=Math.floor(vals[c.key]||0);
+    let tierIdx=-1; c.thr.forEach((th,i)=>{ if(v>=th)tierIdx=i; });
     const locked=tierIdx<0; if(!locked) anyUnlocked=true;
     const tierLab=locked?'':TIERS[tierIdx][0];
-    cells+='<div class="badge-mini'+(locked?' locked':'')+'" title="'+c.name+(tierLab?' · '+tierLab:'')+'">'+ICN(icons[c.name]||'medal',18)+'</div>';
+    cells+='<div class="badge-mini'+(locked?' locked':'')+'" title="'+c.name+(tierLab?' · '+tierLab:'')+'">'+ICN(icons[c.key]||'medal',18)+'</div>';
   });
-  return '<div class="card" style="padding:16px"><div class="lab" style="margin-bottom:10px">Badges</div><div class="badge-mini-row">'+cells+'</div>'+
-    (anyUnlocked?'':'<div style="font-size:11.5px;color:var(--dim);margin-top:8px">Aucun badge débloqué pour l\u2019instant.</div>')+'</div>';
+  return '<div class="card" style="padding:16px"><div class="lab" style="margin-bottom:10px">'+t('badgesLabel')+'</div><div class="badge-mini-row">'+cells+'</div>'+
+    (anyUnlocked?'':'<div style="font-size:11.5px;color:var(--dim);margin-top:8px">'+t('noBadgeUnlocked')+'</div>')+'</div>';
 }
 function renderFriendProfileHTML(){
   const f=[...friendsCache.friends,...friendsCache.pending,...friendsCache.sent].find(x=>x.id===friendsSelected);
-  const back='<div class="row" style="margin-bottom:14px;cursor:pointer" onclick="backToFriendsList()">'+ICN('chevronR',16).replace('<path','<path transform="rotate(180 12 12)"')+' <span style="font-weight:700;margin-left:4px">Retour aux amis</span></div>';
-  if(!f) return back+'<div class="card"><div class="empty"><div class="em-ic">🤷</div><div style="font-size:13px">Profil introuvable.</div></div></div>';
+  const back='<div class="row" style="margin-bottom:14px;cursor:pointer" onclick="backToFriendsList()">'+ICN('chevronR',16).replace('<path','<path transform="rotate(180 12 12)"')+' <span style="font-weight:700;margin-left:4px">'+t('backToFriends')+'</span></div>';
+  if(!f) return back+'<div class="card"><div class="empty"><div class="em-ic">🤷</div><div style="font-size:13px">'+t('profileNotFound')+'</div></div></div>';
   const av=f.photo_url?'<div class="fr-profile-av" style="background-image:url(\''+f.photo_url+'\')"></div>':'<div class="fr-profile-av">'+(f.username?f.username[0].toUpperCase():'?')+'</div>';
   let h=back;
   h+='<div class="fr-profile-hero">'+
-    '<div style="position:relative;display:inline-block">'+av+'<span class="fr-profile-lvl">Niv. '+(f.level||1)+'</span></div>'+
+    '<div style="position:relative;display:inline-block">'+av+'<span class="fr-profile-lvl">'+t('lvlDot')+' '+(f.level||1)+'</span></div>'+
     '<div style="font-weight:800;font-size:18px;margin-top:16px">'+f.username+'</div>'+
     '<div style="font-size:12.5px;color:var(--muted);margin-top:2px">'+(f.xp||0)+' XP</div>'+
   '</div>';
   h+='<div class="stat-quatro" style="margin-top:12px">'+
     '<div class="card stat-card"><div class="stat-ic">'+ICN('lung',14)+'</div><div class="stat-v">'+(f.vdot||'—')+'</div><div class="stat-l">VDOT</div></div>'+
-    '<div class="card stat-card"><div class="stat-ic">'+ICN('run',14)+'</div><div class="stat-v">'+(f.km_week||0)+'</div><div class="stat-l">km/sem.</div></div>'+
-    '<div class="card stat-card"><div class="stat-ic">'+ICN('fire',14)+'</div><div class="stat-v">'+(f.streak_days||0)+'</div><div class="stat-l">Jours de suite</div></div>'+
+    '<div class="card stat-card"><div class="stat-ic">'+ICN('run',14)+'</div><div class="stat-v">'+(f.km_week||0)+'</div><div class="stat-l">'+t('kmPerWeek')+'</div></div>'+
+    '<div class="card stat-card"><div class="stat-ic">'+ICN('fire',14)+'</div><div class="stat-v">'+(f.streak_days||0)+'</div><div class="stat-l">'+t('daysStreak')+'</div></div>'+
   '</div>';
   h+='<div class="stat-quatro" style="margin-top:8px">'+
-    '<div class="card stat-card"><div class="stat-ic">'+ICN('chart',14)+'</div><div class="stat-v">'+(f.total_km||0)+'</div><div class="stat-l">km au total</div></div>'+
-    '<div class="card stat-card"><div class="stat-ic">'+ICN('chart',14)+'</div><div class="stat-v">'+((f.total_tonnage||0).toLocaleString('fr-FR'))+'</div><div class="stat-l">Tonnage kg</div></div>'+
+    '<div class="card stat-card"><div class="stat-ic">'+ICN('chart',14)+'</div><div class="stat-v">'+(f.total_km||0)+'</div><div class="stat-l">'+t('kmTotalLab')+'</div></div>'+
+    '<div class="card stat-card"><div class="stat-ic">'+ICN('chart',14)+'</div><div class="stat-v">'+((f.total_tonnage||0).toLocaleString(localeCode()))+'</div><div class="stat-l">'+t('tonnageKgLab')+'</div></div>'+
   '</div>';
   h+='<div style="margin-top:12px">'+friendBadgesHTML(f)+'</div>';
   return h;
@@ -608,7 +608,151 @@ const I18N={
     vdotReal:'VDOT réel',sessionsRun:'Séances run',kmTotal:'km totaux',paceZones:'🎯 Zones d\u2019allure',
     predictions:'🔮 Prédictions',formFatigue:'📈 Forme / Fatigue',personalRecords:'🏅 Records personnels',
     chronic:'Chronique',acute:'Aiguë',tonnageLab:'Tonnage',prPerSession:'PR (kg/séance)',totalSets:'Séries totales',
-    startFirstMuscu:'Lance ta première séance de muscu !',lastSessions:'📅 Dernières séances'
+    startFirstMuscu:'Lance ta première séance de muscu !',lastSessions:'📅 Dernières séances',
+    tomorrow:'Demain',noUpcomingSession:'Aucune séance planifiée prochainement.',addSession:'Ajouter une séance',
+    showRestPlan:'Afficher le reste du plan · {0} semaines ↓',calendarTitle:'Calendrier',calendarSub:'Planifie ta progression',
+    friendsTitle:'👥 Amis & Classement',tabFriendsList:'👥 Amis',tabRank:'🏆 Classement',tabRefer:'🎁 Parrainage',
+    loginToAddFriends:'Connecte-toi avec Google pour ajouter des amis, te comparer et te parrainer.',
+    searchFriendPlaceholder:'Chercher un ami par pseudo',receivedRequests:'Demandes reçues',acceptBtn:'✓ Accepter',
+    yourFriendsCount:'Tes amis ({0})',noFriendsYet:'Pas encore d\u2019amis — cherche quelqu\u2019un par son pseudo !',
+    sentRequests:'Demandes envoyées',awaitingResponse:'En attente de réponse…',xpRanking:'Classement XP entre amis',
+    addFriendsUnlock:'Ajoute des amis pour débloquer le classement !',youParen:' (toi)',
+    referralCodeLabel:'Ton code de parrainage',shareCode:'↗ Partager mon code',haveCode:'J\u2019ai un code',
+    validateBtn:'Valider',referralRewardText:'🎁 Toi et ton parrain gagnez chacun +50 XP après ta 1\u1d49\u02b3\u1d49 séance.',
+    searchingLab:'Recherche…',loginToSearchFriends:'Connecte-toi pour chercher des amis',noUsernameFound:'Aucun pseudo trouvé',
+    alreadyLinked:'déjà lié',addBtn:'＋ Ajouter',searchError:'Erreur de recherche',alreadySentOrFriend:'Déjà envoyé ou déjà ami',
+    requestSent:'Demande envoyée ✓',friendProfileTitle:'👤 Profil',removeLab:'Retirer',lvlDot:'Niv.',kmThisWeekShort:'{0} km cette semaine',youDefaultName:'Toi',backToFriends:'Retour aux amis',profileNotFound:'Profil introuvable.',noBadgeUnlocked:'Aucun badge débloqué pour l\u2019instant.',kmPerWeek:'km/sem.',daysStreak:'Jours de suite',kmTotalLab:'km au total',tonnageKgLab:'Tonnage kg',
+    addPerf:'＋ Ajouter une performance',addChronosHint:'Ajoute tes chronos : ils alimentent ton VDOT et ton plan.',
+    bestPerf:'🏆 Meilleure perf',avgHR:'FC moy',maxHRshort:'max',perfHistoryTitle:'Historique des performances',
+    chooseDistance:'Choisis la distance',otherDist:'Autre',customDistance:'Distance personnalisée',
+    chronoLab:'Chrono *',chronoFor:'Chrono {0}',dateField:'Date',placeOptional:'Lieu (optionnel)',
+    placeholderPlace:'Lieu de la course',feelOptional:'Sensation (optionnel)',feelPlaceholder:'Comment c\u2019était ?',
+    officialComp:'🏁 Compétition officielle',saveThisPerf:'💾 Enregistrer cette performance',backBtn:'‹ Retour',
+    perfAddedComp:'Performance ajoutée · +XP compétition ✓',perfAdded:'Performance ajoutée ✓',
+    editProfileTitle:'Modifier le profil',usernameLab:'Nom d\u2019utilisateur',usernameHint:'Utilisé par tes amis pour te retrouver',
+    firstNameLab:'Prénom',cityLab:'Ville',birthDateLab:'Date de naissance',heightCmLab:'Taille (cm)',weightKgLab:'Poids (kg)',
+    hrMaxLab:'FC max',hrRestLab:'FC repos',kmWeekLab:'Km / semaine',compDateLab:'Date compétition',coachLab:'Coach',saveBtn:'💾 Sauver',
+    filterAll:'Tous',filterObtained:'Obtenus',filterLocked:'Verrouillés',badgesObtainedCount:'{0} / {1} badges obtenus',
+    badgeDetailTitle:'Détails du badge',tierOf:'Palier {0} sur {1}',newBadgeUnlocked:'NOUVEAU BADGE DÉBLOQUÉ',
+    tapToContinue:'Touche pour continuer',seeDetails:'Voir les détails',tapToClose:'Touche pour fermer',previewLocked:'APERÇU · VERROUILLÉ',
+    obtainedOn:'✅ Obtenu le {0}',lockedLab:'🔒 Verrouillé',replayAnim:'↻ Revivre l\u2019animation',seePreview:'↻ Voir un aperçu',
+    obtainConditions:'Conditions d\u2019obtention',globalProgress:'Progression globale',shareBadgeBtn:'↗ Partager ce badge',closeLab:'Fermer',
+    weightLab:'⚖️ Poids',imcLab:'📐 IMC',imcUnderweight:'Maigreur',imcNormal:'Normal',imcOverweight:'Surpoids',imcObese:'Obésité',
+    sessionsPerWeek:'Séances / sem',metabolismKcal:'Métabolisme kcal',burned7d:'Brûlées 7j (run)',waterPerDay:'Eau / jour',
+    recentFormTitle:'😴 Forme récente (7 dernières séances)',sleepLab:'Sommeil',energyFeelLab:'Énergie / sensations',fatigueLab:'Fatigue',
+    tipBalanced:'Tout est équilibré, continue ainsi ! 💪',tipHighFatigue:'⚠️ Fatigue élevée : privilégie le repos et le sommeil cette semaine.',
+    tipLowSleep:'😴 Ton sommeil est insuffisant : vise 8h pour mieux récupérer.',tipGreatFeel:'🔥 Excellentes sensations : tu peux pousser un peu plus !',
+    noDebriefHint:'Termine des séances avec leur bilan pour suivre ton sommeil, ta fatigue et ta récupération ici.',
+    nutritionTitle:'🍽️ Repères nutrition (athlète)',proteinLab:'Protéines',carbsLab:'Glucides',fatLab:'Lipides',kcalTarget:'kcal cible',
+    weightPickerTitle:'Ton poids (kg)',weightSaved:'Poids enregistré ✓',
+    labHint:'Saisis <b>2 valeurs</b> que tu connais. Les 2 autres se calculent automatiquement. ✨',
+    distField:'Distance',timeField:'Temps',paceField:'Allure',speedField:'Vitesse',calculatedLab:'calculé',toFillLab:'à saisir',
+    resetBtn:'↺ Réinitialiser',splitTimesTitle:'📍 Temps de passage',
+    vdotToolTitle:'VDOT (Jack Daniels)',physioEstimates:'Estimations physiologiques',vo2maxEst:'VO₂max estimé',
+    thresholdPace:'Allure seuil lactique',marathonPace:'Allure marathon',halfPace:'Allure semi',efPace:'Allure EF',
+    vdotAutoTip:'ℹ️ Ton VDOT se met à jour automatiquement depuis tes records. Ajoute tes chronos dans Profil → Records.',
+    waterNeedsTitle:'💧 Besoins en eau',dailyRest:'Quotidien (repos)',perRunHour:'Par heure de course',perHeatHour:'Par forte chaleur (+/h)',
+    hydraTip:'💡 Bois régulièrement par petites gorgées. Surveille la couleur de ton urine.',
+    basalMetabolism:'Métabolisme basal (kcal/j)',needsByActivity:'Besoins selon activité',
+    actSedentary:'Sédentaire',actLight:'Léger',actModerate:'Modéré',actIntense:'Intense',actAthlete:'Athlète',
+    valueField:'Valeur',fromField:'De',toField:'Vers',
+    quickNotesTitle:'📝 Notes rapides',notesPlaceholder:'Écris ici... (sauvegarde automatique)',autoSaveLocal:'💾 Sauvegarde automatique en local.',
+    lapBtn:'Tour',stopBtn:'Stop',resetBtn2:'Reset',bestLap:'Meilleur tour',slowestLap:'Plus lent',avgLap:'Moyenne',lapsLab:'Tours',
+    exportBtn:'Exporter',fastTag:'⚡ rapide',slowTag:'lent',lapsCopied:'Tours copiés ✓',
+    addEventBtn:'＋ Ajouter un événement',competitionDefault:'Compétition',noEventLab:'Aucun événement',pastLab:'passé',
+    eventTitlePrompt:'Titre de l\u2019événement :',eventDatePrompt:'Date (AAAA-MM-JJ) :',eventAdded:'Événement ajouté',
+    prayerTitle:'🕌 Prières · Béjaïa',uoifMethod:'Méthode UOIF · {0}',
+    obWelcomeTitle:'Bienvenue sur IKORUN',obWelcomeIntro:'Elite Athletic Intelligence.<br>Ton coaching personnel, calculé scientifiquement, 100% hors-ligne.',
+    obWhoTitle:'Qui es-tu ?',obWhoIntro:'Tes informations de base.',firstNamePh:'Ton prénom',firstNameReq:'Prénom *',
+    usernameReq:'Nom d\u2019utilisateur *',usernamePh:'pseudo_unique',usernameFormatHint:'3 à 20 caractères : lettres, chiffres, _',
+    birthDateReq:'Date de naissance *',sexReq:'Sexe *',selectLab:'Sélectionner',maleLab:'Homme',femaleLab:'Femme',
+    obLevelTitle:'Ton niveau',obLevelIntro:'Sois honnête, le plan s\u2019adapte.',
+    levelNote:'💡 Le <b>niveau</b> ajuste l\u2019intensité de ton plan et ton volume d\u2019entraînement, calculés automatiquement. Pas sûr ? Touche <b>« Comment choisir ? »</b>.',
+    levelReq:'Niveau *',howChooseLab:'ℹ️ Comment choisir ?',
+    lvlBeginner:'Débutant',lvlIntermediate:'Intermédiaire',lvlAdvanced:'Confirmé',lvlVeryAdvanced:'Très avancé',lvlElite:'Élite',
+    obGoalTitle:'Ton objectif',obGoalIntro:'Ce qui te fait courir.',goalReq:'Objectif *',goalPh:'Ex : passer sous 20:00 au 5 km',
+    compDateReq:'Date de compétition *',coachOptional:'Coach — optionnel',coachPh:'Nom de ton coach',
+    obPerfTitle:'Tes performances',obPerfIntro:'Ajoute tes meilleurs chronos. Au moins un est requis.',
+    perfNote:'💡 Tes chronos calculent ton <b>VDOT</b> (ta « cylindrée ») et toutes tes <b>allures d\u2019entraînement</b>. Donne au moins un chrono récent et fiable. Choisis la distance puis le temps avec les roues.',
+    addAnotherPerf:'＋ Ajouter une autre performance',backLab:'Retour',continueLab:'Continuer',
+    paramsTitle:'Paramètres',libTitle:'Bibliothèque',configureTitle:'Configurer',programTitle:'Programme',sessionTitle:'Séance',
+    newProgramTitle:'Nouveau programme',homeDefault:'Accueil',chooseLab:'Choisir',validateLab2:'Valider',
+    understoodLab:'Compris 👍',howChooseLevelTitle:'Comment choisir mon niveau ?',
+    lvlBeginnerDesc:'Tu cours depuis moins d\u2019un an. Tu t\u2019entraînes occasionnellement et tu découvres encore les bases.',
+    lvlIntermediateDesc:'Tu cours régulièrement, participes parfois à des compétitions et maîtrises les principaux types de séances.',
+    lvlAdvancedDesc:'Plusieurs années d\u2019entraînement, une pratique structurée et des objectifs chronométriques précis.',
+    lvlVeryAdvancedDesc:'Entraînement intensif, plusieurs compétitions par an, très bon niveau régional ou national.',
+    lvlEliteDesc:'Athlète de haut niveau : performances nationales/internationales, entraînement quotidien à très gros volume.',
+    checkingLab:'Vérification…',
+    fillRequiredFields:'Remplis les champs requis',chooseUsernameLab:'Choisis un nom d\u2019utilisateur',usernameUnavailable:'Ce nom d\u2019utilisateur n\u2019est pas disponible',
+    quickProfileEnabled:'Profil rapide activé — mode simplifié activé ✓',chooseLevelLab:'Choisis un niveau',goalDateRequired:'Objectif et date requis',addAtLeastOnePerf:'Ajoute au moins une performance',
+    finishLab:'Terminer 🚀',distanceLab2:'Distance',timeForLab:'Temps · {0}',chooseWord:'Choisir',
+    usernameTakenMeanwhile:'⚠️ Pseudo pris entre-temps, modifie-le dans Profil',
+    liveFinishBtn:'Terminer',durationLab:'Durée',volumeLab:'Volume',setsLab:'Séries',deleteLab2:'Supprimer',
+    exerciseDoneLab:'✓ Terminé',setsDoneCount:'{0}/{1} séries faites',restTimerLab:'⏱ Minuteur de repos : {0}',disabledLab:'Désactivé',
+    setCol:'Set',prevCol:'Précédent',kgCol:'Kg',repsCol:'Reps',addSetBtn:'＋ Ajouter une série',
+    addExerciseBtn:'＋ Ajouter un exercice',cancelSessionBtn:'🗑 Annuler la séance',
+    restSeconds:'Repos (secondes)',minOneSetRemain:'Il doit rester au moins une série',changeRestLab:'⏱ Modifier le repos',
+    removeExLab:'🗑 Retirer cet exercice',cancelLab:'Annuler',minOneExRemain:'Il doit rester au moins un exercice',
+    removeExConfirmTitle:'⚠️ Retirer cet exercice ?',removeLab2:'Retirer',exerciseRemoved:'Exercice retiré ✓',
+    exerciseAdded:'Exercice ajouté ✓',sessionSaved:'Séance sauvegardée — reprends quand tu veux',xpGain:'+5 XP',
+    restTitle:'⏱ Repos',secLab:'sec',add30sLab:'+30s',skipLab:'Passer',cancelSessionTitle:'⚠️ Annuler la séance ?',
+    progressLostText:'Ta progression sur cette séance sera perdue.',continueLab2:'Continuer',yesCancelLab:'Oui, annuler',sessionCancelled:'Séance annulée',
+    sessionDoneTitle:'Séance terminée !',tonnageParenKg:'Tonnage (kg)',repsLab:'Répétitions',caloriesLab:'Calories',recordsBrokenLab:'Records battus',
+    tonnageVsLastLab:'de tonnage vs ta dernière séance {0}.',newRecordsLab:'🥇 Nouveaux records',musclesWorkedLab:'💪 Muscles travaillés',xpEarnedLab:'+50 XP gagnés !',
+    programNameLab:'Nom du programme',programNamePh:'Mon programme',descriptionLab:'Description',descriptionPh:'Objectif, split, fréquence...',
+    objectiveLab2:'Objectif',iconLab:'Icône',colorLab:'Couleur',exercisesCountLab:'Exercices ({0})',addExFromLib:'Ajoute des exercices depuis la bibliothèque.',
+    addFromLibBtn:'＋ Ajouter depuis la bibliothèque',saveProgramBtn:'💾 Enregistrer le programme',giveNameLab:'Donne un nom',addExercisesLab:'Ajoute des exercices',programCreated:'Programme créé ✓',
+    sessTitle_EF:'Endurance Fondamentale',sessLabel_EF:'EF',
+    sessTitle_RECUP:'Récupération active',sessLabel_RECUP:'Récup',
+    sessTitle_LONG:'Sortie Longue',sessLabel_LONG:'Long',progressiveSuffix:' progressive',
+    sessTitle_TEMPO:'Tempo Run',sessLabel_TEMPO:'Tempo',
+    sessTitle_TEMPO_SPE:'Tempo allure spécifique',sessLabel_TEMPO_SPE:'Tempo spé',
+    sessTitle_SEUIL:'Séance au Seuil',sessLabel_SEUIL:'Seuil',
+    sessTitle_DBLSEUIL:'Double Seuil (méthode norvégienne)',sessLabel_DBLSEUIL:'Double seuil',
+    sessTitle_VMAc:'VMA Courte',sessLabel_VMAc:'VMA courte',
+    sessTitle_VMAl:'VMA Longue',sessLabel_VMAl:'VMA longue',
+    sessTitle_VO2:'Séance VO₂max',sessLabel_VO2:'VO₂max',
+    sessTitle_INTERVAL:'Intervalles mixtes',sessLabel_INTERVAL:'Intervalles',
+    sessTitle_SPE:'Allure Spécifique',sessLabel_SPE:'Allure spé',
+    sessTitle_PROGRESSIF:'Run Progressif',sessLabel_PROGRESSIF:'Progressif',
+    sessTitle_FARTLEK:'Fartlek (jeu d\u2019allures)',sessLabel_FARTLEK:'Fartlek',
+    sessTitle_COTES:'Séance de Côtes',sessLabel_COTES:'Côtes',
+    sessTitle_LIGNES:'Footing + Lignes droites',sessLabel_LIGNES:'Lignes',
+    sessTitle_COURSE:'🏆 Jour J',sessLabel_COURSE:'Course',
+    sessTitle_default:'Endurance',sessLabel_default:'EF',
+    phase_PG:'Préparation générale',phase_AERO:'Développement aérobie',phase_VO2:'Développement VO₂max',
+    phase_SPE:'Développement spécifique',phase_PIC:'Pic de forme',phase_TAPER:'Affûtage',
+    bdg_debutant_name:'Débutant',bdg_debutant_desc:'Le tout début de l\u2019aventure IKORUN.',
+    bdg_amateur_name:'Amateur',bdg_amateur_desc:'Tu prends le rythme.',
+    bdg_sportif_name:'Sportif',bdg_sportif_desc:'L\u2019entraînement devient une habitude.',
+    bdg_athlete_name:'Athlète',bdg_athlete_desc:'Tu progresses avec sérieux.',
+    bdg_expert_name:'Expert',bdg_expert_desc:'Une vraie maîtrise de ton entraînement.',
+    bdg_elite_name:'Élite',bdg_elite_desc:'Constante amélioration.',
+    bdg_maitre_name:'Maître',bdg_maitre_desc:'Maîtrise ton corps et ton mental.',
+    bdg_legende_name:'Légende',bdg_legende_desc:'Devenu une référence.',
+    tierBronze:'Bronze',tierArgent:'Argent',tierOr:'Or',tierPlatine:'Platine',tierDiamant:'Diamant',tierMaitre:'Maître',tierLegende:'Légende',
+    medalCatSeances:'Séances',medalCatRegularite:'Régularité',medalCatDistance:'Distance',
+    daysLab:'jours',continueUnlockBadges:'Continue pour débloquer tes badges',    ach_premiere_name:'Première course',ach_premiere_desc:'Termine la course que tu préparais.',
+    ach_cinqk_name:'5K',ach_cinqk_desc:'Cours plus de 5 km d\u2019une traite.',
+    ach_dixk_name:'10K',ach_dixk_desc:'Cours plus de 10 km d\u2019une traite.',
+    ach_serie_name:'Série',ach_serie_desc:'Tiens un mois de régularité (30 jours d\u2019affilée).',
+    ach_denivele_name:'Dénivelé',ach_denivele_desc:'Plus de 200 m de D+ sur une séance ou une course.',
+    ach_podium_name:'Podium',ach_podium_desc:'Finis dans le top 3 d\u2019une course.',
+    ach_objectif_name:'Objectif atteint',ach_objectif_desc:'Réalise ton chrono visé (ou plus vite) sur la course préparée.',
+    ach_nouveaupb_name:'Nouveau PB',ach_nouveaupb_desc:'Bats un nouveau record avec un VDOT supérieur à ton précédent record.',
+    ach_allure_name:'Allure',ach_allure_desc:'Cours au moins 3 km à une allure de 10:00/km ou plus rapide.',
+    ach_endurance_name:'Endurance',ach_endurance_desc:'Termine une sortie d\u2019au moins 15 km.',
+    ach_puissance_name:'Puissance',ach_puissance_desc:'Fais au moins 3 séances de musculation en une seule semaine.',
+    ach_vo2max_name:'VO2 Max',ach_vo2max_desc:'Atteins un VO\u2082max estimé supérieur à 50.',
+    ach_force_name:'Force',ach_force_desc:'Soulève plus de 20 000 kg cumulés en une seule semaine.',
+    catAccomplissement:'Accomplissement',catPerformance:'Performance',allYearsLab:'Toutes',
+    tapTrophyHint:'Touche un trophée pour voir l\u2019animation ou la condition à remplir pour l\u2019obtenir.',
+    noTrophyInYear:'Aucun trophée obtenu en {0}.',badgeUnlockedToast:'🏵️ {0} débloqué !',badgeRemovedToast:'Badge retiré',
+    objForce:'Force',objMass:'Masse',objEndurance:'Endurance',objWeightLoss:'Perte poids',objMaintain:'Maintien',
+    colBlue:'Bleu',colRed:'Rouge',colGreen:'Vert',colGold:'Or',colPurple:'Violet',colCyan:'Cyan',
+    newTrophyUnlocked:'NOUVEAU TROPHÉE DÉBLOQUÉ',
+    markAsObtained:'✓ Marquer comme obtenu'
   },
   en:{
     nav_home:'Home',nav_sport:'Sport',nav_stats:'Stats',nav_outils:'Tools',nav_profil:'Profile',
@@ -678,7 +822,151 @@ const I18N={
     vdotReal:'Actual VDOT',sessionsRun:'Run sessions',kmTotal:'Total km',paceZones:'🎯 Pace zones',
     predictions:'🔮 Predictions',formFatigue:'📈 Form / Fatigue',personalRecords:'🏅 Personal records',
     chronic:'Chronic',acute:'Acute',tonnageLab:'Tonnage',prPerSession:'PR (kg/session)',totalSets:'Total sets',
-    startFirstMuscu:'Start your first strength session!',lastSessions:'📅 Recent sessions'
+    startFirstMuscu:'Start your first strength session!',lastSessions:'📅 Recent sessions',
+    tomorrow:'Tomorrow',noUpcomingSession:'No upcoming session planned.',addSession:'Add a session',
+    showRestPlan:'Show the rest of the plan · {0} weeks ↓',calendarTitle:'Calendar',calendarSub:'Plan your progress',
+    friendsTitle:'👥 Friends & Leaderboard',tabFriendsList:'👥 Friends',tabRank:'🏆 Leaderboard',tabRefer:'🎁 Referral',
+    loginToAddFriends:'Sign in with Google to add friends, compare stats and refer others.',
+    searchFriendPlaceholder:'Search a friend by username',receivedRequests:'Received requests',acceptBtn:'✓ Accept',
+    yourFriendsCount:'Your friends ({0})',noFriendsYet:'No friends yet — search for someone by their username!',
+    sentRequests:'Sent requests',awaitingResponse:'Awaiting response…',xpRanking:'XP leaderboard among friends',
+    addFriendsUnlock:'Add friends to unlock the leaderboard!',youParen:' (you)',
+    referralCodeLabel:'Your referral code',shareCode:'↗ Share my code',haveCode:'I have a code',
+    validateBtn:'Confirm',referralRewardText:'🎁 You and your referrer each get +50 XP after your 1st session.',
+    searchingLab:'Searching…',loginToSearchFriends:'Sign in to search for friends',noUsernameFound:'No username found',
+    alreadyLinked:'already linked',addBtn:'＋ Add',searchError:'Search error',alreadySentOrFriend:'Already sent or already friends',
+    requestSent:'Request sent ✓',friendProfileTitle:'👤 Profile',removeLab:'Remove',lvlDot:'Lvl.',kmThisWeekShort:'{0} km this week',youDefaultName:'You',backToFriends:'Back to friends',profileNotFound:'Profile not found.',noBadgeUnlocked:'No badge unlocked yet.',kmPerWeek:'km/wk',daysStreak:'Day streak',kmTotalLab:'total km',tonnageKgLab:'Tonnage kg',
+    addPerf:'＋ Add a performance',addChronosHint:'Add your times: they power your VDOT and your plan.',
+    bestPerf:'🏆 Best performance',avgHR:'avg HR',maxHRshort:'max',perfHistoryTitle:'Performance history',
+    chooseDistance:'Choose the distance',otherDist:'Other',customDistance:'Custom distance',
+    chronoLab:'Time *',chronoFor:'Time {0}',dateField:'Date',placeOptional:'Place (optional)',
+    placeholderPlace:'Race location',feelOptional:'How it felt (optional)',feelPlaceholder:'How did it go?',
+    officialComp:'🏁 Official competition',saveThisPerf:'💾 Save this performance',backBtn:'‹ Back',
+    perfAddedComp:'Performance added · +XP competition ✓',perfAdded:'Performance added ✓',
+    editProfileTitle:'Edit profile',usernameLab:'Username',usernameHint:'Used by your friends to find you',
+    firstNameLab:'First name',cityLab:'City',birthDateLab:'Date of birth',heightCmLab:'Height (cm)',weightKgLab:'Weight (kg)',
+    hrMaxLab:'Max HR',hrRestLab:'Resting HR',kmWeekLab:'Km / week',compDateLab:'Race date',coachLab:'Coach',saveBtn:'💾 Save',
+    filterAll:'All',filterObtained:'Earned',filterLocked:'Locked',badgesObtainedCount:'{0} / {1} badges earned',
+    badgeDetailTitle:'Badge details',tierOf:'Tier {0} of {1}',newBadgeUnlocked:'NEW BADGE UNLOCKED',
+    tapToContinue:'Tap to continue',seeDetails:'See details',tapToClose:'Tap to close',previewLocked:'PREVIEW · LOCKED',
+    obtainedOn:'✅ Earned on {0}',lockedLab:'🔒 Locked',replayAnim:'↻ Replay animation',seePreview:'↻ See preview',
+    obtainConditions:'Requirements',globalProgress:'Overall progress',shareBadgeBtn:'↗ Share this badge',closeLab:'Close',
+    weightLab:'⚖️ Weight',imcLab:'📐 BMI',imcUnderweight:'Underweight',imcNormal:'Normal',imcOverweight:'Overweight',imcObese:'Obese',
+    sessionsPerWeek:'Sessions / wk',metabolismKcal:'Metabolism kcal',burned7d:'Burned 7d (run)',waterPerDay:'Water / day',
+    recentFormTitle:'😴 Recent form (last 7 sessions)',sleepLab:'Sleep',energyFeelLab:'Energy / feel',fatigueLab:'Fatigue',
+    tipBalanced:'Everything is balanced, keep it up! 💪',tipHighFatigue:'⚠️ High fatigue: prioritize rest and sleep this week.',
+    tipLowSleep:'😴 Your sleep is insufficient: aim for 8h to recover better.',tipGreatFeel:'🔥 Great feelings: you can push a bit more!',
+    noDebriefHint:'Complete sessions with their debrief to track your sleep, fatigue and recovery here.',
+    nutritionTitle:'🍽️ Nutrition benchmarks (athlete)',proteinLab:'Protein',carbsLab:'Carbs',fatLab:'Fat',kcalTarget:'target kcal',
+    weightPickerTitle:'Your weight (kg)',weightSaved:'Weight saved ✓',
+    labHint:'Enter <b>2 values</b> you know. The other 2 are calculated automatically. ✨',
+    distField:'Distance',timeField:'Time',paceField:'Pace',speedField:'Speed',calculatedLab:'calculated',toFillLab:'to fill',
+    resetBtn:'↺ Reset',splitTimesTitle:'📍 Split times',
+    vdotToolTitle:'VDOT (Jack Daniels)',physioEstimates:'Physiological estimates',vo2maxEst:'Estimated VO₂max',
+    thresholdPace:'Lactate threshold pace',marathonPace:'Marathon pace',halfPace:'Half marathon pace',efPace:'Easy pace',
+    vdotAutoTip:'ℹ️ Your VDOT updates automatically from your records. Add your times in Profile → Records.',
+    waterNeedsTitle:'💧 Water needs',dailyRest:'Daily (rest)',perRunHour:'Per hour running',perHeatHour:'In hot weather (+/h)',
+    hydraTip:'💡 Drink regularly in small sips. Watch the color of your urine.',
+    basalMetabolism:'Basal metabolism (kcal/day)',needsByActivity:'Needs by activity level',
+    actSedentary:'Sedentary',actLight:'Light',actModerate:'Moderate',actIntense:'Intense',actAthlete:'Athlete',
+    valueField:'Value',fromField:'From',toField:'To',
+    quickNotesTitle:'📝 Quick notes',notesPlaceholder:'Write here... (auto-saved)',autoSaveLocal:'💾 Auto-saved locally.',
+    lapBtn:'Lap',stopBtn:'Stop',resetBtn2:'Reset',bestLap:'Best lap',slowestLap:'Slowest',avgLap:'Average',lapsLab:'Laps',
+    exportBtn:'Export',fastTag:'⚡ fast',slowTag:'slow',lapsCopied:'Laps copied ✓',
+    addEventBtn:'＋ Add an event',competitionDefault:'Competition',noEventLab:'No event',pastLab:'past',
+    eventTitlePrompt:'Event title:',eventDatePrompt:'Date (YYYY-MM-DD):',eventAdded:'Event added',
+    prayerTitle:'🕌 Prayers · Béjaïa',uoifMethod:'UOIF method · {0}',
+    obWelcomeTitle:'Welcome to IKORUN',obWelcomeIntro:'Elite Athletic Intelligence.<br>Your personal coaching, scientifically calculated, 100% offline.',
+    obWhoTitle:'Who are you?',obWhoIntro:'Your basic info.',firstNamePh:'Your first name',firstNameReq:'First name *',
+    usernameReq:'Username *',usernamePh:'unique_username',usernameFormatHint:'3 to 20 characters: letters, digits, _',
+    birthDateReq:'Date of birth *',sexReq:'Sex *',selectLab:'Select',maleLab:'Male',femaleLab:'Female',
+    obLevelTitle:'Your level',obLevelIntro:'Be honest, the plan adapts.',
+    levelNote:'💡 Your <b>level</b> adjusts your plan\u2019s intensity and training volume, calculated automatically. Not sure? Tap <b>"How to choose?"</b>.',
+    levelReq:'Level *',howChooseLab:'ℹ️ How to choose?',
+    lvlBeginner:'Beginner',lvlIntermediate:'Intermediate',lvlAdvanced:'Advanced',lvlVeryAdvanced:'Very advanced',lvlElite:'Elite',
+    obGoalTitle:'Your goal',obGoalIntro:'What keeps you running.',goalReq:'Goal *',goalPh:'E.g.: break 20:00 on the 5K',
+    compDateReq:'Race date *',coachOptional:'Coach — optional',coachPh:'Your coach\u2019s name',
+    obPerfTitle:'Your performances',obPerfIntro:'Add your best times. At least one is required.',
+    perfNote:'💡 Your times calculate your <b>VDOT</b> (your "engine size") and all your <b>training paces</b>. Give at least one recent, reliable time. Choose the distance then the time with the wheels.',
+    addAnotherPerf:'＋ Add another performance',backLab:'Back',continueLab:'Continue',
+    paramsTitle:'Settings',libTitle:'Library',configureTitle:'Configure',programTitle:'Program',sessionTitle:'Session',
+    newProgramTitle:'New program',homeDefault:'Home',chooseLab:'Choose',validateLab2:'Confirm',
+    understoodLab:'Got it 👍',howChooseLevelTitle:'How to choose my level?',
+    lvlBeginnerDesc:'You\u2019ve been running for less than a year. You train occasionally and are still learning the basics.',
+    lvlIntermediateDesc:'You run regularly, sometimes compete, and know the main session types.',
+    lvlAdvancedDesc:'Several years of training, structured practice and precise time goals.',
+    lvlVeryAdvancedDesc:'Intensive training, several races a year, very good regional or national level.',
+    lvlEliteDesc:'High-level athlete: national/international performances, daily high-volume training.',
+    checkingLab:'Checking…',
+    fillRequiredFields:'Fill in the required fields',chooseUsernameLab:'Choose a username',usernameUnavailable:'This username is not available',
+    quickProfileEnabled:'Quick profile enabled — simplified mode enabled ✓',chooseLevelLab:'Choose a level',goalDateRequired:'Goal and date required',addAtLeastOnePerf:'Add at least one performance',
+    finishLab:'Finish 🚀',distanceLab2:'Distance',timeForLab:'Time · {0}',chooseWord:'Choose',
+    usernameTakenMeanwhile:'⚠️ Username taken meanwhile, change it in Profile',
+    liveFinishBtn:'Finish',durationLab:'Duration',volumeLab:'Volume',setsLab:'Sets',deleteLab2:'Delete',
+    exerciseDoneLab:'✓ Done',setsDoneCount:'{0}/{1} sets done',restTimerLab:'⏱ Rest timer: {0}',disabledLab:'Off',
+    setCol:'Set',prevCol:'Previous',kgCol:'Kg',repsCol:'Reps',addSetBtn:'＋ Add a set',
+    addExerciseBtn:'＋ Add an exercise',cancelSessionBtn:'🗑 Cancel session',
+    restSeconds:'Rest (seconds)',minOneSetRemain:'At least one set must remain',changeRestLab:'⏱ Change rest time',
+    removeExLab:'🗑 Remove this exercise',cancelLab:'Cancel',minOneExRemain:'At least one exercise must remain',
+    removeExConfirmTitle:'⚠️ Remove this exercise?',removeLab2:'Remove',exerciseRemoved:'Exercise removed ✓',
+    exerciseAdded:'Exercise added ✓',sessionSaved:'Session saved — resume anytime',xpGain:'+5 XP',
+    restTitle:'⏱ Rest',secLab:'sec',add30sLab:'+30s',skipLab:'Skip',cancelSessionTitle:'⚠️ Cancel this session?',
+    progressLostText:'Your progress on this session will be lost.',continueLab2:'Continue',yesCancelLab:'Yes, cancel',sessionCancelled:'Session cancelled',
+    sessionDoneTitle:'Session complete!',tonnageParenKg:'Tonnage (kg)',repsLab:'Reps',caloriesLab:'Calories',recordsBrokenLab:'Records broken',
+    tonnageVsLastLab:'tonnage vs your last {0} session.',newRecordsLab:'🥇 New records',musclesWorkedLab:'💪 Muscles worked',xpEarnedLab:'+50 XP earned!',
+    programNameLab:'Program name',programNamePh:'My program',descriptionLab:'Description',descriptionPh:'Goal, split, frequency...',
+    objectiveLab2:'Goal',iconLab:'Icon',colorLab:'Color',exercisesCountLab:'Exercises ({0})',addExFromLib:'Add exercises from the library.',
+    addFromLibBtn:'＋ Add from library',saveProgramBtn:'💾 Save program',giveNameLab:'Give it a name',addExercisesLab:'Add exercises',programCreated:'Program created ✓',
+    sessTitle_EF:'Base Endurance',sessLabel_EF:'Easy',
+    sessTitle_RECUP:'Active Recovery',sessLabel_RECUP:'Recovery',
+    sessTitle_LONG:'Long Run',sessLabel_LONG:'Long',progressiveSuffix:' progressive',
+    sessTitle_TEMPO:'Tempo Run',sessLabel_TEMPO:'Tempo',
+    sessTitle_TEMPO_SPE:'Race-Pace Tempo',sessLabel_TEMPO_SPE:'Pace tempo',
+    sessTitle_SEUIL:'Threshold Session',sessLabel_SEUIL:'Threshold',
+    sessTitle_DBLSEUIL:'Double Threshold (Norwegian method)',sessLabel_DBLSEUIL:'Double threshold',
+    sessTitle_VMAc:'Short Speed Intervals',sessLabel_VMAc:'Short intervals',
+    sessTitle_VMAl:'Long Speed Intervals',sessLabel_VMAl:'Long intervals',
+    sessTitle_VO2:'VO₂max Session',sessLabel_VO2:'VO₂max',
+    sessTitle_INTERVAL:'Mixed Intervals',sessLabel_INTERVAL:'Intervals',
+    sessTitle_SPE:'Race Pace',sessLabel_SPE:'Race pace',
+    sessTitle_PROGRESSIF:'Progressive Run',sessLabel_PROGRESSIF:'Progressive',
+    sessTitle_FARTLEK:'Fartlek (pace play)',sessLabel_FARTLEK:'Fartlek',
+    sessTitle_COTES:'Hill Session',sessLabel_COTES:'Hills',
+    sessTitle_LIGNES:'Easy Run + Strides',sessLabel_LIGNES:'Strides',
+    sessTitle_COURSE:'🏆 Race Day',sessLabel_COURSE:'Race',
+    sessTitle_default:'Endurance',sessLabel_default:'Easy',
+    phase_PG:'General Preparation',phase_AERO:'Aerobic Development',phase_VO2:'VO₂max Development',
+    phase_SPE:'Specific Development',phase_PIC:'Peak Form',phase_TAPER:'Taper',
+    bdg_debutant_name:'Beginner',bdg_debutant_desc:'The very start of the IKORUN journey.',
+    bdg_amateur_name:'Amateur',bdg_amateur_desc:'You\u2019re finding your rhythm.',
+    bdg_sportif_name:'Athletic',bdg_sportif_desc:'Training is becoming a habit.',
+    bdg_athlete_name:'Athlete',bdg_athlete_desc:'You\u2019re progressing seriously.',
+    bdg_expert_name:'Expert',bdg_expert_desc:'Real mastery of your training.',
+    bdg_elite_name:'Elite',bdg_elite_desc:'Constant improvement.',
+    bdg_maitre_name:'Master',bdg_maitre_desc:'Master of body and mind.',
+    bdg_legende_name:'Legend',bdg_legende_desc:'A reference in your own right.',
+    tierBronze:'Bronze',tierArgent:'Silver',tierOr:'Gold',tierPlatine:'Platinum',tierDiamant:'Diamond',tierMaitre:'Master',tierLegende:'Legend',
+    medalCatSeances:'Sessions',medalCatRegularite:'Consistency',medalCatDistance:'Distance',
+    daysLab:'days',continueUnlockBadges:'Keep going to unlock your badges',    ach_premiere_name:'First Race',ach_premiere_desc:'Finish the race you were preparing for.',
+    ach_cinqk_name:'5K',ach_cinqk_desc:'Run more than 5 km in one go.',
+    ach_dixk_name:'10K',ach_dixk_desc:'Run more than 10 km in one go.',
+    ach_serie_name:'Streak',ach_serie_desc:'Keep a month of consistency (30 days in a row).',
+    ach_denivele_name:'Elevation',ach_denivele_desc:'More than 200 m of elevation gain on a session or race.',
+    ach_podium_name:'Podium',ach_podium_desc:'Finish in the top 3 of a race.',
+    ach_objectif_name:'Goal Reached',ach_objectif_desc:'Hit your target time (or faster) on the race you prepared for.',
+    ach_nouveaupb_name:'New PB',ach_nouveaupb_desc:'Beat a new record with a VDOT higher than your previous record.',
+    ach_allure_name:'Pace',ach_allure_desc:'Run at least 3 km at a pace of 10:00/km or faster.',
+    ach_endurance_name:'Endurance',ach_endurance_desc:'Finish a run of at least 15 km.',
+    ach_puissance_name:'Power',ach_puissance_desc:'Do at least 3 strength sessions in a single week.',
+    ach_vo2max_name:'VO2 Max',ach_vo2max_desc:'Reach an estimated VO\u2082max above 50.',
+    ach_force_name:'Strength',ach_force_desc:'Lift more than 20,000 kg total in a single week.',
+    catAccomplissement:'Achievement',catPerformance:'Performance',allYearsLab:'All',
+    tapTrophyHint:'Tap a trophy to see the animation or the condition to earn it.',
+    noTrophyInYear:'No trophy earned in {0}.',badgeUnlockedToast:'🏵️ {0} unlocked!',badgeRemovedToast:'Badge removed',
+    objForce:'Strength',objMass:'Mass',objEndurance:'Endurance',objWeightLoss:'Weight loss',objMaintain:'Maintenance',
+    colBlue:'Blue',colRed:'Red',colGreen:'Green',colGold:'Gold',colPurple:'Purple',colCyan:'Cyan',
+    newTrophyUnlocked:'NEW TROPHY UNLOCKED',
+    markAsObtained:'✓ Mark as earned'
   },
   ar:{
     nav_home:'الرئيسية',nav_sport:'رياضة',nav_stats:'إحصائيات',nav_outils:'أدوات',nav_profil:'الملف',
@@ -748,7 +1036,151 @@ const I18N={
     vdotReal:'VDOT الحقيقي',sessionsRun:'حصص الجري',kmTotal:'كم إجمالية',paceZones:'🎯 مناطق الوتيرة',
     predictions:'🔮 توقعات',formFatigue:'📈 اللياقة / التعب',personalRecords:'🏅 الأرقام الشخصية',
     chronic:'مزمن',acute:'حاد',tonnageLab:'الحمولة',prPerSession:'أفضل رقم (كغ/حصة)',totalSets:'إجمالي المجموعات',
-    startFirstMuscu:'ابدأ أول حصة كمال أجسام لك!',lastSessions:'📅 آخر الحصص'
+    startFirstMuscu:'ابدأ أول حصة كمال أجسام لك!',lastSessions:'📅 آخر الحصص',
+    tomorrow:'غدًا',noUpcomingSession:'لا توجد حصة مخططة قريبًا.',addSession:'إضافة حصة',
+    showRestPlan:'عرض بقية الخطة · {0} أسابيع ↓',calendarTitle:'التقويم',calendarSub:'خطط لتقدمك',
+    friendsTitle:'👥 الأصدقاء والترتيب',tabFriendsList:'👥 الأصدقاء',tabRank:'🏆 الترتيب',tabRefer:'🎁 الإحالة',
+    loginToAddFriends:'سجّل الدخول عبر Google لإضافة أصدقاء ومقارنة نفسك ودعوة الآخرين.',
+    searchFriendPlaceholder:'ابحث عن صديق بالاسم المستعار',receivedRequests:'الطلبات الواردة',acceptBtn:'✓ قبول',
+    yourFriendsCount:'أصدقاؤك ({0})',noFriendsYet:'لا يوجد أصدقاء بعد — ابحث عن أحدهم باسمه المستعار!',
+    sentRequests:'الطلبات المرسلة',awaitingResponse:'بانتظار الرد…',xpRanking:'ترتيب نقاط الخبرة بين الأصدقاء',
+    addFriendsUnlock:'أضف أصدقاء لفتح الترتيب!',youParen:' (أنت)',
+    referralCodeLabel:'رمز الإحالة الخاص بك',shareCode:'↗ مشاركة رمزي',haveCode:'لدي رمز',
+    validateBtn:'تأكيد',referralRewardText:'🎁 أنت ومن أحلته تحصلان على +50 XP لكل منكما بعد حصتك الأولى.',
+    searchingLab:'جارٍ البحث…',loginToSearchFriends:'سجّل الدخول للبحث عن أصدقاء',noUsernameFound:'لم يتم العثور على اسم مستعار',
+    alreadyLinked:'مرتبط بالفعل',addBtn:'＋ إضافة',searchError:'خطأ في البحث',alreadySentOrFriend:'تم الإرسال بالفعل أو صديق بالفعل',
+    requestSent:'تم إرسال الطلب ✓',friendProfileTitle:'👤 الملف الشخصي',removeLab:'إزالة',lvlDot:'مستوى',kmThisWeekShort:'{0} كم هذا الأسبوع',youDefaultName:'أنت',backToFriends:'العودة إلى الأصدقاء',profileNotFound:'الملف غير موجود.',noBadgeUnlocked:'لا يوجد وسام مفتوح بعد.',kmPerWeek:'كم/أسبوع',daysStreak:'أيام متتالية',kmTotalLab:'كم إجمالية',tonnageKgLab:'الحمولة كغ',
+    addPerf:'＋ إضافة أداء',addChronosHint:'أضف أوقاتك: تُستخدم لحساب VDOT وخطتك.',
+    bestPerf:'🏆 أفضل أداء',avgHR:'متوسط النبض',maxHRshort:'الأقصى',perfHistoryTitle:'سجل الأداء',
+    chooseDistance:'اختر المسافة',otherDist:'أخرى',customDistance:'مسافة مخصصة',
+    chronoLab:'الوقت *',chronoFor:'وقت {0}',dateField:'التاريخ',placeOptional:'المكان (اختياري)',
+    placeholderPlace:'مكان السباق',feelOptional:'الإحساس (اختياري)',feelPlaceholder:'كيف كان الأداء؟',
+    officialComp:'🏁 مسابقة رسمية',saveThisPerf:'💾 حفظ هذا الأداء',backBtn:'‹ رجوع',
+    perfAddedComp:'تمت إضافة الأداء · +XP مسابقة ✓',perfAdded:'تمت إضافة الأداء ✓',
+    editProfileTitle:'تعديل الملف الشخصي',usernameLab:'اسم المستخدم',usernameHint:'يُستخدم من قبل أصدقائك للعثور عليك',
+    firstNameLab:'الاسم الأول',cityLab:'المدينة',birthDateLab:'تاريخ الميلاد',heightCmLab:'الطول (سم)',weightKgLab:'الوزن (كغ)',
+    hrMaxLab:'أقصى نبض',hrRestLab:'نبض الراحة',kmWeekLab:'كم / أسبوع',compDateLab:'تاريخ السباق',coachLab:'المدرب',saveBtn:'💾 حفظ',
+    filterAll:'الكل',filterObtained:'مكتسبة',filterLocked:'مغلقة',badgesObtainedCount:'{0} / {1} وسام مكتسب',
+    badgeDetailTitle:'تفاصيل الوسام',tierOf:'المستوى {0} من {1}',newBadgeUnlocked:'وسام جديد مفتوح',
+    tapToContinue:'اضغط للمتابعة',seeDetails:'عرض التفاصيل',tapToClose:'اضغط للإغلاق',previewLocked:'معاينة · مغلق',
+    obtainedOn:'✅ تم الحصول عليه في {0}',lockedLab:'🔒 مغلق',replayAnim:'↻ إعادة الرسوم المتحركة',seePreview:'↻ عرض معاينة',
+    obtainConditions:'شروط الحصول',globalProgress:'التقدم الإجمالي',shareBadgeBtn:'↗ مشاركة هذا الوسام',closeLab:'إغلاق',
+    weightLab:'⚖️ الوزن',imcLab:'📐 كتلة الجسم',imcUnderweight:'نحافة',imcNormal:'طبيعي',imcOverweight:'زيادة وزن',imcObese:'سمنة',
+    sessionsPerWeek:'حصص/أسبوع',metabolismKcal:'الأيض كالوري',burned7d:'محروقة 7 أيام (جري)',waterPerDay:'الماء/يوم',
+    recentFormTitle:'😴 اللياقة الأخيرة (آخر 7 حصص)',sleepLab:'النوم',energyFeelLab:'الطاقة/الإحساس',fatigueLab:'التعب',
+    tipBalanced:'كل شيء متوازن، واصل هكذا! 💪',tipHighFatigue:'⚠️ تعب مرتفع: امنح الأولوية للراحة والنوم هذا الأسبوع.',
+    tipLowSleep:'😴 نومك غير كافٍ: استهدف 8 ساعات لتتعافى بشكل أفضل.',tipGreatFeel:'🔥 إحساس رائع: يمكنك الدفع أكثر قليلاً!',
+    noDebriefHint:'أنهِ حصصك مع تقييمها لمتابعة نومك وتعبك وتعافيك هنا.',
+    nutritionTitle:'🍽️ معايير التغذية (رياضي)',proteinLab:'بروتين',carbsLab:'كربوهيدرات',fatLab:'دهون',kcalTarget:'كالوري مستهدف',
+    weightPickerTitle:'وزنك (كغ)',weightSaved:'تم حفظ الوزن ✓',
+    labHint:'أدخل <b>قيمتين</b> تعرفهما. القيمتان الأخريان تُحسبان تلقائيًا. ✨',
+    distField:'المسافة',timeField:'الوقت',paceField:'الوتيرة',speedField:'السرعة',calculatedLab:'محسوب',toFillLab:'يجب إدخاله',
+    resetBtn:'↺ إعادة تعيين',splitTimesTitle:'📍 أوقات المرور',
+    vdotToolTitle:'VDOT (جاك دانيلز)',physioEstimates:'تقديرات فسيولوجية',vo2maxEst:'VO₂max المقدر',
+    thresholdPace:'وتيرة عتبة اللاكتات',marathonPace:'وتيرة الماراثون',halfPace:'وتيرة نصف الماراثون',efPace:'وتيرة سهلة',
+    vdotAutoTip:'ℹ️ يتحدث VDOT الخاص بك تلقائيًا من أرقامك. أضف أوقاتك في الملف الشخصي ← الأرقام.',
+    waterNeedsTitle:'💧 احتياجات الماء',dailyRest:'يوميًا (راحة)',perRunHour:'لكل ساعة جري',perHeatHour:'في الحر الشديد (+/ساعة)',
+    hydraTip:'💡 اشرب بانتظام رشفات صغيرة. راقب لون بولك.',
+    basalMetabolism:'الأيض الأساسي (كالوري/يوم)',needsByActivity:'الاحتياجات حسب النشاط',
+    actSedentary:'خامل',actLight:'خفيف',actModerate:'معتدل',actIntense:'مكثف',actAthlete:'رياضي',
+    valueField:'القيمة',fromField:'من',toField:'إلى',
+    quickNotesTitle:'📝 ملاحظات سريعة',notesPlaceholder:'اكتب هنا... (حفظ تلقائي)',autoSaveLocal:'💾 حفظ تلقائي محلي.',
+    lapBtn:'شوط',stopBtn:'إيقاف',resetBtn2:'إعادة تعيين',bestLap:'أفضل شوط',slowestLap:'الأبطأ',avgLap:'المتوسط',lapsLab:'الأشواط',
+    exportBtn:'تصدير',fastTag:'⚡ سريع',slowTag:'بطيء',lapsCopied:'تم نسخ الأشواط ✓',
+    addEventBtn:'＋ إضافة حدث',competitionDefault:'مسابقة',noEventLab:'لا يوجد حدث',pastLab:'مضى',
+    eventTitlePrompt:'عنوان الحدث:',eventDatePrompt:'التاريخ (YYYY-MM-DD):',eventAdded:'تمت إضافة الحدث',
+    prayerTitle:'🕌 الصلوات · بجاية',uoifMethod:'طريقة UOIF · {0}',
+    obWelcomeTitle:'مرحبًا بك في IKORUN',obWelcomeIntro:'Elite Athletic Intelligence.<br>تدريبك الشخصي، محسوب علميًا، بدون اتصال 100%.',
+    obWhoTitle:'من أنت؟',obWhoIntro:'معلوماتك الأساسية.',firstNamePh:'اسمك الأول',firstNameReq:'الاسم الأول *',
+    usernameReq:'اسم المستخدم *',usernamePh:'اسم_مستخدم_فريد',usernameFormatHint:'3 إلى 20 حرفًا: أحرف، أرقام، _',
+    birthDateReq:'تاريخ الميلاد *',sexReq:'الجنس *',selectLab:'اختر',maleLab:'ذكر',femaleLab:'أنثى',
+    obLevelTitle:'مستواك',obLevelIntro:'كن صادقًا، الخطة تتكيف.',
+    levelNote:'💡 يعدّل <b>المستوى</b> شدة خطتك وحجم تدريبك، محسوبان تلقائيًا. غير متأكد؟ اضغط <b>«كيف أختار؟»</b>.',
+    levelReq:'المستوى *',howChooseLab:'ℹ️ كيف أختار؟',
+    lvlBeginner:'مبتدئ',lvlIntermediate:'متوسط',lvlAdvanced:'متقدم',lvlVeryAdvanced:'متقدم جدًا',lvlElite:'نخبة',
+    obGoalTitle:'هدفك',obGoalIntro:'ما الذي يجعلك تجري.',goalReq:'الهدف *',goalPh:'مثال: أقل من 20:00 في 5 كم',
+    compDateReq:'تاريخ السباق *',coachOptional:'المدرب — اختياري',coachPh:'اسم مدربك',
+    obPerfTitle:'أداؤك',obPerfIntro:'أضف أفضل أوقاتك. مطلوب واحد على الأقل.',
+    perfNote:'💡 تحسب أوقاتك <b>VDOT</b> (قدرتك) وكل <b>وتيرات تدريبك</b>. أعط وقتًا واحدًا حديثًا وموثوقًا على الأقل. اختر المسافة ثم الوقت بالعجلات.',
+    addAnotherPerf:'＋ إضافة أداء آخر',backLab:'رجوع',continueLab:'متابعة',
+    paramsTitle:'الإعدادات',libTitle:'المكتبة',configureTitle:'تهيئة',programTitle:'البرنامج',sessionTitle:'الحصة',
+    newProgramTitle:'برنامج جديد',homeDefault:'الرئيسية',chooseLab:'اختر',validateLab2:'تأكيد',
+    understoodLab:'فهمت 👍',howChooseLevelTitle:'كيف أختار مستواي؟',
+    lvlBeginnerDesc:'تجري منذ أقل من سنة. تتدرب أحيانًا وما زلت تتعلم الأساسيات.',
+    lvlIntermediateDesc:'تجري بانتظام، تشارك أحيانًا في مسابقات وتتقن أنواع الحصص الرئيسية.',
+    lvlAdvancedDesc:'عدة سنوات من التدريب، ممارسة منظمة وأهداف زمنية دقيقة.',
+    lvlVeryAdvancedDesc:'تدريب مكثف، عدة مسابقات في السنة، مستوى إقليمي أو وطني جيد جدًا.',
+    lvlEliteDesc:'رياضي محترف: أداء وطني/دولي، تدريب يومي بحجم كبير جدًا.',
+    checkingLab:'جارٍ التحقق…',
+    fillRequiredFields:'املأ الحقول المطلوبة',chooseUsernameLab:'اختر اسم مستخدم',usernameUnavailable:'اسم المستخدم هذا غير متاح',
+    quickProfileEnabled:'تم تفعيل الملف السريع — تم تفعيل الوضع المبسّط ✓',chooseLevelLab:'اختر مستوى',goalDateRequired:'الهدف والتاريخ مطلوبان',addAtLeastOnePerf:'أضف أداءً واحدًا على الأقل',
+    finishLab:'إنهاء 🚀',distanceLab2:'المسافة',timeForLab:'الوقت · {0}',chooseWord:'اختر',
+    usernameTakenMeanwhile:'⚠️ تم أخذ الاسم المستعار في هذه الأثناء، غيّره من الملف الشخصي',
+    liveFinishBtn:'إنهاء',durationLab:'المدة',volumeLab:'الحجم',setsLab:'المجموعات',deleteLab2:'حذف',
+    exerciseDoneLab:'✓ منتهٍ',setsDoneCount:'{0}/{1} مجموعة منجزة',restTimerLab:'⏱ مؤقت الراحة: {0}',disabledLab:'معطّل',
+    setCol:'مجموعة',prevCol:'السابق',kgCol:'كغ',repsCol:'تكرار',addSetBtn:'＋ إضافة مجموعة',
+    addExerciseBtn:'＋ إضافة تمرين',cancelSessionBtn:'🗑 إلغاء الحصة',
+    restSeconds:'الراحة (ثوانٍ)',minOneSetRemain:'يجب أن تبقى مجموعة واحدة على الأقل',changeRestLab:'⏱ تعديل وقت الراحة',
+    removeExLab:'🗑 إزالة هذا التمرين',cancelLab:'إلغاء',minOneExRemain:'يجب أن يبقى تمرين واحد على الأقل',
+    removeExConfirmTitle:'⚠️ إزالة هذا التمرين؟',removeLab2:'إزالة',exerciseRemoved:'تمت إزالة التمرين ✓',
+    exerciseAdded:'تمت إضافة التمرين ✓',sessionSaved:'تم حفظ الحصة — استأنفها متى شئت',xpGain:'+5 XP',
+    restTitle:'⏱ راحة',secLab:'ثا',add30sLab:'+30 ثا',skipLab:'تخطي',cancelSessionTitle:'⚠️ إلغاء الحصة؟',
+    progressLostText:'سيُفقد تقدمك في هذه الحصة.',continueLab2:'متابعة',yesCancelLab:'نعم، إلغاء',sessionCancelled:'تم إلغاء الحصة',
+    sessionDoneTitle:'انتهت الحصة!',tonnageParenKg:'الحمولة (كغ)',repsLab:'التكرارات',caloriesLab:'السعرات',recordsBrokenLab:'أرقام محطّمة',
+    tonnageVsLastLab:'حمولة مقارنة بآخر حصة {0}.',newRecordsLab:'🥇 أرقام جديدة',musclesWorkedLab:'💪 العضلات المستهدفة',xpEarnedLab:'+50 XP مكتسبة!',
+    programNameLab:'اسم البرنامج',programNamePh:'برنامجي',descriptionLab:'الوصف',descriptionPh:'الهدف، التقسيم، التكرار...',
+    objectiveLab2:'الهدف',iconLab:'الأيقونة',colorLab:'اللون',exercisesCountLab:'التمارين ({0})',addExFromLib:'أضف تمارين من المكتبة.',
+    addFromLibBtn:'＋ إضافة من المكتبة',saveProgramBtn:'💾 حفظ البرنامج',giveNameLab:'أعطه اسمًا',addExercisesLab:'أضف تمارين',programCreated:'تم إنشاء البرنامج ✓',
+    sessTitle_EF:'التحمل الأساسي',sessLabel_EF:'سهل',
+    sessTitle_RECUP:'استرجاع نشط',sessLabel_RECUP:'استرجاع',
+    sessTitle_LONG:'الخرجة الطويلة',sessLabel_LONG:'طويل',progressiveSuffix:' تصاعدية',
+    sessTitle_TEMPO:'تيمبو',sessLabel_TEMPO:'تيمبو',
+    sessTitle_TEMPO_SPE:'تيمبو بوتيرة السباق',sessLabel_TEMPO_SPE:'تيمبو وتيرة',
+    sessTitle_SEUIL:'حصة العتبة',sessLabel_SEUIL:'عتبة',
+    sessTitle_DBLSEUIL:'العتبة المزدوجة (الطريقة النرويجية)',sessLabel_DBLSEUIL:'عتبة مزدوجة',
+    sessTitle_VMAc:'سرعة قصوى قصيرة',sessLabel_VMAc:'سرعة قصيرة',
+    sessTitle_VMAl:'سرعة قصوى طويلة',sessLabel_VMAl:'سرعة طويلة',
+    sessTitle_VO2:'حصة VO₂max',sessLabel_VO2:'VO₂max',
+    sessTitle_INTERVAL:'فترات مختلطة',sessLabel_INTERVAL:'فترات',
+    sessTitle_SPE:'وتيرة السباق',sessLabel_SPE:'وتيرة السباق',
+    sessTitle_PROGRESSIF:'جري تصاعدي',sessLabel_PROGRESSIF:'تصاعدي',
+    sessTitle_FARTLEK:'فارتلك (لعب الوتيرة)',sessLabel_FARTLEK:'فارتلك',
+    sessTitle_COTES:'حصة المرتفعات',sessLabel_COTES:'مرتفعات',
+    sessTitle_LIGNES:'جري سهل + خطوط تسريع',sessLabel_LIGNES:'خطوط',
+    sessTitle_COURSE:'🏆 يوم السباق',sessLabel_COURSE:'السباق',
+    sessTitle_default:'تحمل',sessLabel_default:'سهل',
+    phase_PG:'التحضير العام',phase_AERO:'تطوير التحمل الهوائي',phase_VO2:'تطوير VO₂max',
+    phase_SPE:'التطوير النوعي',phase_PIC:'ذروة اللياقة',phase_TAPER:'تخفيف الحمل',
+    bdg_debutant_name:'مبتدئ',bdg_debutant_desc:'بداية مغامرة IKORUN.',
+    bdg_amateur_name:'هاوٍ',bdg_amateur_desc:'بدأت تأخذ الإيقاع.',
+    bdg_sportif_name:'رياضي',bdg_sportif_desc:'أصبح التدريب عادة.',
+    bdg_athlete_name:'رياضي محترف',bdg_athlete_desc:'تتقدم بجدية.',
+    bdg_expert_name:'خبير',bdg_expert_desc:'إتقان حقيقي لتدريبك.',
+    bdg_elite_name:'نخبة',bdg_elite_desc:'تحسن مستمر.',
+    bdg_maitre_name:'أستاذ',bdg_maitre_desc:'تتقن جسدك وعقلك.',
+    bdg_legende_name:'أسطورة',bdg_legende_desc:'أصبحت مرجعًا.',
+    tierBronze:'برونزي',tierArgent:'فضي',tierOr:'ذهبي',tierPlatine:'بلاتيني',tierDiamant:'ماسي',tierMaitre:'أستاذ',tierLegende:'أسطورة',
+    medalCatSeances:'الحصص',medalCatRegularite:'الانتظام',medalCatDistance:'المسافة',
+    daysLab:'أيام',continueUnlockBadges:'واصل لفتح أوسمتك',    ach_premiere_name:'أول سباق',ach_premiere_desc:'أنهِ السباق الذي كنت تُحضّر له.',
+    ach_cinqk_name:'5 كم',ach_cinqk_desc:'اجرِ أكثر من 5 كم دفعة واحدة.',
+    ach_dixk_name:'10 كم',ach_dixk_desc:'اجرِ أكثر من 10 كم دفعة واحدة.',
+    ach_serie_name:'سلسلة',ach_serie_desc:'حافظ على الانتظام لمدة شهر (30 يومًا متتاليًا).',
+    ach_denivele_name:'ارتفاع',ach_denivele_desc:'أكثر من 200 م ارتفاعًا في حصة أو سباق.',
+    ach_podium_name:'منصة التتويج',ach_podium_desc:'أنهِ ضمن أفضل 3 في سباق.',
+    ach_objectif_name:'الهدف محقق',ach_objectif_desc:'حقق وقتك المستهدف (أو أسرع) في السباق الذي حضّرت له.',
+    ach_nouveaupb_name:'رقم شخصي جديد',ach_nouveaupb_desc:'حطّم رقمًا جديدًا بـ VDOT أعلى من رقمك السابق.',
+    ach_allure_name:'الوتيرة',ach_allure_desc:'اجرِ 3 كم على الأقل بوتيرة 10:00/كم أو أسرع.',
+    ach_endurance_name:'التحمل',ach_endurance_desc:'أنهِ خرجة لا تقل عن 15 كم.',
+    ach_puissance_name:'القوة',ach_puissance_desc:'قم بـ 3 حصص كمال أجسام على الأقل في أسبوع واحد.',
+    ach_vo2max_name:'VO2 Max',ach_vo2max_desc:'حقق VO\u2082max مقدر أعلى من 50.',
+    ach_force_name:'قوة',ach_force_desc:'ارفع أكثر من 20,000 كغ إجمالاً في أسبوع واحد.',
+    catAccomplissement:'إنجاز',catPerformance:'أداء',allYearsLab:'الكل',
+    tapTrophyHint:'اضغط على وسام لرؤية الرسوم المتحركة أو الشرط لتحقيقه.',
+    noTrophyInYear:'لم يتم الحصول على وسام في {0}.',badgeUnlockedToast:'🏵️ تم فتح {0}!',badgeRemovedToast:'تمت إزالة الوسام',
+    objForce:'قوة',objMass:'كتلة',objEndurance:'تحمل',objWeightLoss:'فقدان وزن',objMaintain:'محافظة',
+    colBlue:'أزرق',colRed:'أحمر',colGreen:'أخضر',colGold:'ذهبي',colPurple:'بنفسجي',colCyan:'سماوي',
+    newTrophyUnlocked:'وسام جديد مفتوح',
+    markAsObtained:'✓ وضع علامة كمُحقق'
   }
 };
 function curLang(){ return (P&&P.lang)||'fr'; }
@@ -760,7 +1192,9 @@ function setLang(l){
   P.lang=l; saveAll();
   document.documentElement.lang=l;
   document.documentElement.dir=(l==='ar')?'rtl':'ltr';
+  TOOLS=TOOLS_DEF(); BADGE_TIERS=BADGE_TIERS_DEF(); TIERS=TIERS_DEF(); MEDAL_CATS=MEDAL_CATS_DEF(); ACHIEVEMENTS=ACHIEVEMENTS_DEF();
   applyNavLabels();
+  applyStaticLabels();
   // re-render la vue active
   const active=document.querySelector('.nb.on'); if(active) nav(active.dataset.s);
   refreshPfSheet();
@@ -1064,16 +1498,18 @@ function addXP(amount,reason){
      - Élite    : ≥2 mois (60 j),              objectif = 12 mois    (1440 km / 9600 XP)
      - Maître   : ≥4 mois (120 j),             objectif = 18 mois    (2160 km / 14400 XP)
      - Légende  : ≥8 mois (240 j),             objectif = 2 ans      (2880 km / 19200 XP) */
-const BADGE_TIERS=[
-  {key:'debutant', name:'Débutant', cls:'bd-debutant', emoji:'🌱', xpMin:0,     kmMin:0,    daysMin:0,   desc:"Le tout début de l\u2019aventure IKORUN."},
-  {key:'amateur',  name:'Amateur',  cls:'bd-amateur',  emoji:'🥉', xpMin:200,   kmMin:30,   daysMin:3,   desc:"Tu prends le rythme."},
-  {key:'sportif',  name:'Sportif',  cls:'bd-sportif',  emoji:'⭐', xpMin:400,   kmMin:60,   daysMin:11,  desc:"L\u2019entraînement devient une habitude."},
-  {key:'athlete',  name:'Athlète',  cls:'bd-athlete',  emoji:'🏅', xpMin:1600,  kmMin:240,  daysMin:14,  desc:"Tu progresses avec sérieux."},
-  {key:'expert',   name:'Expert',   cls:'bd-expert',   emoji:'💚', xpMin:4000,  kmMin:600,  daysMin:30,  desc:"Une vraie maîtrise de ton entraînement."},
-  {key:'elite',    name:'Élite',    cls:'bd-elite',    emoji:'💎', xpMin:9600,  kmMin:1440, daysMin:60,  desc:"Constante amélioration."},
-  {key:'maitre',   name:'Maître',   cls:'bd-maitre',   emoji:'🛡️', xpMin:14400, kmMin:2160, daysMin:120, desc:"Maîtrise ton corps et ton mental."},
-  {key:'legende',  name:'Légende',  cls:'bd-legende',  emoji:'👑', xpMin:19200, kmMin:2880, daysMin:240, desc:"Devenu une référence."}
-];
+function BADGE_TIERS_DEF(){ return [
+  {key:'debutant', name:t('bdg_debutant_name'), cls:'bd-debutant', emoji:'🌱', xpMin:0,     kmMin:0,    daysMin:0,   desc:t('bdg_debutant_desc')},
+  {key:'amateur',  name:t('bdg_amateur_name'),  cls:'bd-amateur',  emoji:'🥉', xpMin:200,   kmMin:30,   daysMin:3,   desc:t('bdg_amateur_desc')},
+  {key:'sportif',  name:t('bdg_sportif_name'),  cls:'bd-sportif',  emoji:'⭐', xpMin:400,   kmMin:60,   daysMin:11,  desc:t('bdg_sportif_desc')},
+  {key:'athlete',  name:t('bdg_athlete_name'),  cls:'bd-athlete',  emoji:'🏅', xpMin:1600,  kmMin:240,  daysMin:14,  desc:t('bdg_athlete_desc')},
+  {key:'expert',   name:t('bdg_expert_name'),   cls:'bd-expert',   emoji:'💚', xpMin:4000,  kmMin:600,  daysMin:30,  desc:t('bdg_expert_desc')},
+  {key:'elite',    name:t('bdg_elite_name'),    cls:'bd-elite',    emoji:'💎', xpMin:9600,  kmMin:1440, daysMin:60,  desc:t('bdg_elite_desc')},
+  {key:'maitre',   name:t('bdg_maitre_name'),   cls:'bd-maitre',   emoji:'🛡️', xpMin:14400, kmMin:2160, daysMin:120, desc:t('bdg_maitre_desc')},
+  {key:'legende',  name:t('bdg_legende_name'),  cls:'bd-legende',  emoji:'👑', xpMin:19200, kmMin:2880, daysMin:240, desc:t('bdg_legende_desc')}
+]; }
+// Recalculé à chaque changement de langue (setLang) pour suivre curLang() — voir TOOLS_DEF pour le même principe.
+let BADGE_TIERS=BADGE_TIERS_DEF();
 function badgeStats(){
   return { xp: XP.total||0, km: totalKm(), days: daysSinceJoin() };
 }
@@ -1183,12 +1619,12 @@ function showBadgeUnlockAnim(b){
   let sparks=''; for(let i=0;i<26;i++){ const a=Math.random()*Math.PI*2, d=90+Math.random()*110;
     sparks+='<span class="bd-spark" style="--tx:'+(Math.cos(a)*d)+'px;--ty:'+(Math.sin(a)*d)+'px;animation-delay:'+(Math.random()*1.2)+'s"></span>'; }
   ov.innerHTML='<div class="bd-flash"></div>'+
-    '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded;margin-bottom:6px">NOUVEAU BADGE DÉBLOQUÉ</div>'+
+    '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded;margin-bottom:6px">'+t('newBadgeUnlocked')+'</div>'+
     '<div class="bd-unlock-stage '+b.cls+'"><div class="bd-rays"></div><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div><div class="bd-ring r4"></div>'+
     '<div class="bd-unlock-badge">'+bdGlyph(b.key)+sparks+'</div></div>'+
     '<div class="man" style="font-weight:800;font-size:30px;margin-top:18px;letter-spacing:.5px">'+b.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+b.desc+'</div>'+
-    '<div style="color:var(--dim);font-size:12px;margin-top:18px">Touche pour continuer</div>';
+    '<div style="color:var(--dim);font-size:12px;margin-top:18px">'+t('tapToContinue')+'</div>';
   ov.onclick=()=>{ ov.remove(); playBadgeUnlockQueue(); };
   document.body.appendChild(ov);
   setTimeout(()=>{ if(ov.parentNode){ ov.remove(); playBadgeUnlockQueue(); } },4200);
@@ -1206,8 +1642,8 @@ function replayBadgeAnim(key){
     '<div class="bd-unlock-badge">'+bdGlyph(b.key)+sparks+'</div></div>'+
     '<div class="man" style="font-weight:800;font-size:26px;margin-top:18px">'+b.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+b.desc+'</div>'+
-    '<button type="button" class="btn sm" style="width:auto;margin-top:20px;padding:11px 26px" data-details>Voir les détails</button>'+
-    '<div style="color:var(--dim);font-size:12px;margin-top:12px">Touche pour fermer</div>';
+    '<button type="button" class="btn sm" style="width:auto;margin-top:20px;padding:11px 26px" data-details>'+t('seeDetails')+'</button>'+
+    '<div style="color:var(--dim);font-size:12px;margin-top:12px">'+t('tapToClose')+'</div>';
   ov.onclick=(e)=>{
     if(e.target.closest('[data-details]')){ ov.remove(); openBadgeDetail(key); return; }
     ov.remove();
@@ -1230,14 +1666,14 @@ function previewBadgeAnim(key){
     condHtml='<div class="bd-preview-cond">'+remain.map(p=>'<div class="row" style="justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px"><span>'+p.label+'</span><span class="mono">'+Math.min(p.have,p.need)+' / '+p.need+' '+p.unit+'</span></div>').join('')+'</div>';
   }
   ov.innerHTML='<div class="bd-flash"></div>'+
-    '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded;margin-bottom:6px">APERÇU · VERROUILLÉ</div>'+
+    '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded;margin-bottom:6px">'+t('previewLocked')+'</div>'+
     '<div class="bd-unlock-stage '+b.cls+'"><div class="bd-rays"></div><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div>'+
     '<div class="bd-unlock-badge">'+bdGlyph(b.key)+sparks+'<div class="bd-lock-chip big">🔒</div></div></div>'+
     '<div class="man" style="font-weight:800;font-size:26px;margin-top:18px">'+b.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+b.desc+'</div>'+
     condHtml+
-    '<button type="button" class="btn sm" style="width:auto;margin-top:20px;padding:11px 26px" data-details>Voir les détails</button>'+
-    '<div style="color:var(--dim);font-size:12px;margin-top:12px">Touche pour fermer</div>';
+    '<button type="button" class="btn sm" style="width:auto;margin-top:20px;padding:11px 26px" data-details>'+t('seeDetails')+'</button>'+
+    '<div style="color:var(--dim);font-size:12px;margin-top:12px">'+t('tapToClose')+'</div>';
   ov.onclick=(e)=>{
     if(e.target.closest('[data-details]')){ ov.remove(); openBadgeDetail(key); return; }
     ov.remove();
@@ -1246,7 +1682,7 @@ function previewBadgeAnim(key){
 }
 let badgeFilter='tous';
 function openBadges(){
-  $('#ovBadgesTitle').textContent='Badges';
+  $('#ovBadgesTitle').textContent=t('badgesLabel');
   renderBadgeGallery();
   openOv('ovBadges');
 }
@@ -1254,9 +1690,9 @@ function renderBadgeGallery(){
   const unlocked=unlockedBadges(); const ukeys=new Set(unlocked.map(u=>u.key));
   const list=BADGE_TIERS.filter(b=> badgeFilter==='tous' ? true : (badgeFilter==='obtenus'? ukeys.has(b.key) : !ukeys.has(b.key)));
   let h='<div class="pills" style="margin-bottom:14px">'+
-    [['tous','Tous'],['obtenus','Obtenus'],['verrouilles','Verrouillés']].map(f=>'<div class="pill '+(badgeFilter===f[0]?'on':'')+'" onclick="badgeFilter=\''+f[0]+'\';renderBadgeGallery()">'+f[1]+'</div>').join('')+
+    [['tous',t('filterAll')],['obtenus',t('filterObtained')],['verrouilles',t('filterLocked')]].map(f=>'<div class="pill '+(badgeFilter===f[0]?'on':'')+'" onclick="badgeFilter=\''+f[0]+'\';renderBadgeGallery()">'+f[1]+'</div>').join('')+
     '</div>';
-  h+='<div style="font-size:12px;color:var(--muted);margin-bottom:10px">'+unlocked.length+' / '+BADGE_TIERS.length+' badges obtenus</div>';
+  h+='<div style="font-size:12px;color:var(--muted);margin-bottom:10px">'+tp('badgesObtainedCount',unlocked.length,BADGE_TIERS.length)+'</div>';
   h+='<div class="bd-grid">';
   list.forEach((b,i)=>{
     const on=ukeys.has(b.key);
@@ -1273,16 +1709,16 @@ function openBadgeDetail(key){
   const unlocked=unlockedBadges(); const ukeys=new Set(unlocked.map(u=>u.key));
   const rec=unlocked.find(u=>u.key===key);
   const prog=badgeProgress(b);
-  $('#ovBadgesTitle').textContent='Détails du badge';
+  $('#ovBadgesTitle').textContent=t('badgeDetailTitle');
 
   /* Rail des 8 paliers — la progression IKORUN est une vraie séquence,
      donc la montrer dans son ensemble (obtenus / palier actuel / à venir)
      a plus de sens qu'un simple prev/next textuel. */
-  let h='<div class="bd-detail-rail">'+BADGE_TIERS.map(t=>{
-    const on=ukeys.has(t.key), cur=t.key===key;
-    return '<div class="bd-icon xs '+t.cls+(cur?' cur':'')+(on?'':' locked')+'" onclick="openBadgeDetail(\''+t.key+'\')" title="'+t.name+'">'+bdGlyph(t.key)+'</div>';
+  let h='<div class="bd-detail-rail">'+BADGE_TIERS.map(bt=>{
+    const on=ukeys.has(bt.key), cur=bt.key===key;
+    return '<div class="bd-icon xs '+bt.cls+(cur?' cur':'')+(on?'':' locked')+'" onclick="openBadgeDetail(\''+bt.key+'\')" title="'+bt.name+'">'+bdGlyph(bt.key)+'</div>';
   }).join('')+'</div>';
-  h+='<div class="row" style="justify-content:center;margin:8px 0 16px"><span class="lab">Palier '+(idx+1)+' sur '+BADGE_TIERS.length+'</span></div>';
+  h+='<div class="row" style="justify-content:center;margin:8px 0 16px"><span class="lab">'+tp('tierOf',idx+1,BADGE_TIERS.length)+'</span></div>';
 
   /* Hero : le halo reprend la couleur matière propre au badge (--glow),
      posé via la classe de palier (b.cls) qui définit --c1/--c2/--glow. */
@@ -1291,12 +1727,12 @@ function openBadgeDetail(key){
     '<div class="man" style="font-weight:800;font-size:24px;margin-top:16px">'+b.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;padding:0 14px">'+b.desc+'</div>'+
     '<div class="row" style="justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap">'+
-      '<div class="bd-status-chip'+(rec?' on':'')+'">'+(rec?'✅ Obtenu le '+fmtDate(rec.date):'🔒 Verrouillé')+'</div>'+
-      '<div class="bd-status-chip ghost" onclick="'+(rec?'replayBadgeAnim':'previewBadgeAnim')+'(\''+b.key+'\')">↻ '+(rec?'Revivre l\u2019animation':'Voir un aperçu')+'</div>'+
+      '<div class="bd-status-chip'+(rec?' on':'')+'">'+(rec?tp('obtainedOn',fmtDate(rec.date)):t('lockedLab'))+'</div>'+
+      '<div class="bd-status-chip ghost" onclick="'+(rec?'replayBadgeAnim':'previewBadgeAnim')+'(\''+b.key+'\')">'+(rec?t('replayAnim'):t('seePreview'))+'</div>'+
     '</div>'+
   '</div>';
 
-  h+='<div class="card '+b.cls+'"><div class="lab" style="margin-bottom:12px">Conditions d\u2019obtention</div>';
+  h+='<div class="card '+b.cls+'"><div class="lab" style="margin-bottom:12px">'+t('obtainConditions')+'</div>';
   prog.parts.forEach(p=>{
     const pc=Math.min(100,Math.round((p.need?p.have/p.need:1)*100));
     const done=p.have>=p.need;
@@ -1312,12 +1748,12 @@ function openBadgeDetail(key){
         '</svg>'+
         '<div class="rc"><span class="mono" style="font-size:17px;font-weight:800">'+prog.pct+'%</span></div>'+
       '</div>'+
-      '<div style="flex:1"><div class="lab">Progression globale</div>'+
+      '<div style="flex:1"><div class="lab">'+t('globalProgress')+'</div>'+
       '<div style="font-size:12px;color:var(--muted);margin-top:4px">'+badgeHintText(prog)+'</div></div>'+
     '</div></div>';
 
-  if(rec) h+='<button class="btn" style="margin-top:12px" onclick="shareBadge(\''+b.key+'\')">↗ Partager ce badge</button>';
-  h+='<button class="btn ghost" style="margin-top:8px" onclick="closeOv(\'ovBadges\')">Fermer</button>';
+  if(rec) h+='<button class="btn" style="margin-top:12px" onclick="shareBadge(\''+b.key+'\')">'+t('shareBadgeBtn')+'</button>';
+  h+='<button class="btn ghost" style="margin-top:8px" onclick="closeOv(\'ovBadges\')">'+t('closeLab')+'</button>';
   $('#badgesBody').innerHTML=h;
   openOv('ovBadges');
 }
@@ -1747,13 +2183,26 @@ function nudgeScroll(){
 }
 function boot(){
   hideAppSkeleton();
+  detectLangIfUnset(); // 1re ouverture : pré-règle la langue depuis le téléphone (modifiable ensuite dans Profil)
   applyTheme(); // applique le mode (clair/sombre) dès le démarrage
+  applyStaticLabels();
   checkConnectivity();
   if(P.notif!==false) ensureNotifPerm();
   positionNavPill(document.querySelector('.nb.on')||document.querySelector('.nb'));
   window.addEventListener('resize',()=>positionNavPill(document.querySelector('.nb.on')));
   if(!P.setupDone){ startOnboarding(); return; }  // création profil
   initApp();                                      // app
+}
+/* Ne s'exécute qu'une fois, avant la création du profil : devine la langue
+   depuis les réglages du téléphone (fr/en/ar supportés, sinon fr par défaut).
+   Une fois choisie manuellement dans Profil → Langue, P.lang n'est plus jamais
+   réécrit ici (setupDone devient true après l'onboarding). */
+function detectLangIfUnset(){
+  if(P.lang || P.setupDone) return;
+  const nav=(navigator.language||navigator.userLanguage||'fr').toLowerCase();
+  P.lang = nav.startsWith('ar') ? 'ar' : nav.startsWith('en') ? 'en' : 'fr';
+  document.documentElement.lang=P.lang;
+  document.documentElement.dir=(P.lang==='ar')?'rtl':'ltr';
 }
 
 /* ============ CONNEXION / COMPTE (Supabase) ============ */
@@ -1839,6 +2288,7 @@ let obStep=1; const OB_MAX=5;
 let obEasy=false; // true si >26 ans → mode simplifié activé auto (n'affecte plus la navigation de l'onboarding)
 function startOnboarding(){
   obEasy=false;
+  applyOnboardingLabels();
   $('#ob').classList.add('on');
   const prog=$('#obProg'); prog.innerHTML='';
   for(let i=1;i<=OB_MAX;i++){ const d=document.createElement('div'); if(i===1)d.classList.add('on'); prog.appendChild(d); }
@@ -1851,6 +2301,57 @@ function startOnboarding(){
   wireUsernameField('ob_username','ob_username_status',ok=>{ obUsernameOk=ok; });
   wireAutoUsername();
   obShow(1);
+}
+/* Traduit le HTML statique de l'onboarding (index.html) selon curLang().
+   Les data-v des pills de niveau restent en français en interne (utilisés
+   comme clés par kmWeekFromLevel/finishOnboarding) — seul l'affichage change. */
+function applyOnboardingLabels(){
+  const step1=$('.ob-step[data-step="1"]'); if(step1){ const h1=step1.querySelector('h1'),p=step1.querySelector('.intro'); if(h1)h1.textContent=t('obWelcomeTitle'); if(p)p.innerHTML=t('obWelcomeIntro'); }
+  const step2=$('.ob-step[data-step="2"]');
+  if(step2){
+    step2.querySelector('h1').textContent=t('obWhoTitle'); step2.querySelector('.intro').textContent=t('obWhoIntro');
+    $('#ob_name').placeholder=t('firstNamePh'); $('#ob_name').closest('.field').querySelector('label').textContent=t('firstNameReq');
+    $('#ob_username').placeholder=t('usernamePh'); $('#ob_username_status').textContent=t('usernameFormatHint');
+    step2.querySelectorAll('.field label')[1].textContent=t('usernameReq');
+    step2.querySelectorAll('.field label')[2].textContent=t('birthDateReq');
+    step2.querySelectorAll('.field label')[3].textContent=t('sexReq');
+    const sexSel=$('#ob_sex'); sexSel.options[0].textContent=t('selectLab'); sexSel.options[1].textContent=t('maleLab'); sexSel.options[2].textContent=t('femaleLab');
+  }
+  const step3=$('.ob-step[data-step="3"]');
+  if(step3){
+    step3.querySelector('h1').textContent=t('obLevelTitle'); step3.querySelector('.intro').textContent=t('obLevelIntro');
+    step3.querySelector('.note span').innerHTML=t('levelNote');
+    const lvLabel=step3.querySelector('.field > label'); lvLabel.childNodes[0].textContent=t('levelReq')+' '; lvLabel.querySelector('span').textContent=t('howChooseLab');
+    const pills=$('#ob_level').querySelectorAll('.pill');
+    const map={'Débutant':'lvlBeginner','Intermédiaire':'lvlIntermediate','Confirmé':'lvlAdvanced','Très avancé':'lvlVeryAdvanced','Élite':'lvlElite'};
+    pills.forEach(p=>{ const k=map[p.dataset.v]; if(k) p.textContent=t(k); });
+  }
+  const step4=$('.ob-step[data-step="4"]');
+  if(step4){
+    step4.querySelector('h1').textContent=t('obGoalTitle'); step4.querySelector('.intro').textContent=t('obGoalIntro');
+    const labels=step4.querySelectorAll('.field label');
+    labels[0].textContent=t('goalReq'); $('#ob_goal').placeholder=t('goalPh');
+    labels[1].textContent=t('compDateReq');
+    labels[2].textContent=t('coachOptional'); $('#ob_coach').placeholder=t('coachPh');
+  }
+  const step5=$('.ob-step[data-step="5"]');
+  if(step5){
+    step5.querySelector('h1').textContent=t('obPerfTitle'); step5.querySelector('.intro').textContent=t('obPerfIntro');
+    step5.querySelector('.note span').innerHTML=t('perfNote');
+    $('#ob_addperf').textContent=t('addAnotherPerf');
+  }
+  $('#obPrev').textContent=t('backLab');
+  $('#obNext').textContent=obStep===OB_MAX?t('finishLab'):t('continueLab');
+  renderPerfRows();
+}
+/* Traduit les titres statiques des overlays génériques + le picker à roues.
+   Les titres dynamiques (Profil, Badges, Amis, Outils...) sont déjà gérés
+   par leurs fonctions d'ouverture respectives (openXxx). */
+function applyStaticLabels(){
+  const map={ovSettings:'paramsTitle',ovLib:'libTitle',ovCfg:'configureTitle',ovCreate:'newProgramTitle'};
+  Object.entries(map).forEach(([id,key])=>{ const el=$('#'+id); if(el){ const h2=el.querySelector('h2'); if(h2) h2.textContent=t(key); } });
+  const pkOk=$('#pkOk'); if(pkOk) pkOk.textContent=t('validateLab2');
+  if(document.body.dataset.scr==='home'){ const tbTitle=$('#tbTitle'); if(tbTitle) tbTitle.textContent=t('home'); }
 }
 let obUsernameOk=false;
 let obUsernameAuto=true; // tant que vrai, le pseudo se génère automatiquement à partir du prénom
@@ -1889,7 +2390,7 @@ function wireAutoUsername(){
       const mySeq=++_autoUnameGen;
       const uInp=$('#ob_username'); if(!uInp) return;
       const stEl=$('#ob_username_status');
-      if(stEl){ stEl.textContent='Vérification…'; stEl.className='uname-status checking'; }
+      if(stEl){ stEl.textContent=t('checkingLab'); stEl.className='uname-status checking'; }
       const u=await suggestAvailableUsername(name);
       if(mySeq!==_autoUnameGen || !obUsernameAuto) return; // le prénom a changé ou l'utilisateur a repris la main entretemps
       uInp.value=u;
@@ -1912,8 +2413,8 @@ function renderPerfRows(){
   let h='';
   OB_PERFS.forEach((p,i)=>{
     h+='<div class="perfrow">';
-    h+='<div class="perfcard" onclick="pickPerfDist('+i+')"><div class="pcl">🏁 Distance</div><div class="pcv '+(p.dist?'':'empty')+'">'+(p.dist||'Choisir')+'</div></div>';
-    h+='<div class="perfcard" onclick="pickPerfTime('+i+')"><div class="pcl">⏱ Temps</div><div class="pcv '+(p.timeS!=null?'':'empty')+'">'+(p.timeS!=null?fmtTime(p.timeS):'Choisir')+'</div></div>';
+    h+='<div class="perfcard" onclick="pickPerfDist('+i+')"><div class="pcl">🏁 '+t('distanceLab2')+'</div><div class="pcv '+(p.dist?'':'empty')+'">'+(p.dist||t('chooseWord'))+'</div></div>';
+    h+='<div class="perfcard" onclick="pickPerfTime('+i+')"><div class="pcl">⏱ '+t('timeField')+'</div><div class="pcv '+(p.timeS!=null?'':'empty')+'">'+(p.timeS!=null?fmtTime(p.timeS):t('chooseWord'))+'</div></div>';
     if(OB_PERFS.length>1) h+='<div class="perfdel" onclick="delPerfRow('+i+')">🗑</div>';
     h+='</div>';
   });
@@ -1922,37 +2423,37 @@ function renderPerfRows(){
 function addPerfRow(){ OB_PERFS.push({dist:null,meters:null,timeS:null}); renderPerfRows(); }
 function openLevelGuide(){
   const lv=[
-    ['🌱 Débutant','Tu cours depuis moins d\u2019un an. Tu t\u2019entraînes occasionnellement et tu découvres encore les bases.'],
-    ['🏃 Intermédiaire','Tu cours régulièrement, participes parfois à des compétitions et maîtrises les principaux types de séances.'],
-    ['⚡ Confirmé','Plusieurs années d\u2019entraînement, une pratique structurée et des objectifs chronométriques précis.'],
-    ['🔥 Très avancé','Entraînement intensif, plusieurs compétitions par an, très bon niveau régional ou national.'],
-    ['🏆 Élite','Athlète de haut niveau : performances nationales/internationales, entraînement quotidien à très gros volume.']
+    ['🌱 '+t('lvlBeginner'),t('lvlBeginnerDesc')],
+    ['🏃 '+t('lvlIntermediate'),t('lvlIntermediateDesc')],
+    ['⚡ '+t('lvlAdvanced'),t('lvlAdvancedDesc')],
+    ['🔥 '+t('lvlVeryAdvanced'),t('lvlVeryAdvancedDesc')],
+    ['🏆 '+t('lvlElite'),t('lvlEliteDesc')]
   ];
   let h=lv.map(x=>'<div class="card" style="margin-bottom:10px;padding:14px"><div style="font-weight:700;font-size:15px;margin-bottom:5px">'+x[0]+'</div><div style="font-size:13px;color:var(--muted);line-height:1.5">'+x[1]+'</div></div>').join('');
-  h+='<button class="btn" onclick="closeOv(\'ovProg\')">Compris 👍</button>';
-  $('#ovProgTitle').textContent='Comment choisir mon niveau ?'; $('#progBody').innerHTML=h;
+  h+='<button class="btn" onclick="closeOv(\'ovProg\')">'+t('understoodLab')+'</button>';
+  $('#ovProgTitle').textContent=t('howChooseLevelTitle'); $('#progBody').innerHTML=h;
   // place l'overlay au-dessus de l'onboarding
   $('#ovProg').style.zIndex='13700'; openOv('ovProg');
 }
 function delPerfRow(i){ OB_PERFS.splice(i,1); renderPerfRows(); }
 function pickPerfDist(i){
-  const names=REC_DISTANCES.map(d=>d[0]).concat(['Autre']);
-  openPicker({title:'Distance',cols:[{values:names,sel:Math.max(0,names.indexOf(OB_PERFS[i].dist)),wide:true}],onOk:idx=>{
+  const names=REC_DISTANCES.map(d=>d[0]).concat([t('otherDist')]);
+  openPicker({title:t('distanceLab2'),cols:[{values:names,sel:Math.max(0,names.indexOf(OB_PERFS[i].dist)),wide:true}],onOk:idx=>{
     const name=names[idx[0]];
-    if(name==='Autre'){ pickDistance('Distance personnalisée',OB_PERFS[i].meters?OB_PERFS[i].meters/1000:5,km=>{ OB_PERFS[i].dist=(km>=1?km+' km':Math.round(km*1000)+' m'); OB_PERFS[i].meters=Math.round(km*1000); renderPerfRows(); }); }
+    if(name===t('otherDist')){ pickDistance(t('customDistance'),OB_PERFS[i].meters?OB_PERFS[i].meters/1000:5,km=>{ OB_PERFS[i].dist=(km>=1?km+' km':Math.round(km*1000)+' m'); OB_PERFS[i].meters=Math.round(km*1000); renderPerfRows(); }); }
     else { const d=REC_DISTANCES[idx[0]]; OB_PERFS[i].dist=d[0]; OB_PERFS[i].meters=d[1]; renderPerfRows(); }
   }});
 }
 function pickPerfTime(i){
   const m=OB_PERFS[i].meters||5000; const longRace=m>=15000;
-  pickTime('Temps · '+(OB_PERFS[i].dist||''),OB_PERFS[i].timeS!=null?OB_PERFS[i].timeS:(m>=10000?2700:m>=5000?1200:300),v=>{ OB_PERFS[i].timeS=v; renderPerfRows(); },longRace);
+  pickTime(tp('timeForLab',OB_PERFS[i].dist||''),OB_PERFS[i].timeS!=null?OB_PERFS[i].timeS:(m>=10000?2700:m>=5000?1200:300),v=>{ OB_PERFS[i].timeS=v; renderPerfRows(); },longRace);
 }
 function obShow(n){
   obStep=n;
   $$('.ob-step').forEach(s=>s.classList.toggle('on',+s.dataset.step===n));
   $('#obProg').querySelectorAll('div').forEach((d,i)=>d.classList.toggle('on',i<n));
   $('#obPrev').style.visibility=n===1?'hidden':'visible';
-  $('#obNext').textContent=n===OB_MAX?'Terminer 🚀':'Continuer';
+  $('#obNext').textContent=n===OB_MAX?t('finishLab'):t('continueLab');
   $('#ob').scrollTop=0;
 }
 $('#obPrev').onclick=()=>{
@@ -1968,17 +2469,17 @@ function obv(id){ const el=$('#'+id); return el.dataset.v!==undefined&&el.classL
 function setObPk(id,val,label){ const el=$('#'+id); el.dataset.v=val; el.textContent=label; el.classList.add('set'); }
 function obValidate(n){
   if(n===2){
-    if(!$('#ob_name').value.trim()||!$('#ob_bday').value||!$('#ob_sex').value){ toast('Remplis les champs requis'); return false; }
-    if(!$('#ob_username').value.trim()){ toast('Choisis un nom d\u2019utilisateur'); return false; }
-    if(!obUsernameOk){ toast('Ce nom d\u2019utilisateur n\u2019est pas disponible'); return false; }
+    if(!$('#ob_name').value.trim()||!$('#ob_bday').value||!$('#ob_sex').value){ toast(t('fillRequiredFields')); return false; }
+    if(!$('#ob_username').value.trim()){ toast(t('chooseUsernameLab')); return false; }
+    if(!obUsernameOk){ toast(t('usernameUnavailable')); return false; }
     const bd=new Date($('#ob_bday').value);
     const ageYears=Math.floor((Date.now()-bd)/31557600000);
     obEasy = ageYears>26;
-    if(obEasy) toast('Profil rapide activé — mode simplifié activé ✓');
+    if(obEasy) toast(t('quickProfileEnabled'));
   }
-  if(n===3){ if(!$('#ob_level').querySelector('.pill.on')){ toast('Choisis un niveau'); return false; } }
-  if(n===4){ if(!$('#ob_goal').value.trim()||!$('#ob_compdate').value){ toast('Objectif et date requis'); return false; } }
-  if(n===5){ const valid=OB_PERFS.filter(p=>p.meters&&p.timeS); if(!valid.length){ toast('Ajoute au moins une performance'); return false; } }
+  if(n===3){ if(!$('#ob_level').querySelector('.pill.on')){ toast(t('chooseLevelLab')); return false; } }
+  if(n===4){ if(!$('#ob_goal').value.trim()||!$('#ob_compdate').value){ toast(t('goalDateRequired')); return false; } }
+  if(n===5){ const valid=OB_PERFS.filter(p=>p.meters&&p.timeS); if(!valid.length){ toast(t('addAtLeastOnePerf')); return false; } }
   return true;
 }
 /* Volume hebdo initial déduit du niveau déclaré (l'utilisateur n'a plus à
@@ -1995,8 +2496,9 @@ function finishOnboarding(){
   RECORDS=valid.map(p=>({dist:p.dist,meters:p.meters,time:fmtTime(p.timeS),date:todayKey()}));
   const find=m=>{ const r=valid.find(x=>x.meters===m); return r?fmtTime(r.timeS):''; };
   const level=$('#ob_level').querySelector('.pill.on').dataset.v;
+  const detectedLang=P.lang; // préserve la langue détectée/choisie avant l'écrasement de P ci-dessous
   P={
-    setupDone:true, joinedAt:Date.now(),
+    setupDone:true, joinedAt:Date.now(), lang:detectedLang,
     name:$('#ob_name').value.trim(), username:$('#ob_username').value.trim(), bday:$('#ob_bday').value, sex:$('#ob_sex').value,
     level, kmWeek:kmWeekFromLevel(level),
     goal:$('#ob_goal').value.trim(), compDate:$('#ob_compdate').value,
@@ -2010,7 +2512,7 @@ function finishOnboarding(){
   burst();
   if(P.username){
     claimUsername(P.username).then(ok=>{
-      if(!ok) toast('⚠️ Pseudo pris entre-temps, modifie-le dans Profil');
+      if(!ok) toast(t('usernameTakenMeanwhile'));
     });
   }
   setTimeout(initApp,400);
@@ -2522,6 +3024,11 @@ const PHASES=[
   {key:'PIC', name:'Pic de forme', color:'--e'},
   {key:'TAPER', name:'Affûtage', color:'--platine'}
 ];
+/* Traduit le nom d'une phase à l'affichage à partir de sa clé stable (phaseKey),
+   plutôt que d'utiliser le texte français figé dans PLAN.sessions[].phase au
+   moment de la génération — ce qui permet au nom de suivre la langue active
+   même sur un plan généré avant un changement de langue. */
+function phaseName(key){ return key ? t('phase_'+key) : ''; }
 function phaseDistribution(weeks){
   // proportions par phase, ajustées au nombre de semaines
   const prop=[0.18,0.24,0.20,0.20,0.10,0.08];
@@ -2932,29 +3439,29 @@ function buildSessionV2(type,o){
   const CD='10-15 min footing très lent en '+S(pace.RC)+'/km + étirements doux.';
   switch(type){
     case 'EF':
-      km=easyKm; p=S(pace.EF); rpe=3; label='EF'; title='Endurance Fondamentale';
+      km=easyKm; p=S(pace.EF); rpe=3; label=t('sessLabel_EF'); title=t('sessTitle_EF');
       d={objectif:'Construire ta base aérobie — le socle de toute progression (80% du volume des élites).',warmup:'Mise en route progressive sur 10 min.',body:km+' km à allure facile ('+S(pace.EF)+'/km). Conversation possible en permanence.',paces:'Zone 2, ~70% FCmax — '+S(pace.EF)+'/km.',recovery:'Effort continu.',cooldown:'Quelques étirements des mollets et ischios.',tips:['Respire par le ventre.','La lenteur est volontaire et productive.'],mistakes:['Courir trop vite « par habitude ».'],why:'Développe le cœur, les capillaires et les mitochondries sans fatigue ni risque.'};
       break;
     case 'RECUP':
-      km=Math.max(4,Math.round(easyKm*0.7)); p=S(pace.RC); rpe=2; label='Récup'; title='Récupération active';
+      km=Math.max(4,Math.round(easyKm*0.7)); p=S(pace.RC); rpe=2; label=t('sessLabel_RECUP'); title=t('sessTitle_RECUP');
       d={objectif:'Accélérer la récupération entre deux séances dures.',warmup:'Aucun.',body:km+' km très souple à '+S(pace.RC)+'/km.',paces:'Zone 1 — très lent.',recovery:'—',cooldown:'Automassage / mobilité.',tips:['Si très fatigué, remplace par 25 min de marche.'],mistakes:['Accélérer : tu sabotes la récup.'],why:'La circulation sanguine évacue les déchets et relance l\u2019adaptation.'};
       break;
     case 'LONG': case 'LONG_COURT':
       km=type==='LONG_COURT'?Math.round(wkKm*0.22):Math.round(wkKm*(phase.key==='SPE'?0.34:0.30));
-      km=Math.max(8,Math.min(longRunCapKm(),km)); p=S(pace.EF*0.99); rpe=4; label='Long'; title='Sortie Longue'+(phase.key==='SPE'?' progressive':'');
+      km=Math.max(8,Math.min(longRunCapKm(),km)); p=S(pace.EF*0.99); rpe=4; label=t('sessLabel_LONG'); title=t('sessTitle_LONG')+(phase.key==='SPE'?t('progressiveSuffix'):'');
       d={objectif:'Développer l\u2019endurance, l\u2019économie de course et le mental.',warmup:'Départ progressif 10 min.',body:phase.key==='SPE'||phase.key==='PIC'?km+' km progressifs : 1ère moitié en '+S(pace.EF)+'/km, 2nde moitié en accélérant jusqu\u2019à '+S(pace.MAR)+'/km.':km+' km à allure endurance stable ('+S(pace.EF*0.99)+'/km).',paces:'EF '+S(pace.EF)+'/km → allure marathon '+S(pace.MAR)+'/km en fin.',recovery:'Continu, ravitaille si > 1h15.',cooldown:CD,tips:['Mange bien la veille.','Emporte eau + gel si > 1h30.'],mistakes:['Partir trop vite et marcher à la fin.'],why:'Augmente les réserves de glycogène et la capacité à utiliser les graisses.'};
       break;
     case 'TEMPO': {
       const tmin=vary(20,30);
       const mainKm=distKmFromTime(tmin*60,pace.TEMPO);
-      km=round1(wuKm+mainKm+cdKm); durMin=Math.round(WU_MIN+tmin+CD_MIN); p=S(pace.TEMPO); rpe=6; label='Tempo'; title='Tempo Run';
+      km=round1(wuKm+mainKm+cdKm); durMin=Math.round(WU_MIN+tmin+CD_MIN); p=S(pace.TEMPO); rpe=6; label=t('sessLabel_TEMPO'); title=t('sessTitle_TEMPO');
       d={objectif:'Améliorer l\u2019efficacité et l\u2019endurance à allure soutenue.',warmup:WU,body:tmin+' min en continu à '+S(pace.TEMPO)+'/km (« confortablement difficile »), soit environ '+round1(mainKm)+' km.',paces:'~83% VMA — '+S(pace.TEMPO)+'/km.',recovery:'Bloc continu.',cooldown:CD,tips:['Tu dois pouvoir dire 2-3 mots, pas une phrase.'],mistakes:['Partir trop vite et exploser.'],why:'Repousse le seuil d\u2019accumulation du lactate.'};
       break; }
     case 'TEMPO_SPE': {
       const n=vary(2,3), dist=2000, recSecEach=120, recN=Math.max(0,n-1);
       const mainKm=n*dist/1000, recKm=distKmFromTime(recN*recSecEach,pace.RC);
       km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*splitSecFromPace(pace.SPE,dist)/60+recN*recSecEach/60+CD_MIN);
-      p=S(pace.SPE); rpe=6; label='Tempo spé'; title='Tempo allure spécifique';
+      p=S(pace.SPE); rpe=6; label=t('sessLabel_TEMPO_SPE'); title=t('sessTitle_TEMPO_SPE');
       series={reps:n,dist,paceSecPerKm:pace.SPE,recoverySec:recSecEach,recoveryLabel:'2 min trot'};
       d={objectif:'Te familiariser avec l\u2019allure de ta course objectif ('+goal+').',warmup:WU,body:repsText(n,dist,pace.SPE)+', récup 2 min trot entre blocs.',paces:'Allure course : '+S(pace.SPE)+'/km.',recovery:'2 min trot entre blocs.',cooldown:CD,tips:['Mémorise les sensations de cette allure.'],mistakes:['Aller plus vite que l\u2019allure cible.'],why:'L\u2019allure spécifique doit devenir automatique le jour J.'};
       break; }
@@ -2962,7 +3469,7 @@ function buildSessionV2(type,o){
       const n=vary(4,6), dist=1000, recSecEach=60, recN=Math.max(0,n-1);
       const mainKm=n*dist/1000, recKm=distKmFromTime(recN*recSecEach,pace.RC);
       km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*splitSecFromPace(pace.SEUIL,dist)/60+recN*recSecEach/60+CD_MIN);
-      p=S(pace.SEUIL); rpe=7; label='Seuil'; title='Séance au Seuil';
+      p=S(pace.SEUIL); rpe=7; label=t('sessLabel_SEUIL'); title=t('sessTitle_SEUIL');
       series={reps:n,dist,paceSecPerKm:pace.SEUIL,recoverySec:recSecEach,recoveryLabel:'1 min trot'};
       d={objectif:'Repousser le seuil lactique — facteur n°1 de performance.',warmup:WU,body:repsText(n,dist,pace.SEUIL)+', récup 1 min trot.',paces:'~88% VMA — '+S(pace.SEUIL)+'/km.',recovery:'1 min trot entre chaque.',cooldown:CD,tips:['Toutes les reps à la même allure.'],mistakes:['Partir trop fort sur la 1ère.'],why:'Le seuil est l\u2019allure tenable ~1h ; l\u2019élever rend tout plus facile.'};
       break; }
@@ -2974,7 +3481,7 @@ function buildSessionV2(type,o){
       const pmMainKm=nPM*distPM/1000, pmRecKm=distKmFromTime(recNpm*recPM,pace.RC);
       km=round1(wuKm+amMainKm+amRecKm+cdKm+wuKm+pmMainKm+pmRecKm+cdKm);
       durMin=Math.round(2*WU_MIN+nAM*minAM+recNam*recAM/60+2*CD_MIN+nPM*splitSecFromPace(pace.SEUIL,distPM)/60+recNpm*recPM/60);
-      p=S(pace.SEUIL); rpe=7; label='Double seuil'; title='Double Seuil (méthode norvégienne)';
+      p=S(pace.SEUIL); rpe=7; label=t('sessLabel_DBLSEUIL'); title=t('sessTitle_DBLSEUIL');
       series={reps:nPM,dist:distPM,paceSecPerKm:pace.SEUIL,recoverySec:recPM,recoveryLabel:'30 s trot',note:'Séance du soir (matin = '+nAM+' × '+minAM+' min)'};
       d={objectif:'Maximiser le volume au seuil sans fatigue excessive (clé norvégienne).',warmup:WU+' (×2 : une fois le matin, une fois le soir)',body:'Matin : '+nAM+' × '+minAM+' min à '+S(pace.SEUIL*1.01)+'/km (récup 1 min). Soir : '+repsText(nPM,distPM,pace.SEUIL)+' (récup 30 s). Reste sous-maximal.',paces:'Seuil contrôlé '+S(pace.SEUIL)+'/km — lactate ~2-4 mmol.',recovery:'Récup courte, intensité maîtrisée.',cooldown:CD+' (après chaque séance)',tips:['Ne jamais finir épuisé : tu dois pouvoir refaire la séance.'],mistakes:['Transformer le seuil en VMA.'],why:'Double dose de stimulus seuil pour une fatigue minimale — signature des Ingebrigtsen.'};
       break; }
@@ -2982,7 +3489,7 @@ function buildSessionV2(type,o){
       const n=vary(8,12), dist=300, recSecEach=60, recN=Math.max(0,n-1);
       const mainKm=n*dist/1000, recKm=distKmFromTime(recN*recSecEach,pace.RC);
       km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*splitSecFromPace(pace.VMAc,dist)/60+recN*recSecEach/60+CD_MIN);
-      p=S(pace.VMAc); rpe=9; label='VMA courte'; title='VMA Courte';
+      p=S(pace.VMAc); rpe=9; label=t('sessLabel_VMAc'); title=t('sessTitle_VMAc');
       series={reps:n,dist,paceSecPerKm:pace.VMAc,recoverySec:recSecEach,recoveryLabel:'1 min trot'};
       const vmac30m=Math.round(distKmFromTime(30,pace.VMAc)*1000);
       d={objectif:'Développer la vVO2max et la vitesse de pointe.',warmup:WU+' Échauffement OBLIGATOIRE.',body:repsText(n,dist,pace.VMAc)+', récup 1 min trot. (ou variante courte : '+vary(12,16)+' × ~'+vmac30m+' m vif / '+vmac30m+' m trot, même intensité).',paces:'~108-110% VMA — vise '+fmtSplit(splitSecFromPace(pace.VMAc,dist))+' sur chaque '+dist+' m (et non '+S(pace.VMAc)+', qui est juste l\u2019allure ramenée au km).',recovery:'1 min trot entre les '+dist+' m.',cooldown:CD,tips:['Même temps de passage sur toutes les reps : '+fmtSplit(splitSecFromPace(pace.VMAc,dist))+' au '+dist+' m.'],mistakes:['Négliger l\u2019échauffement → blessure.','Confondre l\u2019allure /km affichée avec le temps réel à réaliser sur '+dist+' m.'],why:'Stimule le VO₂max et l\u2019économie neuromusculaire.'};
@@ -2991,7 +3498,7 @@ function buildSessionV2(type,o){
       const n=vary(5,7), dist=1000, recSecEach=150, recN=Math.max(0,n-1);
       const mainKm=n*dist/1000, recKm=distKmFromTime(recN*recSecEach,pace.RC);
       km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*splitSecFromPace(pace.VMAl,dist)/60+recN*recSecEach/60+CD_MIN);
-      p=S(pace.VMAl); rpe=9; label=type==='VO2'?'VO₂max':'VMA longue'; title=type==='VO2'?'Séance VO₂max':'VMA Longue';
+      p=S(pace.VMAl); rpe=9; label=type==='VO2'?t('sessLabel_VO2'):t('sessLabel_VMAl'); title=type==='VO2'?t('sessTitle_VO2'):t('sessTitle_VMAl');
       series={reps:n,dist,paceSecPerKm:pace.VMAl,recoverySec:recSecEach,recoveryLabel:'2-3 min trot'};
       d={objectif:'Élever le VO₂max — ta cylindrée maximale.',warmup:WU,body:repsText(n,dist,pace.VMAl)+', récup 2-3 min trot. (ou '+vary(4,5)+' × 1200 m).',paces:'~95-98% VMA — '+S(pace.VMAl)+'/km.',recovery:'2-3 min trot.',cooldown:CD,tips:['Régularité avant tout.','Arrête si tu ne tiens plus l\u2019allure.'],mistakes:['Récup trop courte.'],why:'Le temps passé à ~90-100% VO₂max augmente ta puissance aérobie maximale.'};
       break; }
@@ -3003,7 +3510,7 @@ function buildSessionV2(type,o){
       const recSec=mainSec*6/7; // récup = durée de l'effort, entre chaque segment (pas après le dernier)
       const recKm=distKmFromTime(recSec,pace.RC);
       km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+mainSec/60+recSec/60+CD_MIN);
-      p=S(pace.VMAl); rpe=8; label='Intervalles'; title='Intervalles mixtes';
+      p=S(pace.VMAl); rpe=8; label=t('sessLabel_INTERVAL'); title=t('sessTitle_INTERVAL');
       series={segments:segs.map(dist=>({dist,paceSecPerKm:paceFor(dist),splitSec:splitSecFromPace(paceFor(dist),dist)})),recoveryLabel:'jog = durée de l\u2019effort'};
       const detailSegs=segs.map(dist=>dist+' m ('+fmtSplit(splitSecFromPace(paceFor(dist),dist))+')').join(' · ');
       d={objectif:'Travail mixte vitesse-endurance.',warmup:WU,body:'Pyramide : '+detailSegs+', récup jog = durée de l\u2019effort entre chaque segment.',paces:'De '+S(paceFor(200))+'/km (200 m) à '+S(paceFor(800))+'/km (800 m) — l\u2019allure ralentit progressivement avec la distance.',recovery:'Récup active égale à l\u2019effort.',cooldown:CD,tips:['Gère l\u2019allure selon la distance : plus la rép est courte, plus tu vas vite en valeur absolue.'],mistakes:['Tout faire à la même vitesse.'],why:'Combine plusieurs filières énergétiques.'};
@@ -3012,39 +3519,39 @@ function buildSessionV2(type,o){
       const n=type==='SPE_COURT'?vary(3,4):vary(4,6), dist=1000, recSecEach=90, recN=Math.max(0,n-1);
       const mainKm=n*dist/1000, recKm=distKmFromTime(recN*recSecEach,pace.RC);
       km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*splitSecFromPace(pace.SPE,dist)/60+recN*recSecEach/60+CD_MIN);
-      p=S(pace.SPE); rpe=8; label='Allure spé'; title='Allure Spécifique '+(P.objRace||'');
+      p=S(pace.SPE); rpe=8; label=t('sessLabel_SPE'); title=t('sessTitle_SPE')+(P.objRace?' '+P.objRace:'');
       series={reps:n,dist,paceSecPerKm:pace.SPE,recoverySec:recSecEach,recoveryLabel:'90 s trot'};
       d={objectif:'Ancrer l\u2019allure exacte de ta course ('+goal+').',warmup:WU,body:repsText(n,dist,pace.SPE)+', récup 90 s.',paces:'Allure objectif : '+S(pace.SPE)+'/km.',recovery:'90 s trot.',cooldown:CD,tips:['Cette allure doit devenir un réflexe.'],mistakes:['Aller plus vite par excès de confiance.'],why:'La spécificité prime à l\u2019approche de la course.'};
       break; }
     case 'PROGRESSIF':
-      km=Math.round(easyKm*1.2); p=S(pace.MAR); rpe=6; label='Progressif'; title='Run Progressif';
+      km=Math.round(easyKm*1.2); p=S(pace.MAR); rpe=6; label=t('sessLabel_PROGRESSIF'); title=t('sessTitle_PROGRESSIF');
       d={objectif:'Apprendre à accélérer sur la fatigue.',warmup:'10 min '+S(pace.EF)+'/km.',body:km+' km en 3 paliers : '+S(pace.EF)+' → '+S(pace.MAR)+' → '+S(pace.TEMPO)+'/km.',paces:'EF → tempo.',recovery:'Continu.',cooldown:CD,tips:['Chaque palier un peu plus vite.'],mistakes:['Partir trop vite.'],why:'Renforce le mental et le négatif split.'};
       break;
     case 'FARTLEK': {
       const n=vary(8,12);
       const mainKm=n*(distKmFromTime(60,pace.VMAl)+distKmFromTime(60,pace.EF));
       km=round1(distKmFromTime(15*60,pace.EF)+mainKm+cdKm); durMin=Math.round(15+n*2+CD_MIN);
-      p=S(pace.TEMPO); rpe=6; label='Fartlek'; title='Fartlek (jeu d\u2019allures)';
+      p=S(pace.TEMPO); rpe=6; label=t('sessLabel_FARTLEK'); title=t('sessTitle_FARTLEK');
       d={objectif:'Travail au ressenti, ludique et libre.',warmup:'15 min '+S(pace.EF)+'/km.',body:n+' × (1 min vite / 1 min lent) au ressenti, dans la nature.',paces:'Vite ≈ '+S(pace.VMAl)+'/km, lent ≈ '+S(pace.EF)+'/km.',recovery:'Récup active libre.',cooldown:CD,tips:['Joue avec le terrain.'],mistakes:['Trop structurer : laisse-toi aller.'],why:'Développe le VO₂max en s\u2019amusant et casse la routine.'};
       break; }
     case 'COTES': {
       const n=vary(8,12), effortSec=37.5;
       const mainKm=distKmFromTime(n*effortSec,pace.SEUIL), recKm=distKmFromTime(n*effortSec,pace.RC);
       km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*effortSec/60+n*effortSec/60+CD_MIN);
-      p=S(pace.SEUIL); rpe=8; label='Côtes'; title='Séance de Côtes';
+      p=S(pace.SEUIL); rpe=8; label=t('sessLabel_COTES'); title=t('sessTitle_COTES');
       series={reps:n,recoveryLabel:'descente trot',note:'30-45 s d\u2019effort en côte par répétition'};
       d={objectif:'Développer puissance, force et économie de course.',warmup:WU,body:n+' × 30-45 s en côte (4-6%) à effort soutenu, récup en descente trot.',paces:'Effort à ~90%.',recovery:'Descente en récup.',cooldown:CD,tips:['Foulée courte et dynamique, regarde devant.'],mistakes:['Descendre trop vite (impact).'],why:'La côte = musculation spécifique sans impact traumatisant.'};
       break; }
     case 'LIGNES':
-      km=Math.round(easyKm*0.8); p=S(pace.EF); rpe=4; label='Lignes'; title='Footing + Lignes droites';
+      km=Math.round(easyKm*0.8); p=S(pace.EF); rpe=4; label=t('sessLabel_LIGNES'); title=t('sessTitle_LIGNES');
       d={objectif:'Entretenir la vitesse et la fraîcheur (idéal taper).',warmup:'10 min '+S(pace.EF)+'/km.',body:Math.round(km*0.7)+' km EF + '+vary(6,8)+' × 80-100 m en accélération progressive (sans forcer), récup marche.',paces:'EF + accélérations relâchées.',recovery:'Marche/trot entre lignes.',cooldown:'Étirements.',tips:['Reste relâché, ne sprinte pas.'],mistakes:['Forcer sur les lignes en période d\u2019affûtage.'],why:'Garde le système nerveux affûté sans fatigue.'};
       break;
     case 'COURSE':
-      const m=raceMeters(); km=Math.round(m/1000); p=S(predictTime(vdot,m)/(m/1000)); rpe=10; label='Course'; title='🏆 Jour J — '+(P.objRace||'Compétition');
+      const m=raceMeters(); km=Math.round(m/1000); p=S(predictTime(vdot,m)/(m/1000)); rpe=10; label=t('sessLabel_COURSE'); title=t('sessTitle_COURSE')+' — '+(P.objRace||t('competitionDefault'));
       d={objectif:'Réaliser ta meilleure performance — objectif : '+(P.objTime||goal)+' !',warmup:'25-30 min : footing progressif + lignes droites + 3 accélérations allure course.',body:km+' km à '+S(predictTime(vdot,m)/(m/1000))+'/km. Départ contrôlé, milieu solide, final tout donné.',paces:'Allure objectif : '+S(predictTime(vdot,m)/(m/1000))+'/km.',recovery:'—',cooldown:'15 min footing dès l\u2019arrivée + étirements.',tips:['Ne pars pas trop vite.','Accroche un coureur de ton niveau.'],mistakes:['Mal dormir / mal manger la veille.'],why:'L\u2019aboutissement de toute ta préparation. Fais-toi confiance !'};
       break;
     default:
-      km=easyKm; p=S(pace.EF); rpe=3; label='EF'; title='Endurance';
+      km=easyKm; p=S(pace.EF); rpe=3; label=t('sessLabel_default'); title=t('sessTitle_default');
       d={objectif:'Endurance.',warmup:'-',body:km+' km facile.',paces:S(pace.EF)+'/km',recovery:'-',cooldown:'-',tips:[],mistakes:[],why:'Base aérobie.'};
   }
   if(isDeload && km>0){ d.objectif='🟢 SEMAINE ALLÉGÉE — '+d.objectif; }
@@ -3330,26 +3837,26 @@ function homeGoalCard(){
     '<div class="goal-top">'+
       '<div><div class="goal-lab">Objectif</div><div class="goal-race">'+(P.objRace||P.goal||'Ta prochaine course')+(P.objTime?' — sub '+P.objTime:'')+'</div>'+
       '<div class="goal-target">Course le '+fmtDate(P.compDate)+'</div></div>'+
-      '<div class="goal-count"><div class="n">'+daysLeft+'</div><div class="u">jours</div></div>'+
+      '<div class="goal-count"><div class="n">'+daysLeft+'</div><div class="u">'+t('daysLab')+'</div></div>'+
     '</div>'+
     '<div class="goal-bar"><div style="width:'+pct+'%"></div></div>'+
   '</div>';
 }
 // Ligne "Progression" — badges de médailles (séances / régularité / distance)
 function homeBadgesRow(){
-  const icons={'Séances':'medal','Régularité':'fire','Distance':'chart'};
+  const icons={sessions:'medal',streak:'fire',distance:'chart'};
   let bestCat=null, bestPct=-1, bestTier=-1;
   const cells=MEDAL_CATS.map(c=>{
     const v=Math.floor(c.val());
-    let tierIdx=-1; c.thr.forEach((t,i)=>{ if(v>=t)tierIdx=i; });
+    let tierIdx=-1; c.thr.forEach((th,i)=>{ if(v>=th)tierIdx=i; });
     const next=tierIdx<c.thr.length-1?c.thr[tierIdx+1]:null;
     const prevT=tierIdx>=0?c.thr[tierIdx]:0;
     const pct=next?Math.min(100,Math.round(((v-prevT)/(next-prevT))*100)):100;
     if(next && pct>bestPct){ bestPct=pct; bestCat=c; bestTier=tierIdx; }
     const locked=tierIdx<0;
-    return '<div class="badge-mini'+(locked?' locked':'')+'" onclick="nav(\'stats\')">'+ICN(icons[c.name]||'medal',18)+'</div>';
+    return '<div class="badge-mini'+(locked?' locked':'')+'" onclick="nav(\'stats\')">'+ICN(icons[c.key]||'medal',18)+'</div>';
   });
-  const label=bestCat?(TIERS[bestTier+1]?TIERS[bestTier+1][0]:bestCat.name)+' · '+bestPct+'%':'Continue pour débloquer tes badges';
+  const label=bestCat?(TIERS[bestTier+1]?TIERS[bestTier+1][0]:bestCat.name)+' · '+bestPct+'%':t('continueUnlockBadges');
   return '<div class="card stag" style="padding:16px;animation-delay:.12s" onclick="nav(\'stats\')">'+
     '<div class="badge-mini-row">'+cells.join('')+
       '<div class="badge-progress-txt"><div class="t">'+label+'</div><div class="b"><div style="width:'+Math.max(0,bestPct)+'%"></div></div></div>'+
@@ -3533,7 +4040,7 @@ function planHeroHTML(){
   h+='<div class="minicard"><div class="lab">'+t('raceDay')+'</div><div class="v" style="color:var(--e)">J-'+daysLeft+'</div></div>';
   h+='<div class="minicard"><div class="lab">'+t('currentVdot')+'</div><div class="v">'+curVdot+(vdotDelta?' <span class="'+(vdotDelta>0?'delta-up':'delta-down')+'">'+(vdotDelta>0?'+':'')+vdotDelta+'</span>':'')+'</div></div>';
   h+='</div>';
-  h+='<div style="margin-top:16px"><div class="lab">'+t('currentPhase')+'</div><div class="man" style="font-weight:700;font-size:16px;margin:2px 0 8px">'+(weekSessions[0]?.phase||'')+'</div><div class="pbar"><div style="width:'+phaseProgress+'%"></div></div></div>';
+  h+='<div style="margin-top:16px"><div class="lab">'+t('currentPhase')+'</div><div class="man" style="font-weight:700;font-size:16px;margin:2px 0 8px">'+phaseName(weekSessions[0]?.phaseKey)+'</div><div class="pbar"><div style="width:'+phaseProgress+'%"></div></div></div>';
   h+='<div style="margin-top:16px"><div class="row" style="margin-bottom:8px"><div class="lab">'+t('thisWeek')+'</div><div class="lab">'+tp('weekOf',curWeekNum,PLAN.weeks)+'</div></div><div class="dotrow">'+dots+'</div></div>';
   h+='<div class="row" style="gap:10px;margin-top:16px">';
   h+='<div class="minicard"><div class="lab">'+t('weeklyLoad')+'</div><div class="v">'+curKm+' km'+(kmDelta!==null?' <span class="'+(kmDelta>=0?'delta-up':'delta-down')+'">'+(kmDelta>=0?'+':'')+kmDelta+'%</span>':'')+'</div></div>';
@@ -3559,7 +4066,7 @@ function renderRunning(){
       const featuredWeek=(todaySess||upcoming||PLAN.sessions[PLAN.sessions.length-1]).week;
       h+=renderPlanRows(PLAN.sessions.filter(s=>s.week===featuredWeek),tk);
       const remaining=[...new Set(PLAN.sessions.filter(x=>x.week!==featuredWeek).map(x=>x.week))].length;
-      if(remaining>0) h+='<button class="btn ghost" style="margin:14px 0 4px" onclick="openFullPlan()">Afficher le reste du plan · '+remaining+' semaines ↓</button>';
+      if(remaining>0) h+='<button class="btn ghost" style="margin:14px 0 4px" onclick="openFullPlan()">'+tp('showRestPlan',remaining)+'</button>';
     }
   } else {
     h+=renderPersoList();
@@ -3573,7 +4080,7 @@ function renderPlanRows(sessions,tk){
   tk=tk||todayKey();
   let h='', curPhase=null, curWeek=null;
   sessions.forEach(s=>{
-    if(s.phase!==curPhase){ curPhase=s.phase; h+='<div class="phase-head" style="color:var('+(s.color||'--e')+')">▸ '+s.phase+'</div>'; }
+    if(s.phase!==curPhase){ curPhase=s.phase; h+='<div class="phase-head" style="color:var('+(s.color||'--e')+')">▸ '+phaseName(s.phaseKey)+'</div>'; }
     if(s.week!==curWeek){ curWeek=s.week; h+='<div class="lab" style="margin:8px 0 6px">'+tp('weekN',s.week)+(s.deload?t('deloadTag'):'')+'</div>'; }
     const isToday=s.date===tk;
     const qb=s.missed?'<div class="qbadge" style="background:rgba(255,92,108,.16);color:var(--bad)">'+t('missedTag')+'</div>'
@@ -3615,8 +4122,8 @@ let sportView='list';
 let sportShowAllWeeks=false; // n'affiche que la semaine en cours par défaut, dans les deux modes
 function renderSport(){
   document.body.dataset.scr = sportView==='calendar' ? 'calendrier' : 'sport';
-  $('#tbTitle').textContent = sportView==='calendar' ? 'Calendrier' : t('sport');
-  $('#tbSub').textContent = sportView==='calendar' ? 'Planifie ta progression' : t('sub_sport');
+  $('#tbTitle').textContent = sportView==='calendar' ? t('calendarTitle') : t('sport');
+  $('#tbSub').textContent = sportView==='calendar' ? t('calendarSub') : t('sub_sport');
   if(sportView==='calendar'){ $('#s-sport').innerHTML=renderCalendarView(); return; }
   let h='<div class="row" style="gap:8px;margin:6px 0 16px">'+
     '<div class="pills" style="flex:1;margin:0"><div class="pill '+(sportTab==='run'?'on':'')+'" onclick="sportTab=\'run\';curPerso=null;renderSport()">🏃 Running</div><div class="pill '+(sportTab==='muscu'?'on':'')+'" onclick="sportTab=\'muscu\';renderSport()">🏋️ Musculation</div></div>'+
@@ -3638,7 +4145,7 @@ function sessionsForDate(k){
 function renderCalendarView(){
   const now=new Date(); const view=new Date(now.getFullYear(),now.getMonth()+calMonthOffset,1);
   const y=view.getFullYear(), m=view.getMonth();
-  const monthLab=view.toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+  const monthLab=view.toLocaleDateString(localeCode(),{month:'long',year:'numeric'});
   const firstDow=(new Date(y,m,1).getDay()+6)%7; // 0=lundi
   const daysInMonth=new Date(y,m+1,0).getDate();
   const daysInPrev=new Date(y,m,0).getDate();
@@ -3652,7 +4159,7 @@ function renderCalendarView(){
   h+='<div class="card">';
   h+='<div class="row" style="margin-bottom:12px"><div style="font-weight:800;font-family:\'Unbounded\';font-size:15px;text-transform:capitalize">'+monthLab+'</div>'+
     '<div style="display:flex;gap:6px"><div class="tb-gear" style="width:28px;height:28px" onclick="calMonthNav(-1)">‹</div><div class="tb-gear" style="width:28px;height:28px" onclick="calMonthNav(1)">›</div></div></div>';
-  h+='<div class="cal-grid cal-head">'+['L','M','M','J','V','S','D'].map(l=>'<span>'+l+'</span>').join('')+'</div>';
+  h+='<div class="cal-grid cal-head">'+t('dowShort').split(',').map(l=>'<span>'+l+'</span>').join('')+'</div>';
   h+='<div class="cal-grid">';
   cells.forEach(c=>{
     if(c.muted) h+='<div class="cal-cell muted">'+c.d+'</div>';
@@ -3662,14 +4169,14 @@ function renderCalendarView(){
 
   // Liste des prochaines séances
   h+='<div class="card" style="padding:12px 14px">';
-  const dayLabels=['Aujourd\u2019hui','Demain'];
+  const dayLabels=[t('today'),t('tomorrow')];
   let shown=0;
   for(let i=0;i<10 && shown<3;i++){
     const d=new Date(); d.setDate(d.getDate()+i); const k=dateKey(d);
     const sess=sessionsForDate(k);
     if(!sess.length) continue;
-    const lab=i<2?dayLabels[i]:d.toLocaleDateString('fr-FR',{weekday:'long'});
-    const dlab=lab.charAt(0).toUpperCase()+lab.slice(1)+' · '+d.getDate()+' '+d.toLocaleDateString('fr-FR',{month:'long'});
+    const lab=i<2?dayLabels[i]:d.toLocaleDateString(localeCode(),{weekday:'long'});
+    const dlab=lab.charAt(0).toUpperCase()+lab.slice(1)+' · '+d.getDate()+' '+d.toLocaleDateString(localeCode(),{month:'long'});
     if(shown>0) h+='<div style="height:1px;background:var(--hair);margin:12px 0"></div>';
     h+='<div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:8px">'+dlab+'</div>';
     sess.forEach(s=>{
@@ -3678,8 +4185,8 @@ function renderCalendarView(){
     });
     shown++;
   }
-  if(!shown) h+='<div style="font-size:13px;color:var(--dim)">Aucune séance planifiée prochainement.</div>';
-  h+='<div class="rs-row" style="padding:10px 0 0;cursor:pointer;color:var(--e2)" onclick="calBack();sportTab=\'run\';runSub=\'perso\'">'+ICN('bolt',16,'var(--e2)')+'<span style="font-weight:700;font-size:13.5px">Ajouter une séance</span></div>';
+  if(!shown) h+='<div style="font-size:13px;color:var(--dim)">'+t('noUpcomingSession')+'</div>';
+  h+='<div class="rs-row" style="padding:10px 0 0;cursor:pointer;color:var(--e2)" onclick="calBack();sportTab=\'run\';runSub=\'perso\'">'+ICN('bolt',16,'var(--e2)')+'<span style="font-weight:700;font-size:13.5px">'+t('addSession')+'</span></div>';
   h+='</div>';
   return h;
 }
@@ -4318,13 +4825,13 @@ function renderLive(){
     '<span onclick="pauseLive()" style="font-size:20px;color:var(--muted);cursor:pointer;padding:4px 8px">⌄</span>'+
     '<div style="flex:1"></div>'+
     '<span onclick="openRest(90)" style="font-size:17px;color:var(--muted);cursor:pointer;padding:4px 8px">⏱</span>'+
-    '<button class="btn sm" style="width:auto;padding:8px 18px;background:linear-gradient(135deg,var(--e),var(--e2))" onclick="finishLive()">Terminer</button>'+
+    '<button class="btn sm" style="width:auto;padding:8px 18px;background:linear-gradient(135deg,var(--e),var(--e2))" onclick="finishLive()">'+t('liveFinishBtn')+'</button>'+
     '</div>';
   // Stats : Durée / Volume / Séries
   h+='<div class="card" style="padding:14px 6px;margin-bottom:16px"><div style="display:flex;text-align:center">'+
-    '<div style="flex:1;border-right:1px solid var(--hair)"><div class="lab" style="margin:0 0 4px">Durée</div><div class="mono" id="liveTime" style="font-weight:800;font-size:16px;color:var(--e)">'+dur+'</div></div>'+
-    '<div style="flex:1;border-right:1px solid var(--hair)"><div class="lab" style="margin:0 0 4px">Volume</div><div style="font-weight:800;font-size:16px">'+Math.round(LIVE.tonnage)+' kg</div></div>'+
-    '<div style="flex:1"><div class="lab" style="margin:0 0 4px">Séries</div><div style="font-weight:800;font-size:16px">'+LIVE.setsDone+'/'+totalSets+'</div></div>'+
+    '<div style="flex:1;border-right:1px solid var(--hair)"><div class="lab" style="margin:0 0 4px">'+t('durationLab')+'</div><div class="mono" id="liveTime" style="font-weight:800;font-size:16px;color:var(--e)">'+dur+'</div></div>'+
+    '<div style="flex:1;border-right:1px solid var(--hair)"><div class="lab" style="margin:0 0 4px">'+t('volumeLab')+'</div><div style="font-weight:800;font-size:16px">'+Math.round(LIVE.tonnage)+' kg</div></div>'+
+    '<div style="flex:1"><div class="lab" style="margin:0 0 4px">'+t('setsLab')+'</div><div style="font-weight:800;font-size:16px">'+LIVE.setsDone+'/'+totalSets+'</div></div>'+
     '</div></div>';
   // Une carte par exercice, repliée sur le nom par défaut — on tape dessus pour dérouler les séries.
   // Un seul exercice ouvert à la fois (accordéon), et tout est animé en douceur (transition CSS).
@@ -4334,20 +4841,20 @@ function renderLive(){
     const open=liveOpenEx===i;
     // Swipe à gauche OU à droite pour révéler "Supprimer" — wrap + 2 actions rouges dessous, carte au-dessus qui glisse.
     h+='<div class="ex-swipe-wrap" data-i="'+i+'">'+
-      '<div class="ex-swipe-action left" onclick="confirmDeleteLiveEx('+i+')"><span>🗑</span>Supprimer</div>'+
-      '<div class="ex-swipe-action right" onclick="confirmDeleteLiveEx('+i+')"><span>🗑</span>Supprimer</div>';
+      '<div class="ex-swipe-action left" onclick="confirmDeleteLiveEx('+i+')"><span>🗑</span>'+t('deleteLab2')+'</div>'+
+      '<div class="ex-swipe-action right" onclick="confirmDeleteLiveEx('+i+')"><span>🗑</span>'+t('deleteLab2')+'</div>';
     h+='<div class="card ex-swipe-card" data-i="'+i+'" style="padding:14px'+(allDone?';border-color:rgba(51,211,153,.35)':'')+'">';
     // Entête exercice (tapable) : vignette, nom, chevron, "..." (options)
     h+='<div class="row" style="align-items:flex-start;cursor:pointer" onclick="toggleLiveEx('+i+')">'+exThumb(e.name,48)+
       '<div style="flex:1;min-width:0;margin-left:10px"><div style="font-weight:700;font-size:15.5px;line-height:1.25">'+e.name+'</div>'+
-      '<div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+(allDone?'✓ Terminé':st.sets.filter(Boolean).length+'/'+st.sets.length+' séries faites')+'</div></div>'+
+      '<div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+(allDone?t('exerciseDoneLab'):tp('setsDoneCount',st.sets.filter(Boolean).length,st.sets.length))+'</div></div>'+
       '<span id="exChev'+i+'" style="color:var(--muted);font-size:14px;padding:6px 4px;transition:transform .25s ease;transform:rotate('+(open?'180':'0')+'deg)">⌄</span>'+
       '<span onclick="event.stopPropagation();openLiveExOptions('+i+')" style="color:var(--muted);font-size:20px;padding:4px 4px 4px 8px;cursor:pointer;letter-spacing:1px">⋯</span></div>';
     // Contenu repliable : notes, repos, tableau des séries
     h+='<div id="exBody'+i+'" style="max-height:'+(open?'1400px':'0')+'px;opacity:'+(open?'1':'0')+';overflow:hidden;transition:max-height .32s ease,opacity .22s ease,margin-top .32s ease;margin-top:'+(open?'12':'0')+'px">';
-    h+='<div class="row" style="margin-bottom:10px;font-size:12.5px"><span style="color:var(--e);cursor:pointer" onclick="changeRest('+i+')">⏱ Minuteur de repos : '+(e.rest?e.rest+'s':'Désactivé')+'</span></div>';
+    h+='<div class="row" style="margin-bottom:10px;font-size:12.5px"><span style="color:var(--e);cursor:pointer" onclick="changeRest('+i+')">'+tp('restTimerLab',e.rest?e.rest+'s':t('disabledLab'))+'</span></div>';
     h+='<div style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:8px;text-align:center">'+
-      '<div>Set</div><div>Précédent</div><div>Kg</div><div>Reps</div><div>✓</div></div>';
+      '<div>'+t('setCol')+'</div><div>'+t('prevCol')+'</div><div>'+t('kgCol')+'</div><div>'+t('repsCol')+'</div><div>✓</div></div>';
     st.log.forEach((s,j)=>{
       h+='<div class="set-swipe-wrap" data-i="'+i+'" data-j="'+j+'">'+
         '<div class="set-swipe-action left" onclick="deleteLiveSet('+i+','+j+')"><span>🗑</span></div>'+
@@ -4360,13 +4867,13 @@ function renderLive(){
         '<div onclick="toggleSet('+i+','+j+')" style="width:32px;height:32px;border-radius:50%;margin:0 auto;cursor:pointer;display:flex;align-items:center;justify-content:center;background:'+(s.done?'var(--e)':'var(--s2)')+';border:1px solid '+(s.done?'var(--e)':'var(--hair)')+';color:#fff;font-size:14px">'+(s.done?'✓':'')+'</div></div>'+
         '</div>'; // fin .set-swipe-wrap
     });
-    h+='<button class="btn ghost sm" style="margin-top:4px" onclick="addLiveSet('+i+')">＋ Ajouter une série</button>';
+    h+='<button class="btn ghost sm" style="margin-top:4px" onclick="addLiveSet('+i+')">'+t('addSetBtn')+'</button>';
     h+='</div>'; // fin exBody
     h+='</div>'; // fin .ex-swipe-card
     h+='</div>'; // fin .ex-swipe-wrap
   });
-  h+='<button class="btn ghost" style="margin:6px 0 10px" onclick="liveAddExercise()">＋ Ajouter un exercice</button>';
-  h+='<button class="btn ghost sm" style="margin-bottom:8px;color:var(--bad)" onclick="confirmCloseLive()">🗑 Annuler la séance</button>';
+  h+='<button class="btn ghost" style="margin:6px 0 10px" onclick="liveAddExercise()">'+t('addExerciseBtn')+'</button>';
+  h+='<button class="btn ghost sm" style="margin-bottom:8px;color:var(--bad)" onclick="confirmCloseLive()">'+t('cancelSessionBtn')+'</button>';
   $('#liveBody').innerHTML=h;
   initLiveSwipe();
 }
@@ -4436,11 +4943,11 @@ function toggleLiveEx(i){
   const c=$('#exChev'+i); if(c) c.style.transform=willOpen?'rotate(180deg)':'rotate(0deg)';
 }
 function setLog(i,j,k,v){ const st=LIVE.state[i]; st.log[j][k]=+v||0; if(k==='kg')st.weight=+v||st.weight; persistLive(); }
-function changeRest(i){ const e=LIVE.prog.ex[i]; pickInt('Repos (secondes)',15,300,e.rest||90,'s',v=>{ e.rest=v; renderLive(); },15); }
+function changeRest(i){ const e=LIVE.prog.ex[i]; pickInt(t('restSeconds'),15,300,e.rest||90,'s',v=>{ e.rest=v; renderLive(); },15); }
 function addLiveSet(i){ const st=LIVE.state[i]; const last=st.log[st.log.length-1]||{kg:20,reps:10,rpe:8}; st.sets.push(false); st.log.push({kg:last.kg,reps:last.reps,rpe:last.rpe,done:false}); persistLive(); renderLive(); }
 function deleteLiveSet(i,j){
   const st=LIVE.state[i];
-  if(st.log.length<=1){ toast('Il doit rester au moins une série'); return; }
+  if(st.log.length<=1){ toast(t('minOneSetRemain')); return; }
   st.sets.splice(j,1); st.log.splice(j,1);
   persistLive(); renderLive();
 }
@@ -4454,24 +4961,24 @@ function openLiveExOptions(i){
   let h='<div class="ov-card" style="text-align:center">';
   h+='<div class="card-t" style="justify-content:center;margin-bottom:14px">'+e.name+'</div>';
   if(g) h+='<img src="'+g[0]+'" style="width:100%;border-radius:14px;margin-bottom:14px;aspect-ratio:16/10;object-fit:cover">';
-  h+='<button class="btn ghost" style="margin-bottom:8px" onclick="document.getElementById(\'liveExOptOv\').remove();changeRest('+i+')">⏱ Modifier le repos</button>';
-  h+='<button class="btn ghost" style="margin-bottom:8px;color:var(--bad)" onclick="document.getElementById(\'liveExOptOv\').remove();confirmDeleteLiveEx('+i+')">🗑 Retirer cet exercice</button>';
-  h+='<button class="btn ghost" onclick="document.getElementById(\'liveExOptOv\').remove()">Annuler</button>';
+  h+='<button class="btn ghost" style="margin-bottom:8px" onclick="document.getElementById(\'liveExOptOv\').remove();changeRest('+i+')">'+t('changeRestLab')+'</button>';
+  h+='<button class="btn ghost" style="margin-bottom:8px;color:var(--bad)" onclick="document.getElementById(\'liveExOptOv\').remove();confirmDeleteLiveEx('+i+')">'+t('removeExLab')+'</button>';
+  h+='<button class="btn ghost" onclick="document.getElementById(\'liveExOptOv\').remove()">'+t('cancelLab')+'</button>';
   h+='</div>';
   ov.innerHTML=h;
   document.body.appendChild(ov);
 }
 function confirmDeleteLiveEx(i){
-  if(LIVE.prog.ex.length<=1){ toast('Il doit rester au moins un exercice'); return; }
+  if(LIVE.prog.ex.length<=1){ toast(t('minOneExRemain')); return; }
   const name=LIVE.prog.ex[i].name;
   const old=$('#delExOv'); if(old) old.remove();
   const ov=document.createElement('div'); ov.className='ov on'; ov.id='delExOv'; ov.style.zIndex='13650';
   ov.innerHTML='<div class="ov-card" style="text-align:center">'+
-    '<div class="card-t" style="justify-content:center;margin-bottom:10px">⚠️ Retirer cet exercice ?</div>'+
+    '<div class="card-t" style="justify-content:center;margin-bottom:10px">'+t('removeExConfirmTitle')+'</div>'+
     '<div style="font-size:13px;color:var(--muted);margin-bottom:18px">'+name+'</div>'+
     '<div class="row" style="gap:10px">'+
-      '<button class="btn ghost" style="flex:1" onclick="document.getElementById(\'delExOv\').remove()">Annuler</button>'+
-      '<button class="btn" style="flex:1;background:var(--bad)" onclick="doDeleteLiveEx('+i+')">Retirer</button>'+
+      '<button class="btn ghost" style="flex:1" onclick="document.getElementById(\'delExOv\').remove()">'+t('cancelLab')+'</button>'+
+      '<button class="btn" style="flex:1;background:var(--bad)" onclick="doDeleteLiveEx('+i+')">'+t('removeLab2')+'</button>'+
     '</div></div>';
   document.body.appendChild(ov);
 }
@@ -4481,7 +4988,7 @@ function doDeleteLiveEx(i){
   if(LIVE.idx>=LIVE.prog.ex.length) LIVE.idx=Math.max(0,LIVE.prog.ex.length-1);
   if(liveOpenEx===i) liveOpenEx=-1; else if(liveOpenEx>i) liveOpenEx--;
   persistLive(); renderLive();
-  toast('Exercice retiré ✓');
+  toast(t('exerciseRemoved'));
 }
 function liveAddExercise(){
   libCallback=(e)=>{ closeOv('ovLib'); openLiveCfgAdd(e); };
@@ -4494,7 +5001,7 @@ function openLiveCfgAdd(e){
     LIVE.prog.ex.push(cfg);
     LIVE.state.push({weight:cfg.weight||20,reps:parseInt(cfg.reps)||10,sets:Array.from({length:cfg.sets},()=>false),log:[]});
     liveOpenEx=LIVE.prog.ex.length-1;
-    persistLive(); toast('Exercice ajouté ✓'); renderLive();
+    persistLive(); toast(t('exerciseAdded')); renderLive();
   });
 }
 
@@ -4502,7 +5009,7 @@ function pauseLive(){
   clearInterval(liveTimer);
   LIVE.savedElapsed=Date.now()-LIVE.start;
   DB.save('live_paused',LIVE); DB.remove('live_active');
-  closeOv('ovLive'); LIVE=null; toast('Séance sauvegardée — reprends quand tu veux');
+  closeOv('ovLive'); LIVE=null; toast(t('sessionSaved'));
   stopBgActivity(); renderSport();
 }
 function resumeLive(){
@@ -4520,21 +5027,21 @@ function toggleSet(exIdx,setIdx){
   const s=st.log[setIdx]||{kg:st.weight,reps:st.reps};
   st.sets[setIdx]=!st.sets[setIdx]; st.log[setIdx].done=st.sets[setIdx];
   const vol=(s.kg||0)*(s.reps||0);
-  if(st.sets[setIdx]){ LIVE.setsDone++; LIVE.tonnage+=vol; openRest(st.log[setIdx].rest||LIVE.prog.ex[exIdx].rest||90); sfx('tick'); toast('+5 XP'); }
+  if(st.sets[setIdx]){ LIVE.setsDone++; LIVE.tonnage+=vol; openRest(st.log[setIdx].rest||LIVE.prog.ex[exIdx].rest||90); sfx('tick'); toast(t('xpGain')); }
   else { LIVE.setsDone--; LIVE.tonnage-=vol; }
   persistLive(); renderLive();
 }
 function openRest(secs){
-  let t=secs||90; const total=t; const endAt=Date.now()+t*1000;
+  let sec=secs||90; const total=sec; const endAt=Date.now()+sec*1000;
   const ov=document.createElement('div'); ov.className='ov on'; ov.id='restOv';
-  ov.innerHTML='<div class="ov-card" style="text-align:center"><div class="card-t" style="justify-content:center">⏱ Repos</div><div class="ring-wrap" style="width:170px;height:170px;margin:10px auto"><span id="restRing"></span><div class="ring-c"><div class="big mono" id="restNum" style="font-size:38px">'+t+'</div><div class="sm">sec</div></div></div><div class="row" style="gap:10px"><button class="btn ghost" onclick="addRest(30)">+30s</button><button class="btn" onclick="skipRest()">Passer</button></div></div>';
+  ov.innerHTML='<div class="ov-card" style="text-align:center"><div class="card-t" style="justify-content:center">'+t('restTitle')+'</div><div class="ring-wrap" style="width:170px;height:170px;margin:10px auto"><span id="restRing"></span><div class="ring-c"><div class="big mono" id="restNum" style="font-size:38px">'+sec+'</div><div class="sm">'+t('secLab')+'</div></div></div><div class="row" style="gap:10px"><button class="btn ghost" onclick="addRest(30)">'+t('add30sLab')+'</button><button class="btn" onclick="skipRest()">'+t('skipLab')+'</button></div></div>';
   document.body.appendChild(ov);
   let extra=0;
   function tick(){
-    t=Math.max(0,Math.round((endAt+extra*1000-Date.now())/1000));
-    const rr=$('#restRing'); if(rr)rr.innerHTML=ringSVG(170,t/(total+extra)*100,12,'var(--e)');
-    const rn=$('#restNum'); if(rn)rn.textContent=t;
-    if(t<=0){ sfx('tick'); skipRest(); return; }
+    sec=Math.max(0,Math.round((endAt+extra*1000-Date.now())/1000));
+    const rr=$('#restRing'); if(rr)rr.innerHTML=ringSVG(170,sec/(total+extra)*100,12,'var(--e)');
+    const rn=$('#restNum'); if(rn)rn.textContent=sec;
+    if(sec<=0){ sfx('tick'); skipRest(); return; }
   }
   tick();
   restTimer=setInterval(tick,250);
@@ -4548,11 +5055,11 @@ function confirmCloseLive(){
   const old=$('#cancelLiveOv'); if(old) old.remove();
   const ov=document.createElement('div'); ov.className='ov on'; ov.id='cancelLiveOv';
   ov.innerHTML='<div class="ov-card" style="text-align:center">'+
-    '<div class="card-t" style="justify-content:center;margin-bottom:10px">⚠️ Annuler la séance ?</div>'+
-    '<div style="font-size:13px;color:var(--muted);margin-bottom:18px">Ta progression sur cette séance sera perdue.</div>'+
+    '<div class="card-t" style="justify-content:center;margin-bottom:10px">'+t('cancelSessionTitle')+'</div>'+
+    '<div style="font-size:13px;color:var(--muted);margin-bottom:18px">'+t('progressLostText')+'</div>'+
     '<div class="row" style="gap:10px">'+
-      '<button class="btn ghost" style="flex:1" onclick="document.getElementById(\'cancelLiveOv\').remove()">Continuer</button>'+
-      '<button class="btn" style="flex:1;background:var(--bad)" onclick="doCancelLive()">Oui, annuler</button>'+
+      '<button class="btn ghost" style="flex:1" onclick="document.getElementById(\'cancelLiveOv\').remove()">'+t('continueLab2')+'</button>'+
+      '<button class="btn" style="flex:1;background:var(--bad)" onclick="doCancelLive()">'+t('yesCancelLab')+'</button>'+
     '</div></div>';
   document.body.appendChild(ov);
 }
@@ -4562,7 +5069,7 @@ function doCancelLive(){
   const de=$('#delExOv'); if(de) de.remove();
   clearInterval(liveTimer); clearInterval(restTimer); skipRest();
   LIVE=null; DB.remove('live_active'); DB.remove('live_paused');
-  closeOv('ovLive'); stopBgActivity(); toast('Séance annulée'); renderSport();
+  closeOv('ovLive'); stopBgActivity(); toast(t('sessionCancelled')); renderSport();
 }
 function finishLive(){
   clearInterval(liveTimer); skipRest();
@@ -4588,49 +5095,49 @@ function finishLive(){
   }});
   DB.remove('live_active');
   saveAll(); refreshXP({animate:true}); burst(); sfx('finish'); stopBgActivity();
-  let h='<div class="popin" style="text-align:center;padding:6px 0"><div style="font-size:50px">🏆</div><div class="man" style="font-weight:800;font-size:22px;margin:8px 0">Séance terminée !</div></div>';
-  h+='<div class="sgrid" style="margin-bottom:12px"><div class="sbox"><div class="v">'+Math.round(LIVE.tonnage)+'</div><div class="l">Tonnage (kg)</div></div><div class="sbox"><div class="v">'+fmtTime(dur)+'</div><div class="l">Durée</div></div><div class="sbox"><div class="v">'+LIVE.setsDone+'</div><div class="l">Séries</div></div><div class="sbox"><div class="v">'+totalReps+'</div><div class="l">Répétitions</div></div><div class="sbox"><div class="v">'+cal+'</div><div class="l">Calories</div></div><div class="sbox"><div class="v" style="color:var(--or)">'+prs.length+'</div><div class="l">Records battus</div></div></div>';
+  let h='<div class="popin" style="text-align:center;padding:6px 0"><div style="font-size:50px">🏆</div><div class="man" style="font-weight:800;font-size:22px;margin:8px 0">'+t('sessionDoneTitle')+'</div></div>';
+  h+='<div class="sgrid" style="margin-bottom:12px"><div class="sbox"><div class="v">'+Math.round(LIVE.tonnage)+'</div><div class="l">'+t('tonnageParenKg')+'</div></div><div class="sbox"><div class="v">'+fmtTime(dur)+'</div><div class="l">'+t('durationLab')+'</div></div><div class="sbox"><div class="v">'+LIVE.setsDone+'</div><div class="l">'+t('setsLab')+'</div></div><div class="sbox"><div class="v">'+totalReps+'</div><div class="l">'+t('repsLab')+'</div></div><div class="sbox"><div class="v">'+cal+'</div><div class="l">'+t('caloriesLab')+'</div></div><div class="sbox"><div class="v" style="color:var(--or)">'+prs.length+'</div><div class="l">'+t('recordsBrokenLab')+'</div></div></div>';
   // progression
   if(prevTon){ const diff=Math.round(LIVE.tonnage-prevTon); const up=diff>=0;
-    h+='<div class="tip" style="margin-bottom:12px;'+(up?'border-color:rgba(51,211,153,.3);background:rgba(51,211,153,.08)':'')+'">'+(up?'📈 +':'📉 ')+diff+' kg de tonnage vs ta dernière séance '+LIVE.prog.name+'.</div>'; }
+    h+='<div class="tip" style="margin-bottom:12px;'+(up?'border-color:rgba(51,211,153,.3);background:rgba(51,211,153,.08)':'')+'">'+(up?'📈 +':'📉 ')+diff+' kg '+tp('tonnageVsLastLab',LIVE.prog.name)+'</div>'; }
   // PR
-  if(prs.length) h+='<div class="card-t">🥇 Nouveaux records</div>'+prs.map(p=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(242,184,75,.4);background:rgba(242,184,75,.1)">⭐ '+p+'</div>').join('');
+  if(prs.length) h+='<div class="card-t">'+t('newRecordsLab')+'</div>'+prs.map(p=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(242,184,75,.4);background:rgba(242,184,75,.1)">⭐ '+p+'</div>').join('');
   // muscles schema
-  if(Object.keys(muscles).length){ h+='<div class="card-t" style="margin-top:12px">💪 Muscles travaillés</div><div class="muscle-tags" style="margin-bottom:12px">'+Object.keys(muscles).map(m=>'<span class="mtag" style="background:var(--ed);color:var(--e);border-color:var(--e)">'+m+'</span>').join('')+'</div>'; }
-  h+='<div class="badge" style="width:100%;justify-content:center;padding:14px;margin:6px 0 14px">+50 XP gagnés !</div>';
-  h+='<button class="btn" onclick="closeOv(\'ovLive\');LIVE=null;renderSport()">Fermer</button>';
+  if(Object.keys(muscles).length){ h+='<div class="card-t" style="margin-top:12px">'+t('musclesWorkedLab')+'</div><div class="muscle-tags" style="margin-bottom:12px">'+Object.keys(muscles).map(m=>'<span class="mtag" style="background:var(--ed);color:var(--e);border-color:var(--e)">'+m+'</span>').join('')+'</div>'; }
+  h+='<div class="badge" style="width:100%;justify-content:center;padding:14px;margin:6px 0 14px">'+t('xpEarnedLab')+'</div>';
+  h+='<button class="btn" onclick="closeOv(\'ovLive\');LIVE=null;renderSport()">'+t('closeLab')+'</button>';
   $('#liveBody').innerHTML=h;
 }
 
 /* ---------- CREATE PROGRAM ---------- */
 let newProg=null,libFilter='Tous',libCallback=null;
 const PROG_ICONS=['💪','🏋️','🔥','⚡','🦾','🎯','🏆','🦵','🧗','🤸'];
-const PROG_COLORS=[['--e','Bleu'],['--bad','Rouge'],['--ok','Vert'],['--or','Or'],['--maitre','Violet'],['--diamant','Cyan']];
+const PROG_COLORS=[['--e','colBlue'],['--bad','colRed'],['--ok','colGreen'],['--or','colGold'],['--maitre','colPurple'],['--diamant','colCyan']];
 function openCreate(){
   newProg={name:'',description:'',objective:'Masse',color:'--e',icon:'💪',ex:[]};
   renderCreate(); openOv('ovCreate');
 }
 function renderCreate(){
-  let h='<div class="field"><label>Nom du programme</label><input class="inp" id="npName" value="'+newProg.name+'" oninput="newProg.name=this.value" placeholder="Mon programme"></div>';
-  h+='<div class="field"><label>Description</label><textarea class="inp" rows="2" oninput="newProg.description=this.value" placeholder="Objectif, split, fréquence...">'+(newProg.description||'')+'</textarea></div>';
-  h+='<div class="field"><label>Objectif</label><div class="pills">'+['Force','Masse','Endurance','Perte poids','Maintien'].map(o=>'<div class="pill '+(newProg.objective===o?'on':'')+'" onclick="newProg.objective=\''+o+'\';renderCreate()">'+o+'</div>').join('')+'</div></div>';
-  h+='<div class="field"><label>Icône</label><div class="pills">'+PROG_ICONS.map(ic=>'<div class="pill '+(newProg.icon===ic?'on':'')+'" style="font-size:18px" onclick="newProg.icon=\''+ic+'\';renderCreate()">'+ic+'</div>').join('')+'</div></div>';
-  h+='<div class="field"><label>Couleur</label><div class="pills">'+PROG_COLORS.map(c=>'<div class="pill '+(newProg.color===c[0]?'on':'')+'" onclick="newProg.color=\''+c[0]+'\';renderCreate()"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var('+c[0]+');margin-right:6px"></span>'+c[1]+'</div>').join('')+'</div></div>';
-  h+='<div class="lab" style="margin:10px 0 8px">Exercices ('+newProg.ex.length+')</div>';
-  if(!newProg.ex.length) h+='<div class="tip" style="margin-bottom:12px">Ajoute des exercices depuis la bibliothèque.</div>';
+  let h='<div class="field"><label>'+t('programNameLab')+'</label><input class="inp" id="npName" value="'+newProg.name+'" oninput="newProg.name=this.value" placeholder="'+t('programNamePh')+'"></div>';
+  h+='<div class="field"><label>'+t('descriptionLab')+'</label><textarea class="inp" rows="2" oninput="newProg.description=this.value" placeholder="'+t('descriptionPh')+'">'+(newProg.description||'')+'</textarea></div>';
+  h+='<div class="field"><label>'+t('objectiveLab2')+'</label><div class="pills">'+[['Force','objForce'],['Masse','objMass'],['Endurance','objEndurance'],['Perte poids','objWeightLoss'],['Maintien','objMaintain']].map(o=>'<div class="pill '+(newProg.objective===o[0]?'on':'')+'" onclick="newProg.objective=\''+o[0]+'\';renderCreate()">'+t(o[1])+'</div>').join('')+'</div></div>';
+  h+='<div class="field"><label>'+t('iconLab')+'</label><div class="pills">'+PROG_ICONS.map(ic=>'<div class="pill '+(newProg.icon===ic?'on':'')+'" style="font-size:18px" onclick="newProg.icon=\''+ic+'\';renderCreate()">'+ic+'</div>').join('')+'</div></div>';
+  h+='<div class="field"><label>'+t('colorLab')+'</label><div class="pills">'+PROG_COLORS.map(c=>'<div class="pill '+(newProg.color===c[0]?'on':'')+'" onclick="newProg.color=\''+c[0]+'\';renderCreate()"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var('+c[0]+');margin-right:6px"></span>'+t(c[1])+'</div>').join('')+'</div></div>';
+  h+='<div class="lab" style="margin:10px 0 8px">'+tp('exercisesCountLab',newProg.ex.length)+'</div>';
+  if(!newProg.ex.length) h+='<div class="tip" style="margin-bottom:12px">'+t('addExFromLib')+'</div>';
   newProg.ex.forEach((e,i)=>{
     h+='<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:8px"><span style="font-size:22px">'+e.anim+'</span><div><div style="font-weight:700;font-size:14px">'+e.name+'</div><div class="mono" style="font-size:12px;color:var(--e)">'+e.sets+'×'+e.reps+(e.rest?' · '+e.rest+'s':'')+'</div></div></div><button class="x" onclick="newProg.ex.splice('+i+',1);renderCreate()">🗑</button></div></div>';
   });
-  h+='<button class="btn ghost" style="margin-bottom:12px" onclick="openLibFor(addToNewProg)">＋ Ajouter depuis la bibliothèque</button>';
-  h+='<button class="btn" onclick="saveNewProg()">💾 Enregistrer le programme</button>';
+  h+='<button class="btn ghost" style="margin-bottom:12px" onclick="openLibFor(addToNewProg)">'+t('addFromLibBtn')+'</button>';
+  h+='<button class="btn" onclick="saveNewProg()">'+t('saveProgramBtn')+'</button>';
   $('#createBody').innerHTML=h;
 }
 function addToNewProg(e){ closeOv('ovLib'); openCfg(e,(cfg)=>{ newProg.ex.push(cfg); renderCreate(); openOv('ovCreate'); }); }
 function saveNewProg(){
-  if(!newProg.name.trim()){ toast('Donne un nom'); return; }
-  if(!newProg.ex.length){ toast('Ajoute des exercices'); return; }
+  if(!newProg.name.trim()){ toast(t('giveNameLab')); return; }
+  if(!newProg.ex.length){ toast(t('addExercisesLab')); return; }
   CUSTOM.push({id:'C'+Date.now(),kind:'muscu',name:newProg.name,description:newProg.description,objective:newProg.objective,color:newProg.color,icon:newProg.icon,ex:newProg.ex});
-  saveAll(); closeOv('ovCreate'); renderSport(); toast('Programme créé ✓');
+  saveAll(); closeOv('ovCreate'); renderSport(); toast(t('programCreated'));
 }
 
 /* ---------- BIBLIOTHÈQUE PREMIUM ---------- */
@@ -4946,21 +5453,23 @@ function achNouveauPB(){
   if(v>store.best){ if(store.best>0) store.unlocked=true; store.best=v; DB.save('pb_track',store); }
   return store.unlocked;
 }
-const ACHIEVEMENTS=[
-  {key:'premiere',    name:'Première course',  img:'premiere.png',    cat:'Accomplissement', cls:'bd-debutant', desc:'Termine la course que tu préparais.',            auto:()=>SESS.some(s=>s.type==='Course')},
-  {key:'cinqk',       name:'5K',                img:'cinqk.png',       emoji:'🏃',            cat:'Accomplissement', cls:'bd-amateur',  desc:'Cours plus de 5 km d\u2019une traite.',   auto:()=>SESS.some(s=>s.km>5)},
-  {key:'dixk',        name:'10K',               img:'dixk.png',        emoji:'🏁',            cat:'Accomplissement', cls:'bd-sportif',  desc:'Cours plus de 10 km d\u2019une traite.',  auto:()=>SESS.some(s=>s.km>10)},
-  {key:'serie',       name:'Série',             img:'serie.png',       cat:'Accomplissement', cls:'bd-athlete',  desc:'Tiens un mois de régularité (30 jours d\u2019affilée).', auto:()=>bestStreak()>=30},
-  {key:'denivele',    name:'Dénivelé',          img:'denivele.png',    cat:'Accomplissement', cls:'bd-expert',   desc:'Plus de 200 m de D+ sur une séance ou une course.',      auto:()=>SESS.some(s=>(s.deniv||0)>200)},
-  {key:'podium',      name:'Podium',            img:'podium.png',      cat:'Accomplissement', cls:'bd-elite',    desc:'Finis dans le top 3 d\u2019une course.', manual:true},
-  {key:'objectif',    name:'Objectif atteint',  img:'objectif.png',    cat:'Accomplissement', cls:'bd-maitre',   desc:'Réalise ton chrono visé (ou plus vite) sur la course préparée.', auto:achObjectifReached},
-  {key:'nouveaupb',   name:'Nouveau PB',        img:'nouveaupb.png',   emoji:'🥇',            cat:'Performance',      cls:'bd-legende', desc:'Bats un nouveau record avec un VDOT supérieur à ton précédent record.', auto:achNouveauPB},
-  {key:'allure',      name:'Allure',            img:'allure.png',      cat:'Performance',      cls:'bd-sportif',  desc:'Cours au moins 3 km à une allure de 10:00/km ou plus rapide.', auto:()=>SESS.some(s=>s.km>=3 && s.pace && s.pace!=='—' && parseTime(s.pace)>0 && parseTime(s.pace)<=600)},
-  {key:'endurance',   name:'Endurance',         img:'endurance.png',   cat:'Performance',      cls:'bd-athlete',  desc:'Termine une sortie d\u2019au moins 15 km.',  auto:()=>SESS.some(s=>s.km>=15)},
-  {key:'puissance',   name:'Puissance',         img:'puissance.png',   cat:'Performance',      cls:'bd-expert',   desc:'Fais au moins 3 séances de musculation en une seule semaine.', auto:()=>achWeeklyCount(MSESS,3)},
-  {key:'vo2max',      name:'VO2 Max',           img:'vo2max.png',      emoji:'🫁',            cat:'Performance',      cls:'bd-elite',    desc:'Atteins un VO\u2082max estimé supérieur à 50.', auto:()=>(getUserVDOT()||0)>50},
-  {key:'force',       name:'Force',             img:'force.png',       cat:'Performance',      cls:'bd-maitre',   desc:'Soulève plus de 20 000 kg cumulés en une seule semaine.', auto:()=>achWeeklySum(MSESS,'tonnage',20000)}
-];
+function ACHIEVEMENTS_DEF(){ return [
+  {key:'premiere',    name:t('ach_premiere_name'),  img:'premiere.png',    cat:'Accomplissement', cls:'bd-debutant', desc:t('ach_premiere_desc'),            auto:()=>SESS.some(s=>s.type==='Course')},
+  {key:'cinqk',       name:t('ach_cinqk_name'),      img:'cinqk.png',       emoji:'🏃',            cat:'Accomplissement', cls:'bd-amateur',  desc:t('ach_cinqk_desc'),   auto:()=>SESS.some(s=>s.km>5)},
+  {key:'dixk',        name:t('ach_dixk_name'),       img:'dixk.png',        emoji:'🏁',            cat:'Accomplissement', cls:'bd-sportif',  desc:t('ach_dixk_desc'),  auto:()=>SESS.some(s=>s.km>10)},
+  {key:'serie',       name:t('ach_serie_name'),      img:'serie.png',       cat:'Accomplissement', cls:'bd-athlete',  desc:t('ach_serie_desc'), auto:()=>bestStreak()>=30},
+  {key:'denivele',    name:t('ach_denivele_name'),   img:'denivele.png',    cat:'Accomplissement', cls:'bd-expert',   desc:t('ach_denivele_desc'),      auto:()=>SESS.some(s=>(s.deniv||0)>200)},
+  {key:'podium',      name:t('ach_podium_name'),     img:'podium.png',      cat:'Accomplissement', cls:'bd-elite',    desc:t('ach_podium_desc'), manual:true},
+  {key:'objectif',    name:t('ach_objectif_name'),   img:'objectif.png',    cat:'Accomplissement', cls:'bd-maitre',   desc:t('ach_objectif_desc'), auto:achObjectifReached},
+  {key:'nouveaupb',   name:t('ach_nouveaupb_name'),  img:'nouveaupb.png',   emoji:'🥇',            cat:'Performance',      cls:'bd-legende', desc:t('ach_nouveaupb_desc'), auto:achNouveauPB},
+  {key:'allure',      name:t('ach_allure_name'),     img:'allure.png',      cat:'Performance',      cls:'bd-sportif',  desc:t('ach_allure_desc'), auto:()=>SESS.some(s=>s.km>=3 && s.pace && s.pace!=='—' && parseTime(s.pace)>0 && parseTime(s.pace)<=600)},
+  {key:'endurance',   name:t('ach_endurance_name'),  img:'endurance.png',   cat:'Performance',      cls:'bd-athlete',  desc:t('ach_endurance_desc'),  auto:()=>SESS.some(s=>s.km>=15)},
+  {key:'puissance',   name:t('ach_puissance_name'),  img:'puissance.png',   cat:'Performance',      cls:'bd-expert',   desc:t('ach_puissance_desc'), auto:()=>achWeeklyCount(MSESS,3)},
+  {key:'vo2max',      name:t('ach_vo2max_name'),     img:'vo2max.png',      emoji:'🫁',            cat:'Performance',      cls:'bd-elite',    desc:t('ach_vo2max_desc'), auto:()=>(getUserVDOT()||0)>50},
+  {key:'force',       name:t('ach_force_name'),      img:'force.png',       cat:'Performance',      cls:'bd-maitre',   desc:t('ach_force_desc'), auto:()=>achWeeklySum(MSESS,'tonnage',20000)}
+]; }
+let ACHIEVEMENTS=ACHIEVEMENTS_DEF();
+function catLabel(cat){ return cat==='Performance'?t('catPerformance'):t('catAccomplissement'); }
 function manualBadges(){ return DB.load('manual_badges')||{}; }
 function achievementUnlocked(a){ const on = a.auto ? !!a.auto() : !!manualBadges()[a.key]; if(on) recordAchDate(a.key); return on; }
 /* Date d'obtention de chaque badge d'accomplissement (inconnue avant cette
@@ -4981,7 +5490,7 @@ function toggleManualBadge(key){
   const a=ACHIEVEMENTS.find(x=>x.key===key); if(!a||!a.manual) return;
   const m=manualBadges(); m[key]=!m[key]; DB.save('manual_badges',m);
   if(m[key]) recordAchDate(key); else { const d=achDates(); delete d[key]; DB.save('ach_dates',d); }
-  toast(m[key]?'🏵️ '+a.name+' débloqué !':'Badge retiré');
+  toast(m[key]?tp('badgeUnlockedToast',a.name):t('badgeRemovedToast'));
   renderStats();
 }
 /* ---- Clic sur un trophée : même effet visuel que les badges de progression ----
@@ -5021,12 +5530,12 @@ function showAchUnlockAnim(a){
   let sparks=''; for(let i=0;i<26;i++){ const ang=Math.random()*Math.PI*2, d=90+Math.random()*110;
     sparks+='<span class="bd-spark" style="--tx:'+(Math.cos(ang)*d)+'px;--ty:'+(Math.sin(ang)*d)+'px;animation-delay:'+(Math.random()*1.2)+'s"></span>'; }
   ov.innerHTML='<div class="bd-flash"></div>'+
-    '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded;margin-bottom:6px">NOUVEAU TROPHÉE DÉBLOQUÉ</div>'+
+    '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded;margin-bottom:6px">'+t('newTrophyUnlocked')+'</div>'+
     '<div class="bd-unlock-stage '+(a.cls||'bd-athlete')+'"><div class="bd-rays"></div><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div><div class="bd-ring r4"></div>'+
     '<div class="bd-unlock-badge">'+achImg(a)+sparks+'</div></div>'+
     '<div class="man" style="font-weight:800;font-size:30px;margin-top:18px;letter-spacing:.5px">'+a.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+a.desc+'</div>'+
-    '<div style="color:var(--dim);font-size:12px;margin-top:18px">Touche pour continuer</div>';
+    '<div style="color:var(--dim);font-size:12px;margin-top:18px">'+t('tapToContinue')+'</div>';
   ov.onclick=()=>{ ov.remove(); playAchUnlockQueue(); };
   document.body.appendChild(ov);
   setTimeout(()=>{ if(ov.parentNode){ ov.remove(); playAchUnlockQueue(); } },4200);
@@ -5045,8 +5554,8 @@ function replayAchAnim(key){
     '<div class="bd-unlock-badge">'+achImg(a)+sparks+'</div></div>'+
     '<div class="man" style="font-weight:800;font-size:26px;margin-top:18px">'+a.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+a.desc+'</div>'+
-    (dt?'<div style="color:var(--dim);font-size:11.5px;margin-top:8px">Obtenu le '+fmtDate(dt)+'</div>':'')+
-    '<div style="color:var(--dim);font-size:12px;margin-top:16px">Touche pour fermer</div>';
+    (dt?'<div style="color:var(--dim);font-size:11.5px;margin-top:8px">'+tp('obtainedOn',fmtDate(dt))+'</div>':'')+
+    '<div style="color:var(--dim);font-size:12px;margin-top:16px">'+t('tapToClose')+'</div>';
   ov.onclick=()=>{ ov.remove(); };
   document.body.appendChild(ov);
 }
@@ -5061,13 +5570,13 @@ function previewAchAnim(key){
   let sparks=''; for(let i=0;i<16;i++){ const ang=Math.random()*Math.PI*2, d=80+Math.random()*90;
     sparks+='<span class="bd-spark" style="--tx:'+(Math.cos(ang)*d)+'px;--ty:'+(Math.sin(ang)*d)+'px;animation-delay:'+(Math.random()*1.4)+'s"></span>'; }
   ov.innerHTML='<div class="bd-flash"></div>'+
-    '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded;margin-bottom:6px">APERÇU · VERROUILLÉ</div>'+
+    '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded;margin-bottom:6px">'+t('previewLocked')+'</div>'+
     '<div class="bd-unlock-stage '+(a.cls||'bd-athlete')+'"><div class="bd-rays"></div><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div>'+
     '<div class="bd-unlock-badge">'+achImg(a)+sparks+'<div class="bd-lock-chip big">🔒</div></div></div>'+
     '<div class="man" style="font-weight:800;font-size:26px;margin-top:18px">'+a.name+'</div>'+
     '<div class="bd-preview-cond" style="text-align:center;color:var(--muted);font-size:13px;margin-top:8px;max-width:280px">'+a.desc+'</div>'+
-    (a.manual?'<button type="button" class="btn sm" style="width:auto;margin-top:20px;padding:11px 26px" data-mark>✓ Marquer comme obtenu</button>':'')+
-    '<div style="color:var(--dim);font-size:12px;margin-top:12px">Touche pour fermer</div>';
+    (a.manual?'<button type="button" class="btn sm" style="width:auto;margin-top:20px;padding:11px 26px" data-mark>'+t('markAsObtained')+'</button>':'')+
+    '<div style="color:var(--dim);font-size:12px;margin-top:12px">'+t('tapToClose')+'</div>';
   ov.onclick=(e)=>{
     if(e.target.closest('[data-mark]')){ ov.remove(); toggleManualBadge(key); return; }
     ov.remove();
@@ -5087,10 +5596,10 @@ function achievementsGridHTML(){
   const unlockedCount=ACHIEVEMENTS.filter(achievementUnlocked).length;
   const years=achYears();
   let h='<div class="card" style="margin-top:18px"><div class="row" style="margin-bottom:6px"><span class="card-t" style="margin:0">🏆 '+t('tabTrophies')+'</span><span style="font-size:12px;color:var(--muted)">'+unlockedCount+' / '+ACHIEVEMENTS.length+'</span></div>'
-    +'<div style="font-size:11px;color:var(--dim);margin-bottom:8px">Touche un trophée pour voir l\u2019animation ou la condition à remplir pour l\u2019obtenir.</div>';
+    +'<div style="font-size:11px;color:var(--dim);margin-bottom:8px">'+t('tapTrophyHint')+'</div>';
   if(years.length){
     h+='<div class="pills" style="margin-bottom:10px">'
-      +'<div class="pill '+(achYearFilter==='toutes'?'on':'')+'" onclick="achYearFilter=\'toutes\';renderStats()">Toutes</div>'
+      +'<div class="pill '+(achYearFilter==='toutes'?'on':'')+'" onclick="achYearFilter=\'toutes\';renderStats()">'+t('allYearsLab')+'</div>'
       +years.map(y=>'<div class="pill '+(achYearFilter===y?'on':'')+'" onclick="achYearFilter='+y+';renderStats()">'+y+'</div>').join('')
       +'</div>';
   }
@@ -5099,7 +5608,7 @@ function achievementsGridHTML(){
     let items=ACHIEVEMENTS.filter(a=>a.cat===cat);
     if(achYearFilter!=='toutes') items=items.filter(a=>achievementUnlocked(a) && +String(dates[a.key]||'').slice(0,4)===achYearFilter);
     if(!items.length) return;
-    h+='<div style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.5px;margin:14px 0 8px">'+cat.toUpperCase()+'</div><div class="bd-grid">';
+    h+='<div style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.5px;margin:14px 0 8px">'+catLabel(cat).toUpperCase()+'</div><div class="bd-grid">';
     items.forEach(a=>{
       const on=achievementUnlocked(a);
       h+='<div class="bd-cell" onclick="openAchQuick(\''+a.key+'\')">'
@@ -5109,18 +5618,20 @@ function achievementsGridHTML(){
     h+='</div>';
   });
   if(achYearFilter!=='toutes' && !ACHIEVEMENTS.some(a=>cats.includes(a.cat)&&achievementUnlocked(a)&&+String(dates[a.key]||'').slice(0,4)===achYearFilter)){
-    h+='<div style="font-size:12px;color:var(--muted);margin-top:8px">Aucun trophée obtenu en '+achYearFilter+'.</div>';
+    h+='<div style="font-size:12px;color:var(--muted);margin-top:8px">'+tp('noTrophyInYear',achYearFilter)+'</div>';
   }
   h+='</div>';
   return h;
 }
 /* ---------- MEDALS ---------- */
-const TIERS=[['Bronze','--bronze'],['Argent','--argent'],['Or','--or'],['Platine','--platine'],['Diamant','--diamant'],['Maître','--maitre'],['Légende','--legende']];
-const MEDAL_CATS=[
-  {name:'Séances',icon:'🎽',val:()=>totalSessions(),thr:[10,25,50,100,200,350,500]},
-  {name:'Régularité',icon:'🔥',val:()=>streakDays(),thr:[3,7,14,30,60,100,180],unit:'j'},
-  {name:'Distance',icon:'🛣️',val:()=>totalKm(),thr:[25,50,100,250,500,1000,2000],unit:'km'}
-];
+function TIERS_DEF(){ return [[t('tierBronze'),'--bronze'],[t('tierArgent'),'--argent'],[t('tierOr'),'--or'],[t('tierPlatine'),'--platine'],[t('tierDiamant'),'--diamant'],[t('tierMaitre'),'--maitre'],[t('tierLegende'),'--legende']]; }
+let TIERS=TIERS_DEF();
+function MEDAL_CATS_DEF(){ return [
+  {key:'sessions',name:t('medalCatSeances'),icon:'🎽',val:()=>totalSessions(),thr:[10,25,50,100,200,350,500]},
+  {key:'streak',name:t('medalCatRegularite'),icon:'🔥',val:()=>streakDays(),thr:[3,7,14,30,60,100,180],unit:'j'},
+  {key:'distance',name:t('medalCatDistance'),icon:'🛣️',val:()=>totalKm(),thr:[25,50,100,250,500,1000,2000],unit:'km'}
+]; }
+let MEDAL_CATS=MEDAL_CATS_DEF();
 function statsMedals(){
   let h='';
   h+=achievementsGridHTML();
@@ -5347,7 +5858,7 @@ function renderOutilsTimer(){ $('#s-outils').innerHTML='<div class="row" style="
 function renderSanteTool(){
   const w=P.weight||62, ht=P.height||175;
   const imc=w/Math.pow(ht/100,2);
-  let imcCat,imcCol; if(imc<18.5){imcCat='Maigreur';imcCol='--warn';}else if(imc<25){imcCat='Normal';imcCol='--ok';}else if(imc<30){imcCat='Surpoids';imcCol='--warn';}else{imcCat='Obésité';imcCol='--bad';}
+  let imcCat,imcCol; if(imc<18.5){imcCat=t('imcUnderweight');imcCol='--warn';}else if(imc<25){imcCat=t('imcNormal');imcCol='--ok';}else if(imc<30){imcCat=t('imcOverweight');imcCol='--warn';}else{imcCat=t('imcObese');imcCol='--bad';}
   // dernier log santé / sommeil depuis SESSLOG (debriefs)
   const lastLog=SESSLOG[SESSLOG.length-1]||{};
   const bmr=Math.round((P.sex==='Femme')?(10*w+6.25*ht-5*(age()||25)-161):(10*w+6.25*ht-5*(age()||25)+5));
@@ -5357,42 +5868,42 @@ function renderSanteTool(){
   // POIDS
   const last=WEIGHTLOG[WEIGHTLOG.length-1], prev=WEIGHTLOG[WEIGHTLOG.length-2];
   const trend=last&&prev?(last.w-prev.w):0;
-  h+='<div class="card"><div class="row"><div class="card-t" style="margin:0">⚖️ Poids</div><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="addWeight()">＋ Ajouter</span></div>';
+  h+='<div class="card"><div class="row"><div class="card-t" style="margin:0">'+t('weightLab')+'</div><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="addWeight()">'+t('addBtn')+'</span></div>';
   h+='<div class="row" style="align-items:flex-end;margin-top:8px"><div class="man" style="font-size:36px;font-weight:800">'+(last?last.w:w)+'<span style="font-size:16px;color:var(--muted)"> kg</span></div>'+(trend?'<span class="mono" style="margin-left:10px;color:'+(trend<0?'var(--ok)':'var(--warn)')+'">'+(trend>0?'▲ +':'▼ ')+trend.toFixed(1)+' kg</span>':'')+'</div>';
   if(WEIGHTLOG.length>=2) h+='<div style="margin-top:12px">'+weightSparkline()+'</div>';
   h+='</div>';
   // IMC
-  h+='<div class="card"><div class="row"><div><div class="card-t" style="margin:0">📐 IMC</div><div class="man" style="font-size:28px;font-weight:800;margin-top:6px;color:var('+imcCol+')">'+imc.toFixed(1)+'</div></div><div class="badge" style="background:var(--ed);color:var('+imcCol+')">'+imcCat+'</div></div>'+
+  h+='<div class="card"><div class="row"><div><div class="card-t" style="margin:0">'+t('imcLab')+'</div><div class="man" style="font-size:28px;font-weight:800;margin-top:6px;color:var('+imcCol+')">'+imc.toFixed(1)+'</div></div><div class="badge" style="background:var(--ed);color:var('+imcCol+')">'+imcCat+'</div></div>'+
     '<div class="pbar" style="margin-top:12px"><div style="width:'+Math.min(100,(imc/40)*100)+'%;background:var('+imcCol+')"></div></div></div>';
   // INDICATEURS — grille
   h+='<div class="sgrid" style="margin-bottom:14px">';
-  h+='<div class="sbox"><div class="v" style="color:var(--e)">'+freq+'</div><div class="l">Séances / sem</div></div>';
-  h+='<div class="sbox"><div class="v" style="color:var(--or)">'+bmr+'</div><div class="l">Métabolisme kcal</div></div>';
-  h+='<div class="sbox"><div class="v" style="color:var(--bad)">'+Math.round(burned)+'</div><div class="l">Brûlées 7j (run)</div></div>';
-  h+='<div class="sbox"><div class="v" style="color:var(--platine)">'+Math.round(w*35/100)/10+'L</div><div class="l">Eau / jour</div></div>';
+  h+='<div class="sbox"><div class="v" style="color:var(--e)">'+freq+'</div><div class="l">'+t('sessionsPerWeek')+'</div></div>';
+  h+='<div class="sbox"><div class="v" style="color:var(--or)">'+bmr+'</div><div class="l">'+t('metabolismKcal')+'</div></div>';
+  h+='<div class="sbox"><div class="v" style="color:var(--bad)">'+Math.round(burned)+'</div><div class="l">'+t('burned7d')+'</div></div>';
+  h+='<div class="sbox"><div class="v" style="color:var(--platine)">'+Math.round(w*35/100)/10+'L</div><div class="l">'+t('waterPerDay')+'</div></div>';
   h+='</div>';
   // SOMMEIL / FATIGUE / RÉCUP (depuis derniers debriefs)
   const recent=SESSLOG.slice(-7);
   if(recent.length){
     const avg=(f)=>recent.reduce((a,x)=>a+(x[f]||0),0)/recent.length;
     const sleep=avg('sleep'),fatigue=avg('fatigue'),feel=avg('feel');
-    h+='<div class="card"><div class="card-t">😴 Forme récente (7 dernières séances)</div>';
-    h+=santeBar('Sommeil',sleep,5,'--platine');
-    h+=santeBar('Énergie / sensations',feel,5,'--ok');
-    h+=santeBar('Fatigue',fatigue,5,'--warn');
+    h+='<div class="card"><div class="card-t">'+t('recentFormTitle')+'</div>';
+    h+=santeBar(t('sleepLab'),sleep,5,'--platine');
+    h+=santeBar(t('energyFeelLab'),feel,5,'--ok');
+    h+=santeBar(t('fatigueLab'),fatigue,5,'--warn');
     // conseil intelligent
-    let tip='Tout est équilibré, continue ainsi ! 💪';
-    if(fatigue>=4) tip='⚠️ Fatigue élevée : privilégie le repos et le sommeil cette semaine.';
-    else if(sleep<=2.5) tip='😴 Ton sommeil est insuffisant : vise 8h pour mieux récupérer.';
-    else if(feel>=4) tip='🔥 Excellentes sensations : tu peux pousser un peu plus !';
+    let tip=t('tipBalanced');
+    if(fatigue>=4) tip=t('tipHighFatigue');
+    else if(sleep<=2.5) tip=t('tipLowSleep');
+    else if(feel>=4) tip=t('tipGreatFeel');
     h+='<div class="tip" style="margin-top:12px">'+tip+'</div></div>';
   } else {
-    h+='<div class="card"><div class="empty"><div class="em-ic">📋</div><div style="font-size:13px">Termine des séances avec leur bilan pour suivre ton sommeil, ta fatigue et ta récupération ici.</div></div></div>';
+    h+='<div class="card"><div class="empty"><div class="em-ic">📋</div><div style="font-size:13px">'+t('noDebriefHint')+'</div></div></div>';
   }
   // NUTRITION (rappel macros indicatifs)
   const prot=Math.round(w*1.8), carbs=Math.round(w*5), lip=Math.round(w*1);
-  h+='<div class="card"><div class="card-t">🍽️ Repères nutrition (athlète)</div>';
-  h+='<div class="sgrid"><div class="sbox"><div class="v" style="font-size:18px;color:var(--ok)">'+prot+'g</div><div class="l">Protéines</div></div><div class="sbox"><div class="v" style="font-size:18px;color:var(--or)">'+carbs+'g</div><div class="l">Glucides</div></div><div class="sbox"><div class="v" style="font-size:18px;color:var(--warn)">'+lip+'g</div><div class="l">Lipides</div></div><div class="sbox"><div class="v" style="font-size:18px">'+Math.round(prot*4+carbs*4+lip*9)+'</div><div class="l">kcal cible</div></div></div></div>';
+  h+='<div class="card"><div class="card-t">'+t('nutritionTitle')+'</div>';
+  h+='<div class="sgrid"><div class="sbox"><div class="v" style="font-size:18px;color:var(--ok)">'+prot+'g</div><div class="l">'+t('proteinLab')+'</div></div><div class="sbox"><div class="v" style="font-size:18px;color:var(--or)">'+carbs+'g</div><div class="l">'+t('carbsLab')+'</div></div><div class="sbox"><div class="v" style="font-size:18px;color:var(--warn)">'+lip+'g</div><div class="l">'+t('fatLab')+'</div></div><div class="sbox"><div class="v" style="font-size:18px">'+Math.round(prot*4+carbs*4+lip*9)+'</div><div class="l">'+t('kcalTarget')+'</div></div></div></div>';
   $('#outBody').innerHTML=h;
 }
 function santeBar(label,val,max,col){ const pct=Math.min(100,val/max*100); const ic=['😣','😕','😐','🙂','🤩'][Math.max(0,Math.min(4,Math.round(val)-1))]||'—';
@@ -5404,7 +5915,7 @@ function weightSparkline(){
   return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:60px"><polyline points="'+pts+'" fill="none" stroke="var(--e)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 }
 function addWeight(){ const cur=P.weight||62; const whole=Math.floor(cur),dec=Math.round((cur-whole)*10);
-  openPicker({title:'Ton poids (kg)',cols:[{values:range(30,200),sel:Math.max(0,whole-30)},{values:range(0,9),sel:dec,unit:'kg'}],seps:['.'],onOk:idx=>{ const w=(idx[0]+30)+idx[1]/10; WEIGHTLOG.push({date:todayKey(),w}); P.weight=w; saveAll(); renderSanteTool(); toast('Poids enregistré ✓'); }}); }
+  openPicker({title:t('weightPickerTitle'),cols:[{values:range(30,200),sel:Math.max(0,whole-30)},{values:range(0,9),sel:dec,unit:'kg'}],seps:['.'],onOk:idx=>{ const w=(idx[0]+30)+idx[1]/10; WEIGHTLOG.push({date:todayKey(),w}); P.weight=w; saveAll(); renderSanteTool(); toast(t('weightSaved')); }}); }
 
 /* ============ PERFORMANCE LAB — calculateur intelligent ============ */
 /* 4 valeurs : distance (km), time (s), pace (s/km), speed (km/h).
@@ -5436,15 +5947,15 @@ function computeLab(){
 }
 function renderAIO(){
   const computed=f=>LAB.recent.length>=2 && !LAB.recent.includes(f) && LAB[f]!=null;
-  let h='<div class="tip" style="margin-bottom:16px">Saisis <b>2 valeurs</b> que tu connais. Les 2 autres se calculent automatiquement. ✨</div>';
-  h+=labField('Distance','📍','dist',LAB.dist!=null?LAB.dist.toFixed(2)+' km':'—',computed('dist'));
-  h+=labField('Temps','⏱️','time',LAB.time!=null?fmtTime(LAB.time):'—',computed('time'));
-  h+=labField('Allure','🏃','pace',LAB.pace!=null?spkToStr(LAB.pace)+' /km':'—',computed('pace'));
-  h+=labField('Vitesse','⚡','speed',LAB.speed!=null?LAB.speed.toFixed(2)+' km/h':'—',computed('speed'));
-  h+='<button class="btn ghost" style="margin-top:10px" onclick="resetLab()">↺ Réinitialiser</button>';
+  let h='<div class="tip" style="margin-bottom:16px">'+t('labHint')+'</div>';
+  h+=labField(t('distField'),'📍','dist',LAB.dist!=null?LAB.dist.toFixed(2)+' km':'—',computed('dist'));
+  h+=labField(t('timeField'),'⏱️','time',LAB.time!=null?fmtTime(LAB.time):'—',computed('time'));
+  h+=labField(t('paceField'),'🏃','pace',LAB.pace!=null?spkToStr(LAB.pace)+' /km':'—',computed('pace'));
+  h+=labField(t('speedField'),'⚡','speed',LAB.speed!=null?LAB.speed.toFixed(2)+' km/h':'—',computed('speed'));
+  h+='<button class="btn ghost" style="margin-top:10px" onclick="resetLab()">'+t('resetBtn')+'</button>';
   // Bonus : splits + prédictions si distance & pace connus
   if(LAB.dist&&LAB.pace&&LAB.dist>=1){
-    h+='<div class="card-t" style="margin-top:20px">📍 Temps de passage</div>';
+    h+='<div class="card-t" style="margin-top:20px">'+t('splitTimesTitle')+'</div>';
     const n=Math.min(Math.floor(LAB.dist),42);
     for(let k=1;k<=n;k++){ const hi=[5,10,21,42].includes(k); h+='<div class="zrow" style="padding:9px 0"><span class="zname" style="'+(hi?'color:var(--e)':'')+'">km '+k+(hi?' ⭐':'')+'</span><span class="zval mono">'+fmtTime(LAB.pace*k)+'</span></div>'; }
     if(LAB.dist%1>0.01) h+='<div class="zrow" style="padding:9px 0"><span class="zname">'+LAB.dist.toFixed(2)+' km</span><span class="zval mono">'+fmtTime(LAB.time)+'</span></div>';
@@ -5453,29 +5964,29 @@ function renderAIO(){
 }
 function labField(label,icon,field,val,isComputed){
   const filled=LAB[field]!=null;
-  return '<div class="card" style="padding:14px;margin-bottom:9px;cursor:pointer;'+(isComputed?'border-color:var(--e);background:var(--ed)':'')+'" onclick="editLab(\''+field+'\')"><div class="row"><div class="row" style="gap:11px"><span style="font-size:19px">'+icon+'</span><div><div style="font-size:11px;color:var(--muted)">'+label+(isComputed?' · calculé':filled?'':' · à saisir')+'</div><div class="mono" style="font-weight:700;font-size:19px;margin-top:2px;color:'+(isComputed?'var(--e)':'var(--snow)')+'">'+val+'</div></div></div><span style="color:var(--dim);font-size:15px">'+(isComputed?'':'✎')+'</span></div></div>';
+  return '<div class="card" style="padding:14px;margin-bottom:9px;cursor:pointer;'+(isComputed?'border-color:var(--e);background:var(--ed)':'')+'" onclick="editLab(\''+field+'\')"><div class="row"><div class="row" style="gap:11px"><span style="font-size:19px">'+icon+'</span><div><div style="font-size:11px;color:var(--muted)">'+label+(isComputed?' · '+t('calculatedLab'):filled?'':' · '+t('toFillLab'))+'</div><div class="mono" style="font-weight:700;font-size:19px;margin-top:2px;color:'+(isComputed?'var(--e)':'var(--snow)')+'">'+val+'</div></div></div><span style="color:var(--dim);font-size:15px">'+(isComputed?'':'✎')+'</span></div></div>';
 }
 function editLab(field){
-  if(field==='dist') pickDistance('Distance',LAB.dist||10,v=>labSet('dist',v));
-  else if(field==='time') pickTime('Temps',LAB.time||1800,v=>labSet('time',v));
-  else if(field==='pace') pickPace('Allure',LAB.pace||270,v=>labSet('pace',v));
-  else if(field==='speed') pickSpeed('Vitesse',LAB.speed||12,v=>labSet('speed',v));
+  if(field==='dist') pickDistance(t('distField'),LAB.dist||10,v=>labSet('dist',v));
+  else if(field==='time') pickTime(t('timeField'),LAB.time||1800,v=>labSet('time',v));
+  else if(field==='pace') pickPace(t('paceField'),LAB.pace||270,v=>labSet('pace',v));
+  else if(field==='speed') pickSpeed(t('speedField'),LAB.speed||12,v=>labSet('speed',v));
 }
 function resetLab(){ LAB={dist:null,time:null,pace:null,speed:null,recent:[]}; renderAIO(); }
 
 /* ----- Nouveaux outils ----- */
 function renderVDOTtool(){
   const vdot=getUserVDOT();
-  let h='<div class="card" style="text-align:center"><div class="man" style="font-size:48px;font-weight:800;color:var(--e)">'+(vdot||'—')+'</div><div class="lab">VDOT (Jack Daniels)</div></div>';
+  let h='<div class="card" style="text-align:center"><div class="man" style="font-size:48px;font-weight:800;color:var(--e)">'+(vdot||'—')+'</div><div class="lab">'+t('vdotToolTitle')+'</div></div>';
   if(vdot){ const vo2=(vdot).toFixed(1);
-    h+='<div class="card"><div class="card-t">Estimations physiologiques</div>'+
-      '<div class="zrow"><span class="zname">VO₂max estimé</span><span class="zval mono">'+vo2+' ml/kg/min</span></div>'+
-      '<div class="zrow"><span class="zname">Allure seuil lactique</span><span class="zval mono">'+spkToStr(paceFromPct(vdot,.88))+'/km</span></div>'+
-      '<div class="zrow"><span class="zname">Allure marathon</span><span class="zval mono">'+spkToStr(paceFromPct(vdot,.80))+'/km</span></div>'+
-      '<div class="zrow"><span class="zname">Allure semi</span><span class="zval mono">'+spkToStr(paceFromPct(vdot,.835))+'/km</span></div>'+
-      '<div class="zrow"><span class="zname">Allure EF</span><span class="zval mono">'+spkToStr(paceFromPct(vdot,.70))+'/km</span></div></div>';
+    h+='<div class="card"><div class="card-t">'+t('physioEstimates')+'</div>'+
+      '<div class="zrow"><span class="zname">'+t('vo2maxEst')+'</span><span class="zval mono">'+vo2+' ml/kg/min</span></div>'+
+      '<div class="zrow"><span class="zname">'+t('thresholdPace')+'</span><span class="zval mono">'+spkToStr(paceFromPct(vdot,.88))+'/km</span></div>'+
+      '<div class="zrow"><span class="zname">'+t('marathonPace')+'</span><span class="zval mono">'+spkToStr(paceFromPct(vdot,.80))+'/km</span></div>'+
+      '<div class="zrow"><span class="zname">'+t('halfPace')+'</span><span class="zval mono">'+spkToStr(paceFromPct(vdot,.835))+'/km</span></div>'+
+      '<div class="zrow"><span class="zname">'+t('efPace')+'</span><span class="zval mono">'+spkToStr(paceFromPct(vdot,.70))+'/km</span></div></div>';
   }
-  h+='<div class="tip">ℹ️ Ton VDOT se met à jour automatiquement depuis tes records. Ajoute tes chronos dans Profil → Records.</div>';
+  h+='<div class="tip">'+t('vdotAutoTip')+'</div>';
   $('#outBody').innerHTML=h;
 }
 let rmW=80,rmR=5;
@@ -5517,15 +6028,15 @@ function renderCaloriesTool(){
 }
 function renderHydraTool(){
   const w=P.weight||62; const daily=Math.round(w*35); const perH=Math.round(0.5*1000);
-  let h='<div class="card"><div class="card-t">💧 Besoins en eau</div><div class="zrow"><span class="zname">Quotidien (repos)</span><span class="zval mono">'+(daily/1000).toFixed(1)+' L</span></div><div class="zrow"><span class="zname">Par heure de course</span><span class="zval mono">0,4–0,8 L</span></div><div class="zrow"><span class="zname">Par forte chaleur (+/h)</span><span class="zval mono">+0,3 L</span></div></div><div class="tip">💡 Bois régulièrement par petites gorgées. Surveille la couleur de ton urine.</div>';
+  let h='<div class="card"><div class="card-t">'+t('waterNeedsTitle')+'</div><div class="zrow"><span class="zname">'+t('dailyRest')+'</span><span class="zval mono">'+(daily/1000).toFixed(1)+' L</span></div><div class="zrow"><span class="zname">'+t('perRunHour')+'</span><span class="zval mono">0,4–0,8 L</span></div><div class="zrow"><span class="zname">'+t('perHeatHour')+'</span><span class="zval mono">+0,3 L</span></div></div><div class="tip">'+t('hydraTip')+'</div>';
   $('#outBody').innerHTML=h;
 }
 let bmrSex=P.sex||'Homme';
 function renderBMRtool(){
   const w=P.weight||62,ht=P.height||175,a=age()||25;
   const bmr=Math.round(bmrSex==='Femme'?(10*w+6.25*ht-5*a-161):(10*w+6.25*ht-5*a+5));
-  let h='<div class="card" style="text-align:center"><div class="man" style="font-size:40px;font-weight:800;color:var(--e)">'+bmr+'</div><div class="lab">Métabolisme basal (kcal/j)</div></div>';
-  h+='<div class="card"><div class="card-t">Besoins selon activité</div>'+[['Sédentaire',1.2],['Léger',1.375],['Modéré',1.55],['Intense',1.725],['Athlète',1.9]].map(x=>'<div class="zrow"><span class="zname">'+x[0]+'</span><span class="zval mono">'+Math.round(bmr*x[1])+' kcal</span></div>').join('')+'</div>';
+  let h='<div class="card" style="text-align:center"><div class="man" style="font-size:40px;font-weight:800;color:var(--e)">'+bmr+'</div><div class="lab">'+t('basalMetabolism')+'</div></div>';
+  h+='<div class="card"><div class="card-t">'+t('needsByActivity')+'</div>'+[[t('actSedentary'),1.2],[t('actLight'),1.375],[t('actModerate'),1.55],[t('actIntense'),1.725],[t('actAthlete'),1.9]].map(x=>'<div class="zrow"><span class="zname">'+x[0]+'</span><span class="zval mono">'+Math.round(bmr*x[1])+' kcal</span></div>').join('')+'</div>';
   $('#outBody').innerHTML=h;
 }
 let cvVal=10,cvFrom='km',cvTo='miles';
@@ -5535,8 +6046,8 @@ function renderConvertTool(){
   if(cvFrom==='km'&&cvTo==='miles') res=(cvVal*0.621371).toFixed(2)+' miles';
   else if(cvFrom==='miles'&&cvTo==='km') res=(cvVal/0.621371).toFixed(2)+' km';
   else res=cvVal;
-  let h='<div class="card"><div class="field"><label>Valeur</label><input class="inp" type="number" value="'+cvVal+'" oninput="cvVal=+this.value;renderConvertTool()"></div>';
-  h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>De</label><select class="inp" onchange="cvFrom=this.value;renderConvertTool()"><option '+(cvFrom==='km'?'selected':'')+'>km</option><option '+(cvFrom==='miles'?'selected':'')+'>miles</option></select></div><div class="field" style="flex:1"><label>Vers</label><select class="inp" onchange="cvTo=this.value;renderConvertTool()"><option '+(cvTo==='km'?'selected':'')+'>km</option><option '+(cvTo==='miles'?'selected':'')+'>miles</option></select></div></div></div>';
+  let h='<div class="card"><div class="field"><label>'+t('valueField')+'</label><input class="inp" type="number" value="'+cvVal+'" oninput="cvVal=+this.value;renderConvertTool()"></div>';
+  h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>'+t('fromField')+'</label><select class="inp" onchange="cvFrom=this.value;renderConvertTool()"><option '+(cvFrom==='km'?'selected':'')+'>km</option><option '+(cvFrom==='miles'?'selected':'')+'>miles</option></select></div><div class="field" style="flex:1"><label>'+t('toField')+'</label><select class="inp" onchange="cvTo=this.value;renderConvertTool()"><option '+(cvTo==='km'?'selected':'')+'>km</option><option '+(cvTo==='miles'?'selected':'')+'>miles</option></select></div></div></div>';
   h+='<div class="card" style="text-align:center"><div class="man" style="font-size:32px;font-weight:800;color:var(--e)">'+res+'</div></div>';
   $('#outBody').innerHTML=h;
 }
@@ -5581,7 +6092,7 @@ function pomoToggle(){
 function pomoReset(){ clearInterval(pomoState.iv); pomoState={phase:'work',left:25*60,running:false,iv:null,count:pomoState.count}; renderPomodoro(); }
 function renderNotesTool(){
   const notes=PREFS.quickNotes||'';
-  let h='<div class="card"><div class="card-t">📝 Notes rapides</div><textarea class="inp" rows="12" id="qnotes" placeholder="Écris ici... (sauvegarde automatique)" oninput="PREFS.quickNotes=this.value;saveAll()">'+notes+'</textarea><div style="font-size:11px;color:var(--dim);margin-top:8px">💾 Sauvegarde automatique en local.</div></div>';
+  let h='<div class="card"><div class="card-t">'+t('quickNotesTitle')+'</div><textarea class="inp" rows="12" id="qnotes" placeholder="'+t('notesPlaceholder')+'" oninput="PREFS.quickNotes=this.value;saveAll()">'+notes+'</textarea><div style="font-size:11px;color:var(--dim);margin-top:8px">'+t('autoSaveLocal')+'</div></div>';
   $('#outBody').innerHTML=h;
 }
 let sleepH=8;
@@ -5706,10 +6217,10 @@ function renderFC(){
 /* ---------- IMC ---------- */
 let imc={h:P.height||175,w:P.weight||62};
 function renderIMC(){
-  let h='<div class="card"><div class="field"><label>Taille (cm)</label><div class="stepper"><button onclick="imc.h--;renderIMC()">−</button><span class="val">'+imc.h+'</span><button onclick="imc.h++;renderIMC()">+</button></div></div>';
-  h+='<div class="field"><label>Poids (kg)</label><div class="stepper"><button onclick="imc.w--;renderIMC()">−</button><span class="val">'+imc.w+'</span><button onclick="imc.w++;renderIMC()">+</button></div></div></div>';
+  let h='<div class="card"><div class="field"><label>'+t('heightCmLab')+'</label><div class="stepper"><button onclick="imc.h--;renderIMC()">−</button><span class="val">'+imc.h+'</span><button onclick="imc.h++;renderIMC()">+</button></div></div>';
+  h+='<div class="field"><label>'+t('weightKgLab')+'</label><div class="stepper"><button onclick="imc.w--;renderIMC()">−</button><span class="val">'+imc.w+'</span><button onclick="imc.w++;renderIMC()">+</button></div></div></div>';
   const v=imc.w/Math.pow(imc.h/100,2);
-  let cat,col; if(v<18.5){cat='Maigreur';col='--warn';} else if(v<25){cat='Normal';col='--ok';} else if(v<30){cat='Surpoids';col='--warn';} else {cat='Obésité';col='--bad';}
+  let cat,col; if(v<18.5){cat=t('imcUnderweight');col='--warn';} else if(v<25){cat=t('imcNormal');col='--ok';} else if(v<30){cat=t('imcOverweight');col='--warn';} else {cat=t('imcObese');col='--bad';}
   h+='<div class="card" style="text-align:center"><div class="man" style="font-weight:800;font-size:42px;color:var('+col+')">'+v.toFixed(1)+'</div><div class="badge" style="background:var(--ed);color:var('+col+')">'+cat+'</div></div>';
   $('#outBody').innerHTML=h;
 }
@@ -5724,22 +6235,22 @@ function renderChrono(){
   if(!chrono.running && total===0){
     h+='<div style="width:62px"></div><button class="btn" style="width:84px;height:84px;border-radius:50%;font-size:30px;flex:0;background:var(--ok)" onclick="chronoToggle()">▶</button><div style="width:62px"></div>';
   } else if(chrono.running){
-    h+='<button class="chbtn" onclick="chronoLap()">Tour</button>';
+    h+='<button class="chbtn" onclick="chronoLap()">'+t('lapBtn')+'</button>';
     h+='<button class="btn" style="width:84px;height:84px;border-radius:50%;font-size:26px;flex:0;background:var(--warn)" onclick="chronoToggle()">⏸</button>';
-    h+='<button class="chbtn" style="border-color:var(--bad);color:var(--bad)" onclick="chronoStop()">Stop</button>';
+    h+='<button class="chbtn" style="border-color:var(--bad);color:var(--bad)" onclick="chronoStop()">'+t('stopBtn')+'</button>';
   } else {
-    h+='<button class="chbtn" style="border-color:var(--bad);color:var(--bad)" onclick="chronoReset()">Reset</button>';
+    h+='<button class="chbtn" style="border-color:var(--bad);color:var(--bad)" onclick="chronoReset()">'+t('resetBtn2')+'</button>';
     h+='<button class="btn" style="width:84px;height:84px;border-radius:50%;font-size:30px;flex:0;background:var(--ok)" onclick="chronoToggle()">▶</button>';
-    h+='<button class="chbtn" onclick="chronoLap()">Tour</button>';
+    h+='<button class="chbtn" onclick="chronoLap()">'+t('lapBtn')+'</button>';
   }
   h+='</div></div>';
   // Statistiques des tours
   if(chrono.laps.length){
     const best=Math.min(...chrono.laps), worst=Math.max(...chrono.laps), avg=chrono.laps.reduce((a,b)=>a+b,0)/chrono.laps.length;
-    h+='<div class="sgrid" style="margin-bottom:12px"><div class="sbox"><div class="v" style="font-size:15px;color:var(--ok)">'+fmtChrono(best)+'</div><div class="l">Meilleur tour</div></div><div class="sbox"><div class="v" style="font-size:15px;color:var(--bad)">'+fmtChrono(worst)+'</div><div class="l">Plus lent</div></div><div class="sbox"><div class="v" style="font-size:15px">'+fmtChrono(avg)+'</div><div class="l">Moyenne</div></div><div class="sbox"><div class="v">'+chrono.laps.length+'</div><div class="l">Tours</div></div></div>';
-    h+='<div class="card"><div class="row" style="margin-bottom:8px"><div class="card-t" style="margin:0">Tours</div><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="exportLaps()">Exporter</span></div>';
+    h+='<div class="sgrid" style="margin-bottom:12px"><div class="sbox"><div class="v" style="font-size:15px;color:var(--ok)">'+fmtChrono(best)+'</div><div class="l">'+t('bestLap')+'</div></div><div class="sbox"><div class="v" style="font-size:15px;color:var(--bad)">'+fmtChrono(worst)+'</div><div class="l">'+t('slowestLap')+'</div></div><div class="sbox"><div class="v" style="font-size:15px">'+fmtChrono(avg)+'</div><div class="l">'+t('avgLap')+'</div></div><div class="sbox"><div class="v">'+chrono.laps.length+'</div><div class="l">'+t('lapsLab')+'</div></div></div>';
+    h+='<div class="card"><div class="row" style="margin-bottom:8px"><div class="card-t" style="margin:0">'+t('lapsLab')+'</div><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="exportLaps()">'+t('exportBtn')+'</span></div>';
     [...chrono.laps].reverse().forEach((l,ri)=>{ const i=chrono.laps.length-1-ri; const isBest=l===best&&chrono.laps.length>1, isWorst=l===worst&&chrono.laps.length>1;
-      h+='<div class="zrow"><span class="zname">Tour '+(i+1)+(isBest?' <span style="color:var(--ok);font-size:11px">⚡ rapide</span>':isWorst?' <span style="color:var(--bad);font-size:11px">lent</span>':'')+'</span><span class="zval mono" style="'+(isBest?'color:var(--ok)':isWorst?'color:var(--bad)':'')+'">'+fmtChrono(l)+'</span></div>'; });
+      h+='<div class="zrow"><span class="zname">'+t('lapBtn')+' '+(i+1)+(isBest?' <span style="color:var(--ok);font-size:11px">'+t('fastTag')+'</span>':isWorst?' <span style="color:var(--bad);font-size:11px">'+t('slowTag')+'</span>':'')+'</span><span class="zval mono" style="'+(isBest?'color:var(--ok)':isWorst?'color:var(--bad)':'')+'">'+fmtChrono(l)+'</span></div>'; });
     h+='</div>';
   }
   $('#outBody').innerHTML=h;
@@ -5747,8 +6258,8 @@ function renderChrono(){
 function chronoStop(){ chrono.running=false; chrono.elapsed+=Date.now()-chrono.start; cancelAnimationFrame(chrono.raf); sfx('stop'); stopBgActivity(); renderChrono(); }
 function chronoReset(){ chrono={running:false,start:0,elapsed:0,laps:[],raf:null}; renderChrono(); }
 function exportLaps(){
-  let txt='IKORUN Chronomètre\n'; chrono.laps.forEach((l,i)=>txt+='Tour '+(i+1)+' : '+fmtChrono(l)+'\n');
-  if(navigator.share) navigator.share({title:'Chrono IKORUN',text:txt}); else { navigator.clipboard&&navigator.clipboard.writeText(txt); toast('Tours copiés ✓'); }
+  let txt='IKORUN Chronomètre\n'; chrono.laps.forEach((l,i)=>txt+=t('lapBtn')+' '+(i+1)+' : '+fmtChrono(l)+'\n');
+  if(navigator.share) navigator.share({title:'Chrono IKORUN',text:txt}); else { navigator.clipboard&&navigator.clipboard.writeText(txt); toast(t('lapsCopied')); }
 }
 function fmtChrono(ms){ const t=Math.floor(ms); const m=Math.floor(t/60000),s=Math.floor((t%60000)/1000),cs=Math.floor((t%1000)/10); return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+String(cs).padStart(2,'0'); }
 function chronoToggle(){
@@ -5799,20 +6310,20 @@ function resetTimer(){ clearInterval(timer.iv); timer.running=false; timer.endAt
 
 /* ---------- AGENDA ---------- */
 function renderAgenda(){
-  let h='<button class="btn" style="margin-bottom:14px" onclick="addEvent()">＋ Ajouter un événement</button>';
+  let h='<button class="btn" style="margin-bottom:14px" onclick="addEvent()">'+t('addEventBtn')+'</button>';
   const evts=[...AGENDA].sort((a,b)=>new Date(a.date)-new Date(b.date));
-  if(P.compDate) evts.unshift({date:P.compDate,title:'🏆 '+(P.goal||'Compétition'),fixed:true});
-  if(!evts.length) h+='<div class="card"><div class="empty"><div class="em-ic">📅</div><div style="font-size:13px">Aucun événement</div></div></div>';
+  if(P.compDate) evts.unshift({date:P.compDate,title:'🏆 '+(P.goal||t('competitionDefault')),fixed:true});
+  if(!evts.length) h+='<div class="card"><div class="empty"><div class="em-ic">📅</div><div style="font-size:13px">'+t('noEventLab')+'</div></div></div>';
   else evts.forEach((e,i)=>{
     const dd=daysBetween(new Date(),new Date(e.date));
-    h+='<div class="card"><div class="row"><div><div style="font-weight:700">'+e.title+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+fmtDate(e.date)+' · '+(dd>=0?'J-'+dd:'passé')+'</div></div>'+(e.fixed?'':'<button class="x" onclick="delEvent('+(i-(P.compDate?1:0))+')">🗑</button>')+'</div></div>';
+    h+='<div class="card"><div class="row"><div><div style="font-weight:700">'+e.title+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+fmtDate(e.date)+' · '+(dd>=0?'J-'+dd:t('pastLab'))+'</div></div>'+(e.fixed?'':'<button class="x" onclick="delEvent('+(i-(P.compDate?1:0))+')">🗑</button>')+'</div></div>';
   });
   $('#outBody').innerHTML=h;
 }
 function addEvent(){
-  const t=prompt('Titre de l\u2019événement :'); if(!t)return;
-  const d=prompt('Date (AAAA-MM-JJ) :',todayKey()); if(!d)return;
-  AGENDA.push({title:t,date:d}); saveAll(); renderAgenda(); toast('Événement ajouté');
+  const ti=prompt(t('eventTitlePrompt')); if(!ti)return;
+  const d=prompt(t('eventDatePrompt'),todayKey()); if(!d)return;
+  AGENDA.push({title:ti,date:d}); saveAll(); renderAgenda(); toast(t('eventAdded'));
 }
 function delEvent(i){ AGENDA.splice(i,1); saveAll(); renderAgenda(); }
 
@@ -5823,7 +6334,7 @@ function renderPriere(){
   const order=['Fajr','Dhuhr','Asr','Maghrib','Isha'];
   let activeIdx=-1;
   order.forEach((p,i)=>{ const[hh,mm]=times[p].split(':').map(Number); if(hh*60+mm<=nowMin) activeIdx=i; });
-  let h='<div class="card"><div class="card-t">🕌 Prières · Béjaïa</div><div style="font-size:12px;color:var(--muted);margin-bottom:14px">Méthode UOIF · '+now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})+'</div>';
+  let h='<div class="card"><div class="card-t">'+t('prayerTitle')+'</div><div style="font-size:12px;color:var(--muted);margin-bottom:14px">'+tp('uoifMethod',now.toLocaleDateString(localeCode(),{weekday:'long',day:'numeric',month:'long'}))+'</div>';
   const icons={Fajr:'🌅',Dhuhr:'☀️',Asr:'🌤️',Maghrib:'🌇',Isha:'🌙'};
   order.forEach((p,i)=>{
     const act=i===activeIdx;
@@ -6114,39 +6625,39 @@ function importData(){
 /* ---------- HISTORIQUE DES PERFORMANCES (records illimités) ---------- */
 const REC_DISTANCES=[['100 m',100],['200 m',200],['300 m',300],['400 m',400],['600 m',600],['800 m',800],['1000 m',1000],['1500 m',1500],['3000 m',3000],['5000 m',5000],['10 km',10000],['15 km',15000],['Semi-marathon',21097],['Marathon',42195],['Trail',0],['Cross',0]];
 function openRecords(){
-  let h='<button class="btn" style="margin-bottom:14px" onclick="addRecord()">＋ Ajouter une performance</button>';
+  let h='<button class="btn" style="margin-bottom:14px" onclick="addRecord()">'+t('addPerf')+'</button>';
   const recs=personalRecords();
-  if(!recs.length) h+='<div class="card"><div class="empty"><div class="em-ic">🏅</div><div style="font-size:13px">Ajoute tes chronos : ils alimentent ton VDOT et ton plan.</div></div></div>';
+  if(!recs.length) h+='<div class="card"><div class="empty"><div class="em-ic">🏅</div><div style="font-size:13px">'+t('addChronosHint')+'</div></div></div>';
   else {
     const sorted=[...RECORDS].sort((a,b)=>(a.meters||0)-(b.meters||0));
     sorted.forEach((r,i)=>{
       const v=r.meters?vdotFromRace(r.meters,parseTime(r.time)).toFixed(1):'—';
-      h+='<div class="card" style="padding:13px"><div class="row"><div><div style="font-weight:700">'+r.dist+' · <span class="mono" style="color:var(--e)">'+r.time+'</span></div><div style="font-size:11px;color:var(--muted);margin-top:3px">'+(r.date?fmtDate(r.date):'')+(r.place?' · '+r.place:'')+(r.meters?' · VDOT '+v:'')+'</div></div><button class="x" onclick="delRecord('+i+')">🗑</button></div>'+(r.feel||r.hrAvg?'<div style="font-size:11px;color:var(--dim);margin-top:6px">'+(r.feel?r.feel:'')+(r.hrAvg?' · FC moy '+r.hrAvg:'')+(r.hrMax?' / max '+r.hrMax:'')+'</div>':'')+'</div>';
+      h+='<div class="card" style="padding:13px"><div class="row"><div><div style="font-weight:700">'+r.dist+' · <span class="mono" style="color:var(--e)">'+r.time+'</span></div><div style="font-size:11px;color:var(--muted);margin-top:3px">'+(r.date?fmtDate(r.date):'')+(r.place?' · '+r.place:'')+(r.meters?' · VDOT '+v:'')+'</div></div><button class="x" onclick="delRecord('+i+')">🗑</button></div>'+(r.feel||r.hrAvg?'<div style="font-size:11px;color:var(--dim);margin-top:6px">'+(r.feel?r.feel:'')+(r.hrAvg?' · '+t('avgHR')+' '+r.hrAvg:'')+(r.hrMax?' / '+t('maxHRshort')+' '+r.hrMax:'')+'</div>':'')+'</div>';
     });
     const best=bestRecord();
-    if(best) h+='<div class="card" style="border-color:var(--or);text-align:center"><div class="lab" style="color:var(--or)">🏆 Meilleure perf</div><div class="man" style="font-weight:800;font-size:18px;margin-top:4px">'+best.dist+' — '+best.time+'</div><div style="font-size:12px;color:var(--muted)">VDOT '+vdotFromRace(best.meters,parseTime(best.time)).toFixed(1)+'</div></div>';
+    if(best) h+='<div class="card" style="border-color:var(--or);text-align:center"><div class="lab" style="color:var(--or)">'+t('bestPerf')+'</div><div class="man" style="font-weight:800;font-size:18px;margin-top:4px">'+best.dist+' — '+best.time+'</div><div style="font-size:12px;color:var(--muted)">VDOT '+vdotFromRace(best.meters,parseTime(best.time)).toFixed(1)+'</div></div>';
   }
-  $('#profileEditBody').innerHTML=h; $('#profileEditFoot').innerHTML=''; $('#ovProfile').querySelector('h2').textContent='Historique des performances'; openOv('ovProfile');
+  $('#profileEditBody').innerHTML=h; $('#profileEditFoot').innerHTML=''; $('#ovProfile').querySelector('h2').textContent=t('perfHistoryTitle'); openOv('ovProfile');
 }
 let recTmp={};
 function addRecord(){
   // Étape 1 : choisir la distance via Wheel Picker
-  const names=REC_DISTANCES.map(d=>d[0]).concat(['Autre']);
-  openPicker({title:'Choisis la distance',cols:[{values:names,sel:9,wide:true}],onOk:idx=>{
-    if(names[idx[0]]==='Autre'){ pickDistance('Distance personnalisée',5,km=>recordForm([(km>=1?km+' km':Math.round(km*1000)+' m'),Math.round(km*1000)])); }
+  const names=REC_DISTANCES.map(d=>d[0]).concat([t('otherDist')]);
+  openPicker({title:t('chooseDistance'),cols:[{values:names,sel:9,wide:true}],onOk:idx=>{
+    if(names[idx[0]]===t('otherDist')){ pickDistance(t('customDistance'),5,km=>recordForm([(km>=1?km+' km':Math.round(km*1000)+' m'),Math.round(km*1000)])); }
     else recordForm(REC_DISTANCES[idx[0]]);
   }});
 }
 function recordForm(d){
   recTmp={dist:d[0],meters:d[1],timeS:d[1]>=21000?5400:(d[1]>=5000?1200:300),date:todayKey(),place:'',feel:'',competition:false};
   let h='<div style="text-align:center;margin-bottom:16px"><div class="badge" style="font-size:14px;padding:8px 16px">🏁 '+d[0]+'</div></div>';
-  h+='<div class="field"><label>Chrono *</label><div class="inp pkfield set" id="rc_time" onclick="pickTime(\'Chrono '+d[0]+'\',recTmp.timeS,v=>{recTmp.timeS=v;document.getElementById(\'rc_time\').textContent=fmtTime(v)},'+(d[1]>=15000?'true':'false')+')">'+fmtTime(recTmp.timeS)+'</div></div>';
-  h+='<div class="field"><label>Date</label><input class="inp" id="rc_date" type="date" value="'+todayKey()+'"></div>';
-  h+='<div class="field"><label>Lieu (optionnel)</label><input class="inp" id="rc_place" placeholder="Lieu de la course"></div>';
-  h+='<div class="field"><label>Sensation (optionnel)</label><input class="inp" id="rc_feel" placeholder="Comment c\u2019était ?"></div>';
-  h+='<div class="row" style="margin:14px 0"><span>🏁 Compétition officielle</span><div class="toggle" id="rc_comp" onclick="recTmp.competition=!recTmp.competition;this.classList.toggle(\'on\')"></div></div>';
-  h+='<button class="btn" onclick="saveRecord()">💾 Enregistrer cette performance</button>';
-  h+='<button class="btn ghost" style="margin-top:10px" onclick="openRecords()">‹ Retour</button>';
+  h+='<div class="field"><label>'+t('chronoLab')+'</label><div class="inp pkfield set" id="rc_time" onclick="pickTime(\''+tp('chronoFor',d[0])+'\',recTmp.timeS,v=>{recTmp.timeS=v;document.getElementById(\'rc_time\').textContent=fmtTime(v)},'+(d[1]>=15000?'true':'false')+')">'+fmtTime(recTmp.timeS)+'</div></div>';
+  h+='<div class="field"><label>'+t('dateField')+'</label><input class="inp" id="rc_date" type="date" value="'+todayKey()+'"></div>';
+  h+='<div class="field"><label>'+t('placeOptional')+'</label><input class="inp" id="rc_place" placeholder="'+t('placeholderPlace')+'"></div>';
+  h+='<div class="field"><label>'+t('feelOptional')+'</label><input class="inp" id="rc_feel" placeholder="'+t('feelPlaceholder')+'"></div>';
+  h+='<div class="row" style="margin:14px 0"><span>'+t('officialComp')+'</span><div class="toggle" id="rc_comp" onclick="recTmp.competition=!recTmp.competition;this.classList.toggle(\'on\')"></div></div>';
+  h+='<button class="btn" onclick="saveRecord()">'+t('saveThisPerf')+'</button>';
+  h+='<button class="btn ghost" style="margin-top:10px" onclick="openRecords()">'+t('backBtn')+'</button>';
   $('#profileEditBody').innerHTML=h; $('#profileEditFoot').innerHTML='';
 }
 function saveRecord(){
@@ -6154,7 +6665,7 @@ function saveRecord(){
   RECORDS.push({dist:recTmp.dist,meters:recTmp.meters,time,date:$('#rc_date').value,place:$('#rc_place').value.trim(),feel:$('#rc_feel').value.trim(),competition:!!recTmp.competition});
   if(recTmp.dist==='5000 m')P.pb5k=time; if(recTmp.dist==='3000 m')P.pb3k=time; if(recTmp.dist==='1500 m')P.pb1500=time; if(recTmp.dist==='10 km')P.pb10k=time;
   P.vdot=computeVDOTfromRecords();
-  saveAll(); refreshXP({animate:true}); openRecords(); toast(recTmp.competition?'Performance ajoutée · +XP compétition ✓':'Performance ajoutée ✓'); burst();
+  saveAll(); refreshXP({animate:true}); openRecords(); toast(recTmp.competition?t('perfAddedComp'):t('perfAdded')); burst();
 }
 function delRecord(i){ const sorted=[...RECORDS].sort((a,b)=>(a.meters||0)-(b.meters||0)); const r=sorted[i]; RECORDS=RECORDS.filter(x=>x!==r); P.vdot=computeVDOTfromRecords(); saveAll(); openRecords(); }
 function computeVDOTfromRecords(){
@@ -6163,16 +6674,16 @@ function computeVDOTfromRecords(){
   return best>0?Math.round(best*10)/10:0;
 }
 function openProfileEdit(){
-  $('#ovProfile').querySelector('h2').textContent='Modifier le profil';
-  const f=(l,id,v,t)=>'<div class="field"><label>'+l+'</label><input class="inp" id="'+id+'" value="'+(v||'')+'" '+(t?'type="'+t+'"':'')+'></div>';
-  let h='<div class="field"><label>Nom d\u2019utilisateur</label><div class="uname-wrap"><span class="uname-at">@</span><input class="inp" id="pe_username" value="'+(P.username||'')+'" autocapitalize="off" autocorrect="off" spellcheck="false"></div><div class="uname-status" id="pe_username_status">Utilisé par tes amis pour te retrouver</div></div>';
-  h+=f('Prénom','pe_name',P.name)+f('Ville','pe_city',P.city)+f('Date de naissance','pe_bday',P.bday,'date')+
-    f('Taille (cm)','pe_h',P.height,'number')+f('Poids (kg)','pe_w',P.weight,'number')+
-    f('FC max','pe_hrmax',P.hrMax,'number')+f('FC repos','pe_hrrest',P.hrRest,'number')+
-    f('Km / semaine','pe_km',P.kmWeek,'number')+f('Objectif','pe_goal',P.goal)+f('Date compétition','pe_comp',P.compDate,'date')+
-    f('5000m','pe_5k',P.t5k)+f('3000m','pe_3k',P.t3k)+f('1500m','pe_1500',P.t1500)+f('10km','pe_10k',P.t10k)+f('Coach','pe_coach',P.coach);
+  $('#ovProfile').querySelector('h2').textContent=t('editProfileTitle');
+  const f=(l,id,v,ty)=>'<div class="field"><label>'+l+'</label><input class="inp" id="'+id+'" value="'+(v||'')+'" '+(ty?'type="'+ty+'"':'')+'></div>';
+  let h='<div class="field"><label>'+t('usernameLab')+'</label><div class="uname-wrap"><span class="uname-at">@</span><input class="inp" id="pe_username" value="'+(P.username||'')+'" autocapitalize="off" autocorrect="off" spellcheck="false"></div><div class="uname-status" id="pe_username_status">'+t('usernameHint')+'</div></div>';
+  h+=f(t('firstNameLab'),'pe_name',P.name)+f(t('cityLab'),'pe_city',P.city)+f(t('birthDateLab'),'pe_bday',P.bday,'date')+
+    f(t('heightCmLab'),'pe_h',P.height,'number')+f(t('weightKgLab'),'pe_w',P.weight,'number')+
+    f(t('hrMaxLab'),'pe_hrmax',P.hrMax,'number')+f(t('hrRestLab'),'pe_hrrest',P.hrRest,'number')+
+    f(t('kmWeekLab'),'pe_km',P.kmWeek,'number')+f(t('objective'),'pe_goal',P.goal)+f(t('compDateLab'),'pe_comp',P.compDate,'date')+
+    f('5000m','pe_5k',P.t5k)+f('3000m','pe_3k',P.t3k)+f('1500m','pe_1500',P.t1500)+f('10km','pe_10k',P.t10k)+f(t('coachLab'),'pe_coach',P.coach);
   $('#profileEditBody').innerHTML=h;
-  $('#profileEditFoot').innerHTML='<button class="btn" onclick="saveProfileEdit()">💾 Sauver</button>';
+  $('#profileEditFoot').innerHTML='<button class="btn" onclick="saveProfileEdit()">'+t('saveBtn')+'</button>';
   openOv('ovProfile');
   peUsernameOk=true; // on ne bloque pas si le champ n'a pas changé
   wireUsernameField('pe_username','pe_username_status',ok=>{ peUsernameOk=ok; });
