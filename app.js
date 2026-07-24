@@ -3894,6 +3894,92 @@ function liveSeries(s){
   if(bt==='DBLSEUIL') sr.note=tp('bs_dblseuil_note',5,6);
   return sr;
 }
+// Reconstruit le contenu détaillé (objectif/échauffement/corps/allures/conseils/erreurs/pourquoi)
+// d'une séance du plan dans la langue active, à partir de s.baseType + valeurs déjà figées
+// (km/pace/série/genParams) — sans re-randomiser, donc identique numériquement à la génération d'origine.
+function liveDetail(s){
+  if(!s||!s.baseType||!PLAN||!PLAN.vdot) return s?s.detail:null;
+  const bt=s.baseType, vdot=PLAN.vdot, S=spkToStr, goal=PLAN.goal;
+  const NEEDS_GENPARAMS={TEMPO:1,VMAc:1,VMAl:1,VO2:1,FARTLEK:1,LIGNES:1};
+  if(NEEDS_GENPARAMS[bt] && !s.genParams) return s.detail;
+  try{
+    const pace={ EF:paceFromPct(vdot,.70), RC:paceFromPct(vdot,.66), MAR:paceFromPct(vdot,.80),
+      TEMPO:paceFromPct(vdot,.83), SEUIL:paceFromPct(vdot,.88), SPE:predictTime(vdot, raceMeters())/(raceMeters()/1000),
+      VMAl:repPace(vdot,1000), VMAc:repPace(vdot,300), SPRINT:paceFromPct(vdot,1.18) };
+    const round1=x=>Math.round(x*10)/10;
+    const WU_MIN=17.5, CD_MIN=12.5;
+    const WU=tp('wuTemplate',S(pace.EF));
+    const CD=tp('cdTemplate',S(pace.RC));
+    const gp=s.genParams||{};
+    let d;
+    switch(bt){
+      case 'EF':
+        d={objectif:t('bs_ef_objectif'),warmup:t('bs_ef_warmup'),body:tp('bs_ef_body',s.km,S(pace.EF)),paces:tp('bs_ef_paces',S(pace.EF)),recovery:t('bs_ef_recovery'),cooldown:t('bs_ef_cooldown'),tips:[t('bs_ef_tip1'),t('bs_ef_tip2')],mistakes:[t('bs_ef_mistake1')],why:t('bs_ef_why')};
+        break;
+      case 'RECUP':
+        d={objectif:t('bs_recup_objectif'),warmup:t('bs_recup_warmup'),body:tp('bs_recup_body',s.km,S(pace.RC)),paces:t('bs_recup_paces'),recovery:'—',cooldown:t('bs_recup_cooldown'),tips:[t('bs_recup_tip1')],mistakes:[t('bs_recup_mistake1')],why:t('bs_recup_why')};
+        break;
+      case 'LONG': case 'LONG_COURT':
+        d={objectif:t('bs_long_objectif'),warmup:t('bs_long_warmup'),body:(s.phaseKey==='SPE'||s.phaseKey==='PIC')?tp('bs_long_body_progressive',s.km,S(pace.EF),S(pace.MAR)):tp('bs_long_body_steady',s.km,S(pace.EF*0.99)),paces:tp('bs_long_paces',S(pace.EF),S(pace.MAR)),recovery:t('bs_long_recovery'),cooldown:CD,tips:[t('bs_long_tip1'),t('bs_long_tip2')],mistakes:[t('bs_long_mistake1')],why:t('bs_long_why')};
+        break;
+      case 'TEMPO': {
+        const tmin=gp.tmin, mainKm=distKmFromTime(tmin*60,pace.TEMPO);
+        d={objectif:t('bs_tempo_objectif'),warmup:WU,body:tp('bs_tempo_body',tmin,S(pace.TEMPO),round1(mainKm)),paces:tp('bs_tempo_paces',S(pace.TEMPO)),recovery:t('bs_tempo_recovery'),cooldown:CD,tips:[t('bs_tempo_tip1')],mistakes:[t('bs_tempo_mistake1')],why:t('bs_tempo_why')};
+        break; }
+      case 'TEMPO_SPE': {
+        const n=s.series?.reps, dist=s.series?.dist||2000; if(!n) return s.detail;
+        d={objectif:tp('bs_temposp_objectif',goal),warmup:WU,body:tp('bs_temposp_body',repsText(n,dist,pace.SPE)),paces:tp('bs_temposp_paces',S(pace.SPE)),recovery:t('recovLabel_2minTrot'),cooldown:CD,tips:[t('bs_temposp_tip1')],mistakes:[t('bs_temposp_mistake1')],why:t('bs_temposp_why')};
+        break; }
+      case 'SEUIL': {
+        const n=s.series?.reps, dist=s.series?.dist||1000; if(!n) return s.detail;
+        d={objectif:t('bs_seuil_objectif'),warmup:WU,body:tp('bs_seuil_body',repsText(n,dist,pace.SEUIL)),paces:tp('bs_seuil_paces',S(pace.SEUIL)),recovery:t('bs_seuil_recovery'),cooldown:CD,tips:[t('bs_seuil_tip1')],mistakes:[t('bs_seuil_mistake1')],why:t('bs_seuil_why')};
+        break; }
+      case 'DBLSEUIL': {
+        const nPM=s.series?.reps||10, distPM=s.series?.dist||400;
+        d={objectif:t('bs_dblseuil_objectif'),warmup:tp('bs_dblseuil_warmup',WU),body:tp('bs_dblseuil_body',5,6,S(pace.SEUIL*1.01),repsText(nPM,distPM,pace.SEUIL)),paces:tp('bs_dblseuil_paces',S(pace.SEUIL)),recovery:t('bs_dblseuil_recovery'),cooldown:tp('bs_dblseuil_cooldown',CD),tips:[t('bs_dblseuil_tip1')],mistakes:[t('bs_dblseuil_mistake1')],why:t('bs_dblseuil_why')};
+        break; }
+      case 'VMAc': {
+        const n=s.series?.reps, dist=s.series?.dist||300; if(!n) return s.detail;
+        const vmac30m=Math.round(distKmFromTime(30,pace.VMAc)*1000);
+        d={objectif:t('bs_vmac_objectif'),warmup:tp('bs_vmac_warmup',WU),body:tp('bs_vmac_body',repsText(n,dist,pace.VMAc),gp.vmacBodyN,vmac30m,vmac30m),paces:tp('bs_vmac_paces',fmtSplit(splitSecFromPace(pace.VMAc,dist)),dist,S(pace.VMAc)),recovery:tp('bs_vmac_recovery',dist),cooldown:CD,tips:[tp('bs_vmac_tip1',fmtSplit(splitSecFromPace(pace.VMAc,dist)),dist)],mistakes:[t('bs_vmac_mistake1'),tp('bs_vmac_mistake2',dist)],why:t('bs_vmac_why')};
+        break; }
+      case 'VMAl': case 'VO2': {
+        const n=s.series?.reps, dist=s.series?.dist||1000; if(!n) return s.detail;
+        d={objectif:t('bs_vmal_objectif'),warmup:WU,body:tp('bs_vmal_body',repsText(n,dist,pace.VMAl),gp.vmalBodyN),paces:tp('bs_vmal_paces',S(pace.VMAl)),recovery:t('recovLabel_2to3minTrot'),cooldown:CD,tips:[t('bs_vmal_tip1'),t('bs_vmal_tip2')],mistakes:[t('bs_vmal_mistake1')],why:t('bs_vmal_why')};
+        break; }
+      case 'INTERVAL': {
+        const segs=[200,400,600,800,600,400,200];
+        const paceFor=dist=>repPace(vdot,dist);
+        const detailSegs=segs.map(dist=>dist+' m ('+fmtSplit(splitSecFromPace(paceFor(dist),dist))+')').join(' · ');
+        d={objectif:t('bs_interval_objectif'),warmup:WU,body:tp('bs_interval_body',detailSegs),paces:tp('bs_interval_paces',S(paceFor(200)),S(paceFor(800))),recovery:t('bs_interval_recovery'),cooldown:CD,tips:[t('bs_interval_tip1')],mistakes:[t('bs_interval_mistake1')],why:t('bs_interval_why')};
+        break; }
+      case 'SPE': case 'SPE_COURT': {
+        const n=s.series?.reps, dist=s.series?.dist||1000; if(!n) return s.detail;
+        d={objectif:tp('bs_spe_objectif',goal),warmup:WU,body:tp('bs_spe_body',repsText(n,dist,pace.SPE)),paces:tp('bs_spe_paces',S(pace.SPE)),recovery:t('recovLabel_90sTrot'),cooldown:CD,tips:[t('bs_spe_tip1')],mistakes:[t('bs_spe_mistake1')],why:t('bs_spe_why')};
+        break; }
+      case 'PROGRESSIF':
+        d={objectif:t('bs_progressif_objectif'),warmup:tp('bs_10min_warmup',S(pace.EF)),body:tp('bs_progressif_body',s.km,S(pace.EF),S(pace.MAR),S(pace.TEMPO)),paces:t('bs_progressif_paces'),recovery:t('bs_progressif_recovery'),cooldown:CD,tips:[t('bs_progressif_tip1')],mistakes:[t('bs_progressif_mistake1')],why:t('bs_progressif_why')};
+        break;
+      case 'FARTLEK':
+        d={objectif:t('bs_fartlek_objectif'),warmup:tp('bs_fartlek_warmup',S(pace.EF)),body:tp('bs_fartlek_body',gp.n),paces:tp('bs_fartlek_paces',S(pace.VMAl),S(pace.EF)),recovery:t('bs_fartlek_recovery'),cooldown:CD,tips:[t('bs_fartlek_tip1')],mistakes:[t('bs_fartlek_mistake1')],why:t('bs_fartlek_why')};
+        break;
+      case 'COTES': {
+        const n=s.series?.reps; if(!n) return s.detail;
+        d={objectif:t('bs_cotes_objectif'),warmup:WU,body:tp('bs_cotes_body',n),paces:t('bs_cotes_paces'),recovery:t('bs_cotes_recovery'),cooldown:CD,tips:[t('bs_cotes_tip1')],mistakes:[t('bs_cotes_mistake1')],why:t('bs_cotes_why')};
+        break; }
+      case 'LIGNES':
+        d={objectif:t('bs_lignes_objectif'),warmup:tp('bs_10min_warmup',S(pace.EF)),body:tp('bs_lignes_body',Math.round(s.km*0.7),gp.lignesN),paces:t('bs_lignes_paces'),recovery:t('bs_lignes_recovery'),cooldown:t('bs_lignes_cooldown'),tips:[t('bs_lignes_tip1')],mistakes:[t('bs_lignes_mistake1')],why:t('bs_lignes_why')};
+        break;
+      case 'COURSE':
+        d={objectif:tp('bs_course_objectif',(P.objTime||goal)),warmup:t('bs_course_warmup'),body:tp('bs_course_body',s.km,s.pace),paces:tp('bs_course_paces',s.pace),recovery:'—',cooldown:t('bs_course_cooldown'),tips:[t('bs_course_tip1'),t('bs_course_tip2')],mistakes:[t('bs_course_mistake1')],why:t('bs_course_why')};
+        break;
+      default:
+        d={objectif:t('bs_default_objectif'),warmup:'-',body:tp('bs_default_body',s.km),paces:S(pace.EF)+'/km',recovery:'-',cooldown:'-',tips:[],mistakes:[],why:t('bs_default_why')};
+    }
+    if(s.deload && s.km>0){ d.objectif=tp('deloadPrefixTemplate',d.objectif); }
+    return d;
+  }catch(e){ return s.detail; }
+}
 const PROFILE_TR={en:{'Plate':'Flat','Vallonnée':'Hilly','Montagne':'Mountain'},ar:{'Plate':'مستوٍ','Vallonnée':'متموّج','Montagne':'جبلي'}};
 function trProfile(p){ if(!p) return p; const l=curLang(); if(l==='fr'||!PROFILE_TR[l]) return p; return PROFILE_TR[l][p]||p; }
 const GOAL_TR={
@@ -4127,7 +4213,7 @@ function weeklyAdaptiveRegen(force){
     const built=buildSessionV2(s.baseType,{vdot,pace,wkKm,nDays:nDaysBySemaine[s.week]||4,phase:ph,rng,pick,isDeload:s.deload,goal:PLAN.goal,w:s.week,weeks:PLAN.weeks});
     const durMin=built.durMin!=null?built.durMin:(built.pace==='—'?0:Math.round(built.km*parseTime(built.pace)/60));
     s.type=built.label; s.title=built.title; s.km=built.km; s.duration=durMin; s.pace=built.pace;
-    s.rpe=built.rpe; s.series=built.series||null; s.desc=built.detail.objectif; s.detail=built.detail;
+    s.rpe=built.rpe; s.series=built.series||null; s.desc=built.detail.objectif; s.detail=built.detail; s.genParams=built.genParams||null;
   });
   PLAN.lastAdapt=tk;
   DB.save('run_plan',PLAN);
@@ -4183,7 +4269,7 @@ function generatePlan(){
       sessions.push({ id:id++, week:w, phase:ph.name, phaseKey:ph.key, color:ph.color,
         date:dateKey(d), type:built.label, baseType:type, title:built.title,
         km:built.km, duration:durMin, pace:built.pace, rpe:built.rpe, series:built.series||null,
-        desc:built.detail.objectif, detail:built.detail, deload:isDeload, done:false });
+        desc:built.detail.objectif, detail:built.detail, genParams:built.genParams||null, deload:isDeload, done:false });
     });
   }
   PLAN={ created:todayKey(), vdot, weeks, seed, sessions, goal, race:P.objRace||'5 km' };
@@ -4295,7 +4381,7 @@ function buildSessionV2(type,o){
   const S=spkToStr;
   const easyKm=Math.max(5,Math.round(wkKm/nDays*0.95));
   const vary=(a,b)=>a+Math.round(rng()*(b-a)); // variabilité contrôlée
-  let km,p,rpe,title,label,d={},durMin=null,series=null;
+  let km,p,rpe,title,label,d={},durMin=null,series=null,genParams=null;
   const WU_MIN=17.5, CD_MIN=12.5;
   const wuKm=distKmFromTime(WU_MIN*60,pace.EF), cdKm=distKmFromTime(CD_MIN*60,pace.RC);
   const round1=x=>Math.round(x*10)/10;
@@ -4320,6 +4406,7 @@ function buildSessionV2(type,o){
       const mainKm=distKmFromTime(tmin*60,pace.TEMPO);
       km=round1(wuKm+mainKm+cdKm); durMin=Math.round(WU_MIN+tmin+CD_MIN); p=S(pace.TEMPO); rpe=6; label=t('sessLabel_TEMPO'); title=t('sessTitle_TEMPO');
       d={objectif:t('bs_tempo_objectif'),warmup:WU,body:tp('bs_tempo_body',tmin,S(pace.TEMPO),round1(mainKm)),paces:tp('bs_tempo_paces',S(pace.TEMPO)),recovery:t('bs_tempo_recovery'),cooldown:CD,tips:[t('bs_tempo_tip1')],mistakes:[t('bs_tempo_mistake1')],why:t('bs_tempo_why')};
+      genParams={tmin};
       break; }
     case 'TEMPO_SPE': {
       const n=vary(2,3), dist=2000, recSecEach=120, recN=Math.max(0,n-1);
@@ -4356,7 +4443,9 @@ function buildSessionV2(type,o){
       p=S(pace.VMAc); rpe=9; label=t('sessLabel_VMAc'); title=t('sessTitle_VMAc');
       series={reps:n,dist,paceSecPerKm:pace.VMAc,recoverySec:recSecEach,recoveryLabel:t('recovLabel_1minTrot')};
       const vmac30m=Math.round(distKmFromTime(30,pace.VMAc)*1000);
-      d={objectif:t('bs_vmac_objectif'),warmup:tp('bs_vmac_warmup',WU),body:tp('bs_vmac_body',repsText(n,dist,pace.VMAc),vary(12,16),vmac30m,vmac30m),paces:tp('bs_vmac_paces',fmtSplit(splitSecFromPace(pace.VMAc,dist)),dist,S(pace.VMAc)),recovery:tp('bs_vmac_recovery',dist),cooldown:CD,tips:[tp('bs_vmac_tip1',fmtSplit(splitSecFromPace(pace.VMAc,dist)),dist)],mistakes:[t('bs_vmac_mistake1'),tp('bs_vmac_mistake2',dist)],why:t('bs_vmac_why')};
+      const vmacBodyN=vary(12,16);
+      d={objectif:t('bs_vmac_objectif'),warmup:tp('bs_vmac_warmup',WU),body:tp('bs_vmac_body',repsText(n,dist,pace.VMAc),vmacBodyN,vmac30m,vmac30m),paces:tp('bs_vmac_paces',fmtSplit(splitSecFromPace(pace.VMAc,dist)),dist,S(pace.VMAc)),recovery:tp('bs_vmac_recovery',dist),cooldown:CD,tips:[tp('bs_vmac_tip1',fmtSplit(splitSecFromPace(pace.VMAc,dist)),dist)],mistakes:[t('bs_vmac_mistake1'),tp('bs_vmac_mistake2',dist)],why:t('bs_vmac_why')};
+      genParams={vmacBodyN};
       break; }
     case 'VMAl': case 'VO2': {
       const n=vary(5,7), dist=1000, recSecEach=150, recN=Math.max(0,n-1);
@@ -4364,7 +4453,9 @@ function buildSessionV2(type,o){
       km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*splitSecFromPace(pace.VMAl,dist)/60+recN*recSecEach/60+CD_MIN);
       p=S(pace.VMAl); rpe=9; label=type==='VO2'?t('sessLabel_VO2'):t('sessLabel_VMAl'); title=type==='VO2'?t('sessTitle_VO2'):t('sessTitle_VMAl');
       series={reps:n,dist,paceSecPerKm:pace.VMAl,recoverySec:recSecEach,recoveryLabel:t('recovLabel_2to3minTrot')};
-      d={objectif:t('bs_vmal_objectif'),warmup:WU,body:tp('bs_vmal_body',repsText(n,dist,pace.VMAl),vary(4,5)),paces:tp('bs_vmal_paces',S(pace.VMAl)),recovery:t('recovLabel_2to3minTrot'),cooldown:CD,tips:[t('bs_vmal_tip1'),t('bs_vmal_tip2')],mistakes:[t('bs_vmal_mistake1')],why:t('bs_vmal_why')};
+      const vmalBodyN=vary(4,5);
+      d={objectif:t('bs_vmal_objectif'),warmup:WU,body:tp('bs_vmal_body',repsText(n,dist,pace.VMAl),vmalBodyN),paces:tp('bs_vmal_paces',S(pace.VMAl)),recovery:t('recovLabel_2to3minTrot'),cooldown:CD,tips:[t('bs_vmal_tip1'),t('bs_vmal_tip2')],mistakes:[t('bs_vmal_mistake1')],why:t('bs_vmal_why')};
+      genParams={vmalBodyN};
       break; }
     case 'INTERVAL': {
       const segs=[200,400,600,800,600,400,200];
@@ -4397,6 +4488,7 @@ function buildSessionV2(type,o){
       km=round1(distKmFromTime(15*60,pace.EF)+mainKm+cdKm); durMin=Math.round(15+n*2+CD_MIN);
       p=S(pace.TEMPO); rpe=6; label=t('sessLabel_FARTLEK'); title=t('sessTitle_FARTLEK');
       d={objectif:t('bs_fartlek_objectif'),warmup:tp('bs_fartlek_warmup',S(pace.EF)),body:tp('bs_fartlek_body',n),paces:tp('bs_fartlek_paces',S(pace.VMAl),S(pace.EF)),recovery:t('bs_fartlek_recovery'),cooldown:CD,tips:[t('bs_fartlek_tip1')],mistakes:[t('bs_fartlek_mistake1')],why:t('bs_fartlek_why')};
+      genParams={n};
       break; }
     case 'COTES': {
       const n=vary(8,12), effortSec=37.5;
@@ -4408,7 +4500,9 @@ function buildSessionV2(type,o){
       break; }
     case 'LIGNES':
       km=Math.round(easyKm*0.8); p=S(pace.EF); rpe=4; label=t('sessLabel_LIGNES'); title=t('sessTitle_LIGNES');
-      d={objectif:t('bs_lignes_objectif'),warmup:tp('bs_10min_warmup',S(pace.EF)),body:tp('bs_lignes_body',Math.round(km*0.7),vary(6,8)),paces:t('bs_lignes_paces'),recovery:t('bs_lignes_recovery'),cooldown:t('bs_lignes_cooldown'),tips:[t('bs_lignes_tip1')],mistakes:[t('bs_lignes_mistake1')],why:t('bs_lignes_why')};
+      { const lignesN=vary(6,8);
+        d={objectif:t('bs_lignes_objectif'),warmup:tp('bs_10min_warmup',S(pace.EF)),body:tp('bs_lignes_body',Math.round(km*0.7),lignesN),paces:t('bs_lignes_paces'),recovery:t('bs_lignes_recovery'),cooldown:t('bs_lignes_cooldown'),tips:[t('bs_lignes_tip1')],mistakes:[t('bs_lignes_mistake1')],why:t('bs_lignes_why')};
+        genParams={lignesN}; }
       break;
     case 'COURSE':
       const m=raceMeters(); km=Math.round(m/1000); p=S(predictTime(vdot,m)/(m/1000)); rpe=10; label=t('sessLabel_COURSE'); title=t('sessTitle_COURSE')+' — '+(trRace(P.objRace)||t('competitionDefault'));
@@ -4419,7 +4513,7 @@ function buildSessionV2(type,o){
       d={objectif:t('bs_default_objectif'),warmup:'-',body:tp('bs_default_body',km),paces:S(pace.EF)+'/km',recovery:'-',cooldown:'-',tips:[],mistakes:[],why:t('bs_default_why')};
   }
   if(isDeload && km>0){ d.objectif=tp('deloadPrefixTemplate',d.objectif); }
-  return {km,pace:p,rpe,title,label,detail:d,durMin,series};
+  return {km,pace:p,rpe,title,label,detail:d,durMin,series,genParams};
 }
 
 /* ---------- HELPERS: real stats ---------- */
@@ -5367,7 +5461,7 @@ function openRunSheet(id){
   curRunId=id;
   $('#sheetTitle').textContent='';
   const col=baseTypeColor(s.baseType);
-  const dt=s.detail;
+  const dt=liveDetail(s);
   let h='';
 
   // EN-TÊTE — badge type, titre, sous-titre semaine/objectif
