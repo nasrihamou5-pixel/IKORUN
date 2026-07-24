@@ -68,7 +68,7 @@ async function signInWithGoogle(){
   if(!window.supabaseClient) return;
   if(_googleAuthing) return; // évite les doubles-taps qui donnent l'impression que rien ne se passe
   _googleAuthing=true;
-  toast('Connexion à Google…');
+  toast(t('connectingGoogle'));
   try{
     const { error } = await window.supabaseClient.auth.signInWithOAuth({
       provider:'google',
@@ -84,26 +84,26 @@ async function signInWithGoogle(){
         queryParams:{ prompt:'select_account' }
       }
     });
-    if(error){ toast('Connexion impossible, réessaie'); console.error('signInWithGoogle error',error); _googleAuthing=false; }
+    if(error){ toast(t('googleConnectFail')); console.error('signInWithGoogle error',error); _googleAuthing=false; }
     // si pas d'erreur, la page va rediriger vers Google : pas besoin de repasser _googleAuthing à false
-  }catch(e){ toast('Connexion impossible, réessaie'); console.error('signInWithGoogle exception',e); _googleAuthing=false; }
+  }catch(e){ toast(t('googleConnectFail')); console.error('signInWithGoogle exception',e); _googleAuthing=false; }
 }
 
 function signOutUser(){
-  if(!confirm('Se déconnecter ? Tes données restent sauvegardées sur ton compte.')) return;
+  if(!confirm(t('confirmLogout'))) return;
   if(window.supabaseClient) window.supabaseClient.auth.signOut();
   else location.reload();
 }
 
 function addAnotherAccount(){
-  if(!confirm('Tu vas être déconnecté(e) pour te reconnecter avec un autre compte Google. Tes données actuelles restent sauvegardées.')) return;
+  if(!confirm(t('confirmSwitchGoogle'))) return;
   if(window.supabaseClient) window.supabaseClient.auth.signOut();
   else location.reload();
 }
 
 async function deleteAccountCompletely(){
-  if(!confirm('⚠️ Cette action va supprimer TOUTES tes données (séances, records, XP, profil...) de façon définitive, sur le cloud et sur cet appareil. Continuer ?')) return;
-  if(!confirm('Dernière confirmation : es-tu vraiment sûr(e) ? Cette action est irréversible.')) return;
+  if(!confirm(t('confirmDeleteAllData'))) return;
+  if(!confirm(t('confirmFinalIrreversible'))) return;
   try{
     if(window.supabaseClient && window.currentUserId){
       await window.supabaseClient.from('user_data').delete().eq('user_id', window.currentUserId);
@@ -168,15 +168,15 @@ async function checkUsernameLive(rawValue, statusEl, inputEl){
   const seq=++_unameSeq;
   const v=(rawValue||'').trim();
   inputEl && inputEl.classList.remove('uname-ok','uname-bad');
-  if(!v){ if(statusEl){ statusEl.textContent="3 à 20 caractères : lettres, chiffres, _"; statusEl.className='uname-status'; } return false; }
+  if(!v){ if(statusEl){ statusEl.textContent=t('usernameFormatHint'); statusEl.className='uname-status'; } return false; }
   if(!usernameFormatOk(v)){
-    if(statusEl){ statusEl.textContent='✕ 3 à 20 caractères : lettres, chiffres, _'; statusEl.className='uname-status bad'; }
+    if(statusEl){ statusEl.textContent='✕ '+t('usernameFormatHint'); statusEl.className='uname-status bad'; }
     inputEl && inputEl.classList.add('uname-bad');
     return false;
   }
-  if(statusEl){ statusEl.textContent='Vérification…'; statusEl.className='uname-status checking'; }
+  if(statusEl){ statusEl.textContent=t('checkingEllipsis'); statusEl.className='uname-status checking'; }
   if(!window.supabaseClient){
-    if(statusEl){ statusEl.textContent='✓ Disponible'; statusEl.className='uname-status ok'; }
+    if(statusEl){ statusEl.textContent='✓ '+t('available'); statusEl.className='uname-status ok'; }
     inputEl && inputEl.classList.add('uname-ok');
     return true;
   }
@@ -187,11 +187,11 @@ async function checkUsernameLive(rawValue, statusEl, inputEl){
     if(seq!==_unameSeq) return null; // réponse obsolète (retapé entretemps) : on l'ignore, on ne touche pas au résultat affiché
     if(error){ console.error('username_available error',error); if(statusEl){ statusEl.textContent=''; statusEl.className='uname-status'; } return null; }
     if(!data){
-      if(statusEl){ statusEl.textContent='✕ Déjà pris'; statusEl.className='uname-status bad'; }
+      if(statusEl){ statusEl.textContent='✕ '+t('alreadyTaken'); statusEl.className='uname-status bad'; }
       inputEl && inputEl.classList.add('uname-bad');
       return false;
     }
-    if(statusEl){ statusEl.textContent='✓ Disponible'; statusEl.className='uname-status ok'; }
+    if(statusEl){ statusEl.textContent='✓ '+t('available'); statusEl.className='uname-status ok'; }
     inputEl && inputEl.classList.add('uname-ok');
     return true;
   }catch(e){
@@ -233,12 +233,12 @@ async function applyReferralCode(code){
   if(!window.supabaseClient || !window.currentUserId || !code) return false;
   code=code.trim().toUpperCase();
   const { data:me } = await window.supabaseClient.from('public_profiles').select('referred_by').eq('user_id',window.currentUserId).maybeSingle();
-  if(me && me.referred_by){ toast('Tu as déjà un parrain'); return false; }
+  if(me && me.referred_by){ toast(t('alreadyReferred')); return false; }
   const { data:owner } = await window.supabaseClient.from('public_profiles').select('user_id').eq('referral_code',code).maybeSingle();
-  if(!owner || owner.user_id===window.currentUserId){ toast('Code invalide'); return false; }
+  if(!owner || owner.user_id===window.currentUserId){ toast(t('invalidCode')); return false; }
   const { error } = await window.supabaseClient.from('public_profiles').update({referred_by:owner.user_id}).eq('user_id',window.currentUserId);
-  if(error){ toast('Erreur, réessaie'); return false; }
-  toast('Parrainage validé ✓ Bonus après ta 1\u1d49\u02b3\u1d49 séance');
+  if(error){ toast(t('genericErrorRetry')); return false; }
+  toast(t('referralValidated'));
   return true;
 }
 // Appelé une fois qu'une séance est marquée terminée (voir hook dans finishSession / debrief)
@@ -248,9 +248,9 @@ async function grantReferralBonusIfNeeded(){
   try{
     const { data:me } = await window.supabaseClient.from('public_profiles').select('referred_by').eq('user_id',window.currentUserId).maybeSingle();
     if(me && me.referred_by){
-      addXP(50,'Bonus de parrainage 🎉'); DB.save('referral_bonus_done', true);
+      addXP(50,t('referralBonusReason')); DB.save('referral_bonus_done', true);
       window.supabaseClient.rpc('increment_referrer_xp',{ p_uid: me.referred_by, p_amount: 50 }).then(()=>{}).catch(()=>{});
-      toast('+50 XP — bonus de parrainage débloqué 🎉');
+      toast(t('referralBonusXP'));
     }
   }catch(e){}
 }
@@ -443,17 +443,17 @@ function renderFriendProfileHTML(){
   return h;
 }
 async function removeFriend(otherId){
-  if(!confirm('Retirer cet ami ?')) return;
+  if(!confirm(t('confirmRemoveFriend'))) return;
   const uid=window.currentUserId;
   await window.supabaseClient.from('friendships').delete().or('and(user_id.eq.'+uid+',friend_id.eq.'+otherId+'),and(user_id.eq.'+otherId+',friend_id.eq.'+uid+')');
   loadFriendsData();
 }
 async function submitReferralCode(){ const el=$('#applyCodeInput'); const v=el?el.value:''; if(await applyReferralCode(v)) renderFriends(); }
 async function shareReferralCode(){
-  const code=await myReferralCode(); if(!code){ toast('Connecte-toi d\u2019abord'); return; }
-  const text='Rejoins-moi sur IKORUN avec mon code '+code+' 🏃';
+  const code=await myReferralCode(); if(!code){ toast(t('connectFirst')); return; }
+  const text=tp('referralShareText',code);
   if(navigator.share){ try{ await navigator.share({text}); }catch(e){} }
-  else { navigator.clipboard&&navigator.clipboard.writeText(text); toast('Copié dans le presse-papier ✓'); }
+  else { navigator.clipboard&&navigator.clipboard.writeText(text); toast(t('copiedClipboard')); }
 }
 /* ---- Carte image partageable (badge / séance) — générée en canvas, sans dépendance externe ---- */
 function shareCardImage(title,subtitle,emoji){
@@ -752,7 +752,219 @@ const I18N={
     objForce:'Force',objMass:'Masse',objEndurance:'Endurance',objWeightLoss:'Perte poids',objMaintain:'Maintien',
     colBlue:'Bleu',colRed:'Rouge',colGreen:'Vert',colGold:'Or',colPurple:'Violet',colCyan:'Cyan',
     newTrophyUnlocked:'NOUVEAU TROPHÉE DÉBLOQUÉ',
-    markAsObtained:'✓ Marquer comme obtenu'
+    markAsObtained:'✓ Marquer comme obtenu',
+    connectingGoogle:'Connexion à Google…',googleConnectFail:'Connexion impossible, réessaie',
+    confirmLogout:'Se déconnecter ? Tes données restent sauvegardées sur ton compte.',
+    confirmSwitchGoogle:'Tu vas être déconnecté(e) pour te reconnecter avec un autre compte Google. Tes données actuelles restent sauvegardées.',
+    confirmDeleteAllData:'⚠️ Cette action va supprimer TOUTES tes données (séances, records, XP, profil...) de façon définitive, sur le cloud et sur cet appareil. Continuer ?',
+    confirmFinalIrreversible:'Dernière confirmation : es-tu vraiment sûr(e) ? Cette action est irréversible.',
+    alreadyReferred:'Tu as déjà un parrain',invalidCode:'Code invalide',genericErrorRetry:'Erreur, réessaie',
+    referralValidated:'Parrainage validé ✓ Bonus après ta 1\u1d49\u02b3\u1d49 séance',
+    referralBonusReason:'Bonus de parrainage 🎉',referralBonusXP:'+50 XP — bonus de parrainage débloqué 🎉',
+    confirmRemoveFriend:'Retirer cet ami ?',referralShareText:'Rejoins-moi sur IKORUN avec mon code {0} 🏃',
+    connectFirst:'Connecte-toi d\u2019abord',copiedClipboard:'Copié dans le presse-papier ✓',
+    usernameFormatHint:'3 à 20 caractères : lettres, chiffres, _',checkingEllipsis:'Vérification…',
+    available:'Disponible',alreadyTaken:'Déjà pris',
+    alarmDefaultTitle:'Alarme',timeUpMsg:'Le temps est écoulé !',timeUpTitle:'Temps écoulé !',
+    stopAlarm:'Arrêter l\u2019alarme',remindIn5Min:'Rappel dans 5 min',reminderCap:'Rappel',fiveMinElapsed:'5 minutes écoulées',
+    sessionInProgress:'Séance en cours',welcomeToast:'Bienvenue 👋',
+    resumeSessionConfirm:'Une séance « {0} » était en cours ({1} min). Reprendre ?',sessionColonName:'Séance : {0}',
+    accentBlue:'Bleu',accentGreen:'Vert militaire',accentBrown:'Marron boisé',accentYellow:'Jaune',accentCarbon:'Fibre de carbone',
+    colorApplied:'Couleur appliquée ✓',easyModeOn:'Mode simplifié activé ✓',easyModeOff:'Mode simplifié désactivé',
+    profileIncompleteAddTime:'Profil incomplet : ajoute un chrono dans tes records',chooseCompDate:'Choisis une date de compétition',
+    planGenerated:'Plan « {0} » généré : {1} sem, {2} séances',raceGeneric:'course',
+    followingPersoPlan:'Tu suis maintenant ce plan perso ✓',backToIkorunPlan:'Retour au plan IKORUN',
+    namePromptLabel:'Nom :',copySuffix:'(copie)',confirmDeletePlan:'Supprimer ce plan ?',
+    addAtLeastOneRepTime:'Ajoute au moins un temps de répétition',sessionAdded:'Séance ajoutée ✓',
+    myPlanColon:'Mon plan : {0}',shareNotSupported:'Partage non supporté',confirmDeleteProgram:'Supprimer ce programme ?',
+    routineTitle:'Routine',exercisesCount:'{0} exercices',exercisesCap:'Exercices',setsCap:'Séries',estDurationCap:'Durée est.',
+    setsRepsLine:'{0} séries · {1} reps',addExercise:'Ajouter un exercice',startWorkout:'Commencer l\u2019entraînement',
+    defaultProgramsNotEditable:'Les programmes par défaut ne sont pas modifiables',
+    heightCmTitle:'Taille (cm)',weightKgTitle:'Poids (kg)',heightSaved:'Taille enregistrée ✓',weightSaved:'Poids enregistré ✓',
+    deservedBreak:'Pause méritée ! ☕',backToWork:'Au travail ! 🍅',setDuration:'Règle une durée',
+    photoUpdated:'Photo mise à jour ✓',photoRemoved:'Photo supprimée',bioPromptLabel:'Ta biographie :',
+    usernameInvalid:'Pseudo invalide (3-20, lettres/chiffres/_)',usernameNotAvailable:'Ce pseudo n\u2019est pas disponible',
+    usernameJustTaken:'Ce pseudo vient d\u2019être pris, choisis-en un autre',usernameUpdated:'Pseudo mis à jour ✓',
+    profileUpdated:'Profil mis à jour ✓',localDataOnly:'Données locales uniquement',exportGenerated:'Export généré ✓',
+    confirmClearAll:'Tout effacer ? Cette action est irréversible.',confirmClearAllFinal:'Vraiment sûr ? Toutes tes données seront perdues.',
+    offlineSinceDays:'Hors ligne depuis {0} j — pense à te reconnecter',dataSynced:'Données synchronisées',
+    connectionRestored:'Connexion rétablie · synchronisation…',offlineModeAvailable:'Mode hors ligne — tout reste accessible',
+    dataImported:'Données importées ✓',invalidFile:'Fichier invalide',
+    searchExercisePlaceholder:'Rechercher un exercice...',muscleLabel:'Muscle',equipmentLabel:'Matériel',levelLabel:'Niveau',
+    exercisesWordPlural:'exercices',exerciseWordSingular:'exercice',
+    movementDemoCap:'DÉMONSTRATION DU MOUVEMENT',movementDemo:'Démonstration du mouvement',
+    musclesWorked:'Muscles sollicités',primaryLabel:'Principaux',secondaryLabel:'Secondaires',
+    stepByStepExecution:'Exécution étape par étape',breathingLabel:'Respiration',commonMistakesLabel:'Erreurs fréquentes',
+    coachTipsLabel:'Conseils du coach',safetyLabel:'Sécurité',variantsLabel:'Variantes',addToProgram:'Ajouter au programme',
+    exTabExercise:'Exercice',exTabMuscles:'Muscles',exTabInstructions:'Instructions',aboutExerciseTitle:'À propos de l\u2019exercice',
+    exWorksMainly:'Le <b style="color:var(--snow)">{0}</b> sollicite principalement {1}',
+    exWorksAlsoSecondary:', ainsi que {0} en secondaire',severalMuscleGroups:'plusieurs groupes musculaires',
+    restBetweenSetsLabel:'Repos entre les séries',volumeCap:'Volume',durationCap:'Durée',
+    targetedMusclesTitle:'Muscles ciblés',primaryMusclesLabel:'Muscles primaires',secondaryMusclesLabel:'Muscles secondaires',
+    executionLabel:'Exécution',defaultExecutionHint:'Réalise le mouvement de façon contrôlée, amplitude complète.',
+    adviceLabel:'Conseils',startLabel:'Démarrer',
+    exBreathGeneric:'Inspire pendant la phase négative (descente/étirement), expire pendant l\u2019effort (poussée/contraction).',
+    exStep1:'Position de départ : installe-toi correctement, dos gainé, regard neutre.',
+    exStep2:'Contracte les muscles cibles avant de débuter le mouvement.',
+    exStep3:'Réalise la phase concentrique de façon contrôlée, sans à-coup.',
+    exStep4:'Marque une courte pause en contraction maximale.',
+    exStep5:'Reviens lentement en contrôlant la phase excentrique (2-3 s).',
+    exMistakeGeneric1:'Utiliser une charge trop lourde au détriment de la technique.',
+    exMistakeGeneric2:'Manquer d\u2019amplitude (mouvement trop court).',
+    exMistakeGeneric3:'Prendre de l\u2019élan / tricher avec le dos.',
+    exMistakeGeneric4:'Aller trop vite et négliger la phase excentrique.',
+    exTipGeneric1:'Privilégie la connexion muscle-esprit : sens le muscle travailler.',
+    exTipGeneric2:'Reste sur 2-3 RIR (répétitions en réserve) pour progresser sainement.',
+    exTipGeneric3:'Garde une exécution propre sur toutes les répétitions.',
+    exSafety1:'Échauffe-toi avec des séries légères avant les séries lourdes.',
+    exSafety2:'Garde le dos neutre, ne bloque jamais complètement les articulations.',
+    exSafety3:'Arrête immédiatement en cas de douleur articulaire vive.',
+    wuTemplate:'15-20 min footing en {0}/km + 4-5 lignes droites progressives + gammes (montées de genoux, talons-fesses, foulées bondissantes).',
+    cdTemplate:'10-15 min footing très lent en {0}/km + étirements doux.',
+    recovLabel_2minTrot:'2 min trot',recovLabel_1minTrot:'1 min trot',recovLabel_30sTrot:'30 s trot',recovLabel_2to3minTrot:'2-3 min trot',recovLabel_90sTrot:'90 s trot',
+    repsTextTemplate:'{0} × {1} m à {2} ({3}/km)',seriesPyramid:'Pyramide {0}→{1} m',seriesRepsDist:'{0} × {1} m à {2}',seriesRepsOnly:'{0} × efforts',
+    deloadPrefixTemplate:'🟢 SEMAINE ALLÉGÉE — {0}',
+    bs_ef_objectif:'Construire ta base aérobie — le socle de toute progression (80% du volume des élites).',
+    bs_ef_warmup:'Mise en route progressive sur 10 min.',bs_ef_body:'{0} km à allure facile ({1}/km). Conversation possible en permanence.',
+    bs_ef_paces:'Zone 2, ~70% FCmax — {0}/km.',bs_ef_recovery:'Effort continu.',bs_ef_cooldown:'Quelques étirements des mollets et ischios.',
+    bs_ef_tip1:'Respire par le ventre.',bs_ef_tip2:'La lenteur est volontaire et productive.',bs_ef_mistake1:'Courir trop vite « par habitude ».',
+    bs_ef_why:'Développe le cœur, les capillaires et les mitochondries sans fatigue ni risque.',
+    bs_recup_objectif:'Accélérer la récupération entre deux séances dures.',bs_recup_warmup:'Aucun.',
+    bs_recup_body:'{0} km très souple à {1}/km.',bs_recup_paces:'Zone 1 — très lent.',bs_recup_cooldown:'Automassage / mobilité.',
+    bs_recup_tip1:'Si très fatigué, remplace par 25 min de marche.',bs_recup_mistake1:'Accélérer : tu sabotes la récup.',
+    bs_recup_why:'La circulation sanguine évacue les déchets et relance l\u2019adaptation.',
+    bs_long_objectif:'Développer l\u2019endurance, l\u2019économie de course et le mental.',bs_long_warmup:'Départ progressif 10 min.',
+    bs_long_body_progressive:'{0} km progressifs : 1ère moitié en {1}/km, 2nde moitié en accélérant jusqu\u2019à {2}/km.',
+    bs_long_body_steady:'{0} km à allure endurance stable ({1}/km).',bs_long_paces:'EF {0}/km → allure marathon {1}/km en fin.',
+    bs_long_recovery:'Continu, ravitaille si > 1h15.',bs_long_tip1:'Mange bien la veille.',bs_long_tip2:'Emporte eau + gel si > 1h30.',
+    bs_long_mistake1:'Partir trop vite et marcher à la fin.',bs_long_why:'Augmente les réserves de glycogène et la capacité à utiliser les graisses.',
+    bs_tempo_objectif:'Améliorer l\u2019efficacité et l\u2019endurance à allure soutenue.',
+    bs_tempo_body:'{0} min en continu à {1}/km (« confortablement difficile »), soit environ {2} km.',bs_tempo_paces:'~83% VMA — {0}/km.',
+    bs_tempo_recovery:'Bloc continu.',bs_tempo_tip1:'Tu dois pouvoir dire 2-3 mots, pas une phrase.',bs_tempo_mistake1:'Partir trop vite et exploser.',
+    bs_tempo_why:'Repousse le seuil d\u2019accumulation du lactate.',
+    bs_temposp_objectif:'Te familiariser avec l\u2019allure de ta course objectif ({0}).',bs_temposp_body:'{0}, récup 2 min trot entre blocs.',
+    bs_temposp_paces:'Allure course : {0}/km.',bs_temposp_tip1:'Mémorise les sensations de cette allure.',
+    bs_temposp_mistake1:'Aller plus vite que l\u2019allure cible.',bs_temposp_why:'L\u2019allure spécifique doit devenir automatique le jour J.',
+    bs_seuil_objectif:'Repousser le seuil lactique — facteur n°1 de performance.',bs_seuil_body:'{0}, récup 1 min trot.',
+    bs_seuil_paces:'~88% VMA — {0}/km.',bs_seuil_recovery:'1 min trot entre chaque.',bs_seuil_tip1:'Toutes les reps à la même allure.',
+    bs_seuil_mistake1:'Partir trop fort sur la 1ère.',bs_seuil_why:'Le seuil est l\u2019allure tenable ~1h ; l\u2019élever rend tout plus facile.',
+    bs_dblseuil_objectif:'Maximiser le volume au seuil sans fatigue excessive (clé norvégienne).',
+    bs_dblseuil_warmup:'{0} (×2 : une fois le matin, une fois le soir)',
+    bs_dblseuil_body:'Matin : {0} × {1} min à {2}/km (récup 1 min). Soir : {3} (récup 30 s). Reste sous-maximal.',
+    bs_dblseuil_paces:'Seuil contrôlé {0}/km — lactate ~2-4 mmol.',bs_dblseuil_recovery:'Récup courte, intensité maîtrisée.',
+    bs_dblseuil_cooldown:'{0} (après chaque séance)',bs_dblseuil_tip1:'Ne jamais finir épuisé : tu dois pouvoir refaire la séance.',
+    bs_dblseuil_mistake1:'Transformer le seuil en VMA.',
+    bs_dblseuil_why:'Double dose de stimulus seuil pour une fatigue minimale — signature des Ingebrigtsen.',
+    bs_dblseuil_note:'Séance du soir (matin = {0} × {1} min)',
+    bs_vmac_objectif:'Développer la vVO2max et la vitesse de pointe.',bs_vmac_warmup:'{0} Échauffement OBLIGATOIRE.',
+    bs_vmac_body:'{0}, récup 1 min trot. (ou variante courte : {1} × ~{2} m vif / {3} m trot, même intensité).',
+    bs_vmac_paces:'~108-110% VMA — vise {0} sur chaque {1} m (et non {2}, qui est juste l\u2019allure ramenée au km).',
+    bs_vmac_recovery:'1 min trot entre les {0} m.',bs_vmac_tip1:'Même temps de passage sur toutes les reps : {0} au {1} m.',
+    bs_vmac_mistake1:'Négliger l\u2019échauffement → blessure.',
+    bs_vmac_mistake2:'Confondre l\u2019allure /km affichée avec le temps réel à réaliser sur {0} m.',
+    bs_vmac_why:'Stimule le VO₂max et l\u2019économie neuromusculaire.',
+    bs_vmal_objectif:'Élever le VO₂max — ta cylindrée maximale.',bs_vmal_body:'{0}, récup 2-3 min trot. (ou {1} × 1200 m).',
+    bs_vmal_paces:'~95-98% VMA — {0}/km.',bs_vmal_tip1:'Régularité avant tout.',bs_vmal_tip2:'Arrête si tu ne tiens plus l\u2019allure.',
+    bs_vmal_mistake1:'Récup trop courte.',bs_vmal_why:'Le temps passé à ~90-100% VO₂max augmente ta puissance aérobie maximale.',
+    bs_interval_objectif:'Travail mixte vitesse-endurance.',bs_interval_body:'Pyramide : {0}, récup jog = durée de l\u2019effort entre chaque segment.',
+    bs_interval_paces:'De {0}/km (200 m) à {1}/km (800 m) — l\u2019allure ralentit progressivement avec la distance.',
+    bs_interval_recovery:'Récup active égale à l\u2019effort.',
+    bs_interval_tip1:'Gère l\u2019allure selon la distance : plus la rép est courte, plus tu vas vite en valeur absolue.',
+    bs_interval_mistake1:'Tout faire à la même vitesse.',bs_interval_why:'Combine plusieurs filières énergétiques.',
+    bs_interval_recoveryLabel:'jog = durée de l\u2019effort',
+    bs_spe_objectif:'Ancrer l\u2019allure exacte de ta course ({0}).',bs_spe_body:'{0}, récup 90 s.',bs_spe_paces:'Allure objectif : {0}/km.',
+    bs_spe_tip1:'Cette allure doit devenir un réflexe.',bs_spe_mistake1:'Aller plus vite par excès de confiance.',
+    bs_spe_why:'La spécificité prime à l\u2019approche de la course.',
+    bs_progressif_objectif:'Apprendre à accélérer sur la fatigue.',bs_10min_warmup:'10 min {0}/km.',
+    bs_progressif_body:'{0} km en 3 paliers : {1} → {2} → {3}/km.',bs_progressif_paces:'EF → tempo.',bs_progressif_recovery:'Continu.',
+    bs_progressif_tip1:'Chaque palier un peu plus vite.',bs_progressif_mistake1:'Partir trop vite.',
+    bs_progressif_why:'Renforce le mental et le négatif split.',
+    bs_fartlek_objectif:'Travail au ressenti, ludique et libre.',bs_fartlek_warmup:'15 min {0}/km.',
+    bs_fartlek_body:'{0} × (1 min vite / 1 min lent) au ressenti, dans la nature.',bs_fartlek_paces:'Vite ≈ {0}/km, lent ≈ {1}/km.',
+    bs_fartlek_recovery:'Récup active libre.',bs_fartlek_tip1:'Joue avec le terrain.',bs_fartlek_mistake1:'Trop structurer : laisse-toi aller.',
+    bs_fartlek_why:'Développe le VO₂max en s\u2019amusant et casse la routine.',
+    bs_cotes_objectif:'Développer puissance, force et économie de course.',
+    bs_cotes_body:'{0} × 30-45 s en côte (4-6%) à effort soutenu, récup en descente trot.',bs_cotes_paces:'Effort à ~90%.',
+    bs_cotes_recovery:'Descente en récup.',bs_cotes_tip1:'Foulée courte et dynamique, regarde devant.',
+    bs_cotes_mistake1:'Descendre trop vite (impact).',bs_cotes_why:'La côte = musculation spécifique sans impact traumatisant.',
+    bs_cotes_recoveryLabel:'descente trot',bs_cotes_note:'30-45 s d\u2019effort en côte par répétition',
+    bs_lignes_objectif:'Entretenir la vitesse et la fraîcheur (idéal taper).',
+    bs_lignes_body:'{0} km EF + {1} × 80-100 m en accélération progressive (sans forcer), récup marche.',
+    bs_lignes_paces:'EF + accélérations relâchées.',bs_lignes_recovery:'Marche/trot entre lignes.',bs_lignes_cooldown:'Étirements.',
+    bs_lignes_tip1:'Reste relâché, ne sprinte pas.',bs_lignes_mistake1:'Forcer sur les lignes en période d\u2019affûtage.',
+    bs_lignes_why:'Garde le système nerveux affûté sans fatigue.',
+    bs_course_objectif:'Réaliser ta meilleure performance — objectif : {0} !',
+    bs_course_warmup:'25-30 min : footing progressif + lignes droites + 3 accélérations allure course.',
+    bs_course_body:'{0} km à {1}/km. Départ contrôlé, milieu solide, final tout donné.',bs_course_paces:'Allure objectif : {0}/km.',
+    bs_course_cooldown:'15 min footing dès l\u2019arrivée + étirements.',bs_course_tip1:'Ne pars pas trop vite.',
+    bs_course_tip2:'Accroche un coureur de ton niveau.',bs_course_mistake1:'Mal dormir / mal manger la veille.',
+    bs_course_why:'L\u2019aboutissement de toute ta préparation. Fais-toi confiance !',
+    bs_default_objectif:'Endurance.',bs_default_body:'{0} km facile.',bs_default_why:'Base aérobie.',
+    avgPerKmLabel:'/km moy.',cooldownLabel:'Retour au calme',detailedPacesLabel:'Allures détaillées',equivalentPaceLabel:'Allure équivalente',
+    markCompleted:'Marquer terminée',mistakesToAvoidLabel:'Erreurs à éviter',objectiveCap:'OBJECTIF',objectiveWord:'Objectif',
+    paceWarnMsg:'Ne dépasse pas l\u2019allure indiquée sur les premières répétitions — mieux vaut finir fort que partir trop vite.',
+    pacesLabel:'Allures',recoveryColon:'Récup :',recoveryLabel:'Récupération',repetitionsWord:'répétitions',
+    seriesPyramidTitle:'Séries — pyramide',sessionBodyLabel:'Corps de séance',sessionCompleted:'Séance terminée',
+    targetPaceLabel:'Allure cible',targetSplitLabel:'Temps de passage cible',warmupLabel:'Échauffement',
+    weekLabelWithNum:'Semaine',whySessionLabel:'Pourquoi cette séance ?',zone2FCmaxLine:'Zone 2 · 70% FCmax · {0}/km',
+    analyzeSessionBtn:'Analyser ma séance',autoLightenedFlag:'Séance allégée automatiquement (raison : {0} le {1}).',
+    avgPaceKmLabel:'Allure moyenne /km',coachAnalysisTitle:'Analyse du Coach',
+    coach_adj_continue:'Continue comme prévu, ton plan est bien calibré.',
+    coach_adj_increaseVolume:'Tu es en forme : on pourra augmenter légèrement le volume la semaine prochaine.',
+    coach_adj_lighten48h:'Allège la prochaine séance dure de 48h pour bien récupérer.',
+    coach_adj_rest:'Prochaine séance : remplace-la par du repos ou un footing très léger.',
+    coach_err_fatigue:'Niveau de fatigue élevé : attention au surentraînement.',
+    coach_err_harderThanPlanned:'Ta séance a été bien plus dure que prévue (RPE {0} vs {1} attendu). Tu es peut-être parti trop vite ou tu es fatigué.',
+    coach_err_pain:'Douleurs {0} : ne les ignore pas. Une douleur articulaire qui persiste = repos.',
+    coach_err_sleep:'Sommeil insuffisant : tes performances et ta récup vont en souffrir.',
+    coach_err_tooEasy:'Séance trop facile (RPE {0}) : tu peux probablement pousser un peu plus la prochaine fois.',
+    coach_pos_completed:'Tu as terminé ta séance : la régularité est ta plus grande force. 💪',
+    coach_pos_feel:'Excellentes sensations — ton corps répond bien à l\u2019entraînement.',
+    coach_pos_nopain:'Aucune douleur signalée : ta technique et ta charge sont bien gérées.',
+    coach_pos_nutrition:'Alimentation au top, le carburant est là.',
+    coach_pos_sleep:'Bon sommeil : c\u2019est 50% de ta récupération, continue.',
+    coach_tip_heat:'Par forte chaleur, cours tôt le matin et hydrate-toi davantage.',
+    coach_tip_hydrate:'Bois au moins 0,5 L d\u2019eau dans l\u2019heure qui suit.',
+    coach_tip_nutrition:'Mange des glucides + protéines dans les 30 min après l\u2019effort.',
+    coach_tip_sleep:'Vise 8h de sommeil cette nuit, écran coupé 1h avant.',
+    constructiveCriticismTitle:'Critiques constructives',dayNutritionLabel:'Alimentation du jour',
+    debriefIntro:'Réponds honnêtement : le moteur IKORUN va analyser ta séance.',
+    distanceKmLabel:'Distance (km)',distanceKmOptionalLabel:'Distance (km, optionnel)',
+    durationMinLabel:'Durée (min)',durationMinOptionalLabel:'Durée (min, optionnel)',
+    elevationGainLabel:'Dénivelé D+ (m, optionnel)',fatigueLabel:'Fatigue',freeCommentLabel:'Commentaire libre',
+    howDidYouFeelPlaceholder:'Comment t\u2019es-tu senti ?',ikorunAnalysisTitle:'Analyse IKORUN',
+    legDayCarryoverFlag:'Ta séance jambes a déjà sollicité tes muscles — reste souple sur l\u2019explosivité aujourd\u2019hui.',
+    load_goodAssimilation:'Bonne assimilation (répétitions respectées, RPE maîtrisé) → volume et intensité légèrement augmentés.',
+    load_high:'Charge élevée détectée (séances ratées, RPE au-dessus du prévu ou fatigue) → volume réduit d\u2019environ 12% cette semaine.',
+    load_stable:'Charge stable : nouvelles variantes de séances, volume inchangé.',
+    missedReasonPrompt:'Pourquoi cette séance n\u2019a-t-elle pas été réalisée ?',missedReplacementPrompt:'As-tu finalement fait autre chose ?',
+    missedSessionTitle:'Séance manquée',nightSleepLabel:'Sommeil de la nuit',
+    note_cardioAlreadyCounted:'charge cardio déjà comptabilisée, plan inchangé',
+    note_explosiveCaution:'vigilance sur ta prochaine séance explosive',note_nextHardLightened:'prochaine séance dure allégée',
+    notedCoachBtn:'C\u2019est noté, Coach ! 💪',notesOptionalLabel:'Notes (optionnel)',paceKmLabel:'Allure /km',painLabel:'Douleurs',
+    planUpdatedWeekReason:'Plan mis à jour pour la semaine — {0}',positivePointsTitle:'Points positifs',
+    recentMissesReducedMsg:'3 séances ratées récemment : volume des prochaines semaines réduit de 15%',
+    repByRepSummary:'Bilan par répétition — {0} × {1} m',
+    repLegendLine:'⏱ = saisir le temps réel · ✓ = "j\u2019ai respecté l\u2019allure" (remplit automatiquement avec le temps cible)',
+    repNumDist:'Rép. {0} · {1} m',replacementMuscuTitle:'Remplacement — {0}',replacementRunTitle:'Course de remplacement',
+    respectedCount:'{0}/{1} respectées',rpeFeltLabel:'RPE — difficulté ressentie :',sensationsLabel:'Sensations',
+    sessionNotedToast:'Séance notée',sessionTypeLabel:'Type de séance',targetColon:'Cible {0}',
+    upcomingAdjustmentsTitle:'Ajustements à venir',weatherLabel:'Météo',
+    addAsGoalLabel:'Ajouter comme objectif',advancedLabel:'Avancé',calculateLabel:'Calculer',copiedShortToast:'Copié ✓',
+    copyLabel:'Copier',customDistanceKmLabel:'Distance custom (km)',distanceLabel:'Distance',
+    goalAddedReason:'objectif ajouté',goalAddedToast:'Objectif ajouté ✓',
+    ikorunDistInTime:'IKORUN — {0}km en {1}',kmSplitsLabel:'Splits km',myIkorunPrediction:'Ma prédiction IKORUN : {0}km en {1}',
+    negativeSplitLabel:'Negative split',paceCalculatorTitle:'Calculateur d\u2019allure',paceMinSecKmLabel:'Allure (min : sec /km)',
+    penaltySecKmLabel:'Pénalité (sec/km)',predictedTimeLabel:'Temps prédit',resetShortLabel:'Réinit.',
+    resultSavedToast:'Résultat enregistré ✓',resultsLabel:'Résultats',runCalcFirstToast:'Lance un calcul d\u2019abord',
+    sleepBorderline:'Limite — vise plus',sleepCyclesTip:'Un cycle dure ~90 min. Vise un réveil en fin de cycle : 6h, 7h30 ou 9h de sommeil. Couche-toi à heure régulière pour optimiser la récupération.',
+    sleepCyclesTitle:'Cycles de sommeil',sleepHoursPerNightLabel:'Heures de sommeil / nuit',
+    sleepInsufficient:'Insuffisant — récupération compromise',sleepOptimal:'Optimal pour un athlète ✓',sleepPlenty:'Beaucoup — écoute ton corps',
+    speedLabel:'Vitesse',timeHMSLabel:'Temps (h : mm : ss)',
+    configurePlanTitle:'Configurer mon plan',courseProfileLabel:'Profil du parcours',generateMyPlanBtn:'Générer mon plan',
+    maxKmWeekLabel:'Km/sem maxi (pic)',minKmWeekLabel:'Km/sem mini',preferredSessionsLabel:'Séances préférées (le coach les privilégiera)',
+    preparedRaceLabel:'Course préparée',raceDateLabel:'Date de la course',targetTimeOptionalLabel:'Chrono visé (optionnel)',
+    trainingDaysLabel:'Jours d\u2019entraînement',yourNextRaceDefault:'Ta prochaine course'
   },
   en:{
     nav_home:'Home',nav_sport:'Sport',nav_stats:'Stats',nav_outils:'Tools',nav_profil:'Profile',
@@ -966,7 +1178,219 @@ const I18N={
     objForce:'Strength',objMass:'Mass',objEndurance:'Endurance',objWeightLoss:'Weight loss',objMaintain:'Maintenance',
     colBlue:'Blue',colRed:'Red',colGreen:'Green',colGold:'Gold',colPurple:'Purple',colCyan:'Cyan',
     newTrophyUnlocked:'NEW TROPHY UNLOCKED',
-    markAsObtained:'✓ Mark as earned'
+    markAsObtained:'✓ Mark as earned',
+    connectingGoogle:'Connecting to Google…',googleConnectFail:'Connection failed, try again',
+    confirmLogout:'Log out? Your data stays saved on your account.',
+    confirmSwitchGoogle:'You\u2019ll be logged out so you can sign in with another Google account. Your current data stays saved.',
+    confirmDeleteAllData:'⚠️ This will permanently delete ALL your data (sessions, records, XP, profile...) from the cloud and this device. Continue?',
+    confirmFinalIrreversible:'Final confirmation: are you really sure? This action is irreversible.',
+    alreadyReferred:'You already have a referrer',invalidCode:'Invalid code',genericErrorRetry:'Error, try again',
+    referralValidated:'Referral confirmed ✓ Bonus after your 1st session',
+    referralBonusReason:'Referral bonus 🎉',referralBonusXP:'+50 XP — referral bonus unlocked 🎉',
+    confirmRemoveFriend:'Remove this friend?',referralShareText:'Join me on IKORUN with my code {0} 🏃',
+    connectFirst:'Sign in first',copiedClipboard:'Copied to clipboard ✓',
+    usernameFormatHint:'3 to 20 characters: letters, numbers, _',checkingEllipsis:'Checking…',
+    available:'Available',alreadyTaken:'Already taken',
+    alarmDefaultTitle:'Alarm',timeUpMsg:'Time\u2019s up!',timeUpTitle:'Time\u2019s up!',
+    stopAlarm:'Stop alarm',remindIn5Min:'Remind in 5 min',reminderCap:'Reminder',fiveMinElapsed:'5 minutes elapsed',
+    sessionInProgress:'Session in progress',welcomeToast:'Welcome 👋',
+    resumeSessionConfirm:'A "{0}" session was in progress ({1} min). Resume?',sessionColonName:'Session: {0}',
+    accentBlue:'Blue',accentGreen:'Military green',accentBrown:'Woodland brown',accentYellow:'Yellow',accentCarbon:'Carbon fiber',
+    colorApplied:'Color applied ✓',easyModeOn:'Simplified mode enabled ✓',easyModeOff:'Simplified mode disabled',
+    profileIncompleteAddTime:'Incomplete profile: add a time in your records',chooseCompDate:'Choose a race date',
+    planGenerated:'"{0}" plan generated: {1} wk, {2} sessions',raceGeneric:'race',
+    followingPersoPlan:'You\u2019re now following this custom plan ✓',backToIkorunPlan:'Back to IKORUN plan',
+    namePromptLabel:'Name:',copySuffix:'(copy)',confirmDeletePlan:'Delete this plan?',
+    addAtLeastOneRepTime:'Add at least one rep time',sessionAdded:'Session added ✓',
+    myPlanColon:'My plan: {0}',shareNotSupported:'Sharing not supported',confirmDeleteProgram:'Delete this program?',
+    routineTitle:'Routine',exercisesCount:'{0} exercises',exercisesCap:'Exercises',setsCap:'Sets',estDurationCap:'Est. duration',
+    setsRepsLine:'{0} sets · {1} reps',addExercise:'Add an exercise',startWorkout:'Start workout',
+    defaultProgramsNotEditable:'Default programs can\u2019t be edited',
+    heightCmTitle:'Height (cm)',weightKgTitle:'Weight (kg)',heightSaved:'Height saved ✓',weightSaved:'Weight saved ✓',
+    deservedBreak:'Well-earned break! ☕',backToWork:'Back to work! 🍅',setDuration:'Set a duration',
+    photoUpdated:'Photo updated ✓',photoRemoved:'Photo removed',bioPromptLabel:'Your bio:',
+    usernameInvalid:'Invalid username (3-20, letters/numbers/_)',usernameNotAvailable:'This username isn\u2019t available',
+    usernameJustTaken:'This username was just taken, pick another one',usernameUpdated:'Username updated ✓',
+    profileUpdated:'Profile updated ✓',localDataOnly:'Local data only',exportGenerated:'Export generated ✓',
+    confirmClearAll:'Clear everything? This action is irreversible.',confirmClearAllFinal:'Really sure? All your data will be lost.',
+    offlineSinceDays:'Offline for {0} days — remember to reconnect',dataSynced:'Data synced',
+    connectionRestored:'Connection restored · syncing…',offlineModeAvailable:'Offline mode — everything stays accessible',
+    dataImported:'Data imported ✓',invalidFile:'Invalid file',
+    searchExercisePlaceholder:'Search an exercise...',muscleLabel:'Muscle',equipmentLabel:'Equipment',levelLabel:'Level',
+    exercisesWordPlural:'exercises',exerciseWordSingular:'exercise',
+    movementDemoCap:'MOVEMENT DEMONSTRATION',movementDemo:'Movement demonstration',
+    musclesWorked:'Muscles worked',primaryLabel:'Primary',secondaryLabel:'Secondary',
+    stepByStepExecution:'Step-by-step execution',breathingLabel:'Breathing',commonMistakesLabel:'Common mistakes',
+    coachTipsLabel:'Coach\u2019s tips',safetyLabel:'Safety',variantsLabel:'Variants',addToProgram:'Add to program',
+    exTabExercise:'Exercise',exTabMuscles:'Muscles',exTabInstructions:'Instructions',aboutExerciseTitle:'About this exercise',
+    exWorksMainly:'The <b style="color:var(--snow)">{0}</b> mainly works {1}',
+    exWorksAlsoSecondary:', as well as {0} as secondary muscles',severalMuscleGroups:'several muscle groups',
+    restBetweenSetsLabel:'Rest between sets',volumeCap:'Volume',durationCap:'Duration',
+    targetedMusclesTitle:'Targeted muscles',primaryMusclesLabel:'Primary muscles',secondaryMusclesLabel:'Secondary muscles',
+    executionLabel:'Execution',defaultExecutionHint:'Perform the movement in a controlled way, with a full range of motion.',
+    adviceLabel:'Tips',startLabel:'Start',
+    exBreathGeneric:'Inhale during the negative phase (lowering/stretch), exhale during the effort (push/contraction).',
+    exStep1:'Starting position: set up correctly, brace your core, keep a neutral gaze.',
+    exStep2:'Contract the target muscles before starting the movement.',
+    exStep3:'Perform the concentric phase in a controlled way, without jerking.',
+    exStep4:'Hold a brief pause at maximum contraction.',
+    exStep5:'Return slowly, controlling the eccentric phase (2-3 s).',
+    exMistakeGeneric1:'Using too much weight at the expense of technique.',
+    exMistakeGeneric2:'Not using a full range of motion (movement too short).',
+    exMistakeGeneric3:'Using momentum / cheating with your back.',
+    exMistakeGeneric4:'Going too fast and neglecting the eccentric phase.',
+    exTipGeneric1:'Prioritize the mind-muscle connection: feel the muscle working.',
+    exTipGeneric2:'Stay at 2-3 RIR (reps in reserve) to progress safely.',
+    exTipGeneric3:'Keep clean form on every rep.',
+    exSafety1:'Warm up with light sets before your heavy sets.',
+    exSafety2:'Keep your back neutral, never fully lock out your joints.',
+    exSafety3:'Stop immediately if you feel sharp joint pain.',
+    wuTemplate:'15-20 min easy jogging at {0}/km + 4-5 progressive strides + drills (high knees, heel flicks, bounding).',
+    cdTemplate:'10-15 min very easy jogging at {0}/km + gentle stretching.',
+    recovLabel_2minTrot:'2 min jog',recovLabel_1minTrot:'1 min jog',recovLabel_30sTrot:'30 s jog',recovLabel_2to3minTrot:'2-3 min jog',recovLabel_90sTrot:'90 s jog',
+    repsTextTemplate:'{0} × {1} m at {2} ({3}/km)',seriesPyramid:'Pyramid {0}→{1} m',seriesRepsDist:'{0} × {1} m at {2}',seriesRepsOnly:'{0} × efforts',
+    deloadPrefixTemplate:'🟢 DELOAD WEEK — {0}',
+    bs_ef_objectif:'Build your aerobic base — the foundation of all progress (80% of elite volume).',
+    bs_ef_warmup:'Progressive warm-up over 10 min.',bs_ef_body:'{0} km at easy pace ({1}/km). You should be able to hold a conversation throughout.',
+    bs_ef_paces:'Zone 2, ~70% max HR — {0}/km.',bs_ef_recovery:'Continuous effort.',bs_ef_cooldown:'A few calf and hamstring stretches.',
+    bs_ef_tip1:'Breathe from your belly.',bs_ef_tip2:'The slow pace is intentional and productive.',bs_ef_mistake1:'Running too fast "out of habit".',
+    bs_ef_why:'Develops the heart, capillaries and mitochondria without fatigue or risk.',
+    bs_recup_objectif:'Speed up recovery between two hard sessions.',bs_recup_warmup:'None.',
+    bs_recup_body:'{0} km very easy at {1}/km.',bs_recup_paces:'Zone 1 — very slow.',bs_recup_cooldown:'Self-massage / mobility work.',
+    bs_recup_tip1:'If very tired, swap for a 25 min walk.',bs_recup_mistake1:'Speeding up: you sabotage the recovery.',
+    bs_recup_why:'Blood flow clears waste products and kickstarts adaptation.',
+    bs_long_objectif:'Build endurance, running economy and mental toughness.',bs_long_warmup:'Progressive start over 10 min.',
+    bs_long_body_progressive:'{0} progressive km: 1st half at {1}/km, 2nd half accelerating up to {2}/km.',
+    bs_long_body_steady:'{0} km at a steady endurance pace ({1}/km).',bs_long_paces:'Easy {0}/km → marathon pace {1}/km at the end.',
+    bs_long_recovery:'Continuous, fuel up if over 1h15.',bs_long_tip1:'Eat well the night before.',bs_long_tip2:'Bring water + a gel if over 1h30.',
+    bs_long_mistake1:'Starting too fast and walking at the end.',bs_long_why:'Increases glycogen stores and the ability to use fat as fuel.',
+    bs_tempo_objectif:'Improve efficiency and endurance at a sustained pace.',
+    bs_tempo_body:'{0} min continuous at {1}/km ("comfortably hard"), about {2} km.',bs_tempo_paces:'~83% of max aerobic speed — {0}/km.',
+    bs_tempo_recovery:'Continuous block.',bs_tempo_tip1:'You should be able to say 2-3 words, not a full sentence.',bs_tempo_mistake1:'Starting too fast and blowing up.',
+    bs_tempo_why:'Pushes back the lactate accumulation threshold.',
+    bs_temposp_objectif:'Get familiar with your target race pace ({0}).',bs_temposp_body:'{0}, 2 min jog recovery between blocks.',
+    bs_temposp_paces:'Race pace: {0}/km.',bs_temposp_tip1:'Memorize the feel of this pace.',
+    bs_temposp_mistake1:'Going faster than the target pace.',bs_temposp_why:'The race pace must become automatic on race day.',
+    bs_seuil_objectif:'Push back the lactate threshold — the #1 performance factor.',bs_seuil_body:'{0}, 1 min jog recovery.',
+    bs_seuil_paces:'~88% of max aerobic speed — {0}/km.',bs_seuil_recovery:'1 min jog between each.',bs_seuil_tip1:'All reps at the same pace.',
+    bs_seuil_mistake1:'Starting too hard on the 1st rep.',bs_seuil_why:'The threshold is the pace you can hold for ~1h; raising it makes everything else easier.',
+    bs_dblseuil_objectif:'Maximize threshold volume without excessive fatigue (the Norwegian key).',
+    bs_dblseuil_warmup:'{0} (×2: once in the morning, once in the evening)',
+    bs_dblseuil_body:'Morning: {0} × {1} min at {2}/km (1 min recovery). Evening: {3} (30 s recovery). Stay sub-maximal.',
+    bs_dblseuil_paces:'Controlled threshold {0}/km — lactate ~2-4 mmol.',bs_dblseuil_recovery:'Short recovery, controlled intensity.',
+    bs_dblseuil_cooldown:'{0} (after each session)',bs_dblseuil_tip1:'Never finish exhausted: you should be able to repeat the session.',
+    bs_dblseuil_mistake1:'Turning the threshold session into a VO2max session.',
+    bs_dblseuil_why:'A double dose of threshold stimulus for minimal fatigue — the Ingebrigtsen signature.',
+    bs_dblseuil_note:'Evening session (morning = {0} × {1} min)',
+    bs_vmac_objectif:'Develop vVO2max and top-end speed.',bs_vmac_warmup:'{0} Warm-up is MANDATORY.',
+    bs_vmac_body:'{0}, 1 min jog recovery. (or short variant: {1} × ~{2} m fast / {3} m jog, same intensity).',
+    bs_vmac_paces:'~108-110% of max aerobic speed — aim for {0} on each {1} m (not {2}, which is just the pace converted to per-km).',
+    bs_vmac_recovery:'1 min jog between the {0} m reps.',bs_vmac_tip1:'Same split time on every rep: {0} for {1} m.',
+    bs_vmac_mistake1:'Skimping on the warm-up → injury.',
+    bs_vmac_mistake2:'Confusing the displayed pace/km with the actual time to hit over {0} m.',
+    bs_vmac_why:'Stimulates VO2max and neuromuscular economy.',
+    bs_vmal_objectif:'Raise your VO2max — your maximum engine capacity.',bs_vmal_body:'{0}, 2-3 min jog recovery. (or {1} × 1200 m).',
+    bs_vmal_paces:'~95-98% of max aerobic speed — {0}/km.',bs_vmal_tip1:'Consistency above all.',bs_vmal_tip2:'Stop if you can\u2019t hold the pace anymore.',
+    bs_vmal_mistake1:'Recovery too short.',bs_vmal_why:'Time spent at ~90-100% VO2max increases your maximum aerobic power.',
+    bs_interval_objectif:'Mixed speed-endurance work.',bs_interval_body:'Pyramid: {0}, jog recovery = effort duration between each segment.',
+    bs_interval_paces:'From {0}/km (200 m) to {1}/km (800 m) — the pace gradually slows as distance increases.',
+    bs_interval_recovery:'Active recovery equal to the effort duration.',
+    bs_interval_tip1:'Adjust pace by distance: the shorter the rep, the faster your absolute speed.',
+    bs_interval_mistake1:'Running everything at the same speed.',bs_interval_why:'Combines several energy systems.',
+    bs_interval_recoveryLabel:'jog = effort duration',
+    bs_spe_objectif:'Lock in your exact race pace ({0}).',bs_spe_body:'{0}, 90 s recovery.',bs_spe_paces:'Target pace: {0}/km.',
+    bs_spe_tip1:'This pace should become second nature.',bs_spe_mistake1:'Going faster out of overconfidence.',
+    bs_spe_why:'Specificity is what matters most as race day approaches.',
+    bs_progressif_objectif:'Learn to accelerate while fatigued.',bs_10min_warmup:'10 min at {0}/km.',
+    bs_progressif_body:'{0} km in 3 stages: {1} → {2} → {3}/km.',bs_progressif_paces:'Easy → tempo.',bs_progressif_recovery:'Continuous.',
+    bs_progressif_tip1:'Each stage a bit faster than the last.',bs_progressif_mistake1:'Starting too fast.',
+    bs_progressif_why:'Builds mental strength and negative-split ability.',
+    bs_fartlek_objectif:'Feel-based, playful and free-form work.',bs_fartlek_warmup:'15 min at {0}/km.',
+    bs_fartlek_body:'{0} × (1 min fast / 1 min slow) by feel, outdoors.',bs_fartlek_paces:'Fast ≈ {0}/km, slow ≈ {1}/km.',
+    bs_fartlek_recovery:'Free active recovery.',bs_fartlek_tip1:'Play with the terrain.',bs_fartlek_mistake1:'Over-structuring it: let yourself go.',
+    bs_fartlek_why:'Develops VO2max while having fun and breaking the routine.',
+    bs_cotes_objectif:'Develop power, strength and running economy.',
+    bs_cotes_body:'{0} × 30-45 s uphill (4-6% grade) at a strong effort, jog back down for recovery.',bs_cotes_paces:'Effort at ~90%.',
+    bs_cotes_recovery:'Downhill jog for recovery.',bs_cotes_tip1:'Short, dynamic stride, look ahead.',
+    bs_cotes_mistake1:'Running back down too fast (impact risk).',bs_cotes_why:'Hills are specific strength training without harsh impact.',
+    bs_cotes_recoveryLabel:'downhill jog',bs_cotes_note:'30-45 s of uphill effort per rep',
+    bs_lignes_objectif:'Maintain speed and freshness (ideal for tapering).',
+    bs_lignes_body:'{0} km easy + {1} × 80-100 m progressive strides (no forcing it), walk recovery.',
+    bs_lignes_paces:'Easy pace + relaxed strides.',bs_lignes_recovery:'Walk/jog between strides.',bs_lignes_cooldown:'Stretching.',
+    bs_lignes_tip1:'Stay relaxed, don\u2019t sprint.',bs_lignes_mistake1:'Pushing too hard on strides during the taper period.',
+    bs_lignes_why:'Keeps the nervous system sharp without adding fatigue.',
+    bs_course_objectif:'Deliver your best performance — target: {0}!',
+    bs_course_warmup:'25-30 min: progressive jog + strides + 3 race-pace accelerations.',
+    bs_course_body:'{0} km at {1}/km. Controlled start, strong middle, all-out finish.',bs_course_paces:'Target pace: {0}/km.',
+    bs_course_cooldown:'15 min easy jog right after finishing + stretching.',bs_course_tip1:'Don\u2019t start too fast.',
+    bs_course_tip2:'Latch onto a runner at your level.',bs_course_mistake1:'Sleeping or eating poorly the night before.',
+    bs_course_why:'The culmination of all your preparation. Trust yourself!',
+    bs_default_objectif:'Endurance.',bs_default_body:'{0} km easy.',bs_default_why:'Aerobic base.',
+    avgPerKmLabel:'/km avg',cooldownLabel:'Cooldown',detailedPacesLabel:'Detailed paces',equivalentPaceLabel:'Equivalent pace',
+    markCompleted:'Mark completed',mistakesToAvoidLabel:'Mistakes to avoid',objectiveCap:'OBJECTIVE',objectiveWord:'Objective',
+    paceWarnMsg:'Don\u2019t exceed the indicated pace on the first reps — better to finish strong than start too fast.',
+    pacesLabel:'Paces',recoveryColon:'Recovery:',recoveryLabel:'Recovery',repetitionsWord:'reps',
+    seriesPyramidTitle:'Series — pyramid',sessionBodyLabel:'Main set',sessionCompleted:'Session completed',
+    targetPaceLabel:'Target pace',targetSplitLabel:'Target split time',warmupLabel:'Warm-up',
+    weekLabelWithNum:'Week',whySessionLabel:'Why this session?',zone2FCmaxLine:'Zone 2 · 70% max HR · {0}/km',
+    analyzeSessionBtn:'Analyze my session',autoLightenedFlag:'Session automatically lightened (reason: {0} on {1}).',
+    avgPaceKmLabel:'Average pace /km',coachAnalysisTitle:'Coach Analysis',
+    coach_adj_continue:'Keep going as planned, your plan is well calibrated.',
+    coach_adj_increaseVolume:'You\u2019re in good shape: we can slightly increase the volume next week.',
+    coach_adj_lighten48h:'Lighten your next hard session by 48h to recover well.',
+    coach_adj_rest:'Next session: replace it with rest or a very light jog.',
+    coach_err_fatigue:'High fatigue level: watch out for overtraining.',
+    coach_err_harderThanPlanned:'Your session was much harder than planned (RPE {0} vs {1} expected). You may have started too fast or you\u2019re fatigued.',
+    coach_err_pain:'Pain level: {0}. Don\u2019t ignore it. Persistent joint pain means rest.',
+    coach_err_sleep:'Insufficient sleep: your performance and recovery will suffer.',
+    coach_err_tooEasy:'Session too easy (RPE {0}): you can probably push a bit harder next time.',
+    coach_pos_completed:'You finished your session: consistency is your greatest strength. 💪',
+    coach_pos_feel:'Excellent feel — your body is responding well to training.',
+    coach_pos_nopain:'No pain reported: your technique and training load are well managed.',
+    coach_pos_nutrition:'Great nutrition, the fuel is there.',
+    coach_pos_sleep:'Good sleep: that\u2019s 50% of your recovery, keep it up.',
+    coach_tip_heat:'In hot weather, run early in the morning and hydrate more.',
+    coach_tip_hydrate:'Drink at least 0.5 L of water in the hour after.',
+    coach_tip_nutrition:'Eat carbs + protein within 30 min after the effort.',
+    coach_tip_sleep:'Aim for 8h of sleep tonight, screens off 1h before.',
+    constructiveCriticismTitle:'Constructive feedback',dayNutritionLabel:'Today\u2019s nutrition',
+    debriefIntro:'Answer honestly: the IKORUN engine will analyze your session.',
+    distanceKmLabel:'Distance (km)',distanceKmOptionalLabel:'Distance (km, optional)',
+    durationMinLabel:'Duration (min)',durationMinOptionalLabel:'Duration (min, optional)',
+    elevationGainLabel:'Elevation gain (m, optional)',fatigueLabel:'Fatigue',freeCommentLabel:'Free comment',
+    howDidYouFeelPlaceholder:'How did you feel?',ikorunAnalysisTitle:'IKORUN Analysis',
+    legDayCarryoverFlag:'Your leg session already worked these muscles — go easy on explosiveness today.',
+    load_goodAssimilation:'Good assimilation (reps on target, RPE under control) → volume and intensity slightly increased.',
+    load_high:'High load detected (missed sessions, RPE above plan, or fatigue) → volume reduced by about 12% this week.',
+    load_stable:'Stable load: new session variants, volume unchanged.',
+    missedReasonPrompt:'Why wasn\u2019t this session completed?',missedReplacementPrompt:'Did you end up doing something else?',
+    missedSessionTitle:'Missed session',nightSleepLabel:'Night\u2019s sleep',
+    note_cardioAlreadyCounted:'cardio load already accounted for, plan unchanged',
+    note_explosiveCaution:'caution advised for your next explosive session',note_nextHardLightened:'next hard session lightened',
+    notedCoachBtn:'Got it, Coach! 💪',notesOptionalLabel:'Notes (optional)',paceKmLabel:'Pace /km',painLabel:'Pain',
+    planUpdatedWeekReason:'Plan updated for the week — {0}',positivePointsTitle:'Positive points',
+    recentMissesReducedMsg:'3 recent missed sessions: upcoming weeks\u2019 volume reduced by 15%',
+    repByRepSummary:'Rep-by-rep summary — {0} × {1} m',
+    repLegendLine:'⏱ = enter actual time · ✓ = "I held the pace" (auto-fills with the target time)',
+    repNumDist:'Rep {0} · {1} m',replacementMuscuTitle:'Replacement — {0}',replacementRunTitle:'Replacement run',
+    respectedCount:'{0}/{1} on target',rpeFeltLabel:'RPE — perceived difficulty:',sensationsLabel:'Feel',
+    sessionNotedToast:'Session logged',sessionTypeLabel:'Session type',targetColon:'Target {0}',
+    upcomingAdjustmentsTitle:'Upcoming adjustments',weatherLabel:'Weather',
+    addAsGoalLabel:'Add as goal',advancedLabel:'Advanced',calculateLabel:'Calculate',copiedShortToast:'Copied ✓',
+    copyLabel:'Copy',customDistanceKmLabel:'Custom distance (km)',distanceLabel:'Distance',
+    goalAddedReason:'goal added',goalAddedToast:'Goal added ✓',
+    ikorunDistInTime:'IKORUN — {0}km in {1}',kmSplitsLabel:'Km splits',myIkorunPrediction:'My IKORUN prediction: {0}km in {1}',
+    negativeSplitLabel:'Negative split',paceCalculatorTitle:'Pace calculator',paceMinSecKmLabel:'Pace (min : sec /km)',
+    penaltySecKmLabel:'Penalty (sec/km)',predictedTimeLabel:'Predicted time',resetShortLabel:'Reset',
+    resultSavedToast:'Result saved ✓',resultsLabel:'Results',runCalcFirstToast:'Run a calculation first',
+    sleepBorderline:'Borderline — aim higher',sleepCyclesTip:'A cycle lasts ~90 min. Aim to wake up at the end of a cycle: 6h, 7h30 or 9h of sleep. Go to bed at a regular time to optimize recovery.',
+    sleepCyclesTitle:'Sleep cycles',sleepHoursPerNightLabel:'Hours of sleep / night',
+    sleepInsufficient:'Insufficient — recovery compromised',sleepOptimal:'Optimal for an athlete ✓',sleepPlenty:'A lot — listen to your body',
+    speedLabel:'Speed',timeHMSLabel:'Time (h : mm : ss)',
+    configurePlanTitle:'Configure my plan',courseProfileLabel:'Course profile',generateMyPlanBtn:'Generate my plan',
+    maxKmWeekLabel:'Max km/week (peak)',minKmWeekLabel:'Min km/week',preferredSessionsLabel:'Preferred sessions (the coach will favor these)',
+    preparedRaceLabel:'Race you\u2019re preparing for',raceDateLabel:'Race date',targetTimeOptionalLabel:'Target time (optional)',
+    trainingDaysLabel:'Training days',yourNextRaceDefault:'Your next race'
   },
   ar:{
     nav_home:'الرئيسية',nav_sport:'رياضة',nav_stats:'إحصائيات',nav_outils:'أدوات',nav_profil:'الملف',
@@ -1180,7 +1604,220 @@ const I18N={
     objForce:'قوة',objMass:'كتلة',objEndurance:'تحمل',objWeightLoss:'فقدان وزن',objMaintain:'محافظة',
     colBlue:'أزرق',colRed:'أحمر',colGreen:'أخضر',colGold:'ذهبي',colPurple:'بنفسجي',colCyan:'سماوي',
     newTrophyUnlocked:'وسام جديد مفتوح',
-    markAsObtained:'✓ وضع علامة كمُحقق'
+    markAsObtained:'✓ وضع علامة كمُحقق',
+    connectingGoogle:'جارٍ الاتصال بـ Google…',googleConnectFail:'تعذر الاتصال، أعد المحاولة',
+    confirmLogout:'تسجيل الخروج؟ بياناتك تبقى محفوظة في حسابك.',
+    confirmSwitchGoogle:'سيتم تسجيل خروجك لتسجيل الدخول بحساب Google آخر. بياناتك الحالية تبقى محفوظة.',
+    confirmDeleteAllData:'⚠️ سيؤدي هذا إلى حذف جميع بياناتك (الحصص، الأرقام القياسية، XP، الملف الشخصي...) نهائيًا من السحابة ومن هذا الجهاز. متابعة؟',
+    confirmFinalIrreversible:'تأكيد أخير: هل أنت متأكد حقًا؟ هذا الإجراء لا رجعة فيه.',
+    alreadyReferred:'لديك راعٍ بالفعل',invalidCode:'رمز غير صالح',genericErrorRetry:'خطأ، أعد المحاولة',
+    referralValidated:'تم تأكيد الإحالة ✓ مكافأة بعد أول حصة',
+    referralBonusReason:'مكافأة الإحالة 🎉',referralBonusXP:'+50 XP — تم فتح مكافأة الإحالة 🎉',
+    confirmRemoveFriend:'إزالة هذا الصديق؟',referralShareText:'انضم إليّ على IKORUN برمزي {0} 🏃',
+    connectFirst:'سجّل الدخول أولاً',copiedClipboard:'تم النسخ ✓',
+    usernameFormatHint:'3 إلى 20 حرفًا: أحرف، أرقام، _',checkingEllipsis:'جارٍ التحقق…',
+    available:'متاح',alreadyTaken:'مُستخدم بالفعل',
+    alarmDefaultTitle:'منبّه',timeUpMsg:'انتهى الوقت!',timeUpTitle:'انتهى الوقت!',
+    stopAlarm:'إيقاف المنبّه',remindIn5Min:'تذكير بعد 5 دقائق',reminderCap:'تذكير',fiveMinElapsed:'مرت 5 دقائق',
+    sessionInProgress:'الحصة جارية',welcomeToast:'مرحبًا 👋',
+    resumeSessionConfirm:'كانت حصة « {0} » جارية ({1} د). المتابعة؟',sessionColonName:'حصة: {0}',
+    accentBlue:'أزرق',accentGreen:'أخضر عسكري',accentBrown:'بني خشبي',accentYellow:'أصفر',accentCarbon:'ألياف الكربون',
+    colorApplied:'تم تطبيق اللون ✓',easyModeOn:'تم تفعيل الوضع المبسّط ✓',easyModeOff:'تم إلغاء الوضع المبسّط',
+    profileIncompleteAddTime:'الملف غير مكتمل: أضف زمنًا في أرقامك القياسية',chooseCompDate:'اختر تاريخ المنافسة',
+    planGenerated:'تم إنشاء خطة « {0} »: {1} أسبوع، {2} حصة',raceGeneric:'سباق',
+    followingPersoPlan:'أنت الآن تتبع هذه الخطة الشخصية ✓',backToIkorunPlan:'العودة إلى خطة IKORUN',
+    namePromptLabel:'الاسم:',copySuffix:'(نسخة)',confirmDeletePlan:'حذف هذه الخطة؟',
+    addAtLeastOneRepTime:'أضف زمنًا واحدًا على الأقل للتكرار',sessionAdded:'تمت إضافة الحصة ✓',
+    myPlanColon:'خطتي: {0}',shareNotSupported:'المشاركة غير مدعومة',confirmDeleteProgram:'حذف هذا البرنامج؟',
+    routineTitle:'روتين',exercisesCount:'{0} تمارين',exercisesCap:'تمارين',setsCap:'مجموعات',estDurationCap:'المدة التقديرية',
+    setsRepsLine:'{0} مجموعات · {1} تكرار',addExercise:'إضافة تمرين',startWorkout:'بدء التمرين',
+    defaultProgramsNotEditable:'لا يمكن تعديل البرامج الافتراضية',
+    heightCmTitle:'الطول (سم)',weightKgTitle:'الوزن (كغ)',heightSaved:'تم حفظ الطول ✓',weightSaved:'تم حفظ الوزن ✓',
+    deservedBreak:'استراحة مستحقة! ☕',backToWork:'عودة للعمل! 🍅',setDuration:'اضبط مدة',
+    photoUpdated:'تم تحديث الصورة ✓',photoRemoved:'تمت إزالة الصورة',bioPromptLabel:'نبذتك:',
+    usernameInvalid:'اسم مستخدم غير صالح (3-20، أحرف/أرقام/_)',usernameNotAvailable:'هذا الاسم غير متاح',
+    usernameJustTaken:'تم أخذ هذا الاسم للتو، اختر اسمًا آخر',usernameUpdated:'تم تحديث اسم المستخدم ✓',
+    profileUpdated:'تم تحديث الملف الشخصي ✓',localDataOnly:'بيانات محلية فقط',exportGenerated:'تم إنشاء التصدير ✓',
+    confirmClearAll:'مسح كل شيء؟ هذا الإجراء لا رجعة فيه.',confirmClearAllFinal:'متأكد حقًا؟ ستفقد جميع بياناتك.',
+    offlineSinceDays:'غير متصل منذ {0} يوم — تذكّر إعادة الاتصال',dataSynced:'تمت مزامنة البيانات',
+    connectionRestored:'تمت استعادة الاتصال · مزامنة…',offlineModeAvailable:'وضع عدم الاتصال — كل شيء يبقى متاحًا',
+    dataImported:'تم استيراد البيانات ✓',invalidFile:'ملف غير صالح',
+    searchExercisePlaceholder:'ابحث عن تمرين...',muscleLabel:'العضلة',equipmentLabel:'المعدات',levelLabel:'المستوى',
+    exercisesWordPlural:'تمارين',exerciseWordSingular:'تمرين',
+    movementDemoCap:'عرض توضيحي للحركة',movementDemo:'عرض توضيحي للحركة',
+    musclesWorked:'العضلات المستهدفة',primaryLabel:'الأساسية',secondaryLabel:'الثانوية',
+    stepByStepExecution:'التنفيذ خطوة بخطوة',breathingLabel:'التنفس',commonMistakesLabel:'أخطاء شائعة',
+    coachTipsLabel:'نصائح المدرب',safetyLabel:'السلامة',variantsLabel:'بدائل',addToProgram:'إضافة إلى البرنامج',
+    exTabExercise:'التمرين',exTabMuscles:'العضلات',exTabInstructions:'التعليمات',aboutExerciseTitle:'حول هذا التمرين',
+    exWorksMainly:'يستهدف <b style="color:var(--snow)">{0}</b> بشكل رئيسي {1}',
+    exWorksAlsoSecondary:'، بالإضافة إلى {0} كعضلات ثانوية',severalMuscleGroups:'عدة مجموعات عضلية',
+    restBetweenSetsLabel:'الراحة بين المجموعات',volumeCap:'الحجم',durationCap:'المدة',
+    targetedMusclesTitle:'العضلات المستهدفة',primaryMusclesLabel:'العضلات الأساسية',secondaryMusclesLabel:'العضلات الثانوية',
+    executionLabel:'التنفيذ',defaultExecutionHint:'نفّذ الحركة بشكل متحكم به، بمدى حركة كامل.',
+    adviceLabel:'نصائح',startLabel:'بدء',
+    exBreathGeneric:'استنشق أثناء المرحلة السلبية (النزول/التمدد)، وازفر أثناء المجهود (الدفع/الانقباض).',
+    exStep1:'وضعية البداية: اتخذ وضعية صحيحة، شد عضلات الجذع، ونظرة محايدة.',
+    exStep2:'اقبض العضلات المستهدفة قبل بدء الحركة.',
+    exStep3:'نفّذ المرحلة الإيجابية بشكل متحكم به، دون حركات مفاجئة.',
+    exStep4:'توقف لحظة قصيرة عند أقصى انقباض.',
+    exStep5:'عد ببطء مع التحكم في المرحلة السلبية (2-3 ثوانٍ).',
+    exMistakeGeneric1:'استخدام وزن ثقيل جدًا على حساب التقنية.',
+    exMistakeGeneric2:'عدم استخدام مدى حركة كامل (حركة قصيرة جدًا).',
+    exMistakeGeneric3:'استخدام الاندفاع / الغش بواسطة الظهر.',
+    exMistakeGeneric4:'الذهاب بسرعة زائدة وإهمال المرحلة السلبية.',
+    exTipGeneric1:'ركّز على الاتصال العقلي العضلي: اشعر بالعضلة وهي تعمل.',
+    exTipGeneric2:'ابقَ عند 2-3 تكرارات احتياطية للتقدم بأمان.',
+    exTipGeneric3:'حافظ على تنفيذ نظيف في كل تكرار.',
+    exSafety1:'سخّن بمجموعات خفيفة قبل المجموعات الثقيلة.',
+    exSafety2:'حافظ على استقامة الظهر، ولا تُقفل المفاصل بالكامل أبدًا.',
+    exSafety3:'توقف فورًا في حال الشعور بألم مفصلي حاد.',
+    wuTemplate:'15-20 دقيقة ركض هادئ بوتيرة {0}/كم + 4-5 انطلاقات تدريجية + تمارين تحضيرية (رفع الركبتين، لمس الكعبين للأرداف، قفزات اندفاعية).',
+    cdTemplate:'10-15 دقيقة ركض بطيء جدًا بوتيرة {0}/كم + تمدّدات خفيفة.',
+    recovLabel_2minTrot:'هرولة دقيقتين',recovLabel_1minTrot:'هرولة دقيقة',recovLabel_30sTrot:'هرولة 30 ثانية',recovLabel_2to3minTrot:'هرولة 2-3 دقائق',recovLabel_90sTrot:'هرولة 90 ثانية',
+    repsTextTemplate:'{0} × {1} م بزمن {2} ({3}/كم)',seriesPyramid:'هرمي {0}←{1} م',seriesRepsDist:'{0} × {1} م بزمن {2}',seriesRepsOnly:'{0} × مجهودات',
+    deloadPrefixTemplate:'🟢 أسبوع تخفيف — {0}',
+    bs_ef_objectif:'بناء قاعدتك الهوائية — أساس كل تقدم (80% من حجم تدريب النخبة).',
+    bs_ef_warmup:'إحماء تدريجي لمدة 10 دقائق.',bs_ef_body:'{0} كم بوتيرة سهلة ({1}/كم). يمكنك التحدث طوال الوقت.',
+    bs_ef_paces:'المنطقة 2، ~70% من أقصى معدل ضربات القلب — {0}/كم.',bs_ef_recovery:'مجهود متواصل.',bs_ef_cooldown:'بعض تمارين تمدد لعضلات الساق الخلفية وأوتار الركبة.',
+    bs_ef_tip1:'تنفّس من البطن.',bs_ef_tip2:'البطء هنا مقصود ومفيد.',bs_ef_mistake1:'الركض بسرعة زائدة «بدافع العادة».',
+    bs_ef_why:'يطوّر القلب والشعيرات الدموية والميتوكوندريا دون إرهاق أو مخاطرة.',
+    bs_recup_objectif:'تسريع التعافي بين حصتين شاقتين.',bs_recup_warmup:'لا يوجد.',
+    bs_recup_body:'{0} كم بخطى هادئة جدًا بوتيرة {1}/كم.',bs_recup_paces:'المنطقة 1 — بطيء جدًا.',bs_recup_cooldown:'تدليك ذاتي / تمارين حركية.',
+    bs_recup_tip1:'إذا كنت متعبًا جدًا، استبدلها بـ 25 دقيقة مشي.',bs_recup_mistake1:'التسريع: تخرّب عملية التعافي.',
+    bs_recup_why:'الدورة الدموية تُخلّص الجسم من الفضلات وتُنشّط عملية التكيّف.',
+    bs_long_objectif:'تطوير التحمل واقتصادية الجري والقوة الذهنية.',bs_long_warmup:'انطلاقة تدريجية لمدة 10 دقائق.',
+    bs_long_body_progressive:'{0} كم تصاعدي: النصف الأول بوتيرة {1}/كم، والنصف الثاني بتسريع حتى {2}/كم.',
+    bs_long_body_steady:'{0} كم بوتيرة تحمل ثابتة ({1}/كم).',bs_long_paces:'وتيرة سهلة {0}/كم ← وتيرة الماراثون {1}/كم في النهاية.',
+    bs_long_recovery:'مجهود متواصل، تزوّد بالطاقة إذا تجاوزت الحصة ساعة و15 دقيقة.',bs_long_tip1:'تناول وجبة جيدة في الليلة السابقة.',
+    bs_long_tip2:'احمل معك ماءً وجل طاقة إذا تجاوزت الحصة ساعة ونصف.',
+    bs_long_mistake1:'الانطلاق بسرعة زائدة والمشي في النهاية.',bs_long_why:'يزيد مخزون الغليكوجين والقدرة على استخدام الدهون كوقود.',
+    bs_tempo_objectif:'تحسين الكفاءة والتحمل بوتيرة مستدامة.',
+    bs_tempo_body:'{0} دقيقة متواصلة بوتيرة {1}/كم («صعبة بشكل مريح»)، أي حوالي {2} كم.',bs_tempo_paces:'~83% من السرعة الهوائية القصوى — {0}/كم.',
+    bs_tempo_recovery:'كتلة متواصلة.',bs_tempo_tip1:'يجب أن تكون قادرًا على قول كلمتين أو ثلاث، وليس جملة كاملة.',bs_tempo_mistake1:'الانطلاق بسرعة زائدة والانهيار لاحقًا.',
+    bs_tempo_why:'يرفع عتبة تراكم حمض اللاكتيك.',
+    bs_temposp_objectif:'التعرّف على وتيرة سباقك المستهدف ({0}).',bs_temposp_body:'{0}، راحة هرولة دقيقتين بين الكتل.',
+    bs_temposp_paces:'وتيرة السباق: {0}/كم.',bs_temposp_tip1:'احفظ إحساس هذه الوتيرة.',
+    bs_temposp_mistake1:'الذهاب أسرع من الوتيرة المستهدفة.',bs_temposp_why:'يجب أن تصبح الوتيرة المحددة تلقائية يوم السباق.',
+    bs_seuil_objectif:'رفع عتبة حمض اللاكتيك — العامل الأول للأداء.',bs_seuil_body:'{0}، راحة هرولة دقيقة.',
+    bs_seuil_paces:'~88% من السرعة الهوائية القصوى — {0}/كم.',bs_seuil_recovery:'هرولة دقيقة بين كل تكرار.',bs_seuil_tip1:'جميع التكرارات بنفس الوتيرة.',
+    bs_seuil_mistake1:'الانطلاق بقوة زائدة في التكرار الأول.',bs_seuil_why:'العتبة هي الوتيرة التي يمكن الحفاظ عليها لساعة تقريبًا؛ رفعها يسهّل كل شيء آخر.',
+    bs_dblseuil_objectif:'زيادة حجم التدريب عند العتبة دون إرهاق مفرط (المفتاح النرويجي).',
+    bs_dblseuil_warmup:'{0} (×2: مرة صباحًا ومرة مساءً)',
+    bs_dblseuil_body:'صباحًا: {0} × {1} دقيقة بوتيرة {2}/كم (راحة دقيقة). مساءً: {3} (راحة 30 ثانية). ابقَ دون الحد الأقصى.',
+    bs_dblseuil_paces:'عتبة متحكم بها {0}/كم — حمض لاكتيك ~2-4 مليمول.',bs_dblseuil_recovery:'راحة قصيرة، شدة متحكم بها.',
+    bs_dblseuil_cooldown:'{0} (بعد كل حصة)',bs_dblseuil_tip1:'لا تنهِ الحصة منهكًا أبدًا: يجب أن تكون قادرًا على إعادتها.',
+    bs_dblseuil_mistake1:'تحويل حصة العتبة إلى حصة VMA.',
+    bs_dblseuil_why:'جرعة مضاعفة من محفز العتبة بأقل إرهاق ممكن — أسلوب عائلة إنغبريغتسن.',
+    bs_dblseuil_note:'حصة المساء (الصباح = {0} × {1} دقيقة)',
+    bs_vmac_objectif:'تطوير سرعة VO2max القصوى وسرعة الذروة.',bs_vmac_warmup:'{0} الإحماء إلزامي.',
+    bs_vmac_body:'{0}، راحة هرولة دقيقة. (أو بديل قصير: {1} × ~{2} م سريع / {3} م هرولة، بنفس الشدة).',
+    bs_vmac_paces:'~108-110% من السرعة الهوائية القصوى — استهدف {0} في كل {1} م (وليس {2}، فهي مجرد الوتيرة محسوبة لكل كم).',
+    bs_vmac_recovery:'راحة هرولة دقيقة بين كل {0} م.',bs_vmac_tip1:'نفس زمن القطع في كل التكرارات: {0} لكل {1} م.',
+    bs_vmac_mistake1:'إهمال الإحماء ← إصابة.',
+    bs_vmac_mistake2:'الخلط بين الوتيرة المعروضة لكل كم والزمن الفعلي المطلوب على {0} م.',
+    bs_vmac_why:'ينشّط VO2max والاقتصاد العصبي العضلي.',
+    bs_vmal_objectif:'رفع VO2max — سعتك القصوى.',bs_vmal_body:'{0}، راحة 2-3 دقائق هرولة. (أو {1} × 1200 م).',
+    bs_vmal_paces:'~95-98% من السرعة الهوائية القصوى — {0}/كم.',bs_vmal_tip1:'الانتظام أولاً وقبل كل شيء.',bs_vmal_tip2:'توقف إذا لم تعد قادرًا على الحفاظ على الوتيرة.',
+    bs_vmal_mistake1:'راحة قصيرة جدًا.',bs_vmal_why:'الوقت المُمضى عند ~90-100% من VO2max يزيد قوتك الهوائية القصوى.',
+    bs_interval_objectif:'عمل مختلط بين السرعة والتحمل.',bs_interval_body:'هرمي: {0}، راحة هرولة = مدة المجهود بين كل جزء.',
+    bs_interval_paces:'من {0}/كم (200 م) إلى {1}/كم (800 م) — تتباطأ الوتيرة تدريجيًا مع زيادة المسافة.',
+    bs_interval_recovery:'راحة نشطة تعادل مدة المجهود.',
+    bs_interval_tip1:'اضبط الوتيرة حسب المسافة: كلما قصر التكرار، كانت سرعتك المطلقة أعلى.',
+    bs_interval_mistake1:'تنفيذ كل شيء بنفس السرعة.',bs_interval_why:'يجمع بين عدة أنظمة طاقة.',
+    bs_interval_recoveryLabel:'هرولة = مدة المجهود',
+    bs_spe_objectif:'ترسيخ وتيرة سباقك الدقيقة ({0}).',bs_spe_body:'{0}، راحة 90 ثانية.',bs_spe_paces:'الوتيرة المستهدفة: {0}/كم.',
+    bs_spe_tip1:'يجب أن تصبح هذه الوتيرة انعكاسًا تلقائيًا.',bs_spe_mistake1:'الذهاب بسرعة أكبر بدافع الثقة الزائدة.',
+    bs_spe_why:'التخصص هو الأهم مع اقتراب موعد السباق.',
+    bs_progressif_objectif:'تعلّم التسريع رغم التعب.',bs_10min_warmup:'10 دقائق بوتيرة {0}/كم.',
+    bs_progressif_body:'{0} كم على 3 مراحل: {1} ← {2} ← {3}/كم.',bs_progressif_paces:'سهل ← تمبو.',bs_progressif_recovery:'متواصل.',
+    bs_progressif_tip1:'كل مرحلة أسرع قليلًا من سابقتها.',bs_progressif_mistake1:'الانطلاق بسرعة زائدة.',
+    bs_progressif_why:'يعزز القوة الذهنية والقدرة على تقسيم السباق تنازليًا.',
+    bs_fartlek_objectif:'عمل حر ومرن يعتمد على الإحساس.',bs_fartlek_warmup:'15 دقيقة بوتيرة {0}/كم.',
+    bs_fartlek_body:'{0} × (دقيقة سريعة / دقيقة بطيئة) حسب الإحساس، في الطبيعة.',bs_fartlek_paces:'سريع ≈ {0}/كم، بطيء ≈ {1}/كم.',
+    bs_fartlek_recovery:'راحة نشطة حرة.',bs_fartlek_tip1:'استغل التضاريس المحيطة.',bs_fartlek_mistake1:'الإفراط في التنظيم: دع نفسك تندمج بحرية.',
+    bs_fartlek_why:'ينمّي VO2max مع المتعة وكسر الروتين.',
+    bs_cotes_objectif:'تطوير القوة والقدرة واقتصادية الجري.',
+    bs_cotes_body:'{0} × 30-45 ثانية صعودًا (بميل 4-6%) بمجهود قوي، والراحة أثناء الهرولة نزولًا.',bs_cotes_paces:'مجهود عند ~90%.',
+    bs_cotes_recovery:'الهرولة نزولًا للراحة.',bs_cotes_tip1:'خطوة قصيرة وديناميكية، وانظر للأمام.',
+    bs_cotes_mistake1:'النزول بسرعة زائدة (خطر الارتطام).',bs_cotes_why:'التلال = تقوية عضلية متخصصة دون ارتطام قاسٍ.',
+    bs_cotes_recoveryLabel:'هرولة نزولًا',bs_cotes_note:'30-45 ثانية من المجهود الصاعد لكل تكرار',
+    bs_lignes_objectif:'الحفاظ على السرعة والنشاط (مثالي لمرحلة التخفيف).',
+    bs_lignes_body:'{0} كم سهل + {1} × 80-100 م تسارع تدريجي (دون إجهاد)، راحة مشي.',
+    bs_lignes_paces:'وتيرة سهلة + تسارعات مسترخية.',bs_lignes_recovery:'مشي/هرولة بين الانطلاقات.',bs_lignes_cooldown:'تمدّدات.',
+    bs_lignes_tip1:'ابقَ مسترخيًا، ولا تعدُ بأقصى سرعة.',bs_lignes_mistake1:'الإفراط في الجهد خلال الانطلاقات أثناء فترة التخفيف.',
+    bs_lignes_why:'يبقي الجهاز العصبي في أوج نشاطه دون إرهاق.',
+    bs_course_objectif:'حقق أفضل أداء لك — الهدف: {0}!',
+    bs_course_warmup:'25-30 دقيقة: ركض تدريجي + انطلاقات + 3 تسارعات بوتيرة السباق.',
+    bs_course_body:'{0} كم بوتيرة {1}/كم. انطلاقة متحكم بها، ومنتصف قوي، وانتهاء بأقصى ما لديك.',bs_course_paces:'الوتيرة المستهدفة: {0}/كم.',
+    bs_course_cooldown:'15 دقيقة ركض هادئ مباشرة بعد الوصول + تمدّدات.',bs_course_tip1:'لا تنطلق بسرعة زائدة.',
+    bs_course_tip2:'التصق بعدّاء في مستواك.',bs_course_mistake1:'النوم أو الأكل بشكل سيء في الليلة السابقة.',
+    bs_course_why:'ثمرة كل تحضيراتك. ثق بنفسك!',
+    bs_default_objectif:'تحمل.',bs_default_body:'{0} كم سهل.',bs_default_why:'قاعدة هوائية.',
+    avgPerKmLabel:'/كم متوسط',cooldownLabel:'العودة للهدوء',detailedPacesLabel:'الوتيرات التفصيلية',equivalentPaceLabel:'الوتيرة المكافئة',
+    markCompleted:'وضع علامة منجزة',mistakesToAvoidLabel:'أخطاء يجب تجنبها',objectiveCap:'الهدف',objectiveWord:'الهدف',
+    paceWarnMsg:'لا تتجاوز الوتيرة المحددة في التكرارات الأولى — من الأفضل الانتهاء بقوة بدلًا من الانطلاق بسرعة زائدة.',
+    pacesLabel:'الوتيرات',recoveryColon:'الراحة:',recoveryLabel:'الراحة',repetitionsWord:'تكرارات',
+    seriesPyramidTitle:'السلاسل — هرمي',sessionBodyLabel:'جوهر الحصة',sessionCompleted:'الحصة منجزة',
+    targetPaceLabel:'الوتيرة المستهدفة',targetSplitLabel:'زمن القطع المستهدف',warmupLabel:'الإحماء',
+    weekLabelWithNum:'الأسبوع',whySessionLabel:'لماذا هذه الحصة؟',zone2FCmaxLine:'المنطقة 2 · 70% من أقصى معدل ضربات القلب · {0}/كم',
+    analyzeSessionBtn:'حلّل حصتي',autoLightenedFlag:'تم تخفيف الحصة تلقائيًا (السبب: {0} بتاريخ {1}).',
+    avgPaceKmLabel:'الوتيرة المتوسطة /كم',coachAnalysisTitle:'تحليل المدرب',
+    coach_adj_continue:'واصل كما هو مخطط، خطتك معايرة جيدًا.',
+    coach_adj_increaseVolume:'أنت في حالة جيدة: يمكننا زيادة الحجم قليلًا الأسبوع القادم.',
+    coach_adj_lighten48h:'خفّف حصتك الشاقة القادمة لمدة 48 ساعة للتعافي جيدًا.',
+    coach_adj_rest:'الحصة القادمة: استبدلها بالراحة أو بركض خفيف جدًا.',
+    coach_err_fatigue:'مستوى تعب مرتفع: انتبه من الإفراط في التدريب.',
+    coach_err_harderThanPlanned:'كانت حصتك أصعب بكثير من المتوقع (RPE {0} مقابل {1} المتوقع). ربما انطلقت بسرعة زائدة أو أنك متعب.',
+    coach_err_pain:'ألم {0}: لا تتجاهله. الألم المفصلي المستمر يعني الراحة.',
+    coach_err_sleep:'نوم غير كافٍ: سيتأثر أداؤك وتعافيك.',
+    coach_err_tooEasy:'حصة سهلة جدًا (RPE {0}): يمكنك على الأرجح بذل مجهود أكبر في المرة القادمة.',
+    coach_pos_completed:'أنهيت حصتك: الانتظام هو أقوى نقاط قوتك. 💪',
+    coach_pos_feel:'إحساس ممتاز — جسمك يستجيب جيدًا للتدريب.',
+    coach_pos_nopain:'لا ألم مُبلَّغ عنه: تقنيتك وحمل تدريبك مُدارَان جيدًا.',
+    coach_pos_nutrition:'تغذية ممتازة، الوقود متوفر.',
+    coach_pos_sleep:'نوم جيد: يمثل 50% من تعافيك، واصل كذلك.',
+    coach_tip_heat:'في الحرارة الشديدة، اركض في الصباح الباكر واشرب المزيد من الماء.',
+    coach_tip_hydrate:'اشرب على الأقل 0.5 لتر من الماء خلال الساعة التالية.',
+    coach_tip_nutrition:'تناول الكربوهيدرات والبروتين خلال 30 دقيقة بعد المجهود.',
+    coach_tip_sleep:'استهدف 8 ساعات نوم الليلة، وأغلق الشاشات قبلها بساعة.',
+    constructiveCriticismTitle:'ملاحظات بنّاءة',dayNutritionLabel:'تغذية اليوم',
+    debriefIntro:'أجب بصدق: سيحلل محرك IKORUN حصتك.',
+    distanceKmLabel:'المسافة (كم)',distanceKmOptionalLabel:'المسافة (كم، اختياري)',
+    durationMinLabel:'المدة (دقيقة)',durationMinOptionalLabel:'المدة (دقيقة، اختياري)',
+    elevationGainLabel:'فرق الارتفاع الصاعد (م، اختياري)',fatigueLabel:'التعب',freeCommentLabel:'تعليق حر',
+    howDidYouFeelPlaceholder:'كيف شعرت؟',ikorunAnalysisTitle:'تحليل IKORUN',
+    legDayCarryoverFlag:'حصة الأرجل استهلكت عضلاتك بالفعل — خفف من التمارين الانفجارية اليوم.',
+    load_goodAssimilation:'استيعاب جيد (التكرارات محترمة، RPE متحكم به) ← زيادة طفيفة في الحجم والشدة.',
+    load_high:'تم رصد حمل مرتفع (حصص فائتة، RPE أعلى من المتوقع، أو تعب) ← تقليل الحجم بنحو 12% هذا الأسبوع.',
+    load_stable:'حمل مستقر: تنويعات جديدة للحصص، الحجم دون تغيير.',
+    missedReasonPrompt:'لماذا لم تُنجَز هذه الحصة؟',missedReplacementPrompt:'هل قمت بشيء آخر في النهاية؟',
+    missedSessionTitle:'حصة فائتة',nightSleepLabel:'نوم الليلة',
+    note_cardioAlreadyCounted:'تم احتساب حمل الكارديو بالفعل، الخطة لم تتغير',
+    note_explosiveCaution:'توخَّ الحذر في حصتك الانفجارية القادمة',note_nextHardLightened:'تم تخفيف الحصة الشاقة القادمة',
+    notedCoachBtn:'تم الفهم، أيها المدرب! 💪',notesOptionalLabel:'ملاحظات (اختياري)',paceKmLabel:'الوتيرة /كم',painLabel:'الألم',
+    planUpdatedWeekReason:'تم تحديث الخطة لهذا الأسبوع — {0}',positivePointsTitle:'نقاط إيجابية',
+    recentMissesReducedMsg:'3 حصص فائتة مؤخرًا: تم تقليل حجم الأسابيع القادمة بنسبة 15%',
+    repByRepSummary:'ملخص لكل تكرار — {0} × {1} م',
+    repLegendLine:'⏱ = أدخل الزمن الفعلي · ✓ = «حافظت على الوتيرة» (يملأ تلقائيًا بالزمن المستهدف)',
+    repNumDist:'تكرار {0} · {1} م',replacementMuscuTitle:'بديل — {0}',replacementRunTitle:'ركض بديل',
+    respectedCount:'{0}/{1} محترمة',rpeFeltLabel:'RPE — الصعوبة المُحسّة:',sensationsLabel:'الإحساس',
+    sessionNotedToast:'تم تسجيل الحصة',sessionTypeLabel:'نوع الحصة',targetColon:'الهدف {0}',
+    upcomingAdjustmentsTitle:'تعديلات قادمة',weatherLabel:'الطقس',
+    addAsGoalLabel:'إضافة كهدف',advancedLabel:'متقدم',calculateLabel:'احسب',copiedShortToast:'تم النسخ ✓',
+    copyLabel:'نسخ',customDistanceKmLabel:'مسافة مخصصة (كم)',distanceLabel:'المسافة',
+    goalAddedReason:'تمت إضافة هدف',goalAddedToast:'تمت إضافة الهدف ✓',
+    ikorunDistInTime:'IKORUN — {0} كم في {1}',kmSplitsLabel:'تقسيمات الكيلومترات',myIkorunPrediction:'توقعي في IKORUN: {0} كم في {1}',
+    negativeSplitLabel:'تقسيم تنازلي',paceCalculatorTitle:'حاسبة الوتيرة',paceMinSecKmLabel:'الوتيرة (دقيقة : ثانية /كم)',
+    penaltySecKmLabel:'عقوبة (ثانية/كم)',predictedTimeLabel:'الزمن المتوقع',resetShortLabel:'إعادة',
+    resultSavedToast:'تم حفظ النتيجة ✓',resultsLabel:'النتائج',runCalcFirstToast:'أجرِ حسابًا أولاً',
+    sleepBorderline:'حدّي — استهدف أكثر',sleepCyclesTip:'تدوم الدورة ~90 دقيقة. استهدف الاستيقاظ في نهاية دورة: 6 أو 7.5 أو 9 ساعات نوم. اخلد للنوم في وقت منتظم لتحسين التعافي.',
+    sleepCyclesTitle:'دورات النوم',sleepHoursPerNightLabel:'ساعات النوم / الليلة',
+    sleepInsufficient:'غير كافٍ — التعافي مُعرَّض للخطر',sleepOptimal:'مثالي للرياضي ✓',sleepPlenty:'كثير — استمع لجسدك',
+    speedLabel:'السرعة',timeHMSLabel:'الزمن (س : د : ث)',
+    configurePlanTitle:'إعداد خطتي',courseProfileLabel:'طبيعة المسار',generateMyPlanBtn:'أنشئ خطتي',
+    maxKmWeekLabel:'أقصى كم/أسبوع (الذروة)',minKmWeekLabel:'أدنى كم/أسبوع',preferredSessionsLabel:'الحصص المفضلة (سيفضلها المدرب)',
+    preparedRaceLabel:'السباق الذي تستعد له',raceDateLabel:'تاريخ السباق',targetTimeOptionalLabel:'الزمن المستهدف (اختياري)',
+    trainingDaysLabel:'أيام التدريب',yourNextRaceDefault:'سباقك القادم'
   }
 };
 function curLang(){ return (P&&P.lang)||'fr'; }
@@ -1316,15 +1953,15 @@ function fmtSplit(sec){
 }
 // Texte complet "8 × 300 m à 53 s (2:57/km)" pour une série de répétitions
 function repsText(n,meters,paceSecPerKm){
-  return n+' × '+meters+' m à '+fmtSplit(splitSecFromPace(paceSecPerKm,meters))+' ('+spkToStr(paceSecPerKm)+'/km)';
+  return tp('repsTextTemplate',n,meters,fmtSplit(splitSecFromPace(paceSecPerKm,meters)),spkToStr(paceSecPerKm));
 }
 // Résumé compact des séries d'une séance, pour affichage AVANT clic (carte de la liste)
 function seriesSummary(s){
   const sr=s.series;
   if(!sr) return null;
-  if(sr.segments) return 'Pyramide '+sr.segments[0].dist+'→'+Math.max(...sr.segments.map(x=>x.dist))+' m';
-  if(sr.reps && sr.dist) return sr.reps+' × '+sr.dist+' m à '+fmtSplit(splitSecFromPace(sr.paceSecPerKm,sr.dist));
-  if(sr.reps) return sr.reps+' × efforts'+(sr.note?' · '+sr.note:'');
+  if(sr.segments) return tp('seriesPyramid',sr.segments[0].dist,Math.max(...sr.segments.map(x=>x.dist)));
+  if(sr.reps && sr.dist) return tp('seriesRepsDist',sr.reps,sr.dist,fmtSplit(splitSecFromPace(sr.paceSecPerKm,sr.dist)));
+  if(sr.reps) return tp('seriesRepsOnly',sr.reps)+(sr.note?' · '+sr.note:'');
   return null;
 }
 function getUserVDOT(){
@@ -1870,8 +2507,8 @@ function startAlarm(title,msg){
   _alarmIv=setInterval(alarmRing,1300);
   // sécurité : arrêt automatique après 60 s
   setTimeout(()=>{ if(_alarmIv) stopAlarm(); },60000);
-  notify(title||'⏰ Alarme',msg||'Le temps est écoulé !');
-  showAlarmScreen(title||'⏰ Temps écoulé !',msg||'');
+  notify(title||'⏰ '+t('alarmDefaultTitle'),msg||t('timeUpMsg'));
+  showAlarmScreen(title||'⏰ '+t('timeUpTitle'),msg||'');
 }
 function stopAlarm(){
   if(_alarmIv){ clearInterval(_alarmIv); _alarmIv=null; }
@@ -1885,15 +2522,15 @@ function showAlarmScreen(title,msg){
   ov.innerHTML='<div style="font-size:84px;animation:alarmShake .5s ease-in-out infinite">⏰</div>'+
     '<div class="man" style="font-weight:800;font-size:28px;margin-top:14px">'+title+'</div>'+
     (msg?'<div style="color:var(--muted);font-size:15px;margin-top:8px">'+msg+'</div>':'')+
-    '<button class="btn" style="margin-top:28px;max-width:240px;font-size:17px;padding:16px" onclick="stopAlarm()">Arrêter l\u2019alarme</button>'+
-    '<button class="btn ghost" style="margin-top:10px;max-width:240px" onclick="snoozeAlarm()">⏱ Rappel dans 5 min</button>';
+    '<button class="btn" style="margin-top:28px;max-width:240px;font-size:17px;padding:16px" onclick="stopAlarm()">'+t('stopAlarm')+'</button>'+
+    '<button class="btn ghost" style="margin-top:10px;max-width:240px" onclick="snoozeAlarm()">⏱ '+t('remindIn5Min')+'</button>';
   ov.onclick=(e)=>{ if(e.target===ov) {} };
   document.body.appendChild(ov);
 }
 function snoozeAlarm(){
   stopAlarm();
-  toast('🔔 Rappel dans 5 min');
-  setTimeout(()=>startAlarm('⏰ Rappel','5 minutes écoulées'),5*60*1000);
+  toast('🔔 '+t('remindIn5Min'));
+  setTimeout(()=>startAlarm('⏰ '+t('reminderCap'),t('fiveMinElapsed')),5*60*1000);
 }
 
 /* ============ NOTIFICATIONS & ACTIVITÉ EN ARRIÈRE-PLAN ============ */
@@ -1914,7 +2551,7 @@ async function startBgActivity(type){
   clearInterval(_bgTick); _bgTick=null;
   if(P.notif!==false && 'Notification'in window && Notification.permission==='granted'){
     try{ if(_bgNotif){ _bgNotif.close(); _bgNotif=null; } }catch(e){}
-    try{ _bgNotif=new Notification('IKORUN · '+type,{body:'▶ Séance en cours',icon:appIconDataURL(),tag:'ikorun-activity',renotify:false,silent:true}); }catch(e){}
+    try{ _bgNotif=new Notification('IKORUN · '+type,{body:'▶ '+t('sessionInProgress'),icon:appIconDataURL(),tag:'ikorun-activity',renotify:false,silent:true}); }catch(e){}
   }
 }
 function pauseBgActivity(p){
@@ -2240,7 +2877,7 @@ async function startApp(){
       reloadState();
       saveAll();
       endLogin();
-      toast('Bienvenue 👋');
+      toast(t('welcomeToast'));
       sfx&&sfx('goal');
       boot();
       ensurePublicProfile().then(syncPublicProfile);
@@ -2276,10 +2913,10 @@ function maybeResumeLive(){
   const prog={...base,ex:snap.progEx||base.ex};
   const mins=Math.round((Date.now()-snap.start)/60000);
   if(mins>180){ DB.remove('live_active'); return; } // trop vieux
-  if(confirm('Une séance « '+prog.name+' » était en cours ('+mins+' min). Reprendre ?')){
+  if(confirm(tp('resumeSessionConfirm',prog.name,mins))){
     LIVE={prog,idx:snap.idx,start:snap.start,state:snap.state,tonnage:snap.tonnage,setsDone:snap.setsDone};
     liveOpenEx=snap.idx||0;
-    renderLive(); openOv('ovLive'); liveTimer=setInterval(updateLiveTimer,500); startBgActivity('Séance : '+prog.name);
+    renderLive(); openOv('ovLive'); liveTimer=setInterval(updateLiveTimer,500); startBgActivity(tp('sessionColonName',prog.name));
   } else { DB.remove('live_active'); }
 }
 
@@ -2528,25 +3165,25 @@ function applyTheme(){
   const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.content=(P.easyMode?(mode==='light'?'#FFFFFF':'#000000'):(mode==='light'?'#F2F4F8':'#0A0D12'));
 }
 /* Couleur d'accent de l'app : bleu (défaut) / vert militaire chromé / marron boisé chromé */
-const ACCENTS=[{key:'blue',name:'Bleu'},{key:'green',name:'Vert militaire'},{key:'brown',name:'Marron boisé'},{key:'yellow',name:'Jaune'},{key:'carbon',name:'Fibre de carbone'}];
+const ACCENTS=[{key:'blue',name:'accentBlue'},{key:'green',name:'accentGreen'},{key:'brown',name:'accentBrown'},{key:'yellow',name:'accentYellow'},{key:'carbon',name:'accentCarbon'}];
 function setAccent(c){
   P.theme=c; saveAll(); applyTheme();
   if($('#s-profil')&&$('#s-profil').classList.contains('on')) renderProfile();
   refreshPfSheet();
   sfx&&sfx('tap');
-  toast('Couleur appliquée ✓');
+  toast(t('colorApplied'));
 }
 function pfAccentPickerHTML(){
   const cur=P.theme||'blue';
   return '<div class="accent-picker">'+ACCENTS.map(a=>
-    '<div class="accent-dot'+(cur===a.key?' on':'')+'" data-a="'+a.key+'" title="'+a.name+'" onclick="event.stopPropagation();setAccent(\''+a.key+'\')"></div>'
+    '<div class="accent-dot'+(cur===a.key?' on':'')+'" data-a="'+a.key+'" title="'+t(a.name)+'" onclick="event.stopPropagation();setAccent(\''+a.key+'\')"></div>'
   ).join('')+'</div>';
 }
 function toggleEasyMode(){
   P.easyMode=!P.easyMode; saveAll(); applyTheme();
   if($('#s-profil')&&$('#s-profil').classList.contains('on')) renderProfile();
   if($('#s-home')&&$('#s-home').classList.contains('on')) renderHome();
-  toast(P.easyMode?'Mode simplifié activé ✓':'Mode simplifié désactivé');
+  toast(P.easyMode?t('easyModeOn'):t('easyModeOff'));
 }
 function setMode(m){ P.mode=(m==='light')?'light':'dark'; saveAll(); applyTheme(); if($('#s-profil')&&$('#s-profil').classList.contains('on'))renderProfile(); refreshPfSheet(); }
 // suit le thème du téléphone en mode auto
@@ -2826,6 +3463,156 @@ function muscleRepImg(group){
   _MUSCLE_REP_CACHE[group]=img;
   return img;
 }
+/* ---------- Traduction affichage muscu (noms/muscles/matériel restent en français en interne comme clés) ---------- */
+const MUSCLE_TR={
+  en:{'Abdominaux':'Abs','Abducteurs':'Abductors','Adducteurs':'Adductors','Arrière épaules':'Rear delts','Avant-bras':'Forearms',
+    'Biceps':'Biceps','Corps entier':'Full body','Cou':'Neck','Deltoïde antérieur':'Front delt','Deltoïde latéral':'Side delt',
+    'Dos':'Back','Fessiers':'Glutes','Grand dorsal':'Lats','Ischios':'Hamstrings','Lombaires':'Lower back','Mollets':'Calves',
+    'Obliques':'Obliques','Pectoraux':'Chest','Pectoraux bas':'Lower chest','Pectoraux haut':'Upper chest','Quadriceps':'Quads',
+    'Transverse':'Transverse abs','Trapèzes':'Traps','Triceps':'Triceps','Épaules':'Shoulders'},
+  ar:{'Abdominaux':'البطن','Abducteurs':'المُبعِدة','Adducteurs':'المُقرِّبة','Arrière épaules':'الكتف الخلفي','Avant-bras':'الساعد',
+    'Biceps':'ذات الرأسين','Corps entier':'كامل الجسم','Cou':'الرقبة','Deltoïde antérieur':'الكتف الأمامي','Deltoïde latéral':'الكتف الجانبي',
+    'Dos':'الظهر','Fessiers':'الأرداف','Grand dorsal':'الظهرية الكبرى','Ischios':'أوتار الركبة','Lombaires':'أسفل الظهر','Mollets':'السمانة',
+    'Obliques':'المائلة','Pectoraux':'الصدر','Pectoraux bas':'أسفل الصدر','Pectoraux haut':'أعلى الصدر','Quadriceps':'الرباعية',
+    'Transverse':'المستعرضة','Trapèzes':'شبه المنحرفة','Triceps':'ثلاثية الرؤوس','Épaules':'الكتفين'}
+};
+function trMuscle(m){ if(!m) return m; const l=curLang(); if(l==='fr'||!MUSCLE_TR[l]) return m; return MUSCLE_TR[l][m]||m; }
+const EQUIP_TR={
+  en:{'Barre':'Barbell','Haltères':'Dumbbells','Kettlebell':'Kettlebell','Machine':'Machine','Poids du corps':'Bodyweight','Poulie':'Cable','Élastique':'Resistance band'},
+  ar:{'Barre':'بار','Haltères':'دمبل','Kettlebell':'كيتل بل','Machine':'آلة','Poids du corps':'وزن الجسم','Poulie':'بكرة','Élastique':'شريط مقاومة'}
+};
+function trEquip(e){ if(!e) return e; const l=curLang(); if(l==='fr'||!EQUIP_TR[l]) return e; return EQUIP_TR[l][e]||e; }
+function trLevel(lv){ const map={'Débutant':'lvlBeginner','Intermédiaire':'lvlIntermediate','Avancé':'lvlAdvanced'}; return map[lv]?t(map[lv]):lv; }
+const EX_NAME_TR={
+  en:{'Développé couché barre':'Barbell Bench Press','Développé incliné barre':'Incline Barbell Bench Press','Développé décliné barre':'Decline Barbell Bench Press',
+    'Développé couché haltères':'Dumbbell Bench Press','Développé incliné haltères':'Incline Dumbbell Press','Écarté couché haltères':'Flat Dumbbell Fly',
+    'Écarté incliné haltères':'Incline Dumbbell Fly','Pec Deck (machine)':'Pec Deck (Machine)','Développé machine convergente':'Converging Chest Press Machine',
+    'Écarté poulie haute':'High Cable Fly','Écarté poulie basse':'Low Cable Fly','Crossover poulie':'Cable Crossover','Pompes':'Push-ups',
+    'Pompes déclinées':'Decline Push-ups','Pompes diamant':'Diamond Push-ups','Dips pectoraux':'Chest Dips','Pullover haltère':'Dumbbell Pullover',
+    'Écarté élastique':'Band Chest Fly','Soulevé de terre':'Deadlift','Soulevé de terre roumain':'Romanian Deadlift','Rowing barre buste penché':'Bent-over Barbell Row',
+    'Rowing T-bar':'T-Bar Row','Rowing haltère unilatéral':'Single-arm Dumbbell Row','Rowing poulie basse':'Seated Cable Row','Tirage vertical poulie':'Lat Pulldown',
+    'Tirage nuque':'Behind-the-neck Pulldown','Tractions pronation':'Pull-ups (Pronated)','Tractions supination':'Chin-ups (Supinated)','Pull-over poulie':'Cable Pullover',
+    'Rowing machine assise':'Seated Row Machine','Rowing élastique':'Band Row','Good Morning':'Good Morning','Hyperextension lombaire':'Back Hyperextension',
+    'Superman au sol':'Floor Superman','Développé militaire barre':'Barbell Overhead Press','Développé haltères assis':'Seated Dumbbell Shoulder Press',
+    'Développé Arnold':'Arnold Press','Développé machine épaules':'Shoulder Press Machine','Élévations latérales':'Lateral Raises',
+    'Élévations latérales poulie':'Cable Lateral Raise','Élévations frontales':'Front Raises','Oiseau (rear delt)':'Rear Delt Fly','Face Pull poulie':'Cable Face Pull',
+    'Rowing menton':'Upright Row','Élévations latérales élastique':'Band Lateral Raise','Shrug barre':'Barbell Shrug','Shrug haltères':'Dumbbell Shrug',
+    'Shrug machine':'Shrug Machine','Curl barre EZ':'EZ-Bar Curl','Curl haltères':'Dumbbell Curl','Curl marteau':'Hammer Curl','Curl incliné':'Incline Dumbbell Curl',
+    'Curl concentré':'Concentration Curl','Curl pupitre (Preacher)':'Preacher Curl','Curl poulie basse':'Low Cable Curl','Curl araignée':'Spider Curl',
+    '21s biceps':'Biceps 21s','Curl élastique':'Band Curl','Barre au front (Skull Crusher)':'Skull Crusher','Extension poulie haute':'Cable Triceps Pushdown',
+    'Extension poulie corde':'Rope Triceps Pushdown','Extension nuque haltère':'Overhead Dumbbell Extension','Kickback haltère':'Dumbbell Kickback',
+    'Dips entre bancs':'Bench Dips','Développé couché serré':'Close-Grip Bench Press','Extension élastique':'Band Triceps Extension','Curl poignets':'Wrist Curl',
+    'Curl poignets inversé':'Reverse Wrist Curl','Marche du fermier':'Farmer\u2019s Walk','Wrist roller':'Wrist Roller','Crunch':'Crunch','Crunch poulie':'Cable Crunch',
+    'Relevé de jambes suspendu':'Hanging Leg Raise','Relevé de jambes au sol':'Lying Leg Raise','Planche':'Plank','Planche latérale':'Side Plank',
+    'Russian Twist':'Russian Twist','Roulette abdominale':'Ab Wheel Rollout','Mountain Climbers':'Mountain Climbers','Vacuum abdominal':'Stomach Vacuum',
+    'Hip Thrust barre':'Barbell Hip Thrust','Hip Thrust machine':'Hip Thrust Machine','Pont fessier':'Glute Bridge','Kickback poulie':'Cable Kickback',
+    'Abduction machine':'Hip Abduction Machine','Adduction machine':'Hip Adduction Machine','Fentes bulgares':'Bulgarian Split Squat',
+    'Abduction élastique':'Band Hip Abduction','Squat barre':'Barbell Squat','Front Squat':'Front Squat','Squat Smith':'Smith Machine Squat',
+    'Presse à cuisses':'Leg Press','Hack Squat':'Hack Squat','Leg Extension':'Leg Extension','Fentes avant':'Forward Lunges','Fentes marchées':'Walking Lunges',
+    'Goblet Squat':'Goblet Squat','Squat poids du corps':'Bodyweight Squat','Wall Sit':'Wall Sit','Leg Curl allongé':'Lying Leg Curl','Leg Curl assis':'Seated Leg Curl',
+    'Nordic Curl':'Nordic Hamstring Curl','Soulevé jambes tendues haltères':'Stiff-leg Dumbbell Deadlift','Mollets debout':'Standing Calf Raise',
+    'Mollets assis':'Seated Calf Raise','Mollets à la presse':'Leg Press Calf Raise','Mollets unilatéral haltère':'Single-leg Dumbbell Calf Raise',
+    'Extension de cou':'Neck Extension','Flexion de cou':'Neck Flexion','Burpees':'Burpees','Thruster':'Thruster','Clean & Press':'Clean & Press',
+    'Kettlebell Swing':'Kettlebell Swing','Snatch kettlebell':'Kettlebell Snatch','Turkish Get-up':'Turkish Get-up'},
+  ar:{'Développé couché barre':'ضغط البنش بالبار','Développé incliné barre':'ضغط بنش مائل بالبار','Développé décliné barre':'ضغط بنش منحدر بالبار',
+    'Développé couché haltères':'ضغط بنش بالدمبل','Développé incliné haltères':'ضغط بنش مائل بالدمبل','Écarté couché haltères':'فتح صدر بالدمبل مستلقيًا',
+    'Écarté incliné haltères':'فتح صدر مائل بالدمبل','Pec Deck (machine)':'جهاز فتح الصدر (بيك ديك)','Développé machine convergente':'جهاز ضغط الصدر المتقارب',
+    'Écarté poulie haute':'فتح صدر بالبكرة العالية','Écarté poulie basse':'فتح صدر بالبكرة المنخفضة','Crossover poulie':'كروس أوفر بالبكرة','Pompes':'ضغط (بوش أب)',
+    'Pompes déclinées':'ضغط منحدر','Pompes diamant':'ضغط الماسة','Dips pectoraux':'متوازي للصدر','Pullover haltère':'بولأوفر بالدمبل',
+    'Écarté élastique':'فتح صدر بالشريط المطاطي','Soulevé de terre':'الرفعة الميتة','Soulevé de terre roumain':'الرفعة الميتة الروماني','Rowing barre buste penché':'تجديف بالبار منحني الجذع',
+    'Rowing T-bar':'تجديف تي بار','Rowing haltère unilatéral':'تجديف بالدمبل بيد واحدة','Rowing poulie basse':'تجديف بالبكرة الجالس','Tirage vertical poulie':'سحب علوي بالبكرة',
+    'Tirage nuque':'سحب خلف الرقبة','Tractions pronation':'سحب عالٍ (قبضة علوية)','Tractions supination':'سحب عالٍ (قبضة سفلية)','Pull-over poulie':'بولأوفر بالبكرة',
+    'Rowing machine assise':'تجديف بالآلة الجالس','Rowing élastique':'تجديف بالشريط المطاطي','Good Morning':'صباح الخير (تمرين الظهر)','Hyperextension lombaire':'تمديد أسفل الظهر',
+    'Superman au sol':'تمرين سوبرمان الأرضي','Développé militaire barre':'ضغط عسكري بالبار','Développé haltères assis':'ضغط كتف بالدمبل جالسًا',
+    'Développé Arnold':'ضغط أرنولد','Développé machine épaules':'جهاز ضغط الكتف','Élévations latérales':'رفرفة جانبية',
+    'Élévations latérales poulie':'رفرفة جانبية بالبكرة','Élévations frontales':'رفرفة أمامية','Oiseau (rear delt)':'رفرفة الكتف الخلفي','Face Pull poulie':'سحب للوجه بالبكرة',
+    'Rowing menton':'تجديف للذقن','Élévations latérales élastique':'رفرفة جانبية بالشريط','Shrug barre':'هز الكتفين بالبار','Shrug haltères':'هز الكتفين بالدمبل',
+    'Shrug machine':'جهاز هز الكتفين','Curl barre EZ':'كيرل بار EZ','Curl haltères':'كيرل بالدمبل','Curl marteau':'كيرل المطرقة','Curl incliné':'كيرل مائل',
+    'Curl concentré':'كيرل التركيز','Curl pupitre (Preacher)':'كيرل الواعظ','Curl poulie basse':'كيرل بالبكرة المنخفضة','Curl araignée':'كيرل العنكبوت',
+    '21s biceps':'تمرين الـ21 للعضلة ذات الرأسين','Curl élastique':'كيرل بالشريط المطاطي','Barre au front (Skull Crusher)':'سكال كراشر','Extension poulie haute':'تمديد الترايسبس بالبكرة العلوية',
+    'Extension poulie corde':'تمديد الترايسبس بالحبل','Extension nuque haltère':'تمديد خلف الرأس بالدمبل','Kickback haltère':'كيك باك بالدمبل',
+    'Dips entre bancs':'متوازي بين مقعدين','Développé couché serré':'ضغط بنش بقبضة ضيقة','Extension élastique':'تمديد الترايسبس بالشريط','Curl poignets':'كيرل المعصم',
+    'Curl poignets inversé':'كيرل المعصم العكسي','Marche du fermier':'مشية المزارع','Wrist roller':'لفافة المعصم','Crunch':'كرانش','Crunch poulie':'كرانش بالبكرة',
+    'Relevé de jambes suspendu':'رفع الأرجل معلقًا','Relevé de jambes au sol':'رفع الأرجل من الأرض','Planche':'بلانك','Planche latérale':'بلانك جانبي',
+    'Russian Twist':'لفة روسية','Roulette abdominale':'عجلة البطن','Mountain Climbers':'متسلق الجبل','Vacuum abdominal':'شفط البطن',
+    'Hip Thrust barre':'هيب ثرست بالبار','Hip Thrust machine':'جهاز هيب ثرست','Pont fessier':'جسر الأرداف','Kickback poulie':'كيك باك بالبكرة',
+    'Abduction machine':'جهاز تبعيد الفخذ','Adduction machine':'جهاز تقريب الفخذ','Fentes bulgares':'اندفاع بلغاري',
+    'Abduction élastique':'تبعيد الفخذ بالشريط','Squat barre':'سكوات بالبار','Front Squat':'سكوات أمامي','Squat Smith':'سكوات بجهاز سميث',
+    'Presse à cuisses':'ضغط الأرجل','Hack Squat':'هاك سكوات','Leg Extension':'تمديد الأرجل','Fentes avant':'اندفاع أمامي','Fentes marchées':'اندفاع أثناء المشي',
+    'Goblet Squat':'سكوات الكأس','Squat poids du corps':'سكوات بوزن الجسم','Wall Sit':'جلسة الحائط','Leg Curl allongé':'كيرل الأرجل مستلقيًا','Leg Curl assis':'كيرل الأرجل جالسًا',
+    'Nordic Curl':'كيرل نوردك','Soulevé jambes tendues haltères':'رفعة ميتة بالساق المستقيمة بالدمبل','Mollets debout':'رفع السمانة واقفًا',
+    'Mollets assis':'رفع السمانة جالسًا','Mollets à la presse':'رفع السمانة بجهاز الضغط','Mollets unilatéral haltère':'رفع السمانة بيد واحدة بالدمبل',
+    'Extension de cou':'تمديد الرقبة','Flexion de cou':'ثني الرقبة','Burpees':'بيربي','Thruster':'ثراستر','Clean & Press':'كلين آند بريس',
+    'Kettlebell Swing':'أرجحة الكيتل بل','Snatch kettlebell':'سناتش الكيتل بل','Turkish Get-up':'النهوض التركي'}
+};
+function trExName(n){ if(!n) return n; const l=curLang(); if(l==='fr'||!EX_NAME_TR[l]) return n; return EX_NAME_TR[l][n]||n; }
+const EX_TIP_TR={
+  en:{'Bench Press':'Keep your shoulder blades pinched and your feet planted on the floor.','Decline Bench Press':'Targets the lower chest, lower the bar under control.',
+    'Dumbbell Incline Bench Press':'Bench at 30°, use a full range of motion.','Lever Seated Fly':'Squeeze your chest at the end of the movement, hold for 1s.',
+    'Cable Crossover':'Slight forward lean, squeeze at the center.','Push Up':'Keep your core tight, don\u2019t let your back sag.',
+    'Dumbbell Pullover':'Stretch the rib cage, keep elbows slightly bent.','Lever Lying T-bar Row':'Pull with your elbows, squeeze your shoulder blades.',
+    'Straight Back Seated Row':'Keep your back straight, don\u2019t lean backward.','Bar Lateral Pulldown':'Pull the bar to your chest, elbows pointing down.',
+    'Pull Up':'Full range of motion, control the descent.','Deadlift':'Keep a neutral back, drive through your legs.',
+    'Bent Over Row':'Torso at 45°, keep your core braced throughout.','Single Arm Dumbbell Row':'Brace on the bench, pull your elbow high.',
+    'Lever Reverse Fly':'Targets the rear deltoids.','EZ-bar 21s':'7 bottom-half + 7 top-half + 7 full reps, no cheating.',
+    'Hammer Curl':'Neutral grip, keep your elbows still.','Biceps Curl':'No swinging, full contraction.','Lever Preacher Curl':'Arms braced, lower slowly.',
+    'Concentration Curl':'Isolates the biceps, elbow braced against your thigh.','Cable Curl':'Constant tension throughout the movement.',
+    'Skull Crusher':'Keep elbows still, lower toward your forehead.','Elbow Dips':'Keep your torso upright to target the triceps.',
+    'Triceps Pushdown':'Elbows tucked to your sides, full extension.','Overhead Triceps Extension':'Elbows pointing up, stretch fully.',
+    'Close Grip Bench Press':'Hands shoulder-width apart, elbows tucked in.','Seated Shoulder Press':'Back braced, press straight up.',
+    'Lever Seated Shoulder Press':'Guided path, stay in control.','Lateral Raise':'Raise to shoulder height, no higher.',
+    'Front Raise':'No swinging, control the descent.','Cable Face Pull':'Pull toward your face, elbows out wide.',
+    'Arnold Press':'Rotate your wrists as you press up.','Upright Row':'Pull the bar to chin height, elbows high.',
+    'Shrug':'Shrug your shoulders up, pause at the top.','Lever Leg Extension':'Full extension, pause for 1s at the top.',
+    'Lever Seated Leg Extension':'Control the descent.','Lever Lying Leg Curl':'Hips pressed down, bring your heels to your glutes.',
+    'Lever Kneeling Leg Curl':'Isolates the hamstring, no jerking.','Sled 45° Leg Wide Press':'Wide foot stance to target the inner thigh.',
+    'Sled 45° Leg Press':'Keep knees aligned with your feet.','Smith Squat':'Squat below parallel, back straight.',
+    'Back Squat':'Drive through the floor, brace your breath.','Front Squat':'Elbows high, torso upright.',
+    'Bulgarian Split Squat':'Rear foot elevated, front knee stable.','Dumbbell Split Squat':'Torso upright, controlled descent.',
+    'Walking Lunge':'Take long strides, knee shouldn\u2019t pass your toes.','Lever Seated Calf Raise':'Maximum range, stretch at the bottom.',
+    'Lever Seated One Leg Calf Raise':'One leg at a time, maximum contraction.','Standing Calf Raise':'Pause at the top, lower slowly.',
+    'Nordic Hamstring Curl':'Slow eccentric, excellent injury protection for runners.','45° One Leg Hyperextension':'Neutral back, squeeze your glutes.',
+    'Hip Thrust':'Pause 1s at the top, chin tucked.','Lever Hip Thrust':'Full hip extension.',
+    'Lever Seated Hip Abduction':'Push out slowly, control the return.','Lever Seated Hip Adduction':'Squeeze your thighs together, control the return.',
+    'Glute Bridge':'Push through your heels.','Cable Kickback':'Straight leg kicking back, don\u2019t arch your back.',
+    'Plank':'Body aligned, constant core bracing.','Hanging Leg Raise':'Raise your legs without swinging.',
+    'Cable Crunch':'Curl your spine, not your hips.','Russian Twist':'Controlled rotation, active core bracing.',
+    'Ab Wheel Rollout':'Never let your lower back sag.','Wrist Curl':'Full range of motion at the wrists.',
+    'Farmer Walk':'Upright posture, firm grip.'},
+  ar:{'Bench Press':'حافظ على انضمام لوحي الكتف وثبّت قدميك على الأرض.','Decline Bench Press':'يستهدف أسفل الصدر، أنزل البار بشكل متحكم.',
+    'Dumbbell Incline Bench Press':'المقعد بزاوية 30°، مدى حركة كامل.','Lever Seated Fly':'اضغط عضلات الصدر في نهاية الحركة، توقف لثانية واحدة.',
+    'Cable Crossover':'انحناء خفيف للجذع، انقباض في المنتصف.','Push Up':'حافظ على شد عضلات الجذع، لا تدع ظهرك ينحني.',
+    'Dumbbell Pullover':'مدّد القفص الصدري، حافظ على ثني خفيف بالمرفقين.','Lever Lying T-bar Row':'اسحب بواسطة المرفقين، وقرّب لوحي الكتف.',
+    'Straight Back Seated Row':'حافظ على استقامة الظهر، لا تمِل للخلف.','Bar Lateral Pulldown':'اسحب البار نحو صدرك، والمرفقان لأسفل.',
+    'Pull Up':'مدى حركة كامل، وتحكّم في النزول.','Deadlift':'حافظ على استقامة الظهر، وادفع بساقيك.',
+    'Bent Over Row':'الجذع بزاوية 45°، وشد عضلات الجذع باستمرار.','Single Arm Dumbbell Row':'استند على المقعد، واسحب المرفق للأعلى.',
+    'Lever Reverse Fly':'يستهدف الكتف الخلفي.','EZ-bar 21s':'7 تكرارات للنصف السفلي + 7 للنصف العلوي + 7 كاملة، دون غش.',
+    'Hammer Curl':'قبضة محايدة، ثبّت المرفقين.','Biceps Curl':'دون تأرجح، انقباض كامل.','Lever Preacher Curl':'ثبّت الذراعين، وأنزل ببطء.',
+    'Concentration Curl':'يعزل العضلة ذات الرأسين، والمرفق مستند على الفخذ.','Cable Curl':'شد مستمر طوال الحركة.',
+    'Skull Crusher':'ثبّت المرفقين، وأنزل باتجاه الجبهة.','Elbow Dips':'حافظ على استقامة الجذع لاستهداف الترايسبس.',
+    'Triceps Pushdown':'المرفقان ملاصقان للجسم، تمديد كامل.','Overhead Triceps Extension':'المرفقان للأعلى، مدّد جيدًا.',
+    'Close Grip Bench Press':'اليدان بعرض الكتفين، والمرفقان قريبان من الجسم.','Seated Shoulder Press':'الظهر مستند، ادفع للأعلى بشكل مستقيم.',
+    'Lever Seated Shoulder Press':'مسار موجّه، حافظ على التحكم.','Lateral Raise':'ارفع حتى مستوى الكتفين، لا أعلى من ذلك.',
+    'Front Raise':'دون تأرجح، وتحكّم في النزول.','Cable Face Pull':'اسحب باتجاه الوجه، وباعد بين المرفقين.',
+    'Arnold Press':'أدر معصميك أثناء الدفع للأعلى.','Upright Row':'اسحب البار حتى الذقن، والمرفقان مرتفعان.',
+    'Shrug':'ارفع كتفيك للأعلى، وتوقف في القمة.','Lever Leg Extension':'تمديد كامل، توقف لثانية في الأعلى.',
+    'Lever Seated Leg Extension':'تحكّم في النزول.','Lever Lying Leg Curl':'الحوض ملاصق، وقرّب الكعبين من الأرداف.',
+    'Lever Kneeling Leg Curl':'يعزل أوتار الركبة، دون حركات مفاجئة.','Sled 45° Leg Wide Press':'وضعية قدمين واسعة لاستهداف الجزء الداخلي.',
+    'Sled 45° Leg Press':'حافظ على محاذاة الركبتين مع القدمين.','Smith Squat':'انزل تحت المستوى الموازي، والظهر مستقيم.',
+    'Back Squat':'ادفع الأرض، واحبس نفسك أثناء الدفع.','Front Squat':'المرفقان مرتفعان، والجذع مستقيم.',
+    'Bulgarian Split Squat':'القدم الخلفية مرفوعة، والركبة الأمامية ثابتة.','Dumbbell Split Squat':'الجذع مستقيم، والنزول متحكم به.',
+    'Walking Lunge':'خطوات واسعة، والركبة لا تتجاوز أصابع القدم.','Lever Seated Calf Raise':'مدى حركة أقصى، ومدّد في الأسفل.',
+    'Lever Seated One Leg Calf Raise':'رجل واحدة في كل مرة، وانقباض أقصى.','Standing Calf Raise':'توقف في الأعلى، وانزل ببطء.',
+    'Nordic Hamstring Curl':'حركة سلبية بطيئة، وقاية ممتازة للعدّائين.','45° One Leg Hyperextension':'الظهر مستقيم، وانقبض الأرداف.',
+    'Hip Thrust':'توقف ثانية في الأعلى، والذقن للداخل.','Lever Hip Thrust':'تمديد كامل للورك.',
+    'Lever Seated Hip Abduction':'افتح ببطء، وتحكّم في العودة.','Lever Seated Hip Adduction':'قرّب الفخذين، ولا تُفلت أثناء العودة.',
+    'Glute Bridge':'ادفع بواسطة الكعبين.','Cable Kickback':'الساق ممدودة للخلف، دون تقويس الظهر.',
+    'Plank':'الجسم في خط مستقيم، وشد مستمر للجذع.','Hanging Leg Raise':'ارفع الساقين دون تأرجح.',
+    'Cable Crunch':'لفّ العمود الفقري، وليس الوركين.','Russian Twist':'دوران متحكم به، وشد فعّال للجذع.',
+    'Ab Wheel Rollout':'لا تدع أسفل ظهرك ينحني أبدًا.','Wrist Curl':'مدى حركة كامل للمعصمين.',
+    'Farmer Walk':'وضعية مستقيمة، وقبضة ثابتة.'}
+};
+function trExTip(name,fallback){ const l=curLang(); if(l==='fr'||!EX_TIP_TR[l]) return fallback; return EX_TIP_TR[l][name]||fallback; }
 function exMeta(name){
   const d=XDATA.find(x=>x[0]===name);
   let base;
@@ -2837,32 +3624,13 @@ function exMeta(name){
 }
 function enrichFiche(b){
   const g=b.group;
-  const breathByGroup='Inspire pendant la phase négative (descente/étirement), expire pendant l\u2019effort (poussée/contraction).';
+  const breathByGroup=t('exBreathGeneric');
   // Génère une fiche complète et cohérente
-  b.steps=[
-    'Position de départ : installe-toi correctement, dos gainé, regard neutre.',
-    'Contracte les muscles cibles avant de débuter le mouvement.',
-    'Réalise la phase concentrique de façon contrôlée, sans à-coup.',
-    'Marque une courte pause en contraction maximale.',
-    'Reviens lentement en contrôlant la phase excentrique (2-3 s).'
-  ];
+  b.steps=[t('exStep1'),t('exStep2'),t('exStep3'),t('exStep4'),t('exStep5')];
   b.breathing=breathByGroup;
-  b.mistakes=[
-    'Utiliser une charge trop lourde au détriment de la technique.',
-    'Manquer d\u2019amplitude (mouvement trop court).',
-    'Prendre de l\u2019élan / tricher avec le dos.',
-    'Aller trop vite et négliger la phase excentrique.'
-  ];
-  b.tips=[
-    'Privilégie la connexion muscle-esprit : sens le muscle travailler.',
-    'Reste sur 2-3 RIR (répétitions en réserve) pour progresser sainement.',
-    b.tip||'Garde une exécution propre sur toutes les répétitions.'
-  ];
-  b.safety=[
-    'Échauffe-toi avec des séries légères avant les séries lourdes.',
-    'Garde le dos neutre, ne bloque jamais complètement les articulations.',
-    'Arrête immédiatement en cas de douleur articulaire vive.'
-  ];
+  b.mistakes=[t('exMistakeGeneric1'),t('exMistakeGeneric2'),t('exMistakeGeneric3'),t('exMistakeGeneric4')];
+  b.tips=[t('exTipGeneric1'),t('exTipGeneric2'),trExTip(b.name,b.tip)||t('exTipGeneric3')];
+  b.safety=[t('exSafety1'),t('exSafety2'),t('exSafety3')];
   // variantes : autres exercices du même groupe
   b.variants=XDATA.filter(x=>x[1]===g && x[0]!==b.name).slice(0,4).map(x=>x[0]);
   return b;
@@ -3051,6 +3819,47 @@ const REPLACEMENT_ACTIVITIES=['Aucune activité','Running','Musculation','Vélo'
 const MISSED_REASON_ICONS={'Manque de temps':'⏱️','Fatigue':'🥱','Douleur':'🤕','Maladie':'🤒','Météo':'🌧️','Déplacement':'🧳','Motivation':'😕','Oubli':'💭','Autre':'✏️'};
 const REPLACEMENT_ICONS={'Aucune activité':'🚫','Running':'🏃','Musculation':'🏋️','Vélo':'🚴','Natation':'🏊','Mobilité':'🧘','Marche':'🚶','Autre':'➕'};
 const HARD_TYPES=['VMAc','VMAl','VO2','INTERVAL','DBLSEUIL','SEUIL','SPE','TEMPO_SPE','TEMPO','PROGRESSIF','FARTLEK','COTES'];
+const REASON_TR={
+  en:{'Manque de temps':'Lack of time','Fatigue':'Fatigue','Douleur':'Pain','Maladie':'Illness','Météo':'Weather','Déplacement':'Travel','Motivation':'Motivation','Oubli':'Forgot','Autre':'Other'},
+  ar:{'Manque de temps':'ضيق الوقت','Fatigue':'تعب','Douleur':'ألم','Maladie':'مرض','Météo':'الطقس','Déplacement':'تنقّل','Motivation':'دافعية','Oubli':'نسيان','Autre':'آخر'}
+};
+function trReason(r){ if(!r) return r; const l=curLang(); if(l==='fr'||!REASON_TR[l]) return r; return REASON_TR[l][r]||r; }
+const ACTIVITY_TR={
+  en:{'Aucune activité':'No activity','Running':'Running','Musculation':'Strength training','Vélo':'Cycling','Natation':'Swimming','Mobilité':'Mobility','Marche':'Walking','Autre':'Other'},
+  ar:{'Aucune activité':'لا نشاط','Running':'الجري','Musculation':'تدريب القوة','Vélo':'الدراجة','Natation':'السباحة','Mobilité':'الحركة','Marche':'المشي','Autre':'آخر'}
+};
+function trActivity(a){ if(!a) return a; const l=curLang(); if(l==='fr'||!ACTIVITY_TR[l]) return a; return ACTIVITY_TR[l][a]||a; }
+const MUSCU_CAT_TR={
+  en:{'Haut du corps':'Upper body','Bas du corps':'Lower body','Gainage':'Core','Explosivité':'Explosiveness','Force maximale':'Max strength','Force endurance':'Strength endurance','Puissance':'Power','Mobilité':'Mobility'},
+  ar:{'Haut du corps':'الجزء العلوي','Bas du corps':'الجزء السفلي','Gainage':'تقوية الجذع','Explosivité':'الانفجارية','Force maximale':'القوة القصوى','Force endurance':'تحمل القوة','Puissance':'القدرة','Mobilité':'الحركة'}
+};
+function trMuscuCat(c){ if(!c) return c; const l=curLang(); if(l==='fr'||!MUSCU_CAT_TR[l]) return c; return MUSCU_CAT_TR[l][c]||c; }
+const RACE_TR={
+  en:{'5 km':'5K','10 km':'10K','Semi-marathon':'Half marathon','Marathon':'Marathon','Ultra':'Ultra','Trail':'Trail','Cross':'Cross country','Autre':'Other'},
+  ar:{'5 km':'5 كم','10 km':'10 كم','Semi-marathon':'نصف ماراثون','Marathon':'ماراثون','Ultra':'ألترا','Trail':'تريل','Cross':'كروس كنتري','Autre':'آخر'}
+};
+function trRace(r){ if(!r) return r; const l=curLang(); if(l==='fr'||!RACE_TR[l]) return r; return RACE_TR[l][r]||r; }
+const PROFILE_TR={en:{'Plate':'Flat','Vallonnée':'Hilly','Montagne':'Mountain'},ar:{'Plate':'مستوٍ','Vallonnée':'متموّج','Montagne':'جبلي'}};
+function trProfile(p){ if(!p) return p; const l=curLang(); if(l==='fr'||!PROFILE_TR[l]) return p; return PROFILE_TR[l][p]||p; }
+const GOAL_TR={
+  en:{'Finir':'Finish','Record personnel':'Personal best','Qualification':'Qualify','Podium':'Podium','Victoire':'Win'},
+  ar:{'Finir':'الإنهاء','Record personnel':'رقم شخصي','Qualification':'التأهل','Podium':'منصة التتويج','Victoire':'الفوز'}
+};
+function trGoal(g){ if(!g) return g; const l=curLang(); if(l==='fr'||!GOAL_TR[l]) return g; return GOAL_TR[l][g]||g; }
+const LIKED_TYPE_TR={
+  en:{'VMA courte':'Short VO2max intervals','VMA longue':'Long VO2max intervals','Intervalles':'Intervals','Tempo':'Tempo','Seuil':'Threshold',
+    'Endurance fondamentale':'Aerobic endurance','Sortie longue':'Long run','Double seuil':'Double threshold','Fartlek':'Fartlek','Côtes':'Hill repeats',
+    'Travail VO₂max':'VO2max work','Travail à l\u2019allure spécifique':'Race-pace work','Récupération active':'Active recovery'},
+  ar:{'VMA courte':'VMA قصيرة','VMA longue':'VMA طويلة','Intervalles':'فترات','Tempo':'تمبو','Seuil':'عتبة',
+    'Endurance fondamentale':'تحمل هوائي أساسي','Sortie longue':'خرجة طويلة','Double seuil':'عتبة مضاعفة','Fartlek':'فارتلك','Côtes':'تلال',
+    'Travail VO₂max':'عمل VO2max','Travail à l\u2019allure spécifique':'عمل بوتيرة السباق','Récupération active':'تعافٍ نشط'}
+};
+function trLikedType(l2){ if(!l2) return l2; const l=curLang(); if(l==='fr'||!LIKED_TYPE_TR[l]) return l2; return LIKED_TYPE_TR[l][l2]||l2; }
+const PAIN_TR={
+  en:{'Aucune':'None','Légères':'Mild','Gênantes':'Bothersome','Importantes':'Significant'},
+  ar:{'Aucune':'لا شيء','Légères':'خفيفة','Gênantes':'مزعجة','Importantes':'كبيرة'}
+};
+function trPain(p){ if(!p) return p; const l=curLang(); if(l==='fr'||!PAIN_TR[l]) return p; return PAIN_TR[l][p]||p; }
 let missedCtx=null;
 
 function checkMissedSessions(){
@@ -3062,20 +3871,20 @@ function checkMissedSessions(){
 function openMissedFlow(sid){
   missedCtx={sessionId:sid, reason:null, replacement:null, replData:null, muscuCat:null};
   renderMissedReason();
-  $('#ovProgTitle').textContent='Séance manquée';
+  $('#ovProgTitle').textContent=t('missedSessionTitle');
   openOv('ovProg');
 }
 function renderMissedReason(){
   const s=PLAN.sessions.find(x=>x.id===missedCtx.sessionId); if(!s) return;
-  let h='<div class="card" style="border-color:rgba(255,92,108,.35);background:rgba(255,92,108,.08);margin-bottom:18px"><div style="font-weight:700;color:var(--bad)">⚠️ Séance manquée</div><div style="font-size:13px;color:var(--muted);margin-top:4px">'+s.title+' · '+fmtDate(s.date)+'</div></div>';
-  h+='<div class="lab" style="margin-bottom:10px">Pourquoi cette séance n\u2019a-t-elle pas été réalisée ?</div>';
-  h+='<div class="reason-grid">'+MISSED_REASONS.map(r=>'<div class="reason-tile" onclick="selectMissedReason(\''+r+'\')">'+(MISSED_REASON_ICONS[r]||'')+' '+r+'</div>').join('')+'</div>';
+  let h='<div class="card" style="border-color:rgba(255,92,108,.35);background:rgba(255,92,108,.08);margin-bottom:18px"><div style="font-weight:700;color:var(--bad)">⚠️ '+t('missedSessionTitle')+'</div><div style="font-size:13px;color:var(--muted);margin-top:4px">'+s.title+' · '+fmtDate(s.date)+'</div></div>';
+  h+='<div class="lab" style="margin-bottom:10px">'+t('missedReasonPrompt')+'</div>';
+  h+='<div class="reason-grid">'+MISSED_REASONS.map(r=>'<div class="reason-tile" onclick="selectMissedReason(\''+r+'\')">'+(MISSED_REASON_ICONS[r]||'')+' '+trReason(r)+'</div>').join('')+'</div>';
   $('#progBody').innerHTML=h;
 }
 function selectMissedReason(r){ missedCtx.reason=r; renderMissedReplacement(); }
 function renderMissedReplacement(){
-  let h='<div class="lab" style="margin-bottom:10px">As-tu finalement fait autre chose ?</div>';
-  h+='<div class="act-grid">'+REPLACEMENT_ACTIVITIES.map(a=>'<div class="act-tile" onclick="selectReplacement(\''+a+'\')"><div class="ic">'+(REPLACEMENT_ICONS[a]||'')+'</div><div class="lb">'+a+'</div></div>').join('')+'</div>';
+  let h='<div class="lab" style="margin-bottom:10px">'+t('missedReplacementPrompt')+'</div>';
+  h+='<div class="act-grid">'+REPLACEMENT_ACTIVITIES.map(a=>'<div class="act-tile" onclick="selectReplacement(\''+a+'\')"><div class="ic">'+(REPLACEMENT_ICONS[a]||'')+'</div><div class="lb">'+trActivity(a)+'</div></div>').join('')+'</div>';
   $('#progBody').innerHTML=h;
 }
 function selectReplacement(a){
@@ -3087,40 +3896,40 @@ function selectReplacement(a){
   renderMissedSimpleForm(a);
 }
 function renderMissedRunningForm(){
-  let h='<div class="field"><label>Distance (km)</label><input class="inp" id="mr_km" type="number" placeholder="8"></div>';
-  h+='<div class="field"><label>Allure /km</label><input class="inp" id="mr_pace" placeholder="4:30"></div>';
-  h+='<div class="field"><label>RPE — difficulté ressentie : <span id="mr_rpe_v">5</span>/10</label><input type="range" min="1" max="10" value="5" style="width:100%" id="mr_rpe" oninput="document.getElementById(\'mr_rpe_v\').textContent=this.value"></div>';
-  h+='<div class="field"><label>Notes (optionnel)</label><textarea class="inp" id="mr_notes" rows="2"></textarea></div>';
-  h+='<button class="btn" onclick="saveMissedRunning()">Valider</button>';
+  let h='<div class="field"><label>'+t('distanceKmLabel')+'</label><input class="inp" id="mr_km" type="number" placeholder="8"></div>';
+  h+='<div class="field"><label>'+t('paceKmLabel')+'</label><input class="inp" id="mr_pace" placeholder="4:30"></div>';
+  h+='<div class="field"><label>'+t('rpeFeltLabel')+' <span id="mr_rpe_v">5</span>/10</label><input type="range" min="1" max="10" value="5" style="width:100%" id="mr_rpe" oninput="document.getElementById(\'mr_rpe_v\').textContent=this.value"></div>';
+  h+='<div class="field"><label>'+t('notesOptionalLabel')+'</label><textarea class="inp" id="mr_notes" rows="2"></textarea></div>';
+  h+='<button class="btn" onclick="saveMissedRunning()">'+t('validate')+'</button>';
   $('#progBody').innerHTML=h;
 }
 function saveMissedRunning(){
   const km=+$('#mr_km').value||0, pace=$('#mr_pace').value.trim()||'—', rpe=+$('#mr_rpe').value, notes=$('#mr_notes').value.trim();
   missedCtx.replData={km,pace,rpe,notes};
-  if(km>0){ SESS.push({date:todayKey(),title:'Course de remplacement',km,pace,type:'EF',duration:(pace!=='—')?Math.round(km*parseTime(pace)/60):0,rpe}); }
+  if(km>0){ SESS.push({date:todayKey(),title:t('replacementRunTitle'),km,pace,type:'EF',duration:(pace!=='—')?Math.round(km*parseTime(pace)/60):0,rpe}); }
   finalizeMissedSession();
 }
 function renderMissedMuscuForm(){
   const cats=['Haut du corps','Bas du corps','Gainage','Explosivité','Force maximale','Force endurance','Puissance','Mobilité'];
   missedCtx.muscuCat=cats[0];
-  let h='<div class="field"><label>Type de séance</label><div class="pills" id="mm_cats">'+cats.map((c,i)=>'<div class="pill '+(i===0?'on':'')+'" onclick="selMuscuCat(\''+c+'\',this)">'+c+'</div>').join('')+'</div></div>';
-  h+='<div class="field"><label>Durée (min)</label><input class="inp" id="mm_dur" type="number" placeholder="45"></div>';
-  h+='<div class="field"><label>RPE — difficulté ressentie : <span id="mm_rpe_v">5</span>/10</label><input type="range" min="1" max="10" value="5" style="width:100%" id="mm_rpe" oninput="document.getElementById(\'mm_rpe_v\').textContent=this.value"></div>';
-  h+='<button class="btn" onclick="saveMissedMuscu()">Valider</button>';
+  let h='<div class="field"><label>'+t('sessionTypeLabel')+'</label><div class="pills" id="mm_cats">'+cats.map((c,i)=>'<div class="pill '+(i===0?'on':'')+'" onclick="selMuscuCat(\''+c+'\',this)">'+trMuscuCat(c)+'</div>').join('')+'</div></div>';
+  h+='<div class="field"><label>'+t('durationMinLabel')+'</label><input class="inp" id="mm_dur" type="number" placeholder="45"></div>';
+  h+='<div class="field"><label>'+t('rpeFeltLabel')+' <span id="mm_rpe_v">5</span>/10</label><input type="range" min="1" max="10" value="5" style="width:100%" id="mm_rpe" oninput="document.getElementById(\'mm_rpe_v\').textContent=this.value"></div>';
+  h+='<button class="btn" onclick="saveMissedMuscu()">'+t('validate')+'</button>';
   $('#progBody').innerHTML=h;
 }
 function selMuscuCat(c,el){ missedCtx.muscuCat=c; document.querySelectorAll('#mm_cats .pill').forEach(x=>x.classList.remove('on')); el.classList.add('on'); }
 function saveMissedMuscu(){
   const dur=Math.min(1440,+$('#mm_dur').value||0), rpe=+$('#mm_rpe').value;
   missedCtx.replData={cat:missedCtx.muscuCat,dur,rpe};
-  MSESS.push({date:todayKey(),progName:'Remplacement — '+missedCtx.muscuCat,tonnage:0,sets:0,reps:0,duration:dur,calories:0,muscles:{}});
+  MSESS.push({date:todayKey(),progName:tp('replacementMuscuTitle',trMuscuCat(missedCtx.muscuCat)),tonnage:0,sets:0,reps:0,duration:dur,calories:0,muscles:{}});
   finalizeMissedSession();
 }
 function renderMissedCardioForm(kind){
-  let h='<div class="field"><label>Durée (min)</label><input class="inp" id="mc_dur" type="number" placeholder="45"></div>';
-  h+='<div class="field"><label>Distance (km, optionnel)</label><input class="inp" id="mc_km" type="number" placeholder="15"></div>';
-  h+='<div class="field"><label>RPE — difficulté ressentie : <span id="mc_rpe_v">5</span>/10</label><input type="range" min="1" max="10" value="5" style="width:100%" id="mc_rpe" oninput="document.getElementById(\'mc_rpe_v\').textContent=this.value"></div>';
-  h+='<button class="btn" onclick="saveMissedCardio(\''+kind+'\')">Valider</button>';
+  let h='<div class="field"><label>'+t('durationMinLabel')+'</label><input class="inp" id="mc_dur" type="number" placeholder="45"></div>';
+  h+='<div class="field"><label>'+t('distanceKmOptionalLabel')+'</label><input class="inp" id="mc_km" type="number" placeholder="15"></div>';
+  h+='<div class="field"><label>'+t('rpeFeltLabel')+' <span id="mc_rpe_v">5</span>/10</label><input type="range" min="1" max="10" value="5" style="width:100%" id="mc_rpe" oninput="document.getElementById(\'mc_rpe_v\').textContent=this.value"></div>';
+  h+='<button class="btn" onclick="saveMissedCardio(\''+kind+'\')">'+t('validate')+'</button>';
   $('#progBody').innerHTML=h;
 }
 function saveMissedCardio(kind){
@@ -3129,8 +3938,8 @@ function saveMissedCardio(kind){
   finalizeMissedSession();
 }
 function renderMissedSimpleForm(kind){
-  let h='<div class="field"><label>Durée (min, optionnel)</label><input class="inp" id="ms_dur" type="number" placeholder="30"></div>';
-  h+='<button class="btn" onclick="saveMissedSimple(\''+kind+'\')">Valider</button>';
+  let h='<div class="field"><label>'+t('durationMinOptionalLabel')+'</label><input class="inp" id="ms_dur" type="number" placeholder="30"></div>';
+  h+='<button class="btn" onclick="saveMissedSimple(\''+kind+'\')">'+t('validate')+'</button>';
   $('#progBody').innerHTML=h;
 }
 function saveMissedSimple(kind){ missedCtx.replData={kind,dur:+$('#ms_dur').value||0}; finalizeMissedSession(); }
@@ -3142,7 +3951,7 @@ function finalizeMissedSession(){
   weeklyAdaptiveRegen();
   saveAll();
   closeOv('ovProg');
-  toast('📝 Séance notée'+(note?' — '+note:''));
+  toast('📝 '+t('sessionNotedToast')+(note?' — '+note:''));
   missedCtx=null;
   renderSport();
   setTimeout(checkMissedSessions,400);
@@ -3162,22 +3971,22 @@ function ruleBasedAdjust(session, reason, replacement){
       const factor=cardioReplacement?0.9:0.75;
       nh.km=Math.round(nh.km*factor*10)/10;
       nh.duration=Math.round(nh.duration*factor);
-      const flag='⚠️ Séance allégée automatiquement (raison : '+reason.toLowerCase()+' le '+fmtDate(session.date)+'). — ';
+      const flag='⚠️ '+tp('autoLightenedFlag',trReason(reason).toLowerCase(),fmtDate(session.date))+' — ';
       if(nh.detail && nh.detail.objectif) nh.detail.objectif=flag+nh.detail.objectif;
       nh.desc=flag+(nh.desc||'');
-      note='prochaine séance dure allégée';
+      note=t('note_nextHardLightened');
     }
   } else if(replacement==='Musculation' && missedCtx && ['Bas du corps','Explosivité','Puissance'].includes(missedCtx.muscuCat)){
     const tomorrow=addDaysKey(session.date,1);
     const nextDay=PLAN.sessions.find(s=>s.date===tomorrow && !s.done && !s.missed);
     if(nextDay && ['VMAc','COTES'].includes(nextDay.baseType)){
-      const flag='💡 Ta séance jambes a déjà sollicité tes muscles — reste souple sur l\u2019explosivité aujourd\u2019hui. — ';
+      const flag='💡 '+t('legDayCarryoverFlag')+' — ';
       if(nextDay.detail && nextDay.detail.objectif) nextDay.detail.objectif=flag+nextDay.detail.objectif;
       nextDay.desc=flag+(nextDay.desc||'');
-      note='vigilance sur ta prochaine séance explosive';
+      note=t('note_explosiveCaution');
     }
   } else if((replacement==='Vélo'||replacement==='Natation') && !heavyReasons.includes(reason)){
-    note='charge cardio déjà comptabilisée, plan inchangé';
+    note=t('note_cardioAlreadyCounted');
   }
   checkConsecutiveMisses();
   return note;
@@ -3189,7 +3998,7 @@ function checkConsecutiveMisses(){
   if(recentMissed>=3 && PLAN.autoReducedAt!==tk){
     nextUpcoming(tk).forEach(s=>{ s.km=Math.round(s.km*0.85*10)/10; s.duration=Math.round(s.duration*0.85); });
     PLAN.autoReducedAt=tk;
-    toast('📉 3 séances ratées récemment : volume des prochaines semaines réduit de 15%');
+    toast('📉 '+t('recentMissesReducedMsg'));
   }
 }
 function applyProgressiveOverload(entry){
@@ -3236,11 +4045,11 @@ function weeklyAdaptiveRegen(force){
   const repRatio=repTot?repOk/repTot:null;
   const rpeDelta=rpeN?rpeDeltaSum/rpeN:0;
   const avgFatigue=fatN?fatSum/fatN:3;
-  let factor=1, reason='Charge stable : nouvelles variantes de séances, volume inchangé.';
+  let factor=1, reason=t('load_stable');
   if(missedCount>=2 || rpeDelta>=1.5 || avgFatigue>=4){
-    factor=0.88; reason='Charge élevée détectée (séances ratées, RPE au-dessus du prévu ou fatigue) → volume réduit d\u2019environ 12% cette semaine.';
+    factor=0.88; reason=t('load_high');
   } else if(repRatio!=null && repRatio>=0.85 && rpeDelta<=0 && avgFatigue<=3){
-    factor=1.06; reason='Bonne assimilation (répétitions respectées, RPE maîtrisé) → volume et intensité légèrement augmentés.';
+    factor=1.06; reason=t('load_goodAssimilation');
   }
   const vdot=getUserVDOT(); if(!vdot) return;
   const pace={ EF:paceFromPct(vdot,.70), RC:paceFromPct(vdot,.66), MAR:paceFromPct(vdot,.80),
@@ -3267,13 +4076,13 @@ function weeklyAdaptiveRegen(force){
   });
   PLAN.lastAdapt=tk;
   DB.save('run_plan',PLAN);
-  toast('🔄 Plan mis à jour pour la semaine — '+reason);
+  toast('🔄 '+tp('planUpdatedWeekReason',reason));
 }
 
 function generatePlan(){
   const vdot=getUserVDOT();
-  if(!vdot){ toast('Profil incomplet : ajoute un chrono dans tes records'); return; }
-  if(!P.compDate){ toast('Choisis une date de compétition'); return; }
+  if(!vdot){ toast(t('profileIncompleteAddTime')); return; }
+  if(!P.compDate){ toast(t('chooseCompDate')); return; }
   const days=(P.days&&P.days.length)?[...P.days].sort((a,b)=>a-b):[1,3,5,6];
   const today=new Date(); today.setHours(0,0,0,0);
   const comp=new Date(P.compDate); comp.setHours(0,0,0,0);
@@ -3324,7 +4133,7 @@ function generatePlan(){
   }
   PLAN={ created:todayKey(), vdot, weeks, seed, sessions, goal, race:P.objRace||'5 km' };
   DB.save('run_plan',PLAN);
-  toast('🔥 Plan « '+(P.objRace||'course')+' » généré : '+weeks+' sem, '+sessions.length+' séances');
+  toast('🔥 '+tp('planGenerated',(trRace(P.objRace)||t('raceGeneric')),weeks,sessions.length));
   burst(); renderSport();
 }
 function raceMeters(){ const m={'5 km':5000,'10 km':10000,'Semi-marathon':21097,'Marathon':42195,'Trail':21097,'Cross':8000,'Ultra':50000}; return m[P.objRace]||5000; }
@@ -3350,20 +4159,20 @@ function openPlanSetup(){
     days:[...(P.days||[1,3,5,6])], kmWeekMin:P.kmWeekMin||P.kmWeek||35, kmWeekMax:P.kmWeekMax||Math.round((P.kmWeek||35)*1.6),
     likedTypes:[...((PREFS.likedTypes)||[])]
   };
-  renderPlanSetup(); $('#ovProgTitle').textContent='Configurer mon plan'; openOv('ovProg');
+  renderPlanSetup(); $('#ovProgTitle').textContent=t('configurePlanTitle'); openOv('ovProg');
 }
 function renderPlanSetup(){
   const s=setupTmp;
-  const dn=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
-  let h='<div class="field"><label>Course préparée</label><select class="inp" onchange="setupTmp.objRace=this.value">'+['5 km','10 km','Semi-marathon','Marathon','Ultra','Trail','Cross','Autre'].map(r=>'<option '+(s.objRace===r?'selected':'')+'>'+r+'</option>').join('')+'</select></div>';
-  h+='<div class="field"><label>Date de la course</label><input class="inp" type="date" value="'+s.compDate+'" onchange="setupTmp.compDate=this.value"></div>';
-  h+='<div class="field"><label>Profil du parcours</label><div class="pills">'+['Plate','Vallonnée','Montagne'].map(p=>'<div class="pill '+(s.objProfile===p?'on':'')+'" onclick="setupTmp.objProfile=\''+p+'\';renderPlanSetup()">'+p+'</div>').join('')+'</div></div>';
-  h+='<div class="field"><label>Objectif</label><div class="pills">'+['Finir','Record personnel','Qualification','Podium','Victoire'].map(o=>'<div class="pill '+(s.objGoal===o?'on':'')+'" onclick="setupTmp.objGoal=\''+o+'\';renderPlanSetup()">'+o+'</div>').join('')+'</div></div>';
-  h+='<div class="field"><label>Chrono visé (optionnel)</label><input class="inp" value="'+(s.objTime||'')+'" oninput="setupTmp.objTime=this.value" placeholder="ex: 18:30"></div>';
-  h+='<div class="field"><label>Jours d\u2019entraînement</label><div class="pills">'+[1,2,3,4,5,6,0].map(d=>'<div class="pill '+(s.days.includes(d)?'on':'')+'" onclick="toggleSetupDay('+d+')">'+dn[d]+'</div>').join('')+'</div></div>';
-  h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>Km/sem mini</label><input class="inp" type="number" value="'+s.kmWeekMin+'" oninput="setupTmp.kmWeekMin=+this.value"></div><div class="field" style="flex:1"><label>Km/sem maxi (pic)</label><input class="inp" type="number" value="'+s.kmWeekMax+'" oninput="setupTmp.kmWeekMax=+this.value"></div></div>';
-  h+='<div class="field"><label>Séances préférées (le coach les privilégiera)</label><div class="pills">'+LIKED_TYPES.map(t=>'<div class="pill '+(s.likedTypes.includes(t)?'on':'')+'" onclick="toggleLiked(\''+t.replace(/'/g,"\\'")+'\')">'+t+'</div>').join('')+'</div></div>';
-  h+='<button class="btn" onclick="confirmPlanSetup()">🔥 Générer mon plan</button>';
+  const dn=[0,1,2,3,4,5,6].map(d=>new Date(2023,0,1+d).toLocaleDateString(localeCode(),{weekday:'short'}));
+  let h='<div class="field"><label>'+t('preparedRaceLabel')+'</label><select class="inp" onchange="setupTmp.objRace=this.value">'+['5 km','10 km','Semi-marathon','Marathon','Ultra','Trail','Cross','Autre'].map(r=>'<option value="'+r+'" '+(s.objRace===r?'selected':'')+'>'+trRace(r)+'</option>').join('')+'</select></div>';
+  h+='<div class="field"><label>'+t('raceDateLabel')+'</label><input class="inp" type="date" value="'+s.compDate+'" onchange="setupTmp.compDate=this.value"></div>';
+  h+='<div class="field"><label>'+t('courseProfileLabel')+'</label><div class="pills">'+['Plate','Vallonnée','Montagne'].map(p=>'<div class="pill '+(s.objProfile===p?'on':'')+'" onclick="setupTmp.objProfile=\''+p+'\';renderPlanSetup()">'+trProfile(p)+'</div>').join('')+'</div></div>';
+  h+='<div class="field"><label>'+t('objectiveCap')+'</label><div class="pills">'+['Finir','Record personnel','Qualification','Podium','Victoire'].map(o=>'<div class="pill '+(s.objGoal===o?'on':'')+'" onclick="setupTmp.objGoal=\''+o+'\';renderPlanSetup()">'+trGoal(o)+'</div>').join('')+'</div></div>';
+  h+='<div class="field"><label>'+t('targetTimeOptionalLabel')+'</label><input class="inp" value="'+(s.objTime||'')+'" oninput="setupTmp.objTime=this.value" placeholder="ex: 18:30"></div>';
+  h+='<div class="field"><label>'+t('trainingDaysLabel')+'</label><div class="pills">'+[1,2,3,4,5,6,0].map(d=>'<div class="pill '+(s.days.includes(d)?'on':'')+'" onclick="toggleSetupDay('+d+')">'+dn[d]+'</div>').join('')+'</div></div>';
+  h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>'+t('minKmWeekLabel')+'</label><input class="inp" type="number" value="'+s.kmWeekMin+'" oninput="setupTmp.kmWeekMin=+this.value"></div><div class="field" style="flex:1"><label>'+t('maxKmWeekLabel')+'</label><input class="inp" type="number" value="'+s.kmWeekMax+'" oninput="setupTmp.kmWeekMax=+this.value"></div></div>';
+  h+='<div class="field"><label>'+t('preferredSessionsLabel')+'</label><div class="pills">'+LIKED_TYPES.map(lt=>'<div class="pill '+(s.likedTypes.includes(lt)?'on':'')+'" onclick="toggleLiked(\''+lt.replace(/'/g,"\\'")+'\')">'+trLikedType(lt)+'</div>').join('')+'</div></div>';
+  h+='<button class="btn" onclick="confirmPlanSetup()">🔥 '+t('generateMyPlanBtn')+'</button>';
   $('#progBody').innerHTML=h;
 }
 function toggleSetupDay(d){ const i=setupTmp.days.indexOf(d); if(i>=0)setupTmp.days.splice(i,1); else setupTmp.days.push(d); renderPlanSetup(); }
@@ -3435,43 +4244,43 @@ function buildSessionV2(type,o){
   const WU_MIN=17.5, CD_MIN=12.5;
   const wuKm=distKmFromTime(WU_MIN*60,pace.EF), cdKm=distKmFromTime(CD_MIN*60,pace.RC);
   const round1=x=>Math.round(x*10)/10;
-  const WU='15-20 min footing en '+S(pace.EF)+'/km + 4-5 lignes droites progressives + gammes (montées de genoux, talons-fesses, foulées bondissantes).';
-  const CD='10-15 min footing très lent en '+S(pace.RC)+'/km + étirements doux.';
+  const WU=tp('wuTemplate',S(pace.EF));
+  const CD=tp('cdTemplate',S(pace.RC));
   switch(type){
     case 'EF':
       km=easyKm; p=S(pace.EF); rpe=3; label=t('sessLabel_EF'); title=t('sessTitle_EF');
-      d={objectif:'Construire ta base aérobie — le socle de toute progression (80% du volume des élites).',warmup:'Mise en route progressive sur 10 min.',body:km+' km à allure facile ('+S(pace.EF)+'/km). Conversation possible en permanence.',paces:'Zone 2, ~70% FCmax — '+S(pace.EF)+'/km.',recovery:'Effort continu.',cooldown:'Quelques étirements des mollets et ischios.',tips:['Respire par le ventre.','La lenteur est volontaire et productive.'],mistakes:['Courir trop vite « par habitude ».'],why:'Développe le cœur, les capillaires et les mitochondries sans fatigue ni risque.'};
+      d={objectif:t('bs_ef_objectif'),warmup:t('bs_ef_warmup'),body:tp('bs_ef_body',km,S(pace.EF)),paces:tp('bs_ef_paces',S(pace.EF)),recovery:t('bs_ef_recovery'),cooldown:t('bs_ef_cooldown'),tips:[t('bs_ef_tip1'),t('bs_ef_tip2')],mistakes:[t('bs_ef_mistake1')],why:t('bs_ef_why')};
       break;
     case 'RECUP':
       km=Math.max(4,Math.round(easyKm*0.7)); p=S(pace.RC); rpe=2; label=t('sessLabel_RECUP'); title=t('sessTitle_RECUP');
-      d={objectif:'Accélérer la récupération entre deux séances dures.',warmup:'Aucun.',body:km+' km très souple à '+S(pace.RC)+'/km.',paces:'Zone 1 — très lent.',recovery:'—',cooldown:'Automassage / mobilité.',tips:['Si très fatigué, remplace par 25 min de marche.'],mistakes:['Accélérer : tu sabotes la récup.'],why:'La circulation sanguine évacue les déchets et relance l\u2019adaptation.'};
+      d={objectif:t('bs_recup_objectif'),warmup:t('bs_recup_warmup'),body:tp('bs_recup_body',km,S(pace.RC)),paces:t('bs_recup_paces'),recovery:'—',cooldown:t('bs_recup_cooldown'),tips:[t('bs_recup_tip1')],mistakes:[t('bs_recup_mistake1')],why:t('bs_recup_why')};
       break;
     case 'LONG': case 'LONG_COURT':
       km=type==='LONG_COURT'?Math.round(wkKm*0.22):Math.round(wkKm*(phase.key==='SPE'?0.34:0.30));
       km=Math.max(8,Math.min(longRunCapKm(),km)); p=S(pace.EF*0.99); rpe=4; label=t('sessLabel_LONG'); title=t('sessTitle_LONG')+(phase.key==='SPE'?t('progressiveSuffix'):'');
-      d={objectif:'Développer l\u2019endurance, l\u2019économie de course et le mental.',warmup:'Départ progressif 10 min.',body:phase.key==='SPE'||phase.key==='PIC'?km+' km progressifs : 1ère moitié en '+S(pace.EF)+'/km, 2nde moitié en accélérant jusqu\u2019à '+S(pace.MAR)+'/km.':km+' km à allure endurance stable ('+S(pace.EF*0.99)+'/km).',paces:'EF '+S(pace.EF)+'/km → allure marathon '+S(pace.MAR)+'/km en fin.',recovery:'Continu, ravitaille si > 1h15.',cooldown:CD,tips:['Mange bien la veille.','Emporte eau + gel si > 1h30.'],mistakes:['Partir trop vite et marcher à la fin.'],why:'Augmente les réserves de glycogène et la capacité à utiliser les graisses.'};
+      d={objectif:t('bs_long_objectif'),warmup:t('bs_long_warmup'),body:phase.key==='SPE'||phase.key==='PIC'?tp('bs_long_body_progressive',km,S(pace.EF),S(pace.MAR)):tp('bs_long_body_steady',km,S(pace.EF*0.99)),paces:tp('bs_long_paces',S(pace.EF),S(pace.MAR)),recovery:t('bs_long_recovery'),cooldown:CD,tips:[t('bs_long_tip1'),t('bs_long_tip2')],mistakes:[t('bs_long_mistake1')],why:t('bs_long_why')};
       break;
     case 'TEMPO': {
       const tmin=vary(20,30);
       const mainKm=distKmFromTime(tmin*60,pace.TEMPO);
       km=round1(wuKm+mainKm+cdKm); durMin=Math.round(WU_MIN+tmin+CD_MIN); p=S(pace.TEMPO); rpe=6; label=t('sessLabel_TEMPO'); title=t('sessTitle_TEMPO');
-      d={objectif:'Améliorer l\u2019efficacité et l\u2019endurance à allure soutenue.',warmup:WU,body:tmin+' min en continu à '+S(pace.TEMPO)+'/km (« confortablement difficile »), soit environ '+round1(mainKm)+' km.',paces:'~83% VMA — '+S(pace.TEMPO)+'/km.',recovery:'Bloc continu.',cooldown:CD,tips:['Tu dois pouvoir dire 2-3 mots, pas une phrase.'],mistakes:['Partir trop vite et exploser.'],why:'Repousse le seuil d\u2019accumulation du lactate.'};
+      d={objectif:t('bs_tempo_objectif'),warmup:WU,body:tp('bs_tempo_body',tmin,S(pace.TEMPO),round1(mainKm)),paces:tp('bs_tempo_paces',S(pace.TEMPO)),recovery:t('bs_tempo_recovery'),cooldown:CD,tips:[t('bs_tempo_tip1')],mistakes:[t('bs_tempo_mistake1')],why:t('bs_tempo_why')};
       break; }
     case 'TEMPO_SPE': {
       const n=vary(2,3), dist=2000, recSecEach=120, recN=Math.max(0,n-1);
       const mainKm=n*dist/1000, recKm=distKmFromTime(recN*recSecEach,pace.RC);
       km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*splitSecFromPace(pace.SPE,dist)/60+recN*recSecEach/60+CD_MIN);
       p=S(pace.SPE); rpe=6; label=t('sessLabel_TEMPO_SPE'); title=t('sessTitle_TEMPO_SPE');
-      series={reps:n,dist,paceSecPerKm:pace.SPE,recoverySec:recSecEach,recoveryLabel:'2 min trot'};
-      d={objectif:'Te familiariser avec l\u2019allure de ta course objectif ('+goal+').',warmup:WU,body:repsText(n,dist,pace.SPE)+', récup 2 min trot entre blocs.',paces:'Allure course : '+S(pace.SPE)+'/km.',recovery:'2 min trot entre blocs.',cooldown:CD,tips:['Mémorise les sensations de cette allure.'],mistakes:['Aller plus vite que l\u2019allure cible.'],why:'L\u2019allure spécifique doit devenir automatique le jour J.'};
+      series={reps:n,dist,paceSecPerKm:pace.SPE,recoverySec:recSecEach,recoveryLabel:t('recovLabel_2minTrot')};
+      d={objectif:tp('bs_temposp_objectif',goal),warmup:WU,body:tp('bs_temposp_body',repsText(n,dist,pace.SPE)),paces:tp('bs_temposp_paces',S(pace.SPE)),recovery:t('recovLabel_2minTrot'),cooldown:CD,tips:[t('bs_temposp_tip1')],mistakes:[t('bs_temposp_mistake1')],why:t('bs_temposp_why')};
       break; }
     case 'SEUIL': {
       const n=vary(4,6), dist=1000, recSecEach=60, recN=Math.max(0,n-1);
       const mainKm=n*dist/1000, recKm=distKmFromTime(recN*recSecEach,pace.RC);
       km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*splitSecFromPace(pace.SEUIL,dist)/60+recN*recSecEach/60+CD_MIN);
       p=S(pace.SEUIL); rpe=7; label=t('sessLabel_SEUIL'); title=t('sessTitle_SEUIL');
-      series={reps:n,dist,paceSecPerKm:pace.SEUIL,recoverySec:recSecEach,recoveryLabel:'1 min trot'};
-      d={objectif:'Repousser le seuil lactique — facteur n°1 de performance.',warmup:WU,body:repsText(n,dist,pace.SEUIL)+', récup 1 min trot.',paces:'~88% VMA — '+S(pace.SEUIL)+'/km.',recovery:'1 min trot entre chaque.',cooldown:CD,tips:['Toutes les reps à la même allure.'],mistakes:['Partir trop fort sur la 1ère.'],why:'Le seuil est l\u2019allure tenable ~1h ; l\u2019élever rend tout plus facile.'};
+      series={reps:n,dist,paceSecPerKm:pace.SEUIL,recoverySec:recSecEach,recoveryLabel:t('recovLabel_1minTrot')};
+      d={objectif:t('bs_seuil_objectif'),warmup:WU,body:tp('bs_seuil_body',repsText(n,dist,pace.SEUIL)),paces:tp('bs_seuil_paces',S(pace.SEUIL)),recovery:t('bs_seuil_recovery'),cooldown:CD,tips:[t('bs_seuil_tip1')],mistakes:[t('bs_seuil_mistake1')],why:t('bs_seuil_why')};
       break; }
     case 'DBLSEUIL': {
       // 2 sorties dans la journée : le matin en blocs longs, le soir en 400 m courts.
@@ -3482,25 +4291,25 @@ function buildSessionV2(type,o){
       km=round1(wuKm+amMainKm+amRecKm+cdKm+wuKm+pmMainKm+pmRecKm+cdKm);
       durMin=Math.round(2*WU_MIN+nAM*minAM+recNam*recAM/60+2*CD_MIN+nPM*splitSecFromPace(pace.SEUIL,distPM)/60+recNpm*recPM/60);
       p=S(pace.SEUIL); rpe=7; label=t('sessLabel_DBLSEUIL'); title=t('sessTitle_DBLSEUIL');
-      series={reps:nPM,dist:distPM,paceSecPerKm:pace.SEUIL,recoverySec:recPM,recoveryLabel:'30 s trot',note:'Séance du soir (matin = '+nAM+' × '+minAM+' min)'};
-      d={objectif:'Maximiser le volume au seuil sans fatigue excessive (clé norvégienne).',warmup:WU+' (×2 : une fois le matin, une fois le soir)',body:'Matin : '+nAM+' × '+minAM+' min à '+S(pace.SEUIL*1.01)+'/km (récup 1 min). Soir : '+repsText(nPM,distPM,pace.SEUIL)+' (récup 30 s). Reste sous-maximal.',paces:'Seuil contrôlé '+S(pace.SEUIL)+'/km — lactate ~2-4 mmol.',recovery:'Récup courte, intensité maîtrisée.',cooldown:CD+' (après chaque séance)',tips:['Ne jamais finir épuisé : tu dois pouvoir refaire la séance.'],mistakes:['Transformer le seuil en VMA.'],why:'Double dose de stimulus seuil pour une fatigue minimale — signature des Ingebrigtsen.'};
+      series={reps:nPM,dist:distPM,paceSecPerKm:pace.SEUIL,recoverySec:recPM,recoveryLabel:t('recovLabel_30sTrot'),note:tp('bs_dblseuil_note',nAM,minAM)};
+      d={objectif:t('bs_dblseuil_objectif'),warmup:tp('bs_dblseuil_warmup',WU),body:tp('bs_dblseuil_body',nAM,minAM,S(pace.SEUIL*1.01),repsText(nPM,distPM,pace.SEUIL)),paces:tp('bs_dblseuil_paces',S(pace.SEUIL)),recovery:t('bs_dblseuil_recovery'),cooldown:tp('bs_dblseuil_cooldown',CD),tips:[t('bs_dblseuil_tip1')],mistakes:[t('bs_dblseuil_mistake1')],why:t('bs_dblseuil_why')};
       break; }
     case 'VMAc': {
       const n=vary(8,12), dist=300, recSecEach=60, recN=Math.max(0,n-1);
       const mainKm=n*dist/1000, recKm=distKmFromTime(recN*recSecEach,pace.RC);
       km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*splitSecFromPace(pace.VMAc,dist)/60+recN*recSecEach/60+CD_MIN);
       p=S(pace.VMAc); rpe=9; label=t('sessLabel_VMAc'); title=t('sessTitle_VMAc');
-      series={reps:n,dist,paceSecPerKm:pace.VMAc,recoverySec:recSecEach,recoveryLabel:'1 min trot'};
+      series={reps:n,dist,paceSecPerKm:pace.VMAc,recoverySec:recSecEach,recoveryLabel:t('recovLabel_1minTrot')};
       const vmac30m=Math.round(distKmFromTime(30,pace.VMAc)*1000);
-      d={objectif:'Développer la vVO2max et la vitesse de pointe.',warmup:WU+' Échauffement OBLIGATOIRE.',body:repsText(n,dist,pace.VMAc)+', récup 1 min trot. (ou variante courte : '+vary(12,16)+' × ~'+vmac30m+' m vif / '+vmac30m+' m trot, même intensité).',paces:'~108-110% VMA — vise '+fmtSplit(splitSecFromPace(pace.VMAc,dist))+' sur chaque '+dist+' m (et non '+S(pace.VMAc)+', qui est juste l\u2019allure ramenée au km).',recovery:'1 min trot entre les '+dist+' m.',cooldown:CD,tips:['Même temps de passage sur toutes les reps : '+fmtSplit(splitSecFromPace(pace.VMAc,dist))+' au '+dist+' m.'],mistakes:['Négliger l\u2019échauffement → blessure.','Confondre l\u2019allure /km affichée avec le temps réel à réaliser sur '+dist+' m.'],why:'Stimule le VO₂max et l\u2019économie neuromusculaire.'};
+      d={objectif:t('bs_vmac_objectif'),warmup:tp('bs_vmac_warmup',WU),body:tp('bs_vmac_body',repsText(n,dist,pace.VMAc),vary(12,16),vmac30m,vmac30m),paces:tp('bs_vmac_paces',fmtSplit(splitSecFromPace(pace.VMAc,dist)),dist,S(pace.VMAc)),recovery:tp('bs_vmac_recovery',dist),cooldown:CD,tips:[tp('bs_vmac_tip1',fmtSplit(splitSecFromPace(pace.VMAc,dist)),dist)],mistakes:[t('bs_vmac_mistake1'),tp('bs_vmac_mistake2',dist)],why:t('bs_vmac_why')};
       break; }
     case 'VMAl': case 'VO2': {
       const n=vary(5,7), dist=1000, recSecEach=150, recN=Math.max(0,n-1);
       const mainKm=n*dist/1000, recKm=distKmFromTime(recN*recSecEach,pace.RC);
       km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*splitSecFromPace(pace.VMAl,dist)/60+recN*recSecEach/60+CD_MIN);
       p=S(pace.VMAl); rpe=9; label=type==='VO2'?t('sessLabel_VO2'):t('sessLabel_VMAl'); title=type==='VO2'?t('sessTitle_VO2'):t('sessTitle_VMAl');
-      series={reps:n,dist,paceSecPerKm:pace.VMAl,recoverySec:recSecEach,recoveryLabel:'2-3 min trot'};
-      d={objectif:'Élever le VO₂max — ta cylindrée maximale.',warmup:WU,body:repsText(n,dist,pace.VMAl)+', récup 2-3 min trot. (ou '+vary(4,5)+' × 1200 m).',paces:'~95-98% VMA — '+S(pace.VMAl)+'/km.',recovery:'2-3 min trot.',cooldown:CD,tips:['Régularité avant tout.','Arrête si tu ne tiens plus l\u2019allure.'],mistakes:['Récup trop courte.'],why:'Le temps passé à ~90-100% VO₂max augmente ta puissance aérobie maximale.'};
+      series={reps:n,dist,paceSecPerKm:pace.VMAl,recoverySec:recSecEach,recoveryLabel:t('recovLabel_2to3minTrot')};
+      d={objectif:t('bs_vmal_objectif'),warmup:WU,body:tp('bs_vmal_body',repsText(n,dist,pace.VMAl),vary(4,5)),paces:tp('bs_vmal_paces',S(pace.VMAl)),recovery:t('recovLabel_2to3minTrot'),cooldown:CD,tips:[t('bs_vmal_tip1'),t('bs_vmal_tip2')],mistakes:[t('bs_vmal_mistake1')],why:t('bs_vmal_why')};
       break; }
     case 'INTERVAL': {
       const segs=[200,400,600,800,600,400,200];
@@ -3511,50 +4320,50 @@ function buildSessionV2(type,o){
       const recKm=distKmFromTime(recSec,pace.RC);
       km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+mainSec/60+recSec/60+CD_MIN);
       p=S(pace.VMAl); rpe=8; label=t('sessLabel_INTERVAL'); title=t('sessTitle_INTERVAL');
-      series={segments:segs.map(dist=>({dist,paceSecPerKm:paceFor(dist),splitSec:splitSecFromPace(paceFor(dist),dist)})),recoveryLabel:'jog = durée de l\u2019effort'};
+      series={segments:segs.map(dist=>({dist,paceSecPerKm:paceFor(dist),splitSec:splitSecFromPace(paceFor(dist),dist)})),recoveryLabel:t('bs_interval_recoveryLabel')};
       const detailSegs=segs.map(dist=>dist+' m ('+fmtSplit(splitSecFromPace(paceFor(dist),dist))+')').join(' · ');
-      d={objectif:'Travail mixte vitesse-endurance.',warmup:WU,body:'Pyramide : '+detailSegs+', récup jog = durée de l\u2019effort entre chaque segment.',paces:'De '+S(paceFor(200))+'/km (200 m) à '+S(paceFor(800))+'/km (800 m) — l\u2019allure ralentit progressivement avec la distance.',recovery:'Récup active égale à l\u2019effort.',cooldown:CD,tips:['Gère l\u2019allure selon la distance : plus la rép est courte, plus tu vas vite en valeur absolue.'],mistakes:['Tout faire à la même vitesse.'],why:'Combine plusieurs filières énergétiques.'};
+      d={objectif:t('bs_interval_objectif'),warmup:WU,body:tp('bs_interval_body',detailSegs),paces:tp('bs_interval_paces',S(paceFor(200)),S(paceFor(800))),recovery:t('bs_interval_recovery'),cooldown:CD,tips:[t('bs_interval_tip1')],mistakes:[t('bs_interval_mistake1')],why:t('bs_interval_why')};
       break; }
     case 'SPE': case 'SPE_COURT': {
       const n=type==='SPE_COURT'?vary(3,4):vary(4,6), dist=1000, recSecEach=90, recN=Math.max(0,n-1);
       const mainKm=n*dist/1000, recKm=distKmFromTime(recN*recSecEach,pace.RC);
       km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*splitSecFromPace(pace.SPE,dist)/60+recN*recSecEach/60+CD_MIN);
-      p=S(pace.SPE); rpe=8; label=t('sessLabel_SPE'); title=t('sessTitle_SPE')+(P.objRace?' '+P.objRace:'');
-      series={reps:n,dist,paceSecPerKm:pace.SPE,recoverySec:recSecEach,recoveryLabel:'90 s trot'};
-      d={objectif:'Ancrer l\u2019allure exacte de ta course ('+goal+').',warmup:WU,body:repsText(n,dist,pace.SPE)+', récup 90 s.',paces:'Allure objectif : '+S(pace.SPE)+'/km.',recovery:'90 s trot.',cooldown:CD,tips:['Cette allure doit devenir un réflexe.'],mistakes:['Aller plus vite par excès de confiance.'],why:'La spécificité prime à l\u2019approche de la course.'};
+      p=S(pace.SPE); rpe=8; label=t('sessLabel_SPE'); title=t('sessTitle_SPE')+(P.objRace?' '+trRace(P.objRace):'');
+      series={reps:n,dist,paceSecPerKm:pace.SPE,recoverySec:recSecEach,recoveryLabel:t('recovLabel_90sTrot')};
+      d={objectif:tp('bs_spe_objectif',goal),warmup:WU,body:tp('bs_spe_body',repsText(n,dist,pace.SPE)),paces:tp('bs_spe_paces',S(pace.SPE)),recovery:t('recovLabel_90sTrot'),cooldown:CD,tips:[t('bs_spe_tip1')],mistakes:[t('bs_spe_mistake1')],why:t('bs_spe_why')};
       break; }
     case 'PROGRESSIF':
       km=Math.round(easyKm*1.2); p=S(pace.MAR); rpe=6; label=t('sessLabel_PROGRESSIF'); title=t('sessTitle_PROGRESSIF');
-      d={objectif:'Apprendre à accélérer sur la fatigue.',warmup:'10 min '+S(pace.EF)+'/km.',body:km+' km en 3 paliers : '+S(pace.EF)+' → '+S(pace.MAR)+' → '+S(pace.TEMPO)+'/km.',paces:'EF → tempo.',recovery:'Continu.',cooldown:CD,tips:['Chaque palier un peu plus vite.'],mistakes:['Partir trop vite.'],why:'Renforce le mental et le négatif split.'};
+      d={objectif:t('bs_progressif_objectif'),warmup:tp('bs_10min_warmup',S(pace.EF)),body:tp('bs_progressif_body',km,S(pace.EF),S(pace.MAR),S(pace.TEMPO)),paces:t('bs_progressif_paces'),recovery:t('bs_progressif_recovery'),cooldown:CD,tips:[t('bs_progressif_tip1')],mistakes:[t('bs_progressif_mistake1')],why:t('bs_progressif_why')};
       break;
     case 'FARTLEK': {
       const n=vary(8,12);
       const mainKm=n*(distKmFromTime(60,pace.VMAl)+distKmFromTime(60,pace.EF));
       km=round1(distKmFromTime(15*60,pace.EF)+mainKm+cdKm); durMin=Math.round(15+n*2+CD_MIN);
       p=S(pace.TEMPO); rpe=6; label=t('sessLabel_FARTLEK'); title=t('sessTitle_FARTLEK');
-      d={objectif:'Travail au ressenti, ludique et libre.',warmup:'15 min '+S(pace.EF)+'/km.',body:n+' × (1 min vite / 1 min lent) au ressenti, dans la nature.',paces:'Vite ≈ '+S(pace.VMAl)+'/km, lent ≈ '+S(pace.EF)+'/km.',recovery:'Récup active libre.',cooldown:CD,tips:['Joue avec le terrain.'],mistakes:['Trop structurer : laisse-toi aller.'],why:'Développe le VO₂max en s\u2019amusant et casse la routine.'};
+      d={objectif:t('bs_fartlek_objectif'),warmup:tp('bs_fartlek_warmup',S(pace.EF)),body:tp('bs_fartlek_body',n),paces:tp('bs_fartlek_paces',S(pace.VMAl),S(pace.EF)),recovery:t('bs_fartlek_recovery'),cooldown:CD,tips:[t('bs_fartlek_tip1')],mistakes:[t('bs_fartlek_mistake1')],why:t('bs_fartlek_why')};
       break; }
     case 'COTES': {
       const n=vary(8,12), effortSec=37.5;
       const mainKm=distKmFromTime(n*effortSec,pace.SEUIL), recKm=distKmFromTime(n*effortSec,pace.RC);
       km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*effortSec/60+n*effortSec/60+CD_MIN);
       p=S(pace.SEUIL); rpe=8; label=t('sessLabel_COTES'); title=t('sessTitle_COTES');
-      series={reps:n,recoveryLabel:'descente trot',note:'30-45 s d\u2019effort en côte par répétition'};
-      d={objectif:'Développer puissance, force et économie de course.',warmup:WU,body:n+' × 30-45 s en côte (4-6%) à effort soutenu, récup en descente trot.',paces:'Effort à ~90%.',recovery:'Descente en récup.',cooldown:CD,tips:['Foulée courte et dynamique, regarde devant.'],mistakes:['Descendre trop vite (impact).'],why:'La côte = musculation spécifique sans impact traumatisant.'};
+      series={reps:n,recoveryLabel:t('bs_cotes_recoveryLabel'),note:t('bs_cotes_note')};
+      d={objectif:t('bs_cotes_objectif'),warmup:WU,body:tp('bs_cotes_body',n),paces:t('bs_cotes_paces'),recovery:t('bs_cotes_recovery'),cooldown:CD,tips:[t('bs_cotes_tip1')],mistakes:[t('bs_cotes_mistake1')],why:t('bs_cotes_why')};
       break; }
     case 'LIGNES':
       km=Math.round(easyKm*0.8); p=S(pace.EF); rpe=4; label=t('sessLabel_LIGNES'); title=t('sessTitle_LIGNES');
-      d={objectif:'Entretenir la vitesse et la fraîcheur (idéal taper).',warmup:'10 min '+S(pace.EF)+'/km.',body:Math.round(km*0.7)+' km EF + '+vary(6,8)+' × 80-100 m en accélération progressive (sans forcer), récup marche.',paces:'EF + accélérations relâchées.',recovery:'Marche/trot entre lignes.',cooldown:'Étirements.',tips:['Reste relâché, ne sprinte pas.'],mistakes:['Forcer sur les lignes en période d\u2019affûtage.'],why:'Garde le système nerveux affûté sans fatigue.'};
+      d={objectif:t('bs_lignes_objectif'),warmup:tp('bs_10min_warmup',S(pace.EF)),body:tp('bs_lignes_body',Math.round(km*0.7),vary(6,8)),paces:t('bs_lignes_paces'),recovery:t('bs_lignes_recovery'),cooldown:t('bs_lignes_cooldown'),tips:[t('bs_lignes_tip1')],mistakes:[t('bs_lignes_mistake1')],why:t('bs_lignes_why')};
       break;
     case 'COURSE':
-      const m=raceMeters(); km=Math.round(m/1000); p=S(predictTime(vdot,m)/(m/1000)); rpe=10; label=t('sessLabel_COURSE'); title=t('sessTitle_COURSE')+' — '+(P.objRace||t('competitionDefault'));
-      d={objectif:'Réaliser ta meilleure performance — objectif : '+(P.objTime||goal)+' !',warmup:'25-30 min : footing progressif + lignes droites + 3 accélérations allure course.',body:km+' km à '+S(predictTime(vdot,m)/(m/1000))+'/km. Départ contrôlé, milieu solide, final tout donné.',paces:'Allure objectif : '+S(predictTime(vdot,m)/(m/1000))+'/km.',recovery:'—',cooldown:'15 min footing dès l\u2019arrivée + étirements.',tips:['Ne pars pas trop vite.','Accroche un coureur de ton niveau.'],mistakes:['Mal dormir / mal manger la veille.'],why:'L\u2019aboutissement de toute ta préparation. Fais-toi confiance !'};
+      const m=raceMeters(); km=Math.round(m/1000); p=S(predictTime(vdot,m)/(m/1000)); rpe=10; label=t('sessLabel_COURSE'); title=t('sessTitle_COURSE')+' — '+(trRace(P.objRace)||t('competitionDefault'));
+      d={objectif:tp('bs_course_objectif',(P.objTime||goal)),warmup:t('bs_course_warmup'),body:tp('bs_course_body',km,S(predictTime(vdot,m)/(m/1000))),paces:tp('bs_course_paces',S(predictTime(vdot,m)/(m/1000))),recovery:'—',cooldown:t('bs_course_cooldown'),tips:[t('bs_course_tip1'),t('bs_course_tip2')],mistakes:[t('bs_course_mistake1')],why:t('bs_course_why')};
       break;
     default:
       km=easyKm; p=S(pace.EF); rpe=3; label=t('sessLabel_default'); title=t('sessTitle_default');
-      d={objectif:'Endurance.',warmup:'-',body:km+' km facile.',paces:S(pace.EF)+'/km',recovery:'-',cooldown:'-',tips:[],mistakes:[],why:'Base aérobie.'};
+      d={objectif:t('bs_default_objectif'),warmup:'-',body:tp('bs_default_body',km),paces:S(pace.EF)+'/km',recovery:'-',cooldown:'-',tips:[],mistakes:[],why:t('bs_default_why')};
   }
-  if(isDeload && km>0){ d.objectif='🟢 SEMAINE ALLÉGÉE — '+d.objectif; }
+  if(isDeload && km>0){ d.objectif=tp('deloadPrefixTemplate',d.objectif); }
   return {km,pace:p,rpe,title,label,detail:d,durMin,series};
 }
 
@@ -3835,7 +4644,7 @@ function homeGoalCard(){
   }
   return '<div class="card goal-card stag" style="animation-delay:.1s" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\'">'+
     '<div class="goal-top">'+
-      '<div><div class="goal-lab">Objectif</div><div class="goal-race">'+(P.objRace||P.goal||'Ta prochaine course')+(P.objTime?' — sub '+P.objTime:'')+'</div>'+
+      '<div><div class="goal-lab">'+t('objectiveCap')+'</div><div class="goal-race">'+(trRace(P.objRace)||P.goal||t('yourNextRaceDefault'))+(P.objTime?' — sub '+P.objTime:'')+'</div>'+
       '<div class="goal-target">Course le '+fmtDate(P.compDate)+'</div></div>'+
       '<div class="goal-count"><div class="n">'+daysLeft+'</div><div class="u">'+t('daysLab')+'</div></div>'+
     '</div>'+
@@ -4034,7 +4843,7 @@ function planHeroHTML(){
   const vdotDelta=Math.round((curVdot-PLAN.vdot)*10)/10;
 
   let h='<div class="card plan-hero">';
-  h+='<div class="lab">'+t('goalCap')+'</div><div class="plan-race">'+(P.objRace||t('courseDefault'))+'</div>';
+  h+='<div class="lab">'+t('goalCap')+'</div><div class="plan-race">'+(trRace(P.objRace)||t('courseDefault'))+'</div>';
   h+='<div class="plan-sub">'+(P.objTime?tp('goalTimeColon',P.objTime):'')+tp('raceOn',fmtDate(P.compDate))+'</div>';
   h+='<div class="row" style="gap:10px;margin-top:16px">';
   h+='<div class="minicard"><div class="lab">'+t('raceDay')+'</div><div class="v" style="color:var(--e)">J-'+daysLeft+'</div></div>';
@@ -4215,12 +5024,12 @@ function renderPersoDetail(){}
 function toggleFollowPerso(id){
   P.followPerso=(P.followPerso===id)?null:id;
   DB.save('profile',P);
-  toast(P.followPerso?'Tu suis maintenant ce plan perso ✓':'Retour au plan IKORUN');
+  toast(P.followPerso?t('followingPersoPlan'):t('backToIkorunPlan'));
   renderSport();
 }
-function renamePerso(id){ const p=CUSTOM.find(x=>x.id===id); const n=prompt('Nom :',p.name); if(n){p.name=n;saveAll();renderSport();} }
-function dupPerso(id){ const p=CUSTOM.find(x=>x.id===id); CUSTOM.push({...JSON.parse(JSON.stringify(p)),id:'P'+Date.now(),name:p.name+' (copie)'}); saveAll(); renderSport(); }
-function delPerso(id){ if(!confirm('Supprimer ce plan ?'))return; CUSTOM=CUSTOM.filter(x=>x.id!==id); if(P.followPerso===id) P.followPerso=null; curPerso=null; saveAll(); renderSport(); }
+function renamePerso(id){ const p=CUSTOM.find(x=>x.id===id); const n=prompt(t('namePromptLabel'),p.name); if(n){p.name=n;saveAll();renderSport();} }
+function dupPerso(id){ const p=CUSTOM.find(x=>x.id===id); CUSTOM.push({...JSON.parse(JSON.stringify(p)),id:'P'+Date.now(),name:p.name+' '+t('copySuffix')}); saveAll(); renderSport(); }
+function delPerso(id){ if(!confirm(t('confirmDeletePlan')))return; CUSTOM=CUSTOM.filter(x=>x.id!==id); if(P.followPerso===id) P.followPerso=null; curPerso=null; saveAll(); renderSport(); }
 let psType='EF';
 let psMode='simple'; // 'simple' (km+allure) ou 'intervals' (temps saisi à chaque répétition) — indépendant du type
 let psIntervals=[{dist:400,timeS:null}];
@@ -4291,7 +5100,7 @@ function savePersoSession(){
   let km,pace,durMin,intervals=null;
   if(psMode==='intervals'){
     const valid=psIntervals.filter(r=>r.timeS!=null);
-    if(!valid.length){ toast('Ajoute au moins un temps de répétition'); return; }
+    if(!valid.length){ toast(t('addAtLeastOneRepTime')); return; }
     const distM=valid[0].dist||400;
     km=+(valid.length*distM/1000).toFixed(2);
     const totalSec=valid.reduce((a,r)=>a+r.timeS,0);
@@ -4304,7 +5113,7 @@ function savePersoSession(){
     durMin=(km&&pace!=='—')?Math.round(km*parseTime(pace)/60):0;
   }
   p.sessions.push({id:Date.now(),title,type:psType,date:$('#ps_date').value,km,pace,duration:durMin,rpe:5,desc:$('#ps_desc').value.trim(),done:false,intervals});
-  saveAll(); closeOv('ovProg'); renderSport(); toast('Séance ajoutée ✓');
+  saveAll(); closeOv('ovProg'); renderSport(); toast(t('sessionAdded'));
 }
 let curPersoSess=null;
 function openPersoSheet(sid){
@@ -4337,7 +5146,7 @@ function delPersoSession(){
   const p=CUSTOM.find(x=>x.id===curPerso); p.sessions=p.sessions.filter(x=>x.id!==curPersoSess);
   saveAll(); closeOv('ovSheet'); renderSport();
 }
-function sharePlan(n){ if(navigator.share) navigator.share({title:'IKORUN Plan',text:'Mon plan : '+n}); else toast('Partage non supporté'); }
+function sharePlan(n){ if(navigator.share) navigator.share({title:'IKORUN Plan',text:tp('myPlanColon',n)}); else toast(t('shareNotSupported')); }
 
 /* ---------- QUESTIONNAIRE POST-SÉANCE + ANALYSE MOTEUR IKORUN ---------- */
 let debriefData=null, debriefCtx=null, debriefReps=[];
@@ -4379,33 +5188,33 @@ function syncDebriefFromReps(){
 function renderDebrief(){
   const d=debriefData;
   const scale=(key,label,icons)=>'<div class="field"><label>'+label+'</label><div class="pills">'+icons.map((ic,i)=>'<div class="pill '+(d[key]===i+1?'on':'')+'" onclick="debriefData.'+key+'='+(i+1)+';renderDebrief()">'+ic+'</div>').join('')+'</div></div>';
-  let h='<div class="tip" style="margin-bottom:14px">\U0001f4cb Réponds honnêtement : le moteur IKORUN va analyser ta séance.</div>';
+  let h='<div class="tip" style="margin-bottom:14px">\U0001f4cb '+t('debriefIntro')+'</div>';
   if(debriefReps.length){
     const doneCount=debriefReps.filter(r=>r.respected===true).length;
-    h+='<div class="chrome-box"><div class="cb-head">\U0001f3c3 Bilan par répétition — '+debriefReps.length+' × '+debriefReps[0].dist+' m <span style="margin-left:auto;font-weight:600;color:var(--e2)">'+doneCount+'/'+debriefReps.length+' respectées</span></div>';
+    h+='<div class="chrome-box"><div class="cb-head">\U0001f3c3 '+tp('repByRepSummary',debriefReps.length,debriefReps[0].dist)+' <span style="margin-left:auto;font-weight:600;color:var(--e2)">'+tp('respectedCount',doneCount,debriefReps.length)+'</span></div>';
     debriefReps.forEach((r,i)=>{
       const st=r.respected===true?'border-color:rgba(51,211,153,.4);background:rgba(51,211,153,.08)':r.respected===false?'border-color:rgba(255,92,108,.35);background:rgba(255,92,108,.08)':'';
       h+='<div class="row" style="align-items:center;gap:8px;border:1px solid var(--hair);border-radius:12px;padding:8px 10px;margin-bottom:6px;'+st+'">'
-        +'<div style="flex:1"><div style="font-weight:700;font-size:13px">Rép. '+r.n+' · '+r.dist+' m</div><div style="font-size:11px;color:var(--muted)">Cible '+fmtSplit(r.target)+'</div></div>'
+        +'<div style="flex:1"><div style="font-weight:700;font-size:13px">'+tp('repNumDist',r.n,r.dist)+'</div><div style="font-size:11px;color:var(--muted)">'+tp('targetColon',fmtSplit(r.target))+'</div></div>'
         +'<div style="font-weight:700;font-family:\'JetBrains Mono\';font-size:14px;min-width:44px;text-align:right">'+(r.timeS!=null?fmtSplit(r.timeS):'—')+'</div>'
         +'<button class="btn ghost sm" style="width:auto;padding:6px 10px" onclick="pickDebriefRepTime('+i+')">\u23f1</button>'
         +'<button class="btn ghost sm" style="width:auto;padding:6px 10px;color:var(--ok)" onclick="quickRespectDebriefRep('+i+')">\u2713</button>'
         +'</div>';
     });
-    h+='<div style="font-size:11px;color:var(--muted);margin-top:2px">\u23f1 = saisir le temps réel · \u2713 = "j\u2019ai respecté l\u2019allure" (remplit automatiquement avec le temps cible)</div></div>';
+    h+='<div style="font-size:11px;color:var(--muted);margin-top:2px">'+t('repLegendLine')+'</div></div>';
   }
-  h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>Durée (min)</label><input class="inp" type="number" max="1440" value="'+(d.duration||'')+'" oninput="debriefData.duration=Math.min(1440,+this.value||0)"></div><div class="field" style="flex:1"><label>Distance (km)</label><input class="inp" type="number" value="'+(d.distance||'')+'" oninput="debriefData.distance=+this.value"></div></div>';
-  h+='<div class="field"><label>Allure moyenne /km</label><input class="inp" value="'+(d.pace||'')+'" oninput="debriefData.pace=this.value" placeholder="4:30"></div>';
-  h+='<div class="field"><label>Dénivelé D+ (m, optionnel)</label><input class="inp" type="number" value="'+(d.deniv||'')+'" oninput="debriefData.deniv=+this.value" placeholder="0"></div>';
-  h+='<div class="field"><label>RPE — difficulté ressentie : '+d.rpe+'/10</label><input type="range" min="1" max="10" value="'+d.rpe+'" style="width:100%" oninput="debriefData.rpe=+this.value;renderDebrief()"></div>';
-  h+='<div class="field"><label>Douleurs</label><div class="pills">'+['Aucune','Légères','Gênantes','Importantes'].map(p=>'<div class="pill '+(d.pain===p?'on':'')+'" onclick="debriefData.pain=\''+p+'\';renderDebrief()">'+p+'</div>').join('')+'</div></div>';
-  h+=scale('fatigue','Fatigue',['\ud83d\ude00','\ud83d\ude42','\ud83d\ude10','\ud83d\ude13','\ud83d\ude35']);
-  h+=scale('feel','Sensations',['\ud83d\ude23','\ud83d\ude15','\ud83d\ude10','\ud83d\ude0a','\ud83e\udd29']);
-  h+=scale('sleep','Sommeil de la nuit',['\ud83d\ude34','\ud83d\ude2a','\ud83d\ude10','\ud83d\ude42','\ud83d\udca4']);
-  h+=scale('nutrition','Alimentation du jour',['\ud83c\udf54','\ud83d\ude10','\ud83d\ude42','\ud83e\udd57','\ud83d\udcaa']);
-  h+='<div class="field"><label>Météo</label><div class="pills">'+['\u2600\ufe0f','\u26c5','\ud83c\udf27\ufe0f','\ud83d\udca8','\ud83e\udd75','\ud83e\udd76'].map(w=>'<div class="pill '+(d.weather===w?'on':'')+'" onclick="debriefData.weather=\''+w+'\';renderDebrief()">'+w+'</div>').join('')+'</div></div>';
-  h+='<div class="field"><label>Commentaire libre</label><textarea class="inp" rows="2" oninput="debriefData.note=this.value" placeholder="Comment t\u2019es-tu senti ?">'+(d.note||'')+'</textarea></div>';
-  h+='<button class="btn" onclick="submitDebrief()">\ud83e\udde0 Analyser ma séance</button>';
+  h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>'+t('durationMinLabel')+'</label><input class="inp" type="number" max="1440" value="'+(d.duration||'')+'" oninput="debriefData.duration=Math.min(1440,+this.value||0)"></div><div class="field" style="flex:1"><label>'+t('distanceKmLabel')+'</label><input class="inp" type="number" value="'+(d.distance||'')+'" oninput="debriefData.distance=+this.value"></div></div>';
+  h+='<div class="field"><label>'+t('avgPaceKmLabel')+'</label><input class="inp" value="'+(d.pace||'')+'" oninput="debriefData.pace=this.value" placeholder="4:30"></div>';
+  h+='<div class="field"><label>'+t('elevationGainLabel')+'</label><input class="inp" type="number" value="'+(d.deniv||'')+'" oninput="debriefData.deniv=+this.value" placeholder="0"></div>';
+  h+='<div class="field"><label>'+t('rpeFeltLabel')+' '+d.rpe+'/10</label><input type="range" min="1" max="10" value="'+d.rpe+'" style="width:100%" oninput="debriefData.rpe=+this.value;renderDebrief()"></div>';
+  h+='<div class="field"><label>'+t('painLabel')+'</label><div class="pills">'+['Aucune','Légères','Gênantes','Importantes'].map(p=>'<div class="pill '+(d.pain===p?'on':'')+'" onclick="debriefData.pain=\''+p+'\';renderDebrief()">'+trPain(p)+'</div>').join('')+'</div></div>';
+  h+=scale('fatigue',t('fatigueLabel'),['\ud83d\ude00','\ud83d\ude42','\ud83d\ude10','\ud83d\ude13','\ud83d\ude35']);
+  h+=scale('feel',t('sensationsLabel'),['\ud83d\ude23','\ud83d\ude15','\ud83d\ude10','\ud83d\ude0a','\ud83e\udd29']);
+  h+=scale('sleep',t('nightSleepLabel'),['\ud83d\ude34','\ud83d\ude2a','\ud83d\ude10','\ud83d\ude42','\ud83d\udca4']);
+  h+=scale('nutrition',t('dayNutritionLabel'),['\ud83c\udf54','\ud83d\ude10','\ud83d\ude42','\ud83e\udd57','\ud83d\udcaa']);
+  h+='<div class="field"><label>'+t('weatherLabel')+'</label><div class="pills">'+['\u2600\ufe0f','\u26c5','\ud83c\udf27\ufe0f','\ud83d\udca8','\ud83e\udd75','\ud83e\udd76'].map(w=>'<div class="pill '+(d.weather===w?'on':'')+'" onclick="debriefData.weather=\''+w+'\';renderDebrief()">'+w+'</div>').join('')+'</div></div>';
+  h+='<div class="field"><label>'+t('freeCommentLabel')+'</label><textarea class="inp" rows="2" oninput="debriefData.note=this.value" placeholder="'+t('howDidYouFeelPlaceholder')+'">'+(d.note||'')+'</textarea></div>';
+  h+='<button class="btn" onclick="submitDebrief()">\ud83e\udde0 '+t('analyzeSessionBtn')+'</button>';
   $('#progBody').innerHTML=h;
 }
 function submitDebrief(){
@@ -4435,41 +5244,42 @@ function submitDebrief(){
 function coachAnalyze(e){
   const pos=[],errs=[],tips=[],adjust=[];
   // Points positifs
-  if(e.done) pos.push('Tu as terminé ta séance : la régularité est ta plus grande force. 💪');
-  if(e.feel>=4) pos.push('Excellentes sensations — ton corps répond bien à l\u2019entraînement.');
-  if(e.sleep>=4) pos.push('Bon sommeil : c\u2019est 50% de ta récupération, continue.');
-  if(e.pain==='Aucune') pos.push('Aucune douleur signalée : ta technique et ta charge sont bien gérées.');
-  if(e.nutrition>=4) pos.push('Alimentation au top, le carburant est là.');
+  if(e.done) pos.push(t('coach_pos_completed'));
+  if(e.feel>=4) pos.push(t('coach_pos_feel'));
+  if(e.sleep>=4) pos.push(t('coach_pos_sleep'));
+  if(e.pain==='Aucune') pos.push(t('coach_pos_nopain'));
+  if(e.nutrition>=4) pos.push(t('coach_pos_nutrition'));
   // Critiques / erreurs
-  if(e.plannedRpe && e.rpe>=e.plannedRpe+2) errs.push('Ta séance a été bien plus dure que prévue (RPE '+e.rpe+' vs '+e.plannedRpe+' attendu). Tu es peut-être parti trop vite ou tu es fatigué.');
-  if(e.plannedRpe && e.rpe<=e.plannedRpe-2 && e.type!=='EF' && e.type!=='Récup') errs.push('Séance trop facile (RPE '+e.rpe+') : tu peux probablement pousser un peu plus la prochaine fois.');
-  if(e.pain==='Gênantes'||e.pain==='Importantes') errs.push('⚠️ Douleurs '+e.pain.toLowerCase()+' : ne les ignore pas. Une douleur articulaire qui persiste = repos.');
-  if(e.sleep<=2) errs.push('Sommeil insuffisant : tes performances et ta récup vont en souffrir.');
-  if(e.fatigue>=4) errs.push('Niveau de fatigue élevé : attention au surentraînement.');
+  if(e.plannedRpe && e.rpe>=e.plannedRpe+2) errs.push(tp('coach_err_harderThanPlanned',e.rpe,e.plannedRpe));
+  if(e.plannedRpe && e.rpe<=e.plannedRpe-2 && e.type!=='EF' && e.type!=='Récup') errs.push(tp('coach_err_tooEasy',e.rpe));
+  if(e.pain==='Gênantes'||e.pain==='Importantes') errs.push('⚠️ '+tp('coach_err_pain',trPain(e.pain).toLowerCase()));
+  if(e.sleep<=2) errs.push(t('coach_err_sleep'));
+  if(e.fatigue>=4) errs.push(t('coach_err_fatigue'));
   // Conseils
-  if(e.sleep<=2) tips.push('Vise 8h de sommeil cette nuit, écran coupé 1h avant.');
-  if(e.nutrition<=2) tips.push('Mange des glucides + protéines dans les 30 min après l\u2019effort.');
-  tips.push('Bois au moins 0,5 L d\u2019eau dans l\u2019heure qui suit.');
-  if(e.weather==='🥵') tips.push('Par forte chaleur, cours tôt le matin et hydrate-toi davantage.');
+  if(e.sleep<=2) tips.push(t('coach_tip_sleep'));
+  if(e.nutrition<=2) tips.push(t('coach_tip_nutrition'));
+  tips.push(t('coach_tip_hydrate'));
+  if(e.weather==='🥵') tips.push(t('coach_tip_heat'));
   // Ajustements prochaines séances
-  if(e.pain==='Importantes'||e.fatigue>=5){ adjust.push('Prochaine séance : remplace-la par du repos ou un footing très léger.'); }
-  else if(e.rpe>=9 && e.fatigue>=4){ adjust.push('Allège la prochaine séance dure de 48h pour bien récupérer.'); }
-  else if(e.feel>=4 && e.rpe<=6){ adjust.push('Tu es en forme : on pourra augmenter légèrement le volume la semaine prochaine.'); }
-  else adjust.push('Continue comme prévu, ton plan est bien calibré.');
+  if(e.pain==='Importantes'||e.fatigue>=5){ adjust.push(t('coach_adj_rest')); }
+  else if(e.rpe>=9 && e.fatigue>=4){ adjust.push(t('coach_adj_lighten48h')); }
+  else if(e.feel>=4 && e.rpe<=6){ adjust.push(t('coach_adj_increaseVolume')); }
+  else adjust.push(t('coach_adj_continue'));
   // Motivation
-  const motiv=['Chaque séance te rapproche de ton objectif. 🔥','La discipline d\u2019aujourd\u2019hui est la victoire de demain.','Les champions sont faits de séances comme celle-ci.','Tu construis quelque chose de grand, brique par brique.'][Math.floor(Math.random()*4)];
+  const motivKeys=['coach_motiv1','coach_motiv2','coach_motiv3','coach_motiv4'];
+  const motiv=t(motivKeys[Math.floor(Math.random()*4)]);
   return {pos,errs,tips,adjust,motiv,e};
 }
 function renderCoachAnalysis(a){
-  let h='<div style="text-align:center;margin-bottom:14px"><div style="font-size:40px">🧠</div><div class="man" style="font-weight:800;font-size:20px">Analyse du Coach</div><div style="font-size:12px;color:var(--muted)">'+a.e.title+'</div></div>';
+  let h='<div style="text-align:center;margin-bottom:14px"><div style="font-size:40px">🧠</div><div class="man" style="font-weight:800;font-size:20px">'+t('coachAnalysisTitle')+'</div><div style="font-size:12px;color:var(--muted)">'+a.e.title+'</div></div>';
   const blk=(icon,title,items,color)=>items.length?'<div class="card-t" style="margin-top:14px;'+(color?'color:'+color:'')+'">'+icon+' '+title+'</div>'+items.map(x=>'<div class="tip" style="margin-bottom:6px;'+(color?'border-color:'+color+'33;background:'+color+'11':'')+'">'+x+'</div>').join(''):'';
-  h+=blk('✅','Points positifs',a.pos,'var(--ok)');
-  h+=blk('⚠️','Critiques constructives',a.errs,'var(--warn)');
-  h+=blk('💡','Conseils',a.tips,'');
-  h+=blk('🔧','Ajustements à venir',a.adjust,'var(--e)');
+  h+=blk('✅',t('positivePointsTitle'),a.pos,'var(--ok)');
+  h+=blk('⚠️',t('constructiveCriticismTitle'),a.errs,'var(--warn)');
+  h+=blk('💡',t('adviceLabel'),a.tips,'');
+  h+=blk('🔧',t('upcomingAdjustmentsTitle'),a.adjust,'var(--e)');
   h+='<div style="background:linear-gradient(135deg,var(--ed),rgba(31,47,80,.3));border:1px solid var(--e);border-radius:14px;padding:14px;margin-top:16px;text-align:center"><div style="font-style:italic;font-size:15px">"'+a.motiv+'"</div></div>';
-  h+='<button class="btn" style="margin-top:16px" onclick="closeOv(\'ovProg\');renderSport();nav(\'home\')">C\u2019est noté, Coach ! 💪</button>';
-  $('#progBody').innerHTML=h; $('#ovProgTitle').textContent='Analyse IKORUN';
+  h+='<button class="btn" style="margin-top:16px" onclick="closeOv(\'ovProg\');renderSport();nav(\'home\')">'+t('notedCoachBtn')+'</button>';
+  $('#progBody').innerHTML=h; $('#ovProgTitle').textContent=t('ikorunAnalysisTitle');
 }
 
 /* ---------- RUN SHEET ---------- */
@@ -4479,20 +5289,20 @@ function seriesTableHTML(sr){
   if(!sr) return '';
   if(sr.segments){
     const rows=sr.segments.map(sg=>'<div class="row" style="font-size:13px;padding:4px 0"><span style="color:var(--muted)">'+sg.dist+' m</span><span style="font-weight:700;color:var(--e)">'+fmtSplit(sg.splitSec)+'</span></div>').join('');
-    return '<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:6px">🏃 Séries — pyramide</div>'+rows+'<div style="font-size:11.5px;color:var(--muted);margin-top:8px">Récup : '+sr.recoveryLabel+'</div></div>';
+    return '<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:6px">🏃 '+t('seriesPyramidTitle')+'</div>'+rows+'<div style="font-size:11.5px;color:var(--muted);margin-top:8px">'+t('recoveryColon')+' '+sr.recoveryLabel+'</div></div>';
   }
   if(sr.reps && sr.dist){
     return '<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:8px">🏃 '+sr.reps+' × '+sr.dist+' m</div>'
-      +'<div class="row" style="font-size:13px;padding:3px 0"><span style="color:var(--muted)">Temps de passage cible</span><span style="font-weight:700;color:var(--e)">'+fmtSplit(splitSecFromPace(sr.paceSecPerKm,sr.dist))+'</span></div>'
-      +'<div class="row" style="font-size:13px;padding:3px 0"><span style="color:var(--muted)">Allure équivalente</span><span>'+spkToStr(sr.paceSecPerKm)+'/km</span></div>'
-      +'<div class="row" style="font-size:13px;padding:3px 0"><span style="color:var(--muted)">Récupération</span><span>'+sr.recoveryLabel+'</span></div>'
+      +'<div class="row" style="font-size:13px;padding:3px 0"><span style="color:var(--muted)">'+t('targetSplitLabel')+'</span><span style="font-weight:700;color:var(--e)">'+fmtSplit(splitSecFromPace(sr.paceSecPerKm,sr.dist))+'</span></div>'
+      +'<div class="row" style="font-size:13px;padding:3px 0"><span style="color:var(--muted)">'+t('equivalentPaceLabel')+'</span><span>'+spkToStr(sr.paceSecPerKm)+'/km</span></div>'
+      +'<div class="row" style="font-size:13px;padding:3px 0"><span style="color:var(--muted)">'+t('recoveryLabel')+'</span><span>'+sr.recoveryLabel+'</span></div>'
       +(sr.note?'<div style="font-size:11.5px;color:var(--muted);margin-top:6px">ℹ️ '+sr.note+'</div>':'')
       +'</div>';
   }
   if(sr.reps){
-    return '<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:6px">🏃 '+sr.reps+' répétitions</div>'
+    return '<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:6px">🏃 '+sr.reps+' '+t('repetitionsWord')+'</div>'
       +(sr.note?'<div style="font-size:13px;color:var(--muted)">'+sr.note+'</div>':'')
-      +'<div class="row" style="font-size:13px;padding:3px 0;margin-top:4px"><span style="color:var(--muted)">Récupération</span><span>'+sr.recoveryLabel+'</span></div></div>';
+      +'<div class="row" style="font-size:13px;padding:3px 0;margin-top:4px"><span style="color:var(--muted)">'+t('recoveryLabel')+'</span><span>'+sr.recoveryLabel+'</span></div></div>';
   }
   return '';
 }
@@ -4508,30 +5318,30 @@ function openRunSheet(id){
   // EN-TÊTE — badge type, titre, sous-titre semaine/objectif
   h+='<div class="rs-badge" style="background:'+col+'22;color:'+col+'">'+(s.type||'').slice(0,2).toUpperCase()+'</div>';
   h+='<div class="rs-title">'+s.title+'</div>';
-  h+='<span class="rs-sub">'+(PLAN.weekLabel?PLAN.weekLabel:'Semaine '+s.week)+' · '+(P.objRace||'Objectif')+'</span>';
+  h+='<span class="rs-sub">'+(PLAN.weekLabel?PLAN.weekLabel:t('weekLabelWithNum')+' '+s.week)+' · '+(trRace(P.objRace)||t('objectiveWord'))+'</span>';
 
   // 3 STATS
   if(s.km){
     h+='<div class="rs-stats"><div class="rs-stat"><div class="v">'+s.km+'</div><div class="l">km</div></div><div class="rs-div"></div>'
-      +'<div class="rs-stat"><div class="v" style="font-size:17px">'+s.pace+'</div><div class="l">/km moy.</div></div><div class="rs-div"></div>'
+      +'<div class="rs-stat"><div class="v" style="font-size:17px">'+s.pace+'</div><div class="l">'+t('avgPerKmLabel')+'</div></div><div class="rs-div"></div>'
       +'<div class="rs-stat"><div class="v">'+s.duration+'</div><div class="l">min</div></div></div>';
   }
 
   // CTA
-  if(s.done) h+='<div class="badge" style="background:rgba(51,211,153,.18);color:var(--ok);width:100%;justify-content:center;padding:14px;border-radius:18px;margin-bottom:18px">✓ Séance terminée</div>';
-  else if(s.type!=='Repos') h+='<button class="btn" style="margin-bottom:18px" onclick="markRunDone()">✓ Marquer terminée</button>';
+  if(s.done) h+='<div class="badge" style="background:rgba(51,211,153,.18);color:var(--ok);width:100%;justify-content:center;padding:14px;border-radius:18px;margin-bottom:18px">✓ '+t('sessionCompleted')+'</div>';
+  else if(s.type!=='Repos') h+='<button class="btn" style="margin-bottom:18px" onclick="markRunDone()">✓ '+t('markCompleted')+'</button>';
 
   if(dt){
-    h+='<div class="rs-obj-lab">OBJECTIF</div><div class="rs-obj-txt">'+dt.objectif+'</div>';
+    h+='<div class="rs-obj-lab">'+t('objectiveCap')+'</div><div class="rs-obj-txt">'+dt.objectif+'</div>';
     h+='<div class="card rs-list">'
       +'<div class="rs-row" onclick="this.nextElementSibling?.classList.toggle(\'open\')"><div class="rs-ic" style="background:rgba(var(--e-rgb),.16);color:var(--e2)">'+ICN('run',17)+'</div>'
-        +'<div class="rs-row-body"><div class="rs-row-t">Échauffement</div><div class="rs-row-m">'+rsShort(dt.warmup,54)+'</div></div>'+ICN('chevronR',16,'var(--dim)')+'</div>'
+        +'<div class="rs-row-body"><div class="rs-row-t">'+t('warmupLabel')+'</div><div class="rs-row-m">'+rsShort(dt.warmup,54)+'</div></div>'+ICN('chevronR',16,'var(--dim)')+'</div>'
       +'<div class="rs-row"><div class="rs-ic" style="background:rgba(242,184,75,.18);color:var(--or)">'+ICN('run',17)+'</div>'
-        +'<div class="rs-row-body"><div class="rs-row-t">Corps de séance</div><div class="rs-row-m">'+rsShort(dt.body,58)+'</div></div>'+ICN('chevronR',16,'var(--dim)')+'</div>'
+        +'<div class="rs-row-body"><div class="rs-row-t">'+t('sessionBodyLabel')+'</div><div class="rs-row-m">'+rsShort(dt.body,58)+'</div></div>'+ICN('chevronR',16,'var(--dim)')+'</div>'
       +'<div class="rs-row"><div class="rs-ic" style="background:rgba(255,92,108,.16);color:var(--bad)">'+ICN('pin',16)+'</div>'
-        +'<div class="rs-row-body"><div class="rs-row-t">Retour au calme</div><div class="rs-row-m">'+rsShort(dt.cooldown,54)+'</div></div>'+ICN('chevronR',16,'var(--dim)')+'</div>'
+        +'<div class="rs-row-body"><div class="rs-row-t">'+t('cooldownLabel')+'</div><div class="rs-row-m">'+rsShort(dt.cooldown,54)+'</div></div>'+ICN('chevronR',16,'var(--dim)')+'</div>'
       +'<div class="rs-row"><div class="rs-ic" style="background:rgba(51,211,153,.16);color:var(--ok)">'+ICN('run',17)+'</div>'
-        +'<div class="rs-row-body"><div class="rs-row-t">Allures</div><div class="rs-row-m">Zone 2 · 70% FCmax · '+s.pace+'/km</div></div>'+ICN('chevronR',16,'var(--dim)')+'</div>'
+        +'<div class="rs-row-body"><div class="rs-row-t">'+t('pacesLabel')+'</div><div class="rs-row-m">'+tp('zone2FCmaxLine',s.pace)+'</div></div>'+ICN('chevronR',16,'var(--dim)')+'</div>'
     +'</div>';
   }
 
@@ -4539,22 +5349,22 @@ function openRunSheet(id){
   if(s.km){
     const base=parseTime(s.pace)||270; const spark=[0,4,-3,2,6,3,8,5,10].map(v=>base-v*2);
     const mn=Math.min(...spark), mx=Math.max(...spark);
-    h+='<div class="card rs-target"><div class="rs-target-lab">Allure cible</div><div class="rs-target-v">'+fmtSplit(Math.min(...spark))+' - '+fmtSplit(Math.max(...spark))+' /km</div>'
+    h+='<div class="card rs-target"><div class="rs-target-lab">'+t('targetPaceLabel')+'</div><div class="rs-target-v">'+fmtSplit(Math.min(...spark))+' - '+fmtSplit(Math.max(...spark))+' /km</div>'
       +'<div class="rs-target-spark">'+spark.map(v=>'<b style="height:'+(mx>mn?Math.round(10+((mx-v)/(mx-mn))*90):50)+'%"></b>').join('')+'</div></div>';
   }
 
   // DÉTAIL COMPLET (repliable, contenu déjà existant conservé)
   if(dt){
     h+=seriesTableHTML(s.series);
-    if(s.series && s.series.length) h+='<div class="pace-warn">⚠️ Ne dépasse pas l\u2019allure indiquée sur les premières répétitions — mieux vaut finir fort que partir trop vite.</div>';
-    h+='<div class="chrome-box"><div class="cb-head">🏁 Allures détaillées</div><div class="cb-body">'+dt.paces+'</div></div>';
-    h+='<div class="chrome-box"><div class="cb-head">⏱ Récupération</div><div class="cb-body">'+dt.recovery+'</div></div>';
-    h+='<div class="chrome-box"><div class="cb-head">✅ Conseils</div>'+dt.tips.map(t=>'<div class="cb-body" style="margin-bottom:5px">• '+t+'</div>').join('')+'</div>';
-    h+='<div class="chrome-box bad"><div class="cb-head" style="color:var(--bad)">⚠️ Erreurs à éviter</div>'+dt.mistakes.map(t=>'<div class="cb-body" style="margin-bottom:5px">✗ '+t+'</div>').join('')+'</div>';
-    h+='<div class="chrome-box"><div class="cb-head">🧠 Pourquoi cette séance ?</div><div class="cb-body">'+dt.why+'</div></div>';
+    if(s.series && s.series.length) h+='<div class="pace-warn">⚠️ '+t('paceWarnMsg')+'</div>';
+    h+='<div class="chrome-box"><div class="cb-head">🏁 '+t('detailedPacesLabel')+'</div><div class="cb-body">'+dt.paces+'</div></div>';
+    h+='<div class="chrome-box"><div class="cb-head">⏱ '+t('recoveryLabel')+'</div><div class="cb-body">'+dt.recovery+'</div></div>';
+    h+='<div class="chrome-box"><div class="cb-head">✅ '+t('adviceLabel')+'</div>'+dt.tips.map(tt=>'<div class="cb-body" style="margin-bottom:5px">• '+tt+'</div>').join('')+'</div>';
+    h+='<div class="chrome-box bad"><div class="cb-head" style="color:var(--bad)">⚠️ '+t('mistakesToAvoidLabel')+'</div>'+dt.mistakes.map(tt=>'<div class="cb-body" style="margin-bottom:5px">✗ '+tt+'</div>').join('')+'</div>';
+    h+='<div class="chrome-box"><div class="cb-head">🧠 '+t('whySessionLabel')+'</div><div class="cb-body">'+dt.why+'</div></div>';
   } else {
     h+=seriesTableHTML(s.series);
-    h+='<div class="chrome-box"><div class="cb-head">💪 Corps de séance</div><div class="cb-body">'+s.desc+'</div></div>';
+    h+='<div class="chrome-box"><div class="cb-head">💪 '+t('sessionBodyLabel')+'</div><div class="cb-body">'+s.desc+'</div></div>';
   }
   $('#sheetBody').innerHTML=h;
   openOv('ovSheet');
@@ -4588,7 +5398,7 @@ function renderMuscu(){
   }
   return h;
 }
-function delProg(id){ if(!confirm('Supprimer ce programme ?'))return; CUSTOM=CUSTOM.filter(p=>p.id!==id); saveAll(); renderSport(); }
+function delProg(id){ if(!confirm(t('confirmDeleteProgram')))return; CUSTOM=CUSTOM.filter(p=>p.id!==id); saveAll(); renderSport(); }
 /* ===== VUE ROUTINE (style Hevy) ===== */
 function exThumb(name,size){
   const g=exGif(name); size=size||64;
@@ -4599,35 +5409,35 @@ function exThumb(name,size){
 function progDuration(p){ return p.ex.reduce((a,e)=>a+e.sets*1.8,0); } // estimation min
 function openProg(id){
   const p=allProgs().find(x=>x.id===id); if(!p) return;
-  $('#ovProgTitle').textContent='Routine';
+  $('#ovProgTitle').textContent=t('routineTitle');
   const totalSets=p.ex.reduce((a,e)=>a+(e.sets||0),0);
   const dur=Math.round(progDuration(p));
-  const lvl=p.objective||'Intermédiaire';
+  const lvl=p.objective||t('lvlIntermediate');
   let h='<div class="row" style="margin-bottom:6px"><div class="man" style="font-weight:800;font-size:22px">'+(p.icon?p.icon+' ':'')+p.name+'</div></div>';
-  h+='<div class="row" style="gap:8px;margin-bottom:14px"><span class="badge">'+lvl+'</span><span style="font-size:12px;color:var(--muted)">⏱ '+p.ex.length+' exercices</span></div>';
+  h+='<div class="row" style="gap:8px;margin-bottom:14px"><span class="badge">'+lvl+'</span><span style="font-size:12px;color:var(--muted)">⏱ '+tp('exercisesCount',p.ex.length)+'</span></div>';
   // Carte stats
   h+='<div class="card" style="padding:0;overflow:hidden"><div style="display:flex;text-align:center">'+
-    '<div style="flex:1;padding:14px 6px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0 0 4px">Exercices</div><div class="man" style="font-weight:800;font-size:20px;color:var(--e)">'+p.ex.length+'</div></div>'+
-    '<div style="flex:1;padding:14px 6px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0 0 4px">Séries</div><div class="man" style="font-weight:800;font-size:20px">'+totalSets+'</div></div>'+
-    '<div style="flex:1.3;padding:14px 6px"><div class="lab" style="margin:0 0 4px">Durée est.</div><div class="man" style="font-weight:800;font-size:20px">~'+dur+' min</div></div></div></div>';
+    '<div style="flex:1;padding:14px 6px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0 0 4px">'+t('exercisesCap')+'</div><div class="man" style="font-weight:800;font-size:20px;color:var(--e)">'+p.ex.length+'</div></div>'+
+    '<div style="flex:1;padding:14px 6px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0 0 4px">'+t('setsCap')+'</div><div class="man" style="font-weight:800;font-size:20px">'+totalSets+'</div></div>'+
+    '<div style="flex:1.3;padding:14px 6px"><div class="lab" style="margin:0 0 4px">'+t('estDurationCap')+'</div><div class="man" style="font-weight:800;font-size:20px">~'+dur+' min</div></div></div></div>';
   // Liste d'exercices avec vignette + numéro
   p.ex.forEach((e,i)=>{
     h+='<div class="card" style="padding:13px;margin-bottom:10px;cursor:pointer" onclick="openExDetail(\''+p.id+'\','+i+')"><div class="row" style="align-items:flex-start"><div style="position:relative;margin-right:12px">'+exThumb(e.name,64)+
       '<div style="position:absolute;top:-6px;left:-6px;width:22px;height:22px;border-radius:7px;background:var(--e);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">'+(i+1)+'</div></div>'+
       '<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15px;line-height:1.25">'+e.name+'</div>'+
       '<div class="muscle-tags" style="margin-top:5px">'+(e.muscles||[]).slice(0,2).map(m=>'<span class="mtag">'+m+'</span>').join('')+'</div>'+
-      '<div style="font-size:12px;color:var(--muted);margin-top:6px">'+e.sets+' séries · '+e.reps+' reps</div>'+
+      '<div style="font-size:12px;color:var(--muted);margin-top:6px">'+tp('setsRepsLine',e.sets,e.reps)+'</div>'+
       '<div style="font-size:11px;color:var(--dim);margin-top:3px">⏱ ~'+Math.round(e.sets*1.8)+' min</div></div>'+
       '<span style="color:var(--dim);font-size:18px;align-self:center">›</span></div></div>';
   });
-  h+='<button class="btn ghost" style="margin:4px 0 12px" onclick="openLibFor(addExToProg.bind(null,\''+p.id+'\'))">＋ Ajouter un exercice</button>';
-  h+='<button class="btn" style="position:sticky;bottom:8px;background:#fff;color:#111;border-radius:26px" onclick="startLive(\''+p.id+'\')">Commencer l\u2019entraînement</button>';
+  h+='<button class="btn ghost" style="margin:4px 0 12px" onclick="openLibFor(addExToProg.bind(null,\''+p.id+'\'))">＋ '+t('addExercise')+'</button>';
+  h+='<button class="btn" style="position:sticky;bottom:8px;background:#fff;color:#111;border-radius:26px" onclick="startLive(\''+p.id+'\')">'+t('startWorkout')+'</button>';
   $('#progBody').innerHTML=h;
   openOv('ovProg');
 }
 function addExToProg(progId,e){
   const p=allProgs().find(x=>x.id===progId); if(!p)return;
-  if(!p.kind){ toast('Les programmes par défaut ne sont pas modifiables'); return; }
+  if(!p.kind){ toast(t('defaultProgramsNotEditable')); return; }
   closeOv('ovLib'); openCfg(e,(cfg)=>{ p.ex.push(cfg); saveAll(); openProg(progId); });
 }
 /* ===== ANATOMIE — zones de muscles pour l'onglet "Muscles" ===== */
@@ -4732,10 +5542,10 @@ function toggleAnatomyView(){ exAnatomyView=exAnatomyView==='front'?'back':'fron
 function renderExDetail(){
   const p=allProgs().find(x=>x.id===exDetailCtx.progId); const e=p.ex[exDetailCtx.idx];
   const f=exMeta(e.name)||{primary:e.muscles||[],secondary:[],steps:[],tips:[],mistakes:[],safety:[],equip:'',level:''};
-  $('#ovProgTitle').textContent=e.name;
+  $('#ovProgTitle').textContent=trExName(e.name);
   const g=exGif(e.name);
   let h='<div class="pills" style="margin-bottom:14px;overflow-x:auto;flex-wrap:nowrap">'+
-    [['exo','Exercice'],['muscles','Muscles'],['instr','Instructions']].map(t=>'<div class="pill '+(exDetailTab===t[0]?'on':'')+'" onclick="exDetailTab=\''+t[0]+'\';renderExDetail()">'+t[1]+'</div>').join('')+'</div>';
+    [['exo',t('exTabExercise')],['muscles',t('exTabMuscles')],['instr',t('exTabInstructions')]].map(tb=>'<div class="pill '+(exDetailTab===tb[0]?'on':'')+'" onclick="exDetailTab=\''+tb[0]+'\';renderExDetail()">'+tb[1]+'</div>').join('')+'</div>';
   if(exDetailTab==='exo'){
     // Média animé — démarre directement le tuto, sans bouton lecture/pause
     if(g){
@@ -4743,34 +5553,34 @@ function renderExDetail(){
     } else {
       h+='<div style="background:linear-gradient(135deg,var(--s2),var(--s1));border:1px solid var(--hair);border-radius:16px;padding:36px;text-align:center;margin-bottom:14px"><div style="font-size:64px;animation:demoFloat 1.5s infinite">'+(e.anim||'🏋️')+'</div></div>';
     }
-    h+='<div class="card"><div class="card-t">À propos de l\u2019exercice</div><div style="font-size:13px;color:var(--muted);line-height:1.55">Le <b style="color:var(--snow)">'+e.name+'</b> sollicite principalement '+((f.primary||[]).join(', ')||'plusieurs groupes musculaires')+(f.secondary&&f.secondary.length?', ainsi que '+f.secondary.join(', ')+' en secondaire':'')+'.</div></div>';
+    h+='<div class="card"><div class="card-t">'+t('aboutExerciseTitle')+'</div><div style="font-size:13px;color:var(--muted);line-height:1.55">'+tp('exWorksMainly',trExName(e.name),((f.primary||[]).map(trMuscle).join(', ')||t('severalMuscleGroups')))+(f.secondary&&f.secondary.length?tp('exWorksAlsoSecondary',f.secondary.map(trMuscle).join(', ')):'')+'.</div></div>';
     // Repos
-    h+='<div class="card"><div class="row"><div class="row" style="gap:10px"><span style="font-size:18px">⏱</span><div><div style="font-size:11px;color:var(--muted)">Repos entre les séries</div><div style="font-weight:700">'+(e.rest||90)+'s</div></div></div></div></div>';
+    h+='<div class="card"><div class="row"><div class="row" style="gap:10px"><span style="font-size:18px">⏱</span><div><div style="font-size:11px;color:var(--muted)">'+t('restBetweenSetsLabel')+'</div><div style="font-weight:700">'+(e.rest||90)+'s</div></div></div></div></div>';
     // mini stats
     const vol=(e.sets||3)*(parseInt(e.reps)||10)*(e.weight||0);
-    h+='<div class="card" style="padding:0;overflow:hidden"><div style="display:flex;text-align:center"><div style="flex:1;padding:13px 4px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0">Séries</div><div class="man" style="font-weight:800;font-size:18px">'+e.sets+'</div></div><div style="flex:1;padding:13px 4px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0">Volume</div><div class="man" style="font-weight:800;font-size:18px">'+vol+' kg</div></div><div style="flex:1;padding:13px 4px"><div class="lab" style="margin:0">Durée</div><div class="man" style="font-weight:800;font-size:18px">~'+Math.round(e.sets*1.8)+'min</div></div></div></div>';
+    h+='<div class="card" style="padding:0;overflow:hidden"><div style="display:flex;text-align:center"><div style="flex:1;padding:13px 4px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0">'+t('setsCap')+'</div><div class="man" style="font-weight:800;font-size:18px">'+e.sets+'</div></div><div style="flex:1;padding:13px 4px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0">'+t('volumeCap')+'</div><div class="man" style="font-weight:800;font-size:18px">'+vol+' kg</div></div><div style="flex:1;padding:13px 4px"><div class="lab" style="margin:0">'+t('durationCap')+'</div><div class="man" style="font-weight:800;font-size:18px">~'+Math.round(e.sets*1.8)+'min</div></div></div></div>';
   } else if(exDetailTab==='muscles'){
     // Schéma d'anatomie double (face + dos) à la place du tutoriel vidéo
     const zoneInfo=anatomyZonesFor(f);
-    h+='<div class="card"><div class="card-t">Muscles ciblés</div>'+
+    h+='<div class="card"><div class="card-t">'+t('targetedMusclesTitle')+'</div>'+
        bodyAnatomyDualSVG(zoneInfo)+
        '</div>';
     h+='<div class="card">'+
-       '<div class="row" style="gap:8px;margin-bottom:6px"><span style="width:9px;height:9px;border-radius:50%;background:var(--bad);flex:0 0 9px"></span><span style="font-weight:800;font-size:14px">Muscles primaires</span></div>'+
-       '<div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:'+(f.secondary&&f.secondary.length?'14px':'0')+'">'+((f.primary||[]).join(', ')||'—')+'</div>'+
-       (f.secondary&&f.secondary.length?('<div class="row" style="gap:8px;margin-bottom:6px"><span style="width:9px;height:9px;border-radius:50%;background:var(--e);flex:0 0 9px"></span><span style="font-weight:800;font-size:14px">Muscles secondaires</span></div>'+
-       '<div style="font-size:13px;color:var(--muted);line-height:1.6">'+f.secondary.join(', ')+'</div>'):'')+
+       '<div class="row" style="gap:8px;margin-bottom:6px"><span style="width:9px;height:9px;border-radius:50%;background:var(--bad);flex:0 0 9px"></span><span style="font-weight:800;font-size:14px">'+t('primaryMusclesLabel')+'</span></div>'+
+       '<div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:'+(f.secondary&&f.secondary.length?'14px':'0')+'">'+((f.primary||[]).map(trMuscle).join(', ')||'—')+'</div>'+
+       (f.secondary&&f.secondary.length?('<div class="row" style="gap:8px;margin-bottom:6px"><span style="width:9px;height:9px;border-radius:50%;background:var(--e);flex:0 0 9px"></span><span style="font-weight:800;font-size:14px">'+t('secondaryMusclesLabel')+'</span></div>'+
+       '<div style="font-size:13px;color:var(--muted);line-height:1.6">'+f.secondary.map(trMuscle).join(', ')+'</div>'):'')+
        '</div>';
-    if(f.equip) h+='<div class="card"><div class="row"><span class="lab">Matériel</span><span style="font-weight:600">'+f.equip+'</span></div></div>';
+    if(f.equip) h+='<div class="card"><div class="row"><span class="lab">'+t('equipmentLabel')+'</span><span style="font-weight:600">'+trEquip(f.equip)+'</span></div></div>';
   } else {
     // Instructions + Conseils réunis dans le même onglet
-    h+='<div class="card"><div class="card-t">📋 Exécution</div>'+((f.steps&&f.steps.length)?f.steps.map((s,i)=>'<div class="tip" style="margin-bottom:6px"><b style="color:var(--e)">'+(i+1)+'.</b> '+s+'</div>').join(''):'<div style="font-size:13px;color:var(--muted)">Réalise le mouvement de façon contrôlée, amplitude complète.</div>')+'</div>';
-    if(f.breathing) h+='<div class="card"><div class="card-t">🌬️ Respiration</div><div class="tip">'+f.breathing+'</div></div>';
-    if(f.tips&&f.tips.length) h+='<div class="card"><div class="card-t">✅ Conseils</div>'+f.tips.map(x=>'<div class="tip" style="margin-bottom:6px">'+x+'</div>').join('')+'</div>';
-    if(f.mistakes&&f.mistakes.length) h+='<div class="card"><div class="card-t" style="color:var(--bad)">⚠️ Erreurs fréquentes</div>'+f.mistakes.map(x=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(255,92,108,.3);background:rgba(255,92,108,.08)">✗ '+x+'</div>').join('')+'</div>';
-    if(f.safety&&f.safety.length) h+='<div class="card"><div class="card-t">🛡️ Sécurité</div>'+f.safety.map(x=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(51,211,153,.3);background:rgba(51,211,153,.08)">'+x+'</div>').join('')+'</div>';
+    h+='<div class="card"><div class="card-t">📋 '+t('executionLabel')+'</div>'+((f.steps&&f.steps.length)?f.steps.map((s,i)=>'<div class="tip" style="margin-bottom:6px"><b style="color:var(--e)">'+(i+1)+'.</b> '+s+'</div>').join(''):'<div style="font-size:13px;color:var(--muted)">'+t('defaultExecutionHint')+'</div>')+'</div>';
+    if(f.breathing) h+='<div class="card"><div class="card-t">🌬️ '+t('breathingLabel')+'</div><div class="tip">'+f.breathing+'</div></div>';
+    if(f.tips&&f.tips.length) h+='<div class="card"><div class="card-t">✅ '+t('adviceLabel')+'</div>'+f.tips.map(x=>'<div class="tip" style="margin-bottom:6px">'+x+'</div>').join('')+'</div>';
+    if(f.mistakes&&f.mistakes.length) h+='<div class="card"><div class="card-t" style="color:var(--bad)">⚠️ '+t('commonMistakesLabel')+'</div>'+f.mistakes.map(x=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(255,92,108,.3);background:rgba(255,92,108,.08)">✗ '+x+'</div>').join('')+'</div>';
+    if(f.safety&&f.safety.length) h+='<div class="card"><div class="card-t">🛡️ '+t('safetyLabel')+'</div>'+f.safety.map(x=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(51,211,153,.3);background:rgba(51,211,153,.08)">'+x+'</div>').join('')+'</div>';
   }
-  h+='<div class="row" style="gap:10px;margin-top:8px"><button class="btn ghost" onclick="openProg(\''+exDetailCtx.progId+'\')">‹ Retour</button><button class="btn" onclick="startLive(\''+exDetailCtx.progId+'\','+exDetailCtx.idx+')">▶ Démarrer</button></div>';
+  h+='<div class="row" style="gap:10px;margin-top:8px"><button class="btn ghost" onclick="openProg(\''+exDetailCtx.progId+'\')">‹ '+t('back')+'</button><button class="btn" onclick="startLive(\''+exDetailCtx.progId+'\','+exDetailCtx.idx+')">▶ '+t('startLabel')+'</button></div>';
   $('#progBody').innerHTML=h;
   openOv('ovProg');
   if(exDetailTab==='exo' && g){ startExDemoAuto(g); } else if(_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; }
@@ -5146,23 +5956,23 @@ function openLibFor(cb){ libCallback=cb; libBrowseMode=false; closeOv('ovCreate'
 function openLibBrowse(){ libCallback=null; libBrowseMode=true; renderLib(); openOv('ovLib'); }
 let libView='grid';
 function renderLib(){
-  let h='<input class="inp" style="margin-bottom:14px" placeholder="🔍 Rechercher un exercice..." value="'+libSearch+'" oninput="libSearch=this.value;renderLib();this.focus()">';
+  let h='<input class="inp" style="margin-bottom:14px" placeholder="🔍 '+t('searchExercisePlaceholder')+'" value="'+libSearch+'" oninput="libSearch=this.value;renderLib();this.focus()">';
   // Tuiles muscle en photo — navigation visuelle rapide, comme une planche anatomique
-  h+='<div class="lab" style="margin-bottom:8px">Muscle</div><div class="mtile-row">'+MUSCLE_GROUPS.map(m=>{
+  h+='<div class="lab" style="margin-bottom:8px">'+t('muscleLabel')+'</div><div class="mtile-row">'+MUSCLE_GROUPS.map(m=>{
     const img=muscleRepImg(m); const on=libFilter===m;
-    return '<div class="mtile '+(on?'on':'')+'" onclick="libFilter=\''+m+'\';renderLib()"><div class="mtile-img" '+(img?'style="background-image:url(\''+img+'\')"':'')+'>'+(img?'':MUSCLE_ICONS[m]||'🏋️')+'</div><div class="mtile-lab">'+m+'</div></div>';
+    return '<div class="mtile '+(on?'on':'')+'" onclick="libFilter=\''+m+'\';renderLib()"><div class="mtile-img" '+(img?'style="background-image:url(\''+img+'\')"':'')+'>'+(img?'':MUSCLE_ICONS[m]||'🏋️')+'</div><div class="mtile-lab">'+(m==='Tous'?t('filterAll'):trMuscle(m))+'</div></div>';
   }).join('')+'</div>';
-  h+='<div class="lab" style="margin-bottom:6px">Matériel</div><div class="pills" style="margin-bottom:10px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px">'+EQUIPMENT.map(m=>'<div class="pill '+(libFilterEquip===m?'on':'')+'" onclick="libFilterEquip=\''+m+'\';renderLib()">'+m+'</div>').join('')+'</div>';
-  h+='<div class="lab" style="margin-bottom:6px">Niveau</div><div class="pills" style="margin-bottom:14px">'+['Tous',...LEVELS].map(m=>'<div class="pill '+(libFilterLevel===m?'on':'')+'" onclick="libFilterLevel=\''+m+'\';renderLib()">'+m+'</div>').join('')+'</div>';
+  h+='<div class="lab" style="margin-bottom:6px">'+t('equipmentLabel')+'</div><div class="pills" style="margin-bottom:10px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px">'+EQUIPMENT.map(m=>'<div class="pill '+(libFilterEquip===m?'on':'')+'" onclick="libFilterEquip=\''+m+'\';renderLib()">'+(m==='Tous'?t('filterAll'):trEquip(m))+'</div>').join('')+'</div>';
+  h+='<div class="lab" style="margin-bottom:6px">'+t('levelLabel')+'</div><div class="pills" style="margin-bottom:14px">'+['Tous',...LEVELS].map(m=>'<div class="pill '+(libFilterLevel===m?'on':'')+'" onclick="libFilterLevel=\''+m+'\';renderLib()">'+(m==='Tous'?t('filterAll'):trLevel(m))+'</div>').join('')+'</div>';
   const q=libSearch.toLowerCase().trim();
   const list=allExercises().filter(e=>{
     if(libFilter!=='Tous' && e.group!==libFilter && !(e.primary||[]).some(m=>m.includes(libFilter)||libFilter.includes(m))) return false;
     if(libFilterEquip!=='Tous' && e.equip!==libFilterEquip) return false;
     if(libFilterLevel!=='Tous' && e.level!==libFilterLevel) return false;
-    if(q && !e.name.toLowerCase().includes(q)) return false;
+    if(q && !e.name.toLowerCase().includes(q) && !trExName(e.name).toLowerCase().includes(q)) return false;
     return true;
   });
-  h+='<div class="row" style="margin-bottom:8px"><div class="lab" style="flex:1">'+list.length+' exercice'+(list.length>1?'s':'')+'</div><div style="display:flex;gap:6px"><span class="mini-ic" style="'+(libView==='grid'?'color:var(--e);border-color:var(--e)':'')+'" onclick="libView=\'grid\';renderLib()">▦</span><span class="mini-ic" style="'+(libView==='list'?'color:var(--e);border-color:var(--e)':'')+'" onclick="libView=\'list\';renderLib()">☰</span></div></div>';
+  h+='<div class="row" style="margin-bottom:8px"><div class="lab" style="flex:1">'+list.length+' '+(list.length>1?t('exercisesWordPlural'):t('exerciseWordSingular'))+'</div><div style="display:flex;gap:6px"><span class="mini-ic" style="'+(libView==='grid'?'color:var(--e);border-color:var(--e)':'')+'" onclick="libView=\'grid\';renderLib()">▦</span><span class="mini-ic" style="'+(libView==='list'?'color:var(--e);border-color:var(--e)':'')+'" onclick="libView=\'list\';renderLib()">☰</span></div></div>';
   if(libView==='grid'){
     h+='<div class="exg-grid">';
     list.forEach(e=>{
@@ -5170,13 +5980,13 @@ function renderLib(){
       h+='<div class="exg-card" onclick=\'openFiche("'+nm+'")\'>'+
         '<div class="exg-img" '+(g?'style="background-image:url(\''+g[0]+'\')"':'')+'>'+(g?'':'<span>'+e.anim+'</span>')+
         (libBrowseMode?'':'<span class="exg-add" onclick=\'event.stopPropagation();pickEx("'+nm+'")\'>＋</span>')+
-        '</div><div class="exg-body"><div class="exg-name">'+e.name+'</div><div class="exg-sub">'+e.equip+' · <span style="color:var('+lvCol+')">'+e.level+'</span></div></div></div>';
+        '</div><div class="exg-body"><div class="exg-name">'+trExName(e.name)+'</div><div class="exg-sub">'+trEquip(e.equip)+' · <span style="color:var('+lvCol+')">'+trLevel(e.level)+'</span></div></div></div>';
     });
     h+='</div>';
   } else {
   list.forEach(e=>{
     const lvCol=e.level==='Débutant'?'--ok':e.level==='Avancé'?'--bad':'--warn';
-    h+='<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:10px;flex:1;cursor:pointer" onclick=\'openFiche("'+e.name.replace(/"/g,'&quot;')+'")\'>'+exThumb(e.name,48)+'<div><div style="font-weight:700;font-size:14px">'+e.name+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+e.equip+' · <span style="color:var('+lvCol+')">'+e.level+'</span></div><div class="muscle-tags">'+(e.primary||[]).map(m=>'<span class="mtag">'+m+'</span>').join('')+'</div></div></div>'+(libBrowseMode?'<button class="x" onclick=\'openFiche("'+e.name.replace(/"/g,'&quot;')+'")\'>›</button>':'<button class="x" style="color:var(--e)" onclick=\'pickEx("'+e.name.replace(/"/g,'&quot;')+'")\'>＋</button>')+'</div></div>';
+    h+='<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:10px;flex:1;cursor:pointer" onclick=\'openFiche("'+e.name.replace(/"/g,'&quot;')+'")\'>'+exThumb(e.name,48)+'<div><div style="font-weight:700;font-size:14px">'+trExName(e.name)+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+trEquip(e.equip)+' · <span style="color:var('+lvCol+')">'+trLevel(e.level)+'</span></div><div class="muscle-tags">'+(e.primary||[]).map(m=>'<span class="mtag">'+trMuscle(m)+'</span>').join('')+'</div></div></div>'+(libBrowseMode?'<button class="x" onclick=\'openFiche("'+e.name.replace(/"/g,'&quot;')+'")\'>›</button>':'<button class="x" style="color:var(--e)" onclick=\'pickEx("'+e.name.replace(/"/g,'&quot;')+'")\'>＋</button>')+'</div></div>';
   });
   }
   $('#libBody').innerHTML=h;
@@ -5186,29 +5996,29 @@ function pickEx(name){ const e=findEx(name); if(libCallback) libCallback(e); els
 function openFiche(name){
   const f=exMeta(name); if(!f) return;
   const lvCol=f.level==='Débutant'?'--ok':f.level==='Avancé'?'--bad':'--warn';
-  let h='<div style="text-align:center;margin-bottom:14px"><div style="font-size:64px;animation:popIn .5s">'+f.anim+'</div><div class="man" style="font-weight:800;font-size:20px;margin-top:4px">'+f.name+'</div><div style="margin-top:8px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap"><span class="badge">'+f.equip+'</span><span class="badge" style="background:var(--ed);color:var('+lvCol+')">'+f.level+'</span></div></div>';
+  let h='<div style="text-align:center;margin-bottom:14px"><div style="font-size:64px;animation:popIn .5s">'+f.anim+'</div><div class="man" style="font-weight:800;font-size:20px;margin-top:4px">'+trExName(f.name)+'</div><div style="margin-top:8px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap"><span class="badge">'+trEquip(f.equip)+'</span><span class="badge" style="background:var(--ed);color:var('+lvCol+')">'+trLevel(f.level)+'</span></div></div>';
   // visuel animé (placeholder élégant simulant un GIF/avatar)
   if(f.gif){
     // Démonstration animée réelle (2 frames alternées = mouvement)
     h+='<div style="position:relative;background:#fff;border:1px solid var(--hair);border-radius:18px;overflow:hidden;margin-bottom:14px">'+
       '<img id="exDemo" src="'+f.gif[0]+'" alt="démonstration" style="width:100%;display:block;aspect-ratio:5/4;object-fit:cover" onerror="this.parentNode.style.display=\'none\';document.getElementById(\'exDemoFallback\').style.display=\'block\'">'+
-      '<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));padding:10px 12px 8px;display:flex;align-items:center;gap:6px;font-size:11px;color:#fff;font-weight:700"><span style="width:7px;height:7px;border-radius:50%;background:var(--e);animation:demoPulse 1s infinite"></span>DÉMONSTRATION DU MOUVEMENT</div></div>';
-    h+='<div id="exDemoFallback" style="display:none;position:relative;background:linear-gradient(135deg,var(--s2),var(--s1));border:1px solid var(--hair);border-radius:18px;padding:34px 16px;text-align:center;margin-bottom:14px"><div style="font-size:68px;animation:demoFloat 1.5s ease-in-out infinite">'+f.anim+'</div><div style="font-size:11px;color:var(--dim);margin-top:8px">Démonstration du mouvement</div></div>';
+      '<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));padding:10px 12px 8px;display:flex;align-items:center;gap:6px;font-size:11px;color:#fff;font-weight:700"><span style="width:7px;height:7px;border-radius:50%;background:var(--e);animation:demoPulse 1s infinite"></span>'+t('movementDemoCap')+'</div></div>';
+    h+='<div id="exDemoFallback" style="display:none;position:relative;background:linear-gradient(135deg,var(--s2),var(--s1));border:1px solid var(--hair);border-radius:18px;padding:34px 16px;text-align:center;margin-bottom:14px"><div style="font-size:68px;animation:demoFloat 1.5s ease-in-out infinite">'+f.anim+'</div><div style="font-size:11px;color:var(--dim);margin-top:8px">'+t('movementDemo')+'</div></div>';
     startExDemo(f.gif);
   } else {
     h+='<div style="position:relative;background:linear-gradient(135deg,var(--s2),var(--s1));border:1px solid var(--hair);border-radius:18px;padding:34px 16px;text-align:center;margin-bottom:14px;overflow:hidden">'+
       '<div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 40%,var(--ed),transparent 70%)"></div>'+
       '<div style="position:relative;font-size:68px;animation:demoFloat 1.5s ease-in-out infinite;filter:drop-shadow(0 6px 14px rgba(0,0,0,.4))">'+f.anim+'</div>'+
-      '<div style="position:relative;display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:11px;color:var(--e);font-weight:700"><span style="width:7px;height:7px;border-radius:50%;background:var(--e);animation:demoPulse 1s infinite"></span>DÉMONSTRATION DU MOUVEMENT</div></div>';
+      '<div style="position:relative;display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:11px;color:var(--e);font-weight:700"><span style="width:7px;height:7px;border-radius:50%;background:var(--e);animation:demoPulse 1s infinite"></span>'+t('movementDemoCap')+'</div></div>';
   }
-  h+='<div class="card-t">🎯 Muscles sollicités</div><div style="margin-bottom:12px"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Principaux</div><div class="muscle-tags">'+(f.primary||[]).map(m=>'<span class="mtag" style="background:var(--ed);color:var(--e);border-color:var(--e)">'+m+'</span>').join('')+'</div>'+((f.secondary&&f.secondary.length)?'<div style="font-size:12px;color:var(--muted);margin:8px 0 4px">Secondaires</div><div class="muscle-tags">'+f.secondary.map(m=>'<span class="mtag">'+m+'</span>').join('')+'</div>':'')+'</div>';
-  h+='<div class="card-t">📋 Exécution étape par étape</div>'+f.steps.map((s,i)=>'<div class="tip" style="margin-bottom:6px"><b style="color:var(--e)">'+(i+1)+'.</b> '+s+'</div>').join('');
-  h+='<div class="card-t" style="margin-top:14px">🌬️ Respiration</div><div class="tip">'+f.breathing+'</div>';
-  h+='<div class="card-t" style="margin-top:14px;color:var(--bad)">⚠️ Erreurs fréquentes</div>'+f.mistakes.map(m=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(255,92,108,.3);background:rgba(255,92,108,.08)">✗ '+m+'</div>').join('');
-  h+='<div class="card-t" style="margin-top:14px">✅ Conseils du coach</div>'+f.tips.map(t=>'<div class="tip" style="margin-bottom:6px">'+t+'</div>').join('');
-  h+='<div class="card-t" style="margin-top:14px">🛡️ Sécurité</div>'+f.safety.map(s=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(51,211,153,.3);background:rgba(51,211,153,.08)">'+s+'</div>').join('');
-  if(f.variants&&f.variants.length){ h+='<div class="card-t" style="margin-top:14px">🔁 Variantes</div><div class="pills">'+f.variants.map(v=>'<div class="pill" onclick=\'openFiche("'+v.replace(/"/g,'&quot;')+'")\'>'+v+'</div>').join('')+'</div>'; }
-  if(libCallback) h+='<button class="btn" style="margin-top:18px" onclick=\'pickEx("'+f.name.replace(/"/g,'&quot;')+'")\'>＋ Ajouter au programme</button>';
+  h+='<div class="card-t">🎯 '+t('musclesWorked')+'</div><div style="margin-bottom:12px"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">'+t('primaryLabel')+'</div><div class="muscle-tags">'+(f.primary||[]).map(m=>'<span class="mtag" style="background:var(--ed);color:var(--e);border-color:var(--e)">'+trMuscle(m)+'</span>').join('')+'</div>'+((f.secondary&&f.secondary.length)?'<div style="font-size:12px;color:var(--muted);margin:8px 0 4px">'+t('secondaryLabel')+'</div><div class="muscle-tags">'+f.secondary.map(m=>'<span class="mtag">'+trMuscle(m)+'</span>').join('')+'</div>':'')+'</div>';
+  h+='<div class="card-t">📋 '+t('stepByStepExecution')+'</div>'+f.steps.map((s,i)=>'<div class="tip" style="margin-bottom:6px"><b style="color:var(--e)">'+(i+1)+'.</b> '+s+'</div>').join('');
+  h+='<div class="card-t" style="margin-top:14px">🌬️ '+t('breathingLabel')+'</div><div class="tip">'+f.breathing+'</div>';
+  h+='<div class="card-t" style="margin-top:14px;color:var(--bad)">⚠️ '+t('commonMistakesLabel')+'</div>'+f.mistakes.map(m=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(255,92,108,.3);background:rgba(255,92,108,.08)">✗ '+m+'</div>').join('');
+  h+='<div class="card-t" style="margin-top:14px">✅ '+t('coachTipsLabel')+'</div>'+f.tips.map(tt=>'<div class="tip" style="margin-bottom:6px">'+tt+'</div>').join('');
+  h+='<div class="card-t" style="margin-top:14px">🛡️ '+t('safetyLabel')+'</div>'+f.safety.map(s=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(51,211,153,.3);background:rgba(51,211,153,.08)">'+s+'</div>').join('');
+  if(f.variants&&f.variants.length){ h+='<div class="card-t" style="margin-top:14px">🔁 '+t('variantsLabel')+'</div><div class="pills">'+f.variants.map(v=>'<div class="pill" onclick=\'openFiche("'+v.replace(/"/g,'&quot;')+'")\'>'+trExName(v)+'</div>').join('')+'</div>'; }
+  if(libCallback) h+='<button class="btn" style="margin-top:18px" onclick=\'pickEx("'+f.name.replace(/"/g,'&quot;')+'")\'>＋ '+t('addToProgram')+'</button>';
   $('#libBody').innerHTML=h;
 }
 let _exDemoTimer=null;
@@ -5271,8 +6081,8 @@ function bodyInfoCard(){
     '<div class="field" style="margin-bottom:0"><label>'+t('weight')+'</label><div class="inp pkfield" onclick="pickBodyWeight()">'+(P.weight?P.weight+' kg':t('chooseWeight'))+'</div></div>'+
   '</div>';
 }
-function pickBodyHeight(){ pickInt('Taille (cm)',120,220,P.height||170,'cm',v=>{ P.height=v; saveAll(); renderStats(); toast('Taille enregistrée ✓'); }); }
-function pickBodyWeight(){ openPicker({title:'Poids (kg)',cols:[{values:range(30,200),sel:Math.max(0,(P.weight||65)-30)},{values:range(0,9),sel:0,unit:'kg'}],seps:['.'],onOk:idx=>{ const w=(idx[0]+30)+idx[1]/10; P.weight=w; saveAll(); renderStats(); toast('Poids enregistré ✓'); }}); }
+function pickBodyHeight(){ pickInt(t('heightCmTitle'),120,220,P.height||170,'cm',v=>{ P.height=v; saveAll(); renderStats(); toast(t('heightSaved')); }); }
+function pickBodyWeight(){ openPicker({title:t('weightKgTitle'),cols:[{values:range(30,200),sel:Math.max(0,(P.weight||65)-30)},{values:range(0,9),sel:0,unit:'kg'}],seps:['.'],onOk:idx=>{ const w=(idx[0]+30)+idx[1]/10; P.weight=w; saveAll(); renderStats(); toast(t('weightSaved')); }}); }
 function statsBilan(){
   const per=bilanPeriod;
   const {cur,prev}=periodRanges(per);
@@ -6084,8 +6894,8 @@ function pomoToggle(){
     const r=$('#pmRing'),n=$('#pmNum'); const col=pomoState.phase==='work'?'var(--bad)':'var(--ok)';
     if(r)r.innerHTML=ringSVG(180,pomoState.left/total*100,12,col); if(n)n.textContent=fmtMS(pomoState.left);
     if(pomoState.left<=0){ clearInterval(pomoState.iv); pomoState.running=false; burst();
-      if(pomoState.phase==='work'){ pomoState.count++; pomoState.phase=(pomoState.count%4===0)?'long':'short'; toast('Pause méritée ! ☕'); }
-      else { pomoState.phase='work'; toast('Au travail ! 🍅'); }
+      if(pomoState.phase==='work'){ pomoState.count++; pomoState.phase=(pomoState.count%4===0)?'long':'short'; toast(t('deservedBreak')); }
+      else { pomoState.phase='work'; toast(t('backToWork')); }
       pomoState.left=pomoState.phase==='work'?25*60:(pomoState.phase==='long'?15*60:5*60); renderPomodoro(); }
   },1000);
 }
@@ -6097,10 +6907,10 @@ function renderNotesTool(){
 }
 let sleepH=8;
 function renderSleepTool(){
-  let h='<div class="card"><div class="field"><label>Heures de sommeil / nuit</label><div class="stepper"><button onclick="sleepH=Math.max(3,sleepH-.5);renderSleepTool()">−</button><span class="val">'+sleepH+'</span><button onclick="sleepH=Math.min(12,sleepH+.5);renderSleepTool()">+</button></div></div></div>';
-  let status,col; if(sleepH<6){status='Insuffisant — récupération compromise';col='--bad';} else if(sleepH<7){status='Limite — vise plus';col='--warn';} else if(sleepH<=9){status='Optimal pour un athlète ✓';col='--ok';} else {status='Beaucoup — écoute ton corps';col='--platine';}
+  let h='<div class="card"><div class="field"><label>'+t('sleepHoursPerNightLabel')+'</label><div class="stepper"><button onclick="sleepH=Math.max(3,sleepH-.5);renderSleepTool()">−</button><span class="val">'+sleepH+'</span><button onclick="sleepH=Math.min(12,sleepH+.5);renderSleepTool()">+</button></div></div></div>';
+  let status,col; if(sleepH<6){status=t('sleepInsufficient');col='--bad';} else if(sleepH<7){status=t('sleepBorderline');col='--warn';} else if(sleepH<=9){status=t('sleepOptimal');col='--ok';} else {status=t('sleepPlenty');col='--platine';}
   h+='<div class="card" style="text-align:center"><div class="man" style="font-size:40px;font-weight:800;color:var('+col+')">'+sleepH+'h</div><div class="badge" style="background:var(--ed);color:var('+col+');margin-top:8px">'+status+'</div></div>';
-  h+='<div class="card"><div class="card-t">😴 Cycles de sommeil</div><div class="tip">Un cycle dure ~90 min. Vise un réveil en fin de cycle : 6h, 7h30 ou 9h de sommeil. Couche-toi à heure régulière pour optimiser la récupération.</div></div>';
+  h+='<div class="card"><div class="card-t">😴 '+t('sleepCyclesTitle')+'</div><div class="tip">'+t('sleepCyclesTip')+'</div></div>';
   $('#outBody').innerHTML=h;
 }
 
@@ -6110,18 +6920,18 @@ const DISTANCES={'800m':800,'1km':1000,'1500m':1500,'Mile':1609,'3km':3000,'5km'
 let calc={dist:'5km',customKm:5,TH:{h:0,m:18,s:0},TP:{m:3,s:36},lastResult:null,penalty:0,negSplit:false};
 function renderCalc(){
   const vdot=getUserVDOT();
-  let h='<div class="row" style="margin-bottom:14px"><span class="lab">Calculateur d\u2019allure</span><span class="badge" onclick="nav(\'profil\')">VDOT '+(vdot||'?')+'</span></div>';
-  h+='<div class="card"><div class="field"><label>Distance</label><select class="inp" id="calcDist" onchange="calc.dist=this.value;syncFromTime();renderCalc()">'+Object.keys(DISTANCES).concat(['Autre']).map(d=>'<option '+(calc.dist===d?'selected':'')+'>'+d+'</option>').join('')+'</select></div>';
-  if(calc.dist==='Autre') h+='<div class="field"><label>Distance custom (km)</label><div class="stepper"><button onclick="calc.customKm=Math.max(.1,calc.customKm-.5);renderCalc()">−</button><span class="val">'+calc.customKm+'</span><button onclick="calc.customKm+=.5;renderCalc()">+</button></div></div>';
+  let h='<div class="row" style="margin-bottom:14px"><span class="lab">'+t('paceCalculatorTitle')+'</span><span class="badge" onclick="nav(\'profil\')">VDOT '+(vdot||'?')+'</span></div>';
+  h+='<div class="card"><div class="field"><label>'+t('distanceLabel')+'</label><select class="inp" id="calcDist" onchange="calc.dist=this.value;syncFromTime();renderCalc()">'+Object.keys(DISTANCES).concat(['Autre']).map(d=>'<option '+(calc.dist===d?'selected':'')+'>'+d+'</option>').join('')+'</select></div>';
+  if(calc.dist==='Autre') h+='<div class="field"><label>'+t('customDistanceKmLabel')+'</label><div class="stepper"><button onclick="calc.customKm=Math.max(.1,calc.customKm-.5);renderCalc()">−</button><span class="val">'+calc.customKm+'</span><button onclick="calc.customKm+=.5;renderCalc()">+</button></div></div>';
   // time wheels
-  h+='<div class="field"><label>Temps (h : mm : ss)</label><div class="wheels">'+wheel('TH.h',0,9,calc.TH.h)+'<span class="wheel-sep">:</span>'+wheel('TH.m',0,59,calc.TH.m)+'<span class="wheel-sep">:</span>'+wheel('TH.s',0,59,calc.TH.s)+'</div></div>';
-  h+='<div class="field"><label>Allure (min : sec /km)</label><div class="wheels">'+wheel('TP.m',2,12,calc.TP.m)+'<span class="wheel-sep">:</span>'+wheel('TP.s',0,59,calc.TP.s)+'</div></div>';
+  h+='<div class="field"><label>'+t('timeHMSLabel')+'</label><div class="wheels">'+wheel('TH.h',0,9,calc.TH.h)+'<span class="wheel-sep">:</span>'+wheel('TH.m',0,59,calc.TH.m)+'<span class="wheel-sep">:</span>'+wheel('TH.s',0,59,calc.TH.s)+'</div></div>';
+  h+='<div class="field"><label>'+t('paceMinSecKmLabel')+'</label><div class="wheels">'+wheel('TP.m',2,12,calc.TP.m)+'<span class="wheel-sep">:</span>'+wheel('TP.s',0,59,calc.TP.s)+'</div></div>';
   // speed
   const spk=calc.TP.m*60+calc.TP.s; const kmh=spk>0?(3600/spk).toFixed(1):'0';
-  h+='<div class="sbox" style="text-align:center;margin-bottom:12px"><div class="v" style="color:var(--e)">'+kmh+' km/h</div><div class="l">Vitesse</div></div>';
-  h+='<div class="row" style="gap:8px"><button class="btn ghost sm" onclick="resetCalc()">Réinit.</button><button class="btn ghost sm" onclick="calc._adv=!calc._adv;renderCalc()">Avancé</button><button class="btn sm" onclick="doCalc()">Calculer</button></div>';
+  h+='<div class="sbox" style="text-align:center;margin-bottom:12px"><div class="v" style="color:var(--e)">'+kmh+' km/h</div><div class="l">'+t('speedLabel')+'</div></div>';
+  h+='<div class="row" style="gap:8px"><button class="btn ghost sm" onclick="resetCalc()">'+t('resetShortLabel')+'</button><button class="btn ghost sm" onclick="calc._adv=!calc._adv;renderCalc()">'+t('advancedLabel')+'</button><button class="btn sm" onclick="doCalc()">'+t('calculateLabel')+'</button></div>';
   if(calc._adv){
-    h+='<hr class="hl"><div class="field"><label>Pénalité (sec/km)</label><div class="stepper"><button onclick="calc.penalty-=1;renderCalc()">−</button><span class="val">'+calc.penalty+'</span><button onclick="calc.penalty+=1;renderCalc()">+</button></div></div><div class="chk '+(calc.negSplit?'done':'')+'" onclick="calc.negSplit=!calc.negSplit;renderCalc()"><div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div><div class="txt">Negative split</div></div>';
+    h+='<hr class="hl"><div class="field"><label>'+t('penaltySecKmLabel')+'</label><div class="stepper"><button onclick="calc.penalty-=1;renderCalc()">−</button><span class="val">'+calc.penalty+'</span><button onclick="calc.penalty+=1;renderCalc()">+</button></div></div><div class="chk '+(calc.negSplit?'done':'')+'" onclick="calc.negSplit=!calc.negSplit;renderCalc()"><div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div><div class="txt">'+t('negativeSplitLabel')+'</div></div>';
   }
   h+='</div>';
   h+='<div id="calcResult"></div>';
@@ -6170,37 +6980,37 @@ function doCalc(){
 let resultDist=5000;
 function renderCalcResult(){
   const vdot=getUserVDOT();
-  let h='<div class="card popin"><div class="card-t">Résultats</div>';
+  let h='<div class="card popin"><div class="card-t">'+t('resultsLabel')+'</div>';
   h+='<div class="pills" style="margin-bottom:14px;overflow-x:auto;flex-wrap:nowrap">'+Object.entries(DISTANCES).map(([k,v])=>'<div class="pill '+(resultDist===v?'on':'')+'" onclick="resultDist='+v+';renderCalc()">'+k+'</div>').join('')+'</div>';
-  const t=vdot?predictTime(vdot,resultDist):calc.lastResult.spk*resultDist/1000;
-  const spk=t/(resultDist/1000); const kmh=(3600/spk).toFixed(1);
-  h+='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v" style="font-size:18px">'+fmtTime(t)+'</div><div class="l">Temps prédit</div></div><div class="sbox"><div class="v" style="font-size:18px">'+spkToStr(spk)+'</div><div class="l">Allure /km</div></div><div class="sbox"><div class="v">'+kmh+'</div><div class="l">km/h</div></div><div class="sbox"><div class="v">'+(resultDist/1000)+'</div><div class="l">km</div></div></div>';
+  const predT=vdot?predictTime(vdot,resultDist):calc.lastResult.spk*resultDist/1000;
+  const spk=predT/(resultDist/1000); const kmh=(3600/spk).toFixed(1);
+  h+='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v" style="font-size:18px">'+fmtTime(predT)+'</div><div class="l">'+t('predictedTimeLabel')+'</div></div><div class="sbox"><div class="v" style="font-size:18px">'+spkToStr(spk)+'</div><div class="l">'+t('paceKmLabel')+'</div></div><div class="sbox"><div class="v">'+kmh+'</div><div class="l">km/h</div></div><div class="sbox"><div class="v">'+(resultDist/1000)+'</div><div class="l">km</div></div></div>';
   // splits
-  h+='<div class="lab" style="margin-bottom:8px">Splits km</div><div style="max-height:180px;overflow-y:auto">';
+  h+='<div class="lab" style="margin-bottom:8px">'+t('kmSplitsLabel')+'</div><div style="max-height:180px;overflow-y:auto">';
   const nk=Math.floor(resultDist/1000);
   for(let k=1;k<=nk;k++){ const hi=[5,10,21,42].includes(k); h+='<div class="zrow" style="padding:8px 0"><span class="zname" style="'+(hi?'color:var(--e)':'')+'">km '+k+(hi?' ⭐':'')+'</span><span class="zval mono">'+fmtTime(spk*k)+'</span></div>'; }
   h+='</div>';
   // actions
-  h+='<div class="row" style="gap:8px;margin-top:14px"><button class="btn ghost sm" onclick="saveCalcResult()">💾</button><button class="btn ghost sm" onclick="copyCalc()">Copier</button><button class="btn ghost sm" onclick="shareCalc()">↗</button></div>';
-  h+='<button class="btn sm" style="margin-top:8px" onclick="calcAsGoal()">🎯 Ajouter comme objectif</button></div>';
+  h+='<div class="row" style="gap:8px;margin-top:14px"><button class="btn ghost sm" onclick="saveCalcResult()">💾</button><button class="btn ghost sm" onclick="copyCalc()">'+t('copyLabel')+'</button><button class="btn ghost sm" onclick="shareCalc()">↗</button></div>';
+  h+='<button class="btn sm" style="margin-top:8px" onclick="calcAsGoal()">🎯 '+t('addAsGoalLabel')+'</button></div>';
   $('#calcResult').innerHTML=h;
 }
 function saveCalcResult(){
-  if(!calc.lastResult){ toast(`Lance un calcul d'abord`); return; }
-  toast('Résultat enregistré ✓');
+  if(!calc.lastResult){ toast(t('runCalcFirstToast')); return; }
+  toast(t('resultSavedToast'));
 }
 function copyCalc(){
-  if(!calc.lastResult){ toast(`Lance un calcul d'abord`); return; }
-  const t=predictTime(getUserVDOT(),resultDist);
-  navigator.clipboard&&navigator.clipboard.writeText('IKORUN — '+(resultDist/1000)+'km en '+fmtTime(t));
-  toast('Copié ✓');
+  if(!calc.lastResult){ toast(t('runCalcFirstToast')); return; }
+  const predT=predictTime(getUserVDOT(),resultDist);
+  navigator.clipboard&&navigator.clipboard.writeText(tp('ikorunDistInTime',(resultDist/1000),fmtTime(predT)));
+  toast(t('copiedShortToast'));
 }
 function shareCalc(){
-  const t=predictTime(getUserVDOT(),resultDist);
-  const txt='Ma prédiction IKORUN : '+(resultDist/1000)+'km en '+fmtTime(t);
-  if(navigator.share) navigator.share({title:'IKORUN',text:txt}); else toast('Partage non supporté');
+  const predT=predictTime(getUserVDOT(),resultDist);
+  const txt=tp('myIkorunPrediction',(resultDist/1000),fmtTime(predT));
+  if(navigator.share) navigator.share({title:'IKORUN',text:txt}); else toast(t('shareNotSupported'));
 }
-function calcAsGoal(){ addXP(10,'objectif ajouté'); toast('Objectif ajouté ✓'); }
+function calcAsGoal(){ addXP(10,t('goalAddedReason')); toast(t('goalAddedToast')); }
 
 /* ---------- FC KARVONEN ---------- */
 let fc={max:P.hrMax||190,rest:P.hrRest||60};
@@ -6294,8 +7104,8 @@ function timerToggle(){
   stopAlarm();
   if(timer.running){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; stopBgActivity(); renderTimer(); return; }
   if(timer.left<=0){ timer.left=timer.total=timer.m*60+timer.s; }
-  if(timer.left<=0){ toast('Règle une durée'); return; }
-  timer.running=true; timer.endAt=Date.now()+timer.left*1000; sfx('start'); startBgActivity('Minuteur'); renderTimer();
+  if(timer.left<=0){ toast(t('setDuration')); return; }
+  timer.running=true; timer.endAt=Date.now()+timer.left*1000; sfx('start'); startBgActivity(t('quickTimer')); renderTimer();
   timer.iv=setInterval(()=>{
     // basé sur l'horloge → reste exact même en arrière-plan
     timer.left=Math.max(0,Math.round((timer.endAt-Date.now())/1000));
@@ -6392,7 +7202,7 @@ function renderProfile(){
     '<div class="grp-row no-chev"><div class="lr-icon">📏</div><div class="lr-title">'+t('heightWeight')+'</div><div class="lr-val">'+(P.height||'—')+' cm · '+(P.weight||'—')+' kg</div></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">🎂</div><div class="lr-title">'+t('age')+'</div><div class="lr-val">'+age()+' '+(curLang()==='en'?'yo':curLang()==='ar'?'سنة':'ans')+'</div></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">📈</div><div class="lr-title">VDOT</div><div class="lr-val">'+(getUserVDOT()||'—')+'</div></div>'+
-    '<div class="grp-row" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\';renderSport()"><div class="lr-icon">🎯</div><div class="lr-title">'+t('objective')+'</div><div class="lr-val">'+(P.objRace||P.goal||t('noObjective'))+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\';renderSport()"><div class="lr-icon">🎯</div><div class="lr-title">'+t('objective')+'</div><div class="lr-val">'+(trRace(P.objRace)||P.goal||t('noObjective'))+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
   // ===== PROGRESSION — badges intégrés directement au profil =====
   { const unlocked=unlockedBadges(); const recent=[...unlocked].sort((a,b)=>b.date<a.date?-1:1).slice(0,5).map(u=>BADGE_TIERS.find(b=>b.key===u.key)).filter(Boolean);
@@ -6611,14 +7421,14 @@ function applyCrop(){
   const base=CROP_OUT/Math.min(img.width,img.height); const w=img.width*base*scale, hh=img.height*base*scale;
   const ratio=CROP_OUT/CROP_VIEW; // remappe le déplacement de l'aperçu vers la sortie
   ctx.drawImage(img,(CROP_OUT-w)/2+x*ratio,(CROP_OUT-hh)/2+y*ratio,w,hh);
-  P.photo=out.toDataURL('image/jpeg',0.9); saveAll(); closeOv('ovProg'); renderProfile(); toast('Photo mise à jour ✓'); sfx&&sfx('goal');
+  P.photo=out.toDataURL('image/jpeg',0.9); saveAll(); closeOv('ovProg'); renderProfile(); toast(t('photoUpdated')); sfx&&sfx('goal');
 }
-function removePhoto(){ delete P.photo; saveAll(); renderProfile(); toast('Photo supprimée'); }
-function editBio(){ const v=prompt('Ta biographie :',P.bio||''); if(v!==null){ P.bio=v.trim().slice(0,160); saveAll(); renderProfile(); } }
+function removePhoto(){ delete P.photo; saveAll(); renderProfile(); toast(t('photoRemoved')); }
+function editBio(){ const v=prompt(t('bioPromptLabel'),P.bio||''); if(v!==null){ P.bio=v.trim().slice(0,160); saveAll(); renderProfile(); } }
 function importData(){
   const inp=document.createElement('input'); inp.type='file'; inp.accept='.json';
   inp.onchange=e=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader();
-    r.onload=()=>{ try{ const d=JSON.parse(r.result); if(d.profile){P=d.profile;DB.save('profile',P);} if(d.sessions){SESS=d.sessions;DB.save('sessions',SESS);} if(d.muscu){MSESS=d.muscu;DB.save('muscu_sessions',MSESS);} if(d.xp){XP=d.xp;DB.save('xp',XP);} toast('Données importées ✓'); applyTheme(); renderProfile(); }catch(err){ toast('Fichier invalide'); } };
+    r.onload=()=>{ try{ const d=JSON.parse(r.result); if(d.profile){P=d.profile;DB.save('profile',P);} if(d.sessions){SESS=d.sessions;DB.save('sessions',SESS);} if(d.muscu){MSESS=d.muscu;DB.save('muscu_sessions',MSESS);} if(d.xp){XP=d.xp;DB.save('xp',XP);} toast(t('dataImported')); applyTheme(); renderProfile(); }catch(err){ toast(t('invalidFile')); } };
     r.readAsText(f); };
   inp.click();
 }
@@ -6692,11 +7502,11 @@ let peUsernameOk=true;
 async function saveProfileEdit(){
   const newUsername=$('#pe_username').value.trim();
   if(newUsername && newUsername!==P.username){
-    if(!usernameFormatOk(newUsername)){ toast('Pseudo invalide (3-20, lettres/chiffres/_)'); return; }
-    if(!peUsernameOk){ toast('Ce pseudo n\u2019est pas disponible'); return; }
+    if(!usernameFormatOk(newUsername)){ toast(t('usernameInvalid')); return; }
+    if(!peUsernameOk){ toast(t('usernameNotAvailable')); return; }
     const ok=await claimUsername(newUsername);
-    if(!ok){ toast('Ce pseudo vient d\u2019être pris, choisis-en un autre'); return; }
-    toast('Pseudo mis à jour ✓');
+    if(!ok){ toast(t('usernameJustTaken')); return; }
+    toast(t('usernameUpdated'));
   }
   P.name=$('#pe_name').value.trim()||P.name; P.city=$('#pe_city').value.trim(); P.bday=$('#pe_bday').value;
   P.height=+$('#pe_h').value||P.height; P.weight=+$('#pe_w').value||P.weight;
@@ -6706,7 +7516,7 @@ async function saveProfileEdit(){
   P.coach=$('#pe_coach').value.trim();
   P.pb5k=P.t5k; P.pb3k=P.t3k; P.pb1500=P.t1500; P.pb10k=P.t10k;
   P.vdot=computeVDOT();
-  saveAll(); closeOv('ovProfile'); renderProfile(); toast('Profil mis à jour ✓');
+  saveAll(); closeOv('ovProfile'); renderProfile(); toast(t('profileUpdated'));
 }
 
 /* ---------- SETTINGS ---------- */
@@ -6715,18 +7525,18 @@ function openSettings(){
     '<div class="row" style="margin-bottom:14px"><span>Unités métriques (km)</span><div class="toggle on"></div></div>'+
     '<div class="row"><span>Notifications</span><div class="toggle'+(P.notif?' on':'')+'" onclick="P.notif=!P.notif;saveAll();this.classList.toggle(\'on\')"></div></div></div>';
   h+='<div class="card"><div class="card-t">🔒 Données & confidentialité</div><button class="btn ghost sm" style="margin-bottom:8px" onclick="exportData()">📤 Exporter mes données (JSON)</button><button class="btn ghost sm" style="color:var(--bad)" onclick="resetAll()">🗑 Réinitialisation totale</button></div>';
-  h+='<div style="text-align:center;color:var(--dim);font-size:12px">IKORUN v2.0 · Données locales uniquement</div>';
+  h+='<div style="text-align:center;color:var(--dim);font-size:12px">IKORUN v2.0 · '+t('localDataOnly')+'</div>';
   $('#settingsBody').innerHTML=h; openOv('ovSettings');
 }
 function exportData(){
   const data={profile:P,sessions:SESS,muscu:MSESS,custom:CUSTOM,plan:PLAN,goals:GOALS,agenda:AGENDA,xp:XP};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='ikorun-export.json'; a.click();
-  toast('Export généré ✓');
+  toast(t('exportGenerated'));
 }
 function resetAll(){
-  if(!confirm('Tout effacer ? Cette action est irréversible.'))return;
-  if(!confirm('Vraiment sûr ? Toutes tes données seront perdues.'))return;
+  if(!confirm(t('confirmClearAll')))return;
+  if(!confirm(t('confirmClearAllFinal')))return;
   localStorage.clear();
   location.reload();
 }
@@ -6758,7 +7568,7 @@ function checkConnectivity(){
   else {
     const last=PREFS.lastOnline||Date.now();
     const days=Math.floor((Date.now()-last)/86400000);
-    if(days>=3) setTimeout(()=>toast('📡 Hors ligne depuis '+days+' j — pense à te reconnecter'),1500);
+    if(days>=3) setTimeout(()=>toast('📡 '+tp('offlineSinceDays',days)),1500);
   }
   return online;
 }
@@ -6772,11 +7582,11 @@ function syncOnline(silent){
   try{ if($('#s-home')&&$('#s-home').classList.contains('on')) renderHome(); }catch(e){}
   try{ if($('#s-outils')&&$('#s-outils').classList.contains('on')&&outilsTab==='priere') renderPriere(); }catch(e){}
   DB.save('prefs',PREFS);
-  if(!silent) toast('🔄 Données synchronisées');
+  if(!silent) toast('🔄 '+t('dataSynced'));
   nudgeScroll();
 }
-window.addEventListener('online',()=>{ toast('🟢 Connexion rétablie · synchronisation…'); syncOnline(false); });
-window.addEventListener('offline',()=>{ toast('🔌 Mode hors ligne — tout reste accessible'); });
+window.addEventListener('online',()=>{ toast('🟢 '+t('connectionRestored')); syncOnline(false); });
+window.addEventListener('offline',()=>{ toast('🔌 '+t('offlineModeAvailable')); });
 // Sync silencieuse périodique tant que l'app est ouverte
 setInterval(()=>{ if(navigator.onLine) syncOnline(true); },5*60*1000);
 
