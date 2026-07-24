@@ -604,6 +604,9 @@ const I18N={
     mileage:'Kilométrage',kmCumulated:'km cumulés',vsPrevPeriod:'vs période préc.',
     volumeTrend:'Tendance volume',kmThisWeek:'km cette sem.',eightWeeksLab:'8 sem.',weeksAgoLab:'Il y a 8 sem.',
     totalTime:'Temps total',overPeriod:'sur la période',goalReached:'Objectif atteint ! 🎉',ofTarget:'{0}% de la cible',
+    kmPerSession:'KM / SÉANCE',sessionTypesLabel:'TYPES DE SÉANCE',bestDayLab:'MEILLEUR JOUR',bestWeekLab:'MEILLEURE SEMAINE',bestMonthLab:'MEILLEUR MOIS',
+    detailByType:'Détail par type',last13Weeks:'13 dernières semaines',lessLabel:'Moins',moreLabel:'Plus',vsPrevShort:'vs préc.',
+    typeMuscu:'Muscu',typeAutre:'Autre',insightsTitle:'Insights',
     quickTimer:'Minuteur',lvlShort:'NIV.',
     vdotReal:'VDOT réel',sessionsRun:'Séances run',kmTotal:'km totaux',paceZones:'🎯 Zones d\u2019allure',
     predictions:'🔮 Prédictions',formFatigue:'📈 Forme / Fatigue',personalRecords:'🏅 Records personnels',
@@ -1030,6 +1033,9 @@ const I18N={
     mileage:'Mileage',kmCumulated:'km total',vsPrevPeriod:'vs previous period',
     volumeTrend:'Volume trend',kmThisWeek:'km this week',eightWeeksLab:'8 wks',weeksAgoLab:'8 weeks ago',
     totalTime:'Total time',overPeriod:'over the period',goalReached:'Goal reached! 🎉',ofTarget:'{0}% of target',
+    kmPerSession:'KM / SESSION',sessionTypesLabel:'SESSION TYPES',bestDayLab:'BEST DAY',bestWeekLab:'BEST WEEK',bestMonthLab:'BEST MONTH',
+    detailByType:'Breakdown by type',last13Weeks:'Last 13 weeks',lessLabel:'Less',moreLabel:'More',vsPrevShort:'vs prev.',
+    typeMuscu:'Strength',typeAutre:'Other',insightsTitle:'Insights',
     quickTimer:'Timer',lvlShort:'LVL',
     vdotReal:'Actual VDOT',sessionsRun:'Run sessions',kmTotal:'Total km',paceZones:'🎯 Pace zones',
     predictions:'🔮 Predictions',formFatigue:'📈 Form / Fatigue',personalRecords:'🏅 Personal records',
@@ -1456,6 +1462,9 @@ const I18N={
     mileage:'المسافة المقطوعة',kmCumulated:'كم متراكمة',vsPrevPeriod:'مقارنة بالفترة السابقة',
     volumeTrend:'اتجاه الحجم',kmThisWeek:'كم هذا الأسبوع',eightWeeksLab:'8 أسابيع',weeksAgoLab:'قبل 8 أسابيع',
     totalTime:'الوقت الإجمالي',overPeriod:'خلال الفترة',goalReached:'تم بلوغ الهدف! 🎉',ofTarget:'{0}% من الهدف',
+    kmPerSession:'كم / حصة',sessionTypesLabel:'أنواع الحصص',bestDayLab:'أفضل يوم',bestWeekLab:'أفضل أسبوع',bestMonthLab:'أفضل شهر',
+    detailByType:'التفاصيل حسب النوع',last13Weeks:'آخر 13 أسبوعًا',lessLabel:'أقل',moreLabel:'أكثر',vsPrevShort:'مقارنة بالسابق',
+    typeMuscu:'كمال أجسام',typeAutre:'آخر',insightsTitle:'إحصاءات',
     quickTimer:'المؤقت',lvlShort:'مستوى',
     vdotReal:'VDOT الحقيقي',sessionsRun:'حصص الجري',kmTotal:'كم إجمالية',paceZones:'🎯 مناطق الوتيرة',
     predictions:'🔮 توقعات',formFatigue:'📈 اللياقة / التعب',personalRecords:'🏅 الأرقام الشخصية',
@@ -3839,6 +3848,52 @@ const RACE_TR={
   ar:{'5 km':'5 كم','10 km':'10 كم','Semi-marathon':'نصف ماراثون','Marathon':'ماراثون','Ultra':'ألترا','Trail':'تريل','Cross':'كروس كنتري','Autre':'آخر'}
 };
 function trRace(r){ if(!r) return r; const l=curLang(); if(l==='fr'||!RACE_TR[l]) return r; return RACE_TR[l][r]||r; }
+// Les séances stockées gardent leur libellé au format du moment de leur création (souvent FR).
+// On mappe ces libellés connus vers les clés sessLabel_XXX pour ré-afficher dans la langue active.
+const SESS_TYPE_TO_KEY={'EF':'EF','Récup':'RECUP','Long':'LONG','Tempo':'TEMPO','Tempo spé':'TEMPO_SPE','Seuil':'SEUIL','Double seuil':'DBLSEUIL',
+  'VMA courte':'VMAc','VMA longue':'VMAl','VO₂max':'VO2','Intervalles':'INTERVAL','Allure spé':'SPE','Progressif':'PROGRESSIF','Fartlek':'FARTLEK',
+  'Côtes':'COTES','Lignes':'LIGNES','Course':'COURSE'};
+function trSessType(ty){
+  if(!ty||ty==='—') return ty;
+  if(ty==='Muscu') return t('typeMuscu');
+  if(ty==='Autre') return t('typeAutre');
+  const key=SESS_TYPE_TO_KEY[ty];
+  if(key) return t('sessLabel_'+key);
+  return ty;
+}
+// Les séances du plan généré (PLAN.sessions) stockent titre/label/desc figés dans la langue
+// active au moment de la génération. On les recalcule à l'affichage à partir de s.baseType
+// (clé stable) pour qu'elles suivent la langue courante. s.title/s.type restent utilisés
+// tels quels pour les séances perso (pas de baseType), qui contiennent du texte libre.
+const PLAN_SESSTYPE_KEYS=['EF','RECUP','LONG','TEMPO','TEMPO_SPE','SEUIL','DBLSEUIL','VMAc','VMAl','VO2','INTERVAL','SPE','PROGRESSIF','FARTLEK','COTES','LIGNES','COURSE','default'];
+function planSessTitle(s){
+  const bt=s&&s.baseType; if(!bt) return s?s.title:'';
+  if(bt==='LONG'||bt==='LONG_COURT') return t('sessTitle_LONG')+(s.phaseKey==='SPE'?t('progressiveSuffix'):'');
+  if(bt==='COURSE') return t('sessTitle_COURSE')+' — '+(trRace(P.objRace)||t('competitionDefault'));
+  if(bt==='SPE'||bt==='SPE_COURT') return t('sessTitle_SPE')+(P.objRace?' '+trRace(P.objRace):'');
+  if(PLAN_SESSTYPE_KEYS.includes(bt)) return t('sessTitle_'+bt);
+  return s.title;
+}
+function planSessLabel(s){
+  const bt=s&&s.baseType; if(!bt) return s?s.type:'';
+  if(bt==='LONG_COURT') return t('sessLabel_LONG');
+  if(bt==='SPE_COURT') return t('sessLabel_SPE');
+  if(PLAN_SESSTYPE_KEYS.includes(bt)) return t('sessLabel_'+bt);
+  return s.type;
+}
+const SERIES_RECOVLABEL_KEY={TEMPO_SPE:'recovLabel_2minTrot',SEUIL:'recovLabel_1minTrot',VMAc:'recovLabel_1minTrot',
+  VMAl:'recovLabel_2to3minTrot',VO2:'recovLabel_2to3minTrot',SPE:'recovLabel_90sTrot',SPE_COURT:'recovLabel_90sTrot',
+  DBLSEUIL:'recovLabel_30sTrot',INTERVAL:'bs_interval_recoveryLabel',COTES:'bs_cotes_recoveryLabel'};
+function liveSeries(s){
+  if(!s||!s.series) return s?s.series:null;
+  const bt=s.baseType; if(!bt) return s.series;
+  const sr={...s.series};
+  const key=SERIES_RECOVLABEL_KEY[bt];
+  if(key) sr.recoveryLabel=t(key);
+  if(bt==='COTES') sr.note=t('bs_cotes_note');
+  if(bt==='DBLSEUIL') sr.note=tp('bs_dblseuil_note',5,6);
+  return sr;
+}
 const PROFILE_TR={en:{'Plate':'Flat','Vallonnée':'Hilly','Montagne':'Mountain'},ar:{'Plate':'مستوٍ','Vallonnée':'متموّج','Montagne':'جبلي'}};
 function trProfile(p){ if(!p) return p; const l=curLang(); if(l==='fr'||!PROFILE_TR[l]) return p; return PROFILE_TR[l][p]||p; }
 const GOAL_TR={
@@ -3876,7 +3931,7 @@ function openMissedFlow(sid){
 }
 function renderMissedReason(){
   const s=PLAN.sessions.find(x=>x.id===missedCtx.sessionId); if(!s) return;
-  let h='<div class="card" style="border-color:rgba(255,92,108,.35);background:rgba(255,92,108,.08);margin-bottom:18px"><div style="font-weight:700;color:var(--bad)">⚠️ '+t('missedSessionTitle')+'</div><div style="font-size:13px;color:var(--muted);margin-top:4px">'+s.title+' · '+fmtDate(s.date)+'</div></div>';
+  let h='<div class="card" style="border-color:rgba(255,92,108,.35);background:rgba(255,92,108,.08);margin-bottom:18px"><div style="font-weight:700;color:var(--bad)">⚠️ '+t('missedSessionTitle')+'</div><div style="font-size:13px;color:var(--muted);margin-top:4px">'+planSessTitle(s)+' · '+fmtDate(s.date)+'</div></div>';
   h+='<div class="lab" style="margin-bottom:10px">'+t('missedReasonPrompt')+'</div>';
   h+='<div class="reason-grid">'+MISSED_REASONS.map(r=>'<div class="reason-tile" onclick="selectMissedReason(\''+r+'\')">'+(MISSED_REASON_ICONS[r]||'')+' '+trReason(r)+'</div>').join('')+'</div>';
   $('#progBody').innerHTML=h;
@@ -4543,7 +4598,7 @@ function getDailyGoals(){
       {id:'sleep',txt:'Dormir 8h cette nuit',done:false}
     ];
     const ps=planSessionToday();
-    if(ps && ps.type!=='Repos') list.unshift({id:'plan',txt:'Faire : '+ps.title,done:false});
+    if(ps && ps.type!=='Repos') list.unshift({id:'plan',txt:'Faire : '+planSessTitle(ps),done:false});
     else list.unshift({id:'mobility',txt:'10 min de mobilité',done:false});
     GOALS={date:tk,list};
     DB.save('daily_goals',GOALS);
@@ -4736,7 +4791,7 @@ function renderHome(){
   html+='<div class="next-lab">'+t('nextSession')+'</div>';
   if(ps && ps.type!=='Repos'){
     html+='<div class="card next-card stag" style="animation-delay:.06s" onclick="'+(ps._source==='perso'?"curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')":'openRunSheet('+ps.id+')')+'">'+
-      '<div class="next-body"><div class="next-title">'+ps.title+'</div>'+
+      '<div class="next-body"><div class="next-title">'+planSessTitle(ps)+'</div>'+
       '<div class="next-meta">'+(ps.km?ps.km+' km · '+ps.pace+'/km'+(ps.duration?' · '+ps.duration+' min':''):'')+'</div>'+
       '<div class="next-when">'+t('today')+'</div></div>'+
       '<div class="next-ic">'+ICN('run',20)+'</div></div>';
@@ -4782,7 +4837,7 @@ function renderHomeSimple(ps,sessW,sessTarget,vdot,form,first){
   h+='<div class="next-lab">'+t('todayCap')+'</div>';
   if(ps && ps.type!=='Repos'){
     h+='<div class="card next-card stag" onclick="'+(ps._source==='perso'?"curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')":'openRunSheet('+ps.id+')')+'">'+
-      '<div class="next-body"><div class="next-title">'+ps.title+'</div>'+
+      '<div class="next-body"><div class="next-title">'+planSessTitle(ps)+'</div>'+
       '<div class="next-meta">'+(ps.km?ps.km+' km · '+ps.pace+'/km'+(ps.duration?' · '+ps.duration+' min':''):'')+'</div>'+
       '<div class="next-when">'+t('tapToStart')+'</div></div>'+
       '<div class="next-ic">'+ICN('run',20)+'</div></div>';
@@ -4893,10 +4948,10 @@ function renderPlanRows(sessions,tk){
     if(s.week!==curWeek){ curWeek=s.week; h+='<div class="lab" style="margin:8px 0 6px">'+tp('weekN',s.week)+(s.deload?t('deloadTag'):'')+'</div>'; }
     const isToday=s.date===tk;
     const qb=s.missed?'<div class="qbadge" style="background:rgba(255,92,108,.16);color:var(--bad)">'+t('missedTag')+'</div>'
-      :(s.km===0?'<div class="qbadge rest">'+t('restTag')+'</div>':'<div class="chrome-chip" style="color:'+baseTypeColor(s.baseType)+'">'+s.type+'</div>');
-    const ssum=seriesSummary(s);
+      :(s.km===0?'<div class="qbadge rest">'+t('restTag')+'</div>':'<div class="chrome-chip" style="color:'+baseTypeColor(s.baseType)+'">'+planSessLabel(s)+'</div>');
+    const ssum=seriesSummary({...s,series:liveSeries(s)});
     const line2=fmtDate(s.date)+(s.km?' · '+s.km+' km':' · Repos')+(s.km&&!ssum?' · '+s.pace+'/km':'');
-    h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'" onclick="openRunSheet('+s.id+')" style="'+(s.missed?'border-color:rgba(255,92,108,.35)':'')+'"><div class="row"><div><div style="font-weight:700;font-size:14px">'+s.title+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+line2+'</div>'+(ssum?'<div style="color:var(--e);font-size:12px;font-weight:700;margin-top:3px">⏱ '+ssum+'</div>':'')+'</div>'+qb+'</div></div>';
+    h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'" onclick="openRunSheet('+s.id+')" style="'+(s.missed?'border-color:rgba(255,92,108,.35)':'')+'"><div class="row"><div><div style="font-weight:700;font-size:14px">'+planSessTitle(s)+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+line2+'</div>'+(ssum?'<div style="color:var(--e);font-size:12px;font-weight:700;margin-top:3px">⏱ '+ssum+'</div>':'')+'</div>'+qb+'</div></div>';
   });
   return h;
 }
@@ -4990,7 +5045,7 @@ function renderCalendarView(){
     h+='<div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:8px">'+dlab+'</div>';
     sess.forEach(s=>{
       h+='<div class="rs-row" style="padding:0 0 4px" onclick="openRunSheet('+s.id+')"><div class="rs-ic" style="background:rgba(51,211,153,.16);color:var(--ok)">'+ICN('run',16)+'</div>'
-        +'<div class="rs-row-body"><div class="rs-row-t">'+s.title+'</div><div class="rs-row-m">'+s.km+' km · '+s.pace+'/km</div></div></div>';
+        +'<div class="rs-row-body"><div class="rs-row-t">'+planSessTitle(s)+'</div><div class="rs-row-m">'+s.km+' km · '+s.pace+'/km</div></div></div>';
     });
     shown++;
   }
@@ -5316,8 +5371,8 @@ function openRunSheet(id){
   let h='';
 
   // EN-TÊTE — badge type, titre, sous-titre semaine/objectif
-  h+='<div class="rs-badge" style="background:'+col+'22;color:'+col+'">'+(s.type||'').slice(0,2).toUpperCase()+'</div>';
-  h+='<div class="rs-title">'+s.title+'</div>';
+  h+='<div class="rs-badge" style="background:'+col+'22;color:'+col+'">'+(planSessLabel(s)||'').slice(0,2).toUpperCase()+'</div>';
+  h+='<div class="rs-title">'+planSessTitle(s)+'</div>';
   h+='<span class="rs-sub">'+(PLAN.weekLabel?PLAN.weekLabel:t('weekLabelWithNum')+' '+s.week)+' · '+(trRace(P.objRace)||t('objectiveWord'))+'</span>';
 
   // 3 STATS
@@ -5355,7 +5410,7 @@ function openRunSheet(id){
 
   // DÉTAIL COMPLET (repliable, contenu déjà existant conservé)
   if(dt){
-    h+=seriesTableHTML(s.series);
+    h+=seriesTableHTML(liveSeries(s));
     if(s.series && s.series.length) h+='<div class="pace-warn">⚠️ '+t('paceWarnMsg')+'</div>';
     h+='<div class="chrome-box"><div class="cb-head">🏁 '+t('detailedPacesLabel')+'</div><div class="cb-body">'+dt.paces+'</div></div>';
     h+='<div class="chrome-box"><div class="cb-head">⏱ '+t('recoveryLabel')+'</div><div class="cb-body">'+dt.recovery+'</div></div>';
@@ -5363,7 +5418,7 @@ function openRunSheet(id){
     h+='<div class="chrome-box bad"><div class="cb-head" style="color:var(--bad)">⚠️ '+t('mistakesToAvoidLabel')+'</div>'+dt.mistakes.map(tt=>'<div class="cb-body" style="margin-bottom:5px">✗ '+tt+'</div>').join('')+'</div>';
     h+='<div class="chrome-box"><div class="cb-head">🧠 '+t('whySessionLabel')+'</div><div class="cb-body">'+dt.why+'</div></div>';
   } else {
-    h+=seriesTableHTML(s.series);
+    h+=seriesTableHTML(liveSeries(s));
     h+='<div class="chrome-box"><div class="cb-head">💪 '+t('sessionBodyLabel')+'</div><div class="cb-body">'+s.desc+'</div></div>';
   }
   $('#sheetBody').innerHTML=h;
@@ -6139,14 +6194,14 @@ function statsBilan(){
   const typeSegs=Object.entries(byType).map(([ty,ct])=>({v:ct,color:'var('+(TYPE_COLORS[ty]||'--e')+')',ty,ct}));
   if(!typeSegs.length) typeSegs.push({v:1,color:'rgba(255,255,255,.08)',ty:'—',ct:0});
   const bestI=bars.values.reduce((bi,v,i)=>v>bars.values[bi]?i:bi,0);
-  const bestLab={week:'MEILLEUR JOUR',month:'MEILLEURE SEMAINE',['3m']:'MEILLEUR MOIS',year:'MEILLEUR MOIS'}[per];
+  const bestLab={week:t('bestDayLab'),month:t('bestWeekLab'),['3m']:t('bestMonthLab'),year:t('bestMonthLab')}[per];
 
-  h+='<div class="kinsights-head">Insights</div>';
+  h+='<div class="kinsights-head">'+t('insightsTitle')+'</div>';
   h+='<div class="krow3">'+
-    '<div class="ktile"><div class="ktile-lab">KM / SÉANCE</div><div class="ktile-val">'+avgKmSess.toFixed(1)+' km</div>'+
-      (avgDelta!==null?'<div class="ktile-sub'+(avgDelta<0?' bad':'')+'">'+(avgDelta>0?'↑ ':avgDelta<0?'↓ ':'')+Math.abs(avgDelta)+'% vs préc.</div>':'<div class="ktile-sub" style="color:var(--muted)">—</div>')+
+    '<div class="ktile"><div class="ktile-lab">'+t('kmPerSession')+'</div><div class="ktile-val">'+avgKmSess.toFixed(1)+' km</div>'+
+      (avgDelta!==null?'<div class="ktile-sub'+(avgDelta<0?' bad':'')+'">'+(avgDelta>0?'↑ ':avgDelta<0?'↓ ':'')+Math.abs(avgDelta)+'% '+t('vsPrevShort')+'</div>':'<div class="ktile-sub" style="color:var(--muted)">—</div>')+
     '</div>'+
-    '<div class="ktile" style="text-align:center"><div class="ktile-lab">TYPES DE SÉANCE</div>'+
+    '<div class="ktile" style="text-align:center"><div class="ktile-lab">'+t('sessionTypesLabel')+'</div>'+
       '<div class="ktile-donut">'+donutSVG(typeSegs,50,9,'')+'</div>'+
     '</div>'+
     '<div class="ktile"><span class="ktile-star">⭐</span><div class="ktile-lab">'+bestLab+'</div>'+
@@ -6155,13 +6210,13 @@ function statsBilan(){
     '</div>'+
   '</div>';
   if(typeSegs[0].ty!=='—'){
-    h+='<div class="card" style="margin-top:2px"><div class="card-t">'+cardIcon('chart','var(--e)')+'Détail par type</div>'+
-      typeSegs.sort((a,b)=>b.ct-a.ct).map(s=>'<div class="row" style="gap:8px;margin-bottom:6px"><span class="zdot" style="background:'+s.color+'"></span><span style="flex:1;font-size:12.5px;font-weight:600">'+s.ty+'</span><span class="mono" style="font-size:12px;color:var(--muted)">'+s.ct+' · '+Math.round(s.ct/periodSess.length*100)+'%</span></div>').join('')+
+    h+='<div class="card" style="margin-top:2px"><div class="card-t">'+cardIcon('chart','var(--e)')+t('detailByType')+'</div>'+
+      typeSegs.sort((a,b)=>b.ct-a.ct).map(s=>'<div class="row" style="gap:8px;margin-bottom:6px"><span class="zdot" style="background:'+s.color+'"></span><span style="flex:1;font-size:12.5px;font-weight:600">'+trSessType(s.ty)+'</span><span class="mono" style="font-size:12px;color:var(--muted)">'+s.ct+' · '+Math.round(s.ct/periodSess.length*100)+'%</span></div>').join('')+
     '</div>';
   }
 
   // 13 DERNIÈRES SEMAINES — heatmap, complément utile non présent chez Kalo
-  h+='<div class="card"><div class="card-t">'+cardIcon('fire','var(--or)')+'13 dernières semaines</div><div class="heat">'+heatmap13()+'</div><div class="row" style="margin-top:10px;font-size:11px;color:var(--dim)"><span>Moins</span><span>Plus</span></div></div>';
+  h+='<div class="card"><div class="card-t">'+cardIcon('fire','var(--or)')+t('last13Weeks')+'</div><div class="heat">'+heatmap13()+'</div><div class="row" style="margin-top:10px;font-size:11px;color:var(--dim)"><span>'+t('lessLabel')+'</span><span>'+t('moreLabel')+'</span></div></div>';
 
   return h;
 }
