@@ -1,5 +1,37 @@
 /* ============ IKORUN — Elite Athletic Intelligence ============ */
 
+/* ---------- WATCHDOG DE DÉMARRAGE (tout en haut, avant tout le reste) ----------
+   Si N'IMPORTE QUOI plus bas dans ce fichier plante (erreur JS, promesse qui ne
+   se résout jamais, etc.), ce timer déjà programmé continuera de tourner car il
+   ne dépend d'aucune fonction définie plus loin. Après 8s, si le skeleton de
+   démarrage est toujours affiché, on le force à disparaître et on affiche un
+   message clair (avec le vrai message d'erreur si dispo) au lieu de laisser
+   l'écran bloqué indéfiniment sans info. */
+window.__ikorunLastError = null;
+window.addEventListener('error', function(e){
+  window.__ikorunLastError = (e && e.message) ? (e.message+' @ '+(e.filename||'')+':'+(e.lineno||'')) : String(e);
+});
+window.addEventListener('unhandledrejection', function(e){
+  window.__ikorunLastError = 'Promise rejetée: ' + (e && e.reason ? (e.reason.message||e.reason) : e);
+});
+setTimeout(function(){
+  try{
+    var el = document.getElementById('appSkeleton');
+    if(!el || el.classList.contains('out')) return; // tout s'est bien passé
+    console.error('[IKORUN] Watchdog : démarrage bloqué, déblocage forcé.', window.__ikorunLastError);
+    if(typeof startLogin === 'function' && !window.__ikorunLastError){
+      startLogin();
+    } else {
+      el.remove();
+      var d = document.createElement('div');
+      d.style.cssText = 'position:fixed;inset:0;background:#0A0D12;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font-family:sans-serif;z-index:99999';
+      var msg = window.__ikorunLastError ? ('<div style="font-size:13px;opacity:.7;margin-top:10px;word-break:break-word">'+window.__ikorunLastError+'</div>') : '';
+      d.innerHTML = '<div>Erreur au chargement.'+msg+'<br><br><button onclick="location.reload(true)" style="padding:10px 20px;border-radius:8px;background:#fff;color:#000;border:none;font-size:16px">Recharger</button></div>';
+      document.body.appendChild(d);
+    }
+  }catch(e){ console.error('[IKORUN] Watchdog erreur',e); }
+}, 8000);
+
 /* ---------- CLOUD SYNC (Supabase) ---------- */
 window.currentUserId = null;
 window.currentUserEmail = null;
