@@ -300,9 +300,15 @@ async function grantReferralBonusIfNeeded(){
   try{
     const { data:me } = await window.supabaseClient.from('public_profiles').select('referred_by').eq('user_id',window.currentUserId).maybeSingle();
     if(me && me.referred_by){
-      addXP(50,t('referralBonusReason')); DB.save('referral_bonus_done', true);
-      window.supabaseClient.rpc('increment_referrer_xp',{ p_uid: me.referred_by, p_amount: 50 }).then(()=>{}).catch(()=>{});
-      toast(t('referralBonusXP'));
+      // Le serveur (grant_referral_bonus) est désormais l'unique source de vérité :
+      // il vérifie lui-même l'identité de l'appelant et n'accorde le bonus qu'une fois,
+      // donc plus besoin (ni possibilité) de faire confiance à un montant/uid fournis par le client.
+      window.supabaseClient.rpc('grant_referral_bonus').then(({data:granted})=>{
+        if(granted){
+          addXP(50,t('referralBonusReason')); DB.save('referral_bonus_done', true);
+          toast(t('referralBonusXP'));
+        }
+      }).catch(()=>{});
     }
   }catch(e){}
 }
@@ -377,21 +383,21 @@ function renderFriends(){
     if(friendsCache.pending.length){
       h+='<div class="sec-lab">'+t('receivedRequests')+'</div>';
       friendsCache.pending.forEach(p=>{
-        h+='<div class="fr-req-card"><div class="row"><div style="font-weight:700">'+p.username+'</div><div class="row" style="gap:6px"><button class="btn sm" style="width:auto" onclick="respondFriend('+p.reqId+',true)">'+t('acceptBtn')+'</button><button class="btn ghost sm" style="width:auto" onclick="respondFriend('+p.reqId+',false)">✕</button></div></div></div>';
+        h+='<div class="fr-req-card"><div class="row"><div style="font-weight:700">'+escHtml(p.username)+'</div><div class="row" style="gap:6px"><button class="btn sm" style="width:auto" onclick="respondFriend('+p.reqId+',true)">'+t('acceptBtn')+'</button><button class="btn ghost sm" style="width:auto" onclick="respondFriend('+p.reqId+',false)">✕</button></div></div></div>';
       });
     }
     h+='<div class="sec-lab">'+tp('yourFriendsCount',friendsCache.friends.length)+'</div>';
     if(!friendsCache.friends.length) h+='<div class="card"><div class="empty"><div class="em-ic">👋</div><div style="font-size:13px">'+t('noFriendsYet')+'</div></div></div>';
     else h+='<div class="card" style="padding:2px 6px">'+friendsCache.friends.map((f,i)=>{
-      const av=f.photo_url?'<div class="fr-avatar" style="background-image:url(\''+f.photo_url+'\')"></div>':'<div class="fr-avatar">'+(f.username?f.username[0].toUpperCase():'?')+'</div>';
+      const av=f.photo_url?'<div class="fr-avatar" style="background-image:url(\''+escHtml(f.photo_url)+'\')"></div>':'<div class="fr-avatar">'+(f.username?escHtml(f.username[0].toUpperCase()):'?')+'</div>';
       return '<div class="fr-row" style="border-bottom:'+(i<friendsCache.friends.length-1?'1px solid var(--hair)':'none')+'" onclick="openFriendProfile(\''+f.id+'\')">'+av+
-        '<div class="fr-info"><div class="fr-name">'+f.username+'</div><div class="fr-meta"><span class="fr-lvl-chip">'+t('lvlDot')+' '+f.level+'</span><span class="fr-km-txt">'+tp('kmThisWeekShort',f.km_week)+'</span></div></div>'+
+        '<div class="fr-info"><div class="fr-name">'+escHtml(f.username)+'</div><div class="fr-meta"><span class="fr-lvl-chip">'+t('lvlDot')+' '+f.level+'</span><span class="fr-km-txt">'+tp('kmThisWeekShort',f.km_week)+'</span></div></div>'+
         '<span class="fr-del" onclick="event.stopPropagation();removeFriend(\''+f.id+'\')" title="'+t('removeLab')+'">🗑</span>'+
         '<span class="lr-chev">'+ICN('chevronR',16)+'</span></div>';
     }).join('')+'</div>';
     if(friendsCache.sent.length){
       h+='<div class="sec-lab">'+t('sentRequests')+'</div>';
-      h+='<div class="card" style="padding:2px 6px">'+friendsCache.sent.map((p,i)=>'<div class="fr-row" style="opacity:.65;cursor:default;border-bottom:'+(i<friendsCache.sent.length-1?'1px solid var(--hair)':'none')+'"><div class="fr-avatar">'+(p.username?p.username[0].toUpperCase():'?')+'</div><div class="fr-info"><div class="fr-name">'+p.username+'</div><div class="fr-km-txt" style="margin-top:3px">'+t('awaitingResponse')+'</div></div></div>').join('')+'</div>';
+      h+='<div class="card" style="padding:2px 6px">'+friendsCache.sent.map((p,i)=>'<div class="fr-row" style="opacity:.65;cursor:default;border-bottom:'+(i<friendsCache.sent.length-1?'1px solid var(--hair)':'none')+'"><div class="fr-avatar">'+(p.username?escHtml(p.username[0].toUpperCase()):'?')+'</div><div class="fr-info"><div class="fr-name">'+escHtml(p.username)+'</div><div class="fr-km-txt" style="margin-top:3px">'+t('awaitingResponse')+'</div></div></div>').join('')+'</div>';
     }
   }
 
@@ -404,11 +410,11 @@ function renderFriends(){
       const top3=all.slice(0,3), rest=all.slice(3);
       const medals=['🥇','🥈','🥉'];
       h+='<div class="fr-podium">'+top3.map((f,i)=>{
-        const av=f.photo_url?'<div class="fr-pod-av" style="background-image:url(\''+f.photo_url+'\')"></div>':'<div class="fr-pod-av">'+(f.username?f.username[0].toUpperCase():'?')+'</div>';
-        return '<div class="fr-pod-card p'+(i+1)+'"'+(f.id?' onclick="openFriendProfile(\''+f.id+'\')" style="cursor:pointer"':'')+'><div class="fr-pod-medal">'+medals[i]+'</div>'+av+'<div class="fr-pod-name">'+f.username+'</div><div class="fr-pod-xp">'+f.xp+' XP</div></div>';
+        const av=f.photo_url?'<div class="fr-pod-av" style="background-image:url(\''+escHtml(f.photo_url)+'\')"></div>':'<div class="fr-pod-av">'+(f.username?escHtml(f.username[0].toUpperCase()):'?')+'</div>';
+        return '<div class="fr-pod-card p'+(i+1)+'"'+(f.id?' onclick="openFriendProfile(\''+f.id+'\')" style="cursor:pointer"':'')+'><div class="fr-pod-medal">'+medals[i]+'</div>'+av+'<div class="fr-pod-name">'+escHtml(f.username)+'</div><div class="fr-pod-xp">'+f.xp+' XP</div></div>';
       }).join('')+'</div>';
       if(rest.length) h+='<div class="card" style="padding:4px 14px">'+rest.map((f,i)=>
-        '<div class="fr-rank-row'+(f.id?'':' me')+'" style="border-bottom:'+(i<rest.length-1?'1px solid var(--hair)':'none')+(f.id?';cursor:pointer':'')+'"'+(f.id?' onclick="openFriendProfile(\''+f.id+'\')"':'')+'><div class="fr-rank-num">#'+(i+4)+'</div><div style="flex:1;font-weight:700;font-size:13.5px">'+f.username+'</div><div style="font-size:12.5px;color:var(--muted);font-weight:600">'+f.xp+' XP · '+t('lvlDot')+f.level+'</div></div>'
+        '<div class="fr-rank-row'+(f.id?'':' me')+'" style="border-bottom:'+(i<rest.length-1?'1px solid var(--hair)':'none')+(f.id?';cursor:pointer':'')+'"'+(f.id?' onclick="openFriendProfile(\''+f.id+'\')"':'')+'><div class="fr-rank-num">#'+(i+4)+'</div><div style="flex:1;font-weight:700;font-size:13.5px">'+escHtml(f.username)+'</div><div style="font-size:12.5px;color:var(--muted);font-weight:600">'+f.xp+' XP · '+t('lvlDot')+f.level+'</div></div>'
       ).join('')+'</div>';
     }
   }
@@ -424,6 +430,12 @@ function renderFriends(){
 }
 let _friendSearchDeb=null;
 function escLike(s){ return s.replace(/[\\%_]/g,'\\$&'); }
+// Échappe tout texte injecté dans du innerHTML (pseudos, URLs de photo, etc.).
+// Sécurité en profondeur : même si le serveur revalide déjà le format des pseudos,
+// on n'affiche jamais de texte contrôlé par un tiers sans l'échapper ici.
+function escHtml(s){
+  return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 function onFriendSearchInput(){
   clearTimeout(_friendSearchDeb);
   const el=$('#addFriendSearch'); const v=el?el.value.trim():'';
@@ -446,7 +458,7 @@ async function searchFriendCandidates(v){
     const known=new Set([...friendsCache.friends,...friendsCache.pending,...friendsCache.sent].map(f=>f.id));
     box.innerHTML=results.map(r=>{
       const already=known.has(r.user_id);
-      return '<div class="card" style="padding:10px 14px;margin-top:6px"><div class="row"><div style="font-weight:700">@'+r.username+'</div>'+
+      return '<div class="card" style="padding:10px 14px;margin-top:6px"><div class="row"><div style="font-weight:700">@'+escHtml(r.username)+'</div>'+
         (already?'<span style="font-size:11.5px;color:var(--muted)">'+t('alreadyLinked')+'</span>':'<button class="btn sm" style="width:auto" onclick="sendFriendRequest(\''+r.user_id+'\')">'+t('addBtn')+'</button>')+
         '</div></div>';
     }).join('');
@@ -492,11 +504,11 @@ function renderFriendProfileHTML(){
   const f=[...friendsCache.friends,...friendsCache.pending,...friendsCache.sent].find(x=>x.id===friendsSelected);
   const back='<div class="row" style="margin-bottom:14px;cursor:pointer" onclick="backToFriendsList()">'+ICN('chevronR',16).replace('<path','<path transform="rotate(180 12 12)"')+' <span style="font-weight:700;margin-left:4px">'+t('backToFriends')+'</span></div>';
   if(!f) return back+'<div class="card"><div class="empty"><div class="em-ic">🤷</div><div style="font-size:13px">'+t('profileNotFound')+'</div></div></div>';
-  const av=f.photo_url?'<div class="fr-profile-av" style="background-image:url(\''+f.photo_url+'\')"></div>':'<div class="fr-profile-av">'+(f.username?f.username[0].toUpperCase():'?')+'</div>';
+  const av=f.photo_url?'<div class="fr-profile-av" style="background-image:url(\''+escHtml(f.photo_url)+'\')"></div>':'<div class="fr-profile-av">'+(f.username?escHtml(f.username[0].toUpperCase()):'?')+'</div>';
   let h=back;
   h+='<div class="fr-profile-hero">'+
     '<div style="position:relative;display:inline-block">'+av+'<span class="fr-profile-lvl">'+t('lvlDot')+' '+(f.level||1)+'</span></div>'+
-    '<div style="font-weight:800;font-size:18px;margin-top:16px">'+f.username+'</div>'+
+    '<div style="font-weight:800;font-size:18px;margin-top:16px">'+escHtml(f.username)+'</div>'+
     '<div style="font-size:12.5px;color:var(--muted);margin-top:2px">'+(f.xp||0)+' XP</div>'+
   '</div>';
   h+='<div class="stat-quatro" style="margin-top:12px">'+
@@ -7713,7 +7725,7 @@ function computeVDOTfromRecords(){
 function openProfileEdit(){
   $('#ovProfile').querySelector('h2').textContent=t('editProfileTitle');
   const f=(l,id,v,ty)=>'<div class="field"><label>'+l+'</label><input class="inp" id="'+id+'" value="'+(v||'')+'" '+(ty?'type="'+ty+'"':'')+'></div>';
-  let h='<div class="field"><label>'+t('usernameLab')+'</label><div class="uname-wrap"><span class="uname-at">@</span><input class="inp" id="pe_username" value="'+(P.username||'')+'" autocapitalize="off" autocorrect="off" spellcheck="false"></div><div class="uname-status" id="pe_username_status">'+t('usernameHint')+'</div></div>';
+  let h='<div class="field"><label>'+t('usernameLab')+'</label><div class="uname-wrap"><span class="uname-at">@</span><input class="inp" id="pe_username" value="'+escHtml(P.username||'')+'" autocapitalize="off" autocorrect="off" spellcheck="false"></div><div class="uname-status" id="pe_username_status">'+t('usernameHint')+'</div></div>';
   h+=f(t('firstNameLab'),'pe_name',P.name)+f(t('cityLab'),'pe_city',P.city)+f(t('birthDateLab'),'pe_bday',P.bday,'date')+
     f(t('heightCmLab'),'pe_h',P.height,'number')+f(t('weightKgLab'),'pe_w',P.weight,'number')+
     f(t('hrMaxLab'),'pe_hrmax',P.hrMax,'number')+f(t('hrRestLab'),'pe_hrrest',P.hrRest,'number')+
