@@ -77,11 +77,17 @@ function _scheduleTokenRefresh(expiresInSec){
 }
 async function ikorunRefreshSession(bodyRefreshToken){
   try{
-    const res = await fetch(AUTH_FN_URL, {
-      method:'POST', credentials:'include',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(bodyRefreshToken ? {refresh_token:bodyRefreshToken} : {})
-    });
+    const ctrl = new AbortController();
+    const killer = setTimeout(()=>ctrl.abort(), 7000); // ne jamais rester pendu indéfiniment
+    let res;
+    try{
+      res = await fetch(AUTH_FN_URL, {
+        method:'POST', credentials:'include',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(bodyRefreshToken ? {refresh_token:bodyRefreshToken} : {}),
+        signal: ctrl.signal
+      });
+    } finally { clearTimeout(killer); }
     if(!res.ok) return null;
     const data = await res.json();
     if(!data.access_token) return null;
@@ -3038,6 +3044,17 @@ function endLogin(){ $('#login').classList.remove('on'); }
 async function startApp(){
   if(!window.supabaseClient){ await window.DB_READY; boot(); return; }
 
+  // Filet de sécurité : si l'init (réseau Supabase, cookie httpOnly, etc.)
+  // reste bloquée trop longtemps, on force l'affichage du login plutôt que
+  // de laisser le skeleton tourner indéfiniment.
+  let _startAppSettled=false;
+  const _forceUnstick=setTimeout(()=>{
+    if(_startAppSettled) return;
+    console.warn('[IKORUN] startApp trop long — déblocage forcé du skeleton');
+    startLogin();
+  },10000);
+  const _markSettled=()=>{ _startAppSettled=true; clearTimeout(_forceUnstick); };
+
   // ---- Diagnostic silencieux (console uniquement, pas d'alerte) ----
   (function diagOAuth(){
     const entryUrl = window.__rawEntryUrl || window.location.href;
@@ -3056,32 +3073,40 @@ async function startApp(){
     saveAll();
     endLogin();
     boot();
+    _markSettled();
     ensurePublicProfile().then(syncPublicProfile);
   }
 
   // getSession()/ikorunRefreshSession() ne dépendent pas du cache local déchiffré :
   // on les lance sans attendre DB_READY, qui tourne déjà en tâche de fond depuis
   // le chargement du script (économise un aller-retour réseau + IndexedDB en série).
-  const { data:{ session } } = await window.supabaseClient.auth.getSession();
-  if(session && session.user){
-    // Callback OAuth Google tout juste traité par supabase-js (session en mémoire
-    // uniquement, jamais persistée). On bascule aussitôt le refresh token vers le
-    // cookie HttpOnly côté serveur au lieu de le laisser vivre dans le client.
-    const realRefresh = session.refresh_token;
-    await finishLogin(session.user.id, session.user.email);
-    ikorunRefreshSession(realRefresh);
-  } else {
-    // Rien en mémoire (normal : plus de persistence locale) — on tente un
-    // rafraîchissement silencieux via le cookie HttpOnly d'une session précédente.
-    // L'utilisateur revient directement dans la réponse : pas besoin d'un getUser()
-    // séparé (ça évite un aller-retour réseau supplémentaire).
-    const refreshed = await ikorunRefreshSession();
-    if(refreshed && refreshed.user){
-      await finishLogin(refreshed.user.id, refreshed.user.email);
+  try{
+    const { data:{ session } } = await window.supabaseClient.auth.getSession();
+    if(session && session.user){
+      // Callback OAuth Google tout juste traité par supabase-js (session en mémoire
+      // uniquement, jamais persistée). On bascule aussitôt le refresh token vers le
+      // cookie HttpOnly côté serveur au lieu de le laisser vivre dans le client.
+      const realRefresh = session.refresh_token;
+      await finishLogin(session.user.id, session.user.email);
+      ikorunRefreshSession(realRefresh);
     } else {
-      await window.DB_READY;
-      startLogin();
+      // Rien en mémoire (normal : plus de persistence locale) — on tente un
+      // rafraîchissement silencieux via le cookie HttpOnly d'une session précédente.
+      // L'utilisateur revient directement dans la réponse : pas besoin d'un getUser()
+      // séparé (ça évite un aller-retour réseau supplémentaire).
+      const refreshed = await ikorunRefreshSession();
+      if(refreshed && refreshed.user){
+        await finishLogin(refreshed.user.id, refreshed.user.email);
+      } else {
+        await window.DB_READY;
+        _markSettled();
+        startLogin();
+      }
     }
+  }catch(e){
+    console.error('[IKORUN] startApp erreur — fallback login',e);
+    _markSettled();
+    startLogin();
   }
   window.supabaseClient.auth.onAuthStateChange(async (event, session) => {
     if(event === 'SIGNED_IN' && session){
