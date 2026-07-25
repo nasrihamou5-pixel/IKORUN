@@ -11,6 +11,17 @@
     const fixed = location.href.replace('##', '#');
     history.replaceState(null, '', fixed);
   }
+  // Kill switch : un ancien Service Worker (enregistré via Blob URL) peut
+  // rester bloqué dans un état zombie sur iOS et servir une version périmée
+  // de l'appli en boucle, empêchant tout nouveau déploiement de s'appliquer.
+  // On le désenregistre systématiquement et on vide son cache avant que
+  // quoi que ce soit d'autre ne s'exécute.
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>r.unregister())).catch(()=>{});
+  }
+  if(window.caches){
+    caches.keys().then(ks=>ks.forEach(k=>caches.delete(k))).catch(()=>{});
+  }
 </script>
 <meta charset="UTF-8">
 <!-- ============ CSP ============
@@ -1705,6 +1716,6 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
     // renouvellement, via le cookie HttpOnly posé par la fonction "auth-session".
   );
 </script>
-<script src="app.js?v=10"></script>
+<script src="app.js?v=11"></script>
 </body>
 </html>
