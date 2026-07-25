@@ -1710,12 +1710,16 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
   window.supabaseClient = supabase.createClient(
     'https://bsrbzuhvqtjkkmpmxyzw.supabase.co',
     'sb_publishable_d1eInkDkCJG-Fx4S8UqNgw_Bm6uQuKw',
-    { auth: { persistSession:false, autoRefreshToken:false, detectSessionInUrl:true } }
-    // persistSession:false -> le SDK n'écrit plus jamais le token en localStorage.
-    // autoRefreshToken:false -> c'est app.js (ikorunRefreshSession) qui pilote le
-    // renouvellement, via le cookie HttpOnly posé par la fonction "auth-session".
+    { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
+    // persistSession:true -> le SDK garde la session dans le localStorage de
+    // github.io (premier parti, jamais bloqué). On avait tenté un cookie
+    // HttpOnly cross-site posé par la fonction "auth-session" pour éviter le
+    // localStorage, mais Safari iOS bloque systématiquement les cookies
+    // tiers (cross-site) : le cookie ne survivait jamais à un vrai rechargement
+    // de page, d'où la reconnexion obligatoire à chaque fois. localStorage
+    // reste same-origin donc fiable partout, y compris iOS.
   );
 </script>
-<script src="app.js?v=14"></script>
+<script src="app.js?v=15"></script>
 </body>
 </html>

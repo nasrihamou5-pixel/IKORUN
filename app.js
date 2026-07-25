@@ -3115,17 +3115,12 @@ async function startApp(){
   try{
     const { data:{ session } } = await window.supabaseClient.auth.getSession();
     if(session && session.user){
-      // Callback OAuth Google tout juste traité par supabase-js (session en mémoire
-      // uniquement, jamais persistée). On bascule aussitôt le refresh token vers le
-      // cookie HttpOnly côté serveur au lieu de le laisser vivre dans le client.
-      const realRefresh = session.refresh_token;
       await finishLogin(session.user.id, session.user.email);
-      ikorunRefreshSession(realRefresh);
     } else {
-      // Rien en mémoire (normal : plus de persistence locale) — on tente un
-      // rafraîchissement silencieux via le cookie HttpOnly d'une session précédente.
-      // L'utilisateur revient directement dans la réponse : pas besoin d'un getUser()
-      // séparé (ça évite un aller-retour réseau supplémentaire).
+      // Avec persistSession:true, getSession() aurait déjà restauré la session
+      // depuis le localStorage si elle existait. On tente quand même l'ancien
+      // cookie HttpOnly en dernier recours (comptes pas encore migrés), sinon
+      // direct au login.
       const refreshed = await ikorunRefreshSession();
       if(refreshed && refreshed.user){
         await finishLogin(refreshed.user.id, refreshed.user.email);
