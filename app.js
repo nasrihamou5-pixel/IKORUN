@@ -7476,7 +7476,7 @@ function shareCalc(){
 function calcAsGoal(){ addXP(10,t('goalAddedReason')); toast(t('goalAddedToast')); }
 
 /* ---------- FC KARVONEN ---------- */
-let fc={max:P.hrMax||190,rest:P.hrRest||60};
+let fc={max:(P&&P.hrMax)||190,rest:(P&&P.hrRest)||60};
 function renderFC(){
   let h='<div class="card"><div class="field"><label>FC max (bpm)</label><div class="stepper"><button onclick="fc.max--;renderFC()">−</button><span class="val">'+fc.max+'</span><button onclick="fc.max++;renderFC()">+</button></div></div>';
   h+='<div class="field"><label>FC repos (bpm)</label><div class="stepper"><button onclick="fc.rest--;renderFC()">−</button><span class="val">'+fc.rest+'</span><button onclick="fc.rest++;renderFC()">+</button></div></div></div>';
@@ -7488,7 +7488,7 @@ function renderFC(){
   $('#outBody').innerHTML=h;
 }
 /* ---------- IMC ---------- */
-let imc={h:P.height||175,w:P.weight||62};
+let imc={h:(P&&P.height)||175,w:(P&&P.weight)||62};
 function renderIMC(){
   let h='<div class="card"><div class="field"><label>'+t('heightCmLab')+'</label><div class="stepper"><button onclick="imc.h--;renderIMC()">−</button><span class="val">'+imc.h+'</span><button onclick="imc.h++;renderIMC()">+</button></div></div>';
   h+='<div class="field"><label>'+t('weightKgLab')+'</label><div class="stepper"><button onclick="imc.w--;renderIMC()">−</button><span class="val">'+imc.w+'</span><button onclick="imc.w++;renderIMC()">+</button></div></div></div>';
