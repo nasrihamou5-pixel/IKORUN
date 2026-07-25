@@ -7304,7 +7304,7 @@ function renderHydraTool(){
   let h='<div class="card"><div class="card-t">'+t('waterNeedsTitle')+'</div><div class="zrow"><span class="zname">'+t('dailyRest')+'</span><span class="zval mono">'+(daily/1000).toFixed(1)+' L</span></div><div class="zrow"><span class="zname">'+t('perRunHour')+'</span><span class="zval mono">0,4–0,8 L</span></div><div class="zrow"><span class="zname">'+t('perHeatHour')+'</span><span class="zval mono">+0,3 L</span></div></div><div class="tip">'+t('hydraTip')+'</div>';
   $('#outBody').innerHTML=h;
 }
-let bmrSex=P.sex||'Homme';
+let bmrSex=(P&&P.sex)||'Homme';
 function renderBMRtool(){
   const w=P.weight||62,ht=P.height||175,a=age()||25;
   const bmr=Math.round(bmrSex==='Femme'?(10*w+6.25*ht-5*a-161):(10*w+6.25*ht-5*a+5));
