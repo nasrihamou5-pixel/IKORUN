@@ -44,10 +44,9 @@ async function cloudPullAll(uid){
         window.supabaseClient.from('user_data').delete().eq('user_id', uid).eq('key', row.key).then(()=>{}).catch(()=>{});
         return; // on ne rapatrie jamais ces clés depuis le cloud
       }
-      let localVal = null;
-      try{ const raw = localStorage.getItem('vvv_'+row.key); localVal = raw ? JSON.parse(raw) : null; }catch(e){}
+      const localVal = DB.load(row.key);
       const merged = mergeStorageValue(row.key, localVal, row.value);
-      localStorage.setItem('vvv_'+row.key, JSON.stringify(merged));
+      DB._cache[row.key]=merged; DB._persist(row.key, merged); // écriture locale chiffrée, sans re-push cloud
     });
   }catch(e){ console.error('cloud pull exception', e); }
 }
@@ -61,6 +60,42 @@ async function cloudPush(key, value){
       { onConflict: 'user_id,key' }
     );
   }catch(e){ console.error('cloud push error', e); }
+}
+
+/* ---------- SESSION VIA COOKIE HttpOnly (Edge Function auth-session) ----------
+   Le refresh token (longue durée) ne transite plus par localStorage : il est
+   posé en cookie HttpOnly/Secure par la fonction Supabase "auth-session" et
+   n'est jamais lisible en JS. Seul un access token courte durée (~1h) revient
+   côté client, gardé en mémoire (jamais persisté sur disque) et renouvelé
+   automatiquement avant expiration. */
+const AUTH_FN_URL = 'https://bsrbzuhvqtjkkmpmxyzw.supabase.co/functions/v1/auth-session';
+let _ikorunRefreshTimer=null;
+function _scheduleTokenRefresh(expiresInSec){
+  if(_ikorunRefreshTimer) clearTimeout(_ikorunRefreshTimer);
+  const delay = Math.max(30, (expiresInSec||3600) - 60) * 1000; // renouvelle 60s avant expiration
+  _ikorunRefreshTimer = setTimeout(()=>ikorunRefreshSession(), delay);
+}
+async function ikorunRefreshSession(bodyRefreshToken){
+  try{
+    const res = await fetch(AUTH_FN_URL, {
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(bodyRefreshToken ? {refresh_token:bodyRefreshToken} : {})
+    });
+    if(!res.ok) return null;
+    const data = await res.json();
+    if(!data.access_token) return null;
+    // Le vrai refresh_token ne repasse jamais par ici : on donne à supabase-js
+    // un placeholder, seul l'access_token compte puisque autoRefreshToken est
+    // désactivé — c'est nous qui pilotons le renouvellement via le cookie.
+    await window.supabaseClient.auth.setSession({ access_token:data.access_token, refresh_token:'managed-by-httponly-cookie' });
+    _scheduleTokenRefresh(data.expires_in);
+    return data.access_token;
+  }catch(e){ console.error('ikorunRefreshSession error',e); return null; }
+}
+async function ikorunLogoutCookie(){
+  if(_ikorunRefreshTimer){ clearTimeout(_ikorunRefreshTimer); _ikorunRefreshTimer=null; }
+  try{ await fetch(AUTH_FN_URL+'?action=logout', { method:'POST', credentials:'include' }); }catch(e){}
 }
 
 let _googleAuthing=false;
@@ -90,14 +125,16 @@ async function signInWithGoogle(){
 }
 
 function signOutUser(){
-  customConfirm(t('confirmLogout'),()=>{
+  customConfirm(t('confirmLogout'),async ()=>{
+    await ikorunLogoutCookie();
     if(window.supabaseClient) window.supabaseClient.auth.signOut();
     else location.reload();
   });
 }
 
 function addAnotherAccount(){
-  customConfirm(t('confirmSwitchGoogle'),()=>{
+  customConfirm(t('confirmSwitchGoogle'),async ()=>{
+    await ikorunLogoutCookie();
     if(window.supabaseClient) window.supabaseClient.auth.signOut();
     else location.reload();
   });
@@ -115,6 +152,7 @@ function deleteAccountCompletely(){
         }
       }catch(e){ console.error('delete account data error', e); }
       Object.keys(localStorage).filter(k=>k.startsWith('vvv_')).forEach(k=>localStorage.removeItem(k));
+      await ikorunLogoutCookie();
       if(window.supabaseClient) await window.supabaseClient.auth.signOut();
       location.reload();
     },{danger:true});
@@ -511,14 +549,99 @@ function shareSessionImg(id){
 }
 
 
+/* ---------- CHIFFREMENT LOCAL DES DONNÉES DE SANTÉ ----------
+   Les données de santé (poids, séances, records, IMC...) ne doivent jamais être
+   lisibles en clair dans localStorage : un script tiers malveillant qui tournerait
+   sur la page (lib publicitaire compromise, extension navigateur, XSS passif...)
+   pourrait sinon les exfiltrer d'un simple coup d'œil dans le storage.
+   On chiffre donc tout le contenu des clés "vvv_*" en AES-GCM 256 bits avec une clé
+   générée sur l'appareil, marquée NON-EXTRACTIBLE (extractable:false) et gardée en
+   IndexedDB — jamais sous forme de chaîne manipulable, jamais envoyée nulle part.
+   Le cloud (Supabase, table user_data) continue de recevoir les valeurs en clair :
+   il ne s'agit pas de la même surface de risque (canal HTTPS + accès restreint par
+   RLS côté serveur), seule la copie assise dans le navigateur est concernée ici. */
+const VVVCrypto = (function(){
+  const DB_NAME='ikorun_keystore', STORE='keys', KEY_ID='vvv_master_key';
+  function openIDB(){
+    return new Promise((res,rej)=>{
+      const req=indexedDB.open(DB_NAME,1);
+      req.onupgradeneeded=()=>{ req.result.createObjectStore(STORE); };
+      req.onsuccess=()=>res(req.result);
+      req.onerror=()=>rej(req.error);
+    });
+  }
+  async function getOrCreateKey(){
+    const idb=await openIDB();
+    const existing=await new Promise((res,rej)=>{
+      const tx=idb.transaction(STORE,'readonly').objectStore(STORE).get(KEY_ID);
+      tx.onsuccess=()=>res(tx.result); tx.onerror=()=>rej(tx.error);
+    });
+    if(existing) return existing;
+    const key=await crypto.subtle.generateKey({name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+    await new Promise((res,rej)=>{
+      const tx=idb.transaction(STORE,'readwrite').objectStore(STORE).put(key,KEY_ID);
+      tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error);
+    });
+    return key;
+  }
+  let _keyPromise=null;
+  function ready(){ if(!_keyPromise) _keyPromise=getOrCreateKey(); return _keyPromise; }
+  async function encrypt(obj){
+    const key=await ready();
+    const iv=crypto.getRandomValues(new Uint8Array(12));
+    const data=new TextEncoder().encode(JSON.stringify(obj));
+    const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,data);
+    return 'v1:'+btoa(String.fromCharCode(...iv))+':'+btoa(String.fromCharCode(...new Uint8Array(ct)));
+  }
+  async function decrypt(str){
+    if(!str || !str.startsWith('v1:')) return undefined; // pas notre format -> à migrer par l'appelant
+    const [,ivB64,ctB64]=str.split(':');
+    const key=await ready();
+    const iv=Uint8Array.from(atob(ivB64),c=>c.charCodeAt(0));
+    const ct=Uint8Array.from(atob(ctB64),c=>c.charCodeAt(0));
+    const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv},key,ct);
+    return JSON.parse(new TextDecoder().decode(pt));
+  }
+  return { ready, encrypt, decrypt };
+})();
+
+/* DB reste une API SYNCHRONE pour ne pas casser les centaines d'appels existants
+   (render*, saveAll, etc.) : les valeurs déchiffrées vivent en cache mémoire une
+   fois DB.init() résolu (voir window.DB_READY plus bas), et l'écriture chiffrée
+   sur disque se fait en tâche de fond sans bloquer l'app. */
 const DB = {
-  load(k){ try{ return JSON.parse(localStorage.getItem('vvv_'+k)); }catch(e){ return null; } },
-  save(k,v){ localStorage.setItem('vvv_'+k, JSON.stringify(v)); cloudPush(k,v); },
+  _cache:{},
+  async init(){
+    await VVVCrypto.ready();
+    const keys=Object.keys(localStorage).filter(k=>k.startsWith('vvv_'));
+    await Promise.all(keys.map(async raw=>{
+      const k=raw.slice(4);
+      const stored=localStorage.getItem(raw);
+      let val=null;
+      try{
+        if(stored && stored.startsWith('v1:')){
+          val=await VVVCrypto.decrypt(stored);
+        } else if(stored){
+          // Migration : ancienne valeur JSON en clair -> on la relit une fois puis
+          // on la réécrit aussitôt sous forme chiffrée.
+          val=JSON.parse(stored);
+          this._persist(k,val);
+        }
+      }catch(e){ console.error('DB.init: échec déchiffrement pour',k,e); }
+      this._cache[k]=(val===undefined)?null:val;
+    }));
+  },
+  _persist(k,v){
+    VVVCrypto.encrypt(v).then(ct=>{ try{ localStorage.setItem('vvv_'+k, ct); }catch(e){} })
+      .catch(e=>console.error('DB: échec chiffrement pour',k,e));
+  },
+  load(k){ return (k in this._cache) ? this._cache[k] : null; },
+  save(k,v){ this._cache[k]=v; this._persist(k,v); cloudPush(k,v); },
   // IMPORTANT : toujours utiliser DB.remove() (et jamais localStorage.removeItem direct) pour les clés
   // synchronisées avec le cloud. Sinon la valeur locale est bien supprimée mais la copie cloud
   // reste présente en base → au prochain cloudPullAll() elle écrase le local et "ressuscite" la donnée
   // (c'était la cause du bug "Annuler la séance" qui ne l'annulait pas vraiment).
-  remove(k){ localStorage.removeItem('vvv_'+k); cloudPush(k, null); }
+  remove(k){ delete this._cache[k]; localStorage.removeItem('vvv_'+k); cloudPush(k, null); }
 };
 
 /* ---------- STATE ---------- */
@@ -549,7 +672,10 @@ function reloadState(){
     DB.save('profile',P);
   }
 }
-reloadState();
+// Le déchiffrement (IndexedDB + WebCrypto) est asynchrone : tout le reste du
+// bootstrap (startApp) attend explicitement ce signal avant de lire/afficher
+// quoi que ce soit issu de DB.load().
+window.DB_READY = DB.init().then(reloadState);
 
 function saveAll(){
   DB.save('profile',P); DB.save('sessions',SESS); DB.save('muscu_sessions',MSESS);
@@ -2910,6 +3036,7 @@ function startLogin(){ hideAppSkeleton(); $('#login').classList.add('on'); sched
 function endLogin(){ $('#login').classList.remove('on'); }
 
 async function startApp(){
+  await window.DB_READY; // garantit que le cache déchiffré (profil, séances, poids...) est prêt
   if(!window.supabaseClient){ boot(); return; }
 
   // ---- Diagnostic silencieux (console uniquement, pas d'alerte) ----
@@ -2919,33 +3046,48 @@ async function startApp(){
   })();
   // ---- FIN DIAGNOSTIC ----
 
-  const { data:{ session } } = await window.supabaseClient.auth.getSession();
-  if(session && session.user){
-    window.currentUserId = session.user.id;
-    window.currentUserEmail = session.user.email;
-    await cloudPullAll(session.user.id);
+  let _loggedInOnce=false;
+  async function finishLogin(userId,email){
+    if(_loggedInOnce) return; _loggedInOnce=true;
+    window.currentUserId = userId;
+    window.currentUserEmail = email;
+    await cloudPullAll(userId);
     reloadState();
     saveAll();
     endLogin();
     boot();
     ensurePublicProfile().then(syncPublicProfile);
+  }
+
+  const { data:{ session } } = await window.supabaseClient.auth.getSession();
+  if(session && session.user){
+    // Callback OAuth Google tout juste traité par supabase-js (session en mémoire
+    // uniquement, jamais persistée). On bascule aussitôt le refresh token vers le
+    // cookie HttpOnly côté serveur au lieu de le laisser vivre dans le client.
+    const realRefresh = session.refresh_token;
+    await finishLogin(session.user.id, session.user.email);
+    ikorunRefreshSession(realRefresh);
   } else {
-    startLogin();
+    // Rien en mémoire (normal : plus de persistence locale) — on tente un
+    // rafraîchissement silencieux via le cookie HttpOnly d'une session précédente.
+    const accessToken = await ikorunRefreshSession();
+    if(accessToken){
+      const { data:{ user } } = await window.supabaseClient.auth.getUser();
+      if(user) await finishLogin(user.id, user.email);
+      else startLogin();
+    } else {
+      startLogin();
+    }
   }
   window.supabaseClient.auth.onAuthStateChange(async (event, session) => {
     if(event === 'SIGNED_IN' && session){
-      window.currentUserId = session.user.id;
-      window.currentUserEmail = session.user.email;
-      await cloudPullAll(session.user.id);
-      reloadState();
-      saveAll();
-      endLogin();
-      toast(t('welcomeToast'));
-      sfx&&sfx('goal');
-      boot();
-      ensurePublicProfile().then(syncPublicProfile);
+      const realRefresh = session.refresh_token;
+      const wasFirstLogin = !_loggedInOnce;
+      await finishLogin(session.user.id, session.user.email);
+      if(wasFirstLogin){ toast(t('welcomeToast')); sfx&&sfx('goal'); }
+      ikorunRefreshSession(realRefresh);
     } else if(event === 'SIGNED_OUT'){
-      location.reload();
+      ikorunLogoutCookie().finally(()=>location.reload());
     }
   });
 }

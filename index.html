@@ -13,6 +13,38 @@
   }
 </script>
 <meta charset="UTF-8">
+<!-- ============ CSP ============
+     Verrouille les origines autorisées à charger un script, se connecter en
+     réseau, afficher une image, etc. Limites de ce mécanisme, à connaître :
+     - script-src / style-src doivent inclure 'unsafe-inline' car l'app repose
+       massivement sur des attributs onclick="..." et style="..." générés en JS
+       (des milliers d'occurrences) : les enlever demanderait une refonte à part
+       (délégation d'événements + classes CSS) qu'on peut faire dans un second
+       temps. Tant que 'unsafe-inline' est présent sur script-src, une XSS qui
+       parviendrait à injecter du HTML pourrait toujours exécuter du JS — cette
+       CSP bloque en revanche le chargement de script/domaines non prévus,
+       l'exfiltration réseau vers un domaine tiers, les <object>/<embed>, et le
+       détournement de <base>.
+     - frame-ancestors (anti-clickjacking) est IGNORÉ quand la CSP est posée via
+       une balise <meta> comme ici : les navigateurs n'appliquent cette directive
+       que si elle vient d'un header HTTP. Si l'hébergeur le permet (Netlify,
+       Vercel, Cloudflare Pages...), ajoute côté serveur :
+       Content-Security-Policy: frame-ancestors 'self'
+  -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src https://fonts.gstatic.com;
+  img-src 'self' data: https://raw.githubusercontent.com;
+  connect-src 'self' https://bsrbzuhvqtjkkmpmxyzw.supabase.co wss://bsrbzuhvqtjkkmpmxyzw.supabase.co;
+  manifest-src 'self' blob:;
+  worker-src 'self' blob:;
+  object-src 'none';
+  base-uri 'self';
+  form-action 'self';
+">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1666,7 +1698,11 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
 <script>
   window.supabaseClient = supabase.createClient(
     'https://bsrbzuhvqtjkkmpmxyzw.supabase.co',
-    'sb_publishable_d1eInkDkCJG-Fx4S8UqNgw_Bm6uQuKw'
+    'sb_publishable_d1eInkDkCJG-Fx4S8UqNgw_Bm6uQuKw',
+    { auth: { persistSession:false, autoRefreshToken:false, detectSessionInUrl:true } }
+    // persistSession:false -> le SDK n'écrit plus jamais le token en localStorage.
+    // autoRefreshToken:false -> c'est app.js (ikorunRefreshSession) qui pilote le
+    // renouvellement, via le cookie HttpOnly posé par la fonction "auth-session".
   );
 </script>
 <script src="app.js?v=9"></script>
