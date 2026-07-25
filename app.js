@@ -553,10 +553,6 @@ function shareBadge(key){
   const b=BADGE_TIERS.find(x=>x.key===key); if(!b) return;
   shareCardImage(b.name,'Badge débloqué sur IKORUN','🏅');
 }
-function shareSessionImg(id){
-  const s=[...SESS,...MSESS].find(x=>x.id===id); if(!s) return;
-  shareCardImage(s.title||s.type,(s.km?s.km+' km':'')+(s.duration?' · '+s.duration+' min':''),'🏃');
-}
 
 
 /* ---------- CHIFFREMENT LOCAL DES DONNÉES DE SANTÉ ----------
@@ -2567,25 +2563,6 @@ function openBadgeDetail(key){
   $('#badgesBody').innerHTML=h;
   openOv('ovBadges');
 }
-/* Bloc résumé badges affiché sur le profil (mini-galerie + prochaine récompense) */
-function badgeStripHTML(){
-  const unlocked=unlockedBadges(); const ukeys=new Set(unlocked.map(u=>u.key));
-  const recent=[...unlocked].sort((a,b)=>b.date<a.date?-1:1).slice(0,4).map(u=>BADGE_TIERS.find(b=>b.key===u.key)).filter(Boolean);
-  const nb=nextBadge();
-  let h='<div class="card stag" style="animation-delay:.12s">';
-  h+='<div class="row" style="margin-bottom:12px"><span class="card-t" style="margin:0">🏆 Mes badges</span><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="openBadges()">'+unlocked.length+' / '+BADGE_TIERS.length+' · Voir tout ›</span></div>';
-  if(recent.length){
-    h+='<div class="row" style="gap:10px;flex-wrap:wrap">'+recent.map(b=>'<div class="bd-icon '+b.cls+'" style="width:52px;height:52px;cursor:pointer" onclick="openBadgeQuick(\''+b.key+'\')">'+bdGlyph(b.key)+'</div>').join('')+'</div>';
-  } else {
-    h+='<div style="font-size:12px;color:var(--muted)">Aucun badge obtenu pour l\u2019instant — ta première séance te rapprochera du badge Initié.</div>';
-  }
-  if(nb){
-    const prog=badgeProgress(nb);
-    h+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--hair)"><div class="row" style="margin-bottom:6px"><span style="font-size:12px;color:var(--muted)">Prochain badge · '+nb.name+'</span><span class="mono" style="font-size:12px;color:var(--e)">'+prog.pct+'%</span></div><div class="pbar" style="height:6px;margin-bottom:6px"><div style="width:'+prog.pct+'%"></div></div><div style="font-size:11px;color:var(--dim)">'+badgeHintText(prog)+'</div></div>';
-  }
-  h+='</div>';
-  return h;
-}
 function nextBadge(){
   const unlocked=new Set(unlockedBadges().map(u=>u.key));
   return BADGE_TIERS.find(b=>!unlocked.has(b.key))||null;
@@ -2725,14 +2702,6 @@ async function startBgActivity(type){
   if(P.notif!==false && 'Notification'in window && Notification.permission==='granted'){
     try{ if(_bgNotif){ _bgNotif.close(); _bgNotif=null; } }catch(e){}
     try{ _bgNotif=new Notification('IKORUN · '+type,{body:'▶ '+t('sessionInProgress'),icon:appIconDataURL(),tag:'ikorun-activity',renotify:false,silent:true}); }catch(e){}
-  }
-}
-function pauseBgActivity(p){
-  if(_bgActivity) _bgActivity.paused=p;
-  // Met à jour la même notification une seule fois (pas de boucle) quand on met en pause / reprend
-  if(_bgActivity && P.notif!==false && 'Notification'in window && Notification.permission==='granted'){
-    try{ if(_bgNotif) _bgNotif.close(); }catch(e){}
-    try{ _bgNotif=new Notification('IKORUN · '+_bgActivity.type,{body:(p?'⏸ En pause':'▶ En cours'),icon:appIconDataURL(),tag:'ikorun-activity',renotify:false,silent:true}); }catch(e){}
   }
 }
 function stopBgActivity(){
@@ -3113,7 +3082,6 @@ async function startApp(){
 }
 
 function logout(){ signOutUser(); }
-function switchAccount(){ signOutUser(); }
 function initApp(){
   $('#ob').classList.remove('on');
   applyTheme();
@@ -3330,8 +3298,6 @@ $('#obNext').onclick=()=>{
   if(obStep===OB_MAX){ finishOnboarding(); return; }
   obShow(obStep+1);
 };
-function obv(id){ const el=$('#'+id); return el.dataset.v!==undefined&&el.classList.contains('pkfield')?el.dataset.v:el.value; }
-function setObPk(id,val,label){ const el=$('#'+id); el.dataset.v=val; el.textContent=label; el.classList.add('set'); }
 function obValidate(n){
   if(n===2){
     if(!$('#ob_name').value.trim()||!$('#ob_bday').value||!$('#ob_sex').value){ toast(t('fillRequiredFields')); return false; }
@@ -3893,118 +3859,6 @@ const BASETYPE_COLORS={EF:'--ok',RECUP:'--dim',LONG:'--e',LONG_COURT:'--e',TEMPO
   SEUIL:'--or',DBLSEUIL:'--or',VMAc:'--bad',VMAl:'--bad',VO2:'--bad',INTERVAL:'--bad',COURSE:'--e',Repos:'--dim'};
 function baseTypeColor(bt){ return 'var('+(BASETYPE_COLORS[bt]||'--e')+')'; }
 
-/* Assigne les types aux jours dispo en respectant les préférences utilisateur */
-function assignTypesToDays(days,types,isLastWeek){
-  const result=new Array(days.length).fill(null);
-  const pool=[...types];
-  const place=(prefDow,matchFn)=>{
-    if(prefDow===undefined||prefDow===null||prefDow==='') return;
-    const di=days.indexOf(+prefDow); if(di<0||result[di]) return;
-    const ti=pool.findIndex(matchFn); if(ti<0) return;
-    result[di]=pool.splice(ti,1)[0];
-  };
-  place(PREFS.longDay, t=>t==='Long');
-  place(PREFS.fractioDay, t=>t==='VMA'||t==='Seuil');
-  place(PREFS.recupDay, t=>t==='Récup');
-  // remplit le reste
-  for(let i=0;i<result.length;i++){ if(!result[i]) result[i]=pool.shift()||'EF'; }
-  return result;
-}
-
-/* Construit une séance ULTRA détaillée (objectif, échauffement, corps, récup,
-   allures, conseils, erreurs, pourquoi) — compréhensible par un débutant */
-function buildSession(type,o){
-  const{vdot,pEF,pTempo,pSeuil,pVMA,easyKm,wkKm,phase}=o;
-  const P_EF=spkToStr(pEF), P_RC=spkToStr(pEF*1.06), P_TP=spkToStr(pTempo), P_SE=spkToStr(pSeuil), P_VM=spkToStr(pVMA);
-  let km,pace,rpe,title,d={};
-  if(type==='EF'){
-    km=easyKm; pace=P_EF; rpe=3; title='Endurance Fondamentale';
-    d={ objectif:'Développer ta base aérobie et ton endurance sans fatiguer l\u2019organisme.',
-      warmup:'Pas d\u2019échauffement spécifique : les 10 premières minutes servent de mise en route progressive.',
-      body:km+' km à allure facile ('+P_EF+'/km). Tu dois pouvoir parler en courant. Si tu es essoufflé, ralentis.',
-      cooldown:'Marche 3 min puis quelques étirements doux des mollets et ischios.',
-      paces:'Allure cible : '+P_EF+'/km (zone 2, ~70% FCmax).',
-      recovery:'Aucune récup pendant : c\u2019est un effort continu et régulier.',
-      tips:['Respire par le ventre, garde les épaules basses.','La régularité prime sur la vitesse.'],
-      mistakes:['Courir trop vite « pour le plaisir » → tu accumules de la fatigue inutile.','Sauter cette séance car « trop facile » : c\u2019est 80% de ta progression.'],
-      why:'80% du volume des meilleurs coureurs est en endurance fondamentale. Elle développe ton cœur, tes mitochondries et tes capillaires sans risque de blessure.' };
-  } else if(type==='Récup'){
-    km=Math.max(4,Math.round(easyKm*0.7)); pace=P_RC; rpe=2; title='Footing de récupération';
-    d={ objectif:'Favoriser la récupération active après une séance dure.',
-      warmup:'Aucun. Démarre très lentement.',
-      body:km+' km en footing très souple à '+P_RC+'/km. Plus lent que d\u2019habitude, volontairement.',
-      cooldown:'Étirements légers + automassage si tu as un rouleau.',
-      paces:'Allure très lente : '+P_RC+'/km. Reste en zone 1.',
-      recovery:'Effort continu mais minimal.',
-      tips:['Si tu te sens cassé, remplace par 20 min de marche.','Hydrate-toi bien après.'],
-      mistakes:['Transformer le footing récup en footing normal → tu ne récupères pas.'],
-      why:'Le sang circule, évacue les déchets musculaires et accélère la récupération sans créer de stress.' };
-  } else if(type==='Tempo'){
-    km=Math.max(6,Math.round(easyKm)); pace=P_TP; rpe=6; title='Tempo Run';
-    d={ objectif:'Habituer ton corps à tenir une allure soutenue et confortable sur la durée.',
-      warmup:'15 min footing en '+P_EF+'/km + 3 lignes droites progressives.',
-      body:'20 à 25 min en continu à '+P_TP+'/km (allure « confortablement difficile »).',
-      cooldown:'10 min footing très lent + étirements.',
-      paces:'Allure tempo : '+P_TP+'/km (~83% de ta VMA).',
-      recovery:'Pas de récup : c\u2019est un bloc continu.',
-      tips:['Tu dois pouvoir dire 2-3 mots, pas une phrase entière.','Garde une foulée fluide et relâchée.'],
-      mistakes:['Partir trop vite et exploser au milieu.','Confondre tempo et sprint.'],
-      why:'Le tempo améliore ton efficacité et repousse le seuil où l\u2019acide lactique s\u2019accumule.' };
-  } else if(type==='Seuil'){
-    km=Math.max(7,Math.round(easyKm*1.1)); pace=P_SE; rpe=7; title='Séance au Seuil';
-    d={ objectif:'Repousser ton seuil lactique — le facteur n°1 de performance sur 5 km à semi.',
-      warmup:'15-20 min footing '+P_EF+'/km + 4 lignes droites + gammes (montées de genoux, talons-fesses).',
-      body:'4 à 5 × 1000 m à '+P_SE+'/km. Récup 1 min trot entre chaque répétition.',
-      cooldown:'10 min footing lent + étirements complets.',
-      paces:'Allure seuil : '+P_SE+'/km (~88% VMA).',
-      recovery:'1 min de trot lent entre chaque 1000 m.',
-      tips:['Toutes les répétitions doivent être à la même allure.','Concentre-toi sur la régularité, pas la première rép.'],
-      mistakes:['Faire la 1ère trop vite et ralentir ensuite.','Récup trop courte → tu n\u2019y arrives plus.'],
-      why:'Le seuil est l\u2019allure que tu peux tenir ~1h. L\u2019augmenter = courir plus vite plus longtemps.' };
-  } else if(type==='VMA'){
-    km=Math.max(6,Math.round(easyKm*0.95)); pace=P_VM; rpe=9; title='Séance VMA / Fractionné';
-    d={ objectif:'Développer ta puissance aérobie maximale (VO2max) et ta vitesse de pointe.',
-      warmup:'20 min footing + 5 lignes droites + 3 accélérations courtes. Échauffement OBLIGATOIRE.',
-      body:'10 à 12 × 400 m à '+P_VM+'/km. Récup 200 m en trottinant (ou 1\u201930 marche).',
-      cooldown:'10-15 min footing très lent : essentiel après l\u2019intensité.',
-      paces:'Allure VMA : '+P_VM+'/km (~97-100% VMA). Rapide mais contrôlé.',
-      recovery:'200 m de récup active entre chaque 400 m.',
-      tips:['Vise la même allure sur toutes les répétitions.','Si tu ne tiens plus, arrête : mieux vaut 8 propres que 12 bâclées.'],
-      mistakes:['Négliger l\u2019échauffement → blessure assurée.','Partir comme un sprinteur sur la 1ère.'],
-      why:'La VMA est ton plafond de cylindrée. Plus elle est haute, plus toutes tes autres allures deviennent faciles.' };
-  } else if(type==='Long'){
-    km=Math.max(10,Math.round(wkKm*0.32)); pace=spkToStr(pEF*0.99); rpe=4; title='Sortie Longue';
-    d={ objectif:'Construire ton endurance, ta résistance mentale et économiser ton énergie.',
-      warmup:'Démarrage progressif sur les 10 premières minutes.',
-      body:km+' km à allure endurance ('+spkToStr(pEF*0.99)+'/km). Tu peux finir un peu plus vite si tu te sens bien.',
-      cooldown:'Marche 5 min + étirements + collation glucides/protéines dans les 30 min.',
-      paces:'Allure : '+spkToStr(pEF*0.99)+'/km, stable.',
-      recovery:'Continu. Ravitaille en eau si > 1h15.',
-      tips:['Mange bien la veille.','Emporte de l\u2019eau et un gel si > 1h30.'],
-      mistakes:['Partir trop vite et marcher à la fin.','Oublier de s\u2019alimenter sur les très longues.'],
-      why:'La sortie longue augmente tes réserves de glycogène et apprend à ton corps à brûler les graisses.' };
-  } else if(type==='Course'){
-    km=5; pace=spkToStr(predictTime(vdot,5000)/5); rpe=10; title='🏆 Jour de Compétition';
-    d={ objectif:'Réaliser ta meilleure performance — objectif : '+(P.goal||'ton record')+' !',
-      warmup:'25-30 min : footing progressif + 5 lignes droites + 3 accélérations à allure course.',
-      body:'5000 m à '+spkToStr(predictTime(vdot,5000)/5)+'/km. Gère : départ contrôlé, milieu solide, final tout donné.',
-      cooldown:'15 min footing très lent dès l\u2019arrivée + étirements.',
-      paces:'Allure objectif : '+spkToStr(predictTime(vdot,5000)/5)+'/km.',
-      recovery:'—',
-      tips:['Ne pars pas trop vite dans l\u2019euphorie.','Accroche un coureur de ton niveau.','Le dernier km, vide-toi.'],
-      mistakes:['Partir 10 s/km trop vite → tu exploses au 3e km.','Mal dormir / mal manger la veille.'],
-      why:'C\u2019est l\u2019aboutissement de toutes tes semaines de travail. Fais-toi confiance.' };
-  } else {
-    km=0; pace='—'; rpe=0; title='Repos complet';
-    d={ objectif:'Laisser ton corps se reconstruire et progresser.',
-      warmup:'—', body:'Repos total ou activité très douce (marche, mobilité).',
-      cooldown:'—', paces:'—', recovery:'Journée OFF.',
-      tips:['Dors 8h.','Hydrate-toi et mange équilibré.'],
-      mistakes:['Culpabiliser de ne rien faire : le repos EST de l\u2019entraînement.'],
-      why:'C\u2019est PENDANT le repos que ton corps assimile l\u2019entraînement et devient plus fort.' };
-  }
-  return {km,pace,rpe,title,detail:d};
-}
 /* ============================================================
    GÉNÉRATEUR DE PLAN — moteur scientifique périodisé
    Inspiré méthode norvégienne (double seuil, polarisation 80/20),
@@ -4746,12 +4600,6 @@ function lastWeekKm(){
   const lastWeekStart=new Date(thisWeekStart); lastWeekStart.setDate(thisWeekStart.getDate()-7);
   return SESS.filter(s=>{ const d=new Date(s.date+'T00:00:00'); return d>=lastWeekStart && d<thisWeekStart; }).reduce((a,s)=>a+(s.km||0),0);
 }
-function last7DaysKm(){
-  const out=[];
-  for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); const k=dateKey(d);
-    out.push([...SESS,...MSESS].filter(s=>s.date===k).reduce((a,s)=>a+(s.km||0),0)); }
-  return out;
-}
 function sumKmBetween(start,end){ return [...SESS,...MSESS].filter(s=>{ const d=new Date(s.date+'T00:00:00'); return d>=start && d<end; }).reduce((a,s)=>a+(s.km||0),0); }
 function countBetween(start,end){ return [...SESS,...MSESS].filter(s=>{ const d=new Date(s.date+'T00:00:00'); return d>=start && d<end; }).length; }
 function sumMinsBetween(start,end){ return sessBetween(start,end).reduce((a,s)=>a+(s.duration||0),0); }
@@ -4859,8 +4707,6 @@ function sessInPeriod(period){
   const end=new Date(now); end.setDate(end.getDate()+1);
   return [...SESS,...MSESS].filter(s=>{ const d=new Date(s.date+'T00:00:00'); return d>=start && d<end; });
 }
-function kmInPeriod(period){ return sessInPeriod(period).reduce((a,s)=>a+(s.km||0),0); }
-function timeInPeriod(period){ return sessInPeriod(period).reduce((a,s)=>a+(s.duration||0),0); }
 function muscuCountWeek(){ const ws=weekStart(); return MSESS.filter(s=>new Date(s.date)>=ws).length; }
 function totalSessions(){ return SESS.length+MSESS.length; }
 function streakDays(){
@@ -4869,11 +4715,6 @@ function streakDays(){
   if(!set.has(dateKey(d))){ d.setDate(d.getDate()-1); if(!set.has(dateKey(d))) return 0; }
   while(set.has(dateKey(d))){ streak++; d.setDate(d.getDate()-1); }
   return streak;
-}
-// Nom du plan réellement suivi en ce moment (généré par IKORUN ou perso choisi par l'athlète)
-function followedPlanLabel(){
-  if(P.followPerso){ const p=CUSTOM.find(x=>x.id===P.followPerso); if(p) return '👤 '+p.name; }
-  return PLAN?PLAN.goal||'En cours':'Aucun plan actif';
 }
 function planSessionToday(){
   if(P.followPerso){
@@ -4918,19 +4759,6 @@ function getDailyGoals(){
   }
   return GOALS.list;
 }
-function toggleGoal(id){
-  const g=GOALS.list.find(x=>x.id===id); if(!g) return;
-  const wasAll=GOALS.list.every(x=>x.done);
-  g.done=!g.done;
-  DB.save('daily_goals',GOALS);
-  // Recalcul COMPLET : cocher ajoute, décocher retire automatiquement
-  refreshXP({animate:true});
-  const isAll=GOALS.list.every(x=>x.done);
-  if(g.done && isAll && !wasAll){ burst(); sfx('finish'); toast('🎉 Tous les objectifs ! +'+XP_RULES.allGoalsBonus+' XP'); }
-  else if(g.done){ sfx('goal'); toast('+'+XP_RULES.perGoal+' XP'); }
-  else toast('−'+XP_RULES.perGoal+' XP');
-  renderHome();
-}
 
 /* ---------- RING SVG ---------- */
 let _ringGradId=0;
@@ -4940,18 +4768,6 @@ function ringSVG(size,pct,stroke,color,bg){
   return '<svg width="'+size+'" height="'+size+'" style="transform:rotate(-90deg);overflow:visible"><defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="'+color+'" stop-opacity=".55"/><stop offset="100%" stop-color="'+color+'"/></linearGradient></defs>'+
     '<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="'+(bg||'var(--s2)')+'" stroke-width="'+stroke+'"/>'+
     '<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="url(#'+gid+')" stroke-width="'+stroke+'" stroke-linecap="round" stroke-dasharray="'+c+'" stroke-dashoffset="'+off+'" style="transition:stroke-dashoffset 1s var(--ease);filter:drop-shadow(0 0 6px '+color+'aa)"/></svg>';
-}
-/* Anneau de stat compact (ring-wrap + svg + valeur centrale), factorisé pour
-   éviter de dupliquer ce markup à chaque tuile du bento (charge/séances/forme).
-   Ajoute un badge ✓ discret quand l'objectif est dépassé, plutôt que de
-   laisser l'anneau plein (100%) sans distinction visuelle avec "pile à 100%". */
-function ringStat(size,stroke,color,valueLabel,subLabel,pct,over){
-  const fs=size>=90?21:14;
-  return '<div class="ring-wrap" style="width:'+size+'px;height:'+size+'px">'+
-    ringSVG(size,pct,stroke,color)+
-    (over?'<div class="ring-over">'+ICN('check',size>=90?12:10)+'</div>':'')+
-    '<div class="ring-c"><div class="big" style="font-size:'+fs+'px">'+valueLabel+'</div>'+(subLabel?'<div class="sm">'+subLabel+'</div>':'')+'</div>'+
-  '</div>';
 }
 /* multi-segment donut: segs = [{v:number,color:'var(--e)'}], centerHTML optional */
 function donutSVG(segs,size,stroke,centerHTML){
@@ -5906,7 +5722,6 @@ function openExDetail(progId,idx){
   exDetailCtx={progId,idx}; exDetailTab='exo'; exAnatomyView=null;
   renderExDetail();
 }
-function toggleAnatomyView(){ exAnatomyView=exAnatomyView==='front'?'back':'front'; renderExDetail(); }
 function renderExDetail(){
   const p=allProgs().find(x=>x.id===exDetailCtx.progId); const e=p.ex[exDetailCtx.idx];
   const f=exMeta(e.name)||{primary:e.muscles||[],secondary:[],steps:[],tips:[],mistakes:[],safety:[],equip:'',level:''};
@@ -6227,7 +6042,6 @@ function openRest(secs){
 }
 function addRest(s){ if(window._restAdd)window._restAdd(s); }
 function skipRest(){ clearInterval(restTimer); const o=$('#restOv'); if(o)o.remove(); }
-function liveNav(d){ LIVE.idx=Math.max(0,Math.min(LIVE.prog.ex.length-1,LIVE.idx+d)); renderLive(); }
 function confirmCloseLive(){
   // Popup "maison" à la place de confirm() natif, qui ne fonctionne pas dans une app ajoutée à l'écran d'accueil (iOS)
   const old=$('#cancelLiveOv'); if(old) old.remove();
@@ -6911,15 +6725,6 @@ function cardIcon(name,color){ color=color||'var(--e)'; return '<span class="icb
 /* ---------- BADGE CRESTS (SVG sur-mesure, remplace les emojis) ----------
    Inspiré des rangs Rocket League : un écusson qui gagne des ailes et des
    ornements (étoile, laurier, gemme, couronne) au fil des paliers. */
-function _bdWing(side,count){
-  if(count<=0) return '';
-  let out='<g transform="scale('+side+',1)">';
-  for(let i=0;i<count;i++){
-    const y=24+i*5, len=14+i*3;
-    out+='<path d="M32 '+y+' Q'+(32+len*0.6)+' '+(y-4)+' '+(32+len)+' '+(y+2)+'" stroke="rgba(255,255,255,.85)" stroke-width="1.6" fill="none" stroke-linecap="round"/>';
-  }
-  return out+'</g>';
-}
 function _bdStar(cx,cy,r,fill){
   let pts=[];
   for(let i=0;i<10;i++){ const a=-Math.PI/2+i*Math.PI/5, rad=i%2===0?r:r*0.42;
@@ -7942,14 +7747,6 @@ async function saveProfileEdit(){
 }
 
 /* ---------- SETTINGS ---------- */
-function openSettings(){
-  let h='<div class="card"><div class="row" style="margin-bottom:14px"><span>Mode sombre</span><div class="toggle on"></div></div>'+
-    '<div class="row" style="margin-bottom:14px"><span>Unités métriques (km)</span><div class="toggle on"></div></div>'+
-    '<div class="row"><span>Notifications</span><div class="toggle'+(P.notif?' on':'')+'" onclick="P.notif=!P.notif;saveAll();this.classList.toggle(\'on\')"></div></div></div>';
-  h+='<div class="card"><div class="card-t">🔒 Données & confidentialité</div><button class="btn ghost sm" style="margin-bottom:8px" onclick="exportData()">📤 Exporter mes données (JSON)</button><button class="btn ghost sm" style="color:var(--bad)" onclick="resetAll()">🗑 Réinitialisation totale</button></div>';
-  h+='<div style="text-align:center;color:var(--dim);font-size:12px">IKORUN v2.0 · '+t('localDataOnly')+'</div>';
-  $('#settingsBody').innerHTML=h; openOv('ovSettings');
-}
 function exportData(){
   const data={profile:P,sessions:SESS,muscu:MSESS,custom:CUSTOM,plan:PLAN,goals:GOALS,agenda:AGENDA,xp:XP};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});

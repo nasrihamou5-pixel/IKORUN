@@ -360,7 +360,7 @@ html[data-mode="light"] body::after{opacity:.02;}
 .plan-ic{width:38px;height:38px;border-radius:11px;background:var(--ed);color:var(--e2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .plan-body{flex:1;}
 .plan-title{font-weight:700;font-size:14px;}
-.plan-sub{color:var(--muted);font-size:11.5px;margin-top:2px;font-weight:500;line-height:1.3;}
+.plan-sub{color:var(--muted);font-size:13px;margin-top:2px;font-weight:500;line-height:1.3;}
 
 /* ===== FICHE SÉANCE — écran détail fidèle à la maquette ===== */
 .rs-badge{display:inline-flex;align-items:center;justify-content:center;padding:3px 9px;border-radius:7px;font-size:11px;font-weight:800;background:rgba(51,211,153,.16);color:var(--ok);margin-bottom:10px;}
@@ -474,7 +474,7 @@ html[data-mode="light"] body::after{opacity:.02;}
 /* ===== RANK CARD (style carte de rang jeu vidéo) ===== */
 .rank-card{position:relative;overflow:hidden;padding:18px 18px 16px;border-radius:20px;margin-bottom:10px;
   background:linear-gradient(150deg,#131826 0%,#0a0d14 70%);border:1px solid rgba(255,255,255,.08);
-  box-shadow:var(--float-lg);}
+  box-shadow:var(--float-lg);animation:slideUp .5s ease forwards;}
 .rk-stripe{position:absolute;top:0;left:-10%;width:60%;height:100%;pointer-events:none;
   background:linear-gradient(100deg,transparent 40%,rgba(var(--e-rgb),.14) 55%,transparent 72%);transform:skewX(-8deg);}
 .rk-glow{position:absolute;top:-55%;right:-10%;width:220px;height:220px;border-radius:50%;pointer-events:none;
@@ -556,36 +556,29 @@ html[data-mode="light"] .ch-bar{background:rgba(20,30,55,.1);}
 .card.accent-or{border-left:2px solid rgba(242,184,75,.5);}
 .card.accent-purple{border-left:2px solid rgba(181,125,255,.5);}
 .card-divider{height:1px;background:linear-gradient(90deg,transparent,var(--hair2),transparent);margin:14px 0;}
-/* micro-interaction tap feedback sur les cartes */
-.card{transition:transform .18s var(--ease-spring),box-shadow .25s ease,border-color .25s ease;}
-.card:active{transform:scale(.985);}
+/* micro-interaction tap feedback sur les cartes : voir bloc .card principal plus bas */
 .mono{font-family:'JetBrains Mono',monospace;}
 .man{font-family:'Unbounded',sans-serif;}
 ::-webkit-scrollbar{display:none;}
 
 /* SCROLL ZONE */
 #scroll{height:100vh;overflow-y:auto;overflow-x:hidden;padding-bottom:98px;-webkit-overflow-scrolling:touch;}
-.scr{display:none;padding:0 14px 20px;animation:pageIn .4s var(--ease-out);}
+.scr{display:none;padding:0 14px 20px;animation:pageIn .4s var(--ease-out);position:relative;}
 .scr.on{display:block;}
 @keyframes pageIn{from{opacity:0;transform:translateY(10px) scale(.99);}to{opacity:1;transform:translateY(0) scale(1);}}
-
-/* ===== FOND — une seule ambiance cohérente, pas une couleur par page ===== */
-.scr{position:relative;}
 
 /* ===== ICÔNES FLOTTANTES — mouvement net, pas subtil ===== */
 @keyframes floatIcon{0%,100%{transform:translateY(0) rotate(0deg) scale(1);}50%{transform:translateY(-6px) rotate(-6deg) scale(1.06);}}
 .icb svg,.lr-icon svg,.qa-pill svg,.favtile svg,.perfcard .pcl svg{animation:floatIcon 2.2s ease-in-out infinite;}
 .favtile:nth-child(2n) svg,.lr-icon:nth-of-type(2n) svg{animation-delay:.35s;}
 .favtile:nth-child(3n) svg{animation-delay:.7s;}
-.favtile{transition:transform .15s var(--ease-spring);}
-.favtile:active{transform:scale(.93);}
 .ev-tile,.tip-tile{transition:transform .15s var(--ease-spring);}
 .ev-tile:active{transform:scale(.97);}
 
 /* TOPBAR */
 .topbar{position:sticky;top:0;z-index:50;
   background:linear-gradient(180deg,rgba(var(--bg-rgb),.58) 0%,rgba(var(--bg-rgb),.34) 65%,rgba(var(--bg-rgb),0) 100%);
-  -webkit-backdrop-filter:blur(8px) saturate(140%);backdrop-filter:blur(8px) saturate(140%);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);
   padding:max(8px,env(safe-area-inset-top)) 0 6px;display:flex;align-items:center;justify-content:space-between;}
 .tb-title,.tb-sub{text-shadow:0 1px 10px rgba(0,0,0,.65);}
 /* Le topbar est sticky et floute en continu le contenu qui défile en dessous :
@@ -604,10 +597,12 @@ body[data-scr="home"] .topbar{display:none;}
 .card{background:var(--glass-bg);background-image:var(--glass-shine),var(--grad-card);
   -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
   border:1px solid var(--glass-border);border-radius:var(--r-md);
-  padding:13px 14px;margin-bottom:8px;box-shadow:var(--glass-shadow);position:relative;}
+  padding:13px 14px;margin-bottom:8px;box-shadow:var(--glass-shadow);position:relative;
+  isolation:isolate;transition:transform .18s var(--ease-spring),box-shadow .25s ease,border-color .25s ease;}
+.card:active{transform:scale(.985);}
 /* L'onglet Outils garde son style de carte d'origine (opaque, sans effet verre) */
 #s-outils .card{background:var(--s1);background-image:var(--grad-card);-webkit-backdrop-filter:none;backdrop-filter:none;
-  border-color:var(--hair);box-shadow:var(--float-md);}
+  border:1px solid var(--hair);box-shadow:var(--sh-md);}
 .card-t{font-family:'Unbounded';font-weight:700;font-size:13.5px;margin-bottom:9px;display:flex;align-items:center;gap:9px;letter-spacing:-.1px;}
 .icb{width:26px;height:26px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
 .lab{font-family:'Unbounded';font-weight:700;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;color:var(--dim);}
@@ -843,16 +838,12 @@ input.inp[type="date"],input.inp[type="time"]{min-width:0;max-width:100%;padding
   box-shadow:var(--sh-md);
 }
 /* .card est géré plus haut (glass everywhere, sauf #s-outils) — volontairement exclu d'ici */
-#s-outils .card{border:1px solid var(--hair);box-shadow:var(--sh-md);}
 .inp,select.inp,.pkfield,.setcell{
   background:var(--s2);
   border:1px solid var(--hair);
 }
 .card::before,.ov-card::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
   background:linear-gradient(180deg,rgba(255,255,255,.03),transparent 40%);}
-.card{isolation:isolate;}
-.rank-card{animation:slideUp .5s ease forwards;}
-.topbar{-webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);}
 
 /* ============================================================
    CHROME GLASS — réservé aux sélecteurs de menu (pills) et à la
@@ -1418,7 +1409,6 @@ hr.hl{border:none;border-top:1px solid var(--hair);margin:14px 0;}
 .plan-hero::before{content:'';position:absolute;top:-40%;right:-20%;width:220px;height:220px;border-radius:50%;
   background:radial-gradient(circle,rgba(var(--e-rgb),.16),transparent 70%);pointer-events:none;}
 .plan-race{font-family:'Unbounded';font-weight:800;font-size:26px;letter-spacing:-.6px;margin:3px 0 3px;position:relative;z-index:1;}
-.plan-sub{color:var(--muted);font-size:13px;}
 .minicard{background:rgba(255,255,255,.03);border:1px solid var(--hair);border-radius:var(--r-sm);padding:11px 13px;flex:1;}
 html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
 .minicard .lab{margin-bottom:4px;}
@@ -1720,6 +1710,6 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
     // reste same-origin donc fiable partout, y compris iOS.
   );
 </script>
-<script src="app.js?v=16"></script>
+<script src="app.js?v=17"></script>
 </body>
 </html>
