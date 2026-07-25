@@ -90,7 +90,7 @@ async function ikorunRefreshSession(bodyRefreshToken){
     // désactivé — c'est nous qui pilotons le renouvellement via le cookie.
     await window.supabaseClient.auth.setSession({ access_token:data.access_token, refresh_token:'managed-by-httponly-cookie' });
     _scheduleTokenRefresh(data.expires_in);
-    return data.access_token;
+    return { accessToken:data.access_token, user:data.user||null };
   }catch(e){ console.error('ikorunRefreshSession error',e); return null; }
 }
 async function ikorunLogoutCookie(){
@@ -3036,8 +3036,7 @@ function startLogin(){ hideAppSkeleton(); $('#login').classList.add('on'); sched
 function endLogin(){ $('#login').classList.remove('on'); }
 
 async function startApp(){
-  await window.DB_READY; // garantit que le cache déchiffré (profil, séances, poids...) est prêt
-  if(!window.supabaseClient){ boot(); return; }
+  if(!window.supabaseClient){ await window.DB_READY; boot(); return; }
 
   // ---- Diagnostic silencieux (console uniquement, pas d'alerte) ----
   (function diagOAuth(){
@@ -3051,6 +3050,7 @@ async function startApp(){
     if(_loggedInOnce) return; _loggedInOnce=true;
     window.currentUserId = userId;
     window.currentUserEmail = email;
+    await window.DB_READY; // déchiffrement local — tourne en parallèle des appels réseau ci-dessus, donc déjà prêt ou presque
     await cloudPullAll(userId);
     reloadState();
     saveAll();
@@ -3059,6 +3059,9 @@ async function startApp(){
     ensurePublicProfile().then(syncPublicProfile);
   }
 
+  // getSession()/ikorunRefreshSession() ne dépendent pas du cache local déchiffré :
+  // on les lance sans attendre DB_READY, qui tourne déjà en tâche de fond depuis
+  // le chargement du script (économise un aller-retour réseau + IndexedDB en série).
   const { data:{ session } } = await window.supabaseClient.auth.getSession();
   if(session && session.user){
     // Callback OAuth Google tout juste traité par supabase-js (session en mémoire
@@ -3070,12 +3073,13 @@ async function startApp(){
   } else {
     // Rien en mémoire (normal : plus de persistence locale) — on tente un
     // rafraîchissement silencieux via le cookie HttpOnly d'une session précédente.
-    const accessToken = await ikorunRefreshSession();
-    if(accessToken){
-      const { data:{ user } } = await window.supabaseClient.auth.getUser();
-      if(user) await finishLogin(user.id, user.email);
-      else startLogin();
+    // L'utilisateur revient directement dans la réponse : pas besoin d'un getUser()
+    // séparé (ça évite un aller-retour réseau supplémentaire).
+    const refreshed = await ikorunRefreshSession();
+    if(refreshed && refreshed.user){
+      await finishLogin(refreshed.user.id, refreshed.user.email);
     } else {
+      await window.DB_READY;
       startLogin();
     }
   }
