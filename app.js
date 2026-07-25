@@ -25,7 +25,8 @@ setTimeout(function(){
       el.remove();
       var d = document.createElement('div');
       d.style.cssText = 'position:fixed;inset:0;background:#0A0D12;color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font-family:sans-serif;z-index:99999';
-      var msg = window.__ikorunLastError ? ('<div style="font-size:13px;opacity:.7;margin-top:10px;word-break:break-word">'+window.__ikorunLastError+'</div>') : '';
+      var _escErr = function(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+      var msg = window.__ikorunLastError ? ('<div style="font-size:13px;opacity:.7;margin-top:10px;word-break:break-word">'+_escErr(window.__ikorunLastError)+'</div>') : '';
       d.innerHTML = '<div>Erreur au chargement.'+msg+'<br><br><button onclick="location.reload(true)" style="padding:10px 20px;border-radius:8px;background:#fff;color:#000;border:none;font-size:16px">Recharger</button></div>';
       document.body.appendChild(d);
     }
@@ -7433,7 +7434,7 @@ function renderProfile(){
     '<div class="pf-cam" onclick="changePhoto()">📷</div></div>';
   h+='<div class="pf-name-row"><div class="man" style="font-weight:800;font-size:20px">'+(P.name||t('athleteDefault'))+'</div>'+
     '<div class="pf-edit" onclick="openProfileEdit()" title="'+t('editInfos')+'">✏️</div></div>';
-  h+='<div style="font-size:12.5px;color:var(--muted);margin-top:3px" onclick="editBio()">'+(window.currentUserEmail||P.bio||t('addBioPrompt'))+'</div>';
+  h+='<div style="font-size:12.5px;color:var(--muted);margin-top:3px" onclick="editBio()">'+escHtml(window.currentUserEmail||P.bio||t('addBioPrompt'))+'</div>';
   h+='<div class="rankchip" style="margin-top:11px;background:'+rk.bg+';color:#fff">'+t('level')+' '+XP.level+' · '+rk.name+' · '+XP.total+' XP</div>';
   h+='</div>';
   // ===== APERÇU RAPIDE — carte unique, une ligne par info (au lieu d'une grille + bannière séparées) =====

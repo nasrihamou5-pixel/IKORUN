@@ -1695,7 +1695,13 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
 <div id="toast"></div>
 <canvas id="confetti"></canvas>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Version figée (2.110.8, plus de @2 flottant) + SRI (integrity=sha256-...) : le
+     navigateur vérifie l'empreinte cryptographique du fichier avant de l'exécuter.
+     Si jsDelivr sert un jour un fichier différent (compromission, erreur) sous cette
+     URL, le hash ne correspondra plus et le script sera bloqué au lieu de s'exécuter.
+     Si tu montes de version un jour, il faudra régénérer le hash sur jsdelivr.com
+     (Files > sélectionner le fichier > Show & Configure all links > activer SRI). -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js" integrity="sha256-kT+U2zOzlKl9NMBYNHAJBTrC2VNEWcCZDrCFlKEI0u4=" crossorigin="anonymous"></script>
 <script>
   window.supabaseClient = supabase.createClient(
     'https://bsrbzuhvqtjkkmpmxyzw.supabase.co',
