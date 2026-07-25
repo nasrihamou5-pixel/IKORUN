@@ -94,45 +94,17 @@ async function cloudPush(key, value){
   }catch(e){ console.error('cloud push error', e); }
 }
 
-/* ---------- SESSION VIA COOKIE HttpOnly (Edge Function auth-session) ----------
-   Le refresh token (longue durée) ne transite plus par localStorage : il est
-   posé en cookie HttpOnly/Secure par la fonction Supabase "auth-session" et
-   n'est jamais lisible en JS. Seul un access token courte durée (~1h) revient
-   côté client, gardé en mémoire (jamais persisté sur disque) et renouvelé
-   automatiquement avant expiration. */
+/* ---------- SESSION ----------
+   La session (access + refresh token) est gérée nativement par supabase-js
+   via localStorage (persistSession:true, autoRefreshToken:true — voir
+   index.html). L'ancien système de cookie HttpOnly (Edge Function
+   "auth-session") est abandonné : il écrasait le vrai refresh_token stocké
+   par supabase-js avec un placeholder, ce qui cassait le renouvellement
+   automatique et forçait une reconnexion à chaque expiration de l'access
+   token (~1h). ikorunLogoutCookie() est conservée uniquement pour nettoyer
+   l'ancien cookie chez les comptes pas encore migrés. */
 const AUTH_FN_URL = 'https://bsrbzuhvqtjkkmpmxyzw.supabase.co/functions/v1/auth-session';
-let _ikorunRefreshTimer=null;
-function _scheduleTokenRefresh(expiresInSec){
-  if(_ikorunRefreshTimer) clearTimeout(_ikorunRefreshTimer);
-  const delay = Math.max(30, (expiresInSec||3600) - 60) * 1000; // renouvelle 60s avant expiration
-  _ikorunRefreshTimer = setTimeout(()=>ikorunRefreshSession(), delay);
-}
-async function ikorunRefreshSession(bodyRefreshToken){
-  try{
-    const ctrl = new AbortController();
-    const killer = setTimeout(()=>ctrl.abort(), 7000); // ne jamais rester pendu indéfiniment
-    let res;
-    try{
-      res = await fetch(AUTH_FN_URL, {
-        method:'POST', credentials:'include',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(bodyRefreshToken ? {refresh_token:bodyRefreshToken} : {}),
-        signal: ctrl.signal
-      });
-    } finally { clearTimeout(killer); }
-    if(!res.ok) return null;
-    const data = await res.json();
-    if(!data.access_token) return null;
-    // Le vrai refresh_token ne repasse jamais par ici : on donne à supabase-js
-    // un placeholder, seul l'access_token compte puisque autoRefreshToken est
-    // désactivé — c'est nous qui pilotons le renouvellement via le cookie.
-    await window.supabaseClient.auth.setSession({ access_token:data.access_token, refresh_token:'managed-by-httponly-cookie' });
-    _scheduleTokenRefresh(data.expires_in);
-    return { accessToken:data.access_token, user:data.user||null };
-  }catch(e){ console.error('ikorunRefreshSession error',e); return null; }
-}
 async function ikorunLogoutCookie(){
-  if(_ikorunRefreshTimer){ clearTimeout(_ikorunRefreshTimer); _ikorunRefreshTimer=null; }
   try{ await fetch(AUTH_FN_URL+'?action=logout', { method:'POST', credentials:'include' }); }catch(e){}
 }
 
@@ -3109,26 +3081,20 @@ async function startApp(){
     ensurePublicProfile().then(syncPublicProfile);
   }
 
-  // getSession()/ikorunRefreshSession() ne dépendent pas du cache local déchiffré :
-  // on les lance sans attendre DB_READY, qui tourne déjà en tâche de fond depuis
-  // le chargement du script (économise un aller-retour réseau + IndexedDB en série).
+  // getSession() ne dépend pas du cache local déchiffré : on le lance sans
+  // attendre DB_READY, qui tourne déjà en tâche de fond depuis le chargement
+  // du script (économise un aller-retour réseau + IndexedDB en série).
   try{
     const { data:{ session } } = await window.supabaseClient.auth.getSession();
     if(session && session.user){
       await finishLogin(session.user.id, session.user.email);
     } else {
-      // Avec persistSession:true, getSession() aurait déjà restauré la session
-      // depuis le localStorage si elle existait. On tente quand même l'ancien
-      // cookie HttpOnly en dernier recours (comptes pas encore migrés), sinon
-      // direct au login.
-      const refreshed = await ikorunRefreshSession();
-      if(refreshed && refreshed.user){
-        await finishLogin(refreshed.user.id, refreshed.user.email);
-      } else {
-        await window.DB_READY;
-        _markSettled();
-        startLogin();
-      }
+      // Avec persistSession:true + autoRefreshToken:true, getSession() a déjà
+      // restauré/renouvelé la session depuis le localStorage si elle existait.
+      // Rien d'autre à tenter : direct au login.
+      await window.DB_READY;
+      _markSettled();
+      startLogin();
     }
   }catch(e){
     console.error('[IKORUN] startApp erreur — fallback login',e);
@@ -3137,13 +3103,11 @@ async function startApp(){
   }
   window.supabaseClient.auth.onAuthStateChange(async (event, session) => {
     if(event === 'SIGNED_IN' && session){
-      const realRefresh = session.refresh_token;
       const wasFirstLogin = !_loggedInOnce;
       await finishLogin(session.user.id, session.user.email);
       if(wasFirstLogin){ toast(t('welcomeToast')); sfx&&sfx('goal'); }
-      ikorunRefreshSession(realRefresh);
     } else if(event === 'SIGNED_OUT'){
-      ikorunLogoutCookie().finally(()=>location.reload());
+      location.reload();
     }
   });
 }
