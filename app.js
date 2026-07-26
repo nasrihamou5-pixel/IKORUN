@@ -84,10 +84,22 @@ async function cloudPullAll(uid){
   }catch(e){ console.error('cloud pull exception', e); }
 }
 
+// Anti-abus de stockage : une seule clé ne doit jamais dépasser 500 Ko. Une
+// valeur au-delà de cette taille est un signe d'anomalie (bug ou tentative
+// d'abus) plutôt qu'une vraie donnée d'usage normal de l'app ; on ne la
+// synchronise pas dans le cloud (elle reste locale/chiffrée sur l'appareil).
+const CLOUD_KEY_MAX_BYTES=500*1024;
 async function cloudPush(key, value){
   if(VVV_LOCAL_ONLY_KEYS.includes(key)) return; // état de séance en cours : jamais envoyé au cloud
   if(!window.supabaseClient || !window.currentUserId) return;
   try{
+    let size=0;
+    try{ size=JSON.stringify(value).length; }catch(e){}
+    if(size>CLOUD_KEY_MAX_BYTES){
+      console.error('cloudPush: valeur trop volumineuse pour la clé "'+key+'" ('+size+' octets) — synchronisation annulée');
+      if(typeof toast==='function') toast(t('guardStorageTooBig'));
+      return;
+    }
     await window.supabaseClient.from('user_data').upsert(
       { user_id: window.currentUserId, key, value, updated_at: new Date().toISOString() },
       { onConflict: 'user_id,key' }
@@ -143,6 +155,113 @@ function signOutUser(){
   });
 }
 
+/* ---------- CONNEXION / INSCRIPTION PAR EMAIL ----------
+   Le google reste géré par signInWithGoogle() ci-dessus. Tout le contenu de
+   #loginMain est généré ici (jamais du HTML statique) pour rester traduit
+   dans les 3 langues de l'app — cf renderLoginMain() rappelée par setLang(). */
+let loginMode='login'; // 'login' | 'signup' | 'forgot'
+function switchLoginMode(m){ loginMode=m; renderLoginMain(); }
+function isEmailValid(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((v||'').trim()); }
+const GOOGLE_ICON_SVG='<svg viewBox="0 0 48 48" width="20" height="20"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.6 30.2 0 24 0 14.6 0 6.4 5.4 2.5 13.3l7.8 6C12.2 13.5 17.6 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.5 3-2.2 5.5-4.7 7.2l7.3 5.7c4.3-4 6.9-9.9 6.9-17.4z"/><path fill="#FBBC05" d="M10.3 28.3c-.5-1.4-.8-2.9-.8-4.3s.3-3 .8-4.3l-7.8-6C.9 16.9 0 20.3 0 24s.9 7.1 2.5 10.3l7.8-6z"/><path fill="#34A853" d="M24 48c6.2 0 11.5-2 15.3-5.5l-7.3-5.7c-2 1.4-4.7 2.3-8 2.3-6.4 0-11.8-4-13.7-9.8l-7.8 6C6.4 42.6 14.6 48 24 48z"/></svg>';
+function googleBtnHtml(){ return '<button class="gbtn" onclick="signInWithGoogle()"><span class="gicon">'+GOOGLE_ICON_SVG+'</span>'+t('continueWithGoogleBtn')+'</button>'; }
+function renderLoginMain(){
+  const el=$('#loginMain'); if(!el) return;
+  const legal=$('#loginLegal'); if(legal) legal.innerHTML=t('loginLegalText');
+  let h='';
+  if(loginMode==='login'){
+    h+='<h1 class="login-h1">'+t('loginWelcomeTitle')+'</h1>';
+    h+='<p class="login-sub">'+t('loginSubConnect')+'</p>';
+    h+='<div class="field"><label>'+t('emailLabel')+'</label><input class="inp" id="li_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="'+t('emailPlaceholder')+'"></div>';
+    h+='<div class="field"><label>'+t('passwordLabel')+'</label><input class="inp" id="li_password" type="password" autocomplete="current-password" placeholder="••••••••"></div>';
+    h+='<div class="uname-status" id="li_status"></div>';
+    h+='<button class="btn" style="margin-bottom:11px" onclick="submitEmailLogin()" id="li_submit">'+t('loginBtnLabel')+'</button>';
+    h+='<div class="login-guest" onclick="switchLoginMode(\'forgot\')">'+t('forgotPasswordLink')+'</div>';
+    h+='<div class="login-or">'+t('orDividerLabel')+'</div>';
+    h+=googleBtnHtml();
+    h+='<div class="login-guest" onclick="switchLoginMode(\'signup\')">'+t('noAccountLink')+'</div>';
+  } else if(loginMode==='signup'){
+    h+='<h1 class="login-h1">'+t('signupTitle')+'</h1>';
+    h+='<p class="login-sub">'+t('signupSub')+'</p>';
+    h+='<div class="field"><label>'+t('emailLabel')+'</label><input class="inp" id="li_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="'+t('emailPlaceholder')+'"></div>';
+    h+='<div class="field"><label>'+t('passwordLabel')+'</label><input class="inp" id="li_password" type="password" autocomplete="new-password" placeholder="••••••••"></div>';
+    h+='<div class="field"><label>'+t('confirmPasswordLabel')+'</label><input class="inp" id="li_password2" type="password" autocomplete="new-password" placeholder="••••••••"></div>';
+    h+='<div class="uname-status" id="li_status"></div>';
+    h+='<button class="btn" style="margin-bottom:11px" onclick="submitEmailSignup()" id="li_submit">'+t('signupBtnLabel')+'</button>';
+    h+='<div class="login-or">'+t('orDividerLabel')+'</div>';
+    h+=googleBtnHtml();
+    h+='<div class="login-guest" onclick="switchLoginMode(\'login\')">'+t('haveAccountLink')+'</div>';
+  } else {
+    h+='<h1 class="login-h1">'+t('forgotTitle')+'</h1>';
+    h+='<p class="login-sub">'+t('forgotSub')+'</p>';
+    h+='<div class="field"><label>'+t('emailLabel')+'</label><input class="inp" id="li_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="'+t('emailPlaceholder')+'"></div>';
+    h+='<div class="uname-status" id="li_status"></div>';
+    h+='<button class="btn" style="margin-bottom:11px" onclick="submitForgotPassword()" id="li_submit">'+t('sendResetLinkBtn')+'</button>';
+    h+='<div class="login-guest" onclick="switchLoginMode(\'login\')">'+t('backToLoginLink')+'</div>';
+  }
+  el.innerHTML=h;
+}
+function setLoginStatus(msg,kind){
+  const s=$('#li_status'); if(!s) return;
+  s.textContent=msg||''; s.className='uname-status'+(kind?(' '+kind):'');
+}
+let _emailAuthing=false;
+async function submitEmailLogin(){
+  if(!window.supabaseClient || _emailAuthing) return;
+  const email=($('#li_email').value||'').trim(), pass=$('#li_password').value||'';
+  if(!email||!pass) return setLoginStatus(t('fillEmailPasswordToast'),'bad');
+  if(!isEmailValid(email)) return setLoginStatus(t('invalidEmailToast'),'bad');
+  _emailAuthing=true; setLoginStatus(t('loggingInToast'),'checking');
+  try{
+    const { error } = await window.supabaseClient.auth.signInWithPassword({ email, password:pass });
+    if(error){
+      console.error('signInWithPassword error',error);
+      setLoginStatus(/invalid/i.test(error.message||'')?t('wrongCredentialsToast'):t('authGenericErrorToast'),'bad');
+    }
+    // si pas d'erreur : onAuthStateChange (SIGNED_IN) prend le relais tout seul
+  }catch(e){ console.error('signInWithPassword exception',e); setLoginStatus(t('authGenericErrorToast'),'bad'); }
+  _emailAuthing=false;
+}
+async function submitEmailSignup(){
+  if(!window.supabaseClient || _emailAuthing) return;
+  const email=($('#li_email').value||'').trim(), pass=$('#li_password').value||'', pass2=$('#li_password2').value||'';
+  if(!email||!pass) return setLoginStatus(t('fillEmailPasswordToast'),'bad');
+  if(!isEmailValid(email)) return setLoginStatus(t('invalidEmailToast'),'bad');
+  if(pass.length<8) return setLoginStatus(t('passwordTooShortToast'),'bad');
+  if(pass!==pass2) return setLoginStatus(t('passwordsMismatchToast'),'bad');
+  _emailAuthing=true; setLoginStatus(t('creatingAccountToast'),'checking');
+  try{
+    const { data, error } = await window.supabaseClient.auth.signUp({
+      email, password:pass,
+      options:{ emailRedirectTo: window.location.origin + window.location.pathname }
+    });
+    if(error){
+      console.error('signUp error',error);
+      setLoginStatus(/already|exists|registered/i.test(error.message||'')?t('emailAlreadyUsedToast'):t('authGenericErrorToast'),'bad');
+    } else if(data && data.user && !data.session){
+      // Confirmation email activée côté projet : pas de session immédiate.
+      setLoginStatus(t('checkEmailConfirmToast'),'ok');
+    }
+    // si une session est déjà présente (confirmation email désactivée côté
+    // projet), onAuthStateChange (SIGNED_IN) prend le relais tout seul.
+  }catch(e){ console.error('signUp exception',e); setLoginStatus(t('authGenericErrorToast'),'bad'); }
+  _emailAuthing=false;
+}
+async function submitForgotPassword(){
+  if(!window.supabaseClient || _emailAuthing) return;
+  const email=($('#li_email').value||'').trim();
+  if(!email) return setLoginStatus(t('fillEmailPasswordToast'),'bad');
+  if(!isEmailValid(email)) return setLoginStatus(t('invalidEmailToast'),'bad');
+  _emailAuthing=true; setLoginStatus(t('sendingResetToast'),'checking');
+  try{
+    const { error } = await window.supabaseClient.auth.resetPasswordForEmail(email,{
+      redirectTo: window.location.origin + window.location.pathname
+    });
+    if(error){ console.error('resetPasswordForEmail error',error); setLoginStatus(t('authGenericErrorToast'),'bad'); }
+    else setLoginStatus(t('resetLinkSentToast'),'ok');
+  }catch(e){ console.error('resetPasswordForEmail exception',e); setLoginStatus(t('authGenericErrorToast'),'bad'); }
+  _emailAuthing=false;
+}
+
 function addAnotherAccount(){
   customConfirm(t('confirmSwitchGoogle'),async ()=>{
     await ikorunLogoutCookie();
@@ -156,10 +275,16 @@ function deleteAccountCompletely(){
     customConfirm(t('confirmFinalIrreversible'),async ()=>{
       try{
         if(window.supabaseClient && window.currentUserId){
-          await window.supabaseClient.from('user_data').delete().eq('user_id', window.currentUserId);
-          // Le profil public (pseudo, xp, streak, km, tonnage, photo, code parrainage...) est ce que voient
-          // les amis / classements : sans cette suppression, le compte "supprimé" restait visible de tous.
-          await window.supabaseClient.from('public_profiles').delete().eq('user_id', window.currentUserId);
+          const { data:{ session } } = await window.supabaseClient.auth.getSession();
+          if(session){
+            // Suppression complète côté serveur : lignes user_data/public_profiles
+            // ET le compte Supabase Auth lui-même (impossible à faire depuis le
+            // client, nécessite la service_role key -> passe par une Edge Function).
+            await fetch('https://bsrbzuhvqtjkkmpmxyzw.supabase.co/functions/v1/delete-account', {
+              method:'POST',
+              headers:{ 'Authorization':'Bearer '+session.access_token }
+            }).catch(e=>console.error('delete-account fn error', e));
+          }
         }
       }catch(e){ console.error('delete account data error', e); }
       Object.keys(localStorage).filter(k=>k.startsWith('vvv_')).forEach(k=>localStorage.removeItem(k));
@@ -170,12 +295,7 @@ function deleteAccountCompletely(){
   },{danger:true});
 }
 
-/* ---------- AMIS / CLASSEMENT / PARRAINAGE / PARTAGE ---------- */
-function genReferralCode(){
-  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let c=''; for(let i=0;i<6;i++) c+=chars[Math.floor(Math.random()*chars.length)];
-  return c;
-}
+/* ---------- AMIS / CLASSEMENT / PARTAGE ---------- */
 async function ensurePublicProfile(){
   if(!window.supabaseClient || !window.currentUserId) return;
   try{
@@ -184,13 +304,9 @@ async function ensurePublicProfile(){
       // pseudo technique unique par défaut (ex: athlete_1a2b3c4d) tant que l'utilisateur
       // n'a pas encore validé son vrai nom d'utilisateur unique.
       const placeholder='athlete_'+String(window.currentUserId).replace(/-/g,'').slice(0,10);
-      let code=genReferralCode(), tries=0, ok=false;
-      while(tries<5 && !ok){
-        const { error } = await window.supabaseClient.from('public_profiles').insert({
-          user_id:window.currentUserId, username:(P.username||placeholder), username_set:!!P.username, referral_code:code
-        });
-        if(!error) ok=true; else { code=genReferralCode(); tries++; }
-      }
+      await window.supabaseClient.from('public_profiles').insert({
+        user_id:window.currentUserId, username:(P.username||placeholder), username_set:!!P.username
+      });
     }
   }catch(e){ console.error('ensurePublicProfile error', e); }
 }
@@ -199,19 +315,18 @@ async function syncPublicProfile(){
   try{
     // Le pseudo n'est JAMAIS écrasé ici : il est géré uniquement via claimUsername()
     // pour garantir son unicité (onboarding + modification dans le profil).
+    // total_km / total_sessions / total_tonnage / streak_days / km_week /
+    // sessions_week ne sont PLUS envoyés par le client : ils sont recalculés
+    // et écrits côté serveur par sync_verified_public_profile() depuis les
+    // vraies séances (user_data), donc impossibles à mentir via un PATCH direct.
     await window.supabaseClient.from('public_profiles').update({
       xp: (XP&&XP.total)||0,
       level: (XP&&XP.level)||1,
-      km_week: Math.round((kmThisWeek()||0)*10)/10,
-      sessions_week: runCountWeek()+muscuCountWeek(),
       vdot: getUserVDOT()||null,
-      total_sessions: totalSessions(),
-      streak_days: streakDays(),
-      total_km: Math.round((totalKm()||0)*10)/10,
-      total_tonnage: Math.round(totalTonnage()||0),
       photo_url: P.photo||null,
       updated_at: new Date().toISOString()
     }).eq('user_id', window.currentUserId);
+    await window.supabaseClient.rpc('sync_verified_public_profile',{p_user_id:window.currentUserId});
   }catch(e){ /* silencieux : pas bloquant pour l'app */ }
 }
 /* ---------- Nom d'utilisateur unique (vérif en direct + réservation) ---------- */
@@ -274,45 +389,6 @@ async function claimUsername(username){
     P.username=username; return true;
   }catch(e){ console.error('claim_username exception',e); return false; }
 }
-let _myRefCodeCache=null;
-async function myReferralCode(){
-  if(_myRefCodeCache) return _myRefCodeCache;
-  if(!window.supabaseClient || !window.currentUserId) return null;
-  const { data } = await window.supabaseClient.from('public_profiles').select('referral_code').eq('user_id',window.currentUserId).maybeSingle();
-  _myRefCodeCache = data ? data.referral_code : null;
-  return _myRefCodeCache;
-}
-async function applyReferralCode(code){
-  if(!window.supabaseClient || !window.currentUserId || !code) return false;
-  code=code.trim().toUpperCase();
-  const { data:me } = await window.supabaseClient.from('public_profiles').select('referred_by').eq('user_id',window.currentUserId).maybeSingle();
-  if(me && me.referred_by){ toast(t('alreadyReferred')); return false; }
-  const { data:owner } = await window.supabaseClient.from('public_profiles').select('user_id').eq('referral_code',code).maybeSingle();
-  if(!owner || owner.user_id===window.currentUserId){ toast(t('invalidCode')); return false; }
-  const { error } = await window.supabaseClient.from('public_profiles').update({referred_by:owner.user_id}).eq('user_id',window.currentUserId);
-  if(error){ toast(t('genericErrorRetry')); return false; }
-  toast(t('referralValidated'));
-  return true;
-}
-// Appelé une fois qu'une séance est marquée terminée (voir hook dans finishSession / debrief)
-async function grantReferralBonusIfNeeded(){
-  if(!window.supabaseClient || !window.currentUserId) return;
-  if(DB.load('referral_bonus_done')) return;
-  try{
-    const { data:me } = await window.supabaseClient.from('public_profiles').select('referred_by').eq('user_id',window.currentUserId).maybeSingle();
-    if(me && me.referred_by){
-      // Le serveur (grant_referral_bonus) est désormais l'unique source de vérité :
-      // il vérifie lui-même l'identité de l'appelant et n'accorde le bonus qu'une fois,
-      // donc plus besoin (ni possibilité) de faire confiance à un montant/uid fournis par le client.
-      window.supabaseClient.rpc('grant_referral_bonus').then(({data:granted})=>{
-        if(granted){
-          addXP(50,t('referralBonusReason')); DB.save('referral_bonus_done', true);
-          toast(t('referralBonusXP'));
-        }
-      }).catch(()=>{});
-    }
-  }catch(e){}
-}
 
 let friendsTab='list';
 let friendsSelected=null;
@@ -370,7 +446,6 @@ function renderFriends(){
   let h='<div class="fr-tabs">'+
     '<div class="fr-tab '+(friendsTab==='list'?'on':'')+'" onclick="friendsTab=\'list\';renderFriends()">'+t('tabFriendsList')+'</div>'+
     '<div class="fr-tab '+(friendsTab==='rank'?'on':'')+'" onclick="friendsTab=\'rank\';renderFriends()">'+t('tabRank')+'</div>'+
-    '<div class="fr-tab '+(friendsTab==='refer'?'on':'')+'" onclick="friendsTab=\'refer\';renderFriends()">'+t('tabRefer')+'</div>'+
   '</div>';
 
   if(!window.supabaseClient || !window.currentUserId){
@@ -418,13 +493,6 @@ function renderFriends(){
         '<div class="fr-rank-row'+(f.id?'':' me')+'" style="border-bottom:'+(i<rest.length-1?'1px solid var(--hair)':'none')+(f.id?';cursor:pointer':'')+'"'+(f.id?' onclick="openFriendProfile(\''+f.id+'\')"':'')+'><div class="fr-rank-num">#'+(i+4)+'</div><div style="flex:1;font-weight:700;font-size:13.5px">'+escHtml(f.username)+'</div><div style="font-size:12.5px;color:var(--muted);font-weight:600">'+f.xp+' XP · '+t('lvlDot')+f.level+'</div></div>'
       ).join('')+'</div>';
     }
-  }
-
-  if(friendsTab==='refer'){
-    h+='<div class="fr-ref-card"><div class="fr-ref-lab">'+t('referralCodeLabel')+'</div><div id="myRefCode" class="fr-ref-code">···</div><button class="btn ghost sm" style="margin-top:14px;width:auto" onclick="shareReferralCode()">'+t('shareCode')+'</button></div>';
-    h+='<div class="field" style="margin-top:16px"><label>'+t('haveCode')+'</label><div class="row" style="gap:8px"><input class="inp" id="applyCodeInput" placeholder="Ex: A3F9K2" style="flex:1"><button class="btn sm" style="width:auto" onclick="submitReferralCode()">'+t('validateBtn')+'</button></div></div>';
-    h+='<div style="font-size:11.5px;color:var(--dim);margin-top:10px">'+t('referralRewardText')+'</div>';
-    myReferralCode().then(c=>{ const el=$('#myRefCode'); if(el) el.textContent=c||'—'; });
   }
 
   $('#friendsBody').innerHTML=h;
@@ -530,13 +598,6 @@ function removeFriend(otherId){
     await window.supabaseClient.from('friendships').delete().or('and(user_id.eq.'+uid+',friend_id.eq.'+otherId+'),and(user_id.eq.'+otherId+',friend_id.eq.'+uid+')');
     loadFriendsData();
   },{danger:true});
-}
-async function submitReferralCode(){ const el=$('#applyCodeInput'); const v=el?el.value:''; if(await applyReferralCode(v)) renderFriends(); }
-async function shareReferralCode(){
-  const code=await myReferralCode(); if(!code){ toast(t('connectFirst')); return; }
-  const text=tp('referralShareText',code);
-  if(navigator.share){ try{ await navigator.share({text}); }catch(e){} }
-  else { navigator.clipboard&&navigator.clipboard.writeText(text); toast(t('copiedClipboard')); }
 }
 /* ---- Carte image partageable (badge / séance) — générée en canvas, sans dépendance externe ---- */
 function shareCardImage(title,subtitle,emoji){
@@ -781,14 +842,12 @@ const I18N={
     startFirstMuscu:'Lance ta première séance de muscu !',lastSessions:'📅 Dernières séances',
     tomorrow:'Demain',noUpcomingSession:'Aucune séance planifiée prochainement.',addSession:'Ajouter une séance',
     showRestPlan:'Afficher le reste du plan · {0} semaines ↓',calendarTitle:'Calendrier',calendarSub:'Planifie ta progression',
-    friendsTitle:'👥 Amis & Classement',tabFriendsList:'👥 Amis',tabRank:'🏆 Classement',tabRefer:'🎁 Parrainage',
-    loginToAddFriends:'Connecte-toi avec Google pour ajouter des amis, te comparer et te parrainer.',
+    friendsTitle:'👥 Amis & Classement',tabFriendsList:'👥 Amis',tabRank:'🏆 Classement',
+    loginToAddFriends:'Connecte-toi avec Google pour ajouter des amis et te comparer.',
     searchFriendPlaceholder:'Chercher un ami par pseudo',receivedRequests:'Demandes reçues',acceptBtn:'✓ Accepter',
     yourFriendsCount:'Tes amis ({0})',noFriendsYet:'Pas encore d\u2019amis — cherche quelqu\u2019un par son pseudo !',
     sentRequests:'Demandes envoyées',awaitingResponse:'En attente de réponse…',xpRanking:'Classement XP entre amis',
     addFriendsUnlock:'Ajoute des amis pour débloquer le classement !',youParen:' (toi)',
-    referralCodeLabel:'Ton code de parrainage',shareCode:'↗ Partager mon code',haveCode:'J\u2019ai un code',
-    validateBtn:'Valider',referralRewardText:'🎁 Toi et ton parrain gagnez chacun +50 XP après ta 1\u1d49\u02b3\u1d49 séance.',
     searchingLab:'Recherche…',loginToSearchFriends:'Connecte-toi pour chercher des amis',noUsernameFound:'Aucun pseudo trouvé',
     loadingLab:'Chargement…',friendsLoadError:'Impossible de charger tes amis. Vérifie ta connexion.',retryBtn:'Réessayer',
     resumeBtn:'Reprendre',discardBtn:'Abandonner',
@@ -930,10 +989,8 @@ const I18N={
     confirmSwitchGoogle:'Tu vas être déconnecté(e) pour te reconnecter avec un autre compte Google. Tes données actuelles restent sauvegardées.',
     confirmDeleteAllData:'⚠️ Cette action va supprimer TOUTES tes données (séances, records, XP, profil...) de façon définitive, sur le cloud et sur cet appareil. Continuer ?',
     confirmFinalIrreversible:'Dernière confirmation : es-tu vraiment sûr(e) ? Cette action est irréversible.',
-    alreadyReferred:'Tu as déjà un parrain',invalidCode:'Code invalide',genericErrorRetry:'Erreur, réessaie',
-    referralValidated:'Parrainage validé ✓ Bonus après ta 1\u1d49\u02b3\u1d49 séance',
-    referralBonusReason:'Bonus de parrainage 🎉',referralBonusXP:'+50 XP — bonus de parrainage débloqué 🎉',
-    confirmRemoveFriend:'Retirer cet ami ?',referralShareText:'Rejoins-moi sur IKORUN avec mon code {0} 🏃',
+    genericErrorRetry:'Erreur, réessaie',
+    confirmRemoveFriend:'Retirer cet ami ?',
     connectFirst:'Connecte-toi d\u2019abord',copiedClipboard:'Copié dans le presse-papier ✓',
     usernameFormatHint:'3 à 20 caractères : lettres, chiffres, _',checkingEllipsis:'Vérification…',
     available:'Disponible',alreadyTaken:'Déjà pris',
@@ -1136,7 +1193,27 @@ const I18N={
     configurePlanTitle:'Configurer mon plan',courseProfileLabel:'Profil du parcours',generateMyPlanBtn:'Générer mon plan',
     maxKmWeekLabel:'Km/sem maxi (pic)',minKmWeekLabel:'Km/sem mini',preferredSessionsLabel:'Séances préférées (le coach les privilégiera)',
     preparedRaceLabel:'Course préparée',raceDateLabel:'Date de la course',targetTimeOptionalLabel:'Chrono visé (optionnel)',
-    trainingDaysLabel:'Jours d\u2019entraînement',yourNextRaceDefault:'Ta prochaine course'
+    trainingDaysLabel:'Jours d\u2019entraînement',yourNextRaceDefault:'Ta prochaine course',
+    guardFutureDate:'⛔ Impossible d\u2019enregistrer une séance à une date future.',
+    guardDistanceTooHigh:'⛔ Distance irréaliste par rapport à ton historique ({0} km max pour l\u2019instant).',
+    guardPaceTooFast:'⛔ Cette allure est incompatible avec ton VDOT actuel ({0}). Vérifie ta saisie.',
+    guardRecordTooFast:'⛔ Cette performance impliquerait un VDOT de {0}, trop éloigné de ton niveau actuel. Vérifie ton temps.',
+    guardStorageTooBig:'⚠️ Cette donnée est trop volumineuse et n\u2019a pas été synchronisée dans le cloud.',
+    loginWelcomeTitle:'Bienvenue',loginSubConnect:'Connecte-toi pour sauvegarder ta progression, tes séances et tes records — synchronisés sur tous tes appareils.',
+    signupTitle:'Créer un compte',signupSub:'Rejoins IKORUN pour sauvegarder ta progression et la retrouver sur tous tes appareils.',
+    forgotTitle:'Mot de passe oublié',forgotSub:'Indique ton email, on t\u2019envoie un lien pour le réinitialiser.',
+    emailLabel:'Email',passwordLabel:'Mot de passe',confirmPasswordLabel:'Confirmer le mot de passe',
+    emailPlaceholder:'ton@email.com',
+    loginBtnLabel:'Se connecter',signupBtnLabel:'Créer mon compte',sendResetLinkBtn:'Envoyer le lien',
+    forgotPasswordLink:'Mot de passe oublié ?',noAccountLink:'Pas de compte ? Créer un compte',
+    haveAccountLink:'Déjà un compte ? Se connecter',backToLoginLink:'← Retour à la connexion',
+    orDividerLabel:'ou',continueWithGoogleBtn:'Continuer avec Google',
+    loginLegalText:'En continuant, tu acceptes nos conditions.<br>Tes données sont synchronisées de façon sécurisée via ton compte.',
+    fillEmailPasswordToast:'Remplis email et mot de passe.',invalidEmailToast:'Adresse email invalide.',
+    passwordTooShortToast:'Mot de passe trop court (8 caractères min).',passwordsMismatchToast:'Les mots de passe ne correspondent pas.',
+    wrongCredentialsToast:'Email ou mot de passe incorrect.',emailAlreadyUsedToast:'Un compte existe déjà avec cet email.',
+    authGenericErrorToast:'Une erreur est survenue. Réessaie.',checkEmailConfirmToast:'Compte créé ✓ Vérifie ta boîte mail pour confirmer ton adresse.',
+    resetLinkSentToast:'Lien envoyé ✓ Vérifie ta boîte mail.',loggingInToast:'Connexion…',creatingAccountToast:'Création du compte…',sendingResetToast:'Envoi du lien…'
   },
   en:{
     nav_home:'Home',nav_sport:'Sport',nav_stats:'Stats',nav_outils:'Tools',nav_profil:'Profile',
@@ -1212,14 +1289,12 @@ const I18N={
     startFirstMuscu:'Start your first strength session!',lastSessions:'📅 Recent sessions',
     tomorrow:'Tomorrow',noUpcomingSession:'No upcoming session planned.',addSession:'Add a session',
     showRestPlan:'Show the rest of the plan · {0} weeks ↓',calendarTitle:'Calendar',calendarSub:'Plan your progress',
-    friendsTitle:'👥 Friends & Leaderboard',tabFriendsList:'👥 Friends',tabRank:'🏆 Leaderboard',tabRefer:'🎁 Referral',
-    loginToAddFriends:'Sign in with Google to add friends, compare stats and refer others.',
+    friendsTitle:'👥 Friends & Leaderboard',tabFriendsList:'👥 Friends',tabRank:'🏆 Leaderboard',
+    loginToAddFriends:'Sign in with Google to add friends and compare stats.',
     searchFriendPlaceholder:'Search a friend by username',receivedRequests:'Received requests',acceptBtn:'✓ Accept',
     yourFriendsCount:'Your friends ({0})',noFriendsYet:'No friends yet — search for someone by their username!',
     sentRequests:'Sent requests',awaitingResponse:'Awaiting response…',xpRanking:'XP leaderboard among friends',
     addFriendsUnlock:'Add friends to unlock the leaderboard!',youParen:' (you)',
-    referralCodeLabel:'Your referral code',shareCode:'↗ Share my code',haveCode:'I have a code',
-    validateBtn:'Confirm',referralRewardText:'🎁 You and your referrer each get +50 XP after your 1st session.',
     searchingLab:'Searching…',loginToSearchFriends:'Sign in to search for friends',noUsernameFound:'No username found',
     loadingLab:'Loading…',friendsLoadError:'Couldn\'t load your friends. Check your connection.',retryBtn:'Retry',
     resumeBtn:'Resume',discardBtn:'Discard',
@@ -1361,10 +1436,8 @@ const I18N={
     confirmSwitchGoogle:'You\u2019ll be logged out so you can sign in with another Google account. Your current data stays saved.',
     confirmDeleteAllData:'⚠️ This will permanently delete ALL your data (sessions, records, XP, profile...) from the cloud and this device. Continue?',
     confirmFinalIrreversible:'Final confirmation: are you really sure? This action is irreversible.',
-    alreadyReferred:'You already have a referrer',invalidCode:'Invalid code',genericErrorRetry:'Error, try again',
-    referralValidated:'Referral confirmed ✓ Bonus after your 1st session',
-    referralBonusReason:'Referral bonus 🎉',referralBonusXP:'+50 XP — referral bonus unlocked 🎉',
-    confirmRemoveFriend:'Remove this friend?',referralShareText:'Join me on IKORUN with my code {0} 🏃',
+    genericErrorRetry:'Error, try again',
+    confirmRemoveFriend:'Remove this friend?',
     connectFirst:'Sign in first',copiedClipboard:'Copied to clipboard ✓',
     usernameFormatHint:'3 to 20 characters: letters, numbers, _',checkingEllipsis:'Checking…',
     available:'Available',alreadyTaken:'Already taken',
@@ -1567,7 +1640,27 @@ const I18N={
     configurePlanTitle:'Configure my plan',courseProfileLabel:'Course profile',generateMyPlanBtn:'Generate my plan',
     maxKmWeekLabel:'Max km/week (peak)',minKmWeekLabel:'Min km/week',preferredSessionsLabel:'Preferred sessions (the coach will favor these)',
     preparedRaceLabel:'Race you\u2019re preparing for',raceDateLabel:'Race date',targetTimeOptionalLabel:'Target time (optional)',
-    trainingDaysLabel:'Training days',yourNextRaceDefault:'Your next race'
+    trainingDaysLabel:'Training days',yourNextRaceDefault:'Your next race',
+    guardFutureDate:'⛔ You can\u2019t log a session with a future date.',
+    guardDistanceTooHigh:'⛔ Unrealistic distance compared to your history ({0} km max for now).',
+    guardPaceTooFast:'⛔ This pace isn\u2019t consistent with your current VDOT ({0}). Check what you entered.',
+    guardRecordTooFast:'⛔ This performance would imply a VDOT of {0}, too far from your current level. Check your time.',
+    guardStorageTooBig:'⚠️ This data is too large and wasn\u2019t synced to the cloud.',
+    loginWelcomeTitle:'Welcome',loginSubConnect:'Sign in to save your progress, sessions and records — synced across all your devices.',
+    signupTitle:'Create an account',signupSub:'Join IKORUN to save your progress and find it on all your devices.',
+    forgotTitle:'Forgot password',forgotSub:'Enter your email, we\u2019ll send you a reset link.',
+    emailLabel:'Email',passwordLabel:'Password',confirmPasswordLabel:'Confirm password',
+    emailPlaceholder:'your@email.com',
+    loginBtnLabel:'Sign in',signupBtnLabel:'Create my account',sendResetLinkBtn:'Send link',
+    forgotPasswordLink:'Forgot password?',noAccountLink:'No account? Create one',
+    haveAccountLink:'Already have an account? Sign in',backToLoginLink:'← Back to sign in',
+    orDividerLabel:'or',continueWithGoogleBtn:'Continue with Google',
+    loginLegalText:'By continuing, you accept our terms.<br>Your data is synced securely via your account.',
+    fillEmailPasswordToast:'Fill in email and password.',invalidEmailToast:'Invalid email address.',
+    passwordTooShortToast:'Password too short (8 characters min).',passwordsMismatchToast:'Passwords don\u2019t match.',
+    wrongCredentialsToast:'Wrong email or password.',emailAlreadyUsedToast:'An account already exists with this email.',
+    authGenericErrorToast:'Something went wrong. Try again.',checkEmailConfirmToast:'Account created ✓ Check your inbox to confirm your email.',
+    resetLinkSentToast:'Link sent ✓ Check your inbox.',loggingInToast:'Signing in…',creatingAccountToast:'Creating account…',sendingResetToast:'Sending link…'
   },
   ar:{
     nav_home:'الرئيسية',nav_sport:'رياضة',nav_stats:'إحصائيات',nav_outils:'أدوات',nav_profil:'الملف',
@@ -1643,14 +1736,12 @@ const I18N={
     startFirstMuscu:'ابدأ أول حصة كمال أجسام لك!',lastSessions:'📅 آخر الحصص',
     tomorrow:'غدًا',noUpcomingSession:'لا توجد حصة مخططة قريبًا.',addSession:'إضافة حصة',
     showRestPlan:'عرض بقية الخطة · {0} أسابيع ↓',calendarTitle:'التقويم',calendarSub:'خطط لتقدمك',
-    friendsTitle:'👥 الأصدقاء والترتيب',tabFriendsList:'👥 الأصدقاء',tabRank:'🏆 الترتيب',tabRefer:'🎁 الإحالة',
-    loginToAddFriends:'سجّل الدخول عبر Google لإضافة أصدقاء ومقارنة نفسك ودعوة الآخرين.',
+    friendsTitle:'👥 الأصدقاء والترتيب',tabFriendsList:'👥 الأصدقاء',tabRank:'🏆 الترتيب',
+    loginToAddFriends:'سجّل الدخول عبر Google لإضافة أصدقاء ومقارنة نفسك.',
     searchFriendPlaceholder:'ابحث عن صديق بالاسم المستعار',receivedRequests:'الطلبات الواردة',acceptBtn:'✓ قبول',
     yourFriendsCount:'أصدقاؤك ({0})',noFriendsYet:'لا يوجد أصدقاء بعد — ابحث عن أحدهم باسمه المستعار!',
     sentRequests:'الطلبات المرسلة',awaitingResponse:'بانتظار الرد…',xpRanking:'ترتيب نقاط الخبرة بين الأصدقاء',
     addFriendsUnlock:'أضف أصدقاء لفتح الترتيب!',youParen:' (أنت)',
-    referralCodeLabel:'رمز الإحالة الخاص بك',shareCode:'↗ مشاركة رمزي',haveCode:'لدي رمز',
-    validateBtn:'تأكيد',referralRewardText:'🎁 أنت ومن أحلته تحصلان على +50 XP لكل منكما بعد حصتك الأولى.',
     searchingLab:'جارٍ البحث…',loginToSearchFriends:'سجّل الدخول للبحث عن أصدقاء',noUsernameFound:'لم يتم العثور على اسم مستعار',
     loadingLab:'جارٍ التحميل…',friendsLoadError:'تعذّر تحميل أصدقائك. تحقّق من اتصالك.',retryBtn:'إعادة المحاولة',
     resumeBtn:'استئناف',discardBtn:'التخلي',
@@ -1792,10 +1883,8 @@ const I18N={
     confirmSwitchGoogle:'سيتم تسجيل خروجك لتسجيل الدخول بحساب Google آخر. بياناتك الحالية تبقى محفوظة.',
     confirmDeleteAllData:'⚠️ سيؤدي هذا إلى حذف جميع بياناتك (الحصص، الأرقام القياسية، XP، الملف الشخصي...) نهائيًا من السحابة ومن هذا الجهاز. متابعة؟',
     confirmFinalIrreversible:'تأكيد أخير: هل أنت متأكد حقًا؟ هذا الإجراء لا رجعة فيه.',
-    alreadyReferred:'لديك راعٍ بالفعل',invalidCode:'رمز غير صالح',genericErrorRetry:'خطأ، أعد المحاولة',
-    referralValidated:'تم تأكيد الإحالة ✓ مكافأة بعد أول حصة',
-    referralBonusReason:'مكافأة الإحالة 🎉',referralBonusXP:'+50 XP — تم فتح مكافأة الإحالة 🎉',
-    confirmRemoveFriend:'إزالة هذا الصديق؟',referralShareText:'انضم إليّ على IKORUN برمزي {0} 🏃',
+    genericErrorRetry:'خطأ، أعد المحاولة',
+    confirmRemoveFriend:'إزالة هذا الصديق؟',
     connectFirst:'سجّل الدخول أولاً',copiedClipboard:'تم النسخ ✓',
     usernameFormatHint:'3 إلى 20 حرفًا: أحرف، أرقام، _',checkingEllipsis:'جارٍ التحقق…',
     available:'متاح',alreadyTaken:'مُستخدم بالفعل',
@@ -1999,7 +2088,27 @@ const I18N={
     configurePlanTitle:'إعداد خطتي',courseProfileLabel:'طبيعة المسار',generateMyPlanBtn:'أنشئ خطتي',
     maxKmWeekLabel:'أقصى كم/أسبوع (الذروة)',minKmWeekLabel:'أدنى كم/أسبوع',preferredSessionsLabel:'الحصص المفضلة (سيفضلها المدرب)',
     preparedRaceLabel:'السباق الذي تستعد له',raceDateLabel:'تاريخ السباق',targetTimeOptionalLabel:'الزمن المستهدف (اختياري)',
-    trainingDaysLabel:'أيام التدريب',yourNextRaceDefault:'سباقك القادم'
+    trainingDaysLabel:'أيام التدريب',yourNextRaceDefault:'سباقك القادم',
+    guardFutureDate:'⛔ لا يمكن تسجيل حصة بتاريخ مستقبلي.',
+    guardDistanceTooHigh:'⛔ مسافة غير واقعية مقارنة بتاريخك ({0} كم كحد أقصى حاليًا).',
+    guardPaceTooFast:'⛔ هذه الوتيرة لا تتوافق مع VDOT الحالي ({0}). تحقق مما أدخلته.',
+    guardRecordTooFast:'⛔ هذا الأداء يعني VDOT قدره {0}، بعيد جدًا عن مستواك الحالي. تحقق من زمنك.',
+    guardStorageTooBig:'⚠️ هذه البيانات كبيرة جدًا ولم تتم مزامنتها مع السحابة.',
+    loginWelcomeTitle:'مرحبًا',loginSubConnect:'سجّل الدخول لحفظ تقدمك وحصصك وأرقامك القياسية — مُزامَنة على كل أجهزتك.',
+    signupTitle:'إنشاء حساب',signupSub:'انضم إلى IKORUN لحفظ تقدمك واسترجاعه على كل أجهزتك.',
+    forgotTitle:'نسيت كلمة المرور',forgotSub:'أدخل بريدك الإلكتروني، سنرسل لك رابط إعادة التعيين.',
+    emailLabel:'البريد الإلكتروني',passwordLabel:'كلمة المرور',confirmPasswordLabel:'تأكيد كلمة المرور',
+    emailPlaceholder:'you@email.com',
+    loginBtnLabel:'تسجيل الدخول',signupBtnLabel:'إنشاء حسابي',sendResetLinkBtn:'إرسال الرابط',
+    forgotPasswordLink:'نسيت كلمة المرور؟',noAccountLink:'ليس لديك حساب؟ أنشئ واحدًا',
+    haveAccountLink:'لديك حساب بالفعل؟ سجّل الدخول',backToLoginLink:'← العودة لتسجيل الدخول',
+    orDividerLabel:'أو',continueWithGoogleBtn:'المتابعة عبر Google',
+    loginLegalText:'بالمتابعة، فإنك توافق على شروطنا.<br>بياناتك مُزامَنة بأمان عبر حسابك.',
+    fillEmailPasswordToast:'أدخل البريد الإلكتروني وكلمة المرور.',invalidEmailToast:'عنوان بريد إلكتروني غير صالح.',
+    passwordTooShortToast:'كلمة المرور قصيرة جدًا (8 أحرف كحد أدنى).',passwordsMismatchToast:'كلمتا المرور غير متطابقتين.',
+    wrongCredentialsToast:'بريد إلكتروني أو كلمة مرور غير صحيحة.',emailAlreadyUsedToast:'يوجد حساب بالفعل بهذا البريد الإلكتروني.',
+    authGenericErrorToast:'حدث خطأ ما. حاول مرة أخرى.',checkEmailConfirmToast:'تم إنشاء الحساب ✓ تحقق من بريدك لتأكيد عنوانك.',
+    resetLinkSentToast:'تم إرسال الرابط ✓ تحقق من بريدك.',loggingInToast:'جارٍ تسجيل الدخول…',creatingAccountToast:'جارٍ إنشاء الحساب…',sendingResetToast:'جارٍ إرسال الرابط…'
   }
 };
 function curLang(){ return (P&&P.lang)||'fr'; }
@@ -2014,6 +2123,7 @@ function setLang(l){
   TOOLS=TOOLS_DEF(); BADGE_TIERS=BADGE_TIERS_DEF(); TIERS=TIERS_DEF(); MEDAL_CATS=MEDAL_CATS_DEF(); ACHIEVEMENTS=ACHIEVEMENTS_DEF();
   applyNavLabels();
   applyStaticLabels();
+  if($('#login') && $('#login').classList.contains('on')) renderLoginMain();
   // re-render la vue active
   const active=document.querySelector('.nb.on'); if(active) nav(active.dataset.s);
   refreshPfSheet();
@@ -2146,10 +2256,15 @@ function seriesSummary(s){
   if(sr.reps) return tp('seriesRepsOnly',sr.reps)+(sr.note?' · '+sr.note:'');
   return null;
 }
+// Plage réaliste de VDOT humain (~20 = débutant très lent, ~90 = record du monde absolu).
+// Toute valeur hors plage est un signe d'injection/erreur de saisie plutôt qu'une vraie
+// perf : on la ramène dans la plage au lieu de l'afficher/l'utiliser telle quelle.
+const VDOT_MIN=20, VDOT_MAX=90;
+function clampVdot(v){ if(!v||isNaN(v)) return 0; return Math.min(VDOT_MAX,Math.max(VDOT_MIN,Math.round(v*10)/10)); }
 function getUserVDOT(){
   const fromRec=(typeof RECORDS!=='undefined')?computeVDOTfromRecords():computeVDOT();
   if(fromRec) return fromRec;
-  return P.vdot||computeVDOT();
+  return clampVdot(P.vdot)||computeVDOT();
 }
 function computeVDOT(){
   const races=[];
@@ -2159,7 +2274,81 @@ function computeVDOT(){
   if(P.t10k) races.push([10000,parseTime(P.t10k)]);
   let best=0;
   races.forEach(r=>{ if(r[1]>0){ const v=vdotFromRace(r[0],r[1]); if(v>best) best=v; }});
-  return best>0?Math.round(best*10)/10:0;
+  return best>0?clampVdot(best):0;
+}
+
+/* ============ ANTI-TRICHE — PLAUSIBILITÉ DES SÉANCES ET PERFS ============
+   Toute la mécanique d'XP/niveaux ne vaut que si les données sources (séances,
+   records) sont crédibles. Ces gardes s'appliquent à CHAQUE point d'entrée où
+   l'utilisateur peut taper une distance/durée/temps à la main, avant que la
+   donnée n'entre dans SESS/MSESS/RECORDS. Rien n'est bloqué "après coup" côté
+   calcul d'XP : on empêche la donnée invraisemblable d'être enregistrée. */
+
+// Marge tolérée (en points de VDOT) entre le niveau actuel du coureur et une
+// performance ponctuelle : autorise un vrai record/une bonne surprise sans
+// autoriser un bond de niveau. Calibré pour qu'un VDOT 67 puisse valider un
+// 3000 m jusqu'à ~8:30 (limite haute réaliste), mais pas un 9:00 avec VDOT 30.
+const ANTICHEAT_VDOT_MARGIN=4;
+
+// Allure la plus rapide plausible (sec/km) pour une distance totale donnée,
+// compte tenu du VDOT (+marge). En dessous de 5 km on utilise la courbe de
+// réserve de vitesse anaérobie (calibrée fractionné court), au-delà on
+// bascule sur le modèle Daniels continu (predictTime), plus réaliste pour
+// les longues distances (la courbe courte, elle, sous-estimerait l'effort
+// nécessaire sur un 20-30 km si on l'extrapolait telle quelle).
+function floorPaceSecPerKm(vdot,meters){
+  if(meters<=0) return Infinity;
+  const v=clampVdot((vdot||VDOT_MIN)+ANTICHEAT_VDOT_MARGIN)||VDOT_MAX;
+  return meters<=5000 ? repPace(v,meters) : predictTime(v,meters)/(meters/1000);
+}
+// Distance max plausible pour une séance manuelle : jamais plus de 3x le plus
+// long effort déjà loggé par l'utilisateur (plancher marathon pour ne pas
+// bloquer un premier gros objectif), et jamais plus de 250 km dans l'absolu
+// (limite ultra-trail la plus large qui reste réaliste pour une seule sortie).
+const SESSION_KM_ABS_MAX=250;
+function maxPlausibleKmForUser(){
+  const hist=(typeof SESS!=='undefined'?SESS:[]).map(s=>+s.km||0);
+  const maxHist=hist.length?Math.max(...hist):0;
+  return Math.min(SESSION_KM_ABS_MAX,Math.max(42.2,maxHist*3));
+}
+// Vérifie qu'une allure moyenne (km sur durationMin minutes) est cohérente
+// avec le VDOT du coureur. Si aucune des deux valeurs n'est exploitable, on
+// laisse passer (on ne bloque jamais sur une donnée absente/incomplète).
+function isPacePlausible(vdot,km,durationMin){
+  if(!vdot||!(km>0)||!(durationMin>0)) return true;
+  const floorSec=floorPaceSecPerKm(vdot,km*1000)*km;
+  return durationMin*60 >= floorSec*0.98; // 2% de tolérance d'arrondi
+}
+// Garde générique appelée avant TOUT push d'une séance manuelle (course
+// perso, séance de remplacement, bilan de séance...). Retourne {ok:true} ou
+// {ok:false, msg} avec un message déjà traduit prêt pour un toast().
+function sessionGuard(km,durationMin,dateStr){
+  km=+km||0; durationMin=+durationMin||0;
+  if(dateStr && dateStr>todayKey()) return {ok:false,msg:t('guardFutureDate')};
+  if(km>0){
+    const maxKm=maxPlausibleKmForUser();
+    if(km>maxKm) return {ok:false,msg:tp('guardDistanceTooHigh',Math.round(maxKm))};
+  }
+  const vdot=getUserVDOT();
+  if(vdot && km>0 && durationMin>0 && !isPacePlausible(vdot,km,durationMin)){
+    return {ok:false,msg:tp('guardPaceTooFast',vdot)};
+  }
+  return {ok:true};
+}
+// Garde spécifique aux records/performances (Profil → Historique des
+// performances) : ici la "séance" EST l'effort maximal, donc on compare le
+// VDOT qu'impliquerait ce chrono au meilleur VDOT déjà connu (+ marge),
+// plutôt qu'à une allure de séance d'entraînement.
+function recordGuard(meters,timeS,dateStr){
+  if(dateStr && dateStr>todayKey()) return {ok:false,msg:t('guardFutureDate')};
+  if(!(meters>0)||!(timeS>0)) return {ok:true};
+  const implied=vdotFromRace(meters,timeS);
+  if(implied>VDOT_MAX+ANTICHEAT_VDOT_MARGIN) return {ok:false,msg:tp('guardRecordTooFast',Math.round(implied))};
+  const currentBest=clampVdot(P.vdot)||(RECORDS&&RECORDS.length?computeVDOTfromRecords():0);
+  if(currentBest && implied>currentBest+ANTICHEAT_VDOT_MARGIN){
+    return {ok:false,msg:tp('guardRecordTooFast',Math.round(implied))};
+  }
+  return {ok:true};
 }
 
 /* ---------- XP — SYSTÈME DÉRIVÉ (recalculé depuis les données réelles) ---------- */
@@ -2211,16 +2400,35 @@ function cumulXpForLevel(n){
 }
 const TOTAL_XP_MAX=cumulXpForLevel(MAX_LEVEL+1); // XP pour boucler le niveau 70
 
+// Plafond d'XP "séances" gagnable par jour calendaire (anti-triche). Un vrai
+// gros jour d'entraînement (sortie longue + muscu) tient large dedans ; ça
+// bloque en revanche quelqu'un qui logguerait 20 fausses séances le même
+// jour pour sauter des niveaux. Recalculé à chaque fois depuis SESS/MSESS
+// (jamais stocké), donc s'applique aussi rétroactivement si des séances
+// invraisemblables avaient été loguées avant l'ajout de ce garde-fou.
+const XP_DAILY_CAP=300;
+function xpSessionsByDate(){
+  const byDate={};
+  SESS.forEach(s=>{
+    if(!s.date) return;
+    const raw=(+s.km||0)*XP_RULES.perKm + XP_RULES.perRunSession + (+s.duration||0)*XP_RULES.perMinTraining;
+    byDate[s.date]=(byDate[s.date]||0)+raw;
+  });
+  MSESS.forEach(s=>{
+    if(!s.date) return;
+    const raw=XP_RULES.perMuscuSession + (+s.sets||0)*XP_RULES.perMuscuSet + (+s.duration||0)*XP_RULES.perMinTraining;
+    byDate[s.date]=(byDate[s.date]||0)+raw;
+  });
+  return byDate;
+}
 function computeXPTotal(){
   let xp=0;
-  // Distance (le gros contributeur naturel : ~3 XP/km)
-  xp += Math.round(totalKm()*XP_RULES.perKm);
-  // Séances réalisées
-  xp += SESS.length*XP_RULES.perRunSession;
-  xp += MSESS.length*XP_RULES.perMuscuSession;
-  xp += MSESS.reduce((a,s)=>a+(s.sets||0),0)*XP_RULES.perMuscuSet;
-  const totMin = SESS.reduce((a,s)=>a+(s.duration||0),0) + MSESS.reduce((a,s)=>a+(s.duration||0),0);
-  xp += Math.round(totMin*XP_RULES.perMinTraining);
+  // Séances réalisées (distance, nb séances, sets, minutes), plafonnées par
+  // jour pour empêcher un abus par saisie massive de fausses séances.
+  const byDate=xpSessionsByDate();
+  let sessionXP=0;
+  Object.values(byDate).forEach(raw=>{ sessionXP+=Math.min(raw,XP_DAILY_CAP); });
+  xp += Math.round(sessionXP);
   // Objectifs du jour cochés (presque rien, comme demandé)
   if(GOALS.list){
     const checked=GOALS.list.filter(g=>g.done).length;
@@ -3024,7 +3232,7 @@ function detectLangIfUnset(){
 }
 
 /* ============ CONNEXION / COMPTE (Supabase) ============ */
-function startLogin(){ hideAppSkeleton(); $('#login').classList.add('on'); scheduleMotionSettle(2200); }
+function startLogin(){ hideAppSkeleton(); loginMode='login'; renderLoginMain(); $('#login').classList.add('on'); scheduleMotionSettle(2200); }
 function endLogin(){ $('#login').classList.remove('on'); }
 
 async function startApp(){
@@ -4132,8 +4340,11 @@ function renderMissedRunningForm(){
 }
 function saveMissedRunning(){
   const km=+$('#mr_km').value||0, pace=$('#mr_pace').value.trim()||'—', rpe=+$('#mr_rpe').value, notes=$('#mr_notes').value.trim();
+  const dur=(pace!=='—')?Math.round(km*parseTime(pace)/60):0;
+  const guard=sessionGuard(km,dur,todayKey());
+  if(!guard.ok){ toast(guard.msg); return; }
   missedCtx.replData={km,pace,rpe,notes};
-  if(km>0){ SESS.push({date:todayKey(),title:t('replacementRunTitle'),km,pace,type:'EF',duration:(pace!=='—')?Math.round(km*parseTime(pace)/60):0,rpe}); }
+  if(km>0){ SESS.push({date:todayKey(),title:t('replacementRunTitle'),km,pace,type:'EF',duration:dur,rpe}); }
   finalizeMissedSession();
 }
 function renderMissedMuscuForm(){
@@ -5309,7 +5520,10 @@ function savePersoSession(){
     km=+$('#ps_km').value||0; pace=$('#ps_pace').value.trim()||'—';
     durMin=(km&&pace!=='—')?Math.round(km*parseTime(pace)/60):0;
   }
-  p.sessions.push({id:Date.now(),title,type:psType,date:$('#ps_date').value,km,pace,duration:durMin,rpe:5,desc:$('#ps_desc').value.trim(),done:false,intervals});
+  const psDate=$('#ps_date').value;
+  const guard=sessionGuard(km,durMin,psDate);
+  if(!guard.ok){ toast(guard.msg); return; }
+  p.sessions.push({id:Date.now(),title,type:psType,date:psDate,km,pace,duration:durMin,rpe:5,desc:$('#ps_desc').value.trim(),done:false,intervals});
   saveAll(); closeOv('ovProg'); renderSport(); toast(t('sessionAdded'));
 }
 let curPersoSess=null;
@@ -5415,6 +5629,8 @@ function renderDebrief(){
   $('#progBody').innerHTML=h;
 }
 function submitDebrief(){
+  const guard=sessionGuard(+debriefData.distance||0,+debriefData.duration||0,debriefCtx.date);
+  if(!guard.ok){ toast(guard.msg); return; }
   const repsLog=debriefReps.length?debriefReps.map(r=>({n:r.n,dist:r.dist,target:r.target,timeS:r.timeS,respected:r.respected})):null;
   const entry={...debriefData,date:debriefCtx.date,title:debriefCtx.title,type:debriefCtx.type,plannedRpe:debriefCtx.plannedRpe,repsLog,ts:Date.now()};
   SESSLOG.push(entry); DB.save('sesslog',SESSLOG);
@@ -5436,7 +5652,6 @@ function submitDebrief(){
   applyProgressiveOverload(entry);
   weeklyAdaptiveRegen();
   renderCoachAnalysis(analysis);
-  grantReferralBonusIfNeeded();
 }
 function coachAnalyze(e){
   const pos=[],errs=[],tips=[],adjust=[];
@@ -7711,8 +7926,11 @@ function recordForm(d){
   $('#profileEditBody').innerHTML=h; $('#profileEditFoot').innerHTML='';
 }
 function saveRecord(){
+  const rcDate=$('#rc_date').value;
+  const guard=recordGuard(recTmp.meters,recTmp.timeS,rcDate);
+  if(!guard.ok){ toast(guard.msg); return; }
   const time=fmtTime(recTmp.timeS);
-  RECORDS.push({dist:recTmp.dist,meters:recTmp.meters,time,date:$('#rc_date').value,place:$('#rc_place').value.trim(),feel:$('#rc_feel').value.trim(),competition:!!recTmp.competition});
+  RECORDS.push({dist:recTmp.dist,meters:recTmp.meters,time,date:rcDate,place:$('#rc_place').value.trim(),feel:$('#rc_feel').value.trim(),competition:!!recTmp.competition});
   if(recTmp.dist==='5000 m')P.pb5k=time; if(recTmp.dist==='3000 m')P.pb3k=time; if(recTmp.dist==='1500 m')P.pb1500=time; if(recTmp.dist==='10 km')P.pb10k=time;
   P.vdot=computeVDOTfromRecords();
   saveAll(); refreshXP({animate:true}); openRecords(); toast(recTmp.competition?t('perfAddedComp'):t('perfAdded')); burst();
@@ -7721,7 +7939,7 @@ function delRecord(i){ const sorted=[...RECORDS].sort((a,b)=>(a.meters||0)-(b.me
 function computeVDOTfromRecords(){
   let best=computeVDOT();
   RECORDS.forEach(r=>{ if(r.meters&&r.time){ const v=vdotFromRace(r.meters,parseTime(r.time)); if(v>best)best=v; }});
-  return best>0?Math.round(best*10)/10:0;
+  return best>0?clampVdot(best):0;
 }
 function openProfileEdit(){
   $('#ovProfile').querySelector('h2').textContent=t('editProfileTitle');
