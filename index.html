@@ -599,9 +599,11 @@ body[data-scr="home"] .topbar{display:none;}
 /* CARDS */
 .card{background:var(--glass-bg);background-image:var(--glass-shine),var(--grad-card);
   -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
-  border:1px solid var(--glass-border);border-radius:var(--r-md);
+  border:none;border-radius:var(--r-md);
+  /* Pas de bordure : un bloc d'info se détache du fond via l'ombre (glass-shadow),
+     la bordure est réservée aux éléments qu'on peut taper (boutons, pastilles, tuiles). */
   padding:13px 14px;margin-bottom:8px;box-shadow:var(--glass-shadow);position:relative;
-  isolation:isolate;transition:transform .18s var(--ease-spring),box-shadow .25s ease,border-color .25s ease;}
+  isolation:isolate;transition:transform .18s var(--ease-spring),box-shadow .25s ease;}
 .card:active{transform:scale(.985);}
 /* L'onglet Outils garde son style de carte d'origine (opaque, sans effet verre) */
 #s-outils .card{background:var(--s1);background-image:var(--grad-card);-webkit-backdrop-filter:none;backdrop-filter:none;
@@ -959,6 +961,26 @@ html[data-mode="light"]{
   display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:16px;transition:transform .15s var(--ease-spring),background .15s;}
 .x:active{transform:scale(.9);background:var(--s3);}
 
+/* ===== PAGES PLEIN ÉCRAN (ov-push) =====
+   Variante de .ov pour les contenus "destination" (Programme, Séance, Bibliothèque) :
+   au lieu d'un sheet qui remonte du bas, la carte glisse depuis la droite en
+   plein écran, avec un bouton retour + swipe-back depuis le bord gauche —
+   même logique que .ex-swipe-card plus bas dans le fichier, mais pour la
+   navigation entre écrans plutôt que pour révéler une action. */
+.ov.ov-push{background:transparent;backdrop-filter:none;align-items:stretch;justify-content:stretch;}
+.ov.ov-push .ov-card{width:100%;max-width:none;height:100%;max-height:none;border-radius:0;border-top:none;
+  box-shadow:none;animation:none;transform:translateX(100%);transition:transform .34s var(--ease-out);
+  display:flex;flex-direction:column;padding:max(18px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom));}
+.ov.ov-push .ov-card::before{display:none;}
+.ov.ov-push.on .ov-card{transform:translateX(0);}
+.ov.ov-push.dragging .ov-card{transition:none;}
+.ov.ov-push .ov-head{flex:0 0 auto;flex-direction:row;justify-content:flex-start;gap:12px;}
+.ov.ov-push .ov-head h2{order:2;flex:1;}
+.ov.ov-push .ov-head .x{order:1;font-size:18px;}
+.ov.ov-push .ov-body-scroll{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+/* zone invisible sur le bord gauche pour capter le swipe-back, façon iOS */
+.ov-push-edge{position:absolute;left:0;top:0;bottom:0;width:22px;z-index:5;}
+
 /* ===== SKELETON — écran de chargement au tout premier lancement ===== */
 #appSkeleton{position:fixed;inset:0;z-index:20000;background:var(--bg);max-width:430px;margin:0 auto;
   overflow:hidden;padding:max(14px,env(safe-area-inset-top)) 20px max(20px,env(safe-area-inset-bottom));
@@ -1197,7 +1219,7 @@ html.motion-settled .login-hero{
 
 /* STAT GRID */
 .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
-.sbox{background:var(--s2);background-image:linear-gradient(180deg,rgba(255,255,255,.025),transparent 50%);border:1px solid var(--hair);border-radius:var(--r-sm);padding:13px 14px;box-shadow:var(--sh-sm);}
+.sbox{background:var(--s2);background-image:linear-gradient(180deg,rgba(255,255,255,.025),transparent 50%);border:none;border-radius:var(--r-sm);padding:13px 14px;box-shadow:var(--sh-sm);}
 .sbox .v{font-family:'JetBrains Mono';font-weight:700;font-size:21px;letter-spacing:-.3px;}
 .sbox .l{font-size:10.5px;color:var(--muted);margin-top:3px;font-weight:600;}
 
@@ -1651,11 +1673,11 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
 <!-- GENERIC OVERLAYS -->
 <div class="ov" id="ovSettings"><div class="ov-card"><div class="ov-head"><h2>Paramètres</h2><div class="x" onclick="closeOv('ovSettings')">✕</div></div><div id="settingsBody"></div></div></div>
 <div class="ov" id="ovProfile"><div class="ov-card"><div class="ov-head"><h2>Modifier le profil</h2><div class="x" onclick="closeOv('ovProfile')">✕</div></div><div id="profileEditBody"></div><div class="ov-foot-save" id="profileEditFoot"></div></div></div>
-<div class="ov" id="ovLib"><div class="ov-card"><div class="ov-head"><h2>Bibliothèque</h2><div class="x" onclick="closeOv('ovLib')">✕</div></div><div id="libBody"></div></div></div>
+<div class="ov ov-push" id="ovLib"><div class="ov-card"><div class="ov-push-edge" data-ovid="ovLib"></div><div class="ov-head"><div class="x" onclick="closeOv('ovLib')">‹</div><h2>Bibliothèque</h2></div><div class="ov-body-scroll"><div id="libBody"></div></div></div></div>
 <div class="ov" id="ovCfg"><div class="ov-card"><div class="ov-head"><h2>Configurer</h2><div class="x" onclick="closeOv('ovCfg')">✕</div></div><div id="cfgBody"></div></div></div>
-<div class="ov" id="ovProg"><div class="ov-card"><div class="ov-head"><h2 id="ovProgTitle">Programme</h2><div class="x" onclick="closeOv('ovProg')">✕</div></div><div id="progBody"></div></div></div>
+<div class="ov ov-push" id="ovProg"><div class="ov-card"><div class="ov-push-edge" data-ovid="ovProg"></div><div class="ov-head"><div class="x" onclick="closeOv('ovProg')">‹</div><h2 id="ovProgTitle">Programme</h2></div><div class="ov-body-scroll"><div id="progBody"></div></div></div></div>
 <div class="ov" id="ovLive"><div class="ov-card"><div class="ov-head"><h2 id="liveTitle">Séance</h2><div class="x" onclick="confirmCloseLive()">✕</div></div><div id="liveBody"></div></div></div>
-<div class="ov" id="ovSheet"><div class="ov-card"><div class="ov-head"><h2 id="sheetTitle">Séance</h2><div class="x" onclick="closeOv('ovSheet')">✕</div></div><div id="sheetBody"></div></div></div>
+<div class="ov ov-push" id="ovSheet"><div class="ov-card"><div class="ov-push-edge" data-ovid="ovSheet"></div><div class="ov-head"><div class="x" onclick="closeOv('ovSheet')">‹</div><h2 id="sheetTitle">Séance</h2></div><div class="ov-body-scroll"><div id="sheetBody"></div></div></div></div>
 <div class="ov" id="ovCreate"><div class="ov-card"><div class="ov-head"><h2>Nouveau programme</h2><div class="x" onclick="closeOv('ovCreate')">✕</div></div><div id="createBody"></div></div></div>
 <div class="ov" id="ovBadges"><div class="ov-card"><div class="ov-head"><h2 id="ovBadgesTitle">Badges</h2><div class="x" onclick="closeOv('ovBadges')">✕</div></div><div id="badgesBody"></div></div></div>
 <div class="ov" id="ovFullPlan"><div class="ov-card"><div class="ov-head"><h2>IKORUN</h2><div class="x" onclick="closeOv('ovFullPlan')">✕</div></div><div id="fullPlanBody"></div></div></div>

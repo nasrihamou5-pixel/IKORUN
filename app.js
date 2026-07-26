@@ -3161,6 +3161,83 @@ $$('.nb').forEach(b=>b.onclick=()=>nav(b.dataset.s));
   });
   navEl.addEventListener('click',e=>{ if(suppressClick){ e.stopImmediatePropagation(); e.preventDefault(); } },true);
 })();
+
+/* ---------- SWIPE-BACK sur les pages plein écran (.ov-push) ----------
+   Glisser depuis le bord gauche (zone .ov-push-edge, ~22px) ferme la page
+   en cours, comme le geste "retour" natif iOS. Reprend la logique du
+   liveSwipe plus bas (transform direct pendant le drag, seuil au relâcher). */
+(function(){
+  let ovEl=null, ovId=null, startX=0, startY=0, dx=0, dragging=false;
+  const THRESH=90;
+  document.addEventListener('touchstart',e=>{
+    const edge=e.target.closest('.ov-push-edge'); if(!edge) return;
+    ovId=edge.dataset.ovid; ovEl=document.getElementById(ovId); if(!ovEl) return;
+    startX=e.touches[0].clientX; startY=e.touches[0].clientY; dx=0; dragging=true;
+    ovEl.classList.add('dragging');
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!dragging||!ovEl) return;
+    const tx=e.touches[0].clientX, ty=e.touches[0].clientY;
+    const ddx=tx-startX, ddy=ty-startY;
+    if(Math.abs(ddy)>Math.abs(ddx)&&Math.abs(ddy)>12){ dragging=false; ovEl.classList.remove('dragging'); return; }
+    dx=Math.max(0,ddx);
+    const card=ovEl.querySelector('.ov-card'); if(card) card.style.transform='translateX('+dx+'px)';
+  },{passive:true});
+  document.addEventListener('touchend',()=>{
+    if(!dragging||!ovEl){ dragging=false; return; }
+    dragging=false; ovEl.classList.remove('dragging');
+    const card=ovEl.querySelector('.ov-card'); if(card) card.style.transform='';
+    if(dx>THRESH) closeOv(ovId);
+    dx=0; ovEl=null; ovId=null;
+  });
+})();
+
+/* ---------- PULL-TO-REFRESH sur #scroll ----------
+   Tirer vers le bas depuis tout en haut relance une resynchro cloud
+   (cloudPullAll) puis re-render l'écran courant. */
+(function(){
+  const sc=document.getElementById('scroll'); if(!sc) return;
+  let startY=0, dy=0, pulling=false, busy=false;
+  const TRIGGER=64, MAXPULL=100;
+  const ind=document.createElement('div');
+  ind.id='ptrIndicator';
+  ind.style.cssText='position:fixed;left:50%;top:max(10px,env(safe-area-inset-top));'
+    +'transform:translate(-50%,-70px);z-index:9500;width:36px;height:36px;border-radius:50%;'
+    +'background:var(--s1);border:1px solid var(--hair);display:flex;align-items:center;justify-content:center;'
+    +'color:var(--e);font-size:16px;box-shadow:var(--sh-md);transition:transform .18s var(--ease-out),opacity .18s;opacity:0;';
+  ind.textContent='↻';
+  document.body.appendChild(ind);
+  sc.addEventListener('touchstart',e=>{
+    if(sc.scrollTop>2||busy) return;
+    startY=e.touches[0].clientY; dy=0; pulling=true;
+  },{passive:true});
+  sc.addEventListener('touchmove',e=>{
+    if(!pulling) return;
+    const raw=e.touches[0].clientY-startY;
+    if(raw<=0){ dy=0; ind.style.opacity='0'; return; }
+    dy=Math.min(MAXPULL,raw);
+    ind.style.opacity=Math.min(1,dy/TRIGGER);
+    ind.style.transform='translate(-50%,'+(dy-70+70*Math.min(1,dy/TRIGGER))+'px) rotate('+(dy*2.4)+'deg)';
+  },{passive:true});
+  sc.addEventListener('touchend',async ()=>{
+    if(!pulling) return;
+    pulling=false;
+    if(dy>=TRIGGER && !busy){
+      busy=true;
+      ind.style.transform='translate(-50%,50px) rotate(0deg)';
+      ind.style.opacity='1';
+      if(navigator.vibrate) navigator.vibrate(8);
+      try{
+        if(window.currentUserId) await cloudPullAll(window.currentUserId);
+        nav(document.body.dataset.scr||'home');
+        toast('Synchronisé');
+      }catch(e){ /* pas de cloud dispo (hors-ligne) : on referme juste l'indicateur */ }
+      busy=false;
+    }
+    ind.style.opacity='0'; ind.style.transform='translate(-50%,-70px)';
+    dy=0;
+  });
+})();
 function greet(){ const h=new Date().getHours(); const l=curLang();
   const G={fr:[h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir'],en:[h<12?'Good morning':h<18?'Good afternoon':'Good evening'],ar:['مرحباً']};
   return (G[l]||G.fr)[0]+', '+(P.name||t('profil'))+' 👋'; }
