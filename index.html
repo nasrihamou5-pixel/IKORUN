@@ -348,6 +348,85 @@ html[data-mode="light"] body::after{opacity:.02;}
 .week-spark-days{display:flex;justify-content:space-between;margin-top:6px;padding:0 2px;}
 .week-spark-days span{font-family:'JetBrains Mono';font-size:9.5px;color:var(--dim);font-weight:600;width:14px;text-align:center;}
 
+/* ===== GRAVITÉ — anneau de charge hebdo + gouttes organiques (maquette V6) =====
+   Remplace le gros chiffre plat de l'ancien hero par un anneau de progression
+   réel (km réalisés / objectif hebdo) entouré de "gouttes" (VDOT, tendance)
+   au lieu d'un empilement de rectangles. Toutes les valeurs affichées ici
+   viennent des variables déjà calculées dans renderHome() (kmW, kmTarget,
+   vdot, delta vs semaine dernière) — aucune donnée inventée. */
+.ik-gravity{position:relative;min-height:190px;margin-top:6px;z-index:1;}
+.ik-ring-wrap{position:relative;width:168px;height:168px;}
+.ik-ring-wrap svg{width:100%;height:100%;transform:rotate(-90deg);}
+.ik-ring-track{stroke:rgba(255,255,255,.07);}
+.ik-ring-val{stroke:url(#ikRingGrad);stroke-linecap:round;filter:drop-shadow(0 0 10px rgba(var(--e-rgb),.35));
+  transition:stroke-dashoffset .6s var(--ease-out);}
+.ik-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ik-ring-center .n{font-family:'Unbounded';font-weight:800;font-size:30px;letter-spacing:-1.1px;line-height:1;
+  background:linear-gradient(180deg,#fff,var(--e2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.ik-ring-center .u{font-family:'JetBrains Mono';font-size:10.5px;color:var(--muted);font-weight:600;margin-top:5px;}
+.ik-ring-badge{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);background:var(--s1);border:1px solid var(--glass-border-soft);
+  border-radius:20px;padding:5px 12px;font-family:'JetBrains Mono';font-size:10.5px;font-weight:700;color:#ffb35c;
+  display:flex;align-items:center;gap:5px;white-space:nowrap;box-shadow:var(--sh-sm);}
+.ik-ring-badge svg{flex-shrink:0;}
+
+.ik-drop{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  background:var(--glass-bg);border:1px solid var(--glass-border-soft);backdrop-filter:blur(14px);box-shadow:var(--sh-sm);cursor:pointer;}
+.ik-drop-vdot{width:88px;height:92px;right:4px;top:0;border-radius:45% 55% 58% 42% / 53% 47% 53% 47%;}
+.ik-drop-vdot .lab{font-family:'JetBrains Mono';font-size:8px;letter-spacing:.6px;color:var(--muted);font-weight:700;text-transform:uppercase;}
+.ik-drop-vdot .val{font-family:'Unbounded';font-weight:800;font-size:21px;margin-top:3px;}
+.ik-drop-trend{width:98px;height:50px;right:0;top:106px;border-radius:56% 44% 46% 54% / 50% 56% 44% 50%;
+  background:rgba(var(--e-rgb),.12);border:1px solid rgba(var(--e-rgb),.28);flex-direction:row;gap:5px;
+  font-family:'JetBrains Mono';font-size:11px;font-weight:700;color:var(--e2);}
+.ik-drop-trend.down{background:rgba(255,92,108,.1);border-color:rgba(255,92,108,.28);color:var(--bad);}
+
+.ik-week-row{display:flex;justify-content:space-between;margin-top:20px;padding:0 4px;position:relative;z-index:1;}
+.ik-week-day{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.ik-week-bar{width:5px;height:28px;border-radius:3px;background:rgba(255,255,255,.08);position:relative;overflow:hidden;}
+.ik-week-bar b{position:absolute;bottom:0;left:0;width:100%;border-radius:3px;display:block;background:var(--e2);}
+.ik-week-bar b.today{background:linear-gradient(180deg,#fff,var(--e2));box-shadow:0 0 10px rgba(var(--e-rgb),.5);}
+.ik-week-lab{font-family:'JetBrains Mono';font-size:9px;color:var(--dim);font-weight:600;}
+.ik-week-day.today .ik-week-lab{color:var(--snow);}
+
+/* =====================================================================
+   THÈME ANNEAU — étendu à toute l'interface (Profil > Préférences).
+   Ne touche à aucune structure JS des autres écrans : reskin des
+   composants PARTAGÉS déjà utilisés partout (card, lr-icon, favtile,
+   bd-icon, pf-hero, rankchip, pill/seg actifs, toggle, searchbox), avec
+   les couleurs d'accent réelles de l'utilisateur (--e/--e2), pas une
+   couleur forcée. Quand le thème est désactivé, rien ne change. */
+html.ring-theme .card{border-radius:22px;}
+html.ring-theme .lr-icon{border-radius:42% 58% 60% 40% / 54% 46% 54% 46%;
+  background:linear-gradient(150deg, rgba(var(--e-rgb),.22), rgba(var(--e-rgb),.05));color:var(--e2);}
+html.ring-theme .favtile{border-radius:42% 58% 60% 40% / 54% 46% 54% 46%;
+  background:linear-gradient(150deg, rgba(var(--e-rgb),.13), rgba(var(--e-rgb),.02));border-color:rgba(var(--e-rgb),.24);}
+html.ring-theme .bd-icon{border-radius:44% 56% 60% 40% / 50% 46% 54% 50%;}
+html.ring-theme .pf-avwrap{box-shadow:0 0 0 3px rgba(var(--e-rgb),.35);border-radius:44% 56% 58% 42% / 52% 48% 52% 48%;overflow:hidden;}
+html.ring-theme .rankchip{background:linear-gradient(135deg,var(--e2),var(--e));box-shadow:0 10px 22px -10px rgba(var(--e-rgb),.55);}
+html.ring-theme .pill.on,html.ring-theme .seg-btn.on{background:linear-gradient(135deg,var(--e2),var(--e));color:#fff;}
+html.ring-theme .toggle.on{background:linear-gradient(135deg,var(--e2),var(--e));}
+html.ring-theme .searchbox{border-radius:18px;background:rgba(var(--e-rgb),.05);}
+html.ring-theme .zdot{box-shadow:0 0 7px currentColor;}
+html.ring-theme .badge-mini,html.ring-theme .chrome-chip{border-radius:42% 58% 60% 40% / 54% 46% 54% 46%;}
+
+/* Extension aux petits composants transverses (boutons, champs, badges,
+   barres de progression, icônes mini, fermetures, cartes perf/stat) —
+   présents dans les popups, outils et sous-écrans, pas seulement les
+   4 onglets principaux. Toujours du CSS pur sur des classes réelles déjà
+   utilisées partout dans app.js, aucune structure touchée. */
+html.ring-theme .btn:not(.ghost){background:linear-gradient(135deg,var(--e2),var(--e));border-color:transparent;
+  box-shadow:0 8px 18px -9px rgba(var(--e-rgb),.5);}
+html.ring-theme .field,html.ring-theme .inp,html.ring-theme .chrome-box,html.ring-theme .ov-card,html.ring-theme .perfcard{
+  border-radius:16px;}
+html.ring-theme .pbar>div,html.ring-theme .pbar b{background:linear-gradient(90deg,var(--e),var(--e2));}
+html.ring-theme .badge{border-radius:42% 58% 60% 40% / 54% 46% 54% 46%;
+  background:linear-gradient(150deg, rgba(var(--e-rgb),.18), rgba(var(--e-rgb),.04));border-color:rgba(var(--e-rgb),.26);}
+html.ring-theme .em-ic,html.ring-theme .mini-ic,html.ring-theme .stat-ic,html.ring-theme .rs-ic{
+  border-radius:42% 58% 60% 40% / 54% 46% 54% 46%;background:rgba(var(--e-rgb),.12);color:var(--e2);}
+html.ring-theme .stat-card{border-radius:20px;}
+html.ring-theme .x{border-radius:40% 60% 55% 45% / 50% 55% 45% 50%;}
+html.ring-theme .stepper{border-radius:14px;}
+html.ring-theme .sec-lab,html.ring-theme .grp-lab{color:var(--e2);}
+
 .next-lab{font-size:10px;letter-spacing:.5px;color:var(--muted);font-weight:700;margin-bottom:2px;}
 .next-card{display:flex;align-items:center;gap:12px;cursor:pointer;}
 .next-body{flex:1;}

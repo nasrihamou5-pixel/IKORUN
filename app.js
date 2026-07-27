@@ -822,6 +822,7 @@ const I18N={
     notConnected:'Non connecté',notifLabel:'Notifications',preferences:'Préférences',historyRecords:'Historique & records',
     statistics:'Statistiques',theme:'Thème',appColor:'Couleur de l\u2019app',simplifiedMode:'Mode simplifié',
     simplifiedModeDesc:'3 onglets, écrans allégés, textes plus grands — l\u2019essentiel seulement',
+    homeRingTheme:'Thème Anneau',homeRingThemeDesc:'Anneau de progression sur l\u2019Accueil + look organique sur toute l\u2019app',
     support:'Support',helpCenter:'Centre d\u2019aide',footerTag:'IKORUN — Elite Athletic Intelligence · v2.0',
     yourSpace:'Ton espace',settings:'Réglages',badgesLabel:'Badges',toolsCalc:'Outils & calculateurs',editMyProfile:'Modifier mon profil',
     // --- Stats ---
@@ -1000,6 +1001,7 @@ const I18N={
     resumeSessionConfirm:'Une séance « {0} » était en cours ({1} min). Reprendre ?',sessionColonName:'Séance : {0}',
     accentBlue:'Bleu',accentGreen:'Vert militaire',accentBrown:'Marron boisé',accentYellow:'Jaune',accentCarbon:'Fibre de carbone',
     colorApplied:'Couleur appliquée ✓',easyModeOn:'Mode simplifié activé ✓',easyModeOff:'Mode simplifié désactivé',
+    homeRingThemeOn:'Thème Anneau activé ✓',homeRingThemeOff:'Thème Anneau désactivé',
     profileIncompleteAddTime:'Profil incomplet : ajoute un chrono dans tes records',chooseCompDate:'Choisis une date de compétition',
     planGenerated:'Plan « {0} » généré : {1} sem, {2} séances',raceGeneric:'course',
     followingPersoPlan:'Tu suis maintenant ce plan perso ✓',backToIkorunPlan:'Retour au plan IKORUN',
@@ -1269,6 +1271,7 @@ const I18N={
     notConnected:'Not signed in',notifLabel:'Notifications',preferences:'Preferences',historyRecords:'History & records',
     statistics:'Statistics',theme:'Theme',appColor:'App color',simplifiedMode:'Simplified mode',
     simplifiedModeDesc:'3 tabs, lighter screens, bigger text — the essentials only',
+    homeRingTheme:'Ring theme',homeRingThemeDesc:'Progress ring on Home + organic look across the whole app',
     support:'Support',helpCenter:'Help center',footerTag:'IKORUN — Elite Athletic Intelligence · v2.0',
     yourSpace:'Your space',settings:'Settings',badgesLabel:'Badges',toolsCalc:'Tools & calculators',editMyProfile:'Edit my profile',
     // --- Stats ---
@@ -1447,6 +1450,7 @@ const I18N={
     resumeSessionConfirm:'A "{0}" session was in progress ({1} min). Resume?',sessionColonName:'Session: {0}',
     accentBlue:'Blue',accentGreen:'Military green',accentBrown:'Woodland brown',accentYellow:'Yellow',accentCarbon:'Carbon fiber',
     colorApplied:'Color applied ✓',easyModeOn:'Simplified mode enabled ✓',easyModeOff:'Simplified mode disabled',
+    homeRingThemeOn:'Ring theme enabled ✓',homeRingThemeOff:'Ring theme disabled',
     profileIncompleteAddTime:'Incomplete profile: add a time in your records',chooseCompDate:'Choose a race date',
     planGenerated:'"{0}" plan generated: {1} wk, {2} sessions',raceGeneric:'race',
     followingPersoPlan:'You\u2019re now following this custom plan ✓',backToIkorunPlan:'Back to IKORUN plan',
@@ -1716,6 +1720,7 @@ const I18N={
     notConnected:'غير متصل',notifLabel:'الإشعارات',preferences:'التفضيلات',historyRecords:'السجل والأرقام',
     statistics:'الإحصائيات',theme:'المظهر',appColor:'لون التطبيق',simplifiedMode:'الوضع المبسّط',
     simplifiedModeDesc:'3 تبويبات، شاشات أخف، نص أكبر — الأساسيات فقط',
+    homeRingTheme:'ثيم الحلقة',homeRingThemeDesc:'حلقة تقدّم في الرئيسية + طابع عضوي في التطبيق كله',
     support:'الدعم',helpCenter:'مركز المساعدة',footerTag:'IKORUN — Elite Athletic Intelligence · v2.0',
     yourSpace:'مساحتك',settings:'الإعدادات',badgesLabel:'الأوسمة',toolsCalc:'الأدوات والحاسبات',editMyProfile:'تعديل ملفي الشخصي',
     // --- الإحصائيات ---
@@ -1894,6 +1899,7 @@ const I18N={
     resumeSessionConfirm:'كانت حصة « {0} » جارية ({1} د). المتابعة؟',sessionColonName:'حصة: {0}',
     accentBlue:'أزرق',accentGreen:'أخضر عسكري',accentBrown:'بني خشبي',accentYellow:'أصفر',accentCarbon:'ألياف الكربون',
     colorApplied:'تم تطبيق اللون ✓',easyModeOn:'تم تفعيل الوضع المبسّط ✓',easyModeOff:'تم إلغاء الوضع المبسّط',
+    homeRingThemeOn:'تم تفعيل ثيم الحلقة ✓',homeRingThemeOff:'تم إلغاء ثيم الحلقة',
     profileIncompleteAddTime:'الملف غير مكتمل: أضف زمنًا في أرقامك القياسية',chooseCompDate:'اختر تاريخ المنافسة',
     planGenerated:'تم إنشاء خطة « {0} »: {1} أسبوع، {2} حصة',raceGeneric:'سباق',
     followingPersoPlan:'أنت الآن تتبع هذه الخطة الشخصية ✓',backToIkorunPlan:'العودة إلى خطة IKORUN',
@@ -3654,6 +3660,7 @@ function applyTheme(){
   document.documentElement.setAttribute('data-mode',mode);
   document.documentElement.setAttribute('data-accent',P.theme||'blue');
   document.documentElement.classList.toggle('easy-mode',!!P.easyMode);
+  document.documentElement.classList.toggle('ring-theme',!!P.homeRingTheme);
   const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.content=(P.easyMode?(mode==='light'?'#FFFFFF':'#000000'):(mode==='light'?'#F2F4F8':'#0A0D12'));
 }
 /* Couleur d'accent de l'app : bleu (défaut) / vert militaire chromé / marron boisé chromé */
@@ -3678,6 +3685,12 @@ function toggleEasyMode(){
   toast(P.easyMode?t('easyModeOn'):t('easyModeOff'));
 }
 function setMode(m){ P.mode=(m==='light')?'light':'dark'; saveAll(); applyTheme(); if($('#s-profil')&&$('#s-profil').classList.contains('on'))renderProfile(); refreshPfSheet(); }
+function toggleHomeRingTheme(){
+  P.homeRingTheme=!P.homeRingTheme; saveAll(); applyTheme();
+  if($('#s-profil')&&$('#s-profil').classList.contains('on')) renderProfile();
+  if($('#s-home')&&$('#s-home').classList.contains('on')) renderHome();
+  toast(P.homeRingTheme?t('homeRingThemeOn'):t('homeRingThemeOff'));
+}
 // suit le thème du téléphone en mode auto
 
 
@@ -5158,6 +5171,45 @@ function homeBadgesRow(){
 }
 
 /* ---------- RENDER HOME ---------- */
+// Thème "Anneau" (V6, optionnel — activé via P.homeRingTheme dans Profil > Préférences).
+// Toutes les valeurs viennent des données réelles déjà calculées par renderHome, rien n'est inventé.
+function homeHeroRing(xp,kmW,kmTarget,vdot,form,sessW,sessTarget){
+  const xpv=xp; const ws=weekStart(); const dowLabels=t('dowShort').split(',');
+  const week=[]; for(let i=0;i<7;i++){ const d=new Date(ws); d.setDate(ws.getDate()+i); const k=dateKey(d);
+    week.push([...SESS,...MSESS].filter(s=>s.date===k).reduce((a,s)=>a+(s.km||0),0)); }
+  const maxDay=Math.max(1,...week);
+  const todayIdx=(new Date().getDay()+6)%7;
+  const ringPct=Math.min(100,kmTarget?Math.round(kmW/kmTarget*100):0);
+  const R=76, C=Math.round(2*Math.PI*R);
+  const ringOffset=Math.round(C*(1-ringPct/100));
+  const s=streakDays();
+  const prevKmW=lastWeekKm();
+  const deltaPct=prevKmW?Math.round((kmW-prevKmW)/prevKmW*100):null;
+  return '<div class="card ik-hero stag" style="animation-delay:.02s" onclick="nav(\'stats\')">'+
+    '<div class="ik-hero-lab">'+t('weekLoadTitle')+'</div>'+
+    '<div class="ik-gravity">'+
+      '<div class="ik-ring-wrap"><svg viewBox="0 0 168 168">'+
+        '<defs><linearGradient id="ikRingGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="var(--e2)"/></linearGradient></defs>'+
+        '<circle class="ik-ring-track" cx="84" cy="84" r="'+R+'" fill="none" stroke-width="9"/>'+
+        '<circle class="ik-ring-val" cx="84" cy="84" r="'+R+'" fill="none" stroke-width="9" stroke-dasharray="'+C+'" stroke-dashoffset="'+ringOffset+'"/>'+
+      '</svg><div class="ik-ring-center"><div class="n">'+kmW.toFixed(1).replace('.',',')+'</div><div class="u">/ '+kmTarget+' km</div></div>'+
+      (s>=2?'<div class="ik-ring-badge">'+ICN('fire',12,'#ffb35c')+s+' '+t('daysLab')+'</div>':'')+
+      '</div>'+
+      '<div class="ik-drop ik-drop-vdot" onclick="event.stopPropagation();nav(\'outils\');openTool(\'vdot\')"><div class="lab">VDOT</div><div class="val">'+(vdot||'—')+'</div></div>'+
+      (deltaPct!==null?'<div class="ik-drop ik-drop-trend'+(deltaPct<0?' down':'')+'">'+ICN(deltaPct>=0?'trendUp':'trendDown',11)+(deltaPct>=0?'+':'')+deltaPct+'% '+t('vsPrevShort')+'</div>':'')+
+    '</div>'+
+    '<div class="ik-week-row">'+week.map((v,i)=>'<div class="ik-week-day'+(i===todayIdx?' today':'')+'"><div class="ik-week-bar"><b'+(i===todayIdx?' class="today"':'')+' style="height:'+Math.max(6,Math.round(v/maxDay*100))+'%"></b></div><span class="ik-week-lab">'+dowLabels[i]+'</span></div>').join('')+'</div>'+
+    '<div class="ik-hero-divider"></div>'+
+    '<div class="ik-hero-mid">'+
+      '<div class="ik-hero-ring-wrap">'+donutSVG([{v:xpv.pct,color:'var(--e)'},{v:100-xpv.pct,color:'rgba(255,255,255,.08)'}],52,6,'<div class="lvl-lab">'+t('lvlShort')+'</div><div class="lvl-n">'+XP.level+'</div>')+'</div>'+
+      '<div class="ik-hero-mid-txt"><div class="v">'+tp('levelXp',XP.level,XP.total)+'</div><div class="l">'+tp('xpBeforeLevel',Math.max(0,xpv.span-xpv.inLvl),XP.level+1)+'</div></div>'+
+    '</div>'+
+    '<div class="ik-hero-row3">'+
+      '<div><div class="hstat-v">'+sessW+'<span>/'+sessTarget+'</span></div><div class="hstat-l">'+t('sessionsCap')+'</div></div>'+
+      donutSVG([{v:form,color:'var(--ok)'},{v:100-form,color:'rgba(255,255,255,.08)'}],50,6,'<div class="week-ring-v'+(form>=100?' v-sm':'')+'">'+form+'%</div><div class="week-ring-l">'+t('formCap')+'</div>')+
+    '</div>'+
+  '</div>';
+}
 function renderHome(){
   const xp=xpProgress();
   const kmW=kmThisWeek(), kmTarget=P.kmWeek||40;
@@ -5186,8 +5238,13 @@ function renderHome(){
   const quip=P.objTime?tp('quipTime',P.objTime):(P.goal?tp('quipGoal',P.goal):t('quipDefault'));
   html+='<div class="ik-greet"><h1>'+t('greet')+' '+(first||t('you'))+'.<br>'+quip+'</h1></div>';
 
-  // HERO FUSIONNÉ — charge hebdo (gros chiffre) + quip + niveau/XP + forme + sparkline
-  { const xpv=xp; const ws=weekStart(); const dowLabels=t('dowShort').split(',');
+  // HERO FUSIONNÉ — charge hebdo. Deux présentations possibles : le hero
+  // classique (gros chiffre) par défaut, ou le thème "Anneau" (V6, anneau de
+  // progression + gouttes VDOT/tendance) si l'utilisateur l'a activé dans
+  // Profil > Préférences. Le comportement par défaut n'est pas modifié.
+  if(P.homeRingTheme) html+=homeHeroRing(xp,kmW,kmTarget,vdot,form,sessW,sessTarget);
+  else {
+    const xpv=xp; const ws=weekStart(); const dowLabels=t('dowShort').split(',');
     const week=[]; for(let i=0;i<7;i++){ const d=new Date(ws); d.setDate(ws.getDate()+i); const k=dateKey(d);
       week.push([...SESS,...MSESS].filter(s=>s.date===k).reduce((a,s)=>a+(s.km||0),0)); }
     const maxDay=Math.max(1,...week);
@@ -7021,7 +7078,10 @@ const ICONS={
   lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
   pause:'<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
   play:'<path d="M7 4l14 8-14 8V4z"/>',
-  stop:'<rect x="6" y="6" width="12" height="12" rx="2"/>'
+  stop:'<rect x="6" y="6" width="12" height="12" rx="2"/>',
+  trendUp:'<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+  trendDown:'<path d="M3 7l6 6 4-4 8 8"/><path d="M15 17h6v-6"/>',
+  ring:'<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 6.36 15.36" stroke-width="2.6"/>'
 };
 function ICN(name,size,color){ const s=size||22; return '<svg viewBox="0 0 24 24" width="'+s+'" height="'+s+'" fill="none" stroke="'+(color||'currentColor')+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[name]||'')+'</svg>'; }
 /* colored rounded-square icon badge used in card headers, replaces flat emoji */
@@ -7767,6 +7827,7 @@ function renderProfile(){
     '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">📊</div><div class="lr-title">'+t('statistics')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">🎨</div><div class="lr-title">'+t('theme')+'</div>'+pfThemeSwitchHTML()+'</div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">🖌️</div><div class="lr-title">'+t('appColor')+'</div>'+pfAccentPickerHTML()+'</div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('ring',18,'var(--e2)')+'</div><div><div class="lr-title">'+t('homeRingTheme')+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px;max-width:200px">'+t('homeRingThemeDesc')+'</div></div><div class="toggle'+(P.homeRingTheme?' on':'')+'" onclick="event.stopPropagation();toggleHomeRingTheme()"></div></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">🧓</div><div><div class="lr-title">'+t('simplifiedMode')+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px;max-width:200px">'+t('simplifiedModeDesc')+'</div></div><div class="toggle'+(P.easyMode?' on':'')+'" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
   '</div>';
   h+='<div class="grp-lab stag" style="animation-delay:.15s">'+t('support')+'</div>';
