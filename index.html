@@ -348,6 +348,40 @@ html[data-mode="light"] body::after{opacity:.02;}
 .week-spark-days{display:flex;justify-content:space-between;margin-top:6px;padding:0 2px;}
 .week-spark-days span{font-family:'JetBrains Mono';font-size:9.5px;color:var(--dim);font-weight:600;width:14px;text-align:center;}
 
+/* ===== HERO "GRAVITÉ" — nouvelle version Accueil (V6), branchée sur les vraies données =====
+   Remplace l'ancien anneau XP + rangée 3 par un anneau de charge hebdo entouré
+   de 2 bulles (VDOT, tendance) et d'un badge de série, façon maquette validée.
+   Pas d'animation en boucle : tout est statique au repos, comme décidé. */
+.v6h-grav{position:relative;height:214px;margin-top:16px;}
+.v6h-ring-wrap{position:absolute;left:0;top:0;width:164px;height:164px;}
+.v6h-ring-wrap svg{width:100%;height:100%;transform:rotate(-90deg);}
+.v6h-ring-track{stroke:rgba(255,255,255,.07);}
+.v6h-ring-val{stroke:var(--e);stroke-linecap:round;transition:stroke-dasharray .8s var(--ease);}
+.v6h-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.v6h-ring-center .lab{font-family:'JetBrains Mono';font-size:9px;letter-spacing:1.6px;color:var(--muted);font-weight:600;text-transform:uppercase;}
+.v6h-ring-center .n{font-family:'Unbounded';font-weight:800;font-size:27px;letter-spacing:-1px;margin-top:5px;
+  background:linear-gradient(180deg,#fff,var(--e2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.v6h-ring-center .u{font-family:'JetBrains Mono';font-size:10px;color:var(--muted);font-weight:600;margin-top:1px;}
+.v6h-ring-badge{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);white-space:nowrap;}
+.v6h-drop{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  background:var(--s2);border:1px solid var(--hair);}
+.v6h-drop-vdot{width:84px;height:84px;right:6px;top:0;border-radius:44% 56% 60% 40% / 54% 46% 54% 46%;}
+.v6h-drop-vdot .lab{font-size:8px;letter-spacing:.6px;color:var(--muted);font-weight:700;text-transform:uppercase;}
+.v6h-drop-vdot .val{font-family:'Unbounded';font-weight:800;font-size:19px;margin-top:3px;}
+.v6h-drop-vdot .sub{font-size:8px;font-weight:700;margin-top:2px;}
+.v6h-drop-vdot .sub.up{color:var(--ok);} .v6h-drop-vdot .sub.down{color:var(--bad);} .v6h-drop-vdot .sub.flat{color:var(--muted);}
+.v6h-drop-trend{width:92px;height:42px;right:2px;top:92px;border-radius:58% 42% 46% 54% / 52% 58% 42% 48%;
+  background:rgba(var(--e-rgb),.10);border:1px solid rgba(var(--e-rgb),.25);flex-direction:row;gap:5px;
+  font-family:'JetBrains Mono';font-size:10px;font-weight:700;color:var(--e2);}
+.v6h-week{display:flex;justify-content:space-between;margin-top:20px;padding:0 2px;position:relative;z-index:1;}
+.v6h-wd{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.v6h-wbar{width:5px;height:30px;border-radius:3px;background:rgba(255,255,255,.08);position:relative;overflow:hidden;}
+.v6h-wbar b{position:absolute;bottom:0;left:0;width:100%;border-radius:3px;display:block;background:rgba(255,255,255,.3);}
+.v6h-wd.today .v6h-wbar{box-shadow:0 0 0 1px var(--hair) inset;}
+.v6h-wd.today .v6h-wbar b{background:var(--e);}
+.v6h-wlab{font-family:'JetBrains Mono';font-size:9px;color:var(--dim);font-weight:600;}
+.v6h-wd.today .v6h-wlab{color:var(--snow);}
+
 .next-lab{font-size:10px;letter-spacing:.5px;color:var(--muted);font-weight:700;margin-bottom:2px;}
 .next-card{display:flex;align-items:center;gap:12px;cursor:pointer;}
 .next-body{flex:1;}
