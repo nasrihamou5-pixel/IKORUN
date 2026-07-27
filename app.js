@@ -3113,7 +3113,7 @@ function nav(s){
   $('#tbSub').textContent= s==='home'?greet():subs[s];
   const av=$('#tbAvatar'); if(av){ if(P.photo){ av.style.background='url('+P.photo+') center/cover'; av.textContent=''; } else { av.style.background='var(--ed)'; av.style.color='var(--e)'; av.style.fontWeight='800'; av.textContent=P.name?P.name[0].toUpperCase():'?'; } }
   $('#scroll').scrollTop=0;
-  if(s==='home') renderHomeAny();
+  if(s==='home') renderHome();
   if(s==='sport'){ renderSport(); setTimeout(checkMissedSessions,300); }
   if(s==='stats') renderStats();
   if(s==='outils') renderOutils();
@@ -3671,16 +3671,10 @@ function pfAccentPickerHTML(){
     '<div class="accent-dot'+(cur===a.key?' on':'')+'" data-a="'+a.key+'" title="'+t(a.name)+'" onclick="event.stopPropagation();setAccent(\''+a.key+'\')"></div>'
   ).join('')+'</div>';
 }
-function toggleHomeV6(){
-  P.uiHomeV6=!P.uiHomeV6; saveAll();
-  if($('#s-profil')&&$('#s-profil').classList.contains('on')) renderProfile();
-  if($('#s-home')&&$('#s-home').classList.contains('on')) renderHomeAny();
-  toast(P.uiHomeV6?'✨ Nouveau design activé':'Design classique restauré');
-}
 function toggleEasyMode(){
   P.easyMode=!P.easyMode; saveAll(); applyTheme();
   if($('#s-profil')&&$('#s-profil').classList.contains('on')) renderProfile();
-  if($('#s-home')&&$('#s-home').classList.contains('on')) renderHomeAny();
+  if($('#s-home')&&$('#s-home').classList.contains('on')) renderHome();
   toast(P.easyMode?t('easyModeOn'):t('easyModeOff'));
 }
 function setMode(m){ P.mode=(m==='light')?'light':'dark'; saveAll(); applyTheme(); if($('#s-profil')&&$('#s-profil').classList.contains('on'))renderProfile(); refreshPfSheet(); }
@@ -5164,9 +5158,6 @@ function homeBadgesRow(){
 }
 
 /* ---------- RENDER HOME ---------- */
-/* Choisit l'accueil classique ou le nouveau design V6 selon la préférence utilisateur.
-   Ne touche jamais à renderHome() elle-même : c'est juste un aiguillage. */
-function renderHomeAny(){ if(P.uiHomeV6) renderHomeV6(); else renderHome(); }
 function renderHome(){
   const xp=xpProgress();
   const kmW=kmThisWeek(), kmTarget=P.kmWeek||40;
@@ -5264,135 +5255,6 @@ function renderHome(){
   '</div>';
 
   $('#s-home').innerHTML=html;
-}
-/* ==========================================================================
-   ACCUEIL — DESIGN V6 (nouveau design, activable depuis Profil > Préférences)
-   N'est appelé que si P.uiHomeV6 est vrai (voir renderHomeAny()).
-   Toutes les données ci-dessous sont réelles (mêmes sources que renderHome()),
-   rien n'est inventé : VDOT, séances, streak, volume, plan... viennent de P/SESS/MSESS/PLAN.
-   ========================================================================== */
-function renderHomeV6(){
-  if(P.easyMode){ const ps0=planSessionToday(); $('#s-home').innerHTML=renderHomeSimple(ps0,runCountWeek()+muscuCountWeek(),(P.days&&P.days.length)||4,getUserVDOT(),formScore(),(P.name||'').split(' ')[0]||''); return; }
-
-  const kmW=kmThisWeek(), kmTarget=P.kmWeek||40;
-  const vdot=getUserVDOT();
-  const ps=planSessionToday();
-  const first=(P.name||'').split(' ')[0]||t('you');
-  const streak=streakDays();
-
-  // Sous-titre : semaine du plan en cours si dispo, sinon rien
-  let weekSub='';
-  if(PLAN && PLAN.sessions && PLAN.sessions.length){
-    const tk=todayKey();
-    const todaySess=PLAN.sessions.find(s=>s.date===tk);
-    const upcoming=PLAN.sessions.find(s=>s.date>=tk);
-    const curWeekNum=(todaySess||upcoming||PLAN.sessions[PLAN.sessions.length-1]).week;
-    weekSub=tp('weekOf',curWeekNum,PLAN.weeks);
-  }
-
-  // Anneau : progression du volume hebdo (km réalisés / objectif)
-  const pct=kmTarget?Math.max(0,Math.min(100,Math.round(kmW/kmTarget*100))):0;
-  const R=80, C=+(2*Math.PI*R).toFixed(1);
-  const dashoff=+(C*(1-pct/100)).toFixed(1);
-  const threshPace=vdot?spkToStr(paceFromPct(vdot,.88))+'/km':'—';
-
-  // Drop "tendance" : variation du volume vs semaine dernière (même calcul que homeLoadQuip)
-  const prevKm=lastWeekKm();
-  let trendHTML='';
-  if(prevKm){
-    const delta=Math.round((kmW-prevKm)/prevKm*100);
-    const up=delta>=0;
-    trendHTML='<div class="ikv6-drop ikv6-drop-trend">'+(up?'↑':'↓')+' '+Math.abs(delta)+'% vs sem. dern.</div>';
-  }
-
-  let html='';
-  html+='<div class="ikv6-livingbg"><span class="ikv6-lb ikv6-lb1"></span><span class="ikv6-lb ikv6-lb2"></span></div>';
-  html+='<div class="ikv6-grain"></div>';
-
-  // HEADER
-  html+='<div class="ikv6-hdr"><div class="ikv6-hdr-logo"><span class="dot"></span>IKORUN</div>'+
-    '<div class="ikv6-hdr-icon" onclick="openFriends()">'+ICN('users',17)+'</div></div>';
-
-  // GREETING
-  html+='<div class="ikv6-greet"><h1>'+t('greet')+' '+first+'</h1>'+(weekSub?'<p>'+weekSub+'</p>':'')+'</div>';
-
-  // GRAVITY ZONE (anneau + drops)
-  html+='<div class="ikv6-gravity">'+
-    '<div class="ikv6-ring-wrap"><svg viewBox="0 0 184 184">'+
-      '<defs><linearGradient id="ikv6RingGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FF8657"/><stop offset="100%" stop-color="#FF5A2E"/></linearGradient></defs>'+
-      '<circle class="ikv6-ring-track" cx="92" cy="92" r="'+R+'" fill="none" stroke-width="9"/>'+
-      '<circle class="ikv6-ring-val" cx="92" cy="92" r="'+R+'" fill="none" stroke-width="9" stroke="url(#ikv6RingGrad)" stroke-dasharray="'+C+'" stroke-dashoffset="'+dashoff+'"/>'+
-    '</svg>'+
-    '<div class="ikv6-ring-center"><div class="lab">'+t('thresholdPace')+'</div><div class="n">'+threshPace.replace('/km','')+'</div><div class="u">/km</div></div>'+
-    (streak>=2?'<div class="ikv6-ring-badge">'+ICN('fire',12,'#FF8657')+' '+streak+' '+t('daysLab')+(streak>=bestStreak()?' — record':'')+'</div>':'')+
-    '</div>'+
-    '<div class="ikv6-drop ikv6-drop-vdot"><div class="lab">VDOT</div><div class="val">'+(vdot||'—')+'</div><div class="sub">'+t('currentVdot')+'</div></div>'+
-    trendHTML+
-  '</div>';
-
-  // SEMAINE EN BARRES
-  { const ws=weekStart(); const dowLabels=t('dowShort').split(',');
-    const week=[], weekEffort=[]; const tk=todayKey();
-    for(let i=0;i<7;i++){ const d=new Date(ws); d.setDate(ws.getDate()+i); const k=dateKey(d);
-      week.push([...SESS,...MSESS].filter(s=>s.date===k).reduce((a,s)=>a+(s.km||0),0));
-      weekEffort.push(SESS.some(s=>s.date===k && /VMA|Seuil|Tempo|Intervalle/i.test(s.type||'')));
-    }
-    const maxDay=Math.max(1,...week);
-    html+='<div class="ikv6-hero-week">';
-    for(let i=0;i<7;i++){ const d=new Date(ws); d.setDate(ws.getDate()+i); const isToday=dateKey(d)===tk;
-      const h=week[i]>0?Math.max(8,Math.round(week[i]/maxDay*100)):0;
-      const cls=week[i]>0?(weekEffort[i]?'ikv6-effort':'ikv6-done'):'';
-      html+='<div class="ikv6-hw-day'+(isToday?' ikv6-today':'')+'"><div class="ikv6-hw-bar"><b class="'+cls+'" style="height:'+h+'%"></b></div><span class="ikv6-hw-lab">'+dowLabels[i]+'</span></div>';
-    }
-    html+='</div>';
-  }
-
-  html+='<div class="ikv6-wave"><svg viewBox="0 0 400 32" preserveAspectRatio="none"><path d="M0,18 C60,2 120,32 200,16 C280,2 340,28 400,12 L400,32 L0,32 Z" fill="var(--v6-L1)"/></svg></div>';
-
-  html+='<div class="ikv6-data-zone">';
-
-  // 2 STATS
-  { const ws=weekStart(); const weekAll=[...SESS,...MSESS].filter(s=>new Date(s.date)>=ws);
-    const totalMin=weekAll.reduce((a,s)=>a+(+s.duration||0),0);
-    html+='<div class="ikv6-row2">'+
-      '<div class="ikv6-stat"><div class="ic">'+ICN('star',13)+'</div><div class="v">'+kmW.toFixed(1).replace('.',',')+'<span style="font-size:11px"> km</span></div><div class="l">'+t('thisWeek')+'</div></div>'+
-      '<div class="ikv6-stat"><div class="ic" style="color:var(--v6-e2)">'+ICN('stopwatch',13)+'</div><div class="v">'+fmtHM(totalMin)+'</div><div class="l">'+t('totalTime')+'</div></div>'+
-    '</div>';
-  }
-
-  // SÉANCE SUIVANTE
-  html+='<div class="ikv6-sec-lab">'+t('nextSession')+'</div>';
-  if(ps && ps.type!=='Repos'){
-    html+='<div class="ikv6-next-row" onclick="'+(ps._source==='perso'?"curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')":'openRunSheet('+ps.id+')')+'">'+
-      '<div class="ikv6-next-ic">'+ICN('bolt',18)+'</div>'+
-      '<div class="ikv6-next-body"><div class="ikv6-next-title">'+planSessTitle(ps)+'</div>'+
-      '<div class="ikv6-next-meta">'+(ps.km?ps.km+' km · '+ps.pace+'/km'+(ps.duration?' · '+ps.duration+' min':''):'')+'</div></div>'+
-      '<div class="ikv6-next-arrow">'+ICN('chevronR',17)+'</div></div>';
-  } else {
-    html+='<div class="ikv6-next-row" onclick="nav(\'sport\')">'+
-      '<div class="ikv6-next-ic">'+ICN('moon',18)+'</div>'+
-      '<div class="ikv6-next-body"><div class="ikv6-next-title">'+t('restDay')+'</div><div class="ikv6-next-meta">'+t('noSessionToday')+'</div></div></div>';
-  }
-
-  // PLAN DE LA SEMAINE (issu du plan IKORUN en cours, si existant)
-  if(PLAN && PLAN.sessions && PLAN.sessions.length){
-    const ws=weekStart(), wsKey=dateKey(ws), we=new Date(ws); we.setDate(we.getDate()+6); const weKey=dateKey(we);
-    const weekSessions=PLAN.sessions.filter(s=>s.date>=wsKey&&s.date<=weKey).sort((a,b)=>a.date<b.date?-1:1);
-    if(weekSessions.length){
-      html+='<div class="ikv6-sec-lab">'+t('planOfDay')+'</div>';
-      weekSessions.forEach(s=>{
-        const dayName=new Date(s.date+'T00:00:00').toLocaleDateString(localeCode(),{weekday:'long'});
-        const dayNameCap=dayName.charAt(0).toUpperCase()+dayName.slice(1);
-        const icon=s.done?'✓':(s.missed?'✕':'→');
-        html+='<div class="ikv6-plan-row'+(s.done?' ikv6-done':'')+'"><div class="ikv6-plan-ic">'+icon+'</div>'+
-          '<div class="ikv6-plan-body"><div class="ikv6-plan-title">'+planSessTitle(s)+'</div><div class="ikv6-plan-sub">'+dayNameCap+(s.type&&s.type!=='Repos'?' · '+s.type:'')+'</div></div></div>';
-      });
-    }
-  }
-
-  html+='</div>'; // .ikv6-data-zone
-
-  $('#s-home').innerHTML='<div class="ikv6-home">'+html+'</div>';
 }
 function renderHomeSimple(ps,sessW,sessTarget,vdot,form,first){
   let h='';
@@ -7907,7 +7769,6 @@ function renderProfile(){
     '<div class="grp-row no-chev"><div class="lr-icon">🖌️</div><div class="lr-title">'+t('appColor')+'</div>'+pfAccentPickerHTML()+'</div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">🧓</div><div><div class="lr-title">'+t('simplifiedMode')+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px;max-width:200px">'+t('simplifiedModeDesc')+'</div></div><div class="toggle'+(P.easyMode?' on':'')+'" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
     '<div class="grp-row" onclick="openV6Preview()"><div class="lr-icon">✨</div><div><div class="lr-title">Aperçu — Nouveau design</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Maquette en test, le thème actuel reste inchangé</div></div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row no-chev"><div class="lr-icon">🆕</div><div><div class="lr-title">Utiliser ce design (Accueil)</div><div style="font-size:11px;color:var(--muted);margin-top:2px;max-width:200px">Applique le nouveau design uniquement sur l\'accueil pour l\'instant</div></div><div class="toggle'+(P.uiHomeV6?' on':'')+'" onclick="event.stopPropagation();toggleHomeV6()"></div></div>'+
   '</div>';
   h+='<div class="grp-lab stag" style="animation-delay:.15s">'+t('support')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.16s">'+
@@ -8247,7 +8108,7 @@ function syncOnline(silent){
   PREFS.lastOnline=Date.now();
   PREFS.lastSync=Date.now();
   // Recalcule/rafraîchit les données dépendantes de la date (prières, calendrier, J-X…)
-  try{ if($('#s-home')&&$('#s-home').classList.contains('on')) renderHomeAny(); }catch(e){}
+  try{ if($('#s-home')&&$('#s-home').classList.contains('on')) renderHome(); }catch(e){}
   try{ if($('#s-outils')&&$('#s-outils').classList.contains('on')&&outilsTab==='priere') renderPriere(); }catch(e){}
   DB.save('prefs',PREFS);
   if(!silent) toast('🔄 '+t('dataSynced'));
