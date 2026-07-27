@@ -800,6 +800,11 @@ const I18N={
     sessionsCount:'{0} séances · {1} terminées',followedTag:'✅ Suivi',duplicate:'Dupliquer',share:'Partager',
     planNamePrompt:'Nom du plan :',myPersoPlanDefault:'Mon plan perso',
     you:'toi',dowShort:'L,M,M,J,V,S,D',greet:'Salut',
+    weekPhaseLabel:'Semaine {0} · {1}',thresholdPaceShort:'Allure seuil',vsLastWeekShort:'vs sem. dernière',
+    nextSessionMeta:'Prochaine séance · {0}',newWeekTag:'Nouvelle semaine',thisWeekCap:'Cette semaine',
+    totalTime:'Temps total',remainingCap:'Restant',sessionsRemainingVal:'{0} séances',objectiveReached:'Objectif atteint',
+    untilEndWeek:'d\u2019ici dimanche',sessionsDoneShort:'{0} séances',planOfWeek:'Plan de la semaine',
+    streakDaysShort:'{0} jours de série',seePlan:'Voir le plan',
     // --- Outils ---
     searchTool:'Rechercher un outil...',favorites:'Favoris',mainTools:'Outils principaux',otherTools:'Autres outils',
     resultsCount:'{0} résultat(s)',editFavsTitle:'Modifier les favoris',tapStarHint:'Touche une étoile pour ajouter/retirer un outil de tes favoris.',
@@ -998,7 +1003,7 @@ const I18N={
     stopAlarm:'Arrêter l\u2019alarme',remindIn5Min:'Rappel dans 5 min',reminderCap:'Rappel',fiveMinElapsed:'5 minutes écoulées',
     sessionInProgress:'Séance en cours',welcomeToast:'Bienvenue 👋',
     resumeSessionConfirm:'Une séance « {0} » était en cours ({1} min). Reprendre ?',sessionColonName:'Séance : {0}',
-    accentBlue:'Bleu',accentGreen:'Vert militaire',accentBrown:'Marron boisé',accentYellow:'Jaune',accentCarbon:'Fibre de carbone',
+    accentBlue:'Bleu',accentRed:'Rouge',accentGreen:'Vert militaire',accentBrown:'Marron boisé',accentYellow:'Jaune',accentCarbon:'Fibre de carbone',
     colorApplied:'Couleur appliquée ✓',easyModeOn:'Mode simplifié activé ✓',easyModeOff:'Mode simplifié désactivé',
     profileIncompleteAddTime:'Profil incomplet : ajoute un chrono dans tes records',chooseCompDate:'Choisis une date de compétition',
     planGenerated:'Plan « {0} » généré : {1} sem, {2} séances',raceGeneric:'course',
@@ -1247,6 +1252,11 @@ const I18N={
     sessionsCount:'{0} sessions · {1} done',followedTag:'✅ Following',duplicate:'Duplicate',share:'Share',
     planNamePrompt:'Plan name:',myPersoPlanDefault:'My custom plan',
     you:'there',dowShort:'M,T,W,T,F,S,S',greet:'Hi',
+    weekPhaseLabel:'Week {0} · {1}',thresholdPaceShort:'Threshold pace',vsLastWeekShort:'vs last week',
+    nextSessionMeta:'Next session · {0}',newWeekTag:'New week',thisWeekCap:'This week',
+    totalTime:'Total time',remainingCap:'Remaining',sessionsRemainingVal:'{0} sessions',objectiveReached:'Goal reached',
+    untilEndWeek:'by Sunday',sessionsDoneShort:'{0} sessions',planOfWeek:'Week plan',
+    streakDaysShort:'{0}-day streak',seePlan:'View plan',
     // --- Tools ---
     searchTool:'Search for a tool...',favorites:'Favorites',mainTools:'Main tools',otherTools:'Other tools',
     resultsCount:'{0} result(s)',editFavsTitle:'Edit favorites',tapStarHint:'Tap a star to add/remove a tool from your favorites.',
@@ -1445,7 +1455,7 @@ const I18N={
     stopAlarm:'Stop alarm',remindIn5Min:'Remind in 5 min',reminderCap:'Reminder',fiveMinElapsed:'5 minutes elapsed',
     sessionInProgress:'Session in progress',welcomeToast:'Welcome 👋',
     resumeSessionConfirm:'A "{0}" session was in progress ({1} min). Resume?',sessionColonName:'Session: {0}',
-    accentBlue:'Blue',accentGreen:'Military green',accentBrown:'Woodland brown',accentYellow:'Yellow',accentCarbon:'Carbon fiber',
+    accentBlue:'Blue',accentRed:'Red',accentGreen:'Military green',accentBrown:'Woodland brown',accentYellow:'Yellow',accentCarbon:'Carbon fiber',
     colorApplied:'Color applied ✓',easyModeOn:'Simplified mode enabled ✓',easyModeOff:'Simplified mode disabled',
     profileIncompleteAddTime:'Incomplete profile: add a time in your records',chooseCompDate:'Choose a race date',
     planGenerated:'"{0}" plan generated: {1} wk, {2} sessions',raceGeneric:'race',
@@ -1694,6 +1704,11 @@ const I18N={
     sessionsCount:'{0} حصص · {1} منجزة',followedTag:'✅ متابَعة',duplicate:'نسخ',share:'مشاركة',
     planNamePrompt:'اسم الخطة:',myPersoPlanDefault:'خطتي الشخصية',
     you:'أنت',dowShort:'ن,ث,ر,خ,ج,س,ح',greet:'مرحبا',
+    weekPhaseLabel:'الأسبوع {0} · {1}',thresholdPaceShort:'وتيرة العتبة',vsLastWeekShort:'مقابل الأسبوع الماضي',
+    nextSessionMeta:'الحصة القادمة · {0}',newWeekTag:'أسبوع جديد',thisWeekCap:'هذا الأسبوع',
+    totalTime:'الوقت الإجمالي',remainingCap:'المتبقي',sessionsRemainingVal:'{0} حصص',objectiveReached:'تم بلوغ الهدف',
+    untilEndWeek:'حتى الأحد',sessionsDoneShort:'{0} حصص',planOfWeek:'خطة الأسبوع',
+    streakDaysShort:'سلسلة {0} أيام',seePlan:'عرض الخطة',
     // --- الأدوات ---
     searchTool:'ابحث عن أداة...',favorites:'المفضلة',mainTools:'الأدوات الرئيسية',otherTools:'أدوات أخرى',
     resultsCount:'{0} نتيجة',editFavsTitle:'تعديل المفضلة',tapStarHint:'اضغط على النجمة لإضافة/إزالة أداة من مفضلتك.',
@@ -1892,7 +1907,7 @@ const I18N={
     stopAlarm:'إيقاف المنبّه',remindIn5Min:'تذكير بعد 5 دقائق',reminderCap:'تذكير',fiveMinElapsed:'مرت 5 دقائق',
     sessionInProgress:'الحصة جارية',welcomeToast:'مرحبًا 👋',
     resumeSessionConfirm:'كانت حصة « {0} » جارية ({1} د). المتابعة؟',sessionColonName:'حصة: {0}',
-    accentBlue:'أزرق',accentGreen:'أخضر عسكري',accentBrown:'بني خشبي',accentYellow:'أصفر',accentCarbon:'ألياف الكربون',
+    accentBlue:'أزرق',accentRed:'أحمر',accentGreen:'أخضر عسكري',accentBrown:'بني خشبي',accentYellow:'أصفر',accentCarbon:'ألياف الكربون',
     colorApplied:'تم تطبيق اللون ✓',easyModeOn:'تم تفعيل الوضع المبسّط ✓',easyModeOff:'تم إلغاء الوضع المبسّط',
     profileIncompleteAddTime:'الملف غير مكتمل: أضف زمنًا في أرقامك القياسية',chooseCompDate:'اختر تاريخ المنافسة',
     planGenerated:'تم إنشاء خطة « {0} »: {1} أسبوع، {2} حصة',raceGeneric:'سباق',
@@ -3657,7 +3672,7 @@ function applyTheme(){
   const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.content=(P.easyMode?(mode==='light'?'#FFFFFF':'#000000'):(mode==='light'?'#F2F4F8':'#0A0D12'));
 }
 /* Couleur d'accent de l'app : bleu (défaut) / vert militaire chromé / marron boisé chromé */
-const ACCENTS=[{key:'blue',name:'accentBlue'},{key:'green',name:'accentGreen'},{key:'brown',name:'accentBrown'},{key:'yellow',name:'accentYellow'},{key:'carbon',name:'accentCarbon'}];
+const ACCENTS=[{key:'blue',name:'accentBlue'},{key:'red',name:'accentRed'},{key:'green',name:'accentGreen'},{key:'brown',name:'accentBrown'},{key:'yellow',name:'accentYellow'},{key:'carbon',name:'accentCarbon'}];
 function setAccent(c){
   P.theme=c; saveAll(); applyTheme();
   if($('#s-profil')&&$('#s-profil').classList.contains('on')) renderProfile();
@@ -5158,102 +5173,175 @@ function homeBadgesRow(){
 }
 
 /* ---------- RENDER HOME ---------- */
+/* ---------- RENDER HOME (Accueil V7) ---------- */
+// Trouve la prochaine vraie séance (non-repos) strictement après aujourd'hui dans le plan IA.
+function homeNextUpcoming(){
+  if(!PLAN||!PLAN.sessions) return null;
+  const tk=todayKey();
+  const nxt=PLAN.sessions.find(s=>s.date>tk && s.km>0 && s.type!=='Repos');
+  if(!nxt) return null;
+  const d=new Date(nxt.date+'T00:00:00'), today=new Date(); today.setHours(0,0,0,0);
+  const days=Math.round((d-today)/86400000);
+  const label=days===1?t('tomorrow'):fmtDate(nxt.date);
+  return {session:nxt,label};
+}
+// Allure seuil approx. (~88% VMA) à partir du VDOT courant, pour la tuile hero-drop.
+function homeThresholdPace(vdot){
+  if(!vdot) return '—';
+  return spkToStr(paceFromPct(vdot,0.88))+'/km';
+}
+// 7 barres de charge quotidienne de la semaine (bleu=facile, orange=effort intense), jour courant repéré.
+function homeWeekBarsHTML(){
+  const ws=weekStart(), dowLabels=t('dowShort').split(','), tk=todayKey();
+  const EFFORT_TYPES=['Tempo','Seuil','VMA','Intervalle'];
+  const week=[];
+  for(let i=0;i<7;i++){
+    const d=new Date(ws); d.setDate(ws.getDate()+i); const k=dateKey(d);
+    const daySess=[...SESS,...MSESS].filter(s=>s.date===k);
+    week.push({k,km:daySess.reduce((a,s)=>a+(s.km||0),0),effort:daySess.some(s=>EFFORT_TYPES.includes(s.type))});
+  }
+  const maxDay=Math.max(1,...week.map(w=>w.km));
+  let bars='';
+  week.forEach((w,i)=>{
+    const isToday=w.k===tk;
+    const inner=w.km>0?'<b class="'+(w.effort?'effort':'done')+'" style="height:'+Math.max(10,Math.round(w.km/maxDay*100))+'%"></b>':'';
+    bars+='<div class="hv7-hw-day'+(isToday?' today':'')+'"><div class="hv7-hw-bar">'+inner+'</div><span class="hv7-hw-lab">'+dowLabels[i]+'</span></div>';
+  });
+  return '<div class="hv7-hero-week">'+bars+'</div>';
+}
+// Lignes "Plan de la semaine" — uniquement les vraies séances (pas les jours de repos) de la semaine en cours du plan IA.
+function homeWeekPlanRows(){
+  if(!PLAN||!PLAN.sessions||!PLAN.sessions.length) return null;
+  const tk=todayKey();
+  const todaySess=PLAN.sessions.find(s=>s.date===tk);
+  const upcoming=PLAN.sessions.find(s=>s.date>=tk);
+  const curWeekNum=(todaySess||upcoming||PLAN.sessions[PLAN.sessions.length-1]).week;
+  const weekSess=PLAN.sessions.filter(s=>s.week===curWeekNum && s.km>0 && s.type!=='Repos').sort((a,b)=>a.date<b.date?-1:1);
+  if(!weekSess.length) return null;
+  let h='';
+  weekSess.forEach(s=>{
+    const dayName=new Date(s.date+'T00:00:00').toLocaleDateString(localeCode(),{weekday:'long'});
+    const dayCap=dayName.charAt(0).toUpperCase()+dayName.slice(1);
+    let ic='→', cls='';
+    if(s.done){ ic='✓'; cls='done'; }
+    else if(s.missed){ ic='✕'; cls='missed'; }
+    else if(s.date===tk) cls='today';
+    h+='<div class="hv7-plan-row '+cls+'" onclick="openRunSheet('+s.id+')"><div class="hv7-plan-ic">'+ic+'</div>'+
+      '<div class="hv7-plan-body"><div class="hv7-plan-title">'+planSessTitle(s)+'</div><div class="hv7-plan-sub">'+dayCap+' · '+(planSessLabel(s)||'')+'</div></div></div>';
+  });
+  return h;
+}
 function renderHome(){
-  const xp=xpProgress();
-  const kmW=kmThisWeek(), kmTarget=P.kmWeek||40;
+  const kmW=kmThisWeek();
   const sessW=runCountWeek()+muscuCountWeek(), sessTarget=(P.days&&P.days.length)||4;
   const form=formScore();
   const vdot=getUserVDOT();
-  const tonnage=Math.round(totalTonnage());
   const ps=planSessionToday();
   const first=(P.name||'').split(' ')[0]||'';
 
   if(P.easyMode){ $('#s-home').innerHTML=renderHomeSimple(ps,sessW,sessTarget,vdot,form,first); return; }
 
-  let html='';
+  let html='<div class="hv7-bg"><span class="hv7-lb1"></span><span class="hv7-lb2"></span><span class="hv7-lb3"></span></div>';
+  html+='<div class="hv7-content">';
 
-  // HEADER — icône amis (haut gauche) + logo IKORUN
-  html+='<div class="ik-header"><div class="ik-header-left">'+
-    '<div class="ik-people" onclick="openFriends()">'+ICN('users',18)+'</div>'+
-    '<div class="ik-logo">'+
-    '<img src="'+LOGO_MARK_URI+'" alt="IKORUN">'+
-    '<span>IKORUN</span></div></div></div>';
+  // HEADER — logo IKORUN (gauche) + icône amis (droite)
+  html+='<div class="hv7-header"><div class="hv7-header-left"><div class="hv7-logo">'+
+    '<img src="'+LOGO_MARK_URI+'" alt="IKORUN"><span>IKORUN</span></div></div>'+
+    '<div class="hv7-people" onclick="openFriends()">'+ICN('users',18)+'</div></div>';
 
-  // STREAK (série de jours consécutifs)
-  html+=homeStreakBadge();
+  // SALUTATION — semaine/phase du plan si actif, sinon quip objectif
+  const wdRaw=new Date().toLocaleDateString(localeCode(),{weekday:'long'});
+  const wdCap=wdRaw.charAt(0).toUpperCase()+wdRaw.slice(1);
+  let sub;
+  if(PLAN && PLAN.sessions && PLAN.sessions.length){
+    const tk=todayKey();
+    const todaySess=PLAN.sessions.find(s=>s.date===tk);
+    const upcoming=PLAN.sessions.find(s=>s.date>=tk);
+    const curSess=todaySess||upcoming||PLAN.sessions[PLAN.sessions.length-1];
+    sub=tp('weekPhaseLabel',curSess.week,phaseName(curSess.phaseKey));
+  } else {
+    sub=P.objTime?tp('quipTime',P.objTime):(P.goal?tp('quipGoal',P.goal):t('quipDefault'));
+  }
+  html+='<div class="hv7-greet"><h1>'+t('greet')+' '+(first||t('you'))+'</h1><p>'+sub+'</p></div>';
 
-  // SALUTATION — quip dynamique sur l'objectif si défini
-  const quip=P.objTime?tp('quipTime',P.objTime):(P.goal?tp('quipGoal',P.goal):t('quipDefault'));
-  html+='<div class="ik-greet"><h1>'+t('greet')+' '+(first||t('you'))+'.<br>'+quip+'</h1></div>';
-
-  // HERO FUSIONNÉ — charge hebdo (gros chiffre) + quip + niveau/XP + forme + sparkline
-  { const xpv=xp; const ws=weekStart(); const dowLabels=t('dowShort').split(',');
-    const week=[]; for(let i=0;i<7;i++){ const d=new Date(ws); d.setDate(ws.getDate()+i); const k=dateKey(d);
-      week.push([...SESS,...MSESS].filter(s=>s.date===k).reduce((a,s)=>a+(s.km||0),0)); }
-    const maxDay=Math.max(1,...week);
-    html+='<div class="card ik-hero stag" style="animation-delay:.02s" onclick="nav(\'stats\')">'+
-      '<div class="ik-hero-lab">'+t('weekLoadTitle')+'</div>'+
-      '<div class="ik-hero-big"><div class="n">'+kmW.toFixed(2).replace('.',',')+'</div><div class="u">km</div></div>'+
-      '<div class="hero-quip">'+homeLoadQuip(kmW)+'</div>'+
-      '<div class="ik-hero-mid">'+
-        '<div class="ik-hero-ring-wrap">'+donutSVG([{v:xpv.pct,color:'var(--e)'},{v:100-xpv.pct,color:'rgba(255,255,255,.08)'}],52,6,'<div class="lvl-lab">'+t('lvlShort')+'</div><div class="lvl-n">'+XP.level+'</div>')+'</div>'+
-        '<div class="ik-hero-mid-txt"><div class="v">'+tp('levelXp',XP.level,XP.total)+'</div><div class="l">'+tp('xpBeforeLevel',Math.max(0,xpv.span-xpv.inLvl),XP.level+1)+'</div></div>'+
+  // HERO-DROP — séance du jour (ou repos) + prochaine séance + VDOT/allure seuil/charge
+  {
+    const streak=streakDays();
+    const badgeHtml=streak>=2?('<div class="hv7-hero-drop-badge">🔥 '+tp('streakDaysShort',streak)+'</div>'):'';
+    let heroTitle, heroMeta, heroClick;
+    if(ps && ps.type!=='Repos'){
+      heroTitle=planSessTitle(ps);
+      heroMeta=(ps.km?ps.km+' km · '+ps.pace+'/km'+(ps.duration?' · '+ps.duration+' min':''):t('today'));
+      heroClick=(ps._source==='perso'?"curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')":'openRunSheet('+ps.id+')');
+    } else {
+      heroTitle=t('restDay');
+      const nxt=homeNextUpcoming();
+      heroMeta=nxt?tp('nextSessionMeta',nxt.label):t('noUpcomingSession');
+      heroClick="nav('sport')";
+    }
+    const prevKm=lastWeekKm();
+    const loadDelta=prevKm?Math.round((kmW-prevKm)/prevKm*100):null;
+    html+='<div class="hv7-hero-drop" onclick="'+heroClick+'">'+
+      '<div class="hv7-hero-drop-top"><div class="hv7-hero-drop-chip">'+t('today')+' · '+wdCap+'</div>'+badgeHtml+'</div>'+
+      '<div class="hv7-hero-drop-title">'+heroTitle+'</div>'+
+      '<div class="hv7-hero-drop-meta">'+heroMeta+'</div>'+
+      '<div class="hv7-hero-drop-row">'+
+        '<div class="hv7-hero-drop-stat"><b>'+(vdot||'—')+'</b><span>VDOT</span></div>'+
+        '<div class="hv7-hero-drop-stat"><b>'+homeThresholdPace(vdot)+'</b><span>'+t('thresholdPaceShort')+'</span></div>'+
+        '<div class="hv7-hero-drop-stat"><b>'+(loadDelta!==null?((loadDelta>0?'+':'')+loadDelta+'%'):'—')+'</b><span>'+t('vsLastWeekShort')+'</span></div>'+
       '</div>'+
-      '<div class="ik-hero-divider"></div>'+
-      '<div class="ik-hero-row3">'+
-        '<div><div class="hstat-v">'+sessW+'<span>/'+sessTarget+'</span></div><div class="hstat-l">'+t('sessionsCap')+'</div></div>'+
-        donutSVG([{v:form,color:'var(--ok)'},{v:100-form,color:'rgba(255,255,255,.08)'}],50,6,'<div class="week-ring-v'+(form>=100?' v-sm':'')+'">'+form+'%</div><div class="week-ring-l">'+t('formCap')+'</div>')+
-      '</div>'+
-      '<div class="week-spark-wrap"><div class="spark" style="height:36px">'+week.map(v=>'<b style="height:'+Math.max(8,Math.round(v/maxDay*100))+'%"></b>').join('')+'</div>'+
-      '<div class="week-spark-days">'+dowLabels.map(l=>'<span>'+l+'</span>').join('')+'</div></div>'+
     '</div>';
   }
 
-  // STAT QUATRO — séances / VDOT / tonnage / forme
-  html+='<div class="stat-quatro">'+
-    '<div class="card stat-card" onclick="nav(\'stats\')"><div class="stat-ic">'+ICN('run',14)+'</div><div class="stat-v">'+sessW+'/'+sessTarget+'</div><div class="stat-l">'+t('sessionsCap')+'</div></div>'+
-    '<div class="card stat-card" onclick="nav(\'outils\');openTool(\'vdot\')"><div class="stat-ic">'+ICN('lung',14)+'</div><div class="stat-v">'+(vdot||'—')+'</div><div class="stat-l">VDOT</div></div>'+
-    '<div class="card stat-card" onclick="nav(\'sport\');sportTab=\'muscu\'"><div class="stat-ic">'+ICN('chart',14)+'</div><div class="stat-v">'+tonnage.toLocaleString(localeCode())+'</div><div class="stat-l">'+t('tonnageKg')+'</div></div>'+
-    '<div class="card stat-card" onclick="nav(\'stats\')"><div class="stat-ic">'+ICN('heart',14)+'</div><div class="stat-v">'+form+'%</div><div class="stat-l">'+t('formCap')+'</div></div>'+
-  '</div>';
+  // SEMAINE COMPACTE — 7 barres (bleu=facile, orange=effort)
+  html+=homeWeekBarsHTML();
 
-  // CARTE PROCHAINE SÉANCE
-  html+='<div class="next-lab">'+t('nextSession')+'</div>';
+  // 3 TUILES — charge, temps total, séances restantes
+  {
+    const prevKm=lastWeekKm();
+    const deltaTxt=prevKm?((kmW>=prevKm?'↑ ':'↓ ')+Math.abs(Math.round((kmW-prevKm)/prevKm*100))+'%'):t('newWeekTag');
+    const ws=weekStart();
+    const totalMin=sessThisWeek().reduce((a,s)=>a+(s.duration||0),0)+MSESS.filter(s=>new Date(s.date)>=ws).reduce((a,s)=>a+(s.duration||0),0);
+    const remaining=Math.max(0,sessTarget-sessW);
+    html+='<div class="hv7-krow3">'+
+      '<div class="hv7-ktile"><div class="hv7-ktile-lab">'+t('thisWeekCap')+'</div><div class="hv7-ktile-val">'+kmW.toFixed(1).replace('.',',')+' km</div>'+
+        '<div class="hv7-ktile-sub'+(prevKm?'':' muted')+'">'+deltaTxt+'</div></div>'+
+      '<div class="hv7-ktile"><div class="hv7-ktile-lab">'+t('totalTime')+'</div><div class="hv7-ktile-val">'+fmtHM(totalMin)+'</div>'+
+        '<div class="hv7-ktile-sub muted">'+tp('sessionsDoneShort',sessW)+'</div></div>'+
+      '<div class="hv7-ktile"><div class="hv7-ktile-lab">'+t('remainingCap')+'</div><div class="hv7-ktile-val">'+(remaining>0?tp('sessionsRemainingVal',remaining):t('objectiveReached'))+'</div>'+
+        '<div class="hv7-ktile-sub muted">'+t('untilEndWeek')+'</div></div>'+
+    '</div>';
+  }
+
+  // SÉANCE SUIVANTE
+  html+='<div class="hv7-sec-lab">'+t('nextSession')+'</div>';
   if(ps && ps.type!=='Repos'){
-    html+='<div class="card next-card stag" style="animation-delay:.06s" onclick="'+(ps._source==='perso'?"curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')":'openRunSheet('+ps.id+')')+'">'+
-      '<div class="next-body"><div class="next-title">'+planSessTitle(ps)+'</div>'+
-      '<div class="next-meta">'+(ps.km?ps.km+' km · '+ps.pace+'/km'+(ps.duration?' · '+ps.duration+' min':''):'')+'</div>'+
-      '<div class="next-when">'+t('today')+'</div></div>'+
-      '<div class="next-ic">'+ICN('run',20)+'</div></div>';
+    html+='<div class="hv7-next-row" onclick="'+(ps._source==='perso'?"curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')":'openRunSheet('+ps.id+')')+'">'+
+      '<div class="hv7-next-ic">'+ICN('bolt',20)+'</div>'+
+      '<div class="hv7-next-body"><div class="hv7-next-title">'+planSessTitle(ps)+'</div>'+
+      '<div class="hv7-next-meta">'+(ps.km?ps.km+' km · '+ps.pace+'/km'+(ps.duration?' · '+ps.duration+' min':''):'')+'</div>'+
+      '<div class="hv7-next-when">'+t('today')+'</div></div>'+
+      '<div class="hv7-next-arrow">'+ICN('chevronR',17)+'</div></div>';
   } else {
-    html+='<div class="card next-card stag" style="animation-delay:.06s" onclick="nav(\'sport\')">'+
-      '<div class="next-body"><div class="next-title">'+t('restDay')+'</div>'+
-      '<div class="next-meta">'+t('noSessionToday')+'</div></div>'+
-      '<div class="next-ic">'+ICN('moon',20)+'</div></div>';
+    html+='<div class="hv7-next-row" onclick="nav(\'sport\')">'+
+      '<div class="hv7-next-ic">'+ICN('moon',20)+'</div>'+
+      '<div class="hv7-next-body"><div class="hv7-next-title">'+t('restDay')+'</div>'+
+      '<div class="hv7-next-meta">'+t('noSessionToday')+'</div></div>'+
+      '<div class="hv7-next-arrow">'+ICN('chevronR',17)+'</div></div>';
   }
 
-  // RECORDS PERSO
-  if(P.pb3k||P.pb5k||P.pb10k||P.t3k||P.t5k||P.t10k){
-    html+='<div class="sec-lab">'+t('recordsPerso')+' <span class="link" onclick="openRecords()" style="cursor:pointer">'+t('seeAll')+' ›</span></div>';
-    html+=homePBRow();
+  // PLAN DE LA SEMAINE
+  const weekRows=homeWeekPlanRows();
+  html+='<div class="hv7-sec-lab">'+t('planOfWeek')+(weekRows?' <span class="see" onclick="openFullPlan()">'+t('seePlan')+' ›</span>':'')+'</div>';
+  if(weekRows){
+    html+='<div class="hv7-plan-list">'+weekRows+'</div>';
+  } else {
+    html+='<div class="card"><div class="empty"><div class="em-ic">⚡</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">'+t('planIkorunTitle')+'</div>'+
+      '<div style="font-size:13px;margin-bottom:16px">'+tp('planIkorunDescLong',(vdot||'?'))+'</div>'+
+      '<button class="btn" onclick="nav(\'sport\');openPlanSetup()">'+t('configureGenerate')+'</button></div></div>';
   }
 
-  // OBJECTIF + COUNTDOWN
-  html+=homeGoalCard();
-
-  // PROGRESSION (badges)
-  html+='<div class="sec-lab">'+t('progression')+'</div>';
-  html+=homeBadgesRow();
-
-  // PLAN DU JOUR
-  html+='<div class="plan-lab">'+t('planOfDay')+'</div>';
-  html+='<div class="card plan-list stag" style="animation-delay:.08s">'+
-    '<div class="plan-item" onclick="nav(\'sport\')"><div class="plan-ic">'+ICN('run',18)+'</div>'+
-      '<div class="plan-body"><div class="plan-title">'+t('coachIA')+'</div><div class="plan-sub">'+t('planIkorunDesc')+'</div></div>'+ICN('chevronR',18,'var(--dim)')+'</div>'+
-    '<div class="plan-item" onclick="runSub=\'perso\';sportTab=\'run\';nav(\'sport\')"><div class="plan-ic">'+ICN('edit',18)+'</div>'+
-      '<div class="plan-body"><div class="plan-title">'+t('myPlan')+'</div><div class="plan-sub">'+t('myPlanDesc')+'</div></div>'+ICN('chevronR',18,'var(--dim)')+'</div>'+
-  '</div>';
-
+  html+='</div>';
   $('#s-home').innerHTML=html;
 }
 function renderHomeSimple(ps,sessW,sessTarget,vdot,form,first){
