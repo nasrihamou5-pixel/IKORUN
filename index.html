@@ -358,14 +358,13 @@ html[data-mode="light"] body::after{opacity:.02;}
 .ik-ring-wrap{position:relative;width:168px;height:168px;}
 .ik-ring-wrap svg{width:100%;height:100%;transform:rotate(-90deg);}
 .ik-ring-track{stroke:rgba(255,255,255,.07);}
-.ik-ring-val{stroke:url(#ikRingGrad);stroke-linecap:round;filter:drop-shadow(0 0 10px rgba(var(--e-rgb),.35));
+.ik-ring-val{stroke:url(#ikRingGrad);stroke-linecap:round;filter:drop-shadow(0 0 10px rgba(var(--effort-rgb,255,90,46),.35));
   transition:stroke-dashoffset .6s var(--ease-out);}
 .ik-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-.ik-ring-center .n{font-family:'Unbounded';font-weight:800;font-size:30px;letter-spacing:-1.1px;line-height:1;
-  background:linear-gradient(180deg,#fff,var(--e2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.ik-ring-center .n{font-family:'Unbounded';font-weight:800;font-size:30px;letter-spacing:-1.1px;line-height:1;color:var(--snow);}
 .ik-ring-center .u{font-family:'JetBrains Mono';font-size:10.5px;color:var(--muted);font-weight:600;margin-top:5px;}
 .ik-ring-badge{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);background:var(--s1);border:1px solid var(--glass-border-soft);
-  border-radius:20px;padding:5px 12px;font-family:'JetBrains Mono';font-size:10.5px;font-weight:700;color:#ffb35c;
+  border-radius:20px;padding:5px 12px;font-family:'JetBrains Mono';font-size:10.5px;font-weight:700;color:var(--effort2,#ffb35c);
   display:flex;align-items:center;gap:5px;white-space:nowrap;box-shadow:var(--sh-sm);}
 .ik-ring-badge svg{flex-shrink:0;}
 
@@ -375,15 +374,14 @@ html[data-mode="light"] body::after{opacity:.02;}
 .ik-drop-vdot .lab{font-family:'JetBrains Mono';font-size:8px;letter-spacing:.6px;color:var(--muted);font-weight:700;text-transform:uppercase;}
 .ik-drop-vdot .val{font-family:'Unbounded';font-weight:800;font-size:21px;margin-top:3px;}
 .ik-drop-trend{width:98px;height:50px;right:0;top:106px;border-radius:56% 44% 46% 54% / 50% 56% 44% 50%;
-  background:rgba(var(--e-rgb),.12);border:1px solid rgba(var(--e-rgb),.28);flex-direction:row;gap:5px;
-  font-family:'JetBrains Mono';font-size:11px;font-weight:700;color:var(--e2);}
-.ik-drop-trend.down{background:rgba(255,92,108,.1);border-color:rgba(255,92,108,.28);color:var(--bad);}
+  background:rgba(var(--effort-rgb,255,90,46),.13);border:1px solid rgba(var(--effort-rgb,255,90,46),.3);flex-direction:row;gap:5px;
+  font-family:'JetBrains Mono';font-size:11px;font-weight:700;color:var(--effort2,#FF8657);}
 
 .ik-week-row{display:flex;justify-content:space-between;margin-top:20px;padding:0 4px;position:relative;z-index:1;}
 .ik-week-day{display:flex;flex-direction:column;align-items:center;gap:6px;}
 .ik-week-bar{width:5px;height:28px;border-radius:3px;background:rgba(255,255,255,.08);position:relative;overflow:hidden;}
-.ik-week-bar b{position:absolute;bottom:0;left:0;width:100%;border-radius:3px;display:block;background:var(--e2);}
-.ik-week-bar b.today{background:linear-gradient(180deg,#fff,var(--e2));box-shadow:0 0 10px rgba(var(--e-rgb),.5);}
+.ik-week-bar b{position:absolute;bottom:0;left:0;width:100%;border-radius:3px;display:block;background:rgba(255,255,255,.32);}
+.ik-week-bar b.today{background:linear-gradient(180deg,var(--effort2,#FF8657),var(--effort,#FF5A2E));box-shadow:0 0 12px rgba(var(--effort-rgb,255,90,46),.5);}
 .ik-week-lab{font-family:'JetBrains Mono';font-size:9px;color:var(--dim);font-weight:600;}
 .ik-week-day.today .ik-week-lab{color:var(--snow);}
 
@@ -401,11 +399,19 @@ html.ring-theme .favtile{border-radius:42% 58% 60% 40% / 54% 46% 54% 46%;
   background:linear-gradient(150deg, rgba(var(--e-rgb),.13), rgba(var(--e-rgb),.02));border-color:rgba(var(--e-rgb),.24);}
 html.ring-theme .bd-icon{border-radius:44% 56% 60% 40% / 50% 46% 54% 50%;}
 html.ring-theme .pf-avwrap{box-shadow:0 0 0 3px rgba(var(--e-rgb),.35);border-radius:44% 56% 58% 42% / 52% 48% 52% 48%;overflow:hidden;}
-html.ring-theme .rankchip{background:linear-gradient(135deg,var(--e2),var(--e));box-shadow:0 10px 22px -10px rgba(var(--e-rgb),.55);}
-html.ring-theme .pill.on,html.ring-theme .seg-btn.on{background:linear-gradient(135deg,var(--e2),var(--e));color:#fff;}
-html.ring-theme .toggle.on{background:linear-gradient(135deg,var(--e2),var(--e));}
+html.ring-theme .rankchip{background:linear-gradient(135deg,var(--effort2,#FF8657),var(--effort,#FF5A2E));color:#150900;box-shadow:0 10px 22px -10px rgba(var(--effort-rgb,255,90,46),.55);}
+html.ring-theme .pill.on,html.ring-theme .seg-btn.on{background:linear-gradient(135deg,var(--effort2,#FF8657),var(--effort,#FF5A2E));color:#150900;}
+html.ring-theme .toggle.on{background:linear-gradient(135deg,var(--effort2,#FF8657),var(--effort,#FF5A2E));}
 html.ring-theme .searchbox{border-radius:18px;background:rgba(var(--e-rgb),.05);}
 html.ring-theme .zdot{box-shadow:0 0 7px currentColor;}
+/* Palette V6 FIGÉE — quand le thème Anneau est actif, on utilise exactement
+   les couleurs de la maquette (bleu 3D7FFF/6FA0FF + orange effort FF5A2E/FF8657),
+   pas la couleur d'accent choisie par l'utilisateur. C'est la maquette à
+   l'identique, pas une adaptation. */
+html.ring-theme{
+  --e:#3D7FFF; --e2:#6FA0FF; --e-rgb:61,127,255; --e2-rgb:111,160,255;
+  --effort:#FF5A2E; --effort2:#FF8657; --effort-rgb:255,90,46;
+}
 html.ring-theme .badge-mini,html.ring-theme .chrome-chip{border-radius:42% 58% 60% 40% / 54% 46% 54% 46%;}
 
 /* Extension aux petits composants transverses (boutons, champs, badges,
@@ -413,13 +419,12 @@ html.ring-theme .badge-mini,html.ring-theme .chrome-chip{border-radius:42% 58% 6
    présents dans les popups, outils et sous-écrans, pas seulement les
    4 onglets principaux. Toujours du CSS pur sur des classes réelles déjà
    utilisées partout dans app.js, aucune structure touchée. */
-html.ring-theme .btn:not(.ghost){background:linear-gradient(135deg,var(--e2),var(--e));border-color:transparent;
-  box-shadow:0 8px 18px -9px rgba(var(--e-rgb),.5);}
+html.ring-theme .btn:not(.ghost){background:linear-gradient(135deg,var(--effort2,#FF8657),var(--effort,#FF5A2E));border-color:transparent;color:#150900;
+  box-shadow:0 8px 18px -9px rgba(var(--effort-rgb,255,90,46),.5);}
 html.ring-theme .field,html.ring-theme .inp,html.ring-theme .chrome-box,html.ring-theme .ov-card,html.ring-theme .perfcard{
   border-radius:16px;}
 html.ring-theme .pbar>div,html.ring-theme .pbar b{background:linear-gradient(90deg,var(--e),var(--e2));}
-html.ring-theme .badge{border-radius:42% 58% 60% 40% / 54% 46% 54% 46%;
-  background:linear-gradient(150deg, rgba(var(--e-rgb),.18), rgba(var(--e-rgb),.04));border-color:rgba(var(--e-rgb),.26);}
+html.ring-theme .badge{border-radius:42% 58% 60% 40% / 54% 46% 54% 46%;}
 html.ring-theme .em-ic,html.ring-theme .mini-ic,html.ring-theme .stat-ic,html.ring-theme .rs-ic{
   border-radius:42% 58% 60% 40% / 54% 46% 54% 46%;background:rgba(var(--e-rgb),.12);color:var(--e2);}
 html.ring-theme .stat-card{border-radius:20px;}
