@@ -5179,43 +5179,33 @@ function renderHome(){
     '<img src="'+LOGO_MARK_URI+'" alt="IKORUN">'+
     '<span>IKORUN</span></div></div></div>';
 
-  // STREAK (série de jours consécutifs) — repositionnée sous l'anneau, plus de bandeau séparé en haut
-  const streakHtml=homeStreakBadge();
+  // STREAK (série de jours consécutifs)
+  html+=homeStreakBadge();
 
   // SALUTATION — quip dynamique sur l'objectif si défini
   const quip=P.objTime?tp('quipTime',P.objTime):(P.goal?tp('quipGoal',P.goal):t('quipDefault'));
   html+='<div class="ik-greet"><h1>'+t('greet')+' '+(first||t('you'))+'.<br>'+quip+'</h1></div>';
 
-  // HERO "GRAVITÉ" — anneau de charge hebdo (vs objectif perso) + bulles VDOT/tendance + badge série + barres de la semaine
-  { const ws=weekStart(); const dowLabels=t('dowShort').split(',');
+  // HERO FUSIONNÉ — charge hebdo (gros chiffre) + quip + niveau/XP + forme + sparkline
+  { const xpv=xp; const ws=weekStart(); const dowLabels=t('dowShort').split(',');
     const week=[]; for(let i=0;i<7;i++){ const d=new Date(ws); d.setDate(ws.getDate()+i); const k=dateKey(d);
       week.push([...SESS,...MSESS].filter(s=>s.date===k).reduce((a,s)=>a+(s.km||0),0)); }
     const maxDay=Math.max(1,...week);
-    const loadPct=Math.max(4,Math.min(100,Math.round(kmW/(kmTarget||1)*100)));
-    const r=72, c=2*Math.PI*r, dash=c*(loadPct/100);
-    const prevKm=lastWeekKm();
-    let trendHtml='<span style="color:var(--muted)">Première semaine</span>';
-    if(prevKm){
-      const deltaPct=Math.round((kmW-prevKm)/prevKm*100);
-      const trendCls=deltaPct>0?'up':(deltaPct<0?'down':'flat');
-      const arrow=deltaPct>0?'↑':(deltaPct<0?'↓':'→');
-      trendHtml='<span class="'+trendCls+'" style="color:'+(deltaPct>0?'var(--ok)':deltaPct<0?'var(--bad)':'var(--muted)')+'">'+arrow+' '+Math.abs(deltaPct)+'%</span> vs sem. préc.';
-    }
-    const todayIdx=(new Date().getDay()+6)%7; // lundi=0
-    html+='<div class="card ik-hero stag" style="animation-delay:.02s;padding:20px" onclick="nav(\'stats\')">'+
+    html+='<div class="card ik-hero stag" style="animation-delay:.02s" onclick="nav(\'stats\')">'+
       '<div class="ik-hero-lab">'+t('weekLoadTitle')+'</div>'+
-      '<div class="v6h-grav">'+
-        '<div class="v6h-ring-wrap"><svg viewBox="0 0 164 164">'+
-          '<circle class="v6h-ring-track" cx="82" cy="82" r="'+r+'" fill="none" stroke-width="10"/>'+
-          '<circle class="v6h-ring-val" cx="82" cy="82" r="'+r+'" fill="none" stroke-width="10" stroke-dasharray="'+dash+' '+(c-dash)+'"/>'+
-        '</svg>'+
-        '<div class="v6h-ring-center"><div class="n">'+kmW.toFixed(1).replace('.',',')+'</div><div class="u">/ '+(kmTarget||'—')+' km</div></div>'+
-        (streakHtml?'<div class="v6h-ring-badge">'+streakHtml+'</div>':'')+
-        '</div>'+
-        '<div class="v6h-drop v6h-drop-vdot"><div class="lab">VDOT</div><div class="val">'+(vdot||'—')+'</div><div class="sub flat">'+t('formCap')+' '+form+'%</div></div>'+
-        '<div class="v6h-drop v6h-drop-trend">'+trendHtml+'</div>'+
+      '<div class="ik-hero-big"><div class="n">'+kmW.toFixed(2).replace('.',',')+'</div><div class="u">km</div></div>'+
+      '<div class="hero-quip">'+homeLoadQuip(kmW)+'</div>'+
+      '<div class="ik-hero-mid">'+
+        '<div class="ik-hero-ring-wrap">'+donutSVG([{v:xpv.pct,color:'var(--e)'},{v:100-xpv.pct,color:'rgba(255,255,255,.08)'}],52,6,'<div class="lvl-lab">'+t('lvlShort')+'</div><div class="lvl-n">'+XP.level+'</div>')+'</div>'+
+        '<div class="ik-hero-mid-txt"><div class="v">'+tp('levelXp',XP.level,XP.total)+'</div><div class="l">'+tp('xpBeforeLevel',Math.max(0,xpv.span-xpv.inLvl),XP.level+1)+'</div></div>'+
       '</div>'+
-      '<div class="v6h-week">'+week.map((v,i)=>'<div class="v6h-wd'+(i===todayIdx?' today':'')+'"><div class="v6h-wbar"><b style="height:'+(v>0?Math.max(10,Math.round(v/maxDay*100)):0)+'%"></b></div><span class="v6h-wlab">'+(dowLabels[i]||'')+'</span></div>').join('')+'</div>'+
+      '<div class="ik-hero-divider"></div>'+
+      '<div class="ik-hero-row3">'+
+        '<div><div class="hstat-v">'+sessW+'<span>/'+sessTarget+'</span></div><div class="hstat-l">'+t('sessionsCap')+'</div></div>'+
+        donutSVG([{v:form,color:'var(--ok)'},{v:100-form,color:'rgba(255,255,255,.08)'}],50,6,'<div class="week-ring-v'+(form>=100?' v-sm':'')+'">'+form+'%</div><div class="week-ring-l">'+t('formCap')+'</div>')+
+      '</div>'+
+      '<div class="week-spark-wrap"><div class="spark" style="height:36px">'+week.map(v=>'<b style="height:'+Math.max(8,Math.round(v/maxDay*100))+'%"></b>').join('')+'</div>'+
+      '<div class="week-spark-days">'+dowLabels.map(l=>'<span>'+l+'</span>').join('')+'</div></div>'+
     '</div>';
   }
 
