@@ -5190,7 +5190,7 @@ function homeThresholdPace(vdot){
   if(!vdot) return '—';
   return spkToStr(paceFromPct(vdot,0.88))+'/km';
 }
-// 7 barres de charge quotidienne de la semaine (bleu=facile, orange=effort intense), jour courant repéré.
+// 7 barres de charge quotidienne de la semaine (couleur = accent du thème actif, plus vif/lumineux pour les séances intenses), jour courant repéré.
 function homeWeekBarsHTML(){
   const ws=weekStart(), dowLabels=t('dowShort').split(','), tk=todayKey();
   const EFFORT_TYPES=['Tempo','Seuil','VMA','Intervalle'];
@@ -5293,7 +5293,7 @@ function renderHome(){
     '</div>';
   }
 
-  // SEMAINE COMPACTE — 7 barres (bleu=facile, orange=effort)
+  // SEMAINE COMPACTE — 7 barres (couleur du thème actif, plus intense pour les séances soutenues)
   html+=homeWeekBarsHTML();
 
   // 3 TUILES — charge, temps total, séances restantes
