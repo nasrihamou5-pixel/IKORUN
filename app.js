@@ -5244,10 +5244,17 @@ function renderHome(){
   let html='<div class="hv7-bg"><span class="hv7-lb1"></span><span class="hv7-lb2"></span><span class="hv7-lb3"></span></div>';
   html+='<div class="hv7-content">';
 
-  // HEADER — logo IKORUN (gauche) + icône amis (droite)
-  html+='<div class="hv7-header"><div class="hv7-header-left"><div class="hv7-logo">'+
-    '<img src="'+LOGO_MARK_URI+'" alt="IKORUN"><span>IKORUN</span></div></div>'+
-    '<div class="hv7-people" onclick="openFriends()">'+ICN('users',18)+'</div></div>';
+  // HEADER — logo IKORUN (gauche) + partage/notifs/amis (droite)
+  {
+    const hasReminderDot=(P.notif!==false)&&ps&&ps.type!=='Repos';
+    html+='<div class="hv7-header"><div class="hv7-header-left"><div class="hv7-logo">'+
+      '<img src="'+LOGO_MARK_URI+'" alt="IKORUN"><span>IKORUN</span></div></div>'+
+      '<div class="hv7-header-right">'+
+        '<div class="hv7-icon-btn" onclick="shareApp()" title="'+t('share')+'">'+ICN('share',17)+'</div>'+
+        '<div class="hv7-icon-btn" onclick="openProfileSection(\'notif\')" title="'+t('notifLabel')+'">'+ICN('bell',17)+(hasReminderDot?'<span class="dot"></span>':'')+'</div>'+
+        '<div class="hv7-people" onclick="openFriends()">'+ICN('users',18)+'</div>'+
+      '</div></div>';
+  }
 
   // SALUTATION — semaine/phase du plan si actif, sinon quip objectif
   const wdRaw=new Date().toLocaleDateString(localeCode(),{weekday:'long'});
@@ -5304,11 +5311,11 @@ function renderHome(){
     const totalMin=sessThisWeek().reduce((a,s)=>a+(s.duration||0),0)+MSESS.filter(s=>new Date(s.date)>=ws).reduce((a,s)=>a+(s.duration||0),0);
     const remaining=Math.max(0,sessTarget-sessW);
     html+='<div class="hv7-krow3">'+
-      '<div class="hv7-ktile"><div class="hv7-ktile-lab">'+t('thisWeekCap')+'</div><div class="hv7-ktile-val">'+kmW.toFixed(1).replace('.',',')+' km</div>'+
+      '<div class="hv7-ktile"><div class="hv7-ktile-ic">'+ICN('road',14)+'</div><div class="hv7-ktile-lab">'+t('thisWeekCap')+'</div><div class="hv7-ktile-val">'+kmW.toFixed(1).replace('.',',')+' km</div>'+
         '<div class="hv7-ktile-sub'+(prevKm?'':' muted')+'">'+deltaTxt+'</div></div>'+
-      '<div class="hv7-ktile"><div class="hv7-ktile-lab">'+t('totalTime')+'</div><div class="hv7-ktile-val">'+fmtHM(totalMin)+'</div>'+
+      '<div class="hv7-ktile"><div class="hv7-ktile-ic">'+ICN('timer',14)+'</div><div class="hv7-ktile-lab">'+t('totalTime')+'</div><div class="hv7-ktile-val">'+fmtHM(totalMin)+'</div>'+
         '<div class="hv7-ktile-sub muted">'+tp('sessionsDoneShort',sessW)+'</div></div>'+
-      '<div class="hv7-ktile"><div class="hv7-ktile-lab">'+t('remainingCap')+'</div><div class="hv7-ktile-val">'+(remaining>0?tp('sessionsRemainingVal',remaining):t('objectiveReached'))+'</div>'+
+      '<div class="hv7-ktile"><div class="hv7-ktile-ic">'+ICN('health',14)+'</div><div class="hv7-ktile-lab">'+t('remainingCap')+'</div><div class="hv7-ktile-val">'+(remaining>0?tp('sessionsRemainingVal',remaining):t('objectiveReached'))+'</div>'+
         '<div class="hv7-ktile-sub muted">'+t('untilEndWeek')+'</div></div>'+
     '</div>';
   }
@@ -7109,7 +7116,9 @@ const ICONS={
   lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
   pause:'<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
   play:'<path d="M7 4l14 8-14 8V4z"/>',
-  stop:'<rect x="6" y="6" width="12" height="12" rx="2"/>'
+  stop:'<rect x="6" y="6" width="12" height="12" rx="2"/>',
+  share:'<path d="M12 3v12M8 7l4-4 4 4"/><path d="M4 13v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/>',
+  road:'<path d="M8 3 4 21M16 3l4 18"/><path d="M11 9h2M10.3 14h3.4M9.6 19h4.8"/>'
 };
 function ICN(name,size,color){ const s=size||22; return '<svg viewBox="0 0 24 24" width="'+s+'" height="'+s+'" fill="none" stroke="'+(color||'currentColor')+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[name]||'')+'</svg>'; }
 /* colored rounded-square icon badge used in card headers, replaces flat emoji */
@@ -7624,6 +7633,11 @@ function copyCalc(){
   const predT=predictTime(getUserVDOT(),resultDist);
   navigator.clipboard&&navigator.clipboard.writeText(tp('ikorunDistInTime',(resultDist/1000),fmtTime(predT)));
   toast(t('copiedShortToast'));
+}
+function shareApp(){
+  const txt='IKORUN — mon app de course à pied 🏃';
+  if(navigator.share) navigator.share({title:'IKORUN',text:txt,url:location.href}).catch(()=>{});
+  else { navigator.clipboard&&navigator.clipboard.writeText(txt+' '+location.href); toast(t('copiedShortToast')); }
 }
 function shareCalc(){
   const predT=predictTime(getUserVDOT(),resultDist);
