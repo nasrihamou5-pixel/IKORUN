@@ -363,13 +363,13 @@ html[data-mode="light"] body::after{opacity:.02;}
 .week-spark-days{display:flex;justify-content:space-between;margin-top:6px;padding:0 2px;}
 .week-spark-days span{font-family:'JetBrains Mono';font-size:9.5px;color:var(--dim);font-weight:600;width:14px;text-align:center;}
 
-.next-lab{font-size:10px;letter-spacing:.5px;color:var(--muted);font-weight:700;margin-bottom:2px;}
+.next-lab{font-size:10px;letter-spacing:.5px;color:var(--e2);font-weight:700;margin-bottom:2px;}
 .next-card{display:flex;align-items:center;gap:12px;cursor:pointer;}
 .next-body{flex:1;}
 .next-title{font-family:'Unbounded';font-weight:700;font-size:15px;margin-top:4px;}
 .next-meta{color:var(--muted);font-size:12px;margin-top:3px;font-weight:500;}
 .next-when{color:var(--e2);font-size:12px;margin-top:2px;font-weight:600;}
-.next-ic{width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(51,211,153,.35),rgba(51,211,153,.12));border:1px solid rgba(51,211,153,.4);display:flex;align-items:center;justify-content:center;color:var(--ok);flex-shrink:0;}
+.next-ic{width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(var(--e-rgb),.35),rgba(var(--e-rgb),.12));border:1px solid rgba(var(--e-rgb),.4);display:flex;align-items:center;justify-content:center;color:var(--e2);flex-shrink:0;}
 
 .plan-lab{font-size:10px;letter-spacing:.5px;color:var(--muted);font-weight:700;margin:14px 0 8px;}
 .plan-list{padding:6px 8px;}
@@ -731,7 +731,7 @@ body[data-scr="home"] .topbar{display:none;}
 .list-row .lr-txt{flex:1;min-width:0;}
 .list-row .lr-title{font-weight:700;font-size:13.5px;font-family:'Unbounded';}
 .list-row .lr-sub{font-size:11.5px;color:var(--muted);margin-top:1px;}
-.list-row .lr-chev{color:var(--dim);flex-shrink:0;}
+.list-row .lr-chev{color:var(--e2);flex-shrink:0;}
 /* GROUPED CARD LIST — une seule carte par section, lignes séparées par un filet
    (organisation "Profil / Réglages" classique : icône + libellé + valeur + chevron) */
 .grp-card{background:var(--s1);border:1px solid var(--hair);border-radius:16px;overflow:hidden;box-shadow:var(--float-sm);margin-bottom:16px;}
@@ -741,10 +741,10 @@ body[data-scr="home"] .topbar{display:none;}
 .grp-row .lr-icon{width:32px;height:32px;border-radius:9px;background:var(--ed);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--e);font-size:14.5px;}
 .grp-row .lr-title{font-weight:600;font-size:14px;flex:1;min-width:0;}
 .grp-row .lr-val{font-size:12.5px;color:var(--muted);flex-shrink:0;max-width:120px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;}
-.grp-row .lr-chev{color:var(--dim);flex-shrink:0;}
+.grp-row .lr-chev{color:var(--e2);flex-shrink:0;}
 .grp-row.no-chev{cursor:default;}
 .grp-row.no-chev:active{background:transparent;}
-.grp-lab{font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-weight:700;margin:0 2px 8px;}
+.grp-lab{font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:var(--e2);font-weight:700;margin:0 2px 8px;text-shadow:0 0 10px rgba(var(--e-rgb),.3);}
 .mini-ic{width:28px;height:28px;border-radius:9px;background:var(--s2);border:1px solid var(--hair);display:inline-flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;flex-shrink:0;}
 .mini-ic:active{transform:scale(.9);}
 
@@ -1582,8 +1582,8 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
   border-radius:999px;padding:5px 11px;font-size:11px;font-weight:700;color:#ffb35c;margin:8px 0 4px;}
 .streak b{font-weight:800;}
 
-.sec-lab{font-size:11px;letter-spacing:1px;color:var(--muted);font-weight:700;margin:16px 0 8px;text-transform:uppercase;
-  display:flex;justify-content:space-between;align-items:center;}
+.sec-lab{font-size:11px;letter-spacing:1px;color:var(--e2);font-weight:700;margin:16px 0 8px;text-transform:uppercase;
+  display:flex;justify-content:space-between;align-items:center;text-shadow:0 0 10px rgba(var(--e-rgb),.35);}
 .sec-lab .link{color:var(--e2);font-weight:600;text-transform:none;letter-spacing:0;font-size:12px;}
 
 .hero-quip{font-size:11.5px;color:var(--e2);font-weight:600;margin-top:4px;}
