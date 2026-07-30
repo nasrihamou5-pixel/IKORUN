@@ -324,6 +324,15 @@ html[data-mode="light"] body::after{opacity:.02;}
 .ik-logo svg{width:26px;height:26px;flex-shrink:0;}
 .ik-logo img{height:26px;width:auto;flex-shrink:0;display:block;}
 .ik-logo span{font-family:'Unbounded';font-weight:800;font-size:16px;letter-spacing:.5px;color:var(--snow);}
+/* Logo-mark teinté : le fanion est appliqué en mask-image et coloré via
+   background, afin qu'il suive automatiquement la couleur d'accent active
+   (uni pour bleu/rouge/vert/marron/jaune, dégradé chromé pour carbone). */
+.ik-logo-mark{display:block;flex-shrink:0;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+  -webkit-mask-position:center;mask-position:center;-webkit-mask-size:contain;mask-size:contain;
+  background:var(--e);transition:background .35s var(--ease);}
+.ik-logo .ik-logo-mark{width:26px;height:26px;}
+.hv7-logo .ik-logo-mark{width:24px;height:24px;}
+html[data-accent="carbon"] .ik-logo-mark{background:var(--grad-btn);}
 .ik-bell{width:38px;height:38px;border-radius:50%;background:var(--s1);border:1px solid var(--hair);display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;position:relative;transition:transform .15s var(--ease-spring);}
 .ik-header-left{display:flex;align-items:center;gap:12px;}
 .ik-people{width:38px;height:38px;border-radius:50%;background:var(--s1);border:1px solid var(--hair);display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;position:relative;transition:transform .15s var(--ease-spring);flex-shrink:0;}
@@ -996,10 +1005,13 @@ html[data-mode="light"]{
   backdrop-filter:blur(28px) saturate(1.4);-webkit-backdrop-filter:blur(28px) saturate(1.4);
   border:1px solid var(--chrome-border);border-radius:26px;overflow:hidden;
   box-shadow:0 20px 46px -16px rgba(0,0,0,.7),0 1px 0 rgba(255,255,255,.35) inset,0 -8px 14px -8px rgba(0,0,0,.45) inset;
-  display:flex;padding:7px 6px;transition:transform .28s var(--ease-spring),box-shadow .35s ease;}
+  display:flex;padding:7px 6px;transition:transform .38s var(--ease-spring),box-shadow .35s ease,opacity .3s ease;}
 #nav::before{content:'';position:absolute;inset:0;pointer-events:none;background:var(--chrome-edge);opacity:.5;border-radius:inherit;}
 #nav.nav-dragging{transform:translateX(-50%) scale(1.03);
   box-shadow:0 26px 54px -16px rgba(0,0,0,.78),0 1px 0 rgba(255,255,255,.4) inset,0 0 30px -8px rgba(var(--e-rgb),.3);}
+/* Masquage auto au scroll : descend hors écran (avec petite animation ressort)
+   quand on scrolle vers le bas, revient dès qu'on remonte. */
+#nav.nav-hidden{transform:translateX(-50%) translateY(calc(100% + 30px + env(safe-area-inset-bottom)));opacity:0;pointer-events:none;}
 #nav-pill{position:absolute;top:7px;height:44px;width:18%;border-radius:18px;background:var(--ed);
   box-shadow:0 0 0 1px rgba(var(--e-rgb),.18) inset;transition:left .38s var(--ease-spring),width .38s var(--ease-spring),background .3s ease,box-shadow .3s ease,border-color .3s ease;
   overflow:hidden;border:1px solid transparent;will-change:left;}

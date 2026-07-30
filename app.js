@@ -3128,6 +3128,7 @@ function nav(s){
   $('#tbSub').textContent= s==='home'?greet():subs[s];
   const av=$('#tbAvatar'); if(av){ if(P.photo){ av.style.background='url('+P.photo+') center/cover'; av.textContent=''; } else { av.style.background='var(--ed)'; av.style.color='var(--e)'; av.style.fontWeight='800'; av.textContent=P.name?P.name[0].toUpperCase():'?'; } }
   $('#scroll').scrollTop=0;
+  const navElReset=document.getElementById('nav'); if(navElReset) navElReset.classList.remove('nav-hidden');
   if(s==='home') renderHome();
   if(s==='sport'){ renderSport(); setTimeout(checkMissedSessions,300); }
   if(s==='stats') renderStats();
@@ -3291,6 +3292,28 @@ let _lastScrollTouch=0;
     sc.classList.add('is-scrolling');
     clearTimeout(_scrollEndT);
     _scrollEndT=setTimeout(()=>{ sc.classList.remove('is-scrolling'); },200);
+  },{passive:true});
+})();
+/* ---------- NAV : masquage auto au scroll ----------
+   Descend (avec petite animation ressort) quand on scrolle vers le bas,
+   revient dès qu'on remonte. Reste toujours visible tout en haut de page,
+   et ne se cache jamais pendant l'appui long / glisser sur la nav elle-même. */
+(function(){
+  const sc=document.getElementById('scroll'), navEl=document.getElementById('nav');
+  if(!sc||!navEl) return;
+  let lastY=sc.scrollTop, ticking=false;
+  const THRESH=6, TOP_LOCK=24;
+  function onScroll(){
+    const y=sc.scrollTop;
+    if(navEl.classList.contains('nav-dragging')){ lastY=y; ticking=false; return; }
+    const dy=y-lastY;
+    if(y<=TOP_LOCK){ navEl.classList.remove('nav-hidden'); }
+    else if(dy>THRESH){ navEl.classList.add('nav-hidden'); lastY=y; }
+    else if(dy<-THRESH){ navEl.classList.remove('nav-hidden'); lastY=y; }
+    ticking=false;
+  }
+  sc.addEventListener('scroll',()=>{
+    if(!ticking){ requestAnimationFrame(onScroll); ticking=true; }
   },{passive:true});
 })();
 function nudgeScroll(){
@@ -5248,7 +5271,7 @@ function renderHome(){
   {
     const hasReminderDot=(P.notif!==false)&&ps&&ps.type!=='Repos';
     html+='<div class="hv7-header"><div class="hv7-header-left"><div class="hv7-logo">'+
-      '<img src="'+LOGO_MARK_URI+'" alt="IKORUN"><span>IKORUN</span></div></div>'+
+      '<div class="ik-logo-mark" style="-webkit-mask-image:url(\''+LOGO_MARK_URI+'\');mask-image:url(\''+LOGO_MARK_URI+'\')" role="img" aria-label="IKORUN"></div><span>IKORUN</span></div></div>'+
       '<div class="hv7-header-right">'+
         '<div class="hv7-icon-btn" onclick="shareApp()" title="'+t('share')+'">'+ICN('share',17)+'</div>'+
         '<div class="hv7-icon-btn" onclick="openProfileSection(\'notif\')" title="'+t('notifLabel')+'">'+ICN('bell',17)+(hasReminderDot?'<span class="dot"></span>':'')+'</div>'+
@@ -5354,7 +5377,7 @@ function renderHome(){
 function renderHomeSimple(ps,sessW,sessTarget,vdot,form,first){
   let h='';
   h+='<div class="ik-header"><div class="ik-logo">'+
-    '<img src="'+LOGO_MARK_URI+'" alt="IKORUN">'+
+    '<div class="ik-logo-mark" style="-webkit-mask-image:url(\''+LOGO_MARK_URI+'\');mask-image:url(\''+LOGO_MARK_URI+'\')" role="img" aria-label="IKORUN"></div>'+
     '<span>IKORUN</span></div></div>';
   h+=homeStreakBadge();
   h+='<div class="ik-greet"><h1>'+t('greet')+' '+(first||t('you'))+' 👋</h1></div>';
