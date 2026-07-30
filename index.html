@@ -1109,6 +1109,33 @@ html[data-mode="light"]{
   overflow:hidden;padding:max(14px,env(safe-area-inset-top)) 20px max(20px,env(safe-area-inset-bottom));
   display:flex;flex-direction:column;transition:opacity .38s ease;}
 #appSkeleton.out{opacity:0;pointer-events:none;}
+
+/* ----- Intro logo : petit temps de marque avant que le squelette n'apparaisse,
+   façon écran de lancement natif. Overlay plein écran par-dessus le squelette,
+   qui s'efface tout seul après un court instant pour révéler ce qu'il y a dessous. */
+.skl-splash{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;
+  background:var(--bg);opacity:0;animation:sklSplashIn .4s ease forwards, sklSplashOut .45s ease forwards .68s;}
+.skl-splash-logo{width:80px;height:80px;border-radius:var(--r-md);overflow:hidden;
+  box-shadow:0 14px 34px -10px rgba(var(--e-rgb),.55),0 0 0 1px rgba(255,255,255,.08) inset;
+  animation:sklSplashPulse 1.05s ease-in-out infinite;}
+.skl-splash-logo img{width:100%;height:100%;object-fit:cover;display:block;}
+@keyframes sklSplashIn{from{opacity:0;transform:scale(.92);}to{opacity:1;transform:scale(1);}}
+@keyframes sklSplashOut{to{opacity:0;pointer-events:none;}}
+@keyframes sklSplashPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.07);}}
+
+/* ----- Variante "déconnecté" : dès qu'on sait (avant même que app.js ne
+   s'exécute — voir le script inline juste après #appSkeleton dans le body)
+   qu'aucune session Supabase n'est probablement persistée, on bascule le
+   squelette vers une forme qui ressemble à l'écran de connexion plutôt qu'au
+   tableau de bord, pour éviter le petit "saut" visuel dashboard → login. */
+#appSkeleton .skl-login-shape{display:none;}
+#appSkeleton.skl-login .skl-dash{display:none;}
+#appSkeleton.skl-login .skl-login-shape{display:flex;flex-direction:column;align-items:center;
+  justify-content:center;flex:1;width:100%;max-width:260px;margin:0 auto;gap:14px;}
+.skl-login-logo{width:76px;height:76px;border-radius:var(--r-md);margin-bottom:4px;}
+.skl-login-brand{width:150px;height:22px;border-radius:8px;}
+.skl-login-tag{width:190px;height:12px;border-radius:6px;}
+.skl-login-btn{width:100%;height:48px;border-radius:var(--r-sm);margin-top:8px;}
 @keyframes sklShimmer{0%{background-position:-360px 0;}100%{background-position:360px 0;}}
 .skl{border-radius:var(--r-sm);background-color:var(--s2);
   background-image:linear-gradient(90deg,var(--s2) 20%,var(--s3) 45%,var(--s2) 70%);
@@ -1722,14 +1749,46 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
 
 <!-- SKELETON — visible instantanément, masqué dès que login/app est prêt -->
 <div id="appSkeleton">
-  <div class="skl-header"><div class="skl skl-logo"></div><div class="skl skl-bell"></div></div>
-  <div class="skl skl-streak"></div>
-  <div class="skl-greet"><div class="skl skl-line w70"></div><div class="skl skl-line w50"></div></div>
-  <div class="skl skl-hero"></div>
-  <div class="skl-grid"><div class="skl skl-stat"></div><div class="skl skl-stat"></div><div class="skl skl-stat"></div><div class="skl skl-stat"></div></div>
-  <div class="skl skl-session"></div>
-  <div class="skl-nav"><div class="skl skl-navicon"></div><div class="skl skl-navicon"></div><div class="skl skl-navicon"></div><div class="skl skl-navicon"></div><div class="skl skl-navicon"></div></div>
+  <div class="skl-splash"><div class="skl-splash-logo"><img src="icon-192.png" alt=""></div></div>
+
+  <div class="skl-dash">
+    <div class="skl-header"><div class="skl skl-logo"></div><div class="skl skl-bell"></div></div>
+    <div class="skl skl-streak"></div>
+    <div class="skl-greet"><div class="skl skl-line w70"></div><div class="skl skl-line w50"></div></div>
+    <div class="skl skl-hero"></div>
+    <div class="skl-grid"><div class="skl skl-stat"></div><div class="skl skl-stat"></div><div class="skl skl-stat"></div><div class="skl skl-stat"></div></div>
+    <div class="skl skl-session"></div>
+    <div class="skl-nav"><div class="skl skl-navicon"></div><div class="skl skl-navicon"></div><div class="skl skl-navicon"></div><div class="skl skl-navicon"></div><div class="skl skl-navicon"></div></div>
+  </div>
+
+  <!-- Forme "connexion" : utilisée à la place du tableau de bord ci-dessus
+       quand aucune session n'est probablement active (voir script juste
+       après cette div, qui ajoute la classe .skl-login au bon moment). -->
+  <div class="skl-login-shape">
+    <div class="skl skl-login-logo"></div>
+    <div class="skl skl-login-brand"></div>
+    <div class="skl skl-login-tag"></div>
+    <div class="skl skl-login-btn"></div>
+    <div class="skl skl-login-btn"></div>
+  </div>
 </div>
+<script>
+/* Devine, de façon synchrone et avant même le chargement d'app.js, si une
+   session Supabase est probablement persistée (clé "sb-...-auth-token" dans
+   localStorage). Si non, on affiche tout de suite le squelette en forme
+   d'écran de connexion plutôt que celui du tableau de bord, pour que la
+   forme du squelette corresponde à la page qui va réellement s'afficher. */
+(function(){
+  try{
+    var hasSession=false;
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i);
+      if(k && k.indexOf('sb-')===0 && k.indexOf('-auth-token')>-1){ hasSession=true; break; }
+    }
+    if(!hasSession) document.getElementById('appSkeleton').classList.add('skl-login');
+  }catch(e){}
+})();
+</script>
 
 <!-- LOGIN / AUTH -->
 <div id="login">
