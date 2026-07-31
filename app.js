@@ -945,7 +945,7 @@ const I18N={
     restSeconds:'Repos (secondes)',minOneSetRemain:'Il doit rester au moins une série',changeRestLab:'Modifier le repos',
     removeExLab:'Retirer cet exercice',cancelLab:'Annuler',minOneExRemain:'Il doit rester au moins un exercice',
     removeExConfirmTitle:'Retirer cet exercice ?',removeLab2:'Retirer',exerciseRemoved:'Exercice retiré',
-    reorderExercisesTitle:'Réorganiser les exercices',reorderExercisesHint:'Maintiens l\\u2019icône \\u2261 et glisse un exercice à la place voulue.',doneReorderBtn:'Terminé',exercisesReordered:'Ordre des exercices mis à jour',
+    exercisesReordered:'Ordre des exercices mis à jour',
     exerciseAdded:'Exercice ajouté',sessionSaved:'Séance sauvegardée — reprends quand tu veux',xpGain:'+5 XP',
     restTitle:'Repos',secLab:'sec',add30sLab:'+30s',skipLab:'Passer',cancelSessionTitle:'Annuler la séance ?',
     progressLostText:'Ta progression sur cette séance sera perdue.',continueLab2:'Continuer',yesCancelLab:'Oui, annuler',sessionCancelled:'Séance annulée',
@@ -1398,7 +1398,7 @@ const I18N={
     restSeconds:'Rest (seconds)',minOneSetRemain:'At least one set must remain',changeRestLab:'Change rest time',
     removeExLab:'Remove this exercise',cancelLab:'Cancel',minOneExRemain:'At least one exercise must remain',
     removeExConfirmTitle:'Remove this exercise?',removeLab2:'Remove',exerciseRemoved:'Exercise removed',
-    reorderExercisesTitle:'Reorder exercises',reorderExercisesHint:'Hold the \\u2261 handle and drag an exercise to where you want it.',doneReorderBtn:'Done',exercisesReordered:'Exercise order updated',
+    exercisesReordered:'Exercise order updated',
     exerciseAdded:'Exercise added',sessionSaved:'Session saved — resume anytime',xpGain:'+5 XP',
     restTitle:'Rest',secLab:'sec',add30sLab:'+30s',skipLab:'Skip',cancelSessionTitle:'Cancel this session?',
     progressLostText:'Your progress on this session will be lost.',continueLab2:'Continue',yesCancelLab:'Yes, cancel',sessionCancelled:'Session cancelled',
@@ -1851,7 +1851,7 @@ const I18N={
     restSeconds:'الراحة (ثوانٍ)',minOneSetRemain:'يجب أن تبقى مجموعة واحدة على الأقل',changeRestLab:'تعديل وقت الراحة',
     removeExLab:'إزالة هذا التمرين',cancelLab:'إلغاء',minOneExRemain:'يجب أن يبقى تمرين واحد على الأقل',
     removeExConfirmTitle:'إزالة هذا التمرين؟',removeLab2:'إزالة',exerciseRemoved:'تمت إزالة التمرين',
-    reorderExercisesTitle:'إعادة ترتيب التمارين',reorderExercisesHint:'اضغط مطولاً على المقبض \\u2261 واسحب التمرين إلى المكان الذي تريده.',doneReorderBtn:'تم',exercisesReordered:'تم تحديث ترتيب التمارين',
+    exercisesReordered:'تم تحديث ترتيب التمارين',
     exerciseAdded:'تمت إضافة التمرين',sessionSaved:'تم حفظ الحصة — استأنفها متى شئت',xpGain:'+5 XP',
     restTitle:'راحة',secLab:'ثا',add30sLab:'+30 ثا',skipLab:'تخطي',cancelSessionTitle:'إلغاء الحصة؟',
     progressLostText:'سيُفقد تقدمك في هذه الحصة.',continueLab2:'متابعة',yesCancelLab:'نعم، إلغاء',sessionCancelled:'تم إلغاء الحصة',
@@ -6334,13 +6334,16 @@ function initLiveSwipe(){
   box.addEventListener('pointercancel',liveSwipeUp);
 }
 function swipeWidthFor(el){ return el.classList.contains('ex-swipe-card')?SWIPE_W_EX:SWIPE_W_SET; }
-// Appui long sur une carte exercice (pas une ligne de série) → ouvre le mode
-// "Réorganiser les exercices". Le minuteur est annulé dès qu'un swipe démarre
-// (liveSwipeMove) ou dès que le doigt/souris se relève avant l'échéance.
-const LONG_PRESS_MS=480;
+// Appui long sur une carte exercice (pas une ligne de série) → la carte se
+// "soulève" directement dans la liste (comme sur iOS) pour être glissée à
+// la nouvelle place, sans quitter l'écran. Le minuteur est annulé dès qu'un
+// swipe démarre (liveSwipeMove) ou dès que le doigt/souris se relève avant
+// l'échéance.
+const LONG_PRESS_MS=420;
 let longPressTimer=null, liveSuppressClick=false;
 function liveSwipeDown(e){
   const el=e.target.closest(SWIPE_SEL); if(!el) return;
+  if(exDrag) return; // un glisser-déposer de réorganisation est déjà en cours
   // un swipe déjà ouvert ailleurs (carte OU ligne série) se referme dès qu'on touche un autre élément
   document.querySelectorAll(SWIPE_SEL+'.open').forEach(c=>{ if(c!==el) closeSwipeCard(c); });
   const w=swipeWidthFor(el);
@@ -6349,17 +6352,18 @@ function liveSwipeDown(e){
     curX:0,dragging:false};
   clearTimeout(longPressTimer); longPressTimer=null; liveSuppressClick=false;
   if(el.classList.contains('ex-swipe-card') && !el.classList.contains('open')){
-    const idx=+el.dataset.i;
+    const idx=+el.dataset.i, pointerId=e.pointerId, startY=e.clientY;
     longPressTimer=setTimeout(()=>{
       longPressTimer=null;
-      if(liveSwipe.dragging) return; // un swipe a démarré entre-temps : on annule le mode réorganisation
+      if(liveSwipe.dragging) return; // un swipe horizontal a démarré entre-temps : on annule
       liveSuppressClick=true;
       if(navigator.vibrate) try{ navigator.vibrate(12); }catch(_e){}
-      openReorderExercises(idx);
+      startExDrag(idx,startY,pointerId);
     },LONG_PRESS_MS);
   }
 }
 function liveSwipeMove(e){
+  if(exDrag) return; // la réorganisation directe gère elle-même ses propres pointermove
   const s=liveSwipe; if(!s.el) return;
   const dx=e.clientX-s.startX, dy=e.clientY-s.startY;
   if(!s.dragging){
@@ -6374,6 +6378,7 @@ function liveSwipeMove(e){
   s.el.style.transform='translateX('+x+'px)';
 }
 function liveSwipeUp(e){
+  if(exDrag) return;
   clearTimeout(longPressTimer); longPressTimer=null;
   const s=liveSwipe; if(!s.el){ liveSwipe={el:null}; return; }
   if(s.dragging){
@@ -6385,8 +6390,66 @@ function liveSwipeUp(e){
   liveSwipe={el:null};
 }
 function closeSwipeCard(card){ card.style.transform='translateX(0px)'; card.classList.remove('open'); card._openDir=null; }
+/* ---------- LIVE : réorganiser en glissant la carte directement (appui long) ----------
+   Contrairement à un écran dédié, la carte se soulève et se déplace là où elle
+   est affichée, exactement comme un reorder natif iOS/Android. Les autres
+   cartes se poussent en douceur pour lui laisser la place, et tout redevient
+   normal (renderLive) une fois le doigt relâché. */
+let exDrag=null;
+function startExDrag(idx,startY,pointerId){
+  const box=$('#liveBody'); if(!box) return;
+  // Une carte dépliée (accordéon ouvert) n'a pas la même hauteur que les autres :
+  // on la replie d'abord pour que le calcul du glisser-déposer reste simple et fiable.
+  if(liveOpenEx>=0){ liveOpenEx=-1; renderLive(); }
+  const wraps=Array.from(box.querySelectorAll('.ex-swipe-wrap'));
+  if(wraps.length<2 || idx<0 || idx>=wraps.length){ liveSuppressClick=false; return; }
+  const rects=wraps.map(w=>w.getBoundingClientRect());
+  const step=rects.length>1?(rects[1].top-rects[0].top):(rects[0].height+12);
+  exDrag={idx,target:idx,wraps,step,startY};
+  const w=wraps[idx];
+  w.style.transition='none'; w.style.zIndex='30'; w.style.position='relative';
+  w.style.boxShadow='0 16px 32px rgba(0,0,0,.5)'; w.style.opacity='.97';
+  wraps.forEach((ww,k)=>{ if(k!==idx) ww.style.transition='transform .18s ease'; });
+  window.addEventListener('pointermove',onExDragMove);
+  window.addEventListener('pointerup',endExDrag);
+  window.addEventListener('pointercancel',endExDrag);
+}
+function onExDragMove(e){
+  const d=exDrag; if(!d) return;
+  e.preventDefault&&e.preventDefault();
+  const dy=e.clientY-d.startY;
+  d.wraps[d.idx].style.transform='translateY('+dy+'px) scale(1.015)';
+  let target=d.idx+Math.round(dy/d.step);
+  target=Math.max(0,Math.min(d.wraps.length-1,target));
+  if(target!==d.target){
+    d.target=target;
+    // Ordre visuel logique : la carte glissée occupe la position "target",
+    // les autres gardent leur ordre relatif d'origine tout autour d'elle.
+    const order=[]; for(let k=0;k<d.wraps.length;k++) if(k!==d.idx) order.push(k);
+    order.splice(target,0,d.idx);
+    order.forEach((origK,pos)=>{
+      if(origK===d.idx) return;
+      d.wraps[origK].style.transform='translateY('+((pos-origK)*d.step)+'px)';
+    });
+  }
+}
+function endExDrag(){
+  const d=exDrag; if(!d) return;
+  window.removeEventListener('pointermove',onExDragMove);
+  window.removeEventListener('pointerup',endExDrag);
+  window.removeEventListener('pointercancel',endExDrag);
+  exDrag=null;
+  const changed=d.target!==d.idx;
+  if(changed){
+    const ex=LIVE.prog.ex.splice(d.idx,1)[0]; LIVE.prog.ex.splice(d.target,0,ex);
+    const st=LIVE.state.splice(d.idx,1)[0]; LIVE.state.splice(d.target,0,st);
+    persistLive();
+  }
+  renderLive(); // repart d'un DOM propre (styles inline de drag effacés d'office)
+  if(changed) toast(t('exercisesReordered'));
+}
 function toggleLiveEx(i){
-  // Un appui long vient d'ouvrir le mode réorganisation : le "click" qui suit le relâchement
+  // Un appui long vient de lancer un glisser-déposer : le "click" qui suit le relâchement
   // du doigt ne doit pas en plus déplier/replier la carte.
   if(liveSuppressClick){ liveSuppressClick=false; return; }
   // Si la carte est ouverte en mode swipe (Supprimer révélé), un tap la referme au lieu de la déplier.
@@ -6454,80 +6517,6 @@ function doDeleteLiveEx(i){
   if(liveOpenEx===i) liveOpenEx=-1; else if(liveOpenEx>i) liveOpenEx--;
   persistLive(); renderLive();
   toast(t('exerciseRemoved'));
-}
-/* ---------- LIVE : réorganiser les exercices (appui long sur une carte) ----------
-   reorderExList garde, pour chaque position affichée, l'index d'origine de
-   l'exercice dans LIVE.prog.ex/LIVE.state. On ne touche à LIVE qu'à la
-   validation (confirmReorderExercises), pour pouvoir annuler proprement. */
-let reorderExList=null, reorderDrag=null;
-function openReorderExercises(selectedIdx){
-  if(!LIVE || LIVE.prog.ex.length<2){ toast(t('minOneExRemain')); return; }
-  reorderExList=LIVE.prog.ex.map((e,i)=>({name:e.name,origIndex:i}));
-  const old=$('#reorderOv'); if(old) old.remove();
-  const ov=document.createElement('div'); ov.className='ov on'; ov.id='reorderOv'; ov.style.zIndex=topZ();
-  ov.innerHTML='<div class="ov-card">'+
-    '<div class="ov-head" style="margin-bottom:4px"><h2>'+t('reorderExercisesTitle')+'</h2></div>'+
-    '<div style="font-size:12px;color:var(--muted);margin-bottom:14px">'+t('reorderExercisesHint')+'</div>'+
-    '<div id="reorderList"></div>'+
-    '<button class="btn" style="margin-top:14px" onclick="confirmReorderExercises()">'+t('doneReorderBtn')+'</button>'+
-    '</div>';
-  document.body.appendChild(ov);
-  renderReorderList(selectedIdx);
-  initReorderDrag();
-}
-function renderReorderList(highlightOrigIdx){
-  const box=document.getElementById('reorderList'); if(!box) return;
-  box.innerHTML=reorderExList.map((item,pos)=>{
-    const st=LIVE.state[item.origIndex];
-    const sub=st?tp('setsDoneCount',st.sets.filter(Boolean).length,st.sets.length):'';
-    const hl=item.origIndex===highlightOrigIdx;
-    return '<div class="reorder-row'+(hl?' hl':'')+'" data-pos="'+pos+'" style="display:flex;align-items:center;gap:10px;padding:11px 8px;border-radius:12px;margin-bottom:7px;background:var(--s1);border:1px solid '+(hl?'var(--e)':'var(--hair)')+';transition:border-color .2s">'+
-      '<span class="reorder-handle" style="cursor:grab;color:var(--muted);font-size:19px;letter-spacing:1px;padding:6px 8px;touch-action:none">'+'\u2261'+'</span>'+
-      '<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+item.name+'</div>'+(sub?'<div style="font-size:11px;color:var(--muted);margin-top:1px">'+sub+'</div>':'')+'</div>'+
-      '<span style="font-weight:800;color:var(--muted);font-size:12px;font-family:\'JetBrains Mono\'">#'+(pos+1)+'</span>'+
-      '</div>';
-  }).join('');
-}
-function initReorderDrag(){
-  const box=document.getElementById('reorderList'); if(!box||box._dragBound) return;
-  box._dragBound=true;
-  box.addEventListener('pointerdown',e=>{
-    const handle=e.target.closest('.reorder-handle'); if(!handle) return;
-    const row=e.target.closest('.reorder-row'); if(!row) return;
-    reorderDrag={pos:+row.dataset.pos,startY:e.clientY,rowH:row.getBoundingClientRect().height||56};
-    row.style.opacity='.6';
-    row.setPointerCapture&&row.setPointerCapture(e.pointerId);
-  });
-  box.addEventListener('pointermove',e=>{
-    if(!reorderDrag) return;
-    const dy=e.clientY-reorderDrag.startY;
-    const steps=Math.round(dy/reorderDrag.rowH);
-    const newPos=Math.max(0,Math.min(reorderExList.length-1,reorderDrag.pos+steps));
-    if(newPos!==reorderDrag.pos){
-      const moved=reorderExList.splice(reorderDrag.pos,1)[0];
-      reorderExList.splice(newPos,0,moved);
-      reorderDrag.pos=newPos; reorderDrag.startY=e.clientY;
-      renderReorderList(moved.origIndex);
-    }
-  });
-  ['pointerup','pointercancel'].forEach(ev=>box.addEventListener(ev,()=>{
-    reorderDrag=null;
-    document.querySelectorAll('#reorderList .reorder-row').forEach(r=>r.style.opacity='1');
-  }));
-}
-function confirmReorderExercises(){
-  if(reorderExList){
-    const openOrigIdx=liveOpenEx>=0?liveOpenEx:-1;
-    const newEx=reorderExList.map(item=>LIVE.prog.ex[item.origIndex]);
-    const newState=reorderExList.map(item=>LIVE.state[item.origIndex]);
-    LIVE.prog.ex=newEx; LIVE.state=newState;
-    liveOpenEx=openOrigIdx>=0?reorderExList.findIndex(item=>item.origIndex===openOrigIdx):-1;
-    persistLive();
-  }
-  reorderExList=null; reorderDrag=null;
-  const o=$('#reorderOv'); if(o) o.remove();
-  renderLive();
-  toast(t('exercisesReordered'));
 }
 function liveAddExercise(){
   libCallback=(e)=>{ closeOv('ovLib'); openLiveCfgAdd(e); };
