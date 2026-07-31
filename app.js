@@ -6329,7 +6329,7 @@ function renderLive(){
 /* ---------- LIVE : swipe gauche/droite sur une carte exercice pour révéler "Supprimer" ---------- */
 const SWIPE_W_EX=88, SWIPE_W_SET=64; // largeurs de la zone rouge révélée (carte exercice / ligne série)
 const SWIPE_SEL='.ex-swipe-card, .set-swipe-row';
-let liveSwipe={el:null,w:0,startX:0,startY:0,baseX:0,curX:0,dragging:false};
+let liveSwipe={el:null,w:0,startX:0,startY:0,baseX:0,curX:0,dragging:false,scrollMode:false,scrollEl:null,lastY:0};
 function initLiveSwipe(){
   const box=$('#liveBody'); if(!box||box._swipeBound) return;
   box._swipeBound=true;
@@ -6354,20 +6354,14 @@ function liveSwipeDown(e){
   const w=swipeWidthFor(el);
   liveSwipe={el,w,startX:e.clientX,startY:e.clientY,
     baseX:el.classList.contains('open')?(el._openDir==='right'?w:-w):0,
-    curX:0,dragging:false};
+    curX:0,dragging:false,scrollMode:false,scrollEl:null,lastY:e.clientY};
   clearTimeout(longPressTimer); longPressTimer=null; liveSuppressClick=false;
   if(el.classList.contains('ex-swipe-card') && !el.classList.contains('open')){
     const idx=+el.dataset.i, pointerId=e.pointerId, startY=e.clientY;
     longPressTimer=setTimeout(()=>{
       longPressTimer=null;
-      if(liveSwipe.dragging) return; // un swipe horizontal a démarré entre-temps : on annule
+      if(liveSwipe.dragging||liveSwipe.scrollMode) return; // un swipe/scroll a démarré entre-temps : on annule
       liveSuppressClick=true;
-      // On coupe le scroll natif de CETTE carte juste avant de démarrer le glisser-déposer,
-      // et avant tout mouvement du doigt : sur iOS, touch-action doit être figé à 'none' dès
-      // le début du geste de déplacement pour que nos pointermove (et leur preventDefault)
-      // priment sur le scroll de la liste, sinon la page défile au lieu de réordonner.
-      // Remis à zéro tout seul : renderLive() reconstruit le DOM sans ce style inline.
-      el.style.touchAction='none';
       if(navigator.vibrate) try{ navigator.vibrate(12); }catch(_e){}
       startExDrag(idx,startY,pointerId);
     },LONG_PRESS_MS);
@@ -6376,11 +6370,24 @@ function liveSwipeDown(e){
 function liveSwipeMove(e){
   if(exDrag) return; // la réorganisation directe gère elle-même ses propres pointermove
   const s=liveSwipe; if(!s.el) return;
+  // Défilement manuel déjà engagé (la carte a touch-action:none, donc iOS ne fait plus
+  // défiler tout seul) : on répercute nous-mêmes le déplacement du doigt sur la feuille.
+  if(s.scrollMode){
+    const dy=e.clientY-s.lastY; s.lastY=e.clientY;
+    if(s.scrollEl) s.scrollEl.scrollTop-=dy;
+    return;
+  }
   const dx=e.clientX-s.startX, dy=e.clientY-s.startY;
   if(!s.dragging){
     if(Math.abs(dx)<6 && Math.abs(dy)<6) return;
     clearTimeout(longPressTimer); longPressTimer=null; // mouvement net → ce n'est plus un appui long
-    if(Math.abs(dy)>Math.abs(dx)){ s.el=null; return; } // scroll vertical → on laisse faire, pas de swipe
+    if(Math.abs(dy)>Math.abs(dx)){
+      // Mouvement vertical net avant la fin de l'appui long → l'utilisateur voulait
+      // juste faire défiler la liste, pas réordonner. On prend nous-mêmes le relais du scroll.
+      s.scrollMode=true; s.scrollEl=s.el.closest('.ov-card'); s.lastY=e.clientY;
+      if(s.scrollEl) s.scrollEl.scrollTop-=dy;
+      return;
+    }
     s.dragging=true; s.el.classList.add('dragging'); s.el.setPointerCapture&&s.el.setPointerCapture(e.pointerId);
   }
   let x=s.baseX+dx;
