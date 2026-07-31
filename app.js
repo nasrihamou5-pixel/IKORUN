@@ -3991,7 +3991,12 @@ const EXDB_MAP={
  'Fentes avant':'Dumbbell_Lunges','Fentes marchées':'Dumbbell_Walking_Lunge','Walking Lunge':'Dumbbell_Walking_Lunge','Dumbbell Split Squat':'Dumbbell_Lunges','Goblet Squat':'Goblet_Squat','Squat poids du corps':'Bodyweight_Squat',
  'Leg Curl allongé':'Lying_Leg_Curls','Lever Lying Leg Curl':'Lying_Leg_Curls','Leg Curl assis':'Seated_Leg_Curl','Lever Kneeling Leg Curl':'Standing_Leg_Curl','Nordic Curl':'Lying_Leg_Curls','Nordic Hamstring Curl':'Lying_Leg_Curls','Soulevé jambes tendues haltères':'Stiff-Legged_Dumbbell_Deadlift',
  'Mollets debout':'Standing_Calf_Raises','Standing Calf Raise':'Standing_Calf_Raises','Mollets assis':'Seated_Calf_Raise','Lever Seated Calf Raise':'Seated_Calf_Raise','Lever Seated One Leg Calf Raise':'Seated_Calf_Raise','Mollets à la presse':'Calf_Press_On_The_Leg_Press_Machine',
- 'Burpees':'Burpee','Thruster':'Thrusters','Clean & Press':'Clean_and_Press','Kettlebell Swing':'Kettlebell_One-Legged_Deadlift','EZ-bar 21s':'Barbell_Curl'
+ 'Burpees':'Burpee','Thruster':'Thrusters','Clean & Press':'Clean_and_Press','Kettlebell Swing':'Kettlebell_One-Legged_Deadlift','EZ-bar 21s':'Barbell_Curl',
+ // Alias ajoutés : ces noms (bibliothèque LIB) n'avaient pas de correspondance ci-dessus et retombaient
+ // sur l'icône générique. On les relie à un id déjà utilisé et vérifié plus haut (même exercice ou variante proche).
+ 'Dumbbell Incline Bench Press':'Incline_Dumbbell_Press','Concentration Curl':'Concentration_Curls','Cable Curl':'Cable_Hammer_Curls_-_Rope_Attachment',
+ 'Overhead Triceps Extension':'Seated_Triceps_Press','Close Grip Bench Press':'Close-Grip_Barbell_Bench_Press','Arnold Press':'Arnold_Dumbbell_Press',
+ 'Shrug':'Barbell_Shrug','Wrist Curl':'Palms-Down_Wrist_Curl_Over_A_Bench'
 };
 function exGif(name){
   const id=EXDB_MAP[name]; if(!id) return null;

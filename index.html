@@ -1727,7 +1727,8 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
   transition:transform .28s cubic-bezier(.2,.85,.3,1);will-change:transform;
   background:var(--s1);background-image:var(--grad-card);
   -webkit-backdrop-filter:none;backdrop-filter:none;
-  border:1px solid var(--hair);box-shadow:var(--float-md);}
+  border:1px solid var(--hair);box-shadow:var(--float-md);
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
 .ex-swipe-card.dragging{transition:none;}
 
 /* Swipe sur une ligne de série (dans le tableau Set/Kg/Reps) — même logique, plus compact */
@@ -1738,8 +1739,11 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
 .set-swipe-action.left{left:0;}
 .set-swipe-action.right{right:0;}
 .set-swipe-row{position:relative;z-index:1;touch-action:pan-y;background:var(--s1);
-  transition:transform .28s cubic-bezier(.2,.85,.3,1);will-change:transform;border-radius:10px;}
+  transition:transform .28s cubic-bezier(.2,.85,.3,1);will-change:transform;border-radius:10px;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
 .set-swipe-row.dragging{transition:none;}
+/* La ligne contient des <input> pour kg/reps : eux doivent rester sélectionnables/éditables normalement */
+.set-swipe-row input{-webkit-user-select:text;user-select:text;}
 
 /* ===== RÉORGANISER UN EXERCICE (appui long : la carte se soulève et se glisse en place) ===== */
 .ex-swipe-wrap{will-change:transform;}
