@@ -172,7 +172,7 @@ function renderLoginMain(){
     h+='<h1 class="login-h1">'+t('loginWelcomeTitle')+'</h1>';
     h+='<p class="login-sub">'+t('loginSubConnect')+'</p>';
     h+='<div class="field"><label>'+t('emailLabel')+'</label><input class="inp" id="li_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="'+t('emailPlaceholder')+'"></div>';
-    h+='<div class="field"><label>'+t('passwordLabel')+'</label><input class="inp" id="li_password" type="password" autocomplete="current-password" placeholder="••••••••"></div>';
+    h+='<div class="field"><label>'+t('passwordLabel')+'</label><input class="inp" id="li_password" type="password" autocomplete="current-password" placeholder=""></div>';
     h+='<div class="uname-status" id="li_status"></div>';
     h+='<button class="btn" style="margin-bottom:11px" onclick="submitEmailLogin()" id="li_submit">'+t('loginBtnLabel')+'</button>';
     h+='<div class="login-guest" onclick="switchLoginMode(\'forgot\')">'+t('forgotPasswordLink')+'</div>';
@@ -183,8 +183,8 @@ function renderLoginMain(){
     h+='<h1 class="login-h1">'+t('signupTitle')+'</h1>';
     h+='<p class="login-sub">'+t('signupSub')+'</p>';
     h+='<div class="field"><label>'+t('emailLabel')+'</label><input class="inp" id="li_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="'+t('emailPlaceholder')+'"></div>';
-    h+='<div class="field"><label>'+t('passwordLabel')+'</label><input class="inp" id="li_password" type="password" autocomplete="new-password" placeholder="••••••••"></div>';
-    h+='<div class="field"><label>'+t('confirmPasswordLabel')+'</label><input class="inp" id="li_password2" type="password" autocomplete="new-password" placeholder="••••••••"></div>';
+    h+='<div class="field"><label>'+t('passwordLabel')+'</label><input class="inp" id="li_password" type="password" autocomplete="new-password" placeholder=""></div>';
+    h+='<div class="field"><label>'+t('confirmPasswordLabel')+'</label><input class="inp" id="li_password2" type="password" autocomplete="new-password" placeholder=""></div>';
     h+='<div class="uname-status" id="li_status"></div>';
     h+='<button class="btn" style="margin-bottom:11px" onclick="submitEmailSignup()" id="li_submit">'+t('signupBtnLabel')+'</button>';
     h+='<div class="login-or">'+t('orDividerLabel')+'</div>';
@@ -338,13 +338,13 @@ async function checkUsernameLive(rawValue, statusEl, inputEl){
   inputEl && inputEl.classList.remove('uname-ok','uname-bad');
   if(!v){ if(statusEl){ statusEl.textContent=t('usernameFormatHint'); statusEl.className='uname-status'; } return false; }
   if(!usernameFormatOk(v)){
-    if(statusEl){ statusEl.textContent='✕ '+t('usernameFormatHint'); statusEl.className='uname-status bad'; }
+    if(statusEl){ statusEl.textContent=''+t('usernameFormatHint'); statusEl.className='uname-status bad'; }
     inputEl && inputEl.classList.add('uname-bad');
     return false;
   }
   if(statusEl){ statusEl.textContent=t('checkingEllipsis'); statusEl.className='uname-status checking'; }
   if(!window.supabaseClient){
-    if(statusEl){ statusEl.textContent='✓ '+t('available'); statusEl.className='uname-status ok'; }
+    if(statusEl){ statusEl.textContent=''+t('available'); statusEl.className='uname-status ok'; }
     inputEl && inputEl.classList.add('uname-ok');
     return true;
   }
@@ -355,11 +355,11 @@ async function checkUsernameLive(rawValue, statusEl, inputEl){
     if(seq!==_unameSeq) return null; // réponse obsolète (retapé entretemps) : on l'ignore, on ne touche pas au résultat affiché
     if(error){ console.error('username_available error',error); if(statusEl){ statusEl.textContent=''; statusEl.className='uname-status'; } return null; }
     if(!data){
-      if(statusEl){ statusEl.textContent='✕ '+t('alreadyTaken'); statusEl.className='uname-status bad'; }
+      if(statusEl){ statusEl.textContent=''+t('alreadyTaken'); statusEl.className='uname-status bad'; }
       inputEl && inputEl.classList.add('uname-bad');
       return false;
     }
-    if(statusEl){ statusEl.textContent='✓ '+t('available'); statusEl.className='uname-status ok'; }
+    if(statusEl){ statusEl.textContent=''+t('available'); statusEl.className='uname-status ok'; }
     inputEl && inputEl.classList.add('uname-ok');
     return true;
   }catch(e){
@@ -402,7 +402,7 @@ function openFriends(){
   // Affiche tout de suite un état de chargement : sans ça, la fenêtre s'ouvrait
   // vide le temps de la requête réseau, ce qui donnait l'impression qu'elle
   // "s'ouvrait mal".
-  $('#progBody').innerHTML='<div id="friendsBody"><div class="card"><div class="empty"><div class="em-ic">⏳</div><div style="font-size:13px">'+t('loadingLab')+'</div></div></div></div>';
+  $('#progBody').innerHTML='<div id="friendsBody"><div class="card"><div class="empty"><div class="em-ic">'+ICN('stopwatch',36,'currentColor')+'</div><div style="font-size:13px">'+t('loadingLab')+'</div></div></div></div>';
   openOv('ovProg');
   loadFriendsData();
 }
@@ -437,7 +437,7 @@ async function loadFriendsData(){
     if(seq!==_friendsLoadSeq) return;
     _friendsLoading=false;
     const box=$('#friendsBody');
-    if(box) box.innerHTML='<div class="card"><div class="empty"><div class="em-ic">⚠️</div><div style="font-size:13px">'+t('friendsLoadError')+'</div><button class="btn ghost sm" style="margin-top:10px;width:auto" onclick="loadFriendsData()">'+t('retryBtn')+'</button></div></div>';
+    if(box) box.innerHTML='<div class="card"><div class="empty"><div class="em-ic">'+ICN('warning',36,'currentColor')+'</div><div style="font-size:13px">'+t('friendsLoadError')+'</div><button class="btn ghost sm" style="margin-top:10px;width:auto" onclick="loadFriendsData()">'+t('retryBtn')+'</button></div></div>';
   }
 }
 function renderFriends(){
@@ -449,7 +449,7 @@ function renderFriends(){
   '</div>';
 
   if(!window.supabaseClient || !window.currentUserId){
-    h+='<div class="card"><div class="empty"><div class="em-ic">🔒</div><div style="font-size:13px">'+t('loginToAddFriends')+'</div></div></div>';
+    h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('lock',36,'currentColor')+'</div><div style="font-size:13px">'+t('loginToAddFriends')+'</div></div></div>';
     $('#friendsBody').innerHTML=h; return;
   }
 
@@ -459,16 +459,16 @@ function renderFriends(){
     if(friendsCache.pending.length){
       h+='<div class="sec-lab">'+t('receivedRequests')+'</div>';
       friendsCache.pending.forEach(p=>{
-        h+='<div class="fr-req-card"><div class="row"><div style="font-weight:700">'+escHtml(p.username)+'</div><div class="row" style="gap:6px"><button class="btn sm" style="width:auto" onclick="respondFriend('+p.reqId+',true)">'+t('acceptBtn')+'</button><button class="btn ghost sm" style="width:auto" onclick="respondFriend('+p.reqId+',false)">✕</button></div></div></div>';
+        h+='<div class="fr-req-card"><div class="row"><div style="font-weight:700">'+escHtml(p.username)+'</div><div class="row" style="gap:6px"><button class="btn sm" style="width:auto" onclick="respondFriend('+p.reqId+',true)">'+t('acceptBtn')+'</button><button class="btn ghost sm" style="width:auto" onclick="respondFriend('+p.reqId+',false)"></button></div></div></div>';
       });
     }
     h+='<div class="sec-lab">'+tp('yourFriendsCount',friendsCache.friends.length)+'</div>';
-    if(!friendsCache.friends.length) h+='<div class="card"><div class="empty"><div class="em-ic">👋</div><div style="font-size:13px">'+t('noFriendsYet')+'</div></div></div>';
+    if(!friendsCache.friends.length) h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('users',36,'currentColor')+'</div><div style="font-size:13px">'+t('noFriendsYet')+'</div></div></div>';
     else h+='<div class="card" style="padding:2px 6px">'+friendsCache.friends.map((f,i)=>{
       const av=f.photo_url?'<div class="fr-avatar" style="background-image:url(\''+escHtml(f.photo_url)+'\')"></div>':'<div class="fr-avatar">'+(f.username?escHtml(f.username[0].toUpperCase()):'?')+'</div>';
       return '<div class="fr-row" style="border-bottom:'+(i<friendsCache.friends.length-1?'1px solid var(--hair)':'none')+'" onclick="openFriendProfile(\''+f.id+'\')">'+av+
         '<div class="fr-info"><div class="fr-name">'+escHtml(f.username)+'</div><div class="fr-meta"><span class="fr-lvl-chip">'+t('lvlDot')+' '+f.level+'</span><span class="fr-km-txt">'+tp('kmThisWeekShort',f.km_week)+'</span></div></div>'+
-        '<span class="fr-del" onclick="event.stopPropagation();removeFriend(\''+f.id+'\')" title="'+t('removeLab')+'">🗑</span>'+
+        '<span class="fr-del" onclick="event.stopPropagation();removeFriend(\''+f.id+'\')" title="'+t('removeLab')+'">'+ICN('trash',16)+'</span>'+
         '<span class="lr-chev">'+ICN('chevronR',16)+'</span></div>';
     }).join('')+'</div>';
     if(friendsCache.sent.length){
@@ -481,10 +481,11 @@ function renderFriends(){
     const me={username:(P.name||t('youDefaultName'))+t('youParen'),xp:(XP&&XP.total)||0,level:(XP&&XP.level)||1,photo_url:P.photo};
     const all=[...friendsCache.friends,me].sort((a,b)=>b.xp-a.xp);
     h+='<div class="sec-lab">'+t('xpRanking')+'</div>';
-    if(all.length===1) h+='<div class="card"><div class="empty"><div class="em-ic">🏆</div><div style="font-size:13px">'+t('addFriendsUnlock')+'</div></div></div>';
+    if(all.length===1) h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('medal',36,'currentColor')+'</div><div style="font-size:13px">'+t('addFriendsUnlock')+'</div></div></div>';
     else {
       const top3=all.slice(0,3), rest=all.slice(3);
-      const medals=['🥇','🥈','🥉'];
+      const medalCols=['var(--or)','var(--platine)','var(--bronze)'];
+      const medals=top3.map((_,i)=>ICN('medal',22,medalCols[i]));
       h+='<div class="fr-podium">'+top3.map((f,i)=>{
         const av=f.photo_url?'<div class="fr-pod-av" style="background-image:url(\''+escHtml(f.photo_url)+'\')"></div>':'<div class="fr-pod-av">'+(f.username?escHtml(f.username[0].toUpperCase()):'?')+'</div>';
         return '<div class="fr-pod-card p'+(i+1)+'"'+(f.id?' onclick="openFriendProfile(\''+f.id+'\')" style="cursor:pointer"':'')+'><div class="fr-pod-medal">'+medals[i]+'</div>'+av+'<div class="fr-pod-name">'+escHtml(f.username)+'</div><div class="fr-pod-xp">'+f.xp+' XP</div></div>';
@@ -572,7 +573,7 @@ function friendBadgesHTML(f){
 function renderFriendProfileHTML(){
   const f=[...friendsCache.friends,...friendsCache.pending,...friendsCache.sent].find(x=>x.id===friendsSelected);
   const back='<div class="row" style="margin-bottom:14px;cursor:pointer" onclick="backToFriendsList()">'+ICN('chevronR',16).replace('<path','<path transform="rotate(180 12 12)"')+' <span style="font-weight:700;margin-left:4px">'+t('backToFriends')+'</span></div>';
-  if(!f) return back+'<div class="card"><div class="empty"><div class="em-ic">🤷</div><div style="font-size:13px">'+t('profileNotFound')+'</div></div></div>';
+  if(!f) return back+'<div class="card"><div class="empty"><div class="em-ic">'+ICN('search',36,'currentColor')+'</div><div style="font-size:13px">'+t('profileNotFound')+'</div></div></div>';
   const av=f.photo_url?'<div class="fr-profile-av" style="background-image:url(\''+escHtml(f.photo_url)+'\')"></div>':'<div class="fr-profile-av">'+(f.username?escHtml(f.username[0].toUpperCase()):'?')+'</div>';
   let h=back;
   h+='<div class="fr-profile-hero">'+
@@ -608,7 +609,20 @@ function shareCardImage(title,subtitle,emoji){
   ctx.fillStyle=grad; ctx.fillRect(0,0,1080,1080);
   ctx.fillStyle='rgba(61,127,255,.25)'; ctx.beginPath(); ctx.arc(850,150,320,0,Math.PI*2); ctx.fill();
   ctx.textAlign='center';
-  ctx.font='140px sans-serif'; ctx.fillText(emoji||'🏅',540,420);
+  // Médaille dessinée au canvas (remplace l'ancien emoji, non stylable) : cercle dégradé + étoile.
+  ctx.save();
+  const mg=ctx.createLinearGradient(540-70,350,540+70,490);
+  mg.addColorStop(0,'#9FD8FF'); mg.addColorStop(1,'#3D7FFF');
+  ctx.fillStyle=mg; ctx.beginPath(); ctx.arc(540,420,70,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#0B1220';
+  ctx.beginPath();
+  for(let i=0;i<5;i++){
+    const a1=-Math.PI/2+i*(2*Math.PI/5), a2=a1+Math.PI/5;
+    ctx.lineTo(540+Math.cos(a1)*30,420+Math.sin(a1)*30);
+    ctx.lineTo(540+Math.cos(a2)*12,420+Math.sin(a2)*12);
+  }
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
   ctx.fillStyle='#F4F6F9'; ctx.font='800 60px Unbounded, sans-serif'; ctx.fillText(title,540,620);
   ctx.fillStyle='#8993A6'; ctx.font='400 34px Inter, sans-serif'; ctx.fillText(subtitle||'',540,680);
   ctx.fillStyle='#3D7FFF'; ctx.font='800 30px Unbounded, sans-serif'; ctx.fillText('IKORUN',540,970);
@@ -625,7 +639,7 @@ function shareCardImage(title,subtitle,emoji){
 }
 function shareBadge(key){
   const b=BADGE_TIERS.find(x=>x.key===key); if(!b) return;
-  shareCardImage(b.name,'Badge débloqué sur IKORUN','🏅');
+  shareCardImage(b.name,'Badge débloqué sur IKORUN');
 }
 
 
@@ -787,17 +801,17 @@ const I18N={
     sessionsCap:'Séances',tonnageKg:'Tonnage kg',formCap:'Forme',nextSession:'PROCHAINE SÉANCE',today:'Aujourd\u2019hui',
     restDay:'Jour de repos',noSessionToday:'Aucune séance planifiée aujourd\u2019hui',recordsPerso:'Records perso',
     progression:'Progression',planOfDay:'PLAN DU JOUR',planIkorunDesc:'Plans d\u2019entraînement conçus par des coaches',
-    myPlanDesc:'Crée ton propre plan sur mesure',todayCap:'AUJOURD\u2019HUI',tapToStart:'Toucher pour démarrer ›',
+    myPlanDesc:'Crée ton propre plan sur mesure',todayCap:'AUJOURD\u2019HUI',tapToStart:'Toucher pour démarrer',
     goalCap:'OBJECTIF',courseDefault:'Course',goalTimeColon:'Objectif : {0} · ',raceOn:'Course le {0}',raceDay:'Jour de course',
     currentVdot:'VDOT actuel',currentPhase:'Phase actuelle',thisWeek:'Cette semaine',weekOf:'Semaine {0}/{1}',
     weeklyLoad:'Charge hebdo',regenConfirm:'Régénérer un nouveau plan ? Tes séances faites restent dans tes stats.',
-    regenBtn:'🔄 Régénérer / reconfigurer',planIkorunPill:'⚡ Plan IKORUN',myPlanPill:'📋 Plan personnel',
+    regenBtn:'Régénérer / reconfigurer',planIkorunPill:'Plan IKORUN',myPlanPill:'Plan personnel',
     planIkorunTitle:'Plan IKORUN — moteur scientifique',
     planIkorunDescLong:'Génère un plan périodisé sur-mesure (méthode norvégienne + VDOT/Daniels) basé sur ton VDOT ({0}), ton objectif, tes préférences et ta date de course. Le plan se réajuste automatiquement si tu rates une séance.',
-    configureGenerate:'⚙️ Configurer & générer',weekN:'Semaine {0}',deloadTag:' · 🟢 allégée',missedTag:'⚠ Manquée',restTag:'Repos',
-    newPersoPlan:'＋ Nouveau plan personnel',createCustomPlan:'Crée ton plan sur-mesure',
+    configureGenerate:'Configurer & générer',weekN:'Semaine {0}',deloadTag:' · allégée',missedTag:'Manquée',restTag:'Repos',
+    newPersoPlan:'Nouveau plan personnel',createCustomPlan:'Crée ton plan sur-mesure',
     createCustomPlanDesc:'Ajoute tes propres séances, choisis les dates, types et allures. Tout se synchronise avec ton accueil et tes stats.',
-    sessionsCount:'{0} séances · {1} terminées',followedTag:'✅ Suivi',duplicate:'Dupliquer',share:'Partager',
+    sessionsCount:'{0} séances · {1} terminées',followedTag:'Suivi',duplicate:'Dupliquer',share:'Partager',
     planNamePrompt:'Nom du plan :',myPersoPlanDefault:'Mon plan perso',
     you:'toi',dowShort:'L,M,M,J,V,S,D',greet:'Salut',
     weekPhaseLabel:'Semaine {0} · {1}',thresholdPaceShort:'Allure seuil',vsLastWeekShort:'vs sem. dernière',
@@ -820,9 +834,9 @@ const I18N={
     toolAgendaName:'Agenda',toolAgendaSub:'Tous vos événements',
     toolPriereName:'Prières',toolPriereSub:'Tous les horaires',
     // --- Profil ---
-    athleteDefault:'Athlète',addBioPrompt:'Ajoute une biographie ✍️',heightWeight:'Taille / poids',
+    athleteDefault:'Athlète',addBioPrompt:'Ajoute une biographie',heightWeight:'Taille / poids',
     noObjective:'Aucun',noBadgeYet:'Aucun badge obtenu pour l\u2019instant — ta première séance te rapprochera du badge Initié.',
-    seeAllProgress:'{0} / {1} · Voir tout ›',nextBadgeLab:'Prochain badge · {0}',
+    seeAllProgress:'{0} / {1} · Voir tout',nextBadgeLab:'Prochain badge · {0}',
     account:'Compte',friendsRanking:'Amis & Classement',manageProfile:'Gérer le profil',passwordSecurity:'Mot de passe & sécurité',
     notConnected:'Non connecté',notifLabel:'Notifications',preferences:'Préférences',historyRecords:'Historique & records',
     statistics:'Statistiques',theme:'Thème',appColor:'Couleur de l\u2019app',simplifiedMode:'Mode simplifié',
@@ -832,88 +846,88 @@ const I18N={
     // --- Stats ---
     tabBilan:'Bilan',tabRun:'Course',tabMuscu:'Muscu',tabTrophies:'Trophées',
     perWeek:'Semaine',perMonth:'Mois',per3Month:'3 Mois',perYear:'Année',
-    completeProfileTitle:'📏 Complète ton profil',completeProfileDesc:'Ta taille et ton poids servent à calculer ton IMC, tes calories et tes besoins.',
+    completeProfileTitle:'Complète ton profil',completeProfileDesc:'Ta taille et ton poids servent à calculer ton IMC, tes calories et tes besoins.',
     chooseHeight:'Choisir ta taille',chooseWeight:'Choisir ton poids',
     mileage:'Kilométrage',kmCumulated:'km cumulés',vsPrevPeriod:'vs période préc.',
     volumeTrend:'Tendance volume',kmThisWeek:'km cette sem.',eightWeeksLab:'8 sem.',weeksAgoLab:'Il y a 8 sem.',
-    totalTime:'Temps total',overPeriod:'sur la période',goalReached:'Objectif atteint ! 🎉',ofTarget:'{0}% de la cible',
+    totalTime:'Temps total',overPeriod:'sur la période',goalReached:'Objectif atteint !',ofTarget:'{0}% de la cible',
     kmPerSession:'KM / SÉANCE',sessionTypesLabel:'TYPES DE SÉANCE',bestDayLab:'MEILLEUR JOUR',bestWeekLab:'MEILLEURE SEMAINE',bestMonthLab:'MEILLEUR MOIS',
     detailByType:'Détail par type',last13Weeks:'13 dernières semaines',lessLabel:'Moins',moreLabel:'Plus',vsPrevShort:'vs préc.',
     typeMuscu:'Muscu',typeAutre:'Autre',insightsTitle:'Insights',
     quickTimer:'Minuteur',lvlShort:'NIV.',
-    vdotReal:'VDOT réel',sessionsRun:'Séances run',kmTotal:'km totaux',paceZones:'🎯 Zones d\u2019allure',
-    predictions:'🔮 Prédictions',formFatigue:'📈 Forme / Fatigue',personalRecords:'🏅 Records personnels',
+    vdotReal:'VDOT réel',sessionsRun:'Séances run',kmTotal:'km totaux',paceZones:'Zones d\u2019allure',
+    predictions:'Prédictions',formFatigue:'Forme / Fatigue',personalRecords:'Records personnels',
     chronic:'Chronique',acute:'Aiguë',tonnageLab:'Tonnage',prPerSession:'PR (kg/séance)',totalSets:'Séries totales',
-    startFirstMuscu:'Lance ta première séance de muscu !',lastSessions:'📅 Dernières séances',
+    startFirstMuscu:'Lance ta première séance de muscu !',lastSessions:'Dernières séances',
     tomorrow:'Demain',noUpcomingSession:'Aucune séance planifiée prochainement.',addSession:'Ajouter une séance',
-    showRestPlan:'Afficher le reste du plan · {0} semaines ↓',calendarTitle:'Calendrier',calendarSub:'Planifie ta progression',
-    friendsTitle:'👥 Amis & Classement',tabFriendsList:'👥 Amis',tabRank:'🏆 Classement',
+    showRestPlan:'Afficher le reste du plan · {0} semaines',calendarTitle:'Calendrier',calendarSub:'Planifie ta progression',
+    friendsTitle:'Amis & Classement',tabFriendsList:'Amis',tabRank:'Classement',
     loginToAddFriends:'Connecte-toi avec Google pour ajouter des amis et te comparer.',
-    searchFriendPlaceholder:'Chercher un ami par pseudo',receivedRequests:'Demandes reçues',acceptBtn:'✓ Accepter',
+    searchFriendPlaceholder:'Chercher un ami par pseudo',receivedRequests:'Demandes reçues',acceptBtn:'Accepter',
     yourFriendsCount:'Tes amis ({0})',noFriendsYet:'Pas encore d\u2019amis — cherche quelqu\u2019un par son pseudo !',
     sentRequests:'Demandes envoyées',awaitingResponse:'En attente de réponse…',xpRanking:'Classement XP entre amis',
     addFriendsUnlock:'Ajoute des amis pour débloquer le classement !',youParen:' (toi)',
     searchingLab:'Recherche…',loginToSearchFriends:'Connecte-toi pour chercher des amis',noUsernameFound:'Aucun pseudo trouvé',
     loadingLab:'Chargement…',friendsLoadError:'Impossible de charger tes amis. Vérifie ta connexion.',retryBtn:'Réessayer',
     resumeBtn:'Reprendre',discardBtn:'Abandonner',
-    alreadyLinked:'déjà lié',addBtn:'＋ Ajouter',searchError:'Erreur de recherche',alreadySentOrFriend:'Déjà envoyé ou déjà ami',
-    requestSent:'Demande envoyée ✓',friendProfileTitle:'👤 Profil',removeLab:'Retirer',lvlDot:'Niv.',kmThisWeekShort:'{0} km cette semaine',youDefaultName:'Toi',backToFriends:'Retour aux amis',profileNotFound:'Profil introuvable.',noBadgeUnlocked:'Aucun badge débloqué pour l\u2019instant.',kmPerWeek:'km/sem.',daysStreak:'Jours de suite',kmTotalLab:'km au total',tonnageKgLab:'Tonnage kg',
-    addPerf:'＋ Ajouter une performance',addChronosHint:'Ajoute tes chronos : ils alimentent ton VDOT et ton plan.',
-    bestPerf:'🏆 Meilleure perf',avgHR:'FC moy',maxHRshort:'max',perfHistoryTitle:'Historique des performances',
+    alreadyLinked:'déjà lié',addBtn:'Ajouter',searchError:'Erreur de recherche',alreadySentOrFriend:'Déjà envoyé ou déjà ami',
+    requestSent:'Demande envoyée',friendProfileTitle:'Profil',removeLab:'Retirer',lvlDot:'Niv.',kmThisWeekShort:'{0} km cette semaine',youDefaultName:'Toi',backToFriends:'Retour aux amis',profileNotFound:'Profil introuvable.',noBadgeUnlocked:'Aucun badge débloqué pour l\u2019instant.',kmPerWeek:'km/sem.',daysStreak:'Jours de suite',kmTotalLab:'km au total',tonnageKgLab:'Tonnage kg',
+    addPerf:'Ajouter une performance',addChronosHint:'Ajoute tes chronos : ils alimentent ton VDOT et ton plan.',
+    bestPerf:'Meilleure perf',avgHR:'FC moy',maxHRshort:'max',perfHistoryTitle:'Historique des performances',
     chooseDistance:'Choisis la distance',otherDist:'Autre',customDistance:'Distance personnalisée',
     chronoLab:'Chrono *',chronoFor:'Chrono {0}',dateField:'Date',placeOptional:'Lieu (optionnel)',
     placeholderPlace:'Lieu de la course',feelOptional:'Sensation (optionnel)',feelPlaceholder:'Comment c\u2019était ?',
-    officialComp:'🏁 Compétition officielle',saveThisPerf:'💾 Enregistrer cette performance',backBtn:'‹ Retour',
-    perfAddedComp:'Performance ajoutée · +XP compétition ✓',perfAdded:'Performance ajoutée ✓',
+    officialComp:'Compétition officielle',saveThisPerf:'Enregistrer cette performance',backBtn:'Retour',
+    perfAddedComp:'Performance ajoutée · +XP compétition',perfAdded:'Performance ajoutée',
     editProfileTitle:'Modifier le profil',usernameLab:'Nom d\u2019utilisateur',usernameHint:'Utilisé par tes amis pour te retrouver',
     firstNameLab:'Prénom',cityLab:'Ville',birthDateLab:'Date de naissance',heightCmLab:'Taille (cm)',weightKgLab:'Poids (kg)',
-    hrMaxLab:'FC max',hrRestLab:'FC repos',kmWeekLab:'Km / semaine',compDateLab:'Date compétition',coachLab:'Coach',saveBtn:'💾 Sauver',
+    hrMaxLab:'FC max',hrRestLab:'FC repos',kmWeekLab:'Km / semaine',compDateLab:'Date compétition',coachLab:'Coach',saveBtn:'Sauver',
     filterAll:'Tous',filterObtained:'Obtenus',filterLocked:'Verrouillés',badgesObtainedCount:'{0} / {1} badges obtenus',
     badgeDetailTitle:'Détails du badge',tierOf:'Palier {0} sur {1}',newBadgeUnlocked:'NOUVEAU BADGE DÉBLOQUÉ',
     tapToContinue:'Touche pour continuer',seeDetails:'Voir les détails',tapToClose:'Touche pour fermer',previewLocked:'APERÇU · VERROUILLÉ',
-    obtainedOn:'✅ Obtenu le {0}',lockedLab:'🔒 Verrouillé',replayAnim:'↻ Revivre l\u2019animation',seePreview:'↻ Voir un aperçu',
-    obtainConditions:'Conditions d\u2019obtention',globalProgress:'Progression globale',shareBadgeBtn:'↗ Partager ce badge',closeLab:'Fermer',
-    weightLab:'⚖️ Poids',imcLab:'📐 IMC',imcUnderweight:'Maigreur',imcNormal:'Normal',imcOverweight:'Surpoids',imcObese:'Obésité',
+    obtainedOn:'Obtenu le {0}',lockedLab:'Verrouillé',replayAnim:'Revivre l\u2019animation',seePreview:'Voir un aperçu',
+    obtainConditions:'Conditions d\u2019obtention',globalProgress:'Progression globale',shareBadgeBtn:'Partager ce badge',closeLab:'Fermer',
+    weightLab:'Poids',imcLab:'IMC',imcUnderweight:'Maigreur',imcNormal:'Normal',imcOverweight:'Surpoids',imcObese:'Obésité',
     sessionsPerWeek:'Séances / sem',metabolismKcal:'Métabolisme kcal',burned7d:'Brûlées 7j (run)',waterPerDay:'Eau / jour',
-    recentFormTitle:'😴 Forme récente (7 dernières séances)',sleepLab:'Sommeil',energyFeelLab:'Énergie / sensations',fatigueLab:'Fatigue',
-    tipBalanced:'Tout est équilibré, continue ainsi ! 💪',tipHighFatigue:'⚠️ Fatigue élevée : privilégie le repos et le sommeil cette semaine.',
-    tipLowSleep:'😴 Ton sommeil est insuffisant : vise 8h pour mieux récupérer.',tipGreatFeel:'🔥 Excellentes sensations : tu peux pousser un peu plus !',
+    recentFormTitle:'Forme récente (7 dernières séances)',sleepLab:'Sommeil',energyFeelLab:'Énergie / sensations',fatigueLab:'Fatigue',
+    tipBalanced:'Tout est équilibré, continue ainsi !',tipHighFatigue:'Fatigue élevée : privilégie le repos et le sommeil cette semaine.',
+    tipLowSleep:'Ton sommeil est insuffisant : vise 8h pour mieux récupérer.',tipGreatFeel:'Excellentes sensations : tu peux pousser un peu plus !',
     noDebriefHint:'Termine des séances avec leur bilan pour suivre ton sommeil, ta fatigue et ta récupération ici.',
-    nutritionTitle:'🍽️ Repères nutrition (athlète)',proteinLab:'Protéines',carbsLab:'Glucides',fatLab:'Lipides',kcalTarget:'kcal cible',
-    weightPickerTitle:'Ton poids (kg)',weightSaved:'Poids enregistré ✓',
-    labHint:'Saisis <b>2 valeurs</b> que tu connais. Les 2 autres se calculent automatiquement. ✨',
+    nutritionTitle:'Repères nutrition (athlète)',proteinLab:'Protéines',carbsLab:'Glucides',fatLab:'Lipides',kcalTarget:'kcal cible',
+    weightPickerTitle:'Ton poids (kg)',weightSaved:'Poids enregistré',
+    labHint:'Saisis <b>2 valeurs</b> que tu connais. Les 2 autres se calculent automatiquement.',
     distField:'Distance',timeField:'Temps',paceField:'Allure',speedField:'Vitesse',calculatedLab:'calculé',toFillLab:'à saisir',
-    resetBtn:'↺ Réinitialiser',splitTimesTitle:'📍 Temps de passage',
+    resetBtn:'Réinitialiser',splitTimesTitle:'Temps de passage',
     vdotToolTitle:'VDOT (Jack Daniels)',physioEstimates:'Estimations physiologiques',vo2maxEst:'VO₂max estimé',
     thresholdPace:'Allure seuil lactique',marathonPace:'Allure marathon',halfPace:'Allure semi',efPace:'Allure EF',
-    vdotAutoTip:'ℹ️ Ton VDOT se met à jour automatiquement depuis tes records. Ajoute tes chronos dans Profil → Records.',
-    waterNeedsTitle:'💧 Besoins en eau',dailyRest:'Quotidien (repos)',perRunHour:'Par heure de course',perHeatHour:'Par forte chaleur (+/h)',
-    hydraTip:'💡 Bois régulièrement par petites gorgées. Surveille la couleur de ton urine.',
+    vdotAutoTip:'Ton VDOT se met à jour automatiquement depuis tes records. Ajoute tes chronos dans Profil → Records.',
+    waterNeedsTitle:'Besoins en eau',dailyRest:'Quotidien (repos)',perRunHour:'Par heure de course',perHeatHour:'Par forte chaleur (+/h)',
+    hydraTip:'Bois régulièrement par petites gorgées. Surveille la couleur de ton urine.',
     basalMetabolism:'Métabolisme basal (kcal/j)',needsByActivity:'Besoins selon activité',
     actSedentary:'Sédentaire',actLight:'Léger',actModerate:'Modéré',actIntense:'Intense',actAthlete:'Athlète',
     valueField:'Valeur',fromField:'De',toField:'Vers',
-    quickNotesTitle:'📝 Notes rapides',notesPlaceholder:'Écris ici... (sauvegarde automatique)',autoSaveLocal:'💾 Sauvegarde automatique en local.',
+    quickNotesTitle:'Notes rapides',notesPlaceholder:'Écris ici... (sauvegarde automatique)',autoSaveLocal:'Sauvegarde automatique en local.',
     lapBtn:'Tour',stopBtn:'Stop',resetBtn2:'Reset',bestLap:'Meilleur tour',slowestLap:'Plus lent',avgLap:'Moyenne',lapsLab:'Tours',
-    exportBtn:'Exporter',fastTag:'⚡ rapide',slowTag:'lent',lapsCopied:'Tours copiés ✓',
-    addEventBtn:'＋ Ajouter un événement',competitionDefault:'Compétition',noEventLab:'Aucun événement',pastLab:'passé',
+    exportBtn:'Exporter',fastTag:'rapide',slowTag:'lent',lapsCopied:'Tours copiés',
+    addEventBtn:'Ajouter un événement',competitionDefault:'Compétition',noEventLab:'Aucun événement',pastLab:'passé',
     eventTitlePrompt:'Titre de l\u2019événement :',eventDatePrompt:'Date (AAAA-MM-JJ) :',eventAdded:'Événement ajouté',
-    prayerTitle:'🕌 Prières · Béjaïa',uoifMethod:'Méthode UOIF · {0}',
+    prayerTitle:'Prières · Béjaïa',uoifMethod:'Méthode UOIF · {0}',
     obWelcomeTitle:'Bienvenue sur IKORUN',obWelcomeIntro:'Elite Athletic Intelligence.<br>Ton coaching personnel, calculé scientifiquement, 100% hors-ligne.',
     obWhoTitle:'Qui es-tu ?',obWhoIntro:'Tes informations de base.',firstNamePh:'Ton prénom',firstNameReq:'Prénom *',
     usernameReq:'Nom d\u2019utilisateur *',usernamePh:'pseudo_unique',usernameFormatHint:'3 à 20 caractères : lettres, chiffres, _',
     birthDateReq:'Date de naissance *',sexReq:'Sexe *',selectLab:'Sélectionner',maleLab:'Homme',femaleLab:'Femme',
     obLevelTitle:'Ton niveau',obLevelIntro:'Sois honnête, le plan s\u2019adapte.',
-    levelNote:'💡 Le <b>niveau</b> ajuste l\u2019intensité de ton plan et ton volume d\u2019entraînement, calculés automatiquement. Pas sûr ? Touche <b>« Comment choisir ? »</b>.',
-    levelReq:'Niveau *',howChooseLab:'ℹ️ Comment choisir ?',
+    levelNote:'Le <b>niveau</b> ajuste l\u2019intensité de ton plan et ton volume d\u2019entraînement, calculés automatiquement. Pas sûr ? Touche <b>« Comment choisir ? »</b>.',
+    levelReq:'Niveau *',howChooseLab:'Comment choisir ?',
     lvlBeginner:'Débutant',lvlIntermediate:'Intermédiaire',lvlAdvanced:'Confirmé',lvlVeryAdvanced:'Très avancé',lvlElite:'Élite',
     obGoalTitle:'Ton objectif',obGoalIntro:'Ce qui te fait courir.',goalReq:'Objectif *',goalPh:'Ex : passer sous 20:00 au 5 km',
     compDateReq:'Date de compétition *',coachOptional:'Coach — optionnel',coachPh:'Nom de ton coach',
     obPerfTitle:'Tes performances',obPerfIntro:'Ajoute tes meilleurs chronos. Au moins un est requis.',
-    perfNote:'💡 Tes chronos calculent ton <b>VDOT</b> (ta « cylindrée ») et toutes tes <b>allures d\u2019entraînement</b>. Donne au moins un chrono récent et fiable. Choisis la distance puis le temps avec les roues.',
-    addAnotherPerf:'＋ Ajouter une autre performance',backLab:'Retour',continueLab:'Continuer',
+    perfNote:'Tes chronos calculent ton <b>VDOT</b> (ta « cylindrée ») et toutes tes <b>allures d\u2019entraînement</b>. Donne au moins un chrono récent et fiable. Choisis la distance puis le temps avec les roues.',
+    addAnotherPerf:'Ajouter une autre performance',backLab:'Retour',continueLab:'Continuer',
     paramsTitle:'Paramètres',libTitle:'Bibliothèque',configureTitle:'Configurer',programTitle:'Programme',sessionTitle:'Séance',
     newProgramTitle:'Nouveau programme',homeDefault:'Accueil',chooseLab:'Choisir',validateLab2:'Valider',
-    understoodLab:'Compris 👍',howChooseLevelTitle:'Comment choisir mon niveau ?',
+    understoodLab:'Compris',howChooseLevelTitle:'Comment choisir mon niveau ?',
     lvlBeginnerDesc:'Tu cours depuis moins d\u2019un an. Tu t\u2019entraînes occasionnellement et tu découvres encore les bases.',
     lvlIntermediateDesc:'Tu cours régulièrement, participes parfois à des compétitions et maîtrises les principaux types de séances.',
     lvlAdvancedDesc:'Plusieurs années d\u2019entraînement, une pratique structurée et des objectifs chronométriques précis.',
@@ -921,24 +935,24 @@ const I18N={
     lvlEliteDesc:'Athlète de haut niveau : performances nationales/internationales, entraînement quotidien à très gros volume.',
     checkingLab:'Vérification…',
     fillRequiredFields:'Remplis les champs requis',chooseUsernameLab:'Choisis un nom d\u2019utilisateur',usernameUnavailable:'Ce nom d\u2019utilisateur n\u2019est pas disponible',
-    quickProfileEnabled:'Profil rapide activé — mode simplifié activé ✓',chooseLevelLab:'Choisis un niveau',goalDateRequired:'Objectif et date requis',addAtLeastOnePerf:'Ajoute au moins une performance',
-    finishLab:'Terminer 🚀',distanceLab2:'Distance',timeForLab:'Temps · {0}',chooseWord:'Choisir',
-    usernameTakenMeanwhile:'⚠️ Pseudo pris entre-temps, modifie-le dans Profil',
+    quickProfileEnabled:'Profil rapide activé — mode simplifié activé',chooseLevelLab:'Choisis un niveau',goalDateRequired:'Objectif et date requis',addAtLeastOnePerf:'Ajoute au moins une performance',
+    finishLab:'Terminer',distanceLab2:'Distance',timeForLab:'Temps · {0}',chooseWord:'Choisir',
+    usernameTakenMeanwhile:'Pseudo pris entre-temps, modifie-le dans Profil',
     liveFinishBtn:'Terminer',durationLab:'Durée',volumeLab:'Volume',setsLab:'Séries',deleteLab2:'Supprimer',
-    exerciseDoneLab:'✓ Terminé',setsDoneCount:'{0}/{1} séries faites',restTimerLab:'⏱ Minuteur de repos : {0}',disabledLab:'Désactivé',
-    setCol:'Set',prevCol:'Précédent',kgCol:'Kg',repsCol:'Reps',addSetBtn:'＋ Ajouter une série',
-    addExerciseBtn:'＋ Ajouter un exercice',cancelSessionBtn:'🗑 Annuler la séance',
-    restSeconds:'Repos (secondes)',minOneSetRemain:'Il doit rester au moins une série',changeRestLab:'⏱ Modifier le repos',
-    removeExLab:'🗑 Retirer cet exercice',cancelLab:'Annuler',minOneExRemain:'Il doit rester au moins un exercice',
-    removeExConfirmTitle:'⚠️ Retirer cet exercice ?',removeLab2:'Retirer',exerciseRemoved:'Exercice retiré ✓',
-    exerciseAdded:'Exercice ajouté ✓',sessionSaved:'Séance sauvegardée — reprends quand tu veux',xpGain:'+5 XP',
-    restTitle:'⏱ Repos',secLab:'sec',add30sLab:'+30s',skipLab:'Passer',cancelSessionTitle:'⚠️ Annuler la séance ?',
+    exerciseDoneLab:'Terminé',setsDoneCount:'{0}/{1} séries faites',restTimerLab:'Minuteur de repos : {0}',disabledLab:'Désactivé',
+    setCol:'Set',prevCol:'Précédent',kgCol:'Kg',repsCol:'Reps',addSetBtn:'Ajouter une série',
+    addExerciseBtn:'Ajouter un exercice',cancelSessionBtn:'Annuler la séance',
+    restSeconds:'Repos (secondes)',minOneSetRemain:'Il doit rester au moins une série',changeRestLab:'Modifier le repos',
+    removeExLab:'Retirer cet exercice',cancelLab:'Annuler',minOneExRemain:'Il doit rester au moins un exercice',
+    removeExConfirmTitle:'Retirer cet exercice ?',removeLab2:'Retirer',exerciseRemoved:'Exercice retiré',
+    exerciseAdded:'Exercice ajouté',sessionSaved:'Séance sauvegardée — reprends quand tu veux',xpGain:'+5 XP',
+    restTitle:'Repos',secLab:'sec',add30sLab:'+30s',skipLab:'Passer',cancelSessionTitle:'Annuler la séance ?',
     progressLostText:'Ta progression sur cette séance sera perdue.',continueLab2:'Continuer',yesCancelLab:'Oui, annuler',sessionCancelled:'Séance annulée',
     sessionDoneTitle:'Séance terminée !',tonnageParenKg:'Tonnage (kg)',repsLab:'Répétitions',caloriesLab:'Calories',recordsBrokenLab:'Records battus',
-    tonnageVsLastLab:'de tonnage vs ta dernière séance {0}.',newRecordsLab:'🥇 Nouveaux records',musclesWorkedLab:'💪 Muscles travaillés',xpEarnedLab:'+50 XP gagnés !',
+    tonnageVsLastLab:'de tonnage vs ta dernière séance {0}.',newRecordsLab:'Nouveaux records',musclesWorkedLab:'Muscles travaillés',xpEarnedLab:'+50 XP gagnés !',
     programNameLab:'Nom du programme',programNamePh:'Mon programme',descriptionLab:'Description',descriptionPh:'Objectif, split, fréquence...',
     objectiveLab2:'Objectif',iconLab:'Icône',colorLab:'Couleur',exercisesCountLab:'Exercices ({0})',addExFromLib:'Ajoute des exercices depuis la bibliothèque.',
-    addFromLibBtn:'＋ Ajouter depuis la bibliothèque',saveProgramBtn:'💾 Enregistrer le programme',giveNameLab:'Donne un nom',addExercisesLab:'Ajoute des exercices',programCreated:'Programme créé ✓',
+    addFromLibBtn:'Ajouter depuis la bibliothèque',saveProgramBtn:'Enregistrer le programme',giveNameLab:'Donne un nom',addExercisesLab:'Ajoute des exercices',programCreated:'Programme créé',
     sessTitle_EF:'Endurance Fondamentale',sessLabel_EF:'EF',
     sessTitle_RECUP:'Récupération active',sessLabel_RECUP:'Récup',
     sessTitle_LONG:'Sortie Longue',sessLabel_LONG:'Long',progressiveSuffix:' progressive',
@@ -955,7 +969,7 @@ const I18N={
     sessTitle_FARTLEK:'Fartlek (jeu d\u2019allures)',sessLabel_FARTLEK:'Fartlek',
     sessTitle_COTES:'Séance de Côtes',sessLabel_COTES:'Côtes',
     sessTitle_LIGNES:'Footing + Lignes droites',sessLabel_LIGNES:'Lignes',
-    sessTitle_COURSE:'🏆 Jour J',sessLabel_COURSE:'Course',
+    sessTitle_COURSE:'Jour J',sessLabel_COURSE:'Course',
     sessTitle_default:'Endurance',sessLabel_default:'EF',
     phase_PG:'Préparation générale',phase_AERO:'Développement aérobie',phase_VO2:'Développement VO₂max',
     phase_SPE:'Développement spécifique',phase_PIC:'Pic de forme',phase_TAPER:'Affûtage',
@@ -984,46 +998,46 @@ const I18N={
     ach_force_name:'Force',ach_force_desc:'Soulève plus de 20 000 kg cumulés en une seule semaine.',
     catAccomplissement:'Accomplissement',catPerformance:'Performance',allYearsLab:'Toutes',
     tapTrophyHint:'Touche un trophée pour voir l\u2019animation ou la condition à remplir pour l\u2019obtenir.',
-    noTrophyInYear:'Aucun trophée obtenu en {0}.',badgeUnlockedToast:'🏵️ {0} débloqué !',badgeRemovedToast:'Badge retiré',
+    noTrophyInYear:'Aucun trophée obtenu en {0}.',badgeUnlockedToast:'{0} débloqué !',badgeRemovedToast:'Badge retiré',
     objForce:'Force',objMass:'Masse',objEndurance:'Endurance',objWeightLoss:'Perte poids',objMaintain:'Maintien',
     colBlue:'Bleu',colRed:'Rouge',colGreen:'Vert',colGold:'Or',colPurple:'Violet',colCyan:'Cyan',
     newTrophyUnlocked:'NOUVEAU TROPHÉE DÉBLOQUÉ',
-    markAsObtained:'✓ Marquer comme obtenu',
+    markAsObtained:'Marquer comme obtenu',
     connectingGoogle:'Connexion à Google…',googleConnectFail:'Connexion impossible, réessaie',
     confirmLogout:'Se déconnecter ? Tes données restent sauvegardées sur ton compte.',
     confirmSwitchGoogle:'Tu vas être déconnecté(e) pour te reconnecter avec un autre compte Google. Tes données actuelles restent sauvegardées.',
-    confirmDeleteAllData:'⚠️ Cette action va supprimer TOUTES tes données (séances, records, XP, profil...) de façon définitive, sur le cloud et sur cet appareil. Continuer ?',
+    confirmDeleteAllData:'Cette action va supprimer TOUTES tes données (séances, records, XP, profil...) de façon définitive, sur le cloud et sur cet appareil. Continuer ?',
     confirmFinalIrreversible:'Dernière confirmation : es-tu vraiment sûr(e) ? Cette action est irréversible.',
     genericErrorRetry:'Erreur, réessaie',
     confirmRemoveFriend:'Retirer cet ami ?',
-    connectFirst:'Connecte-toi d\u2019abord',copiedClipboard:'Copié dans le presse-papier ✓',
+    connectFirst:'Connecte-toi d\u2019abord',copiedClipboard:'Copié dans le presse-papier',
     usernameFormatHint:'3 à 20 caractères : lettres, chiffres, _',checkingEllipsis:'Vérification…',
     available:'Disponible',alreadyTaken:'Déjà pris',
     alarmDefaultTitle:'Alarme',timeUpMsg:'Le temps est écoulé !',timeUpTitle:'Temps écoulé !',
     stopAlarm:'Arrêter l\u2019alarme',remindIn5Min:'Rappel dans 5 min',reminderCap:'Rappel',fiveMinElapsed:'5 minutes écoulées',
-    sessionInProgress:'Séance en cours',welcomeToast:'Bienvenue 👋',
+    sessionInProgress:'Séance en cours',welcomeToast:'Bienvenue',
     resumeSessionConfirm:'Une séance « {0} » était en cours ({1} min). Reprendre ?',sessionColonName:'Séance : {0}',
     accentBlue:'Bleu',accentRed:'Rouge',accentGreen:'Vert militaire',accentBrown:'Marron boisé',accentYellow:'Jaune',accentCarbon:'Fibre de carbone',
-    colorApplied:'Couleur appliquée ✓',easyModeOn:'Mode simplifié activé ✓',easyModeOff:'Mode simplifié désactivé',
+    colorApplied:'Couleur appliquée',easyModeOn:'Mode simplifié activé',easyModeOff:'Mode simplifié désactivé',
     profileIncompleteAddTime:'Profil incomplet : ajoute un chrono dans tes records',chooseCompDate:'Choisis une date de compétition',
     planGenerated:'Plan « {0} » généré : {1} sem, {2} séances',raceGeneric:'course',
-    followingPersoPlan:'Tu suis maintenant ce plan perso ✓',backToIkorunPlan:'Retour au plan IKORUN',
+    followingPersoPlan:'Tu suis maintenant ce plan perso',backToIkorunPlan:'Retour au plan IKORUN',
     namePromptLabel:'Nom :',copySuffix:'(copie)',confirmDeletePlan:'Supprimer ce plan ?',
-    addAtLeastOneRepTime:'Ajoute au moins un temps de répétition',sessionAdded:'Séance ajoutée ✓',
+    addAtLeastOneRepTime:'Ajoute au moins un temps de répétition',sessionAdded:'Séance ajoutée',
     myPlanColon:'Mon plan : {0}',shareNotSupported:'Partage non supporté',confirmDeleteProgram:'Supprimer ce programme ?',
     routineTitle:'Routine',exercisesCount:'{0} exercices',exercisesCap:'Exercices',setsCap:'Séries',estDurationCap:'Durée est.',
     setsRepsLine:'{0} séries · {1} reps',addExercise:'Ajouter un exercice',startWorkout:'Commencer l\u2019entraînement',
     defaultProgramsNotEditable:'Les programmes par défaut ne sont pas modifiables',
-    heightCmTitle:'Taille (cm)',weightKgTitle:'Poids (kg)',heightSaved:'Taille enregistrée ✓',weightSaved:'Poids enregistré ✓',
-    deservedBreak:'Pause méritée ! ☕',backToWork:'Au travail ! 🍅',setDuration:'Règle une durée',
-    photoUpdated:'Photo mise à jour ✓',photoRemoved:'Photo supprimée',bioPromptLabel:'Ta biographie :',
+    heightCmTitle:'Taille (cm)',weightKgTitle:'Poids (kg)',heightSaved:'Taille enregistrée',weightSaved:'Poids enregistré',
+    deservedBreak:'Pause méritée !',backToWork:'Au travail !',setDuration:'Règle une durée',
+    photoUpdated:'Photo mise à jour',photoRemoved:'Photo supprimée',bioPromptLabel:'Ta biographie :',
     usernameInvalid:'Pseudo invalide (3-20, lettres/chiffres/_)',usernameNotAvailable:'Ce pseudo n\u2019est pas disponible',
-    usernameJustTaken:'Ce pseudo vient d\u2019être pris, choisis-en un autre',usernameUpdated:'Pseudo mis à jour ✓',
-    profileUpdated:'Profil mis à jour ✓',localDataOnly:'Données locales uniquement',exportGenerated:'Export généré ✓',
+    usernameJustTaken:'Ce pseudo vient d\u2019être pris, choisis-en un autre',usernameUpdated:'Pseudo mis à jour',
+    profileUpdated:'Profil mis à jour',localDataOnly:'Données locales uniquement',exportGenerated:'Export généré',
     confirmClearAll:'Tout effacer ? Cette action est irréversible.',confirmClearAllFinal:'Vraiment sûr ? Toutes tes données seront perdues.',
     offlineSinceDays:'Hors ligne depuis {0} j — pense à te reconnecter',dataSynced:'Données synchronisées',
     connectionRestored:'Connexion rétablie · synchronisation…',offlineModeAvailable:'Mode hors ligne — tout reste accessible',
-    dataImported:'Données importées ✓',invalidFile:'Fichier invalide',
+    dataImported:'Données importées',invalidFile:'Fichier invalide',
     searchExercisePlaceholder:'Rechercher un exercice...',muscleLabel:'Muscle',equipmentLabel:'Matériel',levelLabel:'Niveau',
     exercisesWordPlural:'exercices',exerciseWordSingular:'exercice',
     movementDemoCap:'DÉMONSTRATION DU MOUVEMENT',movementDemo:'Démonstration du mouvement',
@@ -1057,7 +1071,7 @@ const I18N={
     cdTemplate:'10-15 min footing très lent en {0}/km + étirements doux.',
     recovLabel_2minTrot:'2 min trot',recovLabel_1minTrot:'1 min trot',recovLabel_30sTrot:'30 s trot',recovLabel_2to3minTrot:'2-3 min trot',recovLabel_90sTrot:'90 s trot',
     repsTextTemplate:'{0} × {1} m à {2} ({3}/km)',seriesPyramid:'Pyramide {0}→{1} m',seriesRepsDist:'{0} × {1} m à {2}',seriesRepsOnly:'{0} × efforts',
-    deloadPrefixTemplate:'🟢 SEMAINE ALLÉGÉE — {0}',
+    deloadPrefixTemplate:'SEMAINE ALLÉGÉE — {0}',
     bs_ef_objectif:'Construire ta base aérobie — le socle de toute progression (80% du volume des élites).',
     bs_ef_warmup:'Mise en route progressive sur 10 min.',bs_ef_body:'{0} km à allure facile ({1}/km). Conversation possible en permanence.',
     bs_ef_paces:'Zone 2, ~70% FCmax — {0}/km.',bs_ef_recovery:'Effort continu.',bs_ef_cooldown:'Quelques étirements des mollets et ischios.',
@@ -1152,7 +1166,7 @@ const I18N={
     coach_err_pain:'Douleurs {0} : ne les ignore pas. Une douleur articulaire qui persiste = repos.',
     coach_err_sleep:'Sommeil insuffisant : tes performances et ta récup vont en souffrir.',
     coach_err_tooEasy:'Séance trop facile (RPE {0}) : tu peux probablement pousser un peu plus la prochaine fois.',
-    coach_pos_completed:'Tu as terminé ta séance : la régularité est ta plus grande force. 💪',
+    coach_pos_completed:'Tu as terminé ta séance : la régularité est ta plus grande force.',
     coach_pos_feel:'Excellentes sensations — ton corps répond bien à l\u2019entraînement.',
     coach_pos_nopain:'Aucune douleur signalée : ta technique et ta charge sont bien gérées.',
     coach_pos_nutrition:'Alimentation au top, le carburant est là.',
@@ -1175,35 +1189,35 @@ const I18N={
     missedSessionTitle:'Séance manquée',nightSleepLabel:'Sommeil de la nuit',
     note_cardioAlreadyCounted:'charge cardio déjà comptabilisée, plan inchangé',
     note_explosiveCaution:'vigilance sur ta prochaine séance explosive',note_nextHardLightened:'prochaine séance dure allégée',
-    notedCoachBtn:'C\u2019est noté, Coach ! 💪',notesOptionalLabel:'Notes (optionnel)',paceKmLabel:'Allure /km',painLabel:'Douleurs',
+    notedCoachBtn:'C\u2019est noté, Coach !',notesOptionalLabel:'Notes (optionnel)',paceKmLabel:'Allure /km',painLabel:'Douleurs',
     planUpdatedWeekReason:'Plan mis à jour pour la semaine — {0}',positivePointsTitle:'Points positifs',
     recentMissesReducedMsg:'3 séances ratées récemment : volume des prochaines semaines réduit de 15%',
     repByRepSummary:'Bilan par répétition — {0} × {1} m',
-    repLegendLine:'⏱ = saisir le temps réel · ✓ = "j\u2019ai respecté l\u2019allure" (remplit automatiquement avec le temps cible)',
+    repLegendLine:'= saisir le temps réel · ✓ = "j\u2019ai respecté l\u2019allure" (remplit automatiquement avec le temps cible)',
     repNumDist:'Rép. {0} · {1} m',replacementMuscuTitle:'Remplacement — {0}',replacementRunTitle:'Course de remplacement',
     respectedCount:'{0}/{1} respectées',rpeFeltLabel:'RPE — difficulté ressentie :',sensationsLabel:'Sensations',
     sessionNotedToast:'Séance notée',sessionTypeLabel:'Type de séance',targetColon:'Cible {0}',
     upcomingAdjustmentsTitle:'Ajustements à venir',weatherLabel:'Météo',
-    addAsGoalLabel:'Ajouter comme objectif',advancedLabel:'Avancé',calculateLabel:'Calculer',copiedShortToast:'Copié ✓',
+    addAsGoalLabel:'Ajouter comme objectif',advancedLabel:'Avancé',calculateLabel:'Calculer',copiedShortToast:'Copié',
     copyLabel:'Copier',customDistanceKmLabel:'Distance custom (km)',distanceLabel:'Distance',
-    goalAddedReason:'objectif ajouté',goalAddedToast:'Objectif ajouté ✓',
+    goalAddedReason:'objectif ajouté',goalAddedToast:'Objectif ajouté',
     ikorunDistInTime:'IKORUN — {0}km en {1}',kmSplitsLabel:'Splits km',myIkorunPrediction:'Ma prédiction IKORUN : {0}km en {1}',
     negativeSplitLabel:'Negative split',paceCalculatorTitle:'Calculateur d\u2019allure',paceMinSecKmLabel:'Allure (min : sec /km)',
     penaltySecKmLabel:'Pénalité (sec/km)',predictedTimeLabel:'Temps prédit',resetShortLabel:'Réinit.',
-    resultSavedToast:'Résultat enregistré ✓',resultsLabel:'Résultats',runCalcFirstToast:'Lance un calcul d\u2019abord',
+    resultSavedToast:'Résultat enregistré',resultsLabel:'Résultats',runCalcFirstToast:'Lance un calcul d\u2019abord',
     sleepBorderline:'Limite — vise plus',sleepCyclesTip:'Un cycle dure ~90 min. Vise un réveil en fin de cycle : 6h, 7h30 ou 9h de sommeil. Couche-toi à heure régulière pour optimiser la récupération.',
     sleepCyclesTitle:'Cycles de sommeil',sleepHoursPerNightLabel:'Heures de sommeil / nuit',
-    sleepInsufficient:'Insuffisant — récupération compromise',sleepOptimal:'Optimal pour un athlète ✓',sleepPlenty:'Beaucoup — écoute ton corps',
+    sleepInsufficient:'Insuffisant — récupération compromise',sleepOptimal:'Optimal pour un athlète',sleepPlenty:'Beaucoup — écoute ton corps',
     speedLabel:'Vitesse',timeHMSLabel:'Temps (h : mm : ss)',
     configurePlanTitle:'Configurer mon plan',courseProfileLabel:'Profil du parcours',generateMyPlanBtn:'Générer mon plan',
     maxKmWeekLabel:'Km/sem maxi (pic)',minKmWeekLabel:'Km/sem mini',preferredSessionsLabel:'Séances préférées (le coach les privilégiera)',
     preparedRaceLabel:'Course préparée',raceDateLabel:'Date de la course',targetTimeOptionalLabel:'Chrono visé (optionnel)',
     trainingDaysLabel:'Jours d\u2019entraînement',yourNextRaceDefault:'Ta prochaine course',
-    guardFutureDate:'⛔ Impossible d\u2019enregistrer une séance à une date future.',
-    guardDistanceTooHigh:'⛔ Distance irréaliste par rapport à ton historique ({0} km max pour l\u2019instant).',
-    guardPaceTooFast:'⛔ Cette allure est incompatible avec ton VDOT actuel ({0}). Vérifie ta saisie.',
-    guardRecordTooFast:'⛔ Cette performance impliquerait un VDOT de {0}, trop éloigné de ton niveau actuel. Vérifie ton temps.',
-    guardStorageTooBig:'⚠️ Cette donnée est trop volumineuse et n\u2019a pas été synchronisée dans le cloud.',
+    guardFutureDate:'Impossible d\u2019enregistrer une séance à une date future.',
+    guardDistanceTooHigh:'Distance irréaliste par rapport à ton historique ({0} km max pour l\u2019instant).',
+    guardPaceTooFast:'Cette allure est incompatible avec ton VDOT actuel ({0}). Vérifie ta saisie.',
+    guardRecordTooFast:'Cette performance impliquerait un VDOT de {0}, trop éloigné de ton niveau actuel. Vérifie ton temps.',
+    guardStorageTooBig:'Cette donnée est trop volumineuse et n\u2019a pas été synchronisée dans le cloud.',
     loginWelcomeTitle:'Bienvenue',loginSubConnect:'Connecte-toi pour sauvegarder ta progression, tes séances et tes records — synchronisés sur tous tes appareils.',
     signupTitle:'Créer un compte',signupSub:'Rejoins IKORUN pour sauvegarder ta progression et la retrouver sur tous tes appareils.',
     forgotTitle:'Mot de passe oublié',forgotSub:'Indique ton email, on t\u2019envoie un lien pour le réinitialiser.',
@@ -1211,7 +1225,7 @@ const I18N={
     emailPlaceholder:'ton@email.com',
     loginBtnLabel:'Se connecter',signupBtnLabel:'Créer mon compte',sendResetLinkBtn:'Envoyer le lien',
     forgotPasswordLink:'Mot de passe oublié ?',noAccountLink:'Pas de compte ? Créer un compte',
-    haveAccountLink:'Déjà un compte ? Se connecter',backToLoginLink:'← Retour à la connexion',
+    haveAccountLink:'Déjà un compte ? Se connecter',backToLoginLink:'Retour à la connexion',
     orDividerLabel:'ou',continueWithGoogleBtn:'Continuer avec Google',
     loginLegalText:'En continuant, tu acceptes nos conditions.<br>Tes données sont synchronisées de façon sécurisée via ton compte.',
     fillEmailPasswordToast:'Remplis email et mot de passe.',invalidEmailToast:'Adresse email invalide.',
@@ -1239,17 +1253,17 @@ const I18N={
     sessionsCap:'Sessions',tonnageKg:'Tonnage kg',formCap:'Form',nextSession:'NEXT SESSION',today:'Today',
     restDay:'Rest day',noSessionToday:'No session planned today',recordsPerso:'Personal records',
     progression:'Progress',planOfDay:'PLAN OF THE DAY',planIkorunDesc:'Training plans designed by coaches',
-    myPlanDesc:'Build your own custom plan',todayCap:'TODAY',tapToStart:'Tap to start ›',
+    myPlanDesc:'Build your own custom plan',todayCap:'TODAY',tapToStart:'Tap to start',
     goalCap:'GOAL',courseDefault:'Race',goalTimeColon:'Goal: {0} · ',raceOn:'Race on {0}',raceDay:'Race day',
     currentVdot:'Current VDOT',currentPhase:'Current phase',thisWeek:'This week',weekOf:'Week {0}/{1}',
     weeklyLoad:'Weekly load',regenConfirm:'Regenerate a new plan? Completed sessions stay in your stats.',
-    regenBtn:'🔄 Regenerate / reconfigure',planIkorunPill:'⚡ IKORUN Plan',myPlanPill:'📋 Custom plan',
+    regenBtn:'Regenerate / reconfigure',planIkorunPill:'IKORUN Plan',myPlanPill:'Custom plan',
     planIkorunTitle:'IKORUN Plan — scientific engine',
     planIkorunDescLong:'Generates a custom periodized plan (Norwegian method + VDOT/Daniels) based on your VDOT ({0}), goal, preferences and race date. The plan auto-adjusts if you miss a session.',
-    configureGenerate:'⚙️ Configure & generate',weekN:'Week {0}',deloadTag:' · 🟢 deload',missedTag:'⚠ Missed',restTag:'Rest',
-    newPersoPlan:'＋ New custom plan',createCustomPlan:'Build your custom plan',
+    configureGenerate:'Configure & generate',weekN:'Week {0}',deloadTag:' · deload',missedTag:'Missed',restTag:'Rest',
+    newPersoPlan:'New custom plan',createCustomPlan:'Build your custom plan',
     createCustomPlanDesc:'Add your own sessions, pick dates, types and paces. Everything syncs with your home and stats.',
-    sessionsCount:'{0} sessions · {1} done',followedTag:'✅ Following',duplicate:'Duplicate',share:'Share',
+    sessionsCount:'{0} sessions · {1} done',followedTag:'Following',duplicate:'Duplicate',share:'Share',
     planNamePrompt:'Plan name:',myPersoPlanDefault:'My custom plan',
     you:'there',dowShort:'M,T,W,T,F,S,S',greet:'Hi',
     weekPhaseLabel:'Week {0} · {1}',thresholdPaceShort:'Threshold pace',vsLastWeekShort:'vs last week',
@@ -1272,9 +1286,9 @@ const I18N={
     toolAgendaName:'Agenda',toolAgendaSub:'All your events',
     toolPriereName:'Prayers',toolPriereSub:'All the times',
     // --- Profile ---
-    athleteDefault:'Athlete',addBioPrompt:'Add a bio ✍️',heightWeight:'Height / weight',
+    athleteDefault:'Athlete',addBioPrompt:'Add a bio',heightWeight:'Height / weight',
     noObjective:'None',noBadgeYet:'No badge earned yet — your first session will bring you closer to the Initiate badge.',
-    seeAllProgress:'{0} / {1} · See all ›',nextBadgeLab:'Next badge · {0}',
+    seeAllProgress:'{0} / {1} · See all',nextBadgeLab:'Next badge · {0}',
     account:'Account',friendsRanking:'Friends & Leaderboard',manageProfile:'Manage profile',passwordSecurity:'Password & security',
     notConnected:'Not signed in',notifLabel:'Notifications',preferences:'Preferences',historyRecords:'History & records',
     statistics:'Statistics',theme:'Theme',appColor:'App color',simplifiedMode:'Simplified mode',
@@ -1284,88 +1298,88 @@ const I18N={
     // --- Stats ---
     tabBilan:'Overview',tabRun:'Running',tabMuscu:'Strength',tabTrophies:'Trophies',
     perWeek:'Week',perMonth:'Month',per3Month:'3 Months',perYear:'Year',
-    completeProfileTitle:'📏 Complete your profile',completeProfileDesc:'Your height and weight are used to calculate your BMI, calories and needs.',
+    completeProfileTitle:'Complete your profile',completeProfileDesc:'Your height and weight are used to calculate your BMI, calories and needs.',
     chooseHeight:'Choose your height',chooseWeight:'Choose your weight',
     mileage:'Mileage',kmCumulated:'km total',vsPrevPeriod:'vs previous period',
     volumeTrend:'Volume trend',kmThisWeek:'km this week',eightWeeksLab:'8 wks',weeksAgoLab:'8 weeks ago',
-    totalTime:'Total time',overPeriod:'over the period',goalReached:'Goal reached! 🎉',ofTarget:'{0}% of target',
+    totalTime:'Total time',overPeriod:'over the period',goalReached:'Goal reached!',ofTarget:'{0}% of target',
     kmPerSession:'KM / SESSION',sessionTypesLabel:'SESSION TYPES',bestDayLab:'BEST DAY',bestWeekLab:'BEST WEEK',bestMonthLab:'BEST MONTH',
     detailByType:'Breakdown by type',last13Weeks:'Last 13 weeks',lessLabel:'Less',moreLabel:'More',vsPrevShort:'vs prev.',
     typeMuscu:'Strength',typeAutre:'Other',insightsTitle:'Insights',
     quickTimer:'Timer',lvlShort:'LVL',
-    vdotReal:'Actual VDOT',sessionsRun:'Run sessions',kmTotal:'Total km',paceZones:'🎯 Pace zones',
-    predictions:'🔮 Predictions',formFatigue:'📈 Form / Fatigue',personalRecords:'🏅 Personal records',
+    vdotReal:'Actual VDOT',sessionsRun:'Run sessions',kmTotal:'Total km',paceZones:'Pace zones',
+    predictions:'Predictions',formFatigue:'Form / Fatigue',personalRecords:'Personal records',
     chronic:'Chronic',acute:'Acute',tonnageLab:'Tonnage',prPerSession:'PR (kg/session)',totalSets:'Total sets',
-    startFirstMuscu:'Start your first strength session!',lastSessions:'📅 Recent sessions',
+    startFirstMuscu:'Start your first strength session!',lastSessions:'Recent sessions',
     tomorrow:'Tomorrow',noUpcomingSession:'No upcoming session planned.',addSession:'Add a session',
-    showRestPlan:'Show the rest of the plan · {0} weeks ↓',calendarTitle:'Calendar',calendarSub:'Plan your progress',
-    friendsTitle:'👥 Friends & Leaderboard',tabFriendsList:'👥 Friends',tabRank:'🏆 Leaderboard',
+    showRestPlan:'Show the rest of the plan · {0} weeks',calendarTitle:'Calendar',calendarSub:'Plan your progress',
+    friendsTitle:'Friends & Leaderboard',tabFriendsList:'Friends',tabRank:'Leaderboard',
     loginToAddFriends:'Sign in with Google to add friends and compare stats.',
-    searchFriendPlaceholder:'Search a friend by username',receivedRequests:'Received requests',acceptBtn:'✓ Accept',
+    searchFriendPlaceholder:'Search a friend by username',receivedRequests:'Received requests',acceptBtn:'Accept',
     yourFriendsCount:'Your friends ({0})',noFriendsYet:'No friends yet — search for someone by their username!',
     sentRequests:'Sent requests',awaitingResponse:'Awaiting response…',xpRanking:'XP leaderboard among friends',
     addFriendsUnlock:'Add friends to unlock the leaderboard!',youParen:' (you)',
     searchingLab:'Searching…',loginToSearchFriends:'Sign in to search for friends',noUsernameFound:'No username found',
     loadingLab:'Loading…',friendsLoadError:'Couldn\'t load your friends. Check your connection.',retryBtn:'Retry',
     resumeBtn:'Resume',discardBtn:'Discard',
-    alreadyLinked:'already linked',addBtn:'＋ Add',searchError:'Search error',alreadySentOrFriend:'Already sent or already friends',
-    requestSent:'Request sent ✓',friendProfileTitle:'👤 Profile',removeLab:'Remove',lvlDot:'Lvl.',kmThisWeekShort:'{0} km this week',youDefaultName:'You',backToFriends:'Back to friends',profileNotFound:'Profile not found.',noBadgeUnlocked:'No badge unlocked yet.',kmPerWeek:'km/wk',daysStreak:'Day streak',kmTotalLab:'total km',tonnageKgLab:'Tonnage kg',
-    addPerf:'＋ Add a performance',addChronosHint:'Add your times: they power your VDOT and your plan.',
-    bestPerf:'🏆 Best performance',avgHR:'avg HR',maxHRshort:'max',perfHistoryTitle:'Performance history',
+    alreadyLinked:'already linked',addBtn:'Add',searchError:'Search error',alreadySentOrFriend:'Already sent or already friends',
+    requestSent:'Request sent',friendProfileTitle:'Profile',removeLab:'Remove',lvlDot:'Lvl.',kmThisWeekShort:'{0} km this week',youDefaultName:'You',backToFriends:'Back to friends',profileNotFound:'Profile not found.',noBadgeUnlocked:'No badge unlocked yet.',kmPerWeek:'km/wk',daysStreak:'Day streak',kmTotalLab:'total km',tonnageKgLab:'Tonnage kg',
+    addPerf:'Add a performance',addChronosHint:'Add your times: they power your VDOT and your plan.',
+    bestPerf:'Best performance',avgHR:'avg HR',maxHRshort:'max',perfHistoryTitle:'Performance history',
     chooseDistance:'Choose the distance',otherDist:'Other',customDistance:'Custom distance',
     chronoLab:'Time *',chronoFor:'Time {0}',dateField:'Date',placeOptional:'Place (optional)',
     placeholderPlace:'Race location',feelOptional:'How it felt (optional)',feelPlaceholder:'How did it go?',
-    officialComp:'🏁 Official competition',saveThisPerf:'💾 Save this performance',backBtn:'‹ Back',
-    perfAddedComp:'Performance added · +XP competition ✓',perfAdded:'Performance added ✓',
+    officialComp:'Official competition',saveThisPerf:'Save this performance',backBtn:'Back',
+    perfAddedComp:'Performance added · +XP competition',perfAdded:'Performance added',
     editProfileTitle:'Edit profile',usernameLab:'Username',usernameHint:'Used by your friends to find you',
     firstNameLab:'First name',cityLab:'City',birthDateLab:'Date of birth',heightCmLab:'Height (cm)',weightKgLab:'Weight (kg)',
-    hrMaxLab:'Max HR',hrRestLab:'Resting HR',kmWeekLab:'Km / week',compDateLab:'Race date',coachLab:'Coach',saveBtn:'💾 Save',
+    hrMaxLab:'Max HR',hrRestLab:'Resting HR',kmWeekLab:'Km / week',compDateLab:'Race date',coachLab:'Coach',saveBtn:'Save',
     filterAll:'All',filterObtained:'Earned',filterLocked:'Locked',badgesObtainedCount:'{0} / {1} badges earned',
     badgeDetailTitle:'Badge details',tierOf:'Tier {0} of {1}',newBadgeUnlocked:'NEW BADGE UNLOCKED',
     tapToContinue:'Tap to continue',seeDetails:'See details',tapToClose:'Tap to close',previewLocked:'PREVIEW · LOCKED',
-    obtainedOn:'✅ Earned on {0}',lockedLab:'🔒 Locked',replayAnim:'↻ Replay animation',seePreview:'↻ See preview',
-    obtainConditions:'Requirements',globalProgress:'Overall progress',shareBadgeBtn:'↗ Share this badge',closeLab:'Close',
-    weightLab:'⚖️ Weight',imcLab:'📐 BMI',imcUnderweight:'Underweight',imcNormal:'Normal',imcOverweight:'Overweight',imcObese:'Obese',
+    obtainedOn:'Earned on {0}',lockedLab:'Locked',replayAnim:'Replay animation',seePreview:'See preview',
+    obtainConditions:'Requirements',globalProgress:'Overall progress',shareBadgeBtn:'Share this badge',closeLab:'Close',
+    weightLab:'Weight',imcLab:'BMI',imcUnderweight:'Underweight',imcNormal:'Normal',imcOverweight:'Overweight',imcObese:'Obese',
     sessionsPerWeek:'Sessions / wk',metabolismKcal:'Metabolism kcal',burned7d:'Burned 7d (run)',waterPerDay:'Water / day',
-    recentFormTitle:'😴 Recent form (last 7 sessions)',sleepLab:'Sleep',energyFeelLab:'Energy / feel',fatigueLab:'Fatigue',
-    tipBalanced:'Everything is balanced, keep it up! 💪',tipHighFatigue:'⚠️ High fatigue: prioritize rest and sleep this week.',
-    tipLowSleep:'😴 Your sleep is insufficient: aim for 8h to recover better.',tipGreatFeel:'🔥 Great feelings: you can push a bit more!',
+    recentFormTitle:'Recent form (last 7 sessions)',sleepLab:'Sleep',energyFeelLab:'Energy / feel',fatigueLab:'Fatigue',
+    tipBalanced:'Everything is balanced, keep it up!',tipHighFatigue:'High fatigue: prioritize rest and sleep this week.',
+    tipLowSleep:'Your sleep is insufficient: aim for 8h to recover better.',tipGreatFeel:'Great feelings: you can push a bit more!',
     noDebriefHint:'Complete sessions with their debrief to track your sleep, fatigue and recovery here.',
-    nutritionTitle:'🍽️ Nutrition benchmarks (athlete)',proteinLab:'Protein',carbsLab:'Carbs',fatLab:'Fat',kcalTarget:'target kcal',
-    weightPickerTitle:'Your weight (kg)',weightSaved:'Weight saved ✓',
-    labHint:'Enter <b>2 values</b> you know. The other 2 are calculated automatically. ✨',
+    nutritionTitle:'Nutrition benchmarks (athlete)',proteinLab:'Protein',carbsLab:'Carbs',fatLab:'Fat',kcalTarget:'target kcal',
+    weightPickerTitle:'Your weight (kg)',weightSaved:'Weight saved',
+    labHint:'Enter <b>2 values</b> you know. The other 2 are calculated automatically.',
     distField:'Distance',timeField:'Time',paceField:'Pace',speedField:'Speed',calculatedLab:'calculated',toFillLab:'to fill',
-    resetBtn:'↺ Reset',splitTimesTitle:'📍 Split times',
+    resetBtn:'Reset',splitTimesTitle:'Split times',
     vdotToolTitle:'VDOT (Jack Daniels)',physioEstimates:'Physiological estimates',vo2maxEst:'Estimated VO₂max',
     thresholdPace:'Lactate threshold pace',marathonPace:'Marathon pace',halfPace:'Half marathon pace',efPace:'Easy pace',
-    vdotAutoTip:'ℹ️ Your VDOT updates automatically from your records. Add your times in Profile → Records.',
-    waterNeedsTitle:'💧 Water needs',dailyRest:'Daily (rest)',perRunHour:'Per hour running',perHeatHour:'In hot weather (+/h)',
-    hydraTip:'💡 Drink regularly in small sips. Watch the color of your urine.',
+    vdotAutoTip:'Your VDOT updates automatically from your records. Add your times in Profile → Records.',
+    waterNeedsTitle:'Water needs',dailyRest:'Daily (rest)',perRunHour:'Per hour running',perHeatHour:'In hot weather (+/h)',
+    hydraTip:'Drink regularly in small sips. Watch the color of your urine.',
     basalMetabolism:'Basal metabolism (kcal/day)',needsByActivity:'Needs by activity level',
     actSedentary:'Sedentary',actLight:'Light',actModerate:'Moderate',actIntense:'Intense',actAthlete:'Athlete',
     valueField:'Value',fromField:'From',toField:'To',
-    quickNotesTitle:'📝 Quick notes',notesPlaceholder:'Write here... (auto-saved)',autoSaveLocal:'💾 Auto-saved locally.',
+    quickNotesTitle:'Quick notes',notesPlaceholder:'Write here... (auto-saved)',autoSaveLocal:'Auto-saved locally.',
     lapBtn:'Lap',stopBtn:'Stop',resetBtn2:'Reset',bestLap:'Best lap',slowestLap:'Slowest',avgLap:'Average',lapsLab:'Laps',
-    exportBtn:'Export',fastTag:'⚡ fast',slowTag:'slow',lapsCopied:'Laps copied ✓',
-    addEventBtn:'＋ Add an event',competitionDefault:'Competition',noEventLab:'No event',pastLab:'past',
+    exportBtn:'Export',fastTag:'fast',slowTag:'slow',lapsCopied:'Laps copied',
+    addEventBtn:'Add an event',competitionDefault:'Competition',noEventLab:'No event',pastLab:'past',
     eventTitlePrompt:'Event title:',eventDatePrompt:'Date (YYYY-MM-DD):',eventAdded:'Event added',
-    prayerTitle:'🕌 Prayers · Béjaïa',uoifMethod:'UOIF method · {0}',
+    prayerTitle:'Prayers · Béjaïa',uoifMethod:'UOIF method · {0}',
     obWelcomeTitle:'Welcome to IKORUN',obWelcomeIntro:'Elite Athletic Intelligence.<br>Your personal coaching, scientifically calculated, 100% offline.',
     obWhoTitle:'Who are you?',obWhoIntro:'Your basic info.',firstNamePh:'Your first name',firstNameReq:'First name *',
     usernameReq:'Username *',usernamePh:'unique_username',usernameFormatHint:'3 to 20 characters: letters, digits, _',
     birthDateReq:'Date of birth *',sexReq:'Sex *',selectLab:'Select',maleLab:'Male',femaleLab:'Female',
     obLevelTitle:'Your level',obLevelIntro:'Be honest, the plan adapts.',
-    levelNote:'💡 Your <b>level</b> adjusts your plan\u2019s intensity and training volume, calculated automatically. Not sure? Tap <b>"How to choose?"</b>.',
-    levelReq:'Level *',howChooseLab:'ℹ️ How to choose?',
+    levelNote:'Your <b>level</b> adjusts your plan\u2019s intensity and training volume, calculated automatically. Not sure? Tap <b>"How to choose?"</b>.',
+    levelReq:'Level *',howChooseLab:'How to choose?',
     lvlBeginner:'Beginner',lvlIntermediate:'Intermediate',lvlAdvanced:'Advanced',lvlVeryAdvanced:'Very advanced',lvlElite:'Elite',
     obGoalTitle:'Your goal',obGoalIntro:'What keeps you running.',goalReq:'Goal *',goalPh:'E.g.: break 20:00 on the 5K',
     compDateReq:'Race date *',coachOptional:'Coach — optional',coachPh:'Your coach\u2019s name',
     obPerfTitle:'Your performances',obPerfIntro:'Add your best times. At least one is required.',
-    perfNote:'💡 Your times calculate your <b>VDOT</b> (your "engine size") and all your <b>training paces</b>. Give at least one recent, reliable time. Choose the distance then the time with the wheels.',
-    addAnotherPerf:'＋ Add another performance',backLab:'Back',continueLab:'Continue',
+    perfNote:'Your times calculate your <b>VDOT</b> (your "engine size") and all your <b>training paces</b>. Give at least one recent, reliable time. Choose the distance then the time with the wheels.',
+    addAnotherPerf:'Add another performance',backLab:'Back',continueLab:'Continue',
     paramsTitle:'Settings',libTitle:'Library',configureTitle:'Configure',programTitle:'Program',sessionTitle:'Session',
     newProgramTitle:'New program',homeDefault:'Home',chooseLab:'Choose',validateLab2:'Confirm',
-    understoodLab:'Got it 👍',howChooseLevelTitle:'How to choose my level?',
+    understoodLab:'Got it',howChooseLevelTitle:'How to choose my level?',
     lvlBeginnerDesc:'You\u2019ve been running for less than a year. You train occasionally and are still learning the basics.',
     lvlIntermediateDesc:'You run regularly, sometimes compete, and know the main session types.',
     lvlAdvancedDesc:'Several years of training, structured practice and precise time goals.',
@@ -1373,24 +1387,24 @@ const I18N={
     lvlEliteDesc:'High-level athlete: national/international performances, daily high-volume training.',
     checkingLab:'Checking…',
     fillRequiredFields:'Fill in the required fields',chooseUsernameLab:'Choose a username',usernameUnavailable:'This username is not available',
-    quickProfileEnabled:'Quick profile enabled — simplified mode enabled ✓',chooseLevelLab:'Choose a level',goalDateRequired:'Goal and date required',addAtLeastOnePerf:'Add at least one performance',
-    finishLab:'Finish 🚀',distanceLab2:'Distance',timeForLab:'Time · {0}',chooseWord:'Choose',
-    usernameTakenMeanwhile:'⚠️ Username taken meanwhile, change it in Profile',
+    quickProfileEnabled:'Quick profile enabled — simplified mode enabled',chooseLevelLab:'Choose a level',goalDateRequired:'Goal and date required',addAtLeastOnePerf:'Add at least one performance',
+    finishLab:'Finish',distanceLab2:'Distance',timeForLab:'Time · {0}',chooseWord:'Choose',
+    usernameTakenMeanwhile:'Username taken meanwhile, change it in Profile',
     liveFinishBtn:'Finish',durationLab:'Duration',volumeLab:'Volume',setsLab:'Sets',deleteLab2:'Delete',
-    exerciseDoneLab:'✓ Done',setsDoneCount:'{0}/{1} sets done',restTimerLab:'⏱ Rest timer: {0}',disabledLab:'Off',
-    setCol:'Set',prevCol:'Previous',kgCol:'Kg',repsCol:'Reps',addSetBtn:'＋ Add a set',
-    addExerciseBtn:'＋ Add an exercise',cancelSessionBtn:'🗑 Cancel session',
-    restSeconds:'Rest (seconds)',minOneSetRemain:'At least one set must remain',changeRestLab:'⏱ Change rest time',
-    removeExLab:'🗑 Remove this exercise',cancelLab:'Cancel',minOneExRemain:'At least one exercise must remain',
-    removeExConfirmTitle:'⚠️ Remove this exercise?',removeLab2:'Remove',exerciseRemoved:'Exercise removed ✓',
-    exerciseAdded:'Exercise added ✓',sessionSaved:'Session saved — resume anytime',xpGain:'+5 XP',
-    restTitle:'⏱ Rest',secLab:'sec',add30sLab:'+30s',skipLab:'Skip',cancelSessionTitle:'⚠️ Cancel this session?',
+    exerciseDoneLab:'Done',setsDoneCount:'{0}/{1} sets done',restTimerLab:'Rest timer: {0}',disabledLab:'Off',
+    setCol:'Set',prevCol:'Previous',kgCol:'Kg',repsCol:'Reps',addSetBtn:'Add a set',
+    addExerciseBtn:'Add an exercise',cancelSessionBtn:'Cancel session',
+    restSeconds:'Rest (seconds)',minOneSetRemain:'At least one set must remain',changeRestLab:'Change rest time',
+    removeExLab:'Remove this exercise',cancelLab:'Cancel',minOneExRemain:'At least one exercise must remain',
+    removeExConfirmTitle:'Remove this exercise?',removeLab2:'Remove',exerciseRemoved:'Exercise removed',
+    exerciseAdded:'Exercise added',sessionSaved:'Session saved — resume anytime',xpGain:'+5 XP',
+    restTitle:'Rest',secLab:'sec',add30sLab:'+30s',skipLab:'Skip',cancelSessionTitle:'Cancel this session?',
     progressLostText:'Your progress on this session will be lost.',continueLab2:'Continue',yesCancelLab:'Yes, cancel',sessionCancelled:'Session cancelled',
     sessionDoneTitle:'Session complete!',tonnageParenKg:'Tonnage (kg)',repsLab:'Reps',caloriesLab:'Calories',recordsBrokenLab:'Records broken',
-    tonnageVsLastLab:'tonnage vs your last {0} session.',newRecordsLab:'🥇 New records',musclesWorkedLab:'💪 Muscles worked',xpEarnedLab:'+50 XP earned!',
+    tonnageVsLastLab:'tonnage vs your last {0} session.',newRecordsLab:'New records',musclesWorkedLab:'Muscles worked',xpEarnedLab:'+50 XP earned!',
     programNameLab:'Program name',programNamePh:'My program',descriptionLab:'Description',descriptionPh:'Goal, split, frequency...',
     objectiveLab2:'Goal',iconLab:'Icon',colorLab:'Color',exercisesCountLab:'Exercises ({0})',addExFromLib:'Add exercises from the library.',
-    addFromLibBtn:'＋ Add from library',saveProgramBtn:'💾 Save program',giveNameLab:'Give it a name',addExercisesLab:'Add exercises',programCreated:'Program created ✓',
+    addFromLibBtn:'Add from library',saveProgramBtn:'Save program',giveNameLab:'Give it a name',addExercisesLab:'Add exercises',programCreated:'Program created',
     sessTitle_EF:'Base Endurance',sessLabel_EF:'Easy',
     sessTitle_RECUP:'Active Recovery',sessLabel_RECUP:'Recovery',
     sessTitle_LONG:'Long Run',sessLabel_LONG:'Long',progressiveSuffix:' progressive',
@@ -1407,7 +1421,7 @@ const I18N={
     sessTitle_FARTLEK:'Fartlek (pace play)',sessLabel_FARTLEK:'Fartlek',
     sessTitle_COTES:'Hill Session',sessLabel_COTES:'Hills',
     sessTitle_LIGNES:'Easy Run + Strides',sessLabel_LIGNES:'Strides',
-    sessTitle_COURSE:'🏆 Race Day',sessLabel_COURSE:'Race',
+    sessTitle_COURSE:'Race Day',sessLabel_COURSE:'Race',
     sessTitle_default:'Endurance',sessLabel_default:'Easy',
     phase_PG:'General Preparation',phase_AERO:'Aerobic Development',phase_VO2:'VO₂max Development',
     phase_SPE:'Specific Development',phase_PIC:'Peak Form',phase_TAPER:'Taper',
@@ -1436,46 +1450,46 @@ const I18N={
     ach_force_name:'Strength',ach_force_desc:'Lift more than 20,000 kg total in a single week.',
     catAccomplissement:'Achievement',catPerformance:'Performance',allYearsLab:'All',
     tapTrophyHint:'Tap a trophy to see the animation or the condition to earn it.',
-    noTrophyInYear:'No trophy earned in {0}.',badgeUnlockedToast:'🏵️ {0} unlocked!',badgeRemovedToast:'Badge removed',
+    noTrophyInYear:'No trophy earned in {0}.',badgeUnlockedToast:'{0} unlocked!',badgeRemovedToast:'Badge removed',
     objForce:'Strength',objMass:'Mass',objEndurance:'Endurance',objWeightLoss:'Weight loss',objMaintain:'Maintenance',
     colBlue:'Blue',colRed:'Red',colGreen:'Green',colGold:'Gold',colPurple:'Purple',colCyan:'Cyan',
     newTrophyUnlocked:'NEW TROPHY UNLOCKED',
-    markAsObtained:'✓ Mark as earned',
+    markAsObtained:'Mark as earned',
     connectingGoogle:'Connecting to Google…',googleConnectFail:'Connection failed, try again',
     confirmLogout:'Log out? Your data stays saved on your account.',
     confirmSwitchGoogle:'You\u2019ll be logged out so you can sign in with another Google account. Your current data stays saved.',
-    confirmDeleteAllData:'⚠️ This will permanently delete ALL your data (sessions, records, XP, profile...) from the cloud and this device. Continue?',
+    confirmDeleteAllData:'This will permanently delete ALL your data (sessions, records, XP, profile...) from the cloud and this device. Continue?',
     confirmFinalIrreversible:'Final confirmation: are you really sure? This action is irreversible.',
     genericErrorRetry:'Error, try again',
     confirmRemoveFriend:'Remove this friend?',
-    connectFirst:'Sign in first',copiedClipboard:'Copied to clipboard ✓',
+    connectFirst:'Sign in first',copiedClipboard:'Copied to clipboard',
     usernameFormatHint:'3 to 20 characters: letters, numbers, _',checkingEllipsis:'Checking…',
     available:'Available',alreadyTaken:'Already taken',
     alarmDefaultTitle:'Alarm',timeUpMsg:'Time\u2019s up!',timeUpTitle:'Time\u2019s up!',
     stopAlarm:'Stop alarm',remindIn5Min:'Remind in 5 min',reminderCap:'Reminder',fiveMinElapsed:'5 minutes elapsed',
-    sessionInProgress:'Session in progress',welcomeToast:'Welcome 👋',
+    sessionInProgress:'Session in progress',welcomeToast:'Welcome',
     resumeSessionConfirm:'A "{0}" session was in progress ({1} min). Resume?',sessionColonName:'Session: {0}',
     accentBlue:'Blue',accentRed:'Red',accentGreen:'Military green',accentBrown:'Woodland brown',accentYellow:'Yellow',accentCarbon:'Carbon fiber',
-    colorApplied:'Color applied ✓',easyModeOn:'Simplified mode enabled ✓',easyModeOff:'Simplified mode disabled',
+    colorApplied:'Color applied',easyModeOn:'Simplified mode enabled',easyModeOff:'Simplified mode disabled',
     profileIncompleteAddTime:'Incomplete profile: add a time in your records',chooseCompDate:'Choose a race date',
     planGenerated:'"{0}" plan generated: {1} wk, {2} sessions',raceGeneric:'race',
-    followingPersoPlan:'You\u2019re now following this custom plan ✓',backToIkorunPlan:'Back to IKORUN plan',
+    followingPersoPlan:'You\u2019re now following this custom plan',backToIkorunPlan:'Back to IKORUN plan',
     namePromptLabel:'Name:',copySuffix:'(copy)',confirmDeletePlan:'Delete this plan?',
-    addAtLeastOneRepTime:'Add at least one rep time',sessionAdded:'Session added ✓',
+    addAtLeastOneRepTime:'Add at least one rep time',sessionAdded:'Session added',
     myPlanColon:'My plan: {0}',shareNotSupported:'Sharing not supported',confirmDeleteProgram:'Delete this program?',
     routineTitle:'Routine',exercisesCount:'{0} exercises',exercisesCap:'Exercises',setsCap:'Sets',estDurationCap:'Est. duration',
     setsRepsLine:'{0} sets · {1} reps',addExercise:'Add an exercise',startWorkout:'Start workout',
     defaultProgramsNotEditable:'Default programs can\u2019t be edited',
-    heightCmTitle:'Height (cm)',weightKgTitle:'Weight (kg)',heightSaved:'Height saved ✓',weightSaved:'Weight saved ✓',
-    deservedBreak:'Well-earned break! ☕',backToWork:'Back to work! 🍅',setDuration:'Set a duration',
-    photoUpdated:'Photo updated ✓',photoRemoved:'Photo removed',bioPromptLabel:'Your bio:',
+    heightCmTitle:'Height (cm)',weightKgTitle:'Weight (kg)',heightSaved:'Height saved',weightSaved:'Weight saved',
+    deservedBreak:'Well-earned break!',backToWork:'Back to work!',setDuration:'Set a duration',
+    photoUpdated:'Photo updated',photoRemoved:'Photo removed',bioPromptLabel:'Your bio:',
     usernameInvalid:'Invalid username (3-20, letters/numbers/_)',usernameNotAvailable:'This username isn\u2019t available',
-    usernameJustTaken:'This username was just taken, pick another one',usernameUpdated:'Username updated ✓',
-    profileUpdated:'Profile updated ✓',localDataOnly:'Local data only',exportGenerated:'Export generated ✓',
+    usernameJustTaken:'This username was just taken, pick another one',usernameUpdated:'Username updated',
+    profileUpdated:'Profile updated',localDataOnly:'Local data only',exportGenerated:'Export generated',
     confirmClearAll:'Clear everything? This action is irreversible.',confirmClearAllFinal:'Really sure? All your data will be lost.',
     offlineSinceDays:'Offline for {0} days — remember to reconnect',dataSynced:'Data synced',
     connectionRestored:'Connection restored · syncing…',offlineModeAvailable:'Offline mode — everything stays accessible',
-    dataImported:'Data imported ✓',invalidFile:'Invalid file',
+    dataImported:'Data imported',invalidFile:'Invalid file',
     searchExercisePlaceholder:'Search an exercise...',muscleLabel:'Muscle',equipmentLabel:'Equipment',levelLabel:'Level',
     exercisesWordPlural:'exercises',exerciseWordSingular:'exercise',
     movementDemoCap:'MOVEMENT DEMONSTRATION',movementDemo:'Movement demonstration',
@@ -1509,7 +1523,7 @@ const I18N={
     cdTemplate:'10-15 min very easy jogging at {0}/km + gentle stretching.',
     recovLabel_2minTrot:'2 min jog',recovLabel_1minTrot:'1 min jog',recovLabel_30sTrot:'30 s jog',recovLabel_2to3minTrot:'2-3 min jog',recovLabel_90sTrot:'90 s jog',
     repsTextTemplate:'{0} × {1} m at {2} ({3}/km)',seriesPyramid:'Pyramid {0}→{1} m',seriesRepsDist:'{0} × {1} m at {2}',seriesRepsOnly:'{0} × efforts',
-    deloadPrefixTemplate:'🟢 DELOAD WEEK — {0}',
+    deloadPrefixTemplate:'DELOAD WEEK — {0}',
     bs_ef_objectif:'Build your aerobic base — the foundation of all progress (80% of elite volume).',
     bs_ef_warmup:'Progressive warm-up over 10 min.',bs_ef_body:'{0} km at easy pace ({1}/km). You should be able to hold a conversation throughout.',
     bs_ef_paces:'Zone 2, ~70% max HR — {0}/km.',bs_ef_recovery:'Continuous effort.',bs_ef_cooldown:'A few calf and hamstring stretches.',
@@ -1604,7 +1618,7 @@ const I18N={
     coach_err_pain:'Pain level: {0}. Don\u2019t ignore it. Persistent joint pain means rest.',
     coach_err_sleep:'Insufficient sleep: your performance and recovery will suffer.',
     coach_err_tooEasy:'Session too easy (RPE {0}): you can probably push a bit harder next time.',
-    coach_pos_completed:'You finished your session: consistency is your greatest strength. 💪',
+    coach_pos_completed:'You finished your session: consistency is your greatest strength.',
     coach_pos_feel:'Excellent feel — your body is responding well to training.',
     coach_pos_nopain:'No pain reported: your technique and training load are well managed.',
     coach_pos_nutrition:'Great nutrition, the fuel is there.',
@@ -1627,35 +1641,35 @@ const I18N={
     missedSessionTitle:'Missed session',nightSleepLabel:'Night\u2019s sleep',
     note_cardioAlreadyCounted:'cardio load already accounted for, plan unchanged',
     note_explosiveCaution:'caution advised for your next explosive session',note_nextHardLightened:'next hard session lightened',
-    notedCoachBtn:'Got it, Coach! 💪',notesOptionalLabel:'Notes (optional)',paceKmLabel:'Pace /km',painLabel:'Pain',
+    notedCoachBtn:'Got it, Coach!',notesOptionalLabel:'Notes (optional)',paceKmLabel:'Pace /km',painLabel:'Pain',
     planUpdatedWeekReason:'Plan updated for the week — {0}',positivePointsTitle:'Positive points',
     recentMissesReducedMsg:'3 recent missed sessions: upcoming weeks\u2019 volume reduced by 15%',
     repByRepSummary:'Rep-by-rep summary — {0} × {1} m',
-    repLegendLine:'⏱ = enter actual time · ✓ = "I held the pace" (auto-fills with the target time)',
+    repLegendLine:'= enter actual time · ✓ = "I held the pace" (auto-fills with the target time)',
     repNumDist:'Rep {0} · {1} m',replacementMuscuTitle:'Replacement — {0}',replacementRunTitle:'Replacement run',
     respectedCount:'{0}/{1} on target',rpeFeltLabel:'RPE — perceived difficulty:',sensationsLabel:'Feel',
     sessionNotedToast:'Session logged',sessionTypeLabel:'Session type',targetColon:'Target {0}',
     upcomingAdjustmentsTitle:'Upcoming adjustments',weatherLabel:'Weather',
-    addAsGoalLabel:'Add as goal',advancedLabel:'Advanced',calculateLabel:'Calculate',copiedShortToast:'Copied ✓',
+    addAsGoalLabel:'Add as goal',advancedLabel:'Advanced',calculateLabel:'Calculate',copiedShortToast:'Copied',
     copyLabel:'Copy',customDistanceKmLabel:'Custom distance (km)',distanceLabel:'Distance',
-    goalAddedReason:'goal added',goalAddedToast:'Goal added ✓',
+    goalAddedReason:'goal added',goalAddedToast:'Goal added',
     ikorunDistInTime:'IKORUN — {0}km in {1}',kmSplitsLabel:'Km splits',myIkorunPrediction:'My IKORUN prediction: {0}km in {1}',
     negativeSplitLabel:'Negative split',paceCalculatorTitle:'Pace calculator',paceMinSecKmLabel:'Pace (min : sec /km)',
     penaltySecKmLabel:'Penalty (sec/km)',predictedTimeLabel:'Predicted time',resetShortLabel:'Reset',
-    resultSavedToast:'Result saved ✓',resultsLabel:'Results',runCalcFirstToast:'Run a calculation first',
+    resultSavedToast:'Result saved',resultsLabel:'Results',runCalcFirstToast:'Run a calculation first',
     sleepBorderline:'Borderline — aim higher',sleepCyclesTip:'A cycle lasts ~90 min. Aim to wake up at the end of a cycle: 6h, 7h30 or 9h of sleep. Go to bed at a regular time to optimize recovery.',
     sleepCyclesTitle:'Sleep cycles',sleepHoursPerNightLabel:'Hours of sleep / night',
-    sleepInsufficient:'Insufficient — recovery compromised',sleepOptimal:'Optimal for an athlete ✓',sleepPlenty:'A lot — listen to your body',
+    sleepInsufficient:'Insufficient — recovery compromised',sleepOptimal:'Optimal for an athlete',sleepPlenty:'A lot — listen to your body',
     speedLabel:'Speed',timeHMSLabel:'Time (h : mm : ss)',
     configurePlanTitle:'Configure my plan',courseProfileLabel:'Course profile',generateMyPlanBtn:'Generate my plan',
     maxKmWeekLabel:'Max km/week (peak)',minKmWeekLabel:'Min km/week',preferredSessionsLabel:'Preferred sessions (the coach will favor these)',
     preparedRaceLabel:'Race you\u2019re preparing for',raceDateLabel:'Race date',targetTimeOptionalLabel:'Target time (optional)',
     trainingDaysLabel:'Training days',yourNextRaceDefault:'Your next race',
-    guardFutureDate:'⛔ You can\u2019t log a session with a future date.',
-    guardDistanceTooHigh:'⛔ Unrealistic distance compared to your history ({0} km max for now).',
-    guardPaceTooFast:'⛔ This pace isn\u2019t consistent with your current VDOT ({0}). Check what you entered.',
-    guardRecordTooFast:'⛔ This performance would imply a VDOT of {0}, too far from your current level. Check your time.',
-    guardStorageTooBig:'⚠️ This data is too large and wasn\u2019t synced to the cloud.',
+    guardFutureDate:'You can\u2019t log a session with a future date.',
+    guardDistanceTooHigh:'Unrealistic distance compared to your history ({0} km max for now).',
+    guardPaceTooFast:'This pace isn\u2019t consistent with your current VDOT ({0}). Check what you entered.',
+    guardRecordTooFast:'This performance would imply a VDOT of {0}, too far from your current level. Check your time.',
+    guardStorageTooBig:'This data is too large and wasn\u2019t synced to the cloud.',
     loginWelcomeTitle:'Welcome',loginSubConnect:'Sign in to save your progress, sessions and records — synced across all your devices.',
     signupTitle:'Create an account',signupSub:'Join IKORUN to save your progress and find it on all your devices.',
     forgotTitle:'Forgot password',forgotSub:'Enter your email, we\u2019ll send you a reset link.',
@@ -1663,7 +1677,7 @@ const I18N={
     emailPlaceholder:'your@email.com',
     loginBtnLabel:'Sign in',signupBtnLabel:'Create my account',sendResetLinkBtn:'Send link',
     forgotPasswordLink:'Forgot password?',noAccountLink:'No account? Create one',
-    haveAccountLink:'Already have an account? Sign in',backToLoginLink:'← Back to sign in',
+    haveAccountLink:'Already have an account? Sign in',backToLoginLink:'Back to sign in',
     orDividerLabel:'or',continueWithGoogleBtn:'Continue with Google',
     loginLegalText:'By continuing, you accept our terms.<br>Your data is synced securely via your account.',
     fillEmailPasswordToast:'Fill in email and password.',invalidEmailToast:'Invalid email address.',
@@ -1691,17 +1705,17 @@ const I18N={
     sessionsCap:'الحصص',tonnageKg:'الحمولة كغ',formCap:'اللياقة',nextSession:'الحصة القادمة',today:'اليوم',
     restDay:'يوم راحة',noSessionToday:'لا توجد حصة مخططة اليوم',recordsPerso:'الأرقام الشخصية',
     progression:'التقدم',planOfDay:'خطة اليوم',planIkorunDesc:'خطط تدريبية صممها مدربون',
-    myPlanDesc:'أنشئ خطتك الخاصة',todayCap:'اليوم',tapToStart:'اضغط للبدء ›',
+    myPlanDesc:'أنشئ خطتك الخاصة',todayCap:'اليوم',tapToStart:'اضغط للبدء',
     goalCap:'الهدف',courseDefault:'سباق',goalTimeColon:'الهدف: {0} · ',raceOn:'السباق يوم {0}',raceDay:'يوم السباق',
     currentVdot:'VDOT الحالي',currentPhase:'المرحلة الحالية',thisWeek:'هذا الأسبوع',weekOf:'الأسبوع {0}/{1}',
     weeklyLoad:'الحمل الأسبوعي',regenConfirm:'إعادة توليد خطة جديدة؟ الحصص المنجزة تبقى في إحصائياتك.',
-    regenBtn:'🔄 إعادة التوليد / الإعداد',planIkorunPill:'⚡ خطة IKORUN',myPlanPill:'📋 خطة شخصية',
+    regenBtn:'إعادة التوليد / الإعداد',planIkorunPill:'خطة IKORUN',myPlanPill:'خطة شخصية',
     planIkorunTitle:'خطة IKORUN — محرك علمي',
     planIkorunDescLong:'يولّد خطة مرحلية مخصصة (الطريقة النرويجية + VDOT/Daniels) بناءً على VDOT الخاص بك ({0})، هدفك، تفضيلاتك وتاريخ سباقك. تتعدل الخطة تلقائيًا إذا فاتتك حصة.',
-    configureGenerate:'⚙️ إعداد وتوليد',weekN:'الأسبوع {0}',deloadTag:' · 🟢 مخففة',missedTag:'⚠ فائتة',restTag:'راحة',
-    newPersoPlan:'＋ خطة شخصية جديدة',createCustomPlan:'أنشئ خطتك المخصصة',
+    configureGenerate:'إعداد وتوليد',weekN:'الأسبوع {0}',deloadTag:' · مخففة',missedTag:'فائتة',restTag:'راحة',
+    newPersoPlan:'خطة شخصية جديدة',createCustomPlan:'أنشئ خطتك المخصصة',
     createCustomPlanDesc:'أضف حصصك الخاصة، اختر التواريخ والأنواع والوتيرة. كل شيء يتزامن مع صفحتك الرئيسية وإحصائياتك.',
-    sessionsCount:'{0} حصص · {1} منجزة',followedTag:'✅ متابَعة',duplicate:'نسخ',share:'مشاركة',
+    sessionsCount:'{0} حصص · {1} منجزة',followedTag:'متابَعة',duplicate:'نسخ',share:'مشاركة',
     planNamePrompt:'اسم الخطة:',myPersoPlanDefault:'خطتي الشخصية',
     you:'أنت',dowShort:'ن,ث,ر,خ,ج,س,ح',greet:'مرحبا',
     weekPhaseLabel:'الأسبوع {0} · {1}',thresholdPaceShort:'وتيرة العتبة',vsLastWeekShort:'مقابل الأسبوع الماضي',
@@ -1724,9 +1738,9 @@ const I18N={
     toolAgendaName:'الأجندة',toolAgendaSub:'كل أحداثك',
     toolPriereName:'الصلوات',toolPriereSub:'كل الأوقات',
     // --- الملف الشخصي ---
-    athleteDefault:'رياضي',addBioPrompt:'أضف نبذة ✍️',heightWeight:'الطول / الوزن',
+    athleteDefault:'رياضي',addBioPrompt:'أضف نبذة',heightWeight:'الطول / الوزن',
     noObjective:'لا يوجد',noBadgeYet:'لم تحصل على أي وسام بعد — حصتك الأولى ستقربك من وسام المبتدئ.',
-    seeAllProgress:'{0} / {1} · عرض الكل ›',nextBadgeLab:'الوسام القادم · {0}',
+    seeAllProgress:'{0} / {1} · عرض الكل',nextBadgeLab:'الوسام القادم · {0}',
     account:'الحساب',friendsRanking:'الأصدقاء والترتيب',manageProfile:'إدارة الملف الشخصي',passwordSecurity:'كلمة المرور والأمان',
     notConnected:'غير متصل',notifLabel:'الإشعارات',preferences:'التفضيلات',historyRecords:'السجل والأرقام',
     statistics:'الإحصائيات',theme:'المظهر',appColor:'لون التطبيق',simplifiedMode:'الوضع المبسّط',
@@ -1736,88 +1750,88 @@ const I18N={
     // --- الإحصائيات ---
     tabBilan:'الحصيلة',tabRun:'الجري',tabMuscu:'كمال الأجسام',tabTrophies:'الأوسمة',
     perWeek:'أسبوع',perMonth:'شهر',per3Month:'3 أشهر',perYear:'سنة',
-    completeProfileTitle:'📏 أكمل ملفك الشخصي',completeProfileDesc:'يُستخدم طولك ووزنك لحساب مؤشر كتلة جسمك وسعراتك واحتياجاتك.',
+    completeProfileTitle:'أكمل ملفك الشخصي',completeProfileDesc:'يُستخدم طولك ووزنك لحساب مؤشر كتلة جسمك وسعراتك واحتياجاتك.',
     chooseHeight:'اختر طولك',chooseWeight:'اختر وزنك',
     mileage:'المسافة المقطوعة',kmCumulated:'كم متراكمة',vsPrevPeriod:'مقارنة بالفترة السابقة',
     volumeTrend:'اتجاه الحجم',kmThisWeek:'كم هذا الأسبوع',eightWeeksLab:'8 أسابيع',weeksAgoLab:'قبل 8 أسابيع',
-    totalTime:'الوقت الإجمالي',overPeriod:'خلال الفترة',goalReached:'تم بلوغ الهدف! 🎉',ofTarget:'{0}% من الهدف',
+    totalTime:'الوقت الإجمالي',overPeriod:'خلال الفترة',goalReached:'تم بلوغ الهدف!',ofTarget:'{0}% من الهدف',
     kmPerSession:'كم / حصة',sessionTypesLabel:'أنواع الحصص',bestDayLab:'أفضل يوم',bestWeekLab:'أفضل أسبوع',bestMonthLab:'أفضل شهر',
     detailByType:'التفاصيل حسب النوع',last13Weeks:'آخر 13 أسبوعًا',lessLabel:'أقل',moreLabel:'أكثر',vsPrevShort:'مقارنة بالسابق',
     typeMuscu:'كمال أجسام',typeAutre:'آخر',insightsTitle:'إحصاءات',
     quickTimer:'المؤقت',lvlShort:'مستوى',
-    vdotReal:'VDOT الحقيقي',sessionsRun:'حصص الجري',kmTotal:'كم إجمالية',paceZones:'🎯 مناطق الوتيرة',
-    predictions:'🔮 توقعات',formFatigue:'📈 اللياقة / التعب',personalRecords:'🏅 الأرقام الشخصية',
+    vdotReal:'VDOT الحقيقي',sessionsRun:'حصص الجري',kmTotal:'كم إجمالية',paceZones:'مناطق الوتيرة',
+    predictions:'توقعات',formFatigue:'اللياقة / التعب',personalRecords:'الأرقام الشخصية',
     chronic:'مزمن',acute:'حاد',tonnageLab:'الحمولة',prPerSession:'أفضل رقم (كغ/حصة)',totalSets:'إجمالي المجموعات',
-    startFirstMuscu:'ابدأ أول حصة كمال أجسام لك!',lastSessions:'📅 آخر الحصص',
+    startFirstMuscu:'ابدأ أول حصة كمال أجسام لك!',lastSessions:'آخر الحصص',
     tomorrow:'غدًا',noUpcomingSession:'لا توجد حصة مخططة قريبًا.',addSession:'إضافة حصة',
-    showRestPlan:'عرض بقية الخطة · {0} أسابيع ↓',calendarTitle:'التقويم',calendarSub:'خطط لتقدمك',
-    friendsTitle:'👥 الأصدقاء والترتيب',tabFriendsList:'👥 الأصدقاء',tabRank:'🏆 الترتيب',
+    showRestPlan:'عرض بقية الخطة · {0} أسابيع',calendarTitle:'التقويم',calendarSub:'خطط لتقدمك',
+    friendsTitle:'الأصدقاء والترتيب',tabFriendsList:'الأصدقاء',tabRank:'الترتيب',
     loginToAddFriends:'سجّل الدخول عبر Google لإضافة أصدقاء ومقارنة نفسك.',
-    searchFriendPlaceholder:'ابحث عن صديق بالاسم المستعار',receivedRequests:'الطلبات الواردة',acceptBtn:'✓ قبول',
+    searchFriendPlaceholder:'ابحث عن صديق بالاسم المستعار',receivedRequests:'الطلبات الواردة',acceptBtn:'قبول',
     yourFriendsCount:'أصدقاؤك ({0})',noFriendsYet:'لا يوجد أصدقاء بعد — ابحث عن أحدهم باسمه المستعار!',
     sentRequests:'الطلبات المرسلة',awaitingResponse:'بانتظار الرد…',xpRanking:'ترتيب نقاط الخبرة بين الأصدقاء',
     addFriendsUnlock:'أضف أصدقاء لفتح الترتيب!',youParen:' (أنت)',
     searchingLab:'جارٍ البحث…',loginToSearchFriends:'سجّل الدخول للبحث عن أصدقاء',noUsernameFound:'لم يتم العثور على اسم مستعار',
     loadingLab:'جارٍ التحميل…',friendsLoadError:'تعذّر تحميل أصدقائك. تحقّق من اتصالك.',retryBtn:'إعادة المحاولة',
     resumeBtn:'استئناف',discardBtn:'التخلي',
-    alreadyLinked:'مرتبط بالفعل',addBtn:'＋ إضافة',searchError:'خطأ في البحث',alreadySentOrFriend:'تم الإرسال بالفعل أو صديق بالفعل',
-    requestSent:'تم إرسال الطلب ✓',friendProfileTitle:'👤 الملف الشخصي',removeLab:'إزالة',lvlDot:'مستوى',kmThisWeekShort:'{0} كم هذا الأسبوع',youDefaultName:'أنت',backToFriends:'العودة إلى الأصدقاء',profileNotFound:'الملف غير موجود.',noBadgeUnlocked:'لا يوجد وسام مفتوح بعد.',kmPerWeek:'كم/أسبوع',daysStreak:'أيام متتالية',kmTotalLab:'كم إجمالية',tonnageKgLab:'الحمولة كغ',
-    addPerf:'＋ إضافة أداء',addChronosHint:'أضف أوقاتك: تُستخدم لحساب VDOT وخطتك.',
-    bestPerf:'🏆 أفضل أداء',avgHR:'متوسط النبض',maxHRshort:'الأقصى',perfHistoryTitle:'سجل الأداء',
+    alreadyLinked:'مرتبط بالفعل',addBtn:'إضافة',searchError:'خطأ في البحث',alreadySentOrFriend:'تم الإرسال بالفعل أو صديق بالفعل',
+    requestSent:'تم إرسال الطلب',friendProfileTitle:'الملف الشخصي',removeLab:'إزالة',lvlDot:'مستوى',kmThisWeekShort:'{0} كم هذا الأسبوع',youDefaultName:'أنت',backToFriends:'العودة إلى الأصدقاء',profileNotFound:'الملف غير موجود.',noBadgeUnlocked:'لا يوجد وسام مفتوح بعد.',kmPerWeek:'كم/أسبوع',daysStreak:'أيام متتالية',kmTotalLab:'كم إجمالية',tonnageKgLab:'الحمولة كغ',
+    addPerf:'إضافة أداء',addChronosHint:'أضف أوقاتك: تُستخدم لحساب VDOT وخطتك.',
+    bestPerf:'أفضل أداء',avgHR:'متوسط النبض',maxHRshort:'الأقصى',perfHistoryTitle:'سجل الأداء',
     chooseDistance:'اختر المسافة',otherDist:'أخرى',customDistance:'مسافة مخصصة',
     chronoLab:'الوقت *',chronoFor:'وقت {0}',dateField:'التاريخ',placeOptional:'المكان (اختياري)',
     placeholderPlace:'مكان السباق',feelOptional:'الإحساس (اختياري)',feelPlaceholder:'كيف كان الأداء؟',
-    officialComp:'🏁 مسابقة رسمية',saveThisPerf:'💾 حفظ هذا الأداء',backBtn:'‹ رجوع',
-    perfAddedComp:'تمت إضافة الأداء · +XP مسابقة ✓',perfAdded:'تمت إضافة الأداء ✓',
+    officialComp:'مسابقة رسمية',saveThisPerf:'حفظ هذا الأداء',backBtn:'رجوع',
+    perfAddedComp:'تمت إضافة الأداء · +XP مسابقة',perfAdded:'تمت إضافة الأداء',
     editProfileTitle:'تعديل الملف الشخصي',usernameLab:'اسم المستخدم',usernameHint:'يُستخدم من قبل أصدقائك للعثور عليك',
     firstNameLab:'الاسم الأول',cityLab:'المدينة',birthDateLab:'تاريخ الميلاد',heightCmLab:'الطول (سم)',weightKgLab:'الوزن (كغ)',
-    hrMaxLab:'أقصى نبض',hrRestLab:'نبض الراحة',kmWeekLab:'كم / أسبوع',compDateLab:'تاريخ السباق',coachLab:'المدرب',saveBtn:'💾 حفظ',
+    hrMaxLab:'أقصى نبض',hrRestLab:'نبض الراحة',kmWeekLab:'كم / أسبوع',compDateLab:'تاريخ السباق',coachLab:'المدرب',saveBtn:'حفظ',
     filterAll:'الكل',filterObtained:'مكتسبة',filterLocked:'مغلقة',badgesObtainedCount:'{0} / {1} وسام مكتسب',
     badgeDetailTitle:'تفاصيل الوسام',tierOf:'المستوى {0} من {1}',newBadgeUnlocked:'وسام جديد مفتوح',
     tapToContinue:'اضغط للمتابعة',seeDetails:'عرض التفاصيل',tapToClose:'اضغط للإغلاق',previewLocked:'معاينة · مغلق',
-    obtainedOn:'✅ تم الحصول عليه في {0}',lockedLab:'🔒 مغلق',replayAnim:'↻ إعادة الرسوم المتحركة',seePreview:'↻ عرض معاينة',
-    obtainConditions:'شروط الحصول',globalProgress:'التقدم الإجمالي',shareBadgeBtn:'↗ مشاركة هذا الوسام',closeLab:'إغلاق',
-    weightLab:'⚖️ الوزن',imcLab:'📐 كتلة الجسم',imcUnderweight:'نحافة',imcNormal:'طبيعي',imcOverweight:'زيادة وزن',imcObese:'سمنة',
+    obtainedOn:'تم الحصول عليه في {0}',lockedLab:'مغلق',replayAnim:'إعادة الرسوم المتحركة',seePreview:'عرض معاينة',
+    obtainConditions:'شروط الحصول',globalProgress:'التقدم الإجمالي',shareBadgeBtn:'مشاركة هذا الوسام',closeLab:'إغلاق',
+    weightLab:'الوزن',imcLab:'كتلة الجسم',imcUnderweight:'نحافة',imcNormal:'طبيعي',imcOverweight:'زيادة وزن',imcObese:'سمنة',
     sessionsPerWeek:'حصص/أسبوع',metabolismKcal:'الأيض كالوري',burned7d:'محروقة 7 أيام (جري)',waterPerDay:'الماء/يوم',
-    recentFormTitle:'😴 اللياقة الأخيرة (آخر 7 حصص)',sleepLab:'النوم',energyFeelLab:'الطاقة/الإحساس',fatigueLab:'التعب',
-    tipBalanced:'كل شيء متوازن، واصل هكذا! 💪',tipHighFatigue:'⚠️ تعب مرتفع: امنح الأولوية للراحة والنوم هذا الأسبوع.',
-    tipLowSleep:'😴 نومك غير كافٍ: استهدف 8 ساعات لتتعافى بشكل أفضل.',tipGreatFeel:'🔥 إحساس رائع: يمكنك الدفع أكثر قليلاً!',
+    recentFormTitle:'اللياقة الأخيرة (آخر 7 حصص)',sleepLab:'النوم',energyFeelLab:'الطاقة/الإحساس',fatigueLab:'التعب',
+    tipBalanced:'كل شيء متوازن، واصل هكذا!',tipHighFatigue:'تعب مرتفع: امنح الأولوية للراحة والنوم هذا الأسبوع.',
+    tipLowSleep:'نومك غير كافٍ: استهدف 8 ساعات لتتعافى بشكل أفضل.',tipGreatFeel:'إحساس رائع: يمكنك الدفع أكثر قليلاً!',
     noDebriefHint:'أنهِ حصصك مع تقييمها لمتابعة نومك وتعبك وتعافيك هنا.',
-    nutritionTitle:'🍽️ معايير التغذية (رياضي)',proteinLab:'بروتين',carbsLab:'كربوهيدرات',fatLab:'دهون',kcalTarget:'كالوري مستهدف',
-    weightPickerTitle:'وزنك (كغ)',weightSaved:'تم حفظ الوزن ✓',
-    labHint:'أدخل <b>قيمتين</b> تعرفهما. القيمتان الأخريان تُحسبان تلقائيًا. ✨',
+    nutritionTitle:'معايير التغذية (رياضي)',proteinLab:'بروتين',carbsLab:'كربوهيدرات',fatLab:'دهون',kcalTarget:'كالوري مستهدف',
+    weightPickerTitle:'وزنك (كغ)',weightSaved:'تم حفظ الوزن',
+    labHint:'أدخل <b>قيمتين</b> تعرفهما. القيمتان الأخريان تُحسبان تلقائيًا.',
     distField:'المسافة',timeField:'الوقت',paceField:'الوتيرة',speedField:'السرعة',calculatedLab:'محسوب',toFillLab:'يجب إدخاله',
-    resetBtn:'↺ إعادة تعيين',splitTimesTitle:'📍 أوقات المرور',
+    resetBtn:'إعادة تعيين',splitTimesTitle:'أوقات المرور',
     vdotToolTitle:'VDOT (جاك دانيلز)',physioEstimates:'تقديرات فسيولوجية',vo2maxEst:'VO₂max المقدر',
     thresholdPace:'وتيرة عتبة اللاكتات',marathonPace:'وتيرة الماراثون',halfPace:'وتيرة نصف الماراثون',efPace:'وتيرة سهلة',
-    vdotAutoTip:'ℹ️ يتحدث VDOT الخاص بك تلقائيًا من أرقامك. أضف أوقاتك في الملف الشخصي ← الأرقام.',
-    waterNeedsTitle:'💧 احتياجات الماء',dailyRest:'يوميًا (راحة)',perRunHour:'لكل ساعة جري',perHeatHour:'في الحر الشديد (+/ساعة)',
-    hydraTip:'💡 اشرب بانتظام رشفات صغيرة. راقب لون بولك.',
+    vdotAutoTip:'يتحدث VDOT الخاص بك تلقائيًا من أرقامك. أضف أوقاتك في الملف الشخصي ← الأرقام.',
+    waterNeedsTitle:'احتياجات الماء',dailyRest:'يوميًا (راحة)',perRunHour:'لكل ساعة جري',perHeatHour:'في الحر الشديد (+/ساعة)',
+    hydraTip:'اشرب بانتظام رشفات صغيرة. راقب لون بولك.',
     basalMetabolism:'الأيض الأساسي (كالوري/يوم)',needsByActivity:'الاحتياجات حسب النشاط',
     actSedentary:'خامل',actLight:'خفيف',actModerate:'معتدل',actIntense:'مكثف',actAthlete:'رياضي',
     valueField:'القيمة',fromField:'من',toField:'إلى',
-    quickNotesTitle:'📝 ملاحظات سريعة',notesPlaceholder:'اكتب هنا... (حفظ تلقائي)',autoSaveLocal:'💾 حفظ تلقائي محلي.',
+    quickNotesTitle:'ملاحظات سريعة',notesPlaceholder:'اكتب هنا... (حفظ تلقائي)',autoSaveLocal:'حفظ تلقائي محلي.',
     lapBtn:'شوط',stopBtn:'إيقاف',resetBtn2:'إعادة تعيين',bestLap:'أفضل شوط',slowestLap:'الأبطأ',avgLap:'المتوسط',lapsLab:'الأشواط',
-    exportBtn:'تصدير',fastTag:'⚡ سريع',slowTag:'بطيء',lapsCopied:'تم نسخ الأشواط ✓',
-    addEventBtn:'＋ إضافة حدث',competitionDefault:'مسابقة',noEventLab:'لا يوجد حدث',pastLab:'مضى',
+    exportBtn:'تصدير',fastTag:'سريع',slowTag:'بطيء',lapsCopied:'تم نسخ الأشواط',
+    addEventBtn:'إضافة حدث',competitionDefault:'مسابقة',noEventLab:'لا يوجد حدث',pastLab:'مضى',
     eventTitlePrompt:'عنوان الحدث:',eventDatePrompt:'التاريخ (YYYY-MM-DD):',eventAdded:'تمت إضافة الحدث',
-    prayerTitle:'🕌 الصلوات · بجاية',uoifMethod:'طريقة UOIF · {0}',
+    prayerTitle:'الصلوات · بجاية',uoifMethod:'طريقة UOIF · {0}',
     obWelcomeTitle:'مرحبًا بك في IKORUN',obWelcomeIntro:'Elite Athletic Intelligence.<br>تدريبك الشخصي، محسوب علميًا، بدون اتصال 100%.',
     obWhoTitle:'من أنت؟',obWhoIntro:'معلوماتك الأساسية.',firstNamePh:'اسمك الأول',firstNameReq:'الاسم الأول *',
     usernameReq:'اسم المستخدم *',usernamePh:'اسم_مستخدم_فريد',usernameFormatHint:'3 إلى 20 حرفًا: أحرف، أرقام، _',
     birthDateReq:'تاريخ الميلاد *',sexReq:'الجنس *',selectLab:'اختر',maleLab:'ذكر',femaleLab:'أنثى',
     obLevelTitle:'مستواك',obLevelIntro:'كن صادقًا، الخطة تتكيف.',
-    levelNote:'💡 يعدّل <b>المستوى</b> شدة خطتك وحجم تدريبك، محسوبان تلقائيًا. غير متأكد؟ اضغط <b>«كيف أختار؟»</b>.',
-    levelReq:'المستوى *',howChooseLab:'ℹ️ كيف أختار؟',
+    levelNote:'يعدّل <b>المستوى</b> شدة خطتك وحجم تدريبك، محسوبان تلقائيًا. غير متأكد؟ اضغط <b>«كيف أختار؟»</b>.',
+    levelReq:'المستوى *',howChooseLab:'كيف أختار؟',
     lvlBeginner:'مبتدئ',lvlIntermediate:'متوسط',lvlAdvanced:'متقدم',lvlVeryAdvanced:'متقدم جدًا',lvlElite:'نخبة',
     obGoalTitle:'هدفك',obGoalIntro:'ما الذي يجعلك تجري.',goalReq:'الهدف *',goalPh:'مثال: أقل من 20:00 في 5 كم',
     compDateReq:'تاريخ السباق *',coachOptional:'المدرب — اختياري',coachPh:'اسم مدربك',
     obPerfTitle:'أداؤك',obPerfIntro:'أضف أفضل أوقاتك. مطلوب واحد على الأقل.',
-    perfNote:'💡 تحسب أوقاتك <b>VDOT</b> (قدرتك) وكل <b>وتيرات تدريبك</b>. أعط وقتًا واحدًا حديثًا وموثوقًا على الأقل. اختر المسافة ثم الوقت بالعجلات.',
-    addAnotherPerf:'＋ إضافة أداء آخر',backLab:'رجوع',continueLab:'متابعة',
+    perfNote:'تحسب أوقاتك <b>VDOT</b> (قدرتك) وكل <b>وتيرات تدريبك</b>. أعط وقتًا واحدًا حديثًا وموثوقًا على الأقل. اختر المسافة ثم الوقت بالعجلات.',
+    addAnotherPerf:'إضافة أداء آخر',backLab:'رجوع',continueLab:'متابعة',
     paramsTitle:'الإعدادات',libTitle:'المكتبة',configureTitle:'تهيئة',programTitle:'البرنامج',sessionTitle:'الحصة',
     newProgramTitle:'برنامج جديد',homeDefault:'الرئيسية',chooseLab:'اختر',validateLab2:'تأكيد',
-    understoodLab:'فهمت 👍',howChooseLevelTitle:'كيف أختار مستواي؟',
+    understoodLab:'فهمت',howChooseLevelTitle:'كيف أختار مستواي؟',
     lvlBeginnerDesc:'تجري منذ أقل من سنة. تتدرب أحيانًا وما زلت تتعلم الأساسيات.',
     lvlIntermediateDesc:'تجري بانتظام، تشارك أحيانًا في مسابقات وتتقن أنواع الحصص الرئيسية.',
     lvlAdvancedDesc:'عدة سنوات من التدريب، ممارسة منظمة وأهداف زمنية دقيقة.',
@@ -1825,24 +1839,24 @@ const I18N={
     lvlEliteDesc:'رياضي محترف: أداء وطني/دولي، تدريب يومي بحجم كبير جدًا.',
     checkingLab:'جارٍ التحقق…',
     fillRequiredFields:'املأ الحقول المطلوبة',chooseUsernameLab:'اختر اسم مستخدم',usernameUnavailable:'اسم المستخدم هذا غير متاح',
-    quickProfileEnabled:'تم تفعيل الملف السريع — تم تفعيل الوضع المبسّط ✓',chooseLevelLab:'اختر مستوى',goalDateRequired:'الهدف والتاريخ مطلوبان',addAtLeastOnePerf:'أضف أداءً واحدًا على الأقل',
-    finishLab:'إنهاء 🚀',distanceLab2:'المسافة',timeForLab:'الوقت · {0}',chooseWord:'اختر',
-    usernameTakenMeanwhile:'⚠️ تم أخذ الاسم المستعار في هذه الأثناء، غيّره من الملف الشخصي',
+    quickProfileEnabled:'تم تفعيل الملف السريع — تم تفعيل الوضع المبسّط',chooseLevelLab:'اختر مستوى',goalDateRequired:'الهدف والتاريخ مطلوبان',addAtLeastOnePerf:'أضف أداءً واحدًا على الأقل',
+    finishLab:'إنهاء',distanceLab2:'المسافة',timeForLab:'الوقت · {0}',chooseWord:'اختر',
+    usernameTakenMeanwhile:'تم أخذ الاسم المستعار في هذه الأثناء، غيّره من الملف الشخصي',
     liveFinishBtn:'إنهاء',durationLab:'المدة',volumeLab:'الحجم',setsLab:'المجموعات',deleteLab2:'حذف',
-    exerciseDoneLab:'✓ منتهٍ',setsDoneCount:'{0}/{1} مجموعة منجزة',restTimerLab:'⏱ مؤقت الراحة: {0}',disabledLab:'معطّل',
-    setCol:'مجموعة',prevCol:'السابق',kgCol:'كغ',repsCol:'تكرار',addSetBtn:'＋ إضافة مجموعة',
-    addExerciseBtn:'＋ إضافة تمرين',cancelSessionBtn:'🗑 إلغاء الحصة',
-    restSeconds:'الراحة (ثوانٍ)',minOneSetRemain:'يجب أن تبقى مجموعة واحدة على الأقل',changeRestLab:'⏱ تعديل وقت الراحة',
-    removeExLab:'🗑 إزالة هذا التمرين',cancelLab:'إلغاء',minOneExRemain:'يجب أن يبقى تمرين واحد على الأقل',
-    removeExConfirmTitle:'⚠️ إزالة هذا التمرين؟',removeLab2:'إزالة',exerciseRemoved:'تمت إزالة التمرين ✓',
-    exerciseAdded:'تمت إضافة التمرين ✓',sessionSaved:'تم حفظ الحصة — استأنفها متى شئت',xpGain:'+5 XP',
-    restTitle:'⏱ راحة',secLab:'ثا',add30sLab:'+30 ثا',skipLab:'تخطي',cancelSessionTitle:'⚠️ إلغاء الحصة؟',
+    exerciseDoneLab:'منتهٍ',setsDoneCount:'{0}/{1} مجموعة منجزة',restTimerLab:'مؤقت الراحة: {0}',disabledLab:'معطّل',
+    setCol:'مجموعة',prevCol:'السابق',kgCol:'كغ',repsCol:'تكرار',addSetBtn:'إضافة مجموعة',
+    addExerciseBtn:'إضافة تمرين',cancelSessionBtn:'إلغاء الحصة',
+    restSeconds:'الراحة (ثوانٍ)',minOneSetRemain:'يجب أن تبقى مجموعة واحدة على الأقل',changeRestLab:'تعديل وقت الراحة',
+    removeExLab:'إزالة هذا التمرين',cancelLab:'إلغاء',minOneExRemain:'يجب أن يبقى تمرين واحد على الأقل',
+    removeExConfirmTitle:'إزالة هذا التمرين؟',removeLab2:'إزالة',exerciseRemoved:'تمت إزالة التمرين',
+    exerciseAdded:'تمت إضافة التمرين',sessionSaved:'تم حفظ الحصة — استأنفها متى شئت',xpGain:'+5 XP',
+    restTitle:'راحة',secLab:'ثا',add30sLab:'+30 ثا',skipLab:'تخطي',cancelSessionTitle:'إلغاء الحصة؟',
     progressLostText:'سيُفقد تقدمك في هذه الحصة.',continueLab2:'متابعة',yesCancelLab:'نعم، إلغاء',sessionCancelled:'تم إلغاء الحصة',
     sessionDoneTitle:'انتهت الحصة!',tonnageParenKg:'الحمولة (كغ)',repsLab:'التكرارات',caloriesLab:'السعرات',recordsBrokenLab:'أرقام محطّمة',
-    tonnageVsLastLab:'حمولة مقارنة بآخر حصة {0}.',newRecordsLab:'🥇 أرقام جديدة',musclesWorkedLab:'💪 العضلات المستهدفة',xpEarnedLab:'+50 XP مكتسبة!',
+    tonnageVsLastLab:'حمولة مقارنة بآخر حصة {0}.',newRecordsLab:'أرقام جديدة',musclesWorkedLab:'العضلات المستهدفة',xpEarnedLab:'+50 XP مكتسبة!',
     programNameLab:'اسم البرنامج',programNamePh:'برنامجي',descriptionLab:'الوصف',descriptionPh:'الهدف، التقسيم، التكرار...',
     objectiveLab2:'الهدف',iconLab:'الأيقونة',colorLab:'اللون',exercisesCountLab:'التمارين ({0})',addExFromLib:'أضف تمارين من المكتبة.',
-    addFromLibBtn:'＋ إضافة من المكتبة',saveProgramBtn:'💾 حفظ البرنامج',giveNameLab:'أعطه اسمًا',addExercisesLab:'أضف تمارين',programCreated:'تم إنشاء البرنامج ✓',
+    addFromLibBtn:'إضافة من المكتبة',saveProgramBtn:'حفظ البرنامج',giveNameLab:'أعطه اسمًا',addExercisesLab:'أضف تمارين',programCreated:'تم إنشاء البرنامج',
     sessTitle_EF:'التحمل الأساسي',sessLabel_EF:'سهل',
     sessTitle_RECUP:'استرجاع نشط',sessLabel_RECUP:'استرجاع',
     sessTitle_LONG:'الخرجة الطويلة',sessLabel_LONG:'طويل',progressiveSuffix:' تصاعدية',
@@ -1859,7 +1873,7 @@ const I18N={
     sessTitle_FARTLEK:'فارتلك (لعب الوتيرة)',sessLabel_FARTLEK:'فارتلك',
     sessTitle_COTES:'حصة المرتفعات',sessLabel_COTES:'مرتفعات',
     sessTitle_LIGNES:'جري سهل + خطوط تسريع',sessLabel_LIGNES:'خطوط',
-    sessTitle_COURSE:'🏆 يوم السباق',sessLabel_COURSE:'السباق',
+    sessTitle_COURSE:'يوم السباق',sessLabel_COURSE:'السباق',
     sessTitle_default:'تحمل',sessLabel_default:'سهل',
     phase_PG:'التحضير العام',phase_AERO:'تطوير التحمل الهوائي',phase_VO2:'تطوير VO₂max',
     phase_SPE:'التطوير النوعي',phase_PIC:'ذروة اللياقة',phase_TAPER:'تخفيف الحمل',
@@ -1888,46 +1902,46 @@ const I18N={
     ach_force_name:'قوة',ach_force_desc:'ارفع أكثر من 20,000 كغ إجمالاً في أسبوع واحد.',
     catAccomplissement:'إنجاز',catPerformance:'أداء',allYearsLab:'الكل',
     tapTrophyHint:'اضغط على وسام لرؤية الرسوم المتحركة أو الشرط لتحقيقه.',
-    noTrophyInYear:'لم يتم الحصول على وسام في {0}.',badgeUnlockedToast:'🏵️ تم فتح {0}!',badgeRemovedToast:'تمت إزالة الوسام',
+    noTrophyInYear:'لم يتم الحصول على وسام في {0}.',badgeUnlockedToast:'تم فتح {0}!',badgeRemovedToast:'تمت إزالة الوسام',
     objForce:'قوة',objMass:'كتلة',objEndurance:'تحمل',objWeightLoss:'فقدان وزن',objMaintain:'محافظة',
     colBlue:'أزرق',colRed:'أحمر',colGreen:'أخضر',colGold:'ذهبي',colPurple:'بنفسجي',colCyan:'سماوي',
     newTrophyUnlocked:'وسام جديد مفتوح',
-    markAsObtained:'✓ وضع علامة كمُحقق',
+    markAsObtained:'وضع علامة كمُحقق',
     connectingGoogle:'جارٍ الاتصال بـ Google…',googleConnectFail:'تعذر الاتصال، أعد المحاولة',
     confirmLogout:'تسجيل الخروج؟ بياناتك تبقى محفوظة في حسابك.',
     confirmSwitchGoogle:'سيتم تسجيل خروجك لتسجيل الدخول بحساب Google آخر. بياناتك الحالية تبقى محفوظة.',
-    confirmDeleteAllData:'⚠️ سيؤدي هذا إلى حذف جميع بياناتك (الحصص، الأرقام القياسية، XP، الملف الشخصي...) نهائيًا من السحابة ومن هذا الجهاز. متابعة؟',
+    confirmDeleteAllData:'سيؤدي هذا إلى حذف جميع بياناتك (الحصص، الأرقام القياسية، XP، الملف الشخصي...) نهائيًا من السحابة ومن هذا الجهاز. متابعة؟',
     confirmFinalIrreversible:'تأكيد أخير: هل أنت متأكد حقًا؟ هذا الإجراء لا رجعة فيه.',
     genericErrorRetry:'خطأ، أعد المحاولة',
     confirmRemoveFriend:'إزالة هذا الصديق؟',
-    connectFirst:'سجّل الدخول أولاً',copiedClipboard:'تم النسخ ✓',
+    connectFirst:'سجّل الدخول أولاً',copiedClipboard:'تم النسخ',
     usernameFormatHint:'3 إلى 20 حرفًا: أحرف، أرقام، _',checkingEllipsis:'جارٍ التحقق…',
     available:'متاح',alreadyTaken:'مُستخدم بالفعل',
     alarmDefaultTitle:'منبّه',timeUpMsg:'انتهى الوقت!',timeUpTitle:'انتهى الوقت!',
     stopAlarm:'إيقاف المنبّه',remindIn5Min:'تذكير بعد 5 دقائق',reminderCap:'تذكير',fiveMinElapsed:'مرت 5 دقائق',
-    sessionInProgress:'الحصة جارية',welcomeToast:'مرحبًا 👋',
+    sessionInProgress:'الحصة جارية',welcomeToast:'مرحبًا',
     resumeSessionConfirm:'كانت حصة « {0} » جارية ({1} د). المتابعة؟',sessionColonName:'حصة: {0}',
     accentBlue:'أزرق',accentRed:'أحمر',accentGreen:'أخضر عسكري',accentBrown:'بني خشبي',accentYellow:'أصفر',accentCarbon:'ألياف الكربون',
-    colorApplied:'تم تطبيق اللون ✓',easyModeOn:'تم تفعيل الوضع المبسّط ✓',easyModeOff:'تم إلغاء الوضع المبسّط',
+    colorApplied:'تم تطبيق اللون',easyModeOn:'تم تفعيل الوضع المبسّط',easyModeOff:'تم إلغاء الوضع المبسّط',
     profileIncompleteAddTime:'الملف غير مكتمل: أضف زمنًا في أرقامك القياسية',chooseCompDate:'اختر تاريخ المنافسة',
     planGenerated:'تم إنشاء خطة « {0} »: {1} أسبوع، {2} حصة',raceGeneric:'سباق',
-    followingPersoPlan:'أنت الآن تتبع هذه الخطة الشخصية ✓',backToIkorunPlan:'العودة إلى خطة IKORUN',
+    followingPersoPlan:'أنت الآن تتبع هذه الخطة الشخصية',backToIkorunPlan:'العودة إلى خطة IKORUN',
     namePromptLabel:'الاسم:',copySuffix:'(نسخة)',confirmDeletePlan:'حذف هذه الخطة؟',
-    addAtLeastOneRepTime:'أضف زمنًا واحدًا على الأقل للتكرار',sessionAdded:'تمت إضافة الحصة ✓',
+    addAtLeastOneRepTime:'أضف زمنًا واحدًا على الأقل للتكرار',sessionAdded:'تمت إضافة الحصة',
     myPlanColon:'خطتي: {0}',shareNotSupported:'المشاركة غير مدعومة',confirmDeleteProgram:'حذف هذا البرنامج؟',
     routineTitle:'روتين',exercisesCount:'{0} تمارين',exercisesCap:'تمارين',setsCap:'مجموعات',estDurationCap:'المدة التقديرية',
     setsRepsLine:'{0} مجموعات · {1} تكرار',addExercise:'إضافة تمرين',startWorkout:'بدء التمرين',
     defaultProgramsNotEditable:'لا يمكن تعديل البرامج الافتراضية',
-    heightCmTitle:'الطول (سم)',weightKgTitle:'الوزن (كغ)',heightSaved:'تم حفظ الطول ✓',weightSaved:'تم حفظ الوزن ✓',
-    deservedBreak:'استراحة مستحقة! ☕',backToWork:'عودة للعمل! 🍅',setDuration:'اضبط مدة',
-    photoUpdated:'تم تحديث الصورة ✓',photoRemoved:'تمت إزالة الصورة',bioPromptLabel:'نبذتك:',
+    heightCmTitle:'الطول (سم)',weightKgTitle:'الوزن (كغ)',heightSaved:'تم حفظ الطول',weightSaved:'تم حفظ الوزن',
+    deservedBreak:'استراحة مستحقة!',backToWork:'عودة للعمل!',setDuration:'اضبط مدة',
+    photoUpdated:'تم تحديث الصورة',photoRemoved:'تمت إزالة الصورة',bioPromptLabel:'نبذتك:',
     usernameInvalid:'اسم مستخدم غير صالح (3-20، أحرف/أرقام/_)',usernameNotAvailable:'هذا الاسم غير متاح',
-    usernameJustTaken:'تم أخذ هذا الاسم للتو، اختر اسمًا آخر',usernameUpdated:'تم تحديث اسم المستخدم ✓',
-    profileUpdated:'تم تحديث الملف الشخصي ✓',localDataOnly:'بيانات محلية فقط',exportGenerated:'تم إنشاء التصدير ✓',
+    usernameJustTaken:'تم أخذ هذا الاسم للتو، اختر اسمًا آخر',usernameUpdated:'تم تحديث اسم المستخدم',
+    profileUpdated:'تم تحديث الملف الشخصي',localDataOnly:'بيانات محلية فقط',exportGenerated:'تم إنشاء التصدير',
     confirmClearAll:'مسح كل شيء؟ هذا الإجراء لا رجعة فيه.',confirmClearAllFinal:'متأكد حقًا؟ ستفقد جميع بياناتك.',
     offlineSinceDays:'غير متصل منذ {0} يوم — تذكّر إعادة الاتصال',dataSynced:'تمت مزامنة البيانات',
     connectionRestored:'تمت استعادة الاتصال · مزامنة…',offlineModeAvailable:'وضع عدم الاتصال — كل شيء يبقى متاحًا',
-    dataImported:'تم استيراد البيانات ✓',invalidFile:'ملف غير صالح',
+    dataImported:'تم استيراد البيانات',invalidFile:'ملف غير صالح',
     searchExercisePlaceholder:'ابحث عن تمرين...',muscleLabel:'العضلة',equipmentLabel:'المعدات',levelLabel:'المستوى',
     exercisesWordPlural:'تمارين',exerciseWordSingular:'تمرين',
     movementDemoCap:'عرض توضيحي للحركة',movementDemo:'عرض توضيحي للحركة',
@@ -1961,7 +1975,7 @@ const I18N={
     cdTemplate:'10-15 دقيقة ركض بطيء جدًا بوتيرة {0}/كم + تمدّدات خفيفة.',
     recovLabel_2minTrot:'هرولة دقيقتين',recovLabel_1minTrot:'هرولة دقيقة',recovLabel_30sTrot:'هرولة 30 ثانية',recovLabel_2to3minTrot:'هرولة 2-3 دقائق',recovLabel_90sTrot:'هرولة 90 ثانية',
     repsTextTemplate:'{0} × {1} م بزمن {2} ({3}/كم)',seriesPyramid:'هرمي {0}←{1} م',seriesRepsDist:'{0} × {1} م بزمن {2}',seriesRepsOnly:'{0} × مجهودات',
-    deloadPrefixTemplate:'🟢 أسبوع تخفيف — {0}',
+    deloadPrefixTemplate:'أسبوع تخفيف — {0}',
     bs_ef_objectif:'بناء قاعدتك الهوائية — أساس كل تقدم (80% من حجم تدريب النخبة).',
     bs_ef_warmup:'إحماء تدريجي لمدة 10 دقائق.',bs_ef_body:'{0} كم بوتيرة سهلة ({1}/كم). يمكنك التحدث طوال الوقت.',
     bs_ef_paces:'المنطقة 2، ~70% من أقصى معدل ضربات القلب — {0}/كم.',bs_ef_recovery:'مجهود متواصل.',bs_ef_cooldown:'بعض تمارين تمدد لعضلات الساق الخلفية وأوتار الركبة.',
@@ -2057,7 +2071,7 @@ const I18N={
     coach_err_pain:'ألم {0}: لا تتجاهله. الألم المفصلي المستمر يعني الراحة.',
     coach_err_sleep:'نوم غير كافٍ: سيتأثر أداؤك وتعافيك.',
     coach_err_tooEasy:'حصة سهلة جدًا (RPE {0}): يمكنك على الأرجح بذل مجهود أكبر في المرة القادمة.',
-    coach_pos_completed:'أنهيت حصتك: الانتظام هو أقوى نقاط قوتك. 💪',
+    coach_pos_completed:'أنهيت حصتك: الانتظام هو أقوى نقاط قوتك.',
     coach_pos_feel:'إحساس ممتاز — جسمك يستجيب جيدًا للتدريب.',
     coach_pos_nopain:'لا ألم مُبلَّغ عنه: تقنيتك وحمل تدريبك مُدارَان جيدًا.',
     coach_pos_nutrition:'تغذية ممتازة، الوقود متوفر.',
@@ -2080,35 +2094,35 @@ const I18N={
     missedSessionTitle:'حصة فائتة',nightSleepLabel:'نوم الليلة',
     note_cardioAlreadyCounted:'تم احتساب حمل الكارديو بالفعل، الخطة لم تتغير',
     note_explosiveCaution:'توخَّ الحذر في حصتك الانفجارية القادمة',note_nextHardLightened:'تم تخفيف الحصة الشاقة القادمة',
-    notedCoachBtn:'تم الفهم، أيها المدرب! 💪',notesOptionalLabel:'ملاحظات (اختياري)',paceKmLabel:'الوتيرة /كم',painLabel:'الألم',
+    notedCoachBtn:'تم الفهم، أيها المدرب!',notesOptionalLabel:'ملاحظات (اختياري)',paceKmLabel:'الوتيرة /كم',painLabel:'الألم',
     planUpdatedWeekReason:'تم تحديث الخطة لهذا الأسبوع — {0}',positivePointsTitle:'نقاط إيجابية',
     recentMissesReducedMsg:'3 حصص فائتة مؤخرًا: تم تقليل حجم الأسابيع القادمة بنسبة 15%',
     repByRepSummary:'ملخص لكل تكرار — {0} × {1} م',
-    repLegendLine:'⏱ = أدخل الزمن الفعلي · ✓ = «حافظت على الوتيرة» (يملأ تلقائيًا بالزمن المستهدف)',
+    repLegendLine:'= أدخل الزمن الفعلي · ✓ = «حافظت على الوتيرة» (يملأ تلقائيًا بالزمن المستهدف)',
     repNumDist:'تكرار {0} · {1} م',replacementMuscuTitle:'بديل — {0}',replacementRunTitle:'ركض بديل',
     respectedCount:'{0}/{1} محترمة',rpeFeltLabel:'RPE — الصعوبة المُحسّة:',sensationsLabel:'الإحساس',
     sessionNotedToast:'تم تسجيل الحصة',sessionTypeLabel:'نوع الحصة',targetColon:'الهدف {0}',
     upcomingAdjustmentsTitle:'تعديلات قادمة',weatherLabel:'الطقس',
-    addAsGoalLabel:'إضافة كهدف',advancedLabel:'متقدم',calculateLabel:'احسب',copiedShortToast:'تم النسخ ✓',
+    addAsGoalLabel:'إضافة كهدف',advancedLabel:'متقدم',calculateLabel:'احسب',copiedShortToast:'تم النسخ',
     copyLabel:'نسخ',customDistanceKmLabel:'مسافة مخصصة (كم)',distanceLabel:'المسافة',
-    goalAddedReason:'تمت إضافة هدف',goalAddedToast:'تمت إضافة الهدف ✓',
+    goalAddedReason:'تمت إضافة هدف',goalAddedToast:'تمت إضافة الهدف',
     ikorunDistInTime:'IKORUN — {0} كم في {1}',kmSplitsLabel:'تقسيمات الكيلومترات',myIkorunPrediction:'توقعي في IKORUN: {0} كم في {1}',
     negativeSplitLabel:'تقسيم تنازلي',paceCalculatorTitle:'حاسبة الوتيرة',paceMinSecKmLabel:'الوتيرة (دقيقة : ثانية /كم)',
     penaltySecKmLabel:'عقوبة (ثانية/كم)',predictedTimeLabel:'الزمن المتوقع',resetShortLabel:'إعادة',
-    resultSavedToast:'تم حفظ النتيجة ✓',resultsLabel:'النتائج',runCalcFirstToast:'أجرِ حسابًا أولاً',
+    resultSavedToast:'تم حفظ النتيجة',resultsLabel:'النتائج',runCalcFirstToast:'أجرِ حسابًا أولاً',
     sleepBorderline:'حدّي — استهدف أكثر',sleepCyclesTip:'تدوم الدورة ~90 دقيقة. استهدف الاستيقاظ في نهاية دورة: 6 أو 7.5 أو 9 ساعات نوم. اخلد للنوم في وقت منتظم لتحسين التعافي.',
     sleepCyclesTitle:'دورات النوم',sleepHoursPerNightLabel:'ساعات النوم / الليلة',
-    sleepInsufficient:'غير كافٍ — التعافي مُعرَّض للخطر',sleepOptimal:'مثالي للرياضي ✓',sleepPlenty:'كثير — استمع لجسدك',
+    sleepInsufficient:'غير كافٍ — التعافي مُعرَّض للخطر',sleepOptimal:'مثالي للرياضي',sleepPlenty:'كثير — استمع لجسدك',
     speedLabel:'السرعة',timeHMSLabel:'الزمن (س : د : ث)',
     configurePlanTitle:'إعداد خطتي',courseProfileLabel:'طبيعة المسار',generateMyPlanBtn:'أنشئ خطتي',
     maxKmWeekLabel:'أقصى كم/أسبوع (الذروة)',minKmWeekLabel:'أدنى كم/أسبوع',preferredSessionsLabel:'الحصص المفضلة (سيفضلها المدرب)',
     preparedRaceLabel:'السباق الذي تستعد له',raceDateLabel:'تاريخ السباق',targetTimeOptionalLabel:'الزمن المستهدف (اختياري)',
     trainingDaysLabel:'أيام التدريب',yourNextRaceDefault:'سباقك القادم',
-    guardFutureDate:'⛔ لا يمكن تسجيل حصة بتاريخ مستقبلي.',
-    guardDistanceTooHigh:'⛔ مسافة غير واقعية مقارنة بتاريخك ({0} كم كحد أقصى حاليًا).',
-    guardPaceTooFast:'⛔ هذه الوتيرة لا تتوافق مع VDOT الحالي ({0}). تحقق مما أدخلته.',
-    guardRecordTooFast:'⛔ هذا الأداء يعني VDOT قدره {0}، بعيد جدًا عن مستواك الحالي. تحقق من زمنك.',
-    guardStorageTooBig:'⚠️ هذه البيانات كبيرة جدًا ولم تتم مزامنتها مع السحابة.',
+    guardFutureDate:'لا يمكن تسجيل حصة بتاريخ مستقبلي.',
+    guardDistanceTooHigh:'مسافة غير واقعية مقارنة بتاريخك ({0} كم كحد أقصى حاليًا).',
+    guardPaceTooFast:'هذه الوتيرة لا تتوافق مع VDOT الحالي ({0}). تحقق مما أدخلته.',
+    guardRecordTooFast:'هذا الأداء يعني VDOT قدره {0}، بعيد جدًا عن مستواك الحالي. تحقق من زمنك.',
+    guardStorageTooBig:'هذه البيانات كبيرة جدًا ولم تتم مزامنتها مع السحابة.',
     loginWelcomeTitle:'مرحبًا',loginSubConnect:'سجّل الدخول لحفظ تقدمك وحصصك وأرقامك القياسية — مُزامَنة على كل أجهزتك.',
     signupTitle:'إنشاء حساب',signupSub:'انضم إلى IKORUN لحفظ تقدمك واسترجاعه على كل أجهزتك.',
     forgotTitle:'نسيت كلمة المرور',forgotSub:'أدخل بريدك الإلكتروني، سنرسل لك رابط إعادة التعيين.',
@@ -2116,7 +2130,7 @@ const I18N={
     emailPlaceholder:'you@email.com',
     loginBtnLabel:'تسجيل الدخول',signupBtnLabel:'إنشاء حسابي',sendResetLinkBtn:'إرسال الرابط',
     forgotPasswordLink:'نسيت كلمة المرور؟',noAccountLink:'ليس لديك حساب؟ أنشئ واحدًا',
-    haveAccountLink:'لديك حساب بالفعل؟ سجّل الدخول',backToLoginLink:'← العودة لتسجيل الدخول',
+    haveAccountLink:'لديك حساب بالفعل؟ سجّل الدخول',backToLoginLink:'العودة لتسجيل الدخول',
     orDividerLabel:'أو',continueWithGoogleBtn:'المتابعة عبر Google',
     loginLegalText:'بالمتابعة، فإنك توافق على شروطنا.<br>بياناتك مُزامَنة بأمان عبر حسابك.',
     fillEmailPasswordToast:'أدخل البريد الإلكتروني وكلمة المرور.',invalidEmailToast:'عنوان بريد إلكتروني غير صالح.',
@@ -2130,7 +2144,7 @@ function curLang(){ return (P&&P.lang)||'fr'; }
 function t(key){ const l=curLang(); return (I18N[l]&&I18N[l][key])||I18N.fr[key]||key; }
 function tp(key,...args){ let s=t(key); args.forEach((a,i)=>{ s=s.split('{'+i+'}').join(a); }); return s; }
 function localeCode(){ return curLang()==='en'?'en-US':(curLang()==='ar'?'ar-DZ':'fr-FR'); }
-const LANGS=[['fr','🇫🇷','Français'],['en','🇬🇧','English'],['ar','🇩🇿','العربية']];
+const LANGS=[['fr','FR','Français'],['en','EN','English'],['ar','AR','العربية']];
 function setLang(l){
   P.lang=l; saveAll();
   document.documentElement.lang=l;
@@ -2142,7 +2156,7 @@ function setLang(l){
   // re-render la vue active
   const active=document.querySelector('.nb.on'); if(active) nav(active.dataset.s);
   refreshPfSheet();
-  toast('✓');
+  toast('');
 }
 function applyNavLabels(){
   document.querySelectorAll('.nb').forEach(b=>{ const s=b.dataset.s; const sp=b.querySelector('span'); if(sp) sp.textContent=t('nav_'+s); });
@@ -2541,14 +2555,14 @@ function addXP(amount,reason){
      - Maître   : ≥4 mois (120 j),             objectif = 18 mois    (2160 km / 14400 XP)
      - Légende  : ≥8 mois (240 j),             objectif = 2 ans      (2880 km / 19200 XP) */
 function BADGE_TIERS_DEF(){ return [
-  {key:'debutant', name:t('bdg_debutant_name'), cls:'bd-debutant', emoji:'🌱', xpMin:0,     kmMin:0,    daysMin:0,   desc:t('bdg_debutant_desc')},
-  {key:'amateur',  name:t('bdg_amateur_name'),  cls:'bd-amateur',  emoji:'🥉', xpMin:200,   kmMin:30,   daysMin:3,   desc:t('bdg_amateur_desc')},
-  {key:'sportif',  name:t('bdg_sportif_name'),  cls:'bd-sportif',  emoji:'⭐', xpMin:400,   kmMin:60,   daysMin:11,  desc:t('bdg_sportif_desc')},
-  {key:'athlete',  name:t('bdg_athlete_name'),  cls:'bd-athlete',  emoji:'🏅', xpMin:1600,  kmMin:240,  daysMin:14,  desc:t('bdg_athlete_desc')},
-  {key:'expert',   name:t('bdg_expert_name'),   cls:'bd-expert',   emoji:'💚', xpMin:4000,  kmMin:600,  daysMin:30,  desc:t('bdg_expert_desc')},
-  {key:'elite',    name:t('bdg_elite_name'),    cls:'bd-elite',    emoji:'💎', xpMin:9600,  kmMin:1440, daysMin:60,  desc:t('bdg_elite_desc')},
-  {key:'maitre',   name:t('bdg_maitre_name'),   cls:'bd-maitre',   emoji:'🛡️', xpMin:14400, kmMin:2160, daysMin:120, desc:t('bdg_maitre_desc')},
-  {key:'legende',  name:t('bdg_legende_name'),  cls:'bd-legende',  emoji:'👑', xpMin:19200, kmMin:2880, daysMin:240, desc:t('bdg_legende_desc')}
+  {key:'debutant', name:t('bdg_debutant_name'), cls:'bd-debutant', emoji:'seedling', xpMin:0,     kmMin:0,    daysMin:0,   desc:t('bdg_debutant_desc')},
+  {key:'amateur',  name:t('bdg_amateur_name'),  cls:'bd-amateur',  emoji:'medal', xpMin:200,   kmMin:30,   daysMin:3,   desc:t('bdg_amateur_desc')},
+  {key:'sportif',  name:t('bdg_sportif_name'),  cls:'bd-sportif',  emoji:'star', xpMin:400,   kmMin:60,   daysMin:11,  desc:t('bdg_sportif_desc')},
+  {key:'athlete',  name:t('bdg_athlete_name'),  cls:'bd-athlete',  emoji:'medal', xpMin:1600,  kmMin:240,  daysMin:14,  desc:t('bdg_athlete_desc')},
+  {key:'expert',   name:t('bdg_expert_name'),   cls:'bd-expert',   emoji:'heart', xpMin:4000,  kmMin:600,  daysMin:30,  desc:t('bdg_expert_desc')},
+  {key:'elite',    name:t('bdg_elite_name'),    cls:'bd-elite',    emoji:'gem', xpMin:9600,  kmMin:1440, daysMin:60,  desc:t('bdg_elite_desc')},
+  {key:'maitre',   name:t('bdg_maitre_name'),   cls:'bd-maitre',   emoji:'shield', xpMin:14400, kmMin:2160, daysMin:120, desc:t('bdg_maitre_desc')},
+  {key:'legende',  name:t('bdg_legende_name'),  cls:'bd-legende',  emoji:'crown', xpMin:19200, kmMin:2880, daysMin:240, desc:t('bdg_legende_desc')}
 ]; }
 // Recalculé à chaque changement de langue (setLang) pour suivre curLang() — voir TOOLS_DEF pour le même principe.
 let BADGE_TIERS=BADGE_TIERS_DEF();
@@ -2583,7 +2597,7 @@ function badgeBottleneck(prog){
   }, prog.parts[0]);
 }
 function badgeHintText(prog){
-  if(prog.unlocked) return 'Palier atteint 🎉';
+  if(prog.unlocked) return 'Palier atteint';
   const p=badgeBottleneck(prog);
   const remain=Math.ceil(p.need-p.have);
   if(remain<=0) return 'Continue, tu y es presque.';
@@ -2710,7 +2724,7 @@ function previewBadgeAnim(key){
   ov.innerHTML='<div class="bd-flash"></div>'+
     '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded;margin-bottom:6px">'+t('previewLocked')+'</div>'+
     '<div class="bd-unlock-stage '+b.cls+'"><div class="bd-rays"></div><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div>'+
-    '<div class="bd-unlock-badge">'+bdGlyph(b.key)+sparks+'<div class="bd-lock-chip big">🔒</div></div></div>'+
+    '<div class="bd-unlock-badge">'+bdGlyph(b.key)+sparks+'<div class="bd-lock-chip big">'+ICN('lock',16)+'</div></div></div>'+
     '<div class="man" style="font-weight:800;font-size:26px;margin-top:18px">'+b.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+b.desc+'</div>'+
     condHtml+
@@ -2739,7 +2753,7 @@ function renderBadgeGallery(){
   list.forEach((b,i)=>{
     const on=ukeys.has(b.key);
     h+='<div class="bd-cell" onclick="openBadgeQuick(\''+b.key+'\')">'+
-      '<div class="bd-icon '+b.cls+(on?'':' locked')+'" style="--sw:'+(i%5)+'">'+bdGlyph(b.key)+(on?'':'<div class="bd-lock-chip">🔒</div>')+'</div>'+
+      '<div class="bd-icon '+b.cls+(on?'':' locked')+'" style="--sw:'+(i%5)+'">'+bdGlyph(b.key)+(on?'':'<div class="bd-lock-chip">'+ICN('lock',14)+'</div>')+'</div>'+
       '<div class="bd-name">'+b.name+'</div><div class="bd-lvl">'+(b.kmMin?b.kmMin+' km':'—')+'</div></div>';
   });
   h+='</div>';
@@ -2765,7 +2779,7 @@ function openBadgeDetail(key){
   /* Hero : le halo reprend la couleur matière propre au badge (--glow),
      posé via la classe de palier (b.cls) qui définit --c1/--c2/--glow. */
   h+='<div class="bd-detail-hero '+b.cls+(rec?'':' locked')+'">'+
-    '<div class="bd-icon big'+(rec?'':' locked')+'" style="margin:0 auto;cursor:pointer" onclick="'+(rec?'replayBadgeAnim':'previewBadgeAnim')+'(\''+b.key+'\')">'+bdGlyph(b.key)+(rec?'':'<div class="bd-lock-chip big">🔒</div>')+'</div>'+
+    '<div class="bd-icon big'+(rec?'':' locked')+'" style="margin:0 auto;cursor:pointer" onclick="'+(rec?'replayBadgeAnim':'previewBadgeAnim')+'(\''+b.key+'\')">'+bdGlyph(b.key)+(rec?'':'<div class="bd-lock-chip big">'+ICN('lock',16)+'</div>')+'</div>'+
     '<div class="man" style="font-weight:800;font-size:24px;margin-top:16px">'+b.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;padding:0 14px">'+b.desc+'</div>'+
     '<div class="row" style="justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap">'+
@@ -2778,7 +2792,7 @@ function openBadgeDetail(key){
   prog.parts.forEach(p=>{
     const pc=Math.min(100,Math.round((p.need?p.have/p.need:1)*100));
     const done=p.have>=p.need;
-    h+='<div style="margin-bottom:12px"><div class="row" style="margin-bottom:5px"><span style="font-size:13px">'+(done?'✅ ':'⬜ ')+p.label+'</span><span class="mono" style="font-size:12px;color:var(--muted)">'+Math.min(p.have,p.need)+' / '+p.need+' '+p.unit+'</span></div><div class="pbar bd-pbar" style="height:7px"><div style="width:'+pc+'%"></div></div></div>';
+    h+='<div style="margin-bottom:12px"><div class="row" style="margin-bottom:5px"><span style="font-size:13px">'+(done?'':'')+p.label+'</span><span class="mono" style="font-size:12px;color:var(--muted)">'+Math.min(p.have,p.need)+' / '+p.need+' '+p.unit+'</span></div><div class="pbar bd-pbar" style="height:7px"><div style="width:'+pc+'%"></div></div></div>';
   });
   const R=40,C=+(2*Math.PI*R).toFixed(1),OFF=+(C*(1-prog.pct/100)).toFixed(1);
   h+='<div class="card-divider"></div>'+
@@ -2822,7 +2836,7 @@ function levelUpAnimation(level){
   ov.style.cssText='position:fixed;inset:0;z-index:13500;display:flex;align-items:center;justify-content:center;background:rgba(5,7,10,.86);backdrop-filter:blur(8px);animation:fade .3s';
   ov.innerHTML='<div style="text-align:center;animation:popIn .6s cubic-bezier(.34,1.56,.64,1)">'+
     '<div style="font-size:14px;letter-spacing:3px;color:var(--e);font-weight:700;font-family:Unbounded">NIVEAU SUPÉRIEUR</div>'+
-    '<div style="font-size:96px;margin:6px 0;filter:drop-shadow(0 0 20px var(--e))">⭐</div>'+
+    '<div style="margin:6px 0;filter:drop-shadow(0 0 20px var(--e));display:flex;justify-content:center">'+ICN('star',80,'var(--e)')+'</div>'+
     '<div class="man" style="font-weight:800;font-size:54px;background:linear-gradient(135deg,var(--e),#9FD8FF);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">Niv. '+level+'</div>'+
     '<div class="man" style="font-weight:700;font-size:22px;margin-top:4px">'+levelName(level)+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:14px">Touche pour continuer</div></div>';
@@ -2893,8 +2907,8 @@ function startAlarm(title,msg){
   _alarmIv=setInterval(alarmRing,1300);
   // sécurité : arrêt automatique après 60 s
   setTimeout(()=>{ if(_alarmIv) stopAlarm(); },60000);
-  notify(title||'⏰ '+t('alarmDefaultTitle'),msg||t('timeUpMsg'));
-  showAlarmScreen(title||'⏰ '+t('timeUpTitle'),msg||'');
+  notify(title||''+t('alarmDefaultTitle'),msg||t('timeUpMsg'));
+  showAlarmScreen(title||''+t('timeUpTitle'),msg||'');
 }
 function stopAlarm(){
   if(_alarmIv){ clearInterval(_alarmIv); _alarmIv=null; }
@@ -2905,18 +2919,18 @@ function showAlarmScreen(title,msg){
   const old=$('#alarmOv'); if(old) old.remove();
   const ov=document.createElement('div'); ov.id='alarmOv';
   ov.style.cssText='position:fixed;inset:0;z-index:14000;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(5,7,10,.92);backdrop-filter:blur(8px);text-align:center;padding:24px;animation:fade .3s';
-  ov.innerHTML='<div style="font-size:84px;animation:alarmShake .5s ease-in-out infinite">⏰</div>'+
+  ov.innerHTML='<div style="font-size:84px;animation:alarmShake .5s ease-in-out infinite"></div>'+
     '<div class="man" style="font-weight:800;font-size:28px;margin-top:14px">'+title+'</div>'+
     (msg?'<div style="color:var(--muted);font-size:15px;margin-top:8px">'+msg+'</div>':'')+
     '<button class="btn" style="margin-top:28px;max-width:240px;font-size:17px;padding:16px" onclick="stopAlarm()">'+t('stopAlarm')+'</button>'+
-    '<button class="btn ghost" style="margin-top:10px;max-width:240px" onclick="snoozeAlarm()">⏱ '+t('remindIn5Min')+'</button>';
+    '<button class="btn ghost" style="margin-top:10px;max-width:240px" onclick="snoozeAlarm()">'+t('remindIn5Min')+'</button>';
   ov.onclick=(e)=>{ if(e.target===ov) {} };
   document.body.appendChild(ov);
 }
 function snoozeAlarm(){
   stopAlarm();
-  toast('🔔 '+t('remindIn5Min'));
-  setTimeout(()=>startAlarm('⏰ '+t('reminderCap'),t('fiveMinElapsed')),5*60*1000);
+  toast(''+t('remindIn5Min'));
+  setTimeout(()=>startAlarm(''+t('reminderCap'),t('fiveMinElapsed')),5*60*1000);
 }
 
 /* ============ NOTIFICATIONS & ACTIVITÉ EN ARRIÈRE-PLAN ============ */
@@ -3221,7 +3235,7 @@ $$('.nb').forEach(b=>b.onclick=()=>nav(b.dataset.s));
     +'transform:translate(-50%,-70px);z-index:9500;width:36px;height:36px;border-radius:50%;'
     +'background:var(--s1);border:1px solid var(--hair);display:flex;align-items:center;justify-content:center;'
     +'color:var(--e);font-size:16px;box-shadow:var(--sh-md);transition:transform .18s var(--ease-out),opacity .18s;opacity:0;';
-  ind.textContent='↻';
+  ind.textContent='';
   document.body.appendChild(ind);
   sc.addEventListener('touchstart',e=>{
     if(sc.scrollTop>2||busy) return;
@@ -3256,7 +3270,7 @@ $$('.nb').forEach(b=>b.onclick=()=>nav(b.dataset.s));
 })();
 function greet(){ const h=new Date().getHours(); const l=curLang();
   const G={fr:[h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir'],en:[h<12?'Good morning':h<18?'Good afternoon':'Good evening'],ar:['مرحباً']};
-  return (G[l]||G.fr)[0]+', '+(P.name||t('profil'))+' 👋'; }
+  return (G[l]||G.fr)[0]+', '+(P.name||t('profil'))+''; }
 
 /* ---------- INIT ---------- */
 /* Fige les animations d'ambiance (icônes flottantes, halos, reflets...) une fois
@@ -3582,9 +3596,9 @@ function renderPerfRows(){
   let h='';
   OB_PERFS.forEach((p,i)=>{
     h+='<div class="perfrow">';
-    h+='<div class="perfcard" onclick="pickPerfDist('+i+')"><div class="pcl">🏁 '+t('distanceLab2')+'</div><div class="pcv '+(p.dist?'':'empty')+'">'+(p.dist||t('chooseWord'))+'</div></div>';
-    h+='<div class="perfcard" onclick="pickPerfTime('+i+')"><div class="pcl">⏱ '+t('timeField')+'</div><div class="pcv '+(p.timeS!=null?'':'empty')+'">'+(p.timeS!=null?fmtTime(p.timeS):t('chooseWord'))+'</div></div>';
-    if(OB_PERFS.length>1) h+='<div class="perfdel" onclick="delPerfRow('+i+')">🗑</div>';
+    h+='<div class="perfcard" onclick="pickPerfDist('+i+')"><div class="pcl">'+t('distanceLab2')+'</div><div class="pcv '+(p.dist?'':'empty')+'">'+(p.dist||t('chooseWord'))+'</div></div>';
+    h+='<div class="perfcard" onclick="pickPerfTime('+i+')"><div class="pcl">'+t('timeField')+'</div><div class="pcv '+(p.timeS!=null?'':'empty')+'">'+(p.timeS!=null?fmtTime(p.timeS):t('chooseWord'))+'</div></div>';
+    if(OB_PERFS.length>1) h+='<div class="perfdel" onclick="delPerfRow('+i+')">'+ICN('trash',16)+'</div>';
     h+='</div>';
   });
   box.innerHTML=h;
@@ -3592,13 +3606,13 @@ function renderPerfRows(){
 function addPerfRow(){ OB_PERFS.push({dist:null,meters:null,timeS:null}); renderPerfRows(); }
 function openLevelGuide(){
   const lv=[
-    ['🌱 '+t('lvlBeginner'),t('lvlBeginnerDesc')],
-    ['🏃 '+t('lvlIntermediate'),t('lvlIntermediateDesc')],
-    ['⚡ '+t('lvlAdvanced'),t('lvlAdvancedDesc')],
-    ['🔥 '+t('lvlVeryAdvanced'),t('lvlVeryAdvancedDesc')],
-    ['🏆 '+t('lvlElite'),t('lvlEliteDesc')]
+    ['seedling',t('lvlBeginner'),t('lvlBeginnerDesc')],
+    ['run',t('lvlIntermediate'),t('lvlIntermediateDesc')],
+    ['bolt',t('lvlAdvanced'),t('lvlAdvancedDesc')],
+    ['fire',t('lvlVeryAdvanced'),t('lvlVeryAdvancedDesc')],
+    ['medal',t('lvlElite'),t('lvlEliteDesc')]
   ];
-  let h=lv.map(x=>'<div class="card" style="margin-bottom:10px;padding:14px"><div style="font-weight:700;font-size:15px;margin-bottom:5px">'+x[0]+'</div><div style="font-size:13px;color:var(--muted);line-height:1.5">'+x[1]+'</div></div>').join('');
+  let h=lv.map(x=>'<div class="card" style="margin-bottom:10px;padding:14px"><div style="font-weight:700;font-size:15px;margin-bottom:5px;display:flex;align-items:center;gap:8px">'+ICN(x[0],18,'var(--e)')+x[1]+'</div><div style="font-size:13px;color:var(--muted);line-height:1.5">'+x[2]+'</div></div>').join('');
   h+='<button class="btn" onclick="closeOv(\'ovProg\')">'+t('understoodLab')+'</button>';
   $('#ovProgTitle').textContent=t('howChooseLevelTitle'); $('#progBody').innerHTML=h;
   // place l'overlay au-dessus de l'onboarding
@@ -3722,78 +3736,78 @@ function setMode(m){ P.mode=(m==='light')?'light':'dark'; saveAll(); applyTheme(
 /* ---------- EXERCISE LIBRARY (100+) ---------- */
 const LIB=[
  // Pectoraux
- {name:'Bench Press',sets:4,reps:'12',muscles:['Pectoraux','Triceps'],anim:'🏋️',tip:'Garde les omoplates serrées et les pieds ancrés au sol.'},
- {name:'Decline Bench Press',sets:4,reps:'12',muscles:['Pectoraux bas'],anim:'🏋️',tip:'Cible le bas des pectoraux, descends contrôlé.'},
- {name:'Dumbbell Incline Bench Press',sets:4,reps:'12',muscles:['Pectoraux haut'],anim:'💪',tip:'Banc à 30°, amplitude complète.'},
- {name:'Lever Seated Fly',sets:3,reps:'8',muscles:['Pectoraux'],anim:'🦋',tip:'Serre les pectoraux en fin de mouvement, 1s de pause.'},
- {name:'Cable Crossover',sets:3,reps:'12-15',muscles:['Pectoraux'],anim:'🔀',tip:'Légère flexion du buste, contraction au centre.'},
- {name:'Push Up',sets:3,reps:'AMRAP',muscles:['Pectoraux','Triceps'],anim:'🤸',tip:'Gainage parfait, ne creuse pas le dos.'},
- {name:'Dumbbell Pullover',sets:3,reps:'12',muscles:['Pectoraux','Dos'],anim:'🛢️',tip:'Étire la cage thoracique, coudes semi-fléchis.'},
+ {name:'Bench Press',sets:4,reps:'12',muscles:['Pectoraux','Triceps'],anim:'',tip:'Garde les omoplates serrées et les pieds ancrés au sol.'},
+ {name:'Decline Bench Press',sets:4,reps:'12',muscles:['Pectoraux bas'],anim:'',tip:'Cible le bas des pectoraux, descends contrôlé.'},
+ {name:'Dumbbell Incline Bench Press',sets:4,reps:'12',muscles:['Pectoraux haut'],anim:'',tip:'Banc à 30°, amplitude complète.'},
+ {name:'Lever Seated Fly',sets:3,reps:'8',muscles:['Pectoraux'],anim:'',tip:'Serre les pectoraux en fin de mouvement, 1s de pause.'},
+ {name:'Cable Crossover',sets:3,reps:'12-15',muscles:['Pectoraux'],anim:'',tip:'Légère flexion du buste, contraction au centre.'},
+ {name:'Push Up',sets:3,reps:'AMRAP',muscles:['Pectoraux','Triceps'],anim:'',tip:'Gainage parfait, ne creuse pas le dos.'},
+ {name:'Dumbbell Pullover',sets:3,reps:'12',muscles:['Pectoraux','Dos'],anim:'',tip:'Étire la cage thoracique, coudes semi-fléchis.'},
  // Dos
- {name:'Lever Lying T-bar Row',sets:3,reps:'10-12',muscles:['Dos','Trapèzes'],anim:'🚣',tip:'Tire avec les coudes, serre les omoplates.'},
- {name:'Straight Back Seated Row',sets:3,reps:'6-10',muscles:['Dos'],anim:'🚣',tip:'Dos droit, ne te penche pas en arrière.'},
- {name:'Bar Lateral Pulldown',sets:3,reps:'8-10',muscles:['Grand dorsal'],anim:'🪢',tip:'Tire la barre vers la poitrine, coudes vers le bas.'},
- {name:'Pull Up',sets:3,reps:'AMRAP',muscles:['Grand dorsal','Biceps'],anim:'🧗',tip:'Amplitude complète, contrôle la descente.'},
- {name:'Deadlift',sets:4,reps:'5',muscles:['Dos','Fessiers','Ischios'],anim:'🏋️',tip:'Dos neutre, pousse avec les jambes.'},
- {name:'Bent Over Row',sets:4,reps:'8-10',muscles:['Dos'],anim:'🚣',tip:'Buste à 45°, gainage permanent.'},
- {name:'Single Arm Dumbbell Row',sets:3,reps:'10-12',muscles:['Dos'],anim:'💪',tip:'Appui sur banc, tire le coude haut.'},
- {name:'Lever Reverse Fly',sets:3,reps:'12-15',muscles:['Arrière épaules','Dos'],anim:'🦋',tip:'Cible les deltoïdes postérieurs.'},
+ {name:'Lever Lying T-bar Row',sets:3,reps:'10-12',muscles:['Dos','Trapèzes'],anim:'',tip:'Tire avec les coudes, serre les omoplates.'},
+ {name:'Straight Back Seated Row',sets:3,reps:'6-10',muscles:['Dos'],anim:'',tip:'Dos droit, ne te penche pas en arrière.'},
+ {name:'Bar Lateral Pulldown',sets:3,reps:'8-10',muscles:['Grand dorsal'],anim:'',tip:'Tire la barre vers la poitrine, coudes vers le bas.'},
+ {name:'Pull Up',sets:3,reps:'AMRAP',muscles:['Grand dorsal','Biceps'],anim:'',tip:'Amplitude complète, contrôle la descente.'},
+ {name:'Deadlift',sets:4,reps:'5',muscles:['Dos','Fessiers','Ischios'],anim:'',tip:'Dos neutre, pousse avec les jambes.'},
+ {name:'Bent Over Row',sets:4,reps:'8-10',muscles:['Dos'],anim:'',tip:'Buste à 45°, gainage permanent.'},
+ {name:'Single Arm Dumbbell Row',sets:3,reps:'10-12',muscles:['Dos'],anim:'',tip:'Appui sur banc, tire le coude haut.'},
+ {name:'Lever Reverse Fly',sets:3,reps:'12-15',muscles:['Arrière épaules','Dos'],anim:'',tip:'Cible les deltoïdes postérieurs.'},
  // Biceps
- {name:'EZ-bar 21s',sets:4,reps:'21',muscles:['Biceps'],anim:'💪',tip:'7 bas + 7 haut + 7 complets, sans tricher.'},
- {name:'Hammer Curl',sets:4,reps:'6-12',muscles:['Biceps','Avant-bras'],anim:'🔨',tip:'Prise neutre, coudes fixes.'},
- {name:'Biceps Curl',sets:4,reps:'12',muscles:['Biceps'],anim:'💪',tip:'Pas de balancier, contraction complète.'},
- {name:'Lever Preacher Curl',sets:3,reps:'4-10',muscles:['Biceps'],anim:'🪑',tip:'Bras calés, descente lente.'},
- {name:'Concentration Curl',sets:3,reps:'10-12',muscles:['Biceps'],anim:'💪',tip:'Isole le biceps, coude contre la cuisse.'},
- {name:'Cable Curl',sets:3,reps:'12-15',muscles:['Biceps'],anim:'🪢',tip:'Tension continue tout le mouvement.'},
+ {name:'EZ-bar 21s',sets:4,reps:'21',muscles:['Biceps'],anim:'',tip:'7 bas + 7 haut + 7 complets, sans tricher.'},
+ {name:'Hammer Curl',sets:4,reps:'6-12',muscles:['Biceps','Avant-bras'],anim:'',tip:'Prise neutre, coudes fixes.'},
+ {name:'Biceps Curl',sets:4,reps:'12',muscles:['Biceps'],anim:'',tip:'Pas de balancier, contraction complète.'},
+ {name:'Lever Preacher Curl',sets:3,reps:'4-10',muscles:['Biceps'],anim:'',tip:'Bras calés, descente lente.'},
+ {name:'Concentration Curl',sets:3,reps:'10-12',muscles:['Biceps'],anim:'',tip:'Isole le biceps, coude contre la cuisse.'},
+ {name:'Cable Curl',sets:3,reps:'12-15',muscles:['Biceps'],anim:'',tip:'Tension continue tout le mouvement.'},
  // Triceps
- {name:'Skull Crusher',sets:4,reps:'12',muscles:['Triceps'],anim:'💀',tip:'Coudes fixes, descends vers le front.'},
- {name:'Elbow Dips',sets:3,reps:'6-8',muscles:['Triceps','Pectoraux'],anim:'🤸',tip:'Buste droit pour cibler triceps.'},
- {name:'Triceps Pushdown',sets:4,reps:'12',muscles:['Triceps'],anim:'🪢',tip:'Coudes collés au corps, extension complète.'},
- {name:'Overhead Triceps Extension',sets:3,reps:'12',muscles:['Triceps'],anim:'💪',tip:'Coudes vers le haut, étire bien.'},
- {name:'Close Grip Bench Press',sets:4,reps:'8-10',muscles:['Triceps','Pectoraux'],anim:'🏋️',tip:'Mains largeur épaules, coudes serrés.'},
+ {name:'Skull Crusher',sets:4,reps:'12',muscles:['Triceps'],anim:'',tip:'Coudes fixes, descends vers le front.'},
+ {name:'Elbow Dips',sets:3,reps:'6-8',muscles:['Triceps','Pectoraux'],anim:'',tip:'Buste droit pour cibler triceps.'},
+ {name:'Triceps Pushdown',sets:4,reps:'12',muscles:['Triceps'],anim:'',tip:'Coudes collés au corps, extension complète.'},
+ {name:'Overhead Triceps Extension',sets:3,reps:'12',muscles:['Triceps'],anim:'',tip:'Coudes vers le haut, étire bien.'},
+ {name:'Close Grip Bench Press',sets:4,reps:'8-10',muscles:['Triceps','Pectoraux'],anim:'',tip:'Mains largeur épaules, coudes serrés.'},
  // Épaules
- {name:'Seated Shoulder Press',sets:4,reps:'8',muscles:['Épaules'],anim:'🏋️',tip:'Dos calé, pousse à la verticale.'},
- {name:'Lever Seated Shoulder Press',sets:3,reps:'10-12',muscles:['Épaules'],anim:'🪑',tip:'Trajectoire guidée, contrôle.'},
- {name:'Lateral Raise',sets:4,reps:'12',muscles:['Deltoïde latéral'],anim:'🦅',tip:'Monte aux épaules, pas plus haut.'},
- {name:'Front Raise',sets:4,reps:'12',muscles:['Deltoïde antérieur'],anim:'🙌',tip:'Pas de balancier, contrôle la descente.'},
- {name:'Cable Face Pull',sets:4,reps:'12-15',muscles:['Arrière épaules','Trapèzes'],anim:'🪢',tip:'Tire vers le visage, écarte les coudes.'},
- {name:'Arnold Press',sets:3,reps:'10',muscles:['Épaules'],anim:'🏋️',tip:'Rotation des poignets durant la montée.'},
- {name:'Upright Row',sets:3,reps:'12',muscles:['Épaules','Trapèzes'],anim:'⬆️',tip:'Tire la barre sous le menton, coudes hauts.'},
- {name:'Shrug',sets:4,reps:'15',muscles:['Trapèzes'],anim:'🤷',tip:'Hausse les épaules, pause en haut.'},
+ {name:'Seated Shoulder Press',sets:4,reps:'8',muscles:['Épaules'],anim:'',tip:'Dos calé, pousse à la verticale.'},
+ {name:'Lever Seated Shoulder Press',sets:3,reps:'10-12',muscles:['Épaules'],anim:'',tip:'Trajectoire guidée, contrôle.'},
+ {name:'Lateral Raise',sets:4,reps:'12',muscles:['Deltoïde latéral'],anim:'',tip:'Monte aux épaules, pas plus haut.'},
+ {name:'Front Raise',sets:4,reps:'12',muscles:['Deltoïde antérieur'],anim:'',tip:'Pas de balancier, contrôle la descente.'},
+ {name:'Cable Face Pull',sets:4,reps:'12-15',muscles:['Arrière épaules','Trapèzes'],anim:'',tip:'Tire vers le visage, écarte les coudes.'},
+ {name:'Arnold Press',sets:3,reps:'10',muscles:['Épaules'],anim:'',tip:'Rotation des poignets durant la montée.'},
+ {name:'Upright Row',sets:3,reps:'12',muscles:['Épaules','Trapèzes'],anim:'',tip:'Tire la barre sous le menton, coudes hauts.'},
+ {name:'Shrug',sets:4,reps:'15',muscles:['Trapèzes'],anim:'',tip:'Hausse les épaules, pause en haut.'},
  // Jambes
- {name:'Lever Leg Extension',sets:4,reps:'8-12',muscles:['Quadriceps'],anim:'🦵',tip:'Extension complète, pause 1s en haut.'},
- {name:'Lever Seated Leg Extension',sets:3,reps:'12',muscles:['Quadriceps'],anim:'🦵',tip:'Contrôle la descente.'},
- {name:'Lever Lying Leg Curl',sets:4,reps:'6-12',muscles:['Ischios'],anim:'🦵',tip:'Bassin collé, ramène les talons aux fesses.'},
- {name:'Lever Kneeling Leg Curl',sets:3,reps:'10-12',muscles:['Ischios'],anim:'🦵',tip:'Isole l\u2019ischio, sans à-coup.'},
- {name:'Sled 45° Leg Wide Press',sets:4,reps:'8-12',muscles:['Quadriceps','Fessiers'],anim:'🛷',tip:'Pieds larges pour cibler l\u2019intérieur.'},
- {name:'Sled 45° Leg Press',sets:3,reps:'10-12',muscles:['Quadriceps','Fessiers'],anim:'🛷',tip:'Genoux dans l\u2019axe des pieds.'},
- {name:'Smith Squat',sets:3,reps:'10-12',muscles:['Quadriceps','Fessiers'],anim:'🏋️',tip:'Descends sous parallèle, dos droit.'},
- {name:'Back Squat',sets:5,reps:'5',muscles:['Quadriceps','Fessiers'],anim:'🏋️',tip:'Pousse le sol, respiration bloquée.'},
- {name:'Front Squat',sets:4,reps:'6-8',muscles:['Quadriceps'],anim:'🏋️',tip:'Coudes hauts, buste vertical.'},
- {name:'Bulgarian Split Squat',sets:3,reps:'10',muscles:['Quadriceps','Fessiers'],anim:'🦵',tip:'Pied arrière surélevé, genou avant stable.'},
- {name:'Dumbbell Split Squat',sets:3,reps:'10',muscles:['Quadriceps','Fessiers'],anim:'🦵',tip:'Buste droit, descente contrôlée.'},
- {name:'Walking Lunge',sets:3,reps:'12',muscles:['Quadriceps','Fessiers'],anim:'🚶',tip:'Grandes foulées, genou ne dépasse pas.'},
- {name:'Lever Seated Calf Raise',sets:4,reps:'12',muscles:['Mollets'],anim:'🦵',tip:'Amplitude max, étire en bas.'},
- {name:'Lever Seated One Leg Calf Raise',sets:3,reps:'15',muscles:['Mollets'],anim:'🦵',tip:'Une jambe à la fois, contraction max.'},
- {name:'Standing Calf Raise',sets:4,reps:'15',muscles:['Mollets'],anim:'🦵',tip:'Pause en haut, descente lente.'},
- {name:'Nordic Hamstring Curl',sets:3,reps:'6-8',muscles:['Ischios'],anim:'🦵',tip:'Excentrique lent, super protecteur pour le coureur.'},
- {name:'45° One Leg Hyperextension',sets:3,reps:'12',muscles:['Lombaires','Fessiers'],anim:'🔙',tip:'Dos neutre, contracte les fessiers.'},
+ {name:'Lever Leg Extension',sets:4,reps:'8-12',muscles:['Quadriceps'],anim:'',tip:'Extension complète, pause 1s en haut.'},
+ {name:'Lever Seated Leg Extension',sets:3,reps:'12',muscles:['Quadriceps'],anim:'',tip:'Contrôle la descente.'},
+ {name:'Lever Lying Leg Curl',sets:4,reps:'6-12',muscles:['Ischios'],anim:'',tip:'Bassin collé, ramène les talons aux fesses.'},
+ {name:'Lever Kneeling Leg Curl',sets:3,reps:'10-12',muscles:['Ischios'],anim:'',tip:'Isole l\u2019ischio, sans à-coup.'},
+ {name:'Sled 45° Leg Wide Press',sets:4,reps:'8-12',muscles:['Quadriceps','Fessiers'],anim:'',tip:'Pieds larges pour cibler l\u2019intérieur.'},
+ {name:'Sled 45° Leg Press',sets:3,reps:'10-12',muscles:['Quadriceps','Fessiers'],anim:'',tip:'Genoux dans l\u2019axe des pieds.'},
+ {name:'Smith Squat',sets:3,reps:'10-12',muscles:['Quadriceps','Fessiers'],anim:'',tip:'Descends sous parallèle, dos droit.'},
+ {name:'Back Squat',sets:5,reps:'5',muscles:['Quadriceps','Fessiers'],anim:'',tip:'Pousse le sol, respiration bloquée.'},
+ {name:'Front Squat',sets:4,reps:'6-8',muscles:['Quadriceps'],anim:'',tip:'Coudes hauts, buste vertical.'},
+ {name:'Bulgarian Split Squat',sets:3,reps:'10',muscles:['Quadriceps','Fessiers'],anim:'',tip:'Pied arrière surélevé, genou avant stable.'},
+ {name:'Dumbbell Split Squat',sets:3,reps:'10',muscles:['Quadriceps','Fessiers'],anim:'',tip:'Buste droit, descente contrôlée.'},
+ {name:'Walking Lunge',sets:3,reps:'12',muscles:['Quadriceps','Fessiers'],anim:'',tip:'Grandes foulées, genou ne dépasse pas.'},
+ {name:'Lever Seated Calf Raise',sets:4,reps:'12',muscles:['Mollets'],anim:'',tip:'Amplitude max, étire en bas.'},
+ {name:'Lever Seated One Leg Calf Raise',sets:3,reps:'15',muscles:['Mollets'],anim:'',tip:'Une jambe à la fois, contraction max.'},
+ {name:'Standing Calf Raise',sets:4,reps:'15',muscles:['Mollets'],anim:'',tip:'Pause en haut, descente lente.'},
+ {name:'Nordic Hamstring Curl',sets:3,reps:'6-8',muscles:['Ischios'],anim:'',tip:'Excentrique lent, super protecteur pour le coureur.'},
+ {name:'45° One Leg Hyperextension',sets:3,reps:'12',muscles:['Lombaires','Fessiers'],anim:'',tip:'Dos neutre, contracte les fessiers.'},
  // Fessiers / hanches
- {name:'Hip Thrust',sets:3,reps:'10-12',muscles:['Fessiers'],anim:'🍑',tip:'Pause haute 1s, menton rentré.'},
- {name:'Lever Hip Thrust',sets:3,reps:'12',muscles:['Fessiers'],anim:'🍑',tip:'Extension complète des hanches.'},
- {name:'Lever Seated Hip Abduction',sets:3,reps:'12-15',muscles:['Fessiers','Abducteurs'],anim:'🦵',tip:'Écarte lentement, contrôle le retour.'},
- {name:'Lever Seated Hip Adduction',sets:3,reps:'12-15',muscles:['Adducteurs'],anim:'🦵',tip:'Serre les cuisses, ne lâche pas le retour.'},
- {name:'Glute Bridge',sets:3,reps:'15',muscles:['Fessiers'],anim:'🍑',tip:'Pousse avec les talons.'},
- {name:'Cable Kickback',sets:3,reps:'12-15',muscles:['Fessiers'],anim:'🦵',tip:'Jambe tendue vers l\u2019arrière, sans cambrer.'},
+ {name:'Hip Thrust',sets:3,reps:'10-12',muscles:['Fessiers'],anim:'',tip:'Pause haute 1s, menton rentré.'},
+ {name:'Lever Hip Thrust',sets:3,reps:'12',muscles:['Fessiers'],anim:'',tip:'Extension complète des hanches.'},
+ {name:'Lever Seated Hip Abduction',sets:3,reps:'12-15',muscles:['Fessiers','Abducteurs'],anim:'',tip:'Écarte lentement, contrôle le retour.'},
+ {name:'Lever Seated Hip Adduction',sets:3,reps:'12-15',muscles:['Adducteurs'],anim:'',tip:'Serre les cuisses, ne lâche pas le retour.'},
+ {name:'Glute Bridge',sets:3,reps:'15',muscles:['Fessiers'],anim:'',tip:'Pousse avec les talons.'},
+ {name:'Cable Kickback',sets:3,reps:'12-15',muscles:['Fessiers'],anim:'',tip:'Jambe tendue vers l\u2019arrière, sans cambrer.'},
  // Abdos / Core
- {name:'Plank',sets:3,reps:'45s',muscles:['Abdominaux','Core'],anim:'🧘',tip:'Corps aligné, gainage constant.'},
- {name:'Hanging Leg Raise',sets:3,reps:'12',muscles:['Abdominaux'],anim:'🧗',tip:'Monte les jambes sans balancier.'},
- {name:'Cable Crunch',sets:3,reps:'15',muscles:['Abdominaux'],anim:'🪢',tip:'Enroule la colonne, pas les hanches.'},
- {name:'Russian Twist',sets:3,reps:'20',muscles:['Obliques'],anim:'🌀',tip:'Rotation contrôlée, gainage actif.'},
- {name:'Ab Wheel Rollout',sets:3,reps:'10',muscles:['Abdominaux','Core'],anim:'⚙️',tip:'Ne creuse jamais le bas du dos.'},
+ {name:'Plank',sets:3,reps:'45s',muscles:['Abdominaux','Core'],anim:'',tip:'Corps aligné, gainage constant.'},
+ {name:'Hanging Leg Raise',sets:3,reps:'12',muscles:['Abdominaux'],anim:'',tip:'Monte les jambes sans balancier.'},
+ {name:'Cable Crunch',sets:3,reps:'15',muscles:['Abdominaux'],anim:'',tip:'Enroule la colonne, pas les hanches.'},
+ {name:'Russian Twist',sets:3,reps:'20',muscles:['Obliques'],anim:'',tip:'Rotation contrôlée, gainage actif.'},
+ {name:'Ab Wheel Rollout',sets:3,reps:'10',muscles:['Abdominaux','Core'],anim:'',tip:'Ne creuse jamais le bas du dos.'},
  // Avant-bras
- {name:'Wrist Curl',sets:3,reps:'15',muscles:['Avant-bras'],anim:'✊',tip:'Amplitude complète des poignets.'},
- {name:'Farmer Walk',sets:3,reps:'30m',muscles:['Avant-bras','Trapèzes','Core'],anim:'🚶',tip:'Posture droite, grip ferme.'}
+ {name:'Wrist Curl',sets:3,reps:'15',muscles:['Avant-bras'],anim:'',tip:'Amplitude complète des poignets.'},
+ {name:'Farmer Walk',sets:3,reps:'30m',muscles:['Avant-bras','Trapèzes','Core'],anim:'',tip:'Posture droite, grip ferme.'}
 ];
 /* ============================================================
    BIBLIOTHÈQUE ÉTENDUE — schéma riche (groupe, matériel, niveau,
@@ -3805,134 +3819,134 @@ const LEVELS=['Débutant','Intermédiaire','Avancé'];
 // Schéma compact : [nom, groupe, matériel, niveau, [primaires], [secondaires], emoji]
 const XDATA=[
  // PECTORAUX
- ['Développé couché barre','Pectoraux','Barre','Intermédiaire',['Pectoraux'],['Triceps','Épaules'],'🏋️'],
- ['Développé incliné barre','Pectoraux','Barre','Intermédiaire',['Pectoraux haut'],['Épaules','Triceps'],'🏋️'],
- ['Développé décliné barre','Pectoraux','Barre','Intermédiaire',['Pectoraux bas'],['Triceps'],'🏋️'],
- ['Développé couché haltères','Pectoraux','Haltères','Intermédiaire',['Pectoraux'],['Triceps','Épaules'],'💪'],
- ['Développé incliné haltères','Pectoraux','Haltères','Intermédiaire',['Pectoraux haut'],['Épaules'],'💪'],
- ['Écarté couché haltères','Pectoraux','Haltères','Intermédiaire',['Pectoraux'],['Épaules'],'🦋'],
- ['Écarté incliné haltères','Pectoraux','Haltères','Intermédiaire',['Pectoraux haut'],[],'🦋'],
- ['Pec Deck (machine)','Pectoraux','Machine','Débutant',['Pectoraux'],[],'🦋'],
- ['Développé machine convergente','Pectoraux','Machine','Débutant',['Pectoraux'],['Triceps'],'🏋️'],
- ['Écarté poulie haute','Pectoraux','Poulie','Intermédiaire',['Pectoraux bas'],[],'🔀'],
- ['Écarté poulie basse','Pectoraux','Poulie','Intermédiaire',['Pectoraux haut'],[],'🔀'],
- ['Crossover poulie','Pectoraux','Poulie','Intermédiaire',['Pectoraux'],['Épaules'],'🔀'],
- ['Pompes','Pectoraux','Poids du corps','Débutant',['Pectoraux'],['Triceps','Abdominaux'],'🤸'],
- ['Pompes déclinées','Pectoraux','Poids du corps','Intermédiaire',['Pectoraux haut'],['Épaules'],'🤸'],
- ['Pompes diamant','Pectoraux','Poids du corps','Intermédiaire',['Triceps'],['Pectoraux'],'🤸'],
- ['Dips pectoraux','Pectoraux','Poids du corps','Avancé',['Pectoraux bas'],['Triceps'],'🤸'],
- ['Pullover haltère','Pectoraux','Haltères','Intermédiaire',['Pectoraux'],['Dos'],'🛢️'],
- ['Écarté élastique','Pectoraux','Élastique','Débutant',['Pectoraux'],[],'🦋'],
+ ['Développé couché barre','Pectoraux','Barre','Intermédiaire',['Pectoraux'],['Triceps','Épaules'],''],
+ ['Développé incliné barre','Pectoraux','Barre','Intermédiaire',['Pectoraux haut'],['Épaules','Triceps'],''],
+ ['Développé décliné barre','Pectoraux','Barre','Intermédiaire',['Pectoraux bas'],['Triceps'],''],
+ ['Développé couché haltères','Pectoraux','Haltères','Intermédiaire',['Pectoraux'],['Triceps','Épaules'],''],
+ ['Développé incliné haltères','Pectoraux','Haltères','Intermédiaire',['Pectoraux haut'],['Épaules'],''],
+ ['Écarté couché haltères','Pectoraux','Haltères','Intermédiaire',['Pectoraux'],['Épaules'],''],
+ ['Écarté incliné haltères','Pectoraux','Haltères','Intermédiaire',['Pectoraux haut'],[],''],
+ ['Pec Deck (machine)','Pectoraux','Machine','Débutant',['Pectoraux'],[],''],
+ ['Développé machine convergente','Pectoraux','Machine','Débutant',['Pectoraux'],['Triceps'],''],
+ ['Écarté poulie haute','Pectoraux','Poulie','Intermédiaire',['Pectoraux bas'],[],''],
+ ['Écarté poulie basse','Pectoraux','Poulie','Intermédiaire',['Pectoraux haut'],[],''],
+ ['Crossover poulie','Pectoraux','Poulie','Intermédiaire',['Pectoraux'],['Épaules'],''],
+ ['Pompes','Pectoraux','Poids du corps','Débutant',['Pectoraux'],['Triceps','Abdominaux'],''],
+ ['Pompes déclinées','Pectoraux','Poids du corps','Intermédiaire',['Pectoraux haut'],['Épaules'],''],
+ ['Pompes diamant','Pectoraux','Poids du corps','Intermédiaire',['Triceps'],['Pectoraux'],''],
+ ['Dips pectoraux','Pectoraux','Poids du corps','Avancé',['Pectoraux bas'],['Triceps'],''],
+ ['Pullover haltère','Pectoraux','Haltères','Intermédiaire',['Pectoraux'],['Dos'],''],
+ ['Écarté élastique','Pectoraux','Élastique','Débutant',['Pectoraux'],[],''],
  // DOS
- ['Soulevé de terre','Dos','Barre','Avancé',['Dos','Lombaires'],['Fessiers','Ischios'],'🏋️'],
- ['Soulevé de terre roumain','Ischios','Barre','Intermédiaire',['Ischios'],['Fessiers','Lombaires'],'🏋️'],
- ['Rowing barre buste penché','Dos','Barre','Intermédiaire',['Dos'],['Biceps','Trapèzes'],'🚣'],
- ['Rowing T-bar','Dos','Machine','Intermédiaire',['Dos'],['Trapèzes','Biceps'],'🚣'],
- ['Rowing haltère unilatéral','Dos','Haltères','Débutant',['Dos'],['Biceps'],'💪'],
- ['Rowing poulie basse','Dos','Poulie','Débutant',['Dos'],['Biceps'],'🚣'],
- ['Tirage vertical poulie','Dos','Poulie','Débutant',['Grand dorsal'],['Biceps'],'🪢'],
- ['Tirage nuque','Dos','Poulie','Avancé',['Grand dorsal'],['Trapèzes'],'🪢'],
- ['Tractions pronation','Dos','Poids du corps','Avancé',['Grand dorsal'],['Biceps'],'🧗'],
- ['Tractions supination','Dos','Poids du corps','Avancé',['Grand dorsal'],['Biceps'],'🧗'],
- ['Pull-over poulie','Dos','Poulie','Intermédiaire',['Grand dorsal'],['Pectoraux'],'🪢'],
- ['Rowing machine assise','Dos','Machine','Débutant',['Dos'],['Biceps'],'🚣'],
- ['Rowing élastique','Dos','Élastique','Débutant',['Dos'],['Biceps'],'🪢'],
- ['Good Morning','Lombaires','Barre','Avancé',['Lombaires'],['Ischios','Fessiers'],'🔙'],
- ['Hyperextension lombaire','Lombaires','Poids du corps','Débutant',['Lombaires'],['Fessiers'],'🔙'],
- ['Superman au sol','Lombaires','Poids du corps','Débutant',['Lombaires'],['Fessiers'],'🦸'],
+ ['Soulevé de terre','Dos','Barre','Avancé',['Dos','Lombaires'],['Fessiers','Ischios'],''],
+ ['Soulevé de terre roumain','Ischios','Barre','Intermédiaire',['Ischios'],['Fessiers','Lombaires'],''],
+ ['Rowing barre buste penché','Dos','Barre','Intermédiaire',['Dos'],['Biceps','Trapèzes'],''],
+ ['Rowing T-bar','Dos','Machine','Intermédiaire',['Dos'],['Trapèzes','Biceps'],''],
+ ['Rowing haltère unilatéral','Dos','Haltères','Débutant',['Dos'],['Biceps'],''],
+ ['Rowing poulie basse','Dos','Poulie','Débutant',['Dos'],['Biceps'],''],
+ ['Tirage vertical poulie','Dos','Poulie','Débutant',['Grand dorsal'],['Biceps'],''],
+ ['Tirage nuque','Dos','Poulie','Avancé',['Grand dorsal'],['Trapèzes'],''],
+ ['Tractions pronation','Dos','Poids du corps','Avancé',['Grand dorsal'],['Biceps'],''],
+ ['Tractions supination','Dos','Poids du corps','Avancé',['Grand dorsal'],['Biceps'],''],
+ ['Pull-over poulie','Dos','Poulie','Intermédiaire',['Grand dorsal'],['Pectoraux'],''],
+ ['Rowing machine assise','Dos','Machine','Débutant',['Dos'],['Biceps'],''],
+ ['Rowing élastique','Dos','Élastique','Débutant',['Dos'],['Biceps'],''],
+ ['Good Morning','Lombaires','Barre','Avancé',['Lombaires'],['Ischios','Fessiers'],''],
+ ['Hyperextension lombaire','Lombaires','Poids du corps','Débutant',['Lombaires'],['Fessiers'],''],
+ ['Superman au sol','Lombaires','Poids du corps','Débutant',['Lombaires'],['Fessiers'],''],
  // ÉPAULES
- ['Développé militaire barre','Épaules','Barre','Avancé',['Épaules'],['Triceps','Trapèzes'],'🏋️'],
- ['Développé haltères assis','Épaules','Haltères','Intermédiaire',['Épaules'],['Triceps'],'🏋️'],
- ['Développé Arnold','Épaules','Haltères','Intermédiaire',['Épaules'],['Triceps'],'🏋️'],
- ['Développé machine épaules','Épaules','Machine','Débutant',['Épaules'],['Triceps'],'🪑'],
- ['Élévations latérales','Épaules','Haltères','Débutant',['Deltoïde latéral'],[],'🦅'],
- ['Élévations latérales poulie','Épaules','Poulie','Intermédiaire',['Deltoïde latéral'],[],'🦅'],
- ['Élévations frontales','Épaules','Haltères','Débutant',['Deltoïde antérieur'],[],'🙌'],
- ['Oiseau (rear delt)','Épaules','Haltères','Débutant',['Arrière épaules'],['Trapèzes'],'🦋'],
- ['Face Pull poulie','Épaules','Poulie','Débutant',['Arrière épaules'],['Trapèzes'],'🪢'],
- ['Rowing menton','Épaules','Barre','Intermédiaire',['Épaules','Trapèzes'],[],'⬆️'],
- ['Élévations latérales élastique','Épaules','Élastique','Débutant',['Deltoïde latéral'],[],'🦅'],
+ ['Développé militaire barre','Épaules','Barre','Avancé',['Épaules'],['Triceps','Trapèzes'],''],
+ ['Développé haltères assis','Épaules','Haltères','Intermédiaire',['Épaules'],['Triceps'],''],
+ ['Développé Arnold','Épaules','Haltères','Intermédiaire',['Épaules'],['Triceps'],''],
+ ['Développé machine épaules','Épaules','Machine','Débutant',['Épaules'],['Triceps'],''],
+ ['Élévations latérales','Épaules','Haltères','Débutant',['Deltoïde latéral'],[],''],
+ ['Élévations latérales poulie','Épaules','Poulie','Intermédiaire',['Deltoïde latéral'],[],''],
+ ['Élévations frontales','Épaules','Haltères','Débutant',['Deltoïde antérieur'],[],''],
+ ['Oiseau (rear delt)','Épaules','Haltères','Débutant',['Arrière épaules'],['Trapèzes'],''],
+ ['Face Pull poulie','Épaules','Poulie','Débutant',['Arrière épaules'],['Trapèzes'],''],
+ ['Rowing menton','Épaules','Barre','Intermédiaire',['Épaules','Trapèzes'],[],''],
+ ['Élévations latérales élastique','Épaules','Élastique','Débutant',['Deltoïde latéral'],[],''],
  // TRAPÈZES
- ['Shrug barre','Trapèzes','Barre','Débutant',['Trapèzes'],[],'🤷'],
- ['Shrug haltères','Trapèzes','Haltères','Débutant',['Trapèzes'],[],'🤷'],
- ['Shrug machine','Trapèzes','Machine','Débutant',['Trapèzes'],[],'🤷'],
+ ['Shrug barre','Trapèzes','Barre','Débutant',['Trapèzes'],[],''],
+ ['Shrug haltères','Trapèzes','Haltères','Débutant',['Trapèzes'],[],''],
+ ['Shrug machine','Trapèzes','Machine','Débutant',['Trapèzes'],[],''],
  // BICEPS
- ['Curl barre EZ','Biceps','Barre','Débutant',['Biceps'],['Avant-bras'],'💪'],
- ['Curl haltères','Biceps','Haltères','Débutant',['Biceps'],['Avant-bras'],'💪'],
- ['Curl marteau','Biceps','Haltères','Débutant',['Biceps','Avant-bras'],[],'🔨'],
- ['Curl incliné','Biceps','Haltères','Intermédiaire',['Biceps'],[],'💪'],
- ['Curl concentré','Biceps','Haltères','Débutant',['Biceps'],[],'💪'],
- ['Curl pupitre (Preacher)','Biceps','Barre','Intermédiaire',['Biceps'],[],'🪑'],
- ['Curl poulie basse','Biceps','Poulie','Débutant',['Biceps'],[],'🪢'],
- ['Curl araignée','Biceps','Haltères','Intermédiaire',['Biceps'],[],'🕷️'],
- ['21s biceps','Biceps','Barre','Intermédiaire',['Biceps'],[],'💪'],
- ['Curl élastique','Biceps','Élastique','Débutant',['Biceps'],[],'💪'],
+ ['Curl barre EZ','Biceps','Barre','Débutant',['Biceps'],['Avant-bras'],''],
+ ['Curl haltères','Biceps','Haltères','Débutant',['Biceps'],['Avant-bras'],''],
+ ['Curl marteau','Biceps','Haltères','Débutant',['Biceps','Avant-bras'],[],''],
+ ['Curl incliné','Biceps','Haltères','Intermédiaire',['Biceps'],[],''],
+ ['Curl concentré','Biceps','Haltères','Débutant',['Biceps'],[],''],
+ ['Curl pupitre (Preacher)','Biceps','Barre','Intermédiaire',['Biceps'],[],''],
+ ['Curl poulie basse','Biceps','Poulie','Débutant',['Biceps'],[],''],
+ ['Curl araignée','Biceps','Haltères','Intermédiaire',['Biceps'],[],''],
+ ['21s biceps','Biceps','Barre','Intermédiaire',['Biceps'],[],''],
+ ['Curl élastique','Biceps','Élastique','Débutant',['Biceps'],[],''],
  // TRICEPS
- ['Barre au front (Skull Crusher)','Triceps','Barre','Intermédiaire',['Triceps'],[],'💀'],
- ['Extension poulie haute','Triceps','Poulie','Débutant',['Triceps'],[],'🪢'],
- ['Extension poulie corde','Triceps','Poulie','Débutant',['Triceps'],[],'🪢'],
- ['Extension nuque haltère','Triceps','Haltères','Intermédiaire',['Triceps'],[],'💪'],
- ['Kickback haltère','Triceps','Haltères','Débutant',['Triceps'],[],'🦵'],
- ['Dips entre bancs','Triceps','Poids du corps','Débutant',['Triceps'],['Pectoraux'],'🤸'],
- ['Développé couché serré','Triceps','Barre','Intermédiaire',['Triceps'],['Pectoraux'],'🏋️'],
- ['Extension élastique','Triceps','Élastique','Débutant',['Triceps'],[],'🪢'],
+ ['Barre au front (Skull Crusher)','Triceps','Barre','Intermédiaire',['Triceps'],[],''],
+ ['Extension poulie haute','Triceps','Poulie','Débutant',['Triceps'],[],''],
+ ['Extension poulie corde','Triceps','Poulie','Débutant',['Triceps'],[],''],
+ ['Extension nuque haltère','Triceps','Haltères','Intermédiaire',['Triceps'],[],''],
+ ['Kickback haltère','Triceps','Haltères','Débutant',['Triceps'],[],''],
+ ['Dips entre bancs','Triceps','Poids du corps','Débutant',['Triceps'],['Pectoraux'],''],
+ ['Développé couché serré','Triceps','Barre','Intermédiaire',['Triceps'],['Pectoraux'],''],
+ ['Extension élastique','Triceps','Élastique','Débutant',['Triceps'],[],''],
  // AVANT-BRAS
- ['Curl poignets','Avant-bras','Barre','Débutant',['Avant-bras'],[],'✊'],
- ['Curl poignets inversé','Avant-bras','Barre','Débutant',['Avant-bras'],[],'✊'],
- ['Marche du fermier','Avant-bras','Haltères','Débutant',['Avant-bras','Trapèzes'],['Abdominaux'],'🚶'],
- ['Wrist roller','Avant-bras','Poids du corps','Intermédiaire',['Avant-bras'],[],'🌀'],
+ ['Curl poignets','Avant-bras','Barre','Débutant',['Avant-bras'],[],''],
+ ['Curl poignets inversé','Avant-bras','Barre','Débutant',['Avant-bras'],[],''],
+ ['Marche du fermier','Avant-bras','Haltères','Débutant',['Avant-bras','Trapèzes'],['Abdominaux'],''],
+ ['Wrist roller','Avant-bras','Poids du corps','Intermédiaire',['Avant-bras'],[],''],
  // ABDOMINAUX
- ['Crunch','Abdominaux','Poids du corps','Débutant',['Abdominaux'],[],'🧘'],
- ['Crunch poulie','Abdominaux','Poulie','Intermédiaire',['Abdominaux'],[],'🪢'],
- ['Relevé de jambes suspendu','Abdominaux','Poids du corps','Avancé',['Abdominaux'],[],'🧗'],
- ['Relevé de jambes au sol','Abdominaux','Poids du corps','Débutant',['Abdominaux'],[],'🦵'],
- ['Planche','Abdominaux','Poids du corps','Débutant',['Abdominaux','Lombaires'],[],'🧘'],
- ['Planche latérale','Abdominaux','Poids du corps','Débutant',['Obliques'],[],'🧘'],
- ['Russian Twist','Abdominaux','Poids du corps','Intermédiaire',['Obliques'],[],'🌀'],
- ['Roulette abdominale','Abdominaux','Poids du corps','Avancé',['Abdominaux'],['Lombaires'],'⚙️'],
- ['Mountain Climbers','Abdominaux','Poids du corps','Débutant',['Abdominaux'],['Quadriceps'],'⛰️'],
- ['Vacuum abdominal','Abdominaux','Poids du corps','Intermédiaire',['Transverse'],[],'🌬️'],
+ ['Crunch','Abdominaux','Poids du corps','Débutant',['Abdominaux'],[],''],
+ ['Crunch poulie','Abdominaux','Poulie','Intermédiaire',['Abdominaux'],[],''],
+ ['Relevé de jambes suspendu','Abdominaux','Poids du corps','Avancé',['Abdominaux'],[],''],
+ ['Relevé de jambes au sol','Abdominaux','Poids du corps','Débutant',['Abdominaux'],[],''],
+ ['Planche','Abdominaux','Poids du corps','Débutant',['Abdominaux','Lombaires'],[],''],
+ ['Planche latérale','Abdominaux','Poids du corps','Débutant',['Obliques'],[],''],
+ ['Russian Twist','Abdominaux','Poids du corps','Intermédiaire',['Obliques'],[],''],
+ ['Roulette abdominale','Abdominaux','Poids du corps','Avancé',['Abdominaux'],['Lombaires'],''],
+ ['Mountain Climbers','Abdominaux','Poids du corps','Débutant',['Abdominaux'],['Quadriceps'],''],
+ ['Vacuum abdominal','Abdominaux','Poids du corps','Intermédiaire',['Transverse'],[],''],
  // FESSIERS
- ['Hip Thrust barre','Fessiers','Barre','Intermédiaire',['Fessiers'],['Ischios'],'🍑'],
- ['Hip Thrust machine','Fessiers','Machine','Débutant',['Fessiers'],[],'🍑'],
- ['Pont fessier','Fessiers','Poids du corps','Débutant',['Fessiers'],[],'🍑'],
- ['Kickback poulie','Fessiers','Poulie','Débutant',['Fessiers'],[],'🦵'],
- ['Abduction machine','Abducteurs','Machine','Débutant',['Abducteurs'],['Fessiers'],'🦵'],
- ['Adduction machine','Adducteurs','Machine','Débutant',['Adducteurs'],[],'🦵'],
- ['Fentes bulgares','Fessiers','Haltères','Intermédiaire',['Fessiers','Quadriceps'],[],'🦵'],
- ['Abduction élastique','Abducteurs','Élastique','Débutant',['Abducteurs'],[],'🦵'],
+ ['Hip Thrust barre','Fessiers','Barre','Intermédiaire',['Fessiers'],['Ischios'],''],
+ ['Hip Thrust machine','Fessiers','Machine','Débutant',['Fessiers'],[],''],
+ ['Pont fessier','Fessiers','Poids du corps','Débutant',['Fessiers'],[],''],
+ ['Kickback poulie','Fessiers','Poulie','Débutant',['Fessiers'],[],''],
+ ['Abduction machine','Abducteurs','Machine','Débutant',['Abducteurs'],['Fessiers'],''],
+ ['Adduction machine','Adducteurs','Machine','Débutant',['Adducteurs'],[],''],
+ ['Fentes bulgares','Fessiers','Haltères','Intermédiaire',['Fessiers','Quadriceps'],[],''],
+ ['Abduction élastique','Abducteurs','Élastique','Débutant',['Abducteurs'],[],''],
  // QUADRICEPS
- ['Squat barre','Quadriceps','Barre','Avancé',['Quadriceps','Fessiers'],['Lombaires'],'🏋️'],
- ['Front Squat','Quadriceps','Barre','Avancé',['Quadriceps'],['Abdominaux'],'🏋️'],
- ['Squat Smith','Quadriceps','Machine','Intermédiaire',['Quadriceps','Fessiers'],[],'🏋️'],
- ['Presse à cuisses','Quadriceps','Machine','Débutant',['Quadriceps','Fessiers'],[],'🛷'],
- ['Hack Squat','Quadriceps','Machine','Intermédiaire',['Quadriceps'],['Fessiers'],'🛷'],
- ['Leg Extension','Quadriceps','Machine','Débutant',['Quadriceps'],[],'🦵'],
- ['Fentes avant','Quadriceps','Haltères','Débutant',['Quadriceps','Fessiers'],[],'🚶'],
- ['Fentes marchées','Quadriceps','Haltères','Intermédiaire',['Quadriceps','Fessiers'],[],'🚶'],
- ['Goblet Squat','Quadriceps','Kettlebell','Débutant',['Quadriceps'],['Fessiers'],'🏋️'],
- ['Squat poids du corps','Quadriceps','Poids du corps','Débutant',['Quadriceps'],['Fessiers'],'🦵'],
- ['Wall Sit','Quadriceps','Poids du corps','Débutant',['Quadriceps'],[],'🧱'],
+ ['Squat barre','Quadriceps','Barre','Avancé',['Quadriceps','Fessiers'],['Lombaires'],''],
+ ['Front Squat','Quadriceps','Barre','Avancé',['Quadriceps'],['Abdominaux'],''],
+ ['Squat Smith','Quadriceps','Machine','Intermédiaire',['Quadriceps','Fessiers'],[],''],
+ ['Presse à cuisses','Quadriceps','Machine','Débutant',['Quadriceps','Fessiers'],[],''],
+ ['Hack Squat','Quadriceps','Machine','Intermédiaire',['Quadriceps'],['Fessiers'],''],
+ ['Leg Extension','Quadriceps','Machine','Débutant',['Quadriceps'],[],''],
+ ['Fentes avant','Quadriceps','Haltères','Débutant',['Quadriceps','Fessiers'],[],''],
+ ['Fentes marchées','Quadriceps','Haltères','Intermédiaire',['Quadriceps','Fessiers'],[],''],
+ ['Goblet Squat','Quadriceps','Kettlebell','Débutant',['Quadriceps'],['Fessiers'],''],
+ ['Squat poids du corps','Quadriceps','Poids du corps','Débutant',['Quadriceps'],['Fessiers'],''],
+ ['Wall Sit','Quadriceps','Poids du corps','Débutant',['Quadriceps'],[],''],
  // ISCHIOS
- ['Leg Curl allongé','Ischios','Machine','Débutant',['Ischios'],[],'🦵'],
- ['Leg Curl assis','Ischios','Machine','Débutant',['Ischios'],[],'🦵'],
- ['Nordic Curl','Ischios','Poids du corps','Avancé',['Ischios'],[],'🦵'],
- ['Soulevé jambes tendues haltères','Ischios','Haltères','Intermédiaire',['Ischios'],['Fessiers'],'🏋️'],
+ ['Leg Curl allongé','Ischios','Machine','Débutant',['Ischios'],[],''],
+ ['Leg Curl assis','Ischios','Machine','Débutant',['Ischios'],[],''],
+ ['Nordic Curl','Ischios','Poids du corps','Avancé',['Ischios'],[],''],
+ ['Soulevé jambes tendues haltères','Ischios','Haltères','Intermédiaire',['Ischios'],['Fessiers'],''],
  // MOLLETS
- ['Mollets debout','Mollets','Machine','Débutant',['Mollets'],[],'🦵'],
- ['Mollets assis','Mollets','Machine','Débutant',['Mollets'],[],'🦵'],
- ['Mollets à la presse','Mollets','Machine','Débutant',['Mollets'],[],'🛷'],
- ['Mollets unilatéral haltère','Mollets','Haltères','Débutant',['Mollets'],[],'🦵'],
+ ['Mollets debout','Mollets','Machine','Débutant',['Mollets'],[],''],
+ ['Mollets assis','Mollets','Machine','Débutant',['Mollets'],[],''],
+ ['Mollets à la presse','Mollets','Machine','Débutant',['Mollets'],[],''],
+ ['Mollets unilatéral haltère','Mollets','Haltères','Débutant',['Mollets'],[],''],
  // COU
- ['Extension de cou','Cou','Poids du corps','Intermédiaire',['Cou'],[],'🧣'],
- ['Flexion de cou','Cou','Poids du corps','Intermédiaire',['Cou'],[],'🧣'],
+ ['Extension de cou','Cou','Poids du corps','Intermédiaire',['Cou'],[],''],
+ ['Flexion de cou','Cou','Poids du corps','Intermédiaire',['Cou'],[],''],
  // CORPS ENTIER
- ['Burpees','Corps entier','Poids du corps','Intermédiaire',['Corps entier'],['Pectoraux','Quadriceps'],'🤸'],
- ['Thruster','Corps entier','Barre','Avancé',['Quadriceps','Épaules'],['Fessiers'],'🏋️'],
- ['Clean & Press','Corps entier','Barre','Avancé',['Corps entier'],['Épaules','Dos'],'🏋️'],
- ['Kettlebell Swing','Corps entier','Kettlebell','Intermédiaire',['Fessiers','Dos'],['Ischios'],'🔔'],
- ['Snatch kettlebell','Corps entier','Kettlebell','Avancé',['Corps entier'],['Épaules'],'🔔'],
- ['Turkish Get-up','Corps entier','Kettlebell','Avancé',['Corps entier'],['Abdominaux'],'🔔']
+ ['Burpees','Corps entier','Poids du corps','Intermédiaire',['Corps entier'],['Pectoraux','Quadriceps'],''],
+ ['Thruster','Corps entier','Barre','Avancé',['Quadriceps','Épaules'],['Fessiers'],''],
+ ['Clean & Press','Corps entier','Barre','Avancé',['Corps entier'],['Épaules','Dos'],''],
+ ['Kettlebell Swing','Corps entier','Kettlebell','Intermédiaire',['Fessiers','Dos'],['Ischios'],''],
+ ['Snatch kettlebell','Corps entier','Kettlebell','Avancé',['Corps entier'],['Épaules'],''],
+ ['Turkish Get-up','Corps entier','Kettlebell','Avancé',['Corps entier'],['Abdominaux'],'']
 ];
 // Construit la fiche tutoriel détaillée d'un exercice
 /* ============ DÉMONSTRATIONS VIDÉO/GIF (free-exercise-db, domaine public) ============
@@ -3980,9 +3994,9 @@ function exGif(name){
   return [EXDB_BASE+id+'/0.jpg', EXDB_BASE+id+'/1.jpg'];
 }
 /* ---------- Tuiles "Muscle" en photo (style navigateur d'exercices) ---------- */
-const MUSCLE_ICONS={'Tous':'🔎','Pectoraux':'🏋️','Dos':'🔙','Épaules':'🏋️','Trapèzes':'🤷','Biceps':'💪','Triceps':'💪',
-  'Avant-bras':'✊','Abdominaux':'🧘','Lombaires':'🔙','Fessiers':'🍑','Quadriceps':'🦵','Ischios':'🦵','Adducteurs':'🦵',
-  'Abducteurs':'🦵','Mollets':'🦵','Cou':'🧍','Corps entier':'🏋️'};
+const MUSCLE_ICONS={'Tous':'search','Pectoraux':'dumbbell','Dos':'back','Épaules':'shoulders','Trapèzes':'shoulders','Biceps':'arms','Triceps':'arms',
+  'Avant-bras':'arms','Abdominaux':'abs','Lombaires':'back','Fessiers':'glutes','Quadriceps':'legs','Ischios':'legs','Adducteurs':'legs',
+  'Abducteurs':'legs','Mollets':'legs','Cou':'shoulders','Corps entier':'run'};
 let _MUSCLE_REP_CACHE={};
 function muscleRepImg(group){
   if(group==='Tous') return null;
@@ -4148,7 +4162,7 @@ function exMeta(name){
   let base;
   if(d){ base={name:d[0],group:d[1],equip:d[2],level:d[3],primary:d[4],secondary:d[5],anim:d[6]}; }
   else { const o=LIB.find(e=>e.name===name); if(!o) return null;
-    base={name:o.name,group:(o.muscles&&o.muscles[0])||'Corps entier',equip:'Machine',level:'Intermédiaire',primary:o.muscles||[],secondary:[],anim:o.anim||'🏋️',tip:o.tip}; }
+    base={name:o.name,group:(o.muscles&&o.muscles[0])||'Corps entier',equip:'Machine',level:'Intermédiaire',primary:o.muscles||[],secondary:[],anim:o.anim||'',tip:o.tip}; }
   base.gif=exGif(name);
   return enrichFiche(base);
 }
@@ -4170,11 +4184,11 @@ function allExercises(){
   const names=new Set();
   const out=[];
   XDATA.forEach(x=>{ if(!names.has(x[0])){ names.add(x[0]); out.push({name:x[0],group:x[1],equip:x[2],level:x[3],primary:x[4],secondary:x[5],anim:x[6]}); } });
-  LIB.forEach(o=>{ if(!names.has(o.name)){ names.add(o.name); out.push({name:o.name,group:(o.muscles&&o.muscles[0])||'Corps entier',equip:'Machine',level:'Intermédiaire',primary:o.muscles||[],secondary:[],anim:o.anim||'🏋️',tip:o.tip}); } });
+  LIB.forEach(o=>{ if(!names.has(o.name)){ names.add(o.name); out.push({name:o.name,group:(o.muscles&&o.muscles[0])||'Corps entier',equip:'Machine',level:'Intermédiaire',primary:o.muscles||[],secondary:[],anim:o.anim||'',tip:o.tip}); } });
   return out;
 }
 function findEx(name){ return LIB.find(e=>e.name===name) || (function(){ const d=XDATA.find(x=>x[0]===name); return d?{name:d[0],muscles:d[4],anim:d[6],tip:''}:null; })(); }
-function ex(name,sets,reps){ const e=findEx(name)||{name,muscles:[],anim:'🏋️',tip:''}; return {name:e.name,sets,reps,muscles:e.muscles,anim:e.anim,tip:e.tip||''}; }
+function ex(name,sets,reps){ const e=findEx(name)||{name,muscles:[],anim:'',tip:''}; return {name:e.name,sets,reps,muscles:e.muscles,anim:e.anim,tip:e.tip||''}; }
 
 /* ---------- 6 DEFAULT PROGRAMS ---------- */
 const PROGS=[
@@ -4234,8 +4248,8 @@ function phaseDistribution(weeks){
 /* ============ MOTEUR VVV — SÉANCE RATÉE, REMPLACEMENT & AJUSTEMENT AUTOMATIQUE ============ */
 const MISSED_REASONS=['Manque de temps','Fatigue','Douleur','Maladie','Météo','Déplacement','Motivation','Oubli','Autre'];
 const REPLACEMENT_ACTIVITIES=['Aucune activité','Running','Musculation','Vélo','Natation','Mobilité','Marche','Autre'];
-const MISSED_REASON_ICONS={'Manque de temps':'⏱️','Fatigue':'🥱','Douleur':'🤕','Maladie':'🤒','Météo':'🌧️','Déplacement':'🧳','Motivation':'😕','Oubli':'💭','Autre':'✏️'};
-const REPLACEMENT_ICONS={'Aucune activité':'🚫','Running':'🏃','Musculation':'🏋️','Vélo':'🚴','Natation':'🏊','Mobilité':'🧘','Marche':'🚶','Autre':'➕'};
+const MISSED_REASON_ICONS={'Manque de temps':'timer','Fatigue':'moon','Douleur':'warning','Maladie':'health','Météo':'rain','Déplacement':'suitcase','Motivation':'close','Oubli':'clipboard','Autre':'edit'};
+const REPLACEMENT_ICONS={'Aucune activité':'ban','Running':'run','Musculation':'dumbbell','Vélo':'bike','Natation':'swim','Mobilité':'heart','Marche':'run','Autre':'plus'};
 const HARD_TYPES=['VMAc','VMAl','VO2','INTERVAL','DBLSEUIL','SEUIL','SPE','TEMPO_SPE','TEMPO','PROGRESSIF','FARTLEK','COTES'];
 const REASON_TR={
   en:{'Manque de temps':'Lack of time','Fatigue':'Fatigue','Douleur':'Pain','Maladie':'Illness','Météo':'Weather','Déplacement':'Travel','Motivation':'Motivation','Oubli':'Forgot','Autre':'Other'},
@@ -4426,15 +4440,15 @@ function openMissedFlow(sid){
 }
 function renderMissedReason(){
   const s=PLAN.sessions.find(x=>x.id===missedCtx.sessionId); if(!s) return;
-  let h='<div class="card" style="border-color:rgba(255,92,108,.35);background:rgba(255,92,108,.08);margin-bottom:18px"><div style="font-weight:700;color:var(--bad)">⚠️ '+t('missedSessionTitle')+'</div><div style="font-size:13px;color:var(--muted);margin-top:4px">'+planSessTitle(s)+' · '+fmtDate(s.date)+'</div></div>';
+  let h='<div class="card" style="border-color:rgba(255,92,108,.35);background:rgba(255,92,108,.08);margin-bottom:18px"><div style="font-weight:700;color:var(--bad)">'+t('missedSessionTitle')+'</div><div style="font-size:13px;color:var(--muted);margin-top:4px">'+planSessTitle(s)+' · '+fmtDate(s.date)+'</div></div>';
   h+='<div class="lab" style="margin-bottom:10px">'+t('missedReasonPrompt')+'</div>';
-  h+='<div class="reason-grid">'+MISSED_REASONS.map(r=>'<div class="reason-tile" onclick="selectMissedReason(\''+r+'\')">'+(MISSED_REASON_ICONS[r]||'')+' '+trReason(r)+'</div>').join('')+'</div>';
+  h+='<div class="reason-grid">'+MISSED_REASONS.map(r=>'<div class="reason-tile" onclick="selectMissedReason(\''+r+'\')">'+(MISSED_REASON_ICONS[r]?ICN(MISSED_REASON_ICONS[r],18):'')+' '+trReason(r)+'</div>').join('')+'</div>';
   $('#progBody').innerHTML=h;
 }
 function selectMissedReason(r){ missedCtx.reason=r; renderMissedReplacement(); }
 function renderMissedReplacement(){
   let h='<div class="lab" style="margin-bottom:10px">'+t('missedReplacementPrompt')+'</div>';
-  h+='<div class="act-grid">'+REPLACEMENT_ACTIVITIES.map(a=>'<div class="act-tile" onclick="selectReplacement(\''+a+'\')"><div class="ic">'+(REPLACEMENT_ICONS[a]||'')+'</div><div class="lb">'+trActivity(a)+'</div></div>').join('')+'</div>';
+  h+='<div class="act-grid">'+REPLACEMENT_ACTIVITIES.map(a=>'<div class="act-tile" onclick="selectReplacement(\''+a+'\')"><div class="ic">'+(REPLACEMENT_ICONS[a]?ICN(REPLACEMENT_ICONS[a],20):'')+'</div><div class="lb">'+trActivity(a)+'</div></div>').join('')+'</div>';
   $('#progBody').innerHTML=h;
 }
 function selectReplacement(a){
@@ -4504,7 +4518,7 @@ function finalizeMissedSession(){
   weeklyAdaptiveRegen();
   saveAll();
   closeOv('ovProg');
-  toast('📝 '+t('sessionNotedToast')+(note?' — '+note:''));
+  toast(''+t('sessionNotedToast')+(note?' — '+note:''));
   missedCtx=null;
   renderSport();
   setTimeout(checkMissedSessions,400);
@@ -4524,7 +4538,7 @@ function ruleBasedAdjust(session, reason, replacement){
       const factor=cardioReplacement?0.9:0.75;
       nh.km=Math.round(nh.km*factor*10)/10;
       nh.duration=Math.round(nh.duration*factor);
-      const flag='⚠️ '+tp('autoLightenedFlag',trReason(reason).toLowerCase(),fmtDate(session.date))+' — ';
+      const flag=''+tp('autoLightenedFlag',trReason(reason).toLowerCase(),fmtDate(session.date))+' — ';
       if(nh.detail && nh.detail.objectif) nh.detail.objectif=flag+nh.detail.objectif;
       nh.desc=flag+(nh.desc||'');
       note=t('note_nextHardLightened');
@@ -4533,7 +4547,7 @@ function ruleBasedAdjust(session, reason, replacement){
     const tomorrow=addDaysKey(session.date,1);
     const nextDay=PLAN.sessions.find(s=>s.date===tomorrow && !s.done && !s.missed);
     if(nextDay && ['VMAc','COTES'].includes(nextDay.baseType)){
-      const flag='💡 '+t('legDayCarryoverFlag')+' — ';
+      const flag=''+t('legDayCarryoverFlag')+' — ';
       if(nextDay.detail && nextDay.detail.objectif) nextDay.detail.objectif=flag+nextDay.detail.objectif;
       nextDay.desc=flag+(nextDay.desc||'');
       note=t('note_explosiveCaution');
@@ -4551,7 +4565,7 @@ function checkConsecutiveMisses(){
   if(recentMissed>=3 && PLAN.autoReducedAt!==tk){
     nextUpcoming(tk).forEach(s=>{ s.km=Math.round(s.km*0.85*10)/10; s.duration=Math.round(s.duration*0.85); });
     PLAN.autoReducedAt=tk;
-    toast('📉 '+t('recentMissesReducedMsg'));
+    toast(''+t('recentMissesReducedMsg'));
   }
 }
 function applyProgressiveOverload(entry){
@@ -4629,7 +4643,7 @@ function weeklyAdaptiveRegen(force){
   });
   PLAN.lastAdapt=tk;
   DB.save('run_plan',PLAN);
-  toast('🔄 '+tp('planUpdatedWeekReason',reason));
+  toast(''+tp('planUpdatedWeekReason',reason));
 }
 
 function generatePlan(){
@@ -4686,7 +4700,7 @@ function generatePlan(){
   }
   PLAN={ created:todayKey(), vdot, weeks, seed, sessions, goal, race:P.objRace||'5 km' };
   DB.save('run_plan',PLAN);
-  toast('🔥 '+tp('planGenerated',(trRace(P.objRace)||t('raceGeneric')),weeks,sessions.length));
+  toast(''+tp('planGenerated',(trRace(P.objRace)||t('raceGeneric')),weeks,sessions.length));
   burst(); renderSport();
 }
 function raceMeters(){ const m={'5 km':5000,'10 km':10000,'Semi-marathon':21097,'Marathon':42195,'Trail':21097,'Cross':8000,'Ultra':50000}; return m[P.objRace]||5000; }
@@ -4725,7 +4739,7 @@ function renderPlanSetup(){
   h+='<div class="field"><label>'+t('trainingDaysLabel')+'</label><div class="pills">'+[1,2,3,4,5,6,0].map(d=>'<div class="pill '+(s.days.includes(d)?'on':'')+'" onclick="toggleSetupDay('+d+')">'+dn[d]+'</div>').join('')+'</div></div>';
   h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>'+t('minKmWeekLabel')+'</label><input class="inp" type="number" value="'+s.kmWeekMin+'" oninput="setupTmp.kmWeekMin=+this.value"></div><div class="field" style="flex:1"><label>'+t('maxKmWeekLabel')+'</label><input class="inp" type="number" value="'+s.kmWeekMax+'" oninput="setupTmp.kmWeekMax=+this.value"></div></div>';
   h+='<div class="field"><label>'+t('preferredSessionsLabel')+'</label><div class="pills">'+LIKED_TYPES.map(lt=>'<div class="pill '+(s.likedTypes.includes(lt)?'on':'')+'" onclick="toggleLiked(\''+lt.replace(/'/g,"\\'")+'\')">'+trLikedType(lt)+'</div>').join('')+'</div></div>';
-  h+='<button class="btn" onclick="confirmPlanSetup()">🔥 '+t('generateMyPlanBtn')+'</button>';
+  h+='<button class="btn" onclick="confirmPlanSetup()">'+t('generateMyPlanBtn')+'</button>';
   $('#progBody').innerHTML=h;
 }
 function toggleSetupDay(d){ const i=setupTmp.days.indexOf(d); if(i>=0)setupTmp.days.splice(i,1); else setupTmp.days.push(d); renderPlanSetup(); }
@@ -5130,8 +5144,8 @@ function homeLoadQuip(kmW){
   const prev=lastWeekKm();
   if(!prev) return 'Continue sur ta lancée.';
   const delta=Math.round((kmW-prev)/prev*100);
-  if(delta>0) return '↑ '+delta+'% vs semaine dernière. Rythme tenu.';
-  if(delta<0) return '↓ '+Math.abs(delta)+'% vs semaine dernière.';
+  if(delta>0) return ''+delta+'% vs semaine dernière. Rythme tenu.';
+  if(delta<0) return ''+Math.abs(delta)+'% vs semaine dernière.';
   return 'Charge stable vs semaine dernière.';
 }
 // Bandeau streak (série de jours consécutifs) — n'apparaît que si une série est en cours
@@ -5245,9 +5259,9 @@ function homeWeekPlanRows(){
   weekSess.forEach(s=>{
     const dayName=new Date(s.date+'T00:00:00').toLocaleDateString(localeCode(),{weekday:'long'});
     const dayCap=dayName.charAt(0).toUpperCase()+dayName.slice(1);
-    let ic='→', cls='';
-    if(s.done){ ic='✓'; cls='done'; }
-    else if(s.missed){ ic='✕'; cls='missed'; }
+    let ic='', cls='';
+    if(s.done){ ic=''; cls='done'; }
+    else if(s.missed){ ic=''; cls='missed'; }
     else if(s.date===tk) cls='today';
     h+='<div class="hv7-plan-row '+cls+'" onclick="openRunSheet('+s.id+')"><div class="hv7-plan-ic">'+ic+'</div>'+
       '<div class="hv7-plan-body"><div class="hv7-plan-title">'+planSessTitle(s)+'</div><div class="hv7-plan-sub">'+dayCap+' · '+(planSessLabel(s)||'')+'</div></div></div>';
@@ -5297,7 +5311,7 @@ function renderHome(){
   // HERO-DROP — séance du jour (ou repos) + prochaine séance + VDOT/allure seuil/charge
   {
     const streak=streakDays();
-    const badgeHtml=streak>=2?('<div class="hv7-hero-drop-badge">🔥 '+tp('streakDaysShort',streak)+'</div>'):'';
+    const badgeHtml=streak>=2?('<div class="hv7-hero-drop-badge">'+tp('streakDaysShort',streak)+'</div>'):'';
     let heroTitle, heroMeta, heroClick;
     if(ps && ps.type!=='Repos'){
       heroTitle=planSessTitle(ps);
@@ -5329,7 +5343,7 @@ function renderHome(){
   // 3 TUILES — charge, temps total, séances restantes
   {
     const prevKm=lastWeekKm();
-    const deltaTxt=prevKm?((kmW>=prevKm?'↑ ':'↓ ')+Math.abs(Math.round((kmW-prevKm)/prevKm*100))+'%'):t('newWeekTag');
+    const deltaTxt=prevKm?((kmW>=prevKm?'':'')+Math.abs(Math.round((kmW-prevKm)/prevKm*100))+'%'):t('newWeekTag');
     const ws=weekStart();
     const totalMin=sessThisWeek().reduce((a,s)=>a+(s.duration||0),0)+MSESS.filter(s=>new Date(s.date)>=ws).reduce((a,s)=>a+(s.duration||0),0);
     const remaining=Math.max(0,sessTarget-sessW);
@@ -5366,7 +5380,7 @@ function renderHome(){
   if(weekRows){
     html+='<div class="hv7-plan-list">'+weekRows+'</div>';
   } else {
-    html+='<div class="card"><div class="empty"><div class="em-ic">⚡</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">'+t('planIkorunTitle')+'</div>'+
+    html+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('bolt',36,'currentColor')+'</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">'+t('planIkorunTitle')+'</div>'+
       '<div style="font-size:13px;margin-bottom:16px">'+tp('planIkorunDescLong',(vdot||'?'))+'</div>'+
       '<button class="btn" onclick="nav(\'sport\');openPlanSetup()">'+t('configureGenerate')+'</button></div></div>';
   }
@@ -5380,7 +5394,7 @@ function renderHomeSimple(ps,sessW,sessTarget,vdot,form,first){
     '<div class="ik-logo-mark" style="-webkit-mask-image:url(\''+LOGO_MARK_URI+'\');mask-image:url(\''+LOGO_MARK_URI+'\')" role="img" aria-label="IKORUN"></div>'+
     '<span>IKORUN</span></div></div>';
   h+=homeStreakBadge();
-  h+='<div class="ik-greet"><h1>'+t('greet')+' '+(first||t('you'))+' 👋</h1></div>';
+  h+='<div class="ik-greet"><h1>'+t('greet')+' '+(first||t('you'))+'</h1></div>';
 
   h+='<div class="next-lab">'+t('todayCap')+'</div>';
   if(ps && ps.type!=='Repos'){
@@ -5432,8 +5446,8 @@ function planHeroHTML(){
     const s=byDow[dow];
     let cls='dotcell', ic='';
     if(!s || s.km===0) cls+=' dot-rest';
-    else if(s.done){ cls+=' dot-done'; ic='✓'; }
-    else if(s.missed){ cls+=' dot-missed'; ic='✕'; }
+    else if(s.done){ cls+=' dot-done'; ic=''; }
+    else if(s.missed){ cls+=' dot-missed'; ic=''; }
     else if(s.date===tk) cls+=' dot-today';
     dots+='<div class="'+cls+'"><div class="dc-lab">'+dowLab[i]+'</div><div class="dc-circ">'+ic+'</div></div>';
   });
@@ -5466,7 +5480,7 @@ function renderRunning(){
   let h='<div class="pills" style="margin-bottom:14px"><div class="pill '+(runSub==='ia'?'on':'')+'" onclick="runSub=\'ia\';renderSport()">'+t('planIkorunPill')+'</div><div class="pill '+(runSub==='perso'?'on':'')+'" onclick="runSub=\'perso\';renderSport()">'+t('myPlanPill')+'</div></div>';
   if(runSub==='ia'){
     if(!PLAN){
-      h+='<div class="card"><div class="empty"><div class="em-ic">⚡</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">'+t('planIkorunTitle')+'</div><div style="font-size:13px;margin-bottom:16px">'+tp('planIkorunDescLong',(getUserVDOT()||'?'))+'</div><button class="btn" onclick="openPlanSetup()">'+t('configureGenerate')+'</button></div></div>';
+      h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('bolt',36,'currentColor')+'</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">'+t('planIkorunTitle')+'</div><div style="font-size:13px;margin-bottom:16px">'+tp('planIkorunDescLong',(getUserVDOT()||'?'))+'</div><button class="btn" onclick="openPlanSetup()">'+t('configureGenerate')+'</button></div></div>';
     } else {
       h+=planHeroHTML();
       // Seule la semaine en cours est affichée sur la page ; le reste du plan
@@ -5499,7 +5513,7 @@ function renderPlanRows(sessions,tk){
       :(s.km===0?'<div class="qbadge rest">'+t('restTag')+'</div>':'<div class="chrome-chip" style="color:'+baseTypeColor(s.baseType)+'">'+planSessLabel(s)+'</div>');
     const ssum=seriesSummary({...s,series:liveSeries(s)});
     const line2=fmtDate(s.date)+(s.km?' · '+s.km+' km':' · Repos')+(s.km&&!ssum?' · '+s.pace+'/km':'');
-    h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'" onclick="openRunSheet('+s.id+')" style="'+(s.missed?'border-color:rgba(255,92,108,.35)':'')+'"><div class="row"><div><div style="font-weight:700;font-size:14px">'+planSessTitle(s)+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+line2+'</div>'+(ssum?'<div style="color:var(--e);font-size:12px;font-weight:700;margin-top:3px">⏱ '+ssum+'</div>':'')+'</div>'+qb+'</div></div>';
+    h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'" onclick="openRunSheet('+s.id+')" style="'+(s.missed?'border-color:rgba(255,92,108,.35)':'')+'"><div class="row"><div><div style="font-weight:700;font-size:14px">'+planSessTitle(s)+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+line2+'</div>'+(ssum?'<div style="color:var(--e);font-size:12px;font-weight:700;margin-top:3px">'+ssum+'</div>':'')+'</div>'+qb+'</div></div>';
   });
   return h;
 }
@@ -5514,13 +5528,13 @@ let curPerso=null;
 function renderPersoList(){
   const persoPlans=CUSTOM.filter(p=>p.kind==='run');
   let h='<button class="btn" style="margin-bottom:14px" onclick="addPersoPlan()">'+t('newPersoPlan')+'</button>';
-  if(!persoPlans.length){ h+='<div class="card"><div class="empty"><div class="em-ic">📋</div><div style="font-weight:700;color:var(--snow);margin-bottom:6px">'+t('createCustomPlan')+'</div><div style="font-size:13px">'+t('createCustomPlanDesc')+'</div></div></div>'; }
+  if(!persoPlans.length){ h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('clipboard',36,'currentColor')+'</div><div style="font-weight:700;color:var(--snow);margin-bottom:6px">'+t('createCustomPlan')+'</div><div style="font-size:13px">'+t('createCustomPlanDesc')+'</div></div></div>'; }
   else persoPlans.forEach((p)=>{
     const done=p.sessions.filter(s=>s.done).length;
     const followBadge=P.followPerso===p.id?'<span class="chrome-chip" style="color:var(--ok);margin-left:6px">'+t('followedTag')+'</span>':'';
     h+='<div class="card" style="padding:13px 14px"><div class="row" onclick="openPerso(\''+p.id+'\')" style="cursor:pointer"><div><div style="font-weight:700;font-size:14.5px">'+p.name+followBadge+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+tp('sessionsCount',p.sessions.length,done)+'</div></div><span style="color:var(--e);font-size:18px">›</span></div>'+
       '<div class="row" style="margin-top:9px;gap:8px"><div class="pbar" style="flex:1;margin-top:0"><div style="width:'+(p.sessions.length?done/p.sessions.length*100:0)+'%"></div></div>'+
-      '<span class="mini-ic" onclick="dupPerso(\''+p.id+'\')" title="'+t('duplicate')+'">⎘</span><span class="mini-ic" onclick="sharePlan(\''+p.name+'\')" title="'+t('share')+'">↗</span><span class="mini-ic" style="color:var(--bad)" onclick="delPerso(\''+p.id+'\')" title="'+t('delete')+'">🗑</span></div></div>';
+      '<span class="mini-ic" onclick="dupPerso(\''+p.id+'\')" title="'+t('duplicate')+'">⎘</span><span class="mini-ic" onclick="sharePlan(\''+p.name+'\')" title="'+t('share')+'">↗</span><span class="mini-ic" style="color:var(--bad)" onclick="delPerso(\''+p.id+'\')" title="'+t('delete')+'">'+ICN('trash',16)+'</span></div></div>';
   });
   return h;
 }
@@ -5538,7 +5552,7 @@ function renderSport(){
   $('#tbSub').textContent = sportView==='calendar' ? t('calendarSub') : t('sub_sport');
   if(sportView==='calendar'){ $('#s-sport').innerHTML=renderCalendarView(); return; }
   let h='<div class="row" style="gap:8px;margin:6px 0 16px">'+
-    '<div class="pills" style="flex:1;margin:0"><div class="pill '+(sportTab==='run'?'on':'')+'" onclick="sportTab=\'run\';curPerso=null;renderSport()">🏃 Running</div><div class="pill '+(sportTab==='muscu'?'on':'')+'" onclick="sportTab=\'muscu\';renderSport()">🏋️ Musculation</div></div>'+
+    '<div class="pills" style="flex:1;margin:0"><div class="pill '+(sportTab==='run'?'on':'')+'" onclick="sportTab=\'run\';curPerso=null;renderSport()">Running</div><div class="pill '+(sportTab==='muscu'?'on':'')+'" onclick="sportTab=\'muscu\';renderSport()">Musculation</div></div>'+
     '<div class="tb-gear" style="flex-shrink:0" onclick="sportView=\'calendar\';renderSport()">'+ICN('calendar',17)+'</div></div>';
   if(sportTab==='run' && runSub==='perso' && curPerso){ h+=persoDetailHTML(); }
   else h+= sportTab==='run'?renderRunning():renderMuscu();
@@ -5606,13 +5620,13 @@ function persoDetailHTML(){
   const p=CUSTOM.find(x=>x.id===curPerso); if(!p) return renderPersoList();
   const tk=todayKey();
   const following=P.followPerso===p.id;
-  let h='<div class="row" style="margin-bottom:14px"><button class="x" onclick="curPerso=null;renderSport()">‹</button><div class="man" style="font-weight:800;font-size:18px">'+p.name+'</div><button class="x" onclick="renamePerso(\''+p.id+'\')">✏️</button></div>';
+  let h='<div class="row" style="margin-bottom:14px"><button class="x" onclick="curPerso=null;renderSport()">‹</button><div class="man" style="font-weight:800;font-size:18px">'+p.name+'</div><button class="x" onclick="renamePerso(\''+p.id+'\')"></button></div>';
   h+='<div class="chrome-box'+(following?' accent':'')+'" style="display:flex;align-items:center;gap:10px">'
-    +'<div style="flex:1"><div class="cb-head" style="margin-bottom:2px">'+(following?'✅ Plan suivi actuellement':'👤 Suivre ce plan à la place du plan IKORUN')+'</div>'
+    +'<div style="flex:1"><div class="cb-head" style="margin-bottom:2px">'+(following?'Plan suivi actuellement':'Suivre ce plan à la place du plan IKORUN')+'</div>'
     +'<div class="cb-body" style="font-size:12px;color:var(--muted)">'+(following?'Ton accueil et ton bilan utilisent ce plan. Le plan IKORUN continue de s\u2019ajuster en arrière-plan selon ce que tu fais ici.':'Ton accueil affichera les séances de ce plan au lieu du plan généré. Tu peux revenir au plan IKORUN quand tu veux.')+'</div></div>'
     +'<button class="btn ghost sm" style="width:auto;white-space:nowrap" onclick="toggleFollowPerso(\''+p.id+'\')">'+(following?'Arrêter':'Suivre')+'</button></div>';
   h+='<button class="btn" style="margin-bottom:14px" onclick="addPersoSession()">＋ Ajouter une séance</button>';
-  if(!p.sessions.length) h+='<div class="card"><div class="empty"><div class="em-ic">🏃</div><div style="font-size:13px">Aucune séance. Ajoute ta première !</div></div></div>';
+  if(!p.sessions.length) h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('run',36,'currentColor')+'</div><div style="font-size:13px">Aucune séance. Ajoute ta première !</div></div></div>';
   else {
     const sorted=[...p.sessions].sort((a,b)=>new Date(a.date)-new Date(b.date));
     sorted.forEach(s=>{
@@ -5653,7 +5667,7 @@ function addPersoSession(){
        '<button class="btn ghost sm" style="margin:2px 0 14px" onclick="addPsIntervalRow()">＋ Ajouter une répétition</button>'+
      '</div>';
   h+='<div class="field"><label>Description (optionnel)</label><textarea class="inp" id="ps_desc" rows="3" placeholder="Détails de la séance..."></textarea></div>';
-  h+='<button class="btn" onclick="savePersoSession()">💾 Ajouter la séance</button>';
+  h+='<button class="btn" onclick="savePersoSession()">Ajouter la séance</button>';
   $('#progBody').innerHTML=h; $('#ovProgTitle').textContent='Nouvelle séance'; openOv('ovProg');
   renderPsIntervalRows();
 }
@@ -5685,8 +5699,8 @@ function renderPsIntervalRows(){
   psIntervals.forEach((r,i)=>{
     h+='<div class="perfrow">'+
       '<div class="perfcard" style="flex:0 0 64px;cursor:default"><div class="pcl">Rép.</div><div class="pcv">'+(i+1)+'</div></div>'+
-      '<div class="perfcard" onclick="pickPsIntervalTime('+i+')"><div class="pcl">⏱ Temps</div><div class="pcv '+(r.timeS!=null?'':'empty')+'">'+(r.timeS!=null?fmtTime(r.timeS):'Choisir')+'</div></div>'+
-      (psIntervals.length>1?'<div class="perfdel" onclick="delPsIntervalRow('+i+')">🗑</div>':'')+
+      '<div class="perfcard" onclick="pickPsIntervalTime('+i+')"><div class="pcl">Temps</div><div class="pcv '+(r.timeS!=null?'':'empty')+'">'+(r.timeS!=null?fmtTime(r.timeS):'Choisir')+'</div></div>'+
+      (psIntervals.length>1?'<div class="perfdel" onclick="delPsIntervalRow('+i+')">'+ICN('trash',16)+'</div>':'')+
     '</div>';
   });
   box.innerHTML=h;
@@ -5735,9 +5749,9 @@ function openPersoSheet(sid){
     h+='</div></div>';
   }
   if(s.desc) h+='<div class="tip" style="margin-bottom:14px">'+s.desc+'</div>';
-  if(s.done) h+='<div class="badge" style="background:rgba(51,211,153,.18);color:var(--ok);width:100%;justify-content:center;padding:14px;border-radius:14px;margin-bottom:10px">✓ Terminée</div>';
-  else h+='<button class="btn" style="margin-bottom:10px" onclick="markPersoDone()">✓ Marquer terminée</button>';
-  h+='<button class="btn ghost sm" style="color:var(--bad)" onclick="delPersoSession()">🗑 Supprimer</button>';
+  if(s.done) h+='<div class="badge" style="background:rgba(51,211,153,.18);color:var(--ok);width:100%;justify-content:center;padding:14px;border-radius:14px;margin-bottom:10px">Terminée</div>';
+  else h+='<button class="btn" style="margin-bottom:10px" onclick="markPersoDone()">Marquer terminée</button>';
+  h+='<button class="btn ghost sm" style="color:var(--bad)" onclick="delPersoSession()">Supprimer</button>';
   $('#sheetBody').innerHTML=h; openOv('ovSheet');
 }
 function markPersoDone(){
@@ -5759,7 +5773,7 @@ let debriefData=null, debriefCtx=null, debriefReps=[];
 function openSessionDebrief(ctx){
   debriefCtx=ctx;
   debriefData={ done:true, duration:ctx.duration||'', distance:ctx.km||'', pace:ctx.pace||'', deniv:ctx.deniv||'',
-    rpe:5, pain:'Aucune', fatigue:3, weather:'\u2600\ufe0f', feel:3, sleep:3, nutrition:3, note:'' };
+    rpe:5, pain:'Aucune', fatigue:3, weather:'sunny', feel:3, sleep:3, nutrition:3, note:'' };
   // Si la seance prevue est une serie de repetitions (400, 1000, pyramide simple...),
   // on propose une ligne par repetition : temps reel ou bouton rapide "Respecte"
   // qui remplit tout seul avec le temps de passage cible.
@@ -5818,7 +5832,7 @@ function renderDebrief(){
   h+=scale('feel',t('sensationsLabel'),['\ud83d\ude23','\ud83d\ude15','\ud83d\ude10','\ud83d\ude0a','\ud83e\udd29']);
   h+=scale('sleep',t('nightSleepLabel'),['\ud83d\ude34','\ud83d\ude2a','\ud83d\ude10','\ud83d\ude42','\ud83d\udca4']);
   h+=scale('nutrition',t('dayNutritionLabel'),['\ud83c\udf54','\ud83d\ude10','\ud83d\ude42','\ud83e\udd57','\ud83d\udcaa']);
-  h+='<div class="field"><label>'+t('weatherLabel')+'</label><div class="pills">'+['\u2600\ufe0f','\u26c5','\ud83c\udf27\ufe0f','\ud83d\udca8','\ud83e\udd75','\ud83e\udd76'].map(w=>'<div class="pill '+(d.weather===w?'on':'')+'" onclick="debriefData.weather=\''+w+'\';renderDebrief()">'+w+'</div>').join('')+'</div></div>';
+  h+='<div class="field"><label>'+t('weatherLabel')+'</label><div class="pills">'+['sunny','cloudy','rain','wind','hot','cold'].map(w=>'<div class="pill '+(d.weather===w?'on':'')+'" onclick="debriefData.weather=\''+w+'\';renderDebrief()">'+ICN(w==='sunny'?'sun':w==='cloudy'?'moon':w==='rain'?'rain':w==='wind'?'wind':w==='hot'?'fire':'snow',18)+'</div>').join('')+'</div></div>';
   h+='<div class="field"><label>'+t('freeCommentLabel')+'</label><textarea class="inp" rows="2" oninput="debriefData.note=this.value" placeholder="'+t('howDidYouFeelPlaceholder')+'">'+(d.note||'')+'</textarea></div>';
   h+='<button class="btn" onclick="submitDebrief()">\ud83e\udde0 '+t('analyzeSessionBtn')+'</button>';
   $('#progBody').innerHTML=h;
@@ -5859,14 +5873,14 @@ function coachAnalyze(e){
   // Critiques / erreurs
   if(e.plannedRpe && e.rpe>=e.plannedRpe+2) errs.push(tp('coach_err_harderThanPlanned',e.rpe,e.plannedRpe));
   if(e.plannedRpe && e.rpe<=e.plannedRpe-2 && e.type!=='EF' && e.type!=='Récup') errs.push(tp('coach_err_tooEasy',e.rpe));
-  if(e.pain==='Gênantes'||e.pain==='Importantes') errs.push('⚠️ '+tp('coach_err_pain',trPain(e.pain).toLowerCase()));
+  if(e.pain==='Gênantes'||e.pain==='Importantes') errs.push(''+tp('coach_err_pain',trPain(e.pain).toLowerCase()));
   if(e.sleep<=2) errs.push(t('coach_err_sleep'));
   if(e.fatigue>=4) errs.push(t('coach_err_fatigue'));
   // Conseils
   if(e.sleep<=2) tips.push(t('coach_tip_sleep'));
   if(e.nutrition<=2) tips.push(t('coach_tip_nutrition'));
   tips.push(t('coach_tip_hydrate'));
-  if(e.weather==='🥵') tips.push(t('coach_tip_heat'));
+  if(e.weather==='hot') tips.push(t('coach_tip_heat'));
   // Ajustements prochaines séances
   if(e.pain==='Importantes'||e.fatigue>=5){ adjust.push(t('coach_adj_rest')); }
   else if(e.rpe>=9 && e.fatigue>=4){ adjust.push(t('coach_adj_lighten48h')); }
@@ -5878,12 +5892,12 @@ function coachAnalyze(e){
   return {pos,errs,tips,adjust,motiv,e};
 }
 function renderCoachAnalysis(a){
-  let h='<div style="text-align:center;margin-bottom:14px"><div style="font-size:40px">🧠</div><div class="man" style="font-weight:800;font-size:20px">'+t('coachAnalysisTitle')+'</div><div style="font-size:12px;color:var(--muted)">'+a.e.title+'</div></div>';
+  let h='<div style="text-align:center;margin-bottom:14px"><div style="display:flex;justify-content:center">'+ICN('brain',40,'var(--e)')+'</div><div class="man" style="font-weight:800;font-size:20px">'+t('coachAnalysisTitle')+'</div><div style="font-size:12px;color:var(--muted)">'+a.e.title+'</div></div>';
   const blk=(icon,title,items,color)=>items.length?'<div class="card-t" style="margin-top:14px;'+(color?'color:'+color:'')+'">'+icon+' '+title+'</div>'+items.map(x=>'<div class="tip" style="margin-bottom:6px;'+(color?'border-color:'+color+'33;background:'+color+'11':'')+'">'+x+'</div>').join(''):'';
-  h+=blk('✅',t('positivePointsTitle'),a.pos,'var(--ok)');
-  h+=blk('⚠️',t('constructiveCriticismTitle'),a.errs,'var(--warn)');
-  h+=blk('💡',t('adviceLabel'),a.tips,'');
-  h+=blk('🔧',t('upcomingAdjustmentsTitle'),a.adjust,'var(--e)');
+  h+=blk(ICN('check',15,'var(--ok)'),t('positivePointsTitle'),a.pos,'var(--ok)');
+  h+=blk(ICN('warning',15,'var(--warn)'),t('constructiveCriticismTitle'),a.errs,'var(--warn)');
+  h+=blk(ICN('bulb',15,'var(--e)'),t('adviceLabel'),a.tips,'');
+  h+=blk(ICN('gear',15,'var(--e)'),t('upcomingAdjustmentsTitle'),a.adjust,'var(--e)');
   h+='<div style="background:linear-gradient(135deg,var(--ed),rgba(31,47,80,.3));border:1px solid var(--e);border-radius:14px;padding:14px;margin-top:16px;text-align:center"><div style="font-style:italic;font-size:15px">"'+a.motiv+'"</div></div>';
   h+='<button class="btn" style="margin-top:16px" onclick="closeOv(\'ovProg\');renderSport();nav(\'home\')">'+t('notedCoachBtn')+'</button>';
   $('#progBody').innerHTML=h; $('#ovProgTitle').textContent=t('ikorunAnalysisTitle');
@@ -5896,18 +5910,18 @@ function seriesTableHTML(sr){
   if(!sr) return '';
   if(sr.segments){
     const rows=sr.segments.map(sg=>'<div class="row" style="font-size:13px;padding:4px 0"><span style="color:var(--muted)">'+sg.dist+' m</span><span style="font-weight:700;color:var(--e)">'+fmtSplit(sg.splitSec)+'</span></div>').join('');
-    return '<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:6px">🏃 '+t('seriesPyramidTitle')+'</div>'+rows+'<div style="font-size:11.5px;color:var(--muted);margin-top:8px">'+t('recoveryColon')+' '+sr.recoveryLabel+'</div></div>';
+    return '<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:6px">'+ICN('run',15,'var(--e)')+t('seriesPyramidTitle')+'</div>'+rows+'<div style="font-size:11.5px;color:var(--muted);margin-top:8px">'+t('recoveryColon')+' '+sr.recoveryLabel+'</div></div>';
   }
   if(sr.reps && sr.dist){
-    return '<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:8px">🏃 '+sr.reps+' × '+sr.dist+' m</div>'
+    return '<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:8px">'+ICN('run',15,'var(--e)')+sr.reps+' × '+sr.dist+' m</div>'
       +'<div class="row" style="font-size:13px;padding:3px 0"><span style="color:var(--muted)">'+t('targetSplitLabel')+'</span><span style="font-weight:700;color:var(--e)">'+fmtSplit(splitSecFromPace(sr.paceSecPerKm,sr.dist))+'</span></div>'
       +'<div class="row" style="font-size:13px;padding:3px 0"><span style="color:var(--muted)">'+t('equivalentPaceLabel')+'</span><span>'+spkToStr(sr.paceSecPerKm)+'/km</span></div>'
       +'<div class="row" style="font-size:13px;padding:3px 0"><span style="color:var(--muted)">'+t('recoveryLabel')+'</span><span>'+sr.recoveryLabel+'</span></div>'
-      +(sr.note?'<div style="font-size:11.5px;color:var(--muted);margin-top:6px">ℹ️ '+sr.note+'</div>':'')
+      +(sr.note?'<div style="font-size:11.5px;color:var(--muted);margin-top:6px">'+sr.note+'</div>':'')
       +'</div>';
   }
   if(sr.reps){
-    return '<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:6px">🏃 '+sr.reps+' '+t('repetitionsWord')+'</div>'
+    return '<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:6px">'+ICN('run',15,'var(--e)')+sr.reps+' '+t('repetitionsWord')+'</div>'
       +(sr.note?'<div style="font-size:13px;color:var(--muted)">'+sr.note+'</div>':'')
       +'<div class="row" style="font-size:13px;padding:3px 0;margin-top:4px"><span style="color:var(--muted)">'+t('recoveryLabel')+'</span><span>'+sr.recoveryLabel+'</span></div></div>';
   }
@@ -5935,8 +5949,8 @@ function openRunSheet(id){
   }
 
   // CTA
-  if(s.done) h+='<div class="badge" style="background:rgba(51,211,153,.18);color:var(--ok);width:100%;justify-content:center;padding:14px;border-radius:18px;margin-bottom:18px">✓ '+t('sessionCompleted')+'</div>';
-  else if(s.type!=='Repos') h+='<button class="btn" style="margin-bottom:18px" onclick="markRunDone()">✓ '+t('markCompleted')+'</button>';
+  if(s.done) h+='<div class="badge" style="background:rgba(51,211,153,.18);color:var(--ok);width:100%;justify-content:center;padding:14px;border-radius:18px;margin-bottom:18px">'+t('sessionCompleted')+'</div>';
+  else if(s.type!=='Repos') h+='<button class="btn" style="margin-bottom:18px" onclick="markRunDone()">'+t('markCompleted')+'</button>';
 
   if(dt){
     h+='<div class="rs-obj-lab">'+t('objectiveCap')+'</div><div class="rs-obj-txt">'+dt.objectif+'</div>';
@@ -5963,15 +5977,15 @@ function openRunSheet(id){
   // DÉTAIL COMPLET (repliable, contenu déjà existant conservé)
   if(dt){
     h+=seriesTableHTML(liveSeries(s));
-    if(s.series && s.series.length) h+='<div class="pace-warn">⚠️ '+t('paceWarnMsg')+'</div>';
-    h+='<div class="chrome-box"><div class="cb-head">🏁 '+t('detailedPacesLabel')+'</div><div class="cb-body">'+dt.paces+'</div></div>';
-    h+='<div class="chrome-box"><div class="cb-head">⏱ '+t('recoveryLabel')+'</div><div class="cb-body">'+dt.recovery+'</div></div>';
-    h+='<div class="chrome-box"><div class="cb-head">✅ '+t('adviceLabel')+'</div>'+dt.tips.map(tt=>'<div class="cb-body" style="margin-bottom:5px">• '+tt+'</div>').join('')+'</div>';
-    h+='<div class="chrome-box bad"><div class="cb-head" style="color:var(--bad)">⚠️ '+t('mistakesToAvoidLabel')+'</div>'+dt.mistakes.map(tt=>'<div class="cb-body" style="margin-bottom:5px">✗ '+tt+'</div>').join('')+'</div>';
-    h+='<div class="chrome-box"><div class="cb-head">🧠 '+t('whySessionLabel')+'</div><div class="cb-body">'+dt.why+'</div></div>';
+    if(s.series && s.series.length) h+='<div class="pace-warn">'+t('paceWarnMsg')+'</div>';
+    h+='<div class="chrome-box"><div class="cb-head">'+t('detailedPacesLabel')+'</div><div class="cb-body">'+dt.paces+'</div></div>';
+    h+='<div class="chrome-box"><div class="cb-head">'+t('recoveryLabel')+'</div><div class="cb-body">'+dt.recovery+'</div></div>';
+    h+='<div class="chrome-box"><div class="cb-head">'+t('adviceLabel')+'</div>'+dt.tips.map(tt=>'<div class="cb-body" style="margin-bottom:5px">• '+tt+'</div>').join('')+'</div>';
+    h+='<div class="chrome-box bad"><div class="cb-head" style="color:var(--bad)">'+t('mistakesToAvoidLabel')+'</div>'+dt.mistakes.map(tt=>'<div class="cb-body" style="margin-bottom:5px">'+tt+'</div>').join('')+'</div>';
+    h+='<div class="chrome-box"><div class="cb-head">'+t('whySessionLabel')+'</div><div class="cb-body">'+dt.why+'</div></div>';
   } else {
     h+=seriesTableHTML(liveSeries(s));
-    h+='<div class="chrome-box"><div class="cb-head">💪 '+t('sessionBodyLabel')+'</div><div class="cb-body">'+s.desc+'</div></div>';
+    h+='<div class="chrome-box"><div class="cb-head">'+t('sessionBodyLabel')+'</div><div class="cb-body">'+s.desc+'</div></div>';
   }
   $('#sheetBody').innerHTML=h;
   openOv('ovSheet');
@@ -5990,8 +6004,8 @@ function markRunDone(){
 /* ---------- MUSCULATION ---------- */
 function renderMuscu(){
   let h='';
-  if(DB.load('live_paused')){ const sv=DB.load('live_paused'); h+='<div class="card" style="border-color:var(--warn);background:rgba(255,180,84,.08)"><div class="row"><div><div style="font-weight:700">⏸ Séance en pause</div><div style="font-size:12px;color:var(--muted)">'+sv.prog.name+'</div></div><button class="btn sm" style="width:auto;padding:8px 14px" onclick="resumeLive()">Reprendre</button></div></div>'; }
-  h+='<div class="row" style="gap:10px;margin-bottom:14px"><button class="btn" onclick="openCreate()">＋ Créer</button><button class="btn ghost" onclick="openLibBrowse()">📚 Bibliothèque</button></div>';
+  if(DB.load('live_paused')){ const sv=DB.load('live_paused'); h+='<div class="card" style="border-color:var(--warn);background:rgba(255,180,84,.08)"><div class="row"><div><div style="font-weight:700">Séance en pause</div><div style="font-size:12px;color:var(--muted)">'+sv.prog.name+'</div></div><button class="btn sm" style="width:auto;padding:8px 14px" onclick="resumeLive()">Reprendre</button></div></div>'; }
+  h+='<div class="row" style="gap:10px;margin-bottom:14px"><button class="btn" onclick="openCreate()">＋ Créer</button><button class="btn ghost" onclick="openLibBrowse()">Bibliothèque</button></div>';
   h+='<div class="lab" style="margin:6px 0 10px">Programmes par défaut</div>';
   PROGS.forEach((p,i)=>{
     h+='<div class="card" onclick="openProg(\''+p.id+'\')" style="cursor:pointer"><div class="row"><div><div class="badge" style="margin-bottom:8px">'+p.id+'</div><div style="font-weight:700;font-size:16px">'+p.name+'</div><div style="font-size:12px;color:var(--muted);margin-top:3px">'+p.ex.length+' exercices · '+p.ex.reduce((a,e)=>a+e.sets,0)+' séries</div></div>'+exThumb(p.ex[0].name,52)+'</div></div>';
@@ -6000,7 +6014,7 @@ function renderMuscu(){
   if(custs.length){
     h+='<div class="lab" style="margin:16px 0 10px">Mes créations</div>';
     custs.forEach(p=>{
-      h+='<div class="card"><div class="row"><div onclick="openProg(\''+p.id+'\')" style="flex:1"><div style="font-weight:700;font-size:16px">'+p.name+'</div><div style="font-size:12px;color:var(--muted);margin-top:3px">'+p.objective+' · '+p.ex.length+' exos</div></div><button class="x" onclick="delProg(\''+p.id+'\')">🗑</button></div></div>';
+      h+='<div class="card"><div class="row"><div onclick="openProg(\''+p.id+'\')" style="flex:1"><div style="font-weight:700;font-size:16px">'+p.name+'</div><div style="font-size:12px;color:var(--muted);margin-top:3px">'+p.objective+' · '+p.ex.length+' exos</div></div><button class="x" onclick="delProg(\''+p.id+'\')">'+ICN('trash',16)+'</button></div></div>';
     });
   }
   return h;
@@ -6011,7 +6025,7 @@ function exThumb(name,size){
   const g=exGif(name); size=size||64;
   if(g) return '<div style="width:'+size+'px;height:'+size+'px;border-radius:12px;background:#0c0f15 url('+g[0]+') center/cover;flex-shrink:0;border:1px solid var(--hair)"></div>';
   const e=findEx(name);
-  return '<div style="width:'+size+'px;height:'+size+'px;border-radius:12px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;border:1px solid var(--hair)">'+((e&&e.anim)||'🏋️')+'</div>';
+  return '<div style="width:'+size+'px;height:'+size+'px;border-radius:12px;background:var(--s2);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid var(--hair)">'+exGlyph(e,Math.round(size*0.55))+'</div>';
 }
 function progDuration(p){ return p.ex.reduce((a,e)=>a+e.sets*1.8,0); } // estimation min
 function openProg(id){
@@ -6020,8 +6034,8 @@ function openProg(id){
   const totalSets=p.ex.reduce((a,e)=>a+(e.sets||0),0);
   const dur=Math.round(progDuration(p));
   const lvl=p.objective||t('lvlIntermediate');
-  let h='<div class="row" style="margin-bottom:6px"><div class="man" style="font-weight:800;font-size:22px">'+(p.icon?p.icon+' ':'')+p.name+'</div></div>';
-  h+='<div class="row" style="gap:8px;margin-bottom:14px"><span class="badge">'+lvl+'</span><span style="font-size:12px;color:var(--muted)">⏱ '+tp('exercisesCount',p.ex.length)+'</span></div>';
+  let h='<div class="row" style="margin-bottom:6px"><div class="man" style="font-weight:800;font-size:22px;display:flex;align-items:center;gap:8px">'+(p.icon&&ICONS[p.icon]?ICN(p.icon,20,'var(--e)'):'')+p.name+'</div></div>';
+  h+='<div class="row" style="gap:8px;margin-bottom:14px"><span class="badge">'+lvl+'</span><span style="font-size:12px;color:var(--muted)">'+tp('exercisesCount',p.ex.length)+'</span></div>';
   // Carte stats
   h+='<div class="card" style="padding:0;overflow:hidden"><div style="display:flex;text-align:center">'+
     '<div style="flex:1;padding:14px 6px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0 0 4px">'+t('exercisesCap')+'</div><div class="man" style="font-weight:800;font-size:20px;color:var(--e)">'+p.ex.length+'</div></div>'+
@@ -6034,7 +6048,7 @@ function openProg(id){
       '<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15px;line-height:1.25">'+e.name+'</div>'+
       '<div class="muscle-tags" style="margin-top:5px">'+(e.muscles||[]).slice(0,2).map(m=>'<span class="mtag">'+m+'</span>').join('')+'</div>'+
       '<div style="font-size:12px;color:var(--muted);margin-top:6px">'+tp('setsRepsLine',e.sets,e.reps)+'</div>'+
-      '<div style="font-size:11px;color:var(--dim);margin-top:3px">⏱ ~'+Math.round(e.sets*1.8)+' min</div></div>'+
+      '<div style="font-size:11px;color:var(--dim);margin-top:3px">~'+Math.round(e.sets*1.8)+' min</div></div>'+
       '<span style="color:var(--dim);font-size:18px;align-self:center">›</span></div></div>';
   });
   h+='<button class="btn ghost" style="margin:4px 0 12px" onclick="openLibFor(addExToProg.bind(null,\''+p.id+'\'))">＋ '+t('addExercise')+'</button>';
@@ -6157,11 +6171,11 @@ function renderExDetail(){
     if(g){
       h+='<div style="position:relative;background:#0c0f15;border:1px solid var(--hair);border-radius:16px;overflow:hidden;margin-bottom:14px"><img id="exDemo" src="'+g[0]+'" style="width:100%;display:block;aspect-ratio:16/11;object-fit:cover"></div>';
     } else {
-      h+='<div style="background:linear-gradient(135deg,var(--s2),var(--s1));border:1px solid var(--hair);border-radius:16px;padding:36px;text-align:center;margin-bottom:14px"><div style="font-size:64px;animation:demoFloat 1.5s infinite">'+(e.anim||'🏋️')+'</div></div>';
+      h+='<div style="background:linear-gradient(135deg,var(--s2),var(--s1));border:1px solid var(--hair);border-radius:16px;padding:36px;text-align:center;margin-bottom:14px"><div style="animation:demoFloat 1.5s infinite">'+exGlyph(e,64)+'</div></div>';
     }
     h+='<div class="card"><div class="card-t">'+t('aboutExerciseTitle')+'</div><div style="font-size:13px;color:var(--muted);line-height:1.55">'+tp('exWorksMainly',trExName(e.name),((f.primary||[]).map(trMuscle).join(', ')||t('severalMuscleGroups')))+(f.secondary&&f.secondary.length?tp('exWorksAlsoSecondary',f.secondary.map(trMuscle).join(', ')):'')+'.</div></div>';
     // Repos
-    h+='<div class="card"><div class="row"><div class="row" style="gap:10px"><span style="font-size:18px">⏱</span><div><div style="font-size:11px;color:var(--muted)">'+t('restBetweenSetsLabel')+'</div><div style="font-weight:700">'+(e.rest||90)+'s</div></div></div></div></div>';
+    h+='<div class="card"><div class="row"><div class="row" style="gap:10px"><span style="font-size:18px"></span><div><div style="font-size:11px;color:var(--muted)">'+t('restBetweenSetsLabel')+'</div><div style="font-weight:700">'+(e.rest||90)+'s</div></div></div></div></div>';
     // mini stats
     const vol=(e.sets||3)*(parseInt(e.reps)||10)*(e.weight||0);
     h+='<div class="card" style="padding:0;overflow:hidden"><div style="display:flex;text-align:center"><div style="flex:1;padding:13px 4px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0">'+t('setsCap')+'</div><div class="man" style="font-weight:800;font-size:18px">'+e.sets+'</div></div><div style="flex:1;padding:13px 4px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0">'+t('volumeCap')+'</div><div class="man" style="font-weight:800;font-size:18px">'+vol+' kg</div></div><div style="flex:1;padding:13px 4px"><div class="lab" style="margin:0">'+t('durationCap')+'</div><div class="man" style="font-weight:800;font-size:18px">~'+Math.round(e.sets*1.8)+'min</div></div></div></div>';
@@ -6180,11 +6194,11 @@ function renderExDetail(){
     if(f.equip) h+='<div class="card"><div class="row"><span class="lab">'+t('equipmentLabel')+'</span><span style="font-weight:600">'+trEquip(f.equip)+'</span></div></div>';
   } else {
     // Instructions + Conseils réunis dans le même onglet
-    h+='<div class="card"><div class="card-t">📋 '+t('executionLabel')+'</div>'+((f.steps&&f.steps.length)?f.steps.map((s,i)=>'<div class="tip" style="margin-bottom:6px"><b style="color:var(--e)">'+(i+1)+'.</b> '+s+'</div>').join(''):'<div style="font-size:13px;color:var(--muted)">'+t('defaultExecutionHint')+'</div>')+'</div>';
-    if(f.breathing) h+='<div class="card"><div class="card-t">🌬️ '+t('breathingLabel')+'</div><div class="tip">'+f.breathing+'</div></div>';
-    if(f.tips&&f.tips.length) h+='<div class="card"><div class="card-t">✅ '+t('adviceLabel')+'</div>'+f.tips.map(x=>'<div class="tip" style="margin-bottom:6px">'+x+'</div>').join('')+'</div>';
-    if(f.mistakes&&f.mistakes.length) h+='<div class="card"><div class="card-t" style="color:var(--bad)">⚠️ '+t('commonMistakesLabel')+'</div>'+f.mistakes.map(x=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(255,92,108,.3);background:rgba(255,92,108,.08)">✗ '+x+'</div>').join('')+'</div>';
-    if(f.safety&&f.safety.length) h+='<div class="card"><div class="card-t">🛡️ '+t('safetyLabel')+'</div>'+f.safety.map(x=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(51,211,153,.3);background:rgba(51,211,153,.08)">'+x+'</div>').join('')+'</div>';
+    h+='<div class="card"><div class="card-t">'+ICN('clipboard',15,'var(--e)')+t('executionLabel')+'</div>'+((f.steps&&f.steps.length)?f.steps.map((s,i)=>'<div class="tip" style="margin-bottom:6px"><b style="color:var(--e)">'+(i+1)+'.</b> '+s+'</div>').join(''):'<div style="font-size:13px;color:var(--muted)">'+t('defaultExecutionHint')+'</div>')+'</div>';
+    if(f.breathing) h+='<div class="card"><div class="card-t">'+ICN('lung',15,'var(--e)')+t('breathingLabel')+'</div><div class="tip">'+f.breathing+'</div></div>';
+    if(f.tips&&f.tips.length) h+='<div class="card"><div class="card-t">'+ICN('check',15,'var(--e)')+t('adviceLabel')+'</div>'+f.tips.map(x=>'<div class="tip" style="margin-bottom:6px">'+x+'</div>').join('')+'</div>';
+    if(f.mistakes&&f.mistakes.length) h+='<div class="card"><div class="card-t" style="color:var(--bad)">'+ICN('warning',15,'var(--e)')+t('commonMistakesLabel')+'</div>'+f.mistakes.map(x=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(255,92,108,.3);background:rgba(255,92,108,.08)">'+x+'</div>').join('')+'</div>';
+    if(f.safety&&f.safety.length) h+='<div class="card"><div class="card-t">'+ICN('shield',15,'var(--e)')+t('safetyLabel')+'</div>'+f.safety.map(x=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(51,211,153,.3);background:rgba(51,211,153,.08)">'+x+'</div>').join('')+'</div>';
   }
   h+='<div class="row" style="gap:10px;margin-top:8px"><button class="btn ghost" onclick="openProg(\''+exDetailCtx.progId+'\')">‹ '+t('back')+'</button><button class="btn" onclick="startLive(\''+exDetailCtx.progId+'\','+exDetailCtx.idx+')">▶ '+t('startLabel')+'</button></div>';
   $('#progBody').innerHTML=h;
@@ -6240,7 +6254,7 @@ function renderLive(){
   let h='<div class="row" style="margin-bottom:12px">'+
     '<span onclick="pauseLive()" style="font-size:20px;color:var(--muted);cursor:pointer;padding:4px 8px">⌄</span>'+
     '<div style="flex:1"></div>'+
-    '<span onclick="openRest(90)" style="font-size:17px;color:var(--muted);cursor:pointer;padding:4px 8px">⏱</span>'+
+    '<span onclick="openRest(90)" style="font-size:17px;color:var(--muted);cursor:pointer;padding:4px 8px"></span>'+
     '<button class="btn sm" style="width:auto;padding:8px 18px;background:linear-gradient(135deg,var(--e),var(--e2))" onclick="finishLive()">'+t('liveFinishBtn')+'</button>'+
     '</div>';
   // Stats : Durée / Volume / Séries
@@ -6257,8 +6271,8 @@ function renderLive(){
     const open=liveOpenEx===i;
     // Swipe à gauche OU à droite pour révéler "Supprimer" — wrap + 2 actions rouges dessous, carte au-dessus qui glisse.
     h+='<div class="ex-swipe-wrap" data-i="'+i+'">'+
-      '<div class="ex-swipe-action left" onclick="confirmDeleteLiveEx('+i+')"><span>🗑</span>'+t('deleteLab2')+'</div>'+
-      '<div class="ex-swipe-action right" onclick="confirmDeleteLiveEx('+i+')"><span>🗑</span>'+t('deleteLab2')+'</div>';
+      '<div class="ex-swipe-action left" onclick="confirmDeleteLiveEx('+i+')"><span>'+ICN('trash',16)+'</span>'+t('deleteLab2')+'</div>'+
+      '<div class="ex-swipe-action right" onclick="confirmDeleteLiveEx('+i+')"><span>'+ICN('trash',16)+'</span>'+t('deleteLab2')+'</div>';
     h+='<div class="card ex-swipe-card" data-i="'+i+'" style="padding:14px'+(allDone?';border-color:rgba(51,211,153,.35)':'')+'">';
     // Entête exercice (tapable) : vignette, nom, chevron, "..." (options)
     h+='<div class="row" style="align-items:flex-start;cursor:pointer" onclick="toggleLiveEx('+i+')">'+exThumb(e.name,48)+
@@ -6270,17 +6284,17 @@ function renderLive(){
     h+='<div id="exBody'+i+'" style="max-height:'+(open?'1400px':'0')+'px;opacity:'+(open?'1':'0')+';overflow:hidden;transition:max-height .32s ease,opacity .22s ease,margin-top .32s ease;margin-top:'+(open?'12':'0')+'px">';
     h+='<div class="row" style="margin-bottom:10px;font-size:12.5px"><span style="color:var(--e);cursor:pointer" onclick="changeRest('+i+')">'+tp('restTimerLab',e.rest?e.rest+'s':t('disabledLab'))+'</span></div>';
     h+='<div style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:8px;text-align:center">'+
-      '<div>'+t('setCol')+'</div><div>'+t('prevCol')+'</div><div>'+t('kgCol')+'</div><div>'+t('repsCol')+'</div><div>✓</div></div>';
+      '<div>'+t('setCol')+'</div><div>'+t('prevCol')+'</div><div>'+t('kgCol')+'</div><div>'+t('repsCol')+'</div><div></div></div>';
     st.log.forEach((s,j)=>{
       h+='<div class="set-swipe-wrap" data-i="'+i+'" data-j="'+j+'">'+
-        '<div class="set-swipe-action left" onclick="deleteLiveSet('+i+','+j+')"><span>🗑</span></div>'+
-        '<div class="set-swipe-action right" onclick="deleteLiveSet('+i+','+j+')"><span>🗑</span></div>'+
+        '<div class="set-swipe-action left" onclick="deleteLiveSet('+i+','+j+')"><span>'+ICN('trash',16)+'</span></div>'+
+        '<div class="set-swipe-action right" onclick="deleteLiveSet('+i+','+j+')"><span>'+ICN('trash',16)+'</span></div>'+
         '<div class="set-swipe-row" data-i="'+i+'" data-j="'+j+'" style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;align-items:center">'+
         '<div style="text-align:center;font-weight:700;color:var(--muted)">'+(j+1)+'</div>'+
         '<div style="text-align:center;font-size:11px;color:var(--dim)">'+(e.weight||20)+'kg×'+(parseInt(e.reps)||10)+'</div>'+
         '<input class="setcell" type="number" inputmode="decimal" value="'+s.kg+'" onchange="setLog('+i+','+j+',\'kg\',this.value)">'+
         '<input class="setcell" type="number" inputmode="numeric" value="'+s.reps+'" onchange="setLog('+i+','+j+',\'reps\',this.value)">'+
-        '<div onclick="toggleSet('+i+','+j+')" style="width:32px;height:32px;border-radius:50%;margin:0 auto;cursor:pointer;display:flex;align-items:center;justify-content:center;background:'+(s.done?'var(--e)':'var(--s2)')+';border:1px solid '+(s.done?'var(--e)':'var(--hair)')+';color:#fff;font-size:14px">'+(s.done?'✓':'')+'</div></div>'+
+        '<div onclick="toggleSet('+i+','+j+')" style="width:32px;height:32px;border-radius:50%;margin:0 auto;cursor:pointer;display:flex;align-items:center;justify-content:center;background:'+(s.done?'var(--e)':'var(--s2)')+';border:1px solid '+(s.done?'var(--e)':'var(--hair)')+';color:#fff;font-size:14px">'+(s.done?'':'')+'</div></div>'+
         '</div>'; // fin .set-swipe-wrap
     });
     h+='<button class="btn ghost sm" style="margin-top:4px" onclick="addLiveSet('+i+')">'+t('addSetBtn')+'</button>';
@@ -6510,13 +6524,13 @@ function finishLive(){
   }});
   DB.remove('live_active');
   saveAll(); refreshXP({animate:true}); burst(); sfx('finish'); stopBgActivity();
-  let h='<div class="popin" style="text-align:center;padding:6px 0"><div style="font-size:50px">🏆</div><div class="man" style="font-weight:800;font-size:22px;margin:8px 0">'+t('sessionDoneTitle')+'</div></div>';
+  let h='<div class="popin" style="text-align:center;padding:6px 0"><div style="display:flex;justify-content:center">'+ICN('medal',50,'var(--or)')+'</div><div class="man" style="font-weight:800;font-size:22px;margin:8px 0">'+t('sessionDoneTitle')+'</div></div>';
   h+='<div class="sgrid" style="margin-bottom:12px"><div class="sbox"><div class="v">'+Math.round(LIVE.tonnage)+'</div><div class="l">'+t('tonnageParenKg')+'</div></div><div class="sbox"><div class="v">'+fmtTime(dur)+'</div><div class="l">'+t('durationLab')+'</div></div><div class="sbox"><div class="v">'+LIVE.setsDone+'</div><div class="l">'+t('setsLab')+'</div></div><div class="sbox"><div class="v">'+totalReps+'</div><div class="l">'+t('repsLab')+'</div></div><div class="sbox"><div class="v">'+cal+'</div><div class="l">'+t('caloriesLab')+'</div></div><div class="sbox"><div class="v" style="color:var(--or)">'+prs.length+'</div><div class="l">'+t('recordsBrokenLab')+'</div></div></div>';
   // progression
   if(prevTon){ const diff=Math.round(LIVE.tonnage-prevTon); const up=diff>=0;
-    h+='<div class="tip" style="margin-bottom:12px;'+(up?'border-color:rgba(51,211,153,.3);background:rgba(51,211,153,.08)':'')+'">'+(up?'📈 +':'📉 ')+diff+' kg '+tp('tonnageVsLastLab',LIVE.prog.name)+'</div>'; }
+    h+='<div class="tip" style="margin-bottom:12px;'+(up?'border-color:rgba(51,211,153,.3);background:rgba(51,211,153,.08)':'')+'">'+(up?'+':'')+diff+' kg '+tp('tonnageVsLastLab',LIVE.prog.name)+'</div>'; }
   // PR
-  if(prs.length) h+='<div class="card-t">'+t('newRecordsLab')+'</div>'+prs.map(p=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(242,184,75,.4);background:rgba(242,184,75,.1)">⭐ '+p+'</div>').join('');
+  if(prs.length) h+='<div class="card-t">'+t('newRecordsLab')+'</div>'+prs.map(p=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(242,184,75,.4);background:rgba(242,184,75,.1)">'+p+'</div>').join('');
   // muscles schema
   if(Object.keys(muscles).length){ h+='<div class="card-t" style="margin-top:12px">'+t('musclesWorkedLab')+'</div><div class="muscle-tags" style="margin-bottom:12px">'+Object.keys(muscles).map(m=>'<span class="mtag" style="background:var(--ed);color:var(--e);border-color:var(--e)">'+m+'</span>').join('')+'</div>'; }
   h+='<div class="badge" style="width:100%;justify-content:center;padding:14px;margin:6px 0 14px">'+t('xpEarnedLab')+'</div>';
@@ -6526,22 +6540,22 @@ function finishLive(){
 
 /* ---------- CREATE PROGRAM ---------- */
 let newProg=null,libFilter='Tous',libCallback=null;
-const PROG_ICONS=['💪','🏋️','🔥','⚡','🦾','🎯','🏆','🦵','🧗','🤸'];
+const PROG_ICONS=['arms','dumbbell','fire','bolt','back','target','medal','legs','abs','run'];
 const PROG_COLORS=[['--e','colBlue'],['--bad','colRed'],['--ok','colGreen'],['--or','colGold'],['--maitre','colPurple'],['--diamant','colCyan']];
 function openCreate(){
-  newProg={name:'',description:'',objective:'Masse',color:'--e',icon:'💪',ex:[]};
+  newProg={name:'',description:'',objective:'Masse',color:'--e',icon:'arms',ex:[]};
   renderCreate(); openOv('ovCreate');
 }
 function renderCreate(){
   let h='<div class="field"><label>'+t('programNameLab')+'</label><input class="inp" id="npName" value="'+newProg.name+'" oninput="newProg.name=this.value" placeholder="'+t('programNamePh')+'"></div>';
   h+='<div class="field"><label>'+t('descriptionLab')+'</label><textarea class="inp" rows="2" oninput="newProg.description=this.value" placeholder="'+t('descriptionPh')+'">'+(newProg.description||'')+'</textarea></div>';
   h+='<div class="field"><label>'+t('objectiveLab2')+'</label><div class="pills">'+[['Force','objForce'],['Masse','objMass'],['Endurance','objEndurance'],['Perte poids','objWeightLoss'],['Maintien','objMaintain']].map(o=>'<div class="pill '+(newProg.objective===o[0]?'on':'')+'" onclick="newProg.objective=\''+o[0]+'\';renderCreate()">'+t(o[1])+'</div>').join('')+'</div></div>';
-  h+='<div class="field"><label>'+t('iconLab')+'</label><div class="pills">'+PROG_ICONS.map(ic=>'<div class="pill '+(newProg.icon===ic?'on':'')+'" style="font-size:18px" onclick="newProg.icon=\''+ic+'\';renderCreate()">'+ic+'</div>').join('')+'</div></div>';
+  h+='<div class="field"><label>'+t('iconLab')+'</label><div class="pills">'+PROG_ICONS.map(ic=>'<div class="pill '+(newProg.icon===ic?'on':'')+'" onclick="newProg.icon=\''+ic+'\';renderCreate()">'+ICN(ic,18)+'</div>').join('')+'</div></div>';
   h+='<div class="field"><label>'+t('colorLab')+'</label><div class="pills">'+PROG_COLORS.map(c=>'<div class="pill '+(newProg.color===c[0]?'on':'')+'" onclick="newProg.color=\''+c[0]+'\';renderCreate()"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var('+c[0]+');margin-right:6px"></span>'+t(c[1])+'</div>').join('')+'</div></div>';
   h+='<div class="lab" style="margin:10px 0 8px">'+tp('exercisesCountLab',newProg.ex.length)+'</div>';
   if(!newProg.ex.length) h+='<div class="tip" style="margin-bottom:12px">'+t('addExFromLib')+'</div>';
   newProg.ex.forEach((e,i)=>{
-    h+='<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:8px"><span style="font-size:22px">'+e.anim+'</span><div><div style="font-weight:700;font-size:14px">'+e.name+'</div><div class="mono" style="font-size:12px;color:var(--e)">'+e.sets+'×'+e.reps+(e.rest?' · '+e.rest+'s':'')+'</div></div></div><button class="x" onclick="newProg.ex.splice('+i+',1);renderCreate()">🗑</button></div></div>';
+    h+='<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:8px"><span style="font-size:22px">'+e.anim+'</span><div><div style="font-weight:700;font-size:14px">'+e.name+'</div><div class="mono" style="font-size:12px;color:var(--e)">'+e.sets+'×'+e.reps+(e.rest?' · '+e.rest+'s':'')+'</div></div></div><button class="x" onclick="newProg.ex.splice('+i+',1);renderCreate()">'+ICN('trash',16)+'</button></div></div>';
   });
   h+='<button class="btn ghost" style="margin-bottom:12px" onclick="openLibFor(addToNewProg)">'+t('addFromLibBtn')+'</button>';
   h+='<button class="btn" onclick="saveNewProg()">'+t('saveProgramBtn')+'</button>';
@@ -6561,11 +6575,11 @@ function openLibFor(cb){ libCallback=cb; libBrowseMode=false; closeOv('ovCreate'
 function openLibBrowse(){ libCallback=null; libBrowseMode=true; renderLib(); openOv('ovLib'); }
 let libView='grid';
 function renderLib(){
-  let h='<input class="inp" style="margin-bottom:14px" placeholder="🔍 '+t('searchExercisePlaceholder')+'" value="'+libSearch+'" oninput="libSearch=this.value;renderLib();this.focus()">';
+  let h='<input class="inp" style="margin-bottom:14px" placeholder="'+t('searchExercisePlaceholder')+'" value="'+libSearch+'" oninput="libSearch=this.value;renderLib();this.focus()">';
   // Tuiles muscle en photo — navigation visuelle rapide, comme une planche anatomique
   h+='<div class="lab" style="margin-bottom:8px">'+t('muscleLabel')+'</div><div class="mtile-row">'+MUSCLE_GROUPS.map(m=>{
     const img=muscleRepImg(m); const on=libFilter===m;
-    return '<div class="mtile '+(on?'on':'')+'" onclick="libFilter=\''+m+'\';renderLib()"><div class="mtile-img" '+(img?'style="background-image:url(\''+img+'\')"':'')+'>'+(img?'':MUSCLE_ICONS[m]||'🏋️')+'</div><div class="mtile-lab">'+(m==='Tous'?t('filterAll'):trMuscle(m))+'</div></div>';
+    return '<div class="mtile '+(on?'on':'')+'" onclick="libFilter=\''+m+'\';renderLib()"><div class="mtile-img" '+(img?'style="background-image:url(\''+img+'\')"':'')+'>'+(img?'':ICN(MUSCLE_ICONS[m]||'dumbbell',24,'var(--e)'))+'</div><div class="mtile-lab">'+(m==='Tous'?t('filterAll'):trMuscle(m))+'</div></div>';
   }).join('')+'</div>';
   h+='<div class="lab" style="margin-bottom:6px">'+t('equipmentLabel')+'</div><div class="pills" style="margin-bottom:10px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px">'+EQUIPMENT.map(m=>'<div class="pill '+(libFilterEquip===m?'on':'')+'" onclick="libFilterEquip=\''+m+'\';renderLib()">'+(m==='Tous'?t('filterAll'):trEquip(m))+'</div>').join('')+'</div>';
   h+='<div class="lab" style="margin-bottom:6px">'+t('levelLabel')+'</div><div class="pills" style="margin-bottom:14px">'+['Tous',...LEVELS].map(m=>'<div class="pill '+(libFilterLevel===m?'on':'')+'" onclick="libFilterLevel=\''+m+'\';renderLib()">'+(m==='Tous'?t('filterAll'):trLevel(m))+'</div>').join('')+'</div>';
@@ -6577,13 +6591,13 @@ function renderLib(){
     if(q && !e.name.toLowerCase().includes(q) && !trExName(e.name).toLowerCase().includes(q)) return false;
     return true;
   });
-  h+='<div class="row" style="margin-bottom:8px"><div class="lab" style="flex:1">'+list.length+' '+(list.length>1?t('exercisesWordPlural'):t('exerciseWordSingular'))+'</div><div style="display:flex;gap:6px"><span class="mini-ic" style="'+(libView==='grid'?'color:var(--e);border-color:var(--e)':'')+'" onclick="libView=\'grid\';renderLib()">▦</span><span class="mini-ic" style="'+(libView==='list'?'color:var(--e);border-color:var(--e)':'')+'" onclick="libView=\'list\';renderLib()">☰</span></div></div>';
+  h+='<div class="row" style="margin-bottom:8px"><div class="lab" style="flex:1">'+list.length+' '+(list.length>1?t('exercisesWordPlural'):t('exerciseWordSingular'))+'</div><div style="display:flex;gap:6px"><span class="mini-ic" style="'+(libView==='grid'?'color:var(--e);border-color:var(--e)':'')+'" onclick="libView=\'grid\';renderLib()">▦</span><span class="mini-ic" style="'+(libView==='list'?'color:var(--e);border-color:var(--e)':'')+'" onclick="libView=\'list\';renderLib()"></span></div></div>';
   if(libView==='grid'){
     h+='<div class="exg-grid">';
     list.forEach(e=>{
       const nm=e.name.replace(/"/g,'&quot;'); const g=exGif(e.name); const lvCol=e.level==='Débutant'?'--ok':e.level==='Avancé'?'--bad':'--warn';
       h+='<div class="exg-card" onclick=\'openFiche("'+nm+'")\'>'+
-        '<div class="exg-img" '+(g?'style="background-image:url(\''+g[0]+'\')"':'')+'>'+(g?'':'<span>'+e.anim+'</span>')+
+        '<div class="exg-img" '+(g?'style="background-image:url(\''+g[0]+'\')"':'')+'>'+(g?'':'<span style="display:inline-flex">'+exGlyph(e,22)+'</span>')+
         (libBrowseMode?'':'<span class="exg-add" onclick=\'event.stopPropagation();pickEx("'+nm+'")\'>＋</span>')+
         '</div><div class="exg-body"><div class="exg-name">'+trExName(e.name)+'</div><div class="exg-sub">'+trEquip(e.equip)+' · <span style="color:var('+lvCol+')">'+trLevel(e.level)+'</span></div></div></div>';
     });
@@ -6601,28 +6615,28 @@ function pickEx(name){ const e=findEx(name); if(libCallback) libCallback(e); els
 function openFiche(name){
   const f=exMeta(name); if(!f) return;
   const lvCol=f.level==='Débutant'?'--ok':f.level==='Avancé'?'--bad':'--warn';
-  let h='<div style="text-align:center;margin-bottom:14px"><div style="font-size:64px;animation:popIn .5s">'+f.anim+'</div><div class="man" style="font-weight:800;font-size:20px;margin-top:4px">'+trExName(f.name)+'</div><div style="margin-top:8px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap"><span class="badge">'+trEquip(f.equip)+'</span><span class="badge" style="background:var(--ed);color:var('+lvCol+')">'+trLevel(f.level)+'</span></div></div>';
+  let h='<div style="text-align:center;margin-bottom:14px"><div style="animation:popIn .5s">'+exGlyph(f,64)+'</div><div class="man" style="font-weight:800;font-size:20px;margin-top:4px">'+trExName(f.name)+'</div><div style="margin-top:8px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap"><span class="badge">'+trEquip(f.equip)+'</span><span class="badge" style="background:var(--ed);color:var('+lvCol+')">'+trLevel(f.level)+'</span></div></div>';
   // visuel animé (placeholder élégant simulant un GIF/avatar)
   if(f.gif){
     // Démonstration animée réelle (2 frames alternées = mouvement)
     h+='<div style="position:relative;background:#fff;border:1px solid var(--hair);border-radius:18px;overflow:hidden;margin-bottom:14px">'+
       '<img id="exDemo" src="'+f.gif[0]+'" alt="démonstration" style="width:100%;display:block;aspect-ratio:5/4;object-fit:cover" onerror="this.parentNode.style.display=\'none\';document.getElementById(\'exDemoFallback\').style.display=\'block\'">'+
       '<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));padding:10px 12px 8px;display:flex;align-items:center;gap:6px;font-size:11px;color:#fff;font-weight:700"><span style="width:7px;height:7px;border-radius:50%;background:var(--e);animation:demoPulse 1s infinite"></span>'+t('movementDemoCap')+'</div></div>';
-    h+='<div id="exDemoFallback" style="display:none;position:relative;background:linear-gradient(135deg,var(--s2),var(--s1));border:1px solid var(--hair);border-radius:18px;padding:34px 16px;text-align:center;margin-bottom:14px"><div style="font-size:68px;animation:demoFloat 1.5s ease-in-out infinite">'+f.anim+'</div><div style="font-size:11px;color:var(--dim);margin-top:8px">'+t('movementDemo')+'</div></div>';
+    h+='<div id="exDemoFallback" style="display:none;position:relative;background:linear-gradient(135deg,var(--s2),var(--s1));border:1px solid var(--hair);border-radius:18px;padding:34px 16px;text-align:center;margin-bottom:14px"><div style="animation:demoFloat 1.5s ease-in-out infinite">'+exGlyph(f,68)+'</div><div style="font-size:11px;color:var(--dim);margin-top:8px">'+t('movementDemo')+'</div></div>';
     startExDemo(f.gif);
   } else {
     h+='<div style="position:relative;background:linear-gradient(135deg,var(--s2),var(--s1));border:1px solid var(--hair);border-radius:18px;padding:34px 16px;text-align:center;margin-bottom:14px;overflow:hidden">'+
       '<div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 40%,var(--ed),transparent 70%)"></div>'+
-      '<div style="position:relative;font-size:68px;animation:demoFloat 1.5s ease-in-out infinite;filter:drop-shadow(0 6px 14px rgba(0,0,0,.4))">'+f.anim+'</div>'+
+      '<div style="position:relative;animation:demoFloat 1.5s ease-in-out infinite;filter:drop-shadow(0 6px 14px rgba(0,0,0,.4))">'+exGlyph(f,68)+'</div>'+
       '<div style="position:relative;display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:11px;color:var(--e);font-weight:700"><span style="width:7px;height:7px;border-radius:50%;background:var(--e);animation:demoPulse 1s infinite"></span>'+t('movementDemoCap')+'</div></div>';
   }
-  h+='<div class="card-t">🎯 '+t('musclesWorked')+'</div><div style="margin-bottom:12px"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">'+t('primaryLabel')+'</div><div class="muscle-tags">'+(f.primary||[]).map(m=>'<span class="mtag" style="background:var(--ed);color:var(--e);border-color:var(--e)">'+trMuscle(m)+'</span>').join('')+'</div>'+((f.secondary&&f.secondary.length)?'<div style="font-size:12px;color:var(--muted);margin:8px 0 4px">'+t('secondaryLabel')+'</div><div class="muscle-tags">'+f.secondary.map(m=>'<span class="mtag">'+trMuscle(m)+'</span>').join('')+'</div>':'')+'</div>';
-  h+='<div class="card-t">📋 '+t('stepByStepExecution')+'</div>'+f.steps.map((s,i)=>'<div class="tip" style="margin-bottom:6px"><b style="color:var(--e)">'+(i+1)+'.</b> '+s+'</div>').join('');
-  h+='<div class="card-t" style="margin-top:14px">🌬️ '+t('breathingLabel')+'</div><div class="tip">'+f.breathing+'</div>';
-  h+='<div class="card-t" style="margin-top:14px;color:var(--bad)">⚠️ '+t('commonMistakesLabel')+'</div>'+f.mistakes.map(m=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(255,92,108,.3);background:rgba(255,92,108,.08)">✗ '+m+'</div>').join('');
-  h+='<div class="card-t" style="margin-top:14px">✅ '+t('coachTipsLabel')+'</div>'+f.tips.map(tt=>'<div class="tip" style="margin-bottom:6px">'+tt+'</div>').join('');
-  h+='<div class="card-t" style="margin-top:14px">🛡️ '+t('safetyLabel')+'</div>'+f.safety.map(s=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(51,211,153,.3);background:rgba(51,211,153,.08)">'+s+'</div>').join('');
-  if(f.variants&&f.variants.length){ h+='<div class="card-t" style="margin-top:14px">🔁 '+t('variantsLabel')+'</div><div class="pills">'+f.variants.map(v=>'<div class="pill" onclick=\'openFiche("'+v.replace(/"/g,'&quot;')+'")\'>'+trExName(v)+'</div>').join('')+'</div>'; }
+  h+='<div class="card-t">'+ICN('target',15,'var(--e)')+t('musclesWorked')+'</div><div style="margin-bottom:12px"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">'+t('primaryLabel')+'</div><div class="muscle-tags">'+(f.primary||[]).map(m=>'<span class="mtag" style="background:var(--ed);color:var(--e);border-color:var(--e)">'+trMuscle(m)+'</span>').join('')+'</div>'+((f.secondary&&f.secondary.length)?'<div style="font-size:12px;color:var(--muted);margin:8px 0 4px">'+t('secondaryLabel')+'</div><div class="muscle-tags">'+f.secondary.map(m=>'<span class="mtag">'+trMuscle(m)+'</span>').join('')+'</div>':'')+'</div>';
+  h+='<div class="card-t">'+ICN('clipboard',15,'var(--e)')+t('stepByStepExecution')+'</div>'+f.steps.map((s,i)=>'<div class="tip" style="margin-bottom:6px"><b style="color:var(--e)">'+(i+1)+'.</b> '+s+'</div>').join('');
+  h+='<div class="card-t" style="margin-top:14px">'+ICN('lung',15,'var(--e)')+t('breathingLabel')+'</div><div class="tip">'+f.breathing+'</div>';
+  h+='<div class="card-t" style="margin-top:14px;color:var(--bad)">'+ICN('warning',15,'var(--e)')+t('commonMistakesLabel')+'</div>'+f.mistakes.map(m=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(255,92,108,.3);background:rgba(255,92,108,.08)">'+m+'</div>').join('');
+  h+='<div class="card-t" style="margin-top:14px">'+ICN('check',15,'var(--e)')+t('coachTipsLabel')+'</div>'+f.tips.map(tt=>'<div class="tip" style="margin-bottom:6px">'+tt+'</div>').join('');
+  h+='<div class="card-t" style="margin-top:14px">'+ICN('shield',15,'var(--e)')+t('safetyLabel')+'</div>'+f.safety.map(s=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(51,211,153,.3);background:rgba(51,211,153,.08)">'+s+'</div>').join('');
+  if(f.variants&&f.variants.length){ h+='<div class="card-t" style="margin-top:14px">'+ICN('refresh',15,'var(--e)')+t('variantsLabel')+'</div><div class="pills">'+f.variants.map(v=>'<div class="pill" onclick=\'openFiche("'+v.replace(/"/g,'&quot;')+'")\'>'+trExName(v)+'</div>').join('')+'</div>'; }
   if(libCallback) h+='<button class="btn" style="margin-top:18px" onclick=\'pickEx("'+f.name.replace(/"/g,'&quot;')+'")\'>＋ '+t('addToProgram')+'</button>';
   $('#libBody').innerHTML=h;
 }
@@ -6648,13 +6662,13 @@ function openCfg(e,cb){
 }
 function renderCfg(){
   const s=cfgState;
-  let h='<div style="text-align:center;margin-bottom:14px"><span style="font-size:40px">'+s.anim+'</span><div class="man" style="font-weight:800;font-size:18px;margin-top:4px">'+s.name+'</div></div>';
+  let h='<div style="text-align:center;margin-bottom:14px"><span style="display:inline-flex">'+exGlyph(s,40)+'</span><div class="man" style="font-weight:800;font-size:18px;margin-top:4px">'+s.name+'</div></div>';
   h+='<div class="field"><label>Séries</label><div class="stepper"><button onclick="cfgAdj(\'sets\',-1)">−</button><span class="val" id="cfSets">'+s.sets+'</span><button onclick="cfgAdj(\'sets\',1)">+</button></div></div>';
   h+='<div class="field"><label>Répétitions</label><div class="pills" style="margin-bottom:8px">'+['6','8','10','12','15'].map(r=>'<div class="pill '+(s.reps===r&&!s.amrap?'on':'')+'" onclick="cfgState.reps=\''+r+'\';cfgState.amrap=false;renderCfg()">'+r+'</div>').join('')+'<div class="pill '+(s.amrap?'on':'')+'" onclick="cfgState.amrap=true;cfgState.reps=\'AMRAP\';renderCfg()">AMRAP</div></div></div>';
   h+='<div class="field"><label>Charge (kg)</label><div class="stepper"><button onclick="cfgAdj(\'weight\',-2.5)">−</button><button onclick="cfgAdj(\'weight\',-5)" style="font-size:12px">−5</button><span class="val" id="cfW">'+s.weight+'</span><button onclick="cfgAdj(\'weight\',5)" style="font-size:12px">+5</button><button onclick="cfgAdj(\'weight\',2.5)">+</button></div><div class="pills" style="margin-top:8px">'+[20,40,60,80,100].map(w=>'<div class="pill" onclick="cfgState.weight='+w+';renderCfg()">'+w+'kg</div>').join('')+'</div></div>';
   h+='<div class="field"><label>Repos</label><div class="pills">'+[60,90,120,180].map(r=>'<div class="pill '+(s.rest===r?'on':'')+'" onclick="cfgState.rest='+r+';renderCfg()">'+r+'s</div>').join('')+'</div></div>';
   h+='<div class="field"><label>Notes personnelles (optionnel)</label><textarea class="inp" rows="2" oninput="cfgState.note=this.value" placeholder="ex: bien serrer les omoplates">'+(s.note||'')+'</textarea></div>';
-  h+='<button class="btn" onclick="saveCfg()">✓ Ajouter</button>';
+  h+='<button class="btn" onclick="saveCfg()">Ajouter</button>';
   $('#cfgBody').innerHTML=h;
 }
 function cfgAdj(k,v){ cfgState[k]=Math.max(k==='weight'?0:1,cfgState[k]+v); renderCfg(); }
@@ -6765,7 +6779,7 @@ function statsBilan(){
   // CARTE KILOMÉTRAGE — gros chiffre + delta + barres avec ligne de moyenne
   h+='<div class="kchart-card">'+
     '<div class="kchart-top"><div><div class="kchart-lab">'+t('mileage')+'</div><div class="kchart-val">'+km.toFixed(1)+'<span>'+t('kmCumulated')+'</span></div></div>'+
-    (deltaPct!==null?'<div><div class="kchart-delta'+(deltaPct<0?' bad':'')+'">'+(deltaPct>0?'↑ ':deltaPct<0?'↓ ':'')+Math.abs(deltaPct)+'%</div><div class="kchart-delta-sub">'+t('vsPrevPeriod')+'</div></div>':'')+
+    (deltaPct!==null?'<div><div class="kchart-delta'+(deltaPct<0?' bad':'')+'">'+(deltaPct>0?'':deltaPct<0?'':'')+Math.abs(deltaPct)+'%</div><div class="kchart-delta-sub">'+t('vsPrevPeriod')+'</div></div>':'')+
     '</div>'+
     kBarsHTML(bars.labels,bars.values,per==='week'?((new Date().getDay()+6)%7):null)+
   '</div>';
@@ -6803,12 +6817,12 @@ function statsBilan(){
   h+='<div class="kinsights-head">'+t('insightsTitle')+'</div>';
   h+='<div class="krow3">'+
     '<div class="ktile"><div class="ktile-lab">'+t('kmPerSession')+'</div><div class="ktile-val">'+avgKmSess.toFixed(1)+' km</div>'+
-      (avgDelta!==null?'<div class="ktile-sub'+(avgDelta<0?' bad':'')+'">'+(avgDelta>0?'↑ ':avgDelta<0?'↓ ':'')+Math.abs(avgDelta)+'% '+t('vsPrevShort')+'</div>':'<div class="ktile-sub" style="color:var(--muted)">—</div>')+
+      (avgDelta!==null?'<div class="ktile-sub'+(avgDelta<0?' bad':'')+'">'+(avgDelta>0?'':avgDelta<0?'':'')+Math.abs(avgDelta)+'% '+t('vsPrevShort')+'</div>':'<div class="ktile-sub" style="color:var(--muted)">—</div>')+
     '</div>'+
     '<div class="ktile" style="text-align:center"><div class="ktile-lab">'+t('sessionTypesLabel')+'</div>'+
       '<div class="ktile-donut">'+donutSVG(typeSegs,50,9,'')+'</div>'+
     '</div>'+
-    '<div class="ktile"><span class="ktile-star">⭐</span><div class="ktile-lab">'+bestLab+'</div>'+
+    '<div class="ktile"><span class="ktile-star">'+ICN('star',16,'var(--or)')+'</span><div class="ktile-lab">'+bestLab+'</div>'+
       '<div class="ktile-val">'+bars.labels[bestI]+'</div>'+
       '<div class="ktile-sub">'+bars.values[bestI].toFixed(1)+' km</div>'+
     '</div>'+
@@ -6883,7 +6897,7 @@ function formChart(){
 function statsMuscu(){
   const pr=MSESS.reduce((a,s)=>Math.max(a,s.tonnage||0),0);
   let h='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+MSESS.length+'</div><div class="l">'+t('sessionsCap')+'</div></div><div class="sbox"><div class="v">'+(totalTonnage()/1000).toFixed(1)+'t</div><div class="l">'+t('tonnageLab')+'</div></div><div class="sbox"><div class="v">'+Math.round(pr)+'</div><div class="l">'+t('prPerSession')+'</div></div><div class="sbox"><div class="v">'+MSESS.reduce((a,s)=>a+(s.sets||0),0)+'</div><div class="l">'+t('totalSets')+'</div></div></div>';
-  if(!MSESS.length) h+='<div class="card"><div class="empty"><div class="em-ic">🏋️</div><div style="font-size:13px">'+t('startFirstMuscu')+'</div></div></div>';
+  if(!MSESS.length) h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('dumbbell',36,'currentColor')+'</div><div style="font-size:13px">'+t('startFirstMuscu')+'</div></div></div>';
   else h+='<div class="card"><div class="card-t">'+t('lastSessions')+'</div>'+MSESS.slice(-6).reverse().map(s=>'<div class="zrow"><div><div class="zname">'+s.progName+'</div><div style="font-size:11px;color:var(--dim)">'+fmtDate(s.date)+'</div></div><span class="zval mono">'+Math.round(s.tonnage)+' kg</span></div>').join('')+'</div>';
   return h;
 }
@@ -6924,17 +6938,17 @@ function achNouveauPB(){
 }
 function ACHIEVEMENTS_DEF(){ return [
   {key:'premiere',    name:t('ach_premiere_name'),  img:'premiere.png',    cat:'Accomplissement', cls:'bd-debutant', desc:t('ach_premiere_desc'),            auto:()=>SESS.some(s=>s.type==='Course')},
-  {key:'cinqk',       name:t('ach_cinqk_name'),      img:'cinqk.png',       emoji:'🏃',            cat:'Accomplissement', cls:'bd-amateur',  desc:t('ach_cinqk_desc'),   auto:()=>SESS.some(s=>s.km>5)},
-  {key:'dixk',        name:t('ach_dixk_name'),       img:'dixk.png',        emoji:'🏁',            cat:'Accomplissement', cls:'bd-sportif',  desc:t('ach_dixk_desc'),  auto:()=>SESS.some(s=>s.km>10)},
+  {key:'cinqk',       name:t('ach_cinqk_name'),      img:'cinqk.png',       emoji:'run',            cat:'Accomplissement', cls:'bd-amateur',  desc:t('ach_cinqk_desc'),   auto:()=>SESS.some(s=>s.km>5)},
+  {key:'dixk',        name:t('ach_dixk_name'),       img:'dixk.png',        emoji:'flag',            cat:'Accomplissement', cls:'bd-sportif',  desc:t('ach_dixk_desc'),  auto:()=>SESS.some(s=>s.km>10)},
   {key:'serie',       name:t('ach_serie_name'),      img:'serie.png',       cat:'Accomplissement', cls:'bd-athlete',  desc:t('ach_serie_desc'), auto:()=>bestStreak()>=30},
   {key:'denivele',    name:t('ach_denivele_name'),   img:'denivele.png',    cat:'Accomplissement', cls:'bd-expert',   desc:t('ach_denivele_desc'),      auto:()=>SESS.some(s=>(s.deniv||0)>200)},
   {key:'podium',      name:t('ach_podium_name'),     img:'podium.png',      cat:'Accomplissement', cls:'bd-elite',    desc:t('ach_podium_desc'), manual:true},
   {key:'objectif',    name:t('ach_objectif_name'),   img:'objectif.png',    cat:'Accomplissement', cls:'bd-maitre',   desc:t('ach_objectif_desc'), auto:achObjectifReached},
-  {key:'nouveaupb',   name:t('ach_nouveaupb_name'),  img:'nouveaupb.png',   emoji:'🥇',            cat:'Performance',      cls:'bd-legende', desc:t('ach_nouveaupb_desc'), auto:achNouveauPB},
+  {key:'nouveaupb',   name:t('ach_nouveaupb_name'),  img:'nouveaupb.png',   emoji:'medal',            cat:'Performance',      cls:'bd-legende', desc:t('ach_nouveaupb_desc'), auto:achNouveauPB},
   {key:'allure',      name:t('ach_allure_name'),     img:'allure.png',      cat:'Performance',      cls:'bd-sportif',  desc:t('ach_allure_desc'), auto:()=>SESS.some(s=>s.km>=3 && s.pace && s.pace!=='—' && parseTime(s.pace)>0 && parseTime(s.pace)<=600)},
   {key:'endurance',   name:t('ach_endurance_name'),  img:'endurance.png',   cat:'Performance',      cls:'bd-athlete',  desc:t('ach_endurance_desc'),  auto:()=>SESS.some(s=>s.km>=15)},
   {key:'puissance',   name:t('ach_puissance_name'),  img:'puissance.png',   cat:'Performance',      cls:'bd-expert',   desc:t('ach_puissance_desc'), auto:()=>achWeeklyCount(MSESS,3)},
-  {key:'vo2max',      name:t('ach_vo2max_name'),     img:'vo2max.png',      emoji:'🫁',            cat:'Performance',      cls:'bd-elite',    desc:t('ach_vo2max_desc'), auto:()=>(getUserVDOT()||0)>50},
+  {key:'vo2max',      name:t('ach_vo2max_name'),     img:'vo2max.png',      emoji:'health',            cat:'Performance',      cls:'bd-elite',    desc:t('ach_vo2max_desc'), auto:()=>(getUserVDOT()||0)>50},
   {key:'force',       name:t('ach_force_name'),      img:'force.png',       cat:'Performance',      cls:'bd-maitre',   desc:t('ach_force_desc'), auto:()=>achWeeklySum(MSESS,'tonnage',20000)}
 ]; }
 let ACHIEVEMENTS=ACHIEVEMENTS_DEF();
@@ -7041,7 +7055,7 @@ function previewAchAnim(key){
   ov.innerHTML='<div class="bd-flash"></div>'+
     '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded;margin-bottom:6px">'+t('previewLocked')+'</div>'+
     '<div class="bd-unlock-stage '+(a.cls||'bd-athlete')+'"><div class="bd-rays"></div><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div>'+
-    '<div class="bd-unlock-badge">'+achImg(a)+sparks+'<div class="bd-lock-chip big">🔒</div></div></div>'+
+    '<div class="bd-unlock-badge">'+achImg(a)+sparks+'<div class="bd-lock-chip big">'+ICN('lock',16)+'</div></div></div>'+
     '<div class="man" style="font-weight:800;font-size:26px;margin-top:18px">'+a.name+'</div>'+
     '<div class="bd-preview-cond" style="text-align:center;color:var(--muted);font-size:13px;margin-top:8px;max-width:280px">'+a.desc+'</div>'+
     (a.manual?'<button type="button" class="btn sm" style="width:auto;margin-top:20px;padding:11px 26px" data-mark>'+t('markAsObtained')+'</button>':'')+
@@ -7054,17 +7068,17 @@ function previewAchAnim(key){
 }
 function achImgErr(img){
   if(img.dataset.stage!=='1'){ img.dataset.stage='1'; img.src='badges/'+img.dataset.file; return; }
-  const span=document.createElement('span'); span.className='bd-glyph bd-emoji'; span.textContent='🏵️'; img.replaceWith(span);
+  const span=document.createElement('span'); span.className='bd-glyph bd-emoji'; span.innerHTML=ICN('medal',28,'var(--e)'); img.replaceWith(span);
 }
 function achImg(a){
-  if(!a.img) return '<span class="bd-emoji">'+(a.emoji||'🏵️')+'</span>';
+  if(!a.img) return '<span class="bd-emoji">'+ICN((a.emoji&&ICONS[a.emoji])?a.emoji:'medal',28,'var(--e)')+'</span>';
   return '<img class="bd-glyph" src="'+a.img+'" data-file="'+a.img+'" data-stage="0" alt="" draggable="false" loading="lazy" onerror="achImgErr(this)">';
 }
 function achievementsGridHTML(){
   const cats=['Accomplissement','Performance'];
   const unlockedCount=ACHIEVEMENTS.filter(achievementUnlocked).length;
   const years=achYears();
-  let h='<div class="card" style="margin-top:18px"><div class="row" style="margin-bottom:6px"><span class="card-t" style="margin:0">🏆 '+t('tabTrophies')+'</span><span style="font-size:12px;color:var(--muted)">'+unlockedCount+' / '+ACHIEVEMENTS.length+'</span></div>'
+  let h='<div class="card" style="margin-top:18px"><div class="row" style="margin-bottom:6px"><span class="card-t" style="margin:0">'+ICN('medal',15,'var(--e)')+t('tabTrophies')+'</span><span style="font-size:12px;color:var(--muted)">'+unlockedCount+' / '+ACHIEVEMENTS.length+'</span></div>'
     +'<div style="font-size:11px;color:var(--dim);margin-bottom:8px">'+t('tapTrophyHint')+'</div>';
   if(years.length){
     h+='<div class="pills" style="margin-bottom:10px">'
@@ -7081,7 +7095,7 @@ function achievementsGridHTML(){
     items.forEach(a=>{
       const on=achievementUnlocked(a);
       h+='<div class="bd-cell" onclick="openAchQuick(\''+a.key+'\')">'
-        +'<div class="bd-icon'+(on?'':' locked')+'" style="background:rgba(255,255,255,.04)">'+achImg(a)+(on?'':'<div class="bd-lock-chip">🔒</div>')+'</div>'
+        +'<div class="bd-icon'+(on?'':' locked')+'" style="background:rgba(255,255,255,.04)">'+achImg(a)+(on?'':'<div class="bd-lock-chip">'+ICN('lock',14)+'</div>')+'</div>'
         +'<div class="bd-name">'+a.name+'</div>'+(on&&dates[a.key]?'<div style="font-size:9.5px;color:var(--dim);margin-top:2px">'+dates[a.key].slice(0,4)+'</div>':'')+'</div>';
     });
     h+='</div>';
@@ -7096,9 +7110,9 @@ function achievementsGridHTML(){
 function TIERS_DEF(){ return [[t('tierBronze'),'--bronze'],[t('tierArgent'),'--argent'],[t('tierOr'),'--or'],[t('tierPlatine'),'--platine'],[t('tierDiamant'),'--diamant'],[t('tierMaitre'),'--maitre'],[t('tierLegende'),'--legende']]; }
 let TIERS=TIERS_DEF();
 function MEDAL_CATS_DEF(){ return [
-  {key:'sessions',name:t('medalCatSeances'),icon:'🎽',val:()=>totalSessions(),thr:[10,25,50,100,200,350,500]},
-  {key:'streak',name:t('medalCatRegularite'),icon:'🔥',val:()=>streakDays(),thr:[3,7,14,30,60,100,180],unit:'j'},
-  {key:'distance',name:t('medalCatDistance'),icon:'🛣️',val:()=>totalKm(),thr:[25,50,100,250,500,1000,2000],unit:'km'}
+  {key:'sessions',name:t('medalCatSeances'),icon:'medal',val:()=>totalSessions(),thr:[10,25,50,100,200,350,500]},
+  {key:'streak',name:t('medalCatRegularite'),icon:'fire',val:()=>streakDays(),thr:[3,7,14,30,60,100,180],unit:'j'},
+  {key:'distance',name:t('medalCatDistance'),icon:'chart',val:()=>totalKm(),thr:[25,50,100,250,500,1000,2000],unit:'km'}
 ]; }
 let MEDAL_CATS=MEDAL_CATS_DEF();
 function statsMedals(){
@@ -7141,9 +7155,57 @@ const ICONS={
   play:'<path d="M7 4l14 8-14 8V4z"/>',
   stop:'<rect x="6" y="6" width="12" height="12" rx="2"/>',
   share:'<path d="M12 3v12M8 7l4-4 4 4"/><path d="M4 13v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/>',
-  road:'<path d="M8 3 4 21M16 3l4 18"/><path d="M11 9h2M10.3 14h3.4M9.6 19h4.8"/>'
+  road:'<path d="M8 3 4 21M16 3l4 18"/><path d="M11 9h2M10.3 14h3.4M9.6 19h4.8"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>',
+  trash:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M10 11v6M14 11v6"/>',
+  warning:'<path d="M12 3 2 20h20L12 3z"/><path d="M12 9v5M12 17h.01"/>',
+  close:'<path d="M5 5l14 14M19 5 5 19"/>',
+  clipboard:'<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V2h6v2"/><path d="M9 10h6M9 14h6"/>',
+  bulb:'<path d="M9 18h6M10 22h4M12 2a6 6 0 0 0-3 11c1 .8 1 2 1 3h4c0-1 0-2.2 1-3a6 6 0 0 0-3-11z"/>',
+  refresh:'<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/>',
+  flag:'<path d="M5 21V4"/><path d="M5 4h13l-3 4 3 4H5"/>',
+  camera:'<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="14" r="4"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/>',
+  palette:'<path d="M12 3a9 9 0 0 0 0 18c1.5 0 2-1 2-2s-1-1.5-1-2.5A2.5 2.5 0 0 1 15.5 14H17a4 4 0 0 0 4-4c0-3.9-4-7-9-7z"/><circle cx="7.5" cy="11.5" r="1"/><circle cx="10" cy="8" r="1"/><circle cx="15" cy="8.5" r="1"/>',
+  logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  upload:'<path d="M12 3v12M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
+  download:'<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/>',
+  coffee:'<path d="M4 9h13v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9z"/><path d="M17 10h1a3 3 0 0 1 0 6h-1"/><path d="M8 3v2M11 3v2M14 3v2"/>',
+  brain:'<path d="M9 3a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5h.5A2.5 2.5 0 0 0 9 18.5V6a3 3 0 0 0 0-3z"/><path d="M15 3a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5h-.5A2.5 2.5 0 0 1 15 18.5V6a3 3 0 0 1 0-3z"/>',
+  dumbbell:'<path d="M4 9v6M2 10v4M20 9v6M22 10v4M7 12h10"/><rect x="5" y="8" width="3" height="8" rx="1"/><rect x="16" y="8" width="3" height="8" rx="1"/>',
+  back:'<path d="M6 3v18M18 3v18M6 8h12M6 16h12"/>',
+  shoulders:'<path d="M4 8a4 4 0 0 1 8 0M12 8a4 4 0 0 1 8 0M4 8v4M20 8v4"/>',
+  legs:'<path d="M8 3h8v6l-2 12h-2l-1-9-1 9H8L6 9V3z"/>',
+  glutes:'<circle cx="9" cy="12" r="5"/><circle cx="15" cy="12" r="5"/>',
+  abs:'<rect x="7" y="4" width="10" height="16" rx="3"/><path d="M7 9h10M7 14h10M12 4v16"/>',
+  arms:'<path d="M5 16c0-3 2-5 3-7M5 16H3M19 16c0-3-2-5-3-7M19 16h2"/><circle cx="8" cy="8" r="2"/><circle cx="16" cy="8" r="2"/>',
+  gem:'<path d="M6 3h12l4 6-10 12L2 9z"/><path d="M2 9h20M8 3l4 6 4-6M6 9l6 12 6-12"/>',
+  crown:'<path d="M3 19h18l-1-9-4 4-4-7-4 7-4-4z"/>',
+  seedling:'<path d="M12 21V9"/><path d="M12 9C7 9 4 6 4 3c5 0 8 3 8 6zM12 9c0-3 3-6 8-6 0 3-3 6-8 6z"/>',
+  shield:'<path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5z"/>',
+  help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.7 1.2c0 1.6-2.2 1.8-2.2 3.3"/><path d="M12 17h.01"/>',
+  calculator:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/>',
+  rain:'<path d="M6 16a5 5 0 0 1 .5-9.9A6 6 0 0 1 18 8a4 4 0 0 1-1 7.9"/><path d="M8 19v2M12 19v2M16 19v2"/>',
+  suitcase:'<rect x="3" y="8" width="18" height="12" rx="2"/><path d="M9 8V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v3M3 13h18"/>',
+  bike:'<circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M6 17l4-9h4l3 5M10 8H8M13 13l3 4"/>',
+  swim:'<path d="M3 17c1.5 1.5 3 1.5 4.5 0s3-1.5 4.5 0 3 1.5 4.5 0 3-1.5 4.5 0"/><circle cx="17" cy="6" r="2"/><path d="M6 13l7-6 3 3-2 2"/>',
+  ban:'<circle cx="12" cy="12" r="9"/><path d="M5.5 5.5l13 13"/>',
+  wind:'<path d="M3 8h11a3 3 0 1 0-3-3M3 16h15a3 3 0 1 1-3 3M3 12h9"/>',
+  snow:'<path d="M12 2v20M4 7l16 10M20 7 4 17"/>'
 };
 function ICN(name,size,color){ const s=size||22; return '<svg viewBox="0 0 24 24" width="'+s+'" height="'+s+'" fill="none" stroke="'+(color||'currentColor')+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[name]||'')+'</svg>'; }
+/* Icône par groupe musculaire — remplace les anciens emojis décoratifs des exercices par les
+   icônes SVG du même style que le reste de l'app (voir ICONS ci-dessus). */
+const MUSCLE_ICON_MAP={'Pectoraux':'dumbbell','Pectoraux bas':'dumbbell','Pectoraux haut':'dumbbell','Dos':'back','Grand dorsal':'back','Lombaires':'back',
+  'Épaules':'shoulders','Trapèzes':'shoulders','Deltoïde latéral':'shoulders','Deltoïde antérieur':'shoulders','Arrière épaules':'shoulders','Cou':'shoulders',
+  'Biceps':'arms','Triceps':'arms','Avant-bras':'arms',
+  'Quadriceps':'legs','Ischios':'legs','Adducteurs':'legs','Abducteurs':'legs','Mollets':'legs',
+  'Fessiers':'glutes','Abdominaux':'abs','Obliques':'abs','Transverse':'abs','Core':'abs',
+  'Corps entier':'run'};
+function muscleIconName(group){ return MUSCLE_ICON_MAP[group]||'dumbbell'; }
+function exGlyph(e,size){ const g=(e&&((e.muscles&&e.muscles[0])||(e.primary&&e.primary[0])||e.group))||'Corps entier'; return ICN(muscleIconName(g),size||28,'var(--e)'); }
 /* colored rounded-square icon badge used in card headers, replaces flat emoji */
 function cardIcon(name,color){ color=color||'var(--e)'; return '<span class="icb" style="background:linear-gradient(145deg,'+color+'22,'+color+'0d);box-shadow:0 0 0 1px '+color+'33 inset,0 4px 10px -4px '+color+'55;color:'+color+'">'+ICN(name,15,color)+'</span>'; }
 
@@ -7219,17 +7281,17 @@ const BADGE_IMG_FILES={
 };
 function bdGlyph(key){
   const src=BADGE_IMG_FILES[key];
-  if(!src) return '<span class="bd-emoji">'+badgeEmoji(key)+'</span>';
+  if(!src) return '<span class="bd-emoji">'+ICN(badgeEmoji(key),28,'var(--e)')+'</span>';
   return '<img class="bd-glyph" src="'+src+'" alt="" draggable="false" loading="lazy" data-key="'+key+'" data-stage="0" onerror="bdImgErr(this)">';
 }
-function badgeEmoji(key){ const b=BADGE_TIERS.find(x=>x.key===key); return b?b.emoji:'🏅'; }
+function badgeEmoji(key){ const b=BADGE_TIERS.find(x=>x.key===key); return (b&&ICONS[b.emoji])?b.emoji:'medal'; }
 function bdImgErr(img){
   const key=img.dataset.key; const stage=+img.dataset.stage;
   // Étape 0 → on retente dans un sous-dossier badges/, au cas où les PNG
   // seraient rangés là plutôt qu'à la racine du site.
   if(stage===0){ img.dataset.stage='1'; img.src='badges/'+BADGE_IMG_FILES[key]; return; }
-  // Étape 1 échouée aussi → on bascule sur l'emoji, plus aucune requête réseau.
-  const span=document.createElement('span'); span.className='bd-glyph bd-emoji'; span.textContent=badgeEmoji(key);
+  // Étape 1 échouée aussi → on bascule sur l'icône, plus aucune requête réseau.
+  const span=document.createElement('span'); span.className='bd-glyph bd-emoji'; span.innerHTML=ICN(badgeEmoji(key),28,'var(--e)');
   img.replaceWith(span);
 }
 
@@ -7264,7 +7326,7 @@ function renderOutils(){
   if(outilsTab==='home'){ h=outilsHome(); $('#s-outils').innerHTML=h; bindToolSearch(); return; }
   if(outilsTab==='_timer'){ renderOutilsTimer(); return; }
   const tl=TOOLS[outilsTab]; if(!tl){ outilsTab='home'; return renderOutils(); }
-  h='<div class="row" style="margin-bottom:14px"><button class="x" onclick="outilsBack()">‹</button><div class="man" style="font-weight:800;font-size:17px;flex:1;text-align:center;margin:0 8px">'+tl.name+'</div><button class="x" onclick="toggleFav(\''+outilsTab+'\')" style="color:'+(toolFav().includes(outilsTab)?'var(--or)':'var(--dim)')+'">★</button></div><div id="outBody"></div>';
+  h='<div class="row" style="margin-bottom:14px"><button class="x" onclick="outilsBack()">‹</button><div class="man" style="font-weight:800;font-size:17px;flex:1;text-align:center;margin:0 8px">'+tl.name+'</div><button class="x" onclick="toggleFav(\''+outilsTab+'\')" style="color:'+(toolFav().includes(outilsTab)?'var(--or)':'var(--dim)')+'"></button></div><div id="outBody"></div>';
   $('#s-outils').innerHTML=h;
   window[tl.fn] && window[tl.fn]();
 }
@@ -7312,7 +7374,7 @@ function editFavs(){
   $('#settingsBody').innerHTML=h; $('#ovSettings').querySelector('h2').textContent=t('editFavsTitle'); openOv('ovSettings');
 }
 function toolRow(k,tl){ const fav=toolFav().includes(k);
-  return '<div class="list-row"><div class="lr-icon" style="cursor:pointer" onclick="openTool(\''+k+'\')">'+tl.icon+'</div><div class="lr-txt" style="cursor:pointer" onclick="openTool(\''+k+'\')"><div class="lr-title">'+tl.name+'</div>'+(tl.sub?'<div class="lr-sub">'+tl.sub+'</div>':'')+'</div><span onclick="event.stopPropagation();toggleFav(\''+k+'\')" style="color:'+(fav?'var(--or)':'var(--dim)')+';font-size:17px;cursor:pointer;padding:4px">★</span></div>'; }
+  return '<div class="list-row"><div class="lr-icon" style="cursor:pointer" onclick="openTool(\''+k+'\')">'+tl.icon+'</div><div class="lr-txt" style="cursor:pointer" onclick="openTool(\''+k+'\')"><div class="lr-title">'+tl.name+'</div>'+(tl.sub?'<div class="lr-sub">'+tl.sub+'</div>':'')+'</div><span onclick="event.stopPropagation();toggleFav(\''+k+'\')" style="color:'+(fav?'var(--or)':'var(--dim)')+';font-size:17px;cursor:pointer;padding:4px"></span></div>'; }
 function openQuickTimer(){ outilsFrom='home'; outilsTab='_timer'; renderOutilsTimer(); }
 function renderOutilsTimer(){ $('#s-outils').innerHTML='<div class="row" style="margin-bottom:14px"><button class="x" onclick="outilsTab=\'home\';renderOutils()">‹</button><div class="man" style="font-weight:800;font-size:17px;flex:1;text-align:center">'+t('quickTimer')+'</div><div style="width:34px"></div></div><div id="outBody"></div>'; renderTimer(); }
 
@@ -7360,7 +7422,7 @@ function renderSanteTool(){
     else if(feel>=4) tip=t('tipGreatFeel');
     h+='<div class="tip" style="margin-top:12px">'+tip+'</div></div>';
   } else {
-    h+='<div class="card"><div class="empty"><div class="em-ic">📋</div><div style="font-size:13px">'+t('noDebriefHint')+'</div></div></div>';
+    h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('clipboard',36,'currentColor')+'</div><div style="font-size:13px">'+t('noDebriefHint')+'</div></div></div>';
   }
   // NUTRITION (rappel macros indicatifs)
   const prot=Math.round(w*1.8), carbs=Math.round(w*5), lip=Math.round(w*1);
@@ -7368,8 +7430,9 @@ function renderSanteTool(){
   h+='<div class="sgrid"><div class="sbox"><div class="v" style="font-size:18px;color:var(--ok)">'+prot+'g</div><div class="l">'+t('proteinLab')+'</div></div><div class="sbox"><div class="v" style="font-size:18px;color:var(--or)">'+carbs+'g</div><div class="l">'+t('carbsLab')+'</div></div><div class="sbox"><div class="v" style="font-size:18px;color:var(--warn)">'+lip+'g</div><div class="l">'+t('fatLab')+'</div></div><div class="sbox"><div class="v" style="font-size:18px">'+Math.round(prot*4+carbs*4+lip*9)+'</div><div class="l">'+t('kcalTarget')+'</div></div></div></div>';
   $('#outBody').innerHTML=h;
 }
-function santeBar(label,val,max,col){ const pct=Math.min(100,val/max*100); const ic=['😣','😕','😐','🙂','🤩'][Math.max(0,Math.min(4,Math.round(val)-1))]||'—';
-  return '<div style="margin-bottom:10px"><div class="row" style="margin-bottom:4px"><span style="font-size:13px">'+label+'</span><span style="font-size:13px">'+(val?ic+' '+val.toFixed(1)+'/'+max:'—')+'</span></div><div class="pbar"><div style="width:'+pct+'%;background:var('+col+')"></div></div></div>'; }
+function santeBar(label,val,max,col){ const pct=Math.min(100,val/max*100); const icN=['warning','close','target','check','star'][Math.max(0,Math.min(4,Math.round(val)-1))];
+  const ic=val?ICN(icN,14):'';
+  return '<div style="margin-bottom:10px"><div class="row" style="margin-bottom:4px"><span style="font-size:13px">'+label+'</span><span style="font-size:13px;display:inline-flex;align-items:center;gap:4px">'+(val?ic+' '+val.toFixed(1)+'/'+max:'—')+'</span></div><div class="pbar"><div style="width:'+pct+'%;background:var('+col+')"></div></div></div>'; }
 function weightSparkline(){
   const data=WEIGHTLOG.slice(-14).map(x=>x.w); if(data.length<2)return'';
   const min=Math.min(...data),max=Math.max(...data),rng=(max-min)||1; const W=300,H=60;
@@ -7410,23 +7473,23 @@ function computeLab(){
 function renderAIO(){
   const computed=f=>LAB.recent.length>=2 && !LAB.recent.includes(f) && LAB[f]!=null;
   let h='<div class="tip" style="margin-bottom:16px">'+t('labHint')+'</div>';
-  h+=labField(t('distField'),'📍','dist',LAB.dist!=null?LAB.dist.toFixed(2)+' km':'—',computed('dist'));
-  h+=labField(t('timeField'),'⏱️','time',LAB.time!=null?fmtTime(LAB.time):'—',computed('time'));
-  h+=labField(t('paceField'),'🏃','pace',LAB.pace!=null?spkToStr(LAB.pace)+' /km':'—',computed('pace'));
-  h+=labField(t('speedField'),'⚡','speed',LAB.speed!=null?LAB.speed.toFixed(2)+' km/h':'—',computed('speed'));
+  h+=labField(t('distField'),'','dist',LAB.dist!=null?LAB.dist.toFixed(2)+' km':'—',computed('dist'));
+  h+=labField(t('timeField'),'','time',LAB.time!=null?fmtTime(LAB.time):'—',computed('time'));
+  h+=labField(t('paceField'),'','pace',LAB.pace!=null?spkToStr(LAB.pace)+' /km':'—',computed('pace'));
+  h+=labField(t('speedField'),'','speed',LAB.speed!=null?LAB.speed.toFixed(2)+' km/h':'—',computed('speed'));
   h+='<button class="btn ghost" style="margin-top:10px" onclick="resetLab()">'+t('resetBtn')+'</button>';
   // Bonus : splits + prédictions si distance & pace connus
   if(LAB.dist&&LAB.pace&&LAB.dist>=1){
     h+='<div class="card-t" style="margin-top:20px">'+t('splitTimesTitle')+'</div>';
     const n=Math.min(Math.floor(LAB.dist),42);
-    for(let k=1;k<=n;k++){ const hi=[5,10,21,42].includes(k); h+='<div class="zrow" style="padding:9px 0"><span class="zname" style="'+(hi?'color:var(--e)':'')+'">km '+k+(hi?' ⭐':'')+'</span><span class="zval mono">'+fmtTime(LAB.pace*k)+'</span></div>'; }
+    for(let k=1;k<=n;k++){ const hi=[5,10,21,42].includes(k); h+='<div class="zrow" style="padding:9px 0"><span class="zname" style="'+(hi?'color:var(--e)':'')+'">km '+k+(hi?'':'')+'</span><span class="zval mono">'+fmtTime(LAB.pace*k)+'</span></div>'; }
     if(LAB.dist%1>0.01) h+='<div class="zrow" style="padding:9px 0"><span class="zname">'+LAB.dist.toFixed(2)+' km</span><span class="zval mono">'+fmtTime(LAB.time)+'</span></div>';
   }
   $('#outBody').innerHTML=h;
 }
 function labField(label,icon,field,val,isComputed){
   const filled=LAB[field]!=null;
-  return '<div class="card" style="padding:14px;margin-bottom:9px;cursor:pointer;'+(isComputed?'border-color:var(--e);background:var(--ed)':'')+'" onclick="editLab(\''+field+'\')"><div class="row"><div class="row" style="gap:11px"><span style="font-size:19px">'+icon+'</span><div><div style="font-size:11px;color:var(--muted)">'+label+(isComputed?' · '+t('calculatedLab'):filled?'':' · '+t('toFillLab'))+'</div><div class="mono" style="font-weight:700;font-size:19px;margin-top:2px;color:'+(isComputed?'var(--e)':'var(--snow)')+'">'+val+'</div></div></div><span style="color:var(--dim);font-size:15px">'+(isComputed?'':'✎')+'</span></div></div>';
+  return '<div class="card" style="padding:14px;margin-bottom:9px;cursor:pointer;'+(isComputed?'border-color:var(--e);background:var(--ed)':'')+'" onclick="editLab(\''+field+'\')"><div class="row"><div class="row" style="gap:11px"><span style="font-size:19px">'+icon+'</span><div><div style="font-size:11px;color:var(--muted)">'+label+(isComputed?' · '+t('calculatedLab'):filled?'':' · '+t('toFillLab'))+'</div><div class="mono" style="font-weight:700;font-size:19px;margin-top:2px;color:'+(isComputed?'var(--e)':'var(--snow)')+'">'+val+'</div></div></div><span style="color:var(--dim);font-size:15px">'+(isComputed?'':'')+'</span></div></div>';
 }
 function editLab(field){
   if(field==='dist') pickDistance(t('distField'),LAB.dist||10,v=>labSet('dist',v));
@@ -7475,10 +7538,10 @@ function renderLoadTool(){
   for(let i=0;i<28;i++){ const d=new Date(end);d.setDate(end.getDate()-i); const l=load[dateKey(d)]||0; chronic+=l; if(i<7)acute+=l; }
   acute/=7; chronic/=28;
   const ratio=chronic>0?(acute/chronic):0;
-  let status,col; if(ratio===0){status='Pas de données';col='--dim';} else if(ratio<0.8){status='Sous-charge';col='--platine';} else if(ratio<=1.3){status='Optimal ✓';col='--ok';} else if(ratio<=1.5){status='Élevé ⚠️';col='--warn';} else {status='Risque blessure 🚨';col='--bad';}
+  let status,col; if(ratio===0){status='Pas de données';col='--dim';} else if(ratio<0.8){status='Sous-charge';col='--platine';} else if(ratio<=1.3){status='Optimal';col='--ok';} else if(ratio<=1.5){status='Élevé';col='--warn';} else {status='Risque blessure';col='--bad';}
   let h='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var('+col+')">'+ratio.toFixed(2)+'</div><div class="lab">Ratio Aigu/Chronique (ACWR)</div><div class="badge" style="margin-top:10px;background:var(--ed);color:var('+col+')">'+status+'</div></div>';
   h+='<div class="sgrid"><div class="sbox"><div class="v">'+Math.round(acute)+'</div><div class="l">Charge aiguë (7j)</div></div><div class="sbox"><div class="v">'+Math.round(chronic)+'</div><div class="l">Charge chronique (28j)</div></div></div>';
-  h+='<div class="tip" style="margin-top:12px">💡 Zone optimale : 0,8–1,3. Au-dessus de 1,5, le risque de blessure augmente fortement.</div>';
+  h+='<div class="tip" style="margin-top:12px">Zone optimale : 0,8–1,3. Au-dessus de 1,5, le risque de blessure augmente fortement.</div>';
   $('#outBody').innerHTML=h;
 }
 let calKm=10,calMin=50;
@@ -7523,7 +7586,7 @@ function renderProgTool(){
 }
 function renderReposTool(){
   const data=[['Force max (1-5 reps)','3-5 min'],['Hypertrophie (6-12)','60-90 s'],['Endurance (15+)','30-45 s'],['Puissance / explosif','2-3 min'],['Superset','0 s entre, 90 s après']];
-  let h='<div class="card"><div class="card-t">⏱️ Temps de repos recommandés</div>'+data.map(d=>'<div class="zrow"><span class="zname">'+d[0]+'</span><span class="zval mono">'+d[1]+'</span></div>').join('')+'</div><div class="tip">💡 Plus la charge est lourde, plus le repos doit être long pour récupérer le système nerveux.</div>';
+  let h='<div class="card"><div class="card-t">'+ICN('timer',15,'var(--e)')+'Temps de repos recommandés</div>'+data.map(d=>'<div class="zrow"><span class="zname">'+d[0]+'</span><span class="zval mono">'+d[1]+'</span></div>').join('')+'</div><div class="tip">Plus la charge est lourde, plus le repos doit être long pour récupérer le système nerveux.</div>';
   $('#outBody').innerHTML=h;
 }
 let pomoState={phase:'work',left:25*60,running:false,iv:null,count:0};
@@ -7531,9 +7594,9 @@ function renderPomodoro(){
   const total=pomoState.phase==='work'?25*60:(pomoState.phase==='long'?15*60:5*60);
   const pct=pomoState.left/total*100;
   const col=pomoState.phase==='work'?'var(--bad)':'var(--ok)';
-  const lab=pomoState.phase==='work'?'🍅 Focus':'☕ Pause';
+  const lab=pomoState.phase==='work'?'Focus':'Pause';
   let h='<div class="card" style="text-align:center"><div class="badge" style="background:var(--ed);color:'+col+'">'+lab+'</div><div class="ring-wrap" style="width:180px;height:180px;margin:14px auto"><span id="pmRing">'+ringSVG(180,pct,12,col)+'</span><div class="ring-c"><div class="big mono" id="pmNum" style="font-size:36px">'+fmtMS(pomoState.left)+'</div></div></div>';
-  h+='<div class="row" style="gap:10px"><button class="btn" onclick="pomoToggle()">'+(pomoState.running?'⏸ Pause':'▶ Start')+'</button><button class="btn ghost" onclick="pomoReset()">↺</button></div>';
+  h+='<div class="row" style="gap:10px"><button class="btn" onclick="pomoToggle()">'+(pomoState.running?'Pause':'▶ Start')+'</button><button class="btn ghost" onclick="pomoReset()">↺</button></div>';
   h+='<div style="margin-top:12px;font-size:12px;color:var(--muted)">Pomodoros complétés : '+pomoState.count+'</div></div>';
   $('#outBody').innerHTML=h;
 }
@@ -7562,7 +7625,7 @@ function renderSleepTool(){
   let h='<div class="card"><div class="field"><label>'+t('sleepHoursPerNightLabel')+'</label><div class="stepper"><button onclick="sleepH=Math.max(3,sleepH-.5);renderSleepTool()">−</button><span class="val">'+sleepH+'</span><button onclick="sleepH=Math.min(12,sleepH+.5);renderSleepTool()">+</button></div></div></div>';
   let status,col; if(sleepH<6){status=t('sleepInsufficient');col='--bad';} else if(sleepH<7){status=t('sleepBorderline');col='--warn';} else if(sleepH<=9){status=t('sleepOptimal');col='--ok';} else {status=t('sleepPlenty');col='--platine';}
   h+='<div class="card" style="text-align:center"><div class="man" style="font-size:40px;font-weight:800;color:var('+col+')">'+sleepH+'h</div><div class="badge" style="background:var(--ed);color:var('+col+');margin-top:8px">'+status+'</div></div>';
-  h+='<div class="card"><div class="card-t">😴 '+t('sleepCyclesTitle')+'</div><div class="tip">'+t('sleepCyclesTip')+'</div></div>';
+  h+='<div class="card"><div class="card-t">'+ICN('moon',15,'var(--e)')+t('sleepCyclesTitle')+'</div><div class="tip">'+t('sleepCyclesTip')+'</div></div>';
   $('#outBody').innerHTML=h;
 }
 
@@ -7640,11 +7703,11 @@ function renderCalcResult(){
   // splits
   h+='<div class="lab" style="margin-bottom:8px">'+t('kmSplitsLabel')+'</div><div style="max-height:180px;overflow-y:auto">';
   const nk=Math.floor(resultDist/1000);
-  for(let k=1;k<=nk;k++){ const hi=[5,10,21,42].includes(k); h+='<div class="zrow" style="padding:8px 0"><span class="zname" style="'+(hi?'color:var(--e)':'')+'">km '+k+(hi?' ⭐':'')+'</span><span class="zval mono">'+fmtTime(spk*k)+'</span></div>'; }
+  for(let k=1;k<=nk;k++){ const hi=[5,10,21,42].includes(k); h+='<div class="zrow" style="padding:8px 0"><span class="zname" style="'+(hi?'color:var(--e)':'')+'">km '+k+(hi?'':'')+'</span><span class="zval mono">'+fmtTime(spk*k)+'</span></div>'; }
   h+='</div>';
   // actions
-  h+='<div class="row" style="gap:8px;margin-top:14px"><button class="btn ghost sm" onclick="saveCalcResult()">💾</button><button class="btn ghost sm" onclick="copyCalc()">'+t('copyLabel')+'</button><button class="btn ghost sm" onclick="shareCalc()">↗</button></div>';
-  h+='<button class="btn sm" style="margin-top:8px" onclick="calcAsGoal()">🎯 '+t('addAsGoalLabel')+'</button></div>';
+  h+='<div class="row" style="gap:8px;margin-top:14px"><button class="btn ghost sm" onclick="saveCalcResult()"></button><button class="btn ghost sm" onclick="copyCalc()">'+t('copyLabel')+'</button><button class="btn ghost sm" onclick="shareCalc()">↗</button></div>';
+  h+='<button class="btn sm" style="margin-top:8px" onclick="calcAsGoal()">'+t('addAsGoalLabel')+'</button></div>';
   $('#calcResult').innerHTML=h;
 }
 function saveCalcResult(){
@@ -7658,7 +7721,7 @@ function copyCalc(){
   toast(t('copiedShortToast'));
 }
 function shareApp(){
-  const txt='IKORUN — mon app de course à pied 🏃';
+  const txt='IKORUN — mon app de course à pied';
   if(navigator.share) navigator.share({title:'IKORUN',text:txt,url:location.href}).catch(()=>{});
   else { navigator.clipboard&&navigator.clipboard.writeText(txt+' '+location.href); toast(t('copiedShortToast')); }
 }
@@ -7703,7 +7766,7 @@ function renderChrono(){
     h+='<div style="width:62px"></div><button class="btn" style="width:84px;height:84px;border-radius:50%;font-size:30px;flex:0;background:var(--ok)" onclick="chronoToggle()">▶</button><div style="width:62px"></div>';
   } else if(chrono.running){
     h+='<button class="chbtn" onclick="chronoLap()">'+t('lapBtn')+'</button>';
-    h+='<button class="btn" style="width:84px;height:84px;border-radius:50%;font-size:26px;flex:0;background:var(--warn)" onclick="chronoToggle()">⏸</button>';
+    h+='<button class="btn" style="width:84px;height:84px;border-radius:50%;font-size:26px;flex:0;background:var(--warn)" onclick="chronoToggle()"></button>';
     h+='<button class="chbtn" style="border-color:var(--bad);color:var(--bad)" onclick="chronoStop()">'+t('stopBtn')+'</button>';
   } else {
     h+='<button class="chbtn" style="border-color:var(--bad);color:var(--bad)" onclick="chronoReset()">'+t('resetBtn2')+'</button>';
@@ -7747,7 +7810,7 @@ function renderTimer(){
   const pct=timer.total>0?timer.left/timer.total*100:0;
   const col=pct>50?'var(--e)':pct>20?'var(--warn)':'var(--bad)';
   h+='<div class="ring-wrap" style="width:180px;height:180px;margin:14px auto"><span id="tmRing">'+ringSVG(180,pct,12,col)+'</span><div class="ring-c"><div class="big mono" id="tmNum" style="font-size:36px">'+fmtMS(timer.left)+'</div></div></div>';
-  h+='<div class="row" style="gap:10px"><button class="btn ghost" onclick="addTimer(60)">+1min</button><button class="btn" onclick="timerToggle()">'+(timer.running?'⏸ Pause':'▶ Start')+'</button><button class="btn ghost" onclick="resetTimer()">↺</button></div></div>';
+  h+='<div class="row" style="gap:10px"><button class="btn ghost" onclick="addTimer(60)">+1min</button><button class="btn" onclick="timerToggle()">'+(timer.running?'Pause':'▶ Start')+'</button><button class="btn ghost" onclick="resetTimer()">↺</button></div></div>';
   $('#outBody').innerHTML=h;
   if(!timer.running) attachWheels();
 }
@@ -7770,7 +7833,7 @@ function timerToggle(){
     const col=pct>50?'var(--e)':pct>20?'var(--warn)':'var(--bad)';
     const r=$('#tmRing'),n=$('#tmNum');
     if(r)r.innerHTML=ringSVG(180,pct,12,col); if(n)n.textContent=fmtMS(timer.left);
-    if(timer.left<=0){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; burst(); stopBgActivity(); startAlarm('⏰ Minuteur terminé','Le temps est écoulé !'); renderTimer(); }
+    if(timer.left<=0){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; burst(); stopBgActivity(); startAlarm('Minuteur terminé','Le temps est écoulé !'); renderTimer(); }
   },250);
 }
 function resetTimer(){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; stopAlarm(); stopBgActivity(); timer.left=timer.total=timer.m*60+timer.s||300; renderTimer(); }
@@ -7779,11 +7842,11 @@ function resetTimer(){ clearInterval(timer.iv); timer.running=false; timer.endAt
 function renderAgenda(){
   let h='<button class="btn" style="margin-bottom:14px" onclick="addEvent()">'+t('addEventBtn')+'</button>';
   const evts=[...AGENDA].sort((a,b)=>new Date(a.date)-new Date(b.date));
-  if(P.compDate) evts.unshift({date:P.compDate,title:'🏆 '+(P.goal||t('competitionDefault')),fixed:true});
-  if(!evts.length) h+='<div class="card"><div class="empty"><div class="em-ic">📅</div><div style="font-size:13px">'+t('noEventLab')+'</div></div></div>';
+  if(P.compDate) evts.unshift({date:P.compDate,title:''+(P.goal||t('competitionDefault')),fixed:true});
+  if(!evts.length) h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('calendar',36,'currentColor')+'</div><div style="font-size:13px">'+t('noEventLab')+'</div></div></div>';
   else evts.forEach((e,i)=>{
     const dd=daysBetween(new Date(),new Date(e.date));
-    h+='<div class="card"><div class="row"><div><div style="font-weight:700">'+e.title+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+fmtDate(e.date)+' · '+(dd>=0?'J-'+dd:t('pastLab'))+'</div></div>'+(e.fixed?'':'<button class="x" onclick="delEvent('+(i-(P.compDate?1:0))+')">🗑</button>')+'</div></div>';
+    h+='<div class="card"><div class="row"><div><div style="font-weight:700">'+e.title+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+fmtDate(e.date)+' · '+(dd>=0?'J-'+dd:t('pastLab'))+'</div></div>'+(e.fixed?'':'<button class="x" onclick="delEvent('+(i-(P.compDate?1:0))+')">'+ICN('trash',16)+'</button>')+'</div></div>';
   });
   $('#outBody').innerHTML=h;
 }
@@ -7802,10 +7865,10 @@ function renderPriere(){
   let activeIdx=-1;
   order.forEach((p,i)=>{ const[hh,mm]=times[p].split(':').map(Number); if(hh*60+mm<=nowMin) activeIdx=i; });
   let h='<div class="card"><div class="card-t">'+t('prayerTitle')+'</div><div style="font-size:12px;color:var(--muted);margin-bottom:14px">'+tp('uoifMethod',now.toLocaleDateString(localeCode(),{weekday:'long',day:'numeric',month:'long'}))+'</div>';
-  const icons={Fajr:'🌅',Dhuhr:'☀️',Asr:'🌤️',Maghrib:'🌇',Isha:'🌙'};
+  const icons={Fajr:'sun',Dhuhr:'sun',Asr:'sun',Maghrib:'moon',Isha:'moon'};
   order.forEach((p,i)=>{
     const act=i===activeIdx;
-    h+='<div class="zrow" style="'+(act?'background:var(--ed);border-radius:12px;padding:11px 12px;margin:0 -4px':'')+'"><span style="font-size:18px">'+icons[p]+'</span><span class="zname" style="margin-left:8px;'+(act?'color:var(--e)':'')+'">'+p+'</span><span class="zval mono" style="'+(act?'color:var(--e);font-weight:700':'')+'">'+times[p]+'</span></div>';
+    h+='<div class="zrow" style="'+(act?'background:var(--ed);border-radius:12px;padding:11px 12px;margin:0 -4px':'')+'"><span style="display:inline-flex">'+ICN(icons[p],18)+'</span><span class="zname" style="margin-left:8px;'+(act?'color:var(--e)':'')+'">'+p+'</span><span class="zval mono" style="'+(act?'color:var(--e);font-weight:700':'')+'">'+times[p]+'</span></div>';
   });
   h+='</div>';
   $('#outBody').innerHTML=h;
@@ -7848,18 +7911,18 @@ function renderProfile(){
   let h='';
   // ===== HERO — avatar + nom + email/bio, épuré (image de référence : Profil) =====
   h+='<div class="card stag pf-hero" style="animation-delay:0s"><div class="pf-avwrap">'+avatarHTML(88,34)+
-    '<div class="pf-cam" onclick="changePhoto()">📷</div></div>';
+    '<div class="pf-cam" onclick="changePhoto()">'+ICN('camera',16)+'</div></div>';
   h+='<div class="pf-name-row"><div class="man" style="font-weight:800;font-size:20px">'+(P.name||t('athleteDefault'))+'</div>'+
-    '<div class="pf-edit" onclick="openProfileEdit()" title="'+t('editInfos')+'">✏️</div></div>';
+    '<div class="pf-edit" onclick="openProfileEdit()" title="'+t('editInfos')+'">'+ICN('edit',16)+'</div></div>';
   h+='<div style="font-size:12.5px;color:var(--muted);margin-top:3px" onclick="editBio()">'+escHtml(window.currentUserEmail||P.bio||t('addBioPrompt'))+'</div>';
   h+='<div class="rankchip" style="margin-top:11px;background:'+rk.bg+';color:#fff">'+t('level')+' '+XP.level+' · '+rk.name+' · '+XP.total+' XP</div>';
   h+='</div>';
   // ===== APERÇU RAPIDE — carte unique, une ligne par info (au lieu d'une grille + bannière séparées) =====
   h+='<div class="grp-card stag" style="animation-delay:.04s">'+
-    '<div class="grp-row no-chev"><div class="lr-icon">📏</div><div class="lr-title">'+t('heightWeight')+'</div><div class="lr-val">'+(P.height||'—')+' cm · '+(P.weight||'—')+' kg</div></div>'+
-    '<div class="grp-row no-chev"><div class="lr-icon">🎂</div><div class="lr-title">'+t('age')+'</div><div class="lr-val">'+age()+' '+(curLang()==='en'?'yo':curLang()==='ar'?'سنة':'ans')+'</div></div>'+
-    '<div class="grp-row no-chev"><div class="lr-icon">📈</div><div class="lr-title">VDOT</div><div class="lr-val">'+(getUserVDOT()||'—')+'</div></div>'+
-    '<div class="grp-row" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\';renderSport()"><div class="lr-icon">🎯</div><div class="lr-title">'+t('objective')+'</div><div class="lr-val">'+(trRace(P.objRace)||P.goal||t('noObjective'))+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('scale',20,'currentColor')+'</div><div class="lr-title">'+t('heightWeight')+'</div><div class="lr-val">'+(P.height||'—')+' cm · '+(P.weight||'—')+' kg</div></div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('calendar',20,'currentColor')+'</div><div class="lr-title">'+t('age')+'</div><div class="lr-val">'+age()+' '+(curLang()==='en'?'yo':curLang()==='ar'?'سنة':'ans')+'</div></div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('chart',20,'currentColor')+'</div><div class="lr-title">VDOT</div><div class="lr-val">'+(getUserVDOT()||'—')+'</div></div>'+
+    '<div class="grp-row" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\';renderSport()"><div class="lr-icon">'+ICN('target',20,'currentColor')+'</div><div class="lr-title">'+t('objective')+'</div><div class="lr-val">'+(trRace(P.objRace)||P.goal||t('noObjective'))+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
   // ===== PROGRESSION — badges intégrés directement au profil =====
   { const unlocked=unlockedBadges(); const recent=[...unlocked].sort((a,b)=>b.date<a.date?-1:1).slice(0,5).map(u=>BADGE_TIERS.find(b=>b.key===u.key)).filter(Boolean);
@@ -7880,25 +7943,25 @@ function renderProfile(){
   // ===== SECTIONS GROUPÉES — Compte / Préférences / Support, une seule carte par groupe =====
   h+='<div class="grp-lab stag" style="animation-delay:.09s">'+t('account')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.10s">'+
-    '<div class="grp-row" onclick="openFriends()"><div class="lr-icon">👥</div><div class="lr-title">'+t('friendsRanking')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileEdit()"><div class="lr-icon">👤</div><div class="lr-title">'+t('manageProfile')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'account\')"><div class="lr-icon">🔐</div><div class="lr-title">'+t('passwordSecurity')+'</div><div class="lr-val">'+(window.currentUserEmail||t('notConnected'))+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'notif\')"><div class="lr-icon">🔔</div><div class="lr-title">'+t('notifLabel')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'lang\')"><div class="lr-icon">🌍</div><div class="lr-title">'+t('language')+'</div><div class="lr-val">'+langInfo[1]+' '+langInfo[2]+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openFriends()"><div class="lr-icon">'+ICN('users',20,'currentColor')+'</div><div class="lr-title">'+t('friendsRanking')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileEdit()"><div class="lr-icon">'+ICN('users',20,'currentColor')+'</div><div class="lr-title">'+t('manageProfile')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'account\')"><div class="lr-icon">'+ICN('lock',20,'currentColor')+'</div><div class="lr-title">'+t('passwordSecurity')+'</div><div class="lr-val">'+(window.currentUserEmail||t('notConnected'))+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'notif\')"><div class="lr-icon">'+ICN('bell',20,'currentColor')+'</div><div class="lr-title">'+t('notifLabel')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'lang\')"><div class="lr-icon">'+ICN('globe',20,'currentColor')+'</div><div class="lr-title">'+t('language')+'</div><div class="lr-val">'+langInfo[1]+' '+langInfo[2]+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
   h+='<div class="grp-lab stag" style="animation-delay:.12s">'+t('preferences')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.13s">'+
-    '<div class="grp-row" onclick="openRecords()"><div class="lr-icon">🏅</div><div class="lr-title">'+t('historyRecords')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">📊</div><div class="lr-title">'+t('statistics')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row no-chev"><div class="lr-icon">🎨</div><div class="lr-title">'+t('theme')+'</div>'+pfThemeSwitchHTML()+'</div>'+
-    '<div class="grp-row no-chev"><div class="lr-icon">🖌️</div><div class="lr-title">'+t('appColor')+'</div>'+pfAccentPickerHTML()+'</div>'+
-    '<div class="grp-row no-chev"><div class="lr-icon">🧓</div><div><div class="lr-title">'+t('simplifiedMode')+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px;max-width:200px">'+t('simplifiedModeDesc')+'</div></div><div class="toggle'+(P.easyMode?' on':'')+'" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
-    '<div class="grp-row" onclick="openV6Preview()"><div class="lr-icon">✨</div><div><div class="lr-title">Aperçu — Nouveau design</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Maquette en test, le thème actuel reste inchangé</div></div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openRecords()"><div class="lr-icon">'+ICN('medal',20,'currentColor')+'</div><div class="lr-title">'+t('historyRecords')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">'+ICN('chart',20,'currentColor')+'</div><div class="lr-title">'+t('statistics')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('theme')+'</div>'+pfThemeSwitchHTML()+'</div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('appColor')+'</div>'+pfAccentPickerHTML()+'</div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('heart',20,'currentColor')+'</div><div><div class="lr-title">'+t('simplifiedMode')+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px;max-width:200px">'+t('simplifiedModeDesc')+'</div></div><div class="toggle'+(P.easyMode?' on':'')+'" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
+    '<div class="grp-row" onclick="openV6Preview()"><div class="lr-icon">'+ICN('star',20,'currentColor')+'</div><div><div class="lr-title">Aperçu — Nouveau design</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Maquette en test, le thème actuel reste inchangé</div></div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
   h+='<div class="grp-lab stag" style="animation-delay:.15s">'+t('support')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.16s">'+
-    '<div class="grp-row" onclick="openProfileSection(\'data\')"><div class="lr-icon">🔒</div><div class="lr-title">'+t('dataPrivacy')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'data\')"><div class="lr-icon">❓</div><div class="lr-title">'+t('helpCenter')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'data\')"><div class="lr-icon">'+ICN('lock',20,'currentColor')+'</div><div class="lr-title">'+t('dataPrivacy')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'data\')"><div class="lr-icon">'+ICN('help',20,'currentColor')+'</div><div class="lr-title">'+t('helpCenter')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
   h+='<div style="text-align:center;color:var(--dim);font-size:12px;margin:20px 0">'+t('footerTag')+'</div>';
   $('#s-profil').innerHTML=h;
@@ -7914,17 +7977,17 @@ function renderProfileSimple(){
 
   h+='<div class="grp-lab stag" style="animation-delay:.05s">'+t('yourSpace')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.06s">'+
-    '<div class="grp-row" onclick="openFriends()"><div class="lr-icon">👥</div><div class="lr-title">'+t('friendsRanking')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">📊</div><div class="lr-title">'+t('statistics')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openBadges()"><div class="lr-icon">🏆</div><div class="lr-title">'+t('badgesLabel')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="nav(\'outils\')"><div class="lr-icon">🧮</div><div class="lr-title">'+t('toolsCalc')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileEdit()"><div class="lr-icon">✏️</div><div class="lr-title">'+t('editMyProfile')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openFriends()"><div class="lr-icon">'+ICN('users',20,'currentColor')+'</div><div class="lr-title">'+t('friendsRanking')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">'+ICN('chart',20,'currentColor')+'</div><div class="lr-title">'+t('statistics')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openBadges()"><div class="lr-icon">'+ICN('medal',20,'currentColor')+'</div><div class="lr-title">'+t('badgesLabel')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="nav(\'outils\')"><div class="lr-icon">'+ICN('calculator',20,'currentColor')+'</div><div class="lr-title">'+t('toolsCalc')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileEdit()"><div class="lr-icon">'+ICN('edit',20,'currentColor')+'</div><div class="lr-title">'+t('editMyProfile')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
 
   h+='<div class="grp-lab stag" style="animation-delay:.08s">'+t('settings')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.09s">'+
-    '<div class="grp-row no-chev"><div class="lr-icon">🧓</div><div class="lr-title">'+t('simplifiedMode')+'</div><div class="toggle on" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'account\')"><div class="lr-icon">🔐</div><div class="lr-title">'+t('account')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('heart',20,'currentColor')+'</div><div class="lr-title">'+t('simplifiedMode')+'</div><div class="toggle on" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'account\')"><div class="lr-icon">'+ICN('lock',20,'currentColor')+'</div><div class="lr-title">'+t('account')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
   return h;
 }
@@ -7932,7 +7995,7 @@ function renderProfileSimple(){
 let _pfSheet=null;
 function openProfileSection(key){
   _pfSheet=key;
-  const titles={account:'👤 Compte',lang:'🌍 '+t('language'),appearance:'🎨 '+t('appearance'),notif:'🔔 '+t('notifsApp'),data:'🔒 '+t('dataPrivacy')};
+  const titles={account:'Compte',lang:''+t('language'),appearance:''+t('appearance'),notif:''+t('notifsApp'),data:''+t('dataPrivacy')};
   $('#ovProgTitle').textContent=titles[key]||t('settings');
   $('#progBody').innerHTML=pfSectionHTML(key);
   openOv('ovProg');
@@ -7954,19 +8017,19 @@ function pfAccountHTML(){
           '<div style="width:44px;height:44px;border-radius:50%;background:var(--ed);color:var(--e);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0">'+(P.name?P.name[0].toUpperCase():'?')+'</div>'+
           '<div><div style="font-weight:700">'+(P.name||'Athlète')+'</div><div style="font-size:12px;color:var(--muted)">'+window.currentUserEmail+'</div></div>'+
         '</div>'+
-        '<span class="badge" style="font-size:10px;flex-shrink:0">🔴 Google</span>'+
+        '<span class="badge" style="font-size:10px;flex-shrink:0">Google</span>'+
       '</div>'+
-      '<div style="font-size:11px;color:var(--dim);margin-top:12px">☁️ Synchronisé sur le cloud</div>'+
-      '<div class="row" style="gap:8px;margin-top:14px"><button class="btn ghost sm" style="flex:1" onclick="addAnotherAccount()">➕ Ajouter un compte</button>'+
-      '<button class="btn ghost sm" style="flex:1;color:var(--bad)" onclick="logout()">🚪 '+t('logout')+'</button></div>'+
+      '<div style="font-size:11px;color:var(--dim);margin-top:12px">Synchronisé sur le cloud</div>'+
+      '<div class="row" style="gap:8px;margin-top:14px"><button class="btn ghost sm" style="flex:1" onclick="addAnotherAccount()">Ajouter un compte</button>'+
+      '<button class="btn ghost sm" style="flex:1;color:var(--bad)" onclick="logout()">'+t('logout')+'</button></div>'+
     '</div>'+
     '<div class="card" style="padding:16px;margin-top:12px;border-color:rgba(255,92,108,.35);background:rgba(255,92,108,.05)">'+
-      '<div class="card-t" style="color:var(--bad)">⚠️ Zone de danger</div>'+
+      '<div class="card-t" style="color:var(--bad)">'+ICN('warning',15,'var(--bad)')+'Zone de danger</div>'+
       '<div style="font-size:11.5px;color:var(--muted);margin-bottom:12px;line-height:1.5">Supprime définitivement ton compte et toutes tes données, sur le cloud et sur cet appareil.</div>'+
-      '<button class="btn ghost sm" style="color:var(--bad);width:100%" onclick="deleteAccountCompletely()">🗑 Supprimer mon compte et mes données</button>'+
+      '<button class="btn ghost sm" style="color:var(--bad);width:100%" onclick="deleteAccountCompletely()">Supprimer mon compte et mes données</button>'+
     '</div>';
   }
-  return '<button class="btn" onclick="signInWithGoogle()">🔐 Se connecter</button>';
+  return '<button class="btn" onclick="signInWithGoogle()">Se connecter</button>';
 }
 function pfLangHTML(){
   return '<div class="pills">'+LANGS.map(l=>'<div class="pill '+(curLang()===l[0]?'on':'')+'" onclick="setLang(\''+l[0]+'\')">'+l[1]+' '+l[2]+'</div>').join('')+'</div>';
@@ -7984,7 +8047,7 @@ function pfAppearanceHTML(){
   const isLight=mode==='light';
   let s='<div class="lab" style="margin-bottom:10px">Thème</div>';
   s+='<div class="row" style="justify-content:space-between;align-items:center">'+
-     '<span style="font-size:14px;color:var(--muted)">'+(isLight?'☀️ Clair':'🌙 Sombre')+'</span>'+
+     '<span style="font-size:14px;color:var(--muted);display:inline-flex;align-items:center;gap:5px">'+(isLight?ICN('sun',15)+'Clair':ICN('moon',15)+'Sombre')+'</span>'+
      pfThemeSwitchHTML().replace('theme-switch sm','theme-switch')+
    '</div>';
   return s;
@@ -7999,35 +8062,35 @@ function toggleThemeSwitch(){
     el.classList.toggle('light',next==='light');
     el.classList.add('pulse','burst');
     const thumb=el.querySelector('.ts-thumb'); if(thumb) thumb.innerHTML=(next==='light'?ICN_SUN:ICN_MOON);
-    const lab=el.previousElementSibling; if(lab) lab.textContent=(next==='light'?'☀️ Clair':'🌙 Sombre');
+    const lab=el.previousElementSibling; if(lab) lab.innerHTML=(next==='light'?ICN('sun',15)+'Clair':ICN('moon',15)+'Sombre');
     setTimeout(()=>el.classList.remove('pulse','burst'),600);
   }
   sfx&&sfx('tap');
 }
 function pfNotifHTML(){
   return '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('trainReminders')+'</span><div class="toggle'+(P.notif!==false?' on':'')+'" onclick="toggleNotif(this)"></div></div>'+
-    '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">🔊 '+t('sounds')+'</span><div class="toggle'+(P.sounds!==false?' on':'')+'" onclick="toggleSounds(this)"></div></div>'+
+    '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('sounds')+'</span><div class="toggle'+(P.sounds!==false?' on':'')+'" onclick="toggleSounds(this)"></div></div>'+
     '<div class="row"><span style="font-size:14px">'+t('units')+'</span><div class="toggle on"></div></div>';
 }
 function pfDataHTML(){
   return '<div class="card" style="padding:16px">'+
       '<div style="font-size:11.5px;color:var(--muted);margin-bottom:14px;line-height:1.5">Exporte une copie de tes données ou importe une sauvegarde existante.</div>'+
-      '<button class="btn ghost sm" style="width:100%;margin-bottom:8px" onclick="exportData()">📤 '+t('exportData')+'</button>'+
-      '<button class="btn ghost sm" style="width:100%" onclick="importData()">📥 '+t('importData')+'</button>'+
+      '<button class="btn ghost sm" style="width:100%;margin-bottom:8px" onclick="exportData()">'+t('exportData')+'</button>'+
+      '<button class="btn ghost sm" style="width:100%" onclick="importData()">'+t('importData')+'</button>'+
     '</div>'+
     '<div class="card" style="padding:16px;margin-top:12px;border-color:rgba(255,92,108,.35);background:rgba(255,92,108,.05)">'+
-      '<div class="card-t" style="color:var(--bad)">⚠️ Zone de danger</div>'+
+      '<div class="card-t" style="color:var(--bad)">'+ICN('warning',15,'var(--bad)')+'Zone de danger</div>'+
       '<div style="font-size:11.5px;color:var(--muted);margin-bottom:12px;line-height:1.5">Efface toutes les données de l\u2019application sur cet appareil.</div>'+
-      '<button class="btn ghost sm" style="width:100%;color:var(--bad)" onclick="resetAll()">🗑 '+t('resetApp')+'</button>'+
+      '<button class="btn ghost sm" style="width:100%;color:var(--bad)" onclick="resetAll()">'+t('resetApp')+'</button>'+
     '</div>';
 }
 /* ---- Photo & Bio ---- */
 function changePhoto(){
   // Propose galerie OU appareil photo
   let h='<div class="tip" style="margin-bottom:14px">Choisis ta photo de profil :</div>';
-  h+='<button class="btn" style="margin-bottom:10px" onclick="pickPhotoSource(false)">🖼️ Depuis la galerie</button>';
-  h+='<button class="btn ghost" style="margin-bottom:10px" onclick="pickPhotoSource(true)">📷 Prendre une photo</button>';
-  if(P.photo) h+='<button class="btn ghost" style="color:var(--bad)" onclick="removePhoto();closeOv(\'ovProg\')">🗑 Supprimer la photo actuelle</button>';
+  h+='<button class="btn" style="margin-bottom:10px" onclick="pickPhotoSource(false)">Depuis la galerie</button>';
+  h+='<button class="btn ghost" style="margin-bottom:10px" onclick="pickPhotoSource(true)">Prendre une photo</button>';
+  if(P.photo) h+='<button class="btn ghost" style="color:var(--bad)" onclick="removePhoto();closeOv(\'ovProg\')">Supprimer la photo actuelle</button>';
   $('#ovProgTitle').textContent='Photo de profil'; $('#progBody').innerHTML=h; $('#ovProg').style.zIndex='13700'; openOv('ovProg');
 }
 function pickPhotoSource(useCamera){
@@ -8047,7 +8110,7 @@ function openCropper(img){
   let h='<div class="tip" style="margin-bottom:12px">Glisse pour déplacer, utilise le curseur pour zoomer.</div>';
   h+='<div id="cropStage" style="position:relative;width:'+CROP_VIEW+'px;height:'+CROP_VIEW+'px;max-width:100%;margin:0 auto 14px;border-radius:50%;overflow:hidden;background:#000;touch-action:none;border:2px solid var(--e)"><canvas id="cropCv" style="width:100%;height:100%;display:block"></canvas></div>';
   h+='<div class="field"><label>Zoom</label><input id="cropZoom" type="range" min="1" max="4" step="0.01" value="1" style="width:100%"></div>';
-  h+='<button class="btn" onclick="applyCrop()">✓ Valider la photo</button>';
+  h+='<button class="btn" onclick="applyCrop()">Valider la photo</button>';
   $('#ovProgTitle').textContent='Recadrer'; $('#progBody').innerHTML=h; $('#ovProg').style.zIndex='13700'; openOv('ovProg');
   setTimeout(initCropper,40);
 }
@@ -8095,12 +8158,12 @@ const REC_DISTANCES=[['100 m',100],['200 m',200],['300 m',300],['400 m',400],['6
 function openRecords(){
   let h='<button class="btn" style="margin-bottom:14px" onclick="addRecord()">'+t('addPerf')+'</button>';
   const recs=personalRecords();
-  if(!recs.length) h+='<div class="card"><div class="empty"><div class="em-ic">🏅</div><div style="font-size:13px">'+t('addChronosHint')+'</div></div></div>';
+  if(!recs.length) h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('medal',36,'currentColor')+'</div><div style="font-size:13px">'+t('addChronosHint')+'</div></div></div>';
   else {
     const sorted=[...RECORDS].sort((a,b)=>(a.meters||0)-(b.meters||0));
     sorted.forEach((r,i)=>{
       const v=r.meters?vdotFromRace(r.meters,parseTime(r.time)).toFixed(1):'—';
-      h+='<div class="card" style="padding:13px"><div class="row"><div><div style="font-weight:700">'+r.dist+' · <span class="mono" style="color:var(--e)">'+r.time+'</span></div><div style="font-size:11px;color:var(--muted);margin-top:3px">'+(r.date?fmtDate(r.date):'')+(r.place?' · '+r.place:'')+(r.meters?' · VDOT '+v:'')+'</div></div><button class="x" onclick="delRecord('+i+')">🗑</button></div>'+(r.feel||r.hrAvg?'<div style="font-size:11px;color:var(--dim);margin-top:6px">'+(r.feel?r.feel:'')+(r.hrAvg?' · '+t('avgHR')+' '+r.hrAvg:'')+(r.hrMax?' / '+t('maxHRshort')+' '+r.hrMax:'')+'</div>':'')+'</div>';
+      h+='<div class="card" style="padding:13px"><div class="row"><div><div style="font-weight:700">'+r.dist+' · <span class="mono" style="color:var(--e)">'+r.time+'</span></div><div style="font-size:11px;color:var(--muted);margin-top:3px">'+(r.date?fmtDate(r.date):'')+(r.place?' · '+r.place:'')+(r.meters?' · VDOT '+v:'')+'</div></div><button class="x" onclick="delRecord('+i+')">'+ICN('trash',16)+'</button></div>'+(r.feel||r.hrAvg?'<div style="font-size:11px;color:var(--dim);margin-top:6px">'+(r.feel?r.feel:'')+(r.hrAvg?' · '+t('avgHR')+' '+r.hrAvg:'')+(r.hrMax?' / '+t('maxHRshort')+' '+r.hrMax:'')+'</div>':'')+'</div>';
     });
     const best=bestRecord();
     if(best) h+='<div class="card" style="border-color:var(--or);text-align:center"><div class="lab" style="color:var(--or)">'+t('bestPerf')+'</div><div class="man" style="font-weight:800;font-size:18px;margin-top:4px">'+best.dist+' — '+best.time+'</div><div style="font-size:12px;color:var(--muted)">VDOT '+vdotFromRace(best.meters,parseTime(best.time)).toFixed(1)+'</div></div>';
@@ -8118,7 +8181,7 @@ function addRecord(){
 }
 function recordForm(d){
   recTmp={dist:d[0],meters:d[1],timeS:d[1]>=21000?5400:(d[1]>=5000?1200:300),date:todayKey(),place:'',feel:'',competition:false};
-  let h='<div style="text-align:center;margin-bottom:16px"><div class="badge" style="font-size:14px;padding:8px 16px">🏁 '+d[0]+'</div></div>';
+  let h='<div style="text-align:center;margin-bottom:16px"><div class="badge" style="font-size:14px;padding:8px 16px">'+d[0]+'</div></div>';
   h+='<div class="field"><label>'+t('chronoLab')+'</label><div class="inp pkfield set" id="rc_time" onclick="pickTime(\''+tp('chronoFor',d[0])+'\',recTmp.timeS,v=>{recTmp.timeS=v;document.getElementById(\'rc_time\').textContent=fmtTime(v)},'+(d[1]>=15000?'true':'false')+')">'+fmtTime(recTmp.timeS)+'</div></div>';
   h+='<div class="field"><label>'+t('dateField')+'</label><input class="inp" id="rc_date" type="date" value="'+todayKey()+'"></div>';
   h+='<div class="field"><label>'+t('placeOptional')+'</label><input class="inp" id="rc_place" placeholder="'+t('placeholderPlace')+'"></div>';
@@ -8222,7 +8285,7 @@ function checkConnectivity(){
   else {
     const last=PREFS.lastOnline||Date.now();
     const days=Math.floor((Date.now()-last)/86400000);
-    if(days>=3) setTimeout(()=>toast('📡 '+tp('offlineSinceDays',days)),1500);
+    if(days>=3) setTimeout(()=>toast(''+tp('offlineSinceDays',days)),1500);
   }
   return online;
 }
@@ -8236,11 +8299,11 @@ function syncOnline(silent){
   try{ if($('#s-home')&&$('#s-home').classList.contains('on')) renderHome(); }catch(e){}
   try{ if($('#s-outils')&&$('#s-outils').classList.contains('on')&&outilsTab==='priere') renderPriere(); }catch(e){}
   DB.save('prefs',PREFS);
-  if(!silent) toast('🔄 '+t('dataSynced'));
+  if(!silent) toast(''+t('dataSynced'));
   nudgeScroll();
 }
-window.addEventListener('online',()=>{ toast('🟢 '+t('connectionRestored')); syncOnline(false); });
-window.addEventListener('offline',()=>{ toast('🔌 '+t('offlineModeAvailable')); });
+window.addEventListener('online',()=>{ toast(''+t('connectionRestored')); syncOnline(false); });
+window.addEventListener('offline',()=>{ toast(''+t('offlineModeAvailable')); });
 // Sync silencieuse périodique tant que l'app est ouverte
 setInterval(()=>{ if(navigator.onLine) syncOnline(true); },5*60*1000);
 
