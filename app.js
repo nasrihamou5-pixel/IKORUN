@@ -6362,6 +6362,12 @@ function liveSwipeDown(e){
       longPressTimer=null;
       if(liveSwipe.dragging) return; // un swipe horizontal a démarré entre-temps : on annule
       liveSuppressClick=true;
+      // On coupe le scroll natif de CETTE carte juste avant de démarrer le glisser-déposer,
+      // et avant tout mouvement du doigt : sur iOS, touch-action doit être figé à 'none' dès
+      // le début du geste de déplacement pour que nos pointermove (et leur preventDefault)
+      // priment sur le scroll de la liste, sinon la page défile au lieu de réordonner.
+      // Remis à zéro tout seul : renderLive() reconstruit le DOM sans ce style inline.
+      el.style.touchAction='none';
       if(navigator.vibrate) try{ navigator.vibrate(12); }catch(_e){}
       startExDrag(idx,startY,pointerId);
     },LONG_PRESS_MS);
