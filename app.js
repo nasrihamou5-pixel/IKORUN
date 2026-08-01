@@ -3006,7 +3006,11 @@ let _ovZTop=12000;
 // la page et devient impossible à fermer/valider).
 function topZ(){ return ++_ovZTop; }
 function openOv(id){ const el=$('#'+id); el.style.zIndex=topZ(); el.classList.add('on'); }
-function closeOv(id){ const el=$('#'+id); el.classList.remove('on'); el.style.zIndex=''; if(id==='ovProg') _pfSheet=null; if(id==='ovLib'&&typeof _exDemoTimer!=='undefined'){ clearInterval(_exDemoTimer); } if((id==='ovProg'||id==='ovLive')&&typeof _exDemo2!=='undefined'&&_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; } }
+function closeOv(id){ const el=$('#'+id); el.classList.remove('on'); el.style.zIndex=''; if(id==='ovProg') _pfSheet=null; if(id==='ovLib'&&typeof _exDemoTimer!=='undefined'){ clearInterval(_exDemoTimer); } if((id==='ovProg'||id==='ovLive')&&typeof _exDemo2!=='undefined'&&_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; }
+  // Garde-fou : si ovLive se ferme par un chemin qui n'est pas pauseLive/doCancelLive/finishLive,
+  // on ne laisse jamais liveTimer/restTimer tourner en fond perdu.
+  if(id==='ovLive'){ if(typeof liveTimer!=='undefined'){ clearInterval(liveTimer); } if(typeof restTimer!=='undefined'){ clearInterval(restTimer); } }
+}
 // Popup de confirmation "maison" à la place de confirm() natif : ce dernier ne se
 // déclenche pas de façon fiable dans une app ajoutée à l'écran d'accueil (iOS PWA
 // en mode standalone), ce qui rendait certaines actions (déconnexion, suppression,
@@ -8227,6 +8231,19 @@ function toggleThemeSwitch(){
     setTimeout(()=>el.classList.remove('pulse','burst'),600);
   }
   sfx&&sfx('tap');
+}
+// Bascule le rappel d'entraînement (référencé par pfNotifHTML, existait pas -> toggle mort)
+function toggleNotif(el){
+  P.notif=(P.notif===false)?true:false;
+  if(el) el.classList.toggle('on',P.notif!==false);
+  if(P.notif!==false) ensureNotifPerm();
+  saveAll(); sfx('tap');
+}
+// Bascule les sons (référencé par pfNotifHTML, existait pas -> toggle mort)
+function toggleSounds(el){
+  P.sounds=(P.sounds===false)?true:false;
+  if(el) el.classList.toggle('on',P.sounds!==false);
+  saveAll(); sfx('tap');
 }
 function pfNotifHTML(){
   return '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('trainReminders')+'</span><div class="toggle'+(P.notif!==false?' on':'')+'" onclick="toggleNotif(this)"></div></div>'+
