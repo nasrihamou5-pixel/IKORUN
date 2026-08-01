@@ -840,7 +840,7 @@ const I18N={
     account:'Compte',friendsRanking:'Amis & Classement',manageProfile:'Gérer le profil',passwordSecurity:'Mot de passe & sécurité',
     notConnected:'Non connecté',notifLabel:'Notifications',preferences:'Préférences',historyRecords:'Historique & records',
     statistics:'Statistiques',theme:'Thème',appColor:'Couleur de l\u2019app',simplifiedMode:'Mode simplifié',
-    simplifiedModeDesc:'3 onglets, écrans allégés, textes plus grands — l\u2019essentiel seulement',
+    simplifiedModeDesc:'4 onglets, écrans allégés, textes plus grands — l\u2019essentiel seulement',
     support:'Support',helpCenter:'Centre d\u2019aide',footerTag:'IKORUN — Elite Athletic Intelligence · v2.0',
     yourSpace:'Ton espace',settings:'Réglages',badgesLabel:'Badges',toolsCalc:'Outils & calculateurs',editMyProfile:'Modifier mon profil',
     // --- Stats ---
@@ -1293,7 +1293,7 @@ const I18N={
     account:'Account',friendsRanking:'Friends & Leaderboard',manageProfile:'Manage profile',passwordSecurity:'Password & security',
     notConnected:'Not signed in',notifLabel:'Notifications',preferences:'Preferences',historyRecords:'History & records',
     statistics:'Statistics',theme:'Theme',appColor:'App color',simplifiedMode:'Simplified mode',
-    simplifiedModeDesc:'3 tabs, lighter screens, bigger text — the essentials only',
+    simplifiedModeDesc:'4 tabs, lighter screens, bigger text — the essentials only',
     support:'Support',helpCenter:'Help center',footerTag:'IKORUN — Elite Athletic Intelligence · v2.0',
     yourSpace:'Your space',settings:'Settings',badgesLabel:'Badges',toolsCalc:'Tools & calculators',editMyProfile:'Edit my profile',
     // --- Stats ---
@@ -1746,7 +1746,7 @@ const I18N={
     account:'الحساب',friendsRanking:'الأصدقاء والترتيب',manageProfile:'إدارة الملف الشخصي',passwordSecurity:'كلمة المرور والأمان',
     notConnected:'غير متصل',notifLabel:'الإشعارات',preferences:'التفضيلات',historyRecords:'السجل والأرقام',
     statistics:'الإحصائيات',theme:'المظهر',appColor:'لون التطبيق',simplifiedMode:'الوضع المبسّط',
-    simplifiedModeDesc:'3 تبويبات، شاشات أخف، نص أكبر — الأساسيات فقط',
+    simplifiedModeDesc:'4 تبويبات، شاشات أخف، نص أكبر — الأساسيات فقط',
     support:'الدعم',helpCenter:'مركز المساعدة',footerTag:'IKORUN — Elite Athletic Intelligence · v2.0',
     yourSpace:'مساحتك',settings:'الإعدادات',badgesLabel:'الأوسمة',toolsCalc:'الأدوات والحاسبات',editMyProfile:'تعديل ملفي الشخصي',
     // --- الإحصائيات ---
@@ -6834,7 +6834,52 @@ function sklMedals(){
     '<div class="skl-row3"><div class="skl"></div><div class="skl"></div><div class="skl"></div></div>';
 }
 const STATS_SKELETONS={bilan:sklBilan,run:sklRun,muscu:sklMuscu,medals:sklMedals};
+/* ---------- STATS — version Mode simplifié ----------
+   Contrairement à l'onglet Stats complet (4 sous-onglets, graphiques,
+   heatmap 13 semaines...), cette version reprend l'esprit "essentiel
+   seulement" déjà utilisé par renderHomeSimple/renderProfileSimple :
+   4 gros chiffres, un point rapide sur la semaine en cours, et un aperçu
+   des badges avec un lien vers la galerie complète. */
+function renderStatsSimple(){
+  let h='';
+  const km=totalKm(), sess=totalSessions(), vdot=getUserVDOT(), streak=streakDays();
+  h+='<div class="stat-quatro" style="margin-top:2px;flex-wrap:wrap">'+
+    '<div class="card stat-card" style="flex:1 1 40%"><div class="stat-ic">'+ICN('road',16)+'</div><div class="stat-v">'+Math.round(km)+'</div><div class="stat-l">'+t('kmTotalLab')+'</div></div>'+
+    '<div class="card stat-card" style="flex:1 1 40%"><div class="stat-ic">'+ICN('medal',16)+'</div><div class="stat-v">'+sess+'</div><div class="stat-l">'+t('sessionsCap')+'</div></div>'+
+    '<div class="card stat-card" style="flex:1 1 40%"><div class="stat-ic">'+ICN('lung',16)+'</div><div class="stat-v">'+(vdot||'—')+'</div><div class="stat-l">VDOT</div></div>'+
+    '<div class="card stat-card" style="flex:1 1 40%"><div class="stat-ic">'+ICN('fire',16)+'</div><div class="stat-v">'+streak+'</div><div class="stat-l">'+t('daysStreak')+'</div></div>'+
+  '</div>';
+
+  const {cur,prev}=periodRanges('week');
+  const kmW=sumKmBetween(cur[0],cur[1]), kmPrev=sumKmBetween(prev[0],prev[1]);
+  const sessW=countBetween(cur[0],cur[1]), sessTarget=(P.days&&P.days.length)||4;
+  const pct=sessTarget?Math.min(100,Math.round(sessW/sessTarget*100)):0;
+  const deltaPct=kmPrev>0?Math.round((kmW-kmPrev)/kmPrev*100):(kmW>0?100:null);
+  h+='<div class="sec-lab" style="margin-top:18px">'+t('thisWeek')+'</div>';
+  h+='<div class="card">'+
+    '<div class="row" style="justify-content:space-between;align-items:baseline;margin-bottom:10px">'+
+      '<span class="man" style="font-weight:800;font-size:17px">'+tp('kmThisWeekShort',kmW.toFixed(1))+'</span>'+
+      (deltaPct!==null?'<span style="font-size:12px;color:'+(deltaPct<0?'var(--bad)':'var(--ok)')+';font-weight:700">'+(deltaPct>0?'+':'')+deltaPct+'%</span>':'')+
+    '</div>'+
+    '<div class="kgoal-bar"><div style="width:'+pct+'%"></div></div>'+
+    '<div style="font-size:11.5px;color:var(--dim);margin-top:8px">'+sessW+' / '+sessTarget+' '+t('sessionsCap').toLowerCase()+' · '+t('vsPrevPeriod')+'</div>'+
+  '</div>';
+
+  const unlocked=unlockedBadges(); const ukeys=new Set(unlocked.map(u=>u.key));
+  h+='<div class="sec-head" style="margin-top:18px"><h3 class="grp-lab" style="margin:0">'+t('badgesLabel')+'</h3><span class="see" onclick="openBadges()">'+tp('badgesObtainedCount',unlocked.length,BADGE_TIERS.length)+'</span></div>';
+  h+='<div class="card"><div class="bd-grid">'+
+    BADGE_TIERS.slice(0,6).map(b=>{
+      const on=ukeys.has(b.key);
+      return '<div class="bd-cell" onclick="openBadgeQuick(\''+b.key+'\')">'+
+        '<div class="bd-icon '+b.cls+(on?'':' locked')+'" style="width:52px;height:52px">'+bdGlyph(b.key)+(on?'':'<div class="bd-lock-chip">'+ICN('lock',14)+'</div>')+'</div>'+
+        '<div class="bd-name">'+b.name+'</div></div>';
+    }).join('')+
+  '</div></div>';
+
+  return h;
+}
 function renderStats(){
+  if(P.easyMode){ $('#s-stats').innerHTML=renderStatsSimple(); return; }
   const seg=statsSegHTML();
   // 1) Squelette affiché tout de suite, adapté à l'onglet demandé.
   $('#s-stats').innerHTML='<div class="skl-screen">'+seg+(STATS_SKELETONS[statsTab]?STATS_SKELETONS[statsTab]():'')+'</div>';
