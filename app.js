@@ -73,10 +73,22 @@ async function cloudPullAll(uid){
     // nouvel appareil/navigateur), la lecture pouvait partir sans jeton pleinement
     // prêt -> RLS renvoie 0 ligne sans erreur -> l'app croyait le compte "neuf"
     // et relançait l'onboarding alors que les données existaient bien côté cloud.
-    await window.supabaseClient.auth.getSession();
+    const { data:{ session } } = await window.supabaseClient.auth.getSession();
+    if(!session){
+      console.error('[IKORUN][DIAG] cloudPullAll: aucune session active au moment de la synchro');
+      if(typeof toast==='function') toast('⚠️ Diagnostic : aucune session active pendant la synchro cloud');
+    }
     const { data, error } = await window.supabaseClient.from('user_data').select('key,value').eq('user_id', uid);
-    if(error){ console.error('cloud pull error', error); return; }
-    if(!data) return;
+    if(error){
+      console.error('cloud pull error', error);
+      if(typeof toast==='function') toast('⚠️ Erreur de synchronisation cloud : '+(error.message||error.code||'inconnue'));
+      return;
+    }
+    if(!data){ return; }
+    if(data.length===0){
+      console.warn('[IKORUN][DIAG] cloudPullAll: 0 ligne renvoyée pour uid='+uid);
+      if(typeof toast==='function') toast('⚠️ Diagnostic : 0 donnée reçue du cloud pour ce compte (uid '+uid.slice(0,8)+'…)');
+    }
     data.forEach(row => {
       if(VVV_LOCAL_ONLY_KEYS.includes(row.key)){
         // Nettoyage définitif d'une éventuelle séance fantôme laissée avant ce correctif.
