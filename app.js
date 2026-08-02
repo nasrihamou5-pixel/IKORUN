@@ -68,6 +68,12 @@ function mergeStorageValue(key, localVal, cloudVal){
 async function cloudPullAll(uid){
   if(!window.supabaseClient) return;
   try{
+    // Sécurité anti-course : force l'hydratation complète de la session en mémoire
+    // avant la lecture. Sans ça, sur une connexion toute fraîche (1re fois sur un
+    // nouvel appareil/navigateur), la lecture pouvait partir sans jeton pleinement
+    // prêt -> RLS renvoie 0 ligne sans erreur -> l'app croyait le compte "neuf"
+    // et relançait l'onboarding alors que les données existaient bien côté cloud.
+    await window.supabaseClient.auth.getSession();
     const { data, error } = await window.supabaseClient.from('user_data').select('key,value').eq('user_id', uid);
     if(error){ console.error('cloud pull error', error); return; }
     if(!data) return;
