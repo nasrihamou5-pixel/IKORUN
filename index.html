@@ -80,6 +80,11 @@
   --bronze:#C97B4A; --argent:#D7DCE3; --or:#F2B84B; --platine:#9FD8FF;
   --diamant:#7FE0E8; --maitre:#A98CF0; --legende:#FFD76A;
   --ok:#33D399; --warn:#FFB454; --bad:#FF5C6C;
+  /* Couleur "effort" fixe (indépendante du thème d'accent) utilisée par l'Accueil V7
+     pour distinguer les séances intenses (VMA/Seuil/Tempo/Intervalle) sur la mini-charge
+     hebdo et le bandeau du jour. */
+  --effort:#FF5A2E; --effort-deep:#D8431C; --effort2:#FF8657; --effort-rgb:255,90,46;
+  --gold:#F5B942; --gold-rgb:245,185,66;
   /* ===== DESIGN SYSTEM TOKENS ===== */
   --r-xs:10px; --r-sm:14px; --r-md:18px; --r-lg:22px; --r-pill:999px;
   --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px;
@@ -294,13 +299,12 @@ html.easy-mode .man,html.easy-mode .lr-title,html.easy-mode .card-t{ font-weight
 html.easy-mode #nav{ background:var(--s1)!important; border-top:2px solid var(--hair); }
 html.easy-mode .topbar{ background:var(--bg)!important; border-bottom:2px solid var(--hair); }
 html.easy-mode .ov{ background:rgba(0,0,0,.6)!important; }
-html.easy-mode .nb[data-s="outils"]{ display:none!important; }
+html.easy-mode .nb[data-s="stats"],html.easy-mode .nb[data-s="outils"]{ display:none!important; }
 
 html{transition:background .25s ease;}
 .card,.btn,.pill,.inp,.favtile,.sbox{transition:background .25s ease,border-color .25s ease,color .25s ease;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{background:var(--bg);color:var(--snow);font-family:'Inter',sans-serif;overflow-x:hidden;width:100%;}
-#ob h1,#login h1{font-family:'Unbounded'}
 body{max-width:430px;margin:0 auto;position:relative;min-height:100vh;isolation:isolate;}
 /* AMBIENT DEPTH LAYER — glow bleu profond façon "hero" produit, sur fond quasi noir */
 body::before{content:'';position:fixed;inset:0;z-index:-2;pointer-events:none;
@@ -325,15 +329,6 @@ html[data-mode="light"] body::after{opacity:.02;}
 .ik-logo svg{width:26px;height:26px;flex-shrink:0;}
 .ik-logo img{height:26px;width:auto;flex-shrink:0;display:block;}
 .ik-logo span{font-family:'Unbounded';font-weight:800;font-size:16px;letter-spacing:.5px;color:var(--snow);}
-/* Logo-mark teinté : le fanion est appliqué en mask-image et coloré via
-   background, afin qu'il suive automatiquement la couleur d'accent active
-   (uni pour bleu/rouge/vert/marron/jaune, dégradé chromé pour carbone). */
-.ik-logo-mark{display:block;flex-shrink:0;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
-  -webkit-mask-position:center;mask-position:center;-webkit-mask-size:contain;mask-size:contain;
-  background:var(--e);transition:background .35s var(--ease);}
-.ik-logo .ik-logo-mark{width:26px;height:26px;}
-.hv7-logo .ik-logo-mark{width:24px;height:24px;}
-html[data-accent="carbon"] .ik-logo-mark{background:var(--grad-btn);}
 .ik-bell{width:38px;height:38px;border-radius:50%;background:var(--s1);border:1px solid var(--hair);display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;position:relative;transition:transform .15s var(--ease-spring);}
 .ik-header-left{display:flex;align-items:center;gap:12px;}
 .ik-people{width:38px;height:38px;border-radius:50%;background:var(--s1);border:1px solid var(--hair);display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;position:relative;transition:transform .15s var(--ease-spring);flex-shrink:0;}
@@ -373,13 +368,13 @@ html[data-accent="carbon"] .ik-logo-mark{background:var(--grad-btn);}
 .week-spark-days{display:flex;justify-content:space-between;margin-top:6px;padding:0 2px;}
 .week-spark-days span{font-family:'JetBrains Mono';font-size:9.5px;color:var(--dim);font-weight:600;width:14px;text-align:center;}
 
-.next-lab{font-size:10px;letter-spacing:.5px;color:var(--e2);font-weight:700;margin-bottom:2px;}
+.next-lab{font-size:10px;letter-spacing:.5px;color:var(--muted);font-weight:700;margin-bottom:2px;}
 .next-card{display:flex;align-items:center;gap:12px;cursor:pointer;}
 .next-body{flex:1;}
 .next-title{font-family:'Unbounded';font-weight:700;font-size:15px;margin-top:4px;}
 .next-meta{color:var(--muted);font-size:12px;margin-top:3px;font-weight:500;}
 .next-when{color:var(--e2);font-size:12px;margin-top:2px;font-weight:600;}
-.next-ic{width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(var(--e-rgb),.35),rgba(var(--e-rgb),.12));border:1px solid rgba(var(--e-rgb),.4);display:flex;align-items:center;justify-content:center;color:var(--e2);flex-shrink:0;}
+.next-ic{width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(51,211,153,.35),rgba(51,211,153,.12));border:1px solid rgba(51,211,153,.4);display:flex;align-items:center;justify-content:center;color:var(--ok);flex-shrink:0;}
 
 .plan-lab{font-size:10px;letter-spacing:.5px;color:var(--muted);font-weight:700;margin:14px 0 8px;}
 .plan-list{padding:6px 8px;}
@@ -396,8 +391,8 @@ html[data-accent="carbon"] .ik-logo-mark{background:var(--grad-btn);}
 .hv7-bg{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
 .hv7-bg span{position:absolute;border-radius:50%;filter:blur(60px);opacity:.5;}
 .hv7-lb1{width:300px;height:300px;top:-120px;left:-80px;background:radial-gradient(circle, rgba(var(--e-rgb),.5), transparent 70%);animation:hv7drift1 22s ease-in-out infinite;}
-.hv7-lb2{width:240px;height:240px;top:80px;right:-110px;background:radial-gradient(circle, rgba(var(--e2-rgb),.4), transparent 70%);animation:hv7drift2 26s ease-in-out infinite;}
-.hv7-lb3{width:220px;height:220px;top:460px;left:-100px;background:radial-gradient(circle, rgba(var(--e-rgb),.18), transparent 70%);animation:hv7drift3 30s ease-in-out infinite;}
+.hv7-lb2{width:240px;height:240px;top:80px;right:-110px;background:radial-gradient(circle, rgba(var(--effort-rgb),.4), transparent 70%);animation:hv7drift2 26s ease-in-out infinite;}
+.hv7-lb3{width:220px;height:220px;top:460px;left:-100px;background:radial-gradient(circle, rgba(var(--effort-rgb),.16), transparent 70%);animation:hv7drift3 30s ease-in-out infinite;}
 @keyframes hv7drift1{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(34px,42px) scale(1.15);}}
 @keyframes hv7drift2{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(-26px,34px) scale(1.1);}}
 @keyframes hv7drift3{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(26px,-26px) scale(1.2);}}
@@ -408,36 +403,28 @@ html[data-accent="carbon"] .ik-logo-mark{background:var(--grad-btn);}
 .hv7-header-left{display:flex;align-items:center;gap:8px;}
 .hv7-logo{display:flex;align-items:center;gap:8px;font-family:'Unbounded';font-weight:800;font-size:14.5px;letter-spacing:.5px;}
 .hv7-logo img{width:24px;height:24px;border-radius:6px;object-fit:cover;}
-.hv7-header-right{display:flex;align-items:center;gap:8px;}
-.hv7-people,.hv7-icon-btn{width:37px;height:37px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(var(--e-rgb),.4);
-  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;color:var(--e2);cursor:pointer;flex-shrink:0;position:relative;}
-html[data-mode="light"] .hv7-people,html[data-mode="light"] .hv7-icon-btn{background:rgba(0,0,0,.04);}
-.hv7-icon-btn .dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--e2);
-  box-shadow:0 0 0 2px var(--s1),0 0 8px rgba(var(--e-rgb),.7);}
+.hv7-people{width:37px;height:37px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid var(--hair2);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;flex-shrink:0;}
+html[data-mode="light"] .hv7-people{background:rgba(0,0,0,.04);}
 
 .hv7-greet{margin:16px 0 16px;}
 .hv7-greet h1{font-family:'Unbounded';font-weight:700;font-size:19px;margin:0;letter-spacing:-.3px;}
 .hv7-greet p{color:var(--muted);font-size:12px;margin:5px 0 0;font-weight:500;letter-spacing:.2px;text-transform:uppercase;}
 
 .hv7-hero-drop{position:relative;border-radius:36px 44px 40px 48px / 44px 38px 46px 40px;padding:20px 20px 22px;margin-bottom:16px;cursor:pointer;
-  background:linear-gradient(150deg, rgba(var(--e-rgb),.20), rgba(var(--e2-rgb),.10));border:1px solid rgba(var(--e-rgb),.22);overflow:hidden;
-  box-shadow:0 0 0 1px rgba(var(--e-rgb),.06),0 18px 40px -18px rgba(var(--e-rgb),.5),0 4px 16px -6px rgba(0,0,0,.5);
-  transition:transform .18s var(--ease-spring),box-shadow .25s ease;}
+  background:linear-gradient(150deg, rgba(var(--effort-rgb),.16), rgba(var(--e-rgb),.10));border:1px solid var(--hair2);overflow:hidden;
+  transition:transform .18s var(--ease-spring);}
 .hv7-hero-drop:active{transform:scale(.985);}
-.hv7-hero-drop::before{content:'';position:absolute;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle, rgba(var(--e-rgb),.32), transparent 70%);top:-120px;right:-80px;}
-.hv7-hero-drop::after{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
-  background:linear-gradient(150deg,rgba(var(--e2-rgb),.55),transparent 30%,transparent 70%,rgba(var(--e-rgb),.35));
-  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:.7;}
+.hv7-hero-drop::before{content:'';position:absolute;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle, rgba(var(--effort-rgb),.28), transparent 70%);top:-120px;right:-80px;}
 .hv7-hero-drop-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;gap:8px;}
-.hv7-hero-drop-chip{font-family:'JetBrains Mono';font-size:9.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--e2);
-  background:rgba(0,0,0,.25);border:1px solid rgba(var(--e-rgb),.4);border-radius:20px;padding:5px 10px;white-space:nowrap;
-  text-shadow:0 0 10px rgba(var(--e-rgb),.55);}
-html[data-mode="light"] .hv7-hero-drop-chip{background:rgba(255,255,255,.6);color:var(--e);text-shadow:none;}
+.hv7-hero-drop-chip{font-family:'JetBrains Mono';font-size:9.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--effort2);
+  background:rgba(0,0,0,.25);border:1px solid rgba(var(--effort-rgb),.35);border-radius:20px;padding:5px 10px;white-space:nowrap;}
+html[data-mode="light"] .hv7-hero-drop-chip{background:rgba(255,255,255,.55);color:var(--effort-deep);}
 .hv7-hero-drop-badge{font-family:'JetBrains Mono';font-size:10px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:5px;white-space:nowrap;}
 .hv7-hero-drop-title{font-family:'Unbounded';font-weight:800;font-size:20px;margin-top:14px;letter-spacing:-.3px;position:relative;}
 .hv7-hero-drop-meta{color:var(--muted);font-size:12px;margin-top:6px;font-weight:600;position:relative;}
 .hv7-hero-drop-row{display:flex;gap:20px;margin-top:16px;padding-top:16px;border-top:1px solid var(--hair2);position:relative;}
-.hv7-hero-drop-stat b{display:block;font-family:'Unbounded';font-weight:800;font-size:16px;text-shadow:0 0 12px rgba(var(--e-rgb),.4);}
+.hv7-hero-drop-stat b{display:block;font-family:'Unbounded';font-weight:800;font-size:16px;}
 .hv7-hero-drop-stat span{font-size:9.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;}
 
 .hv7-hero-week{display:flex;justify-content:space-between;margin:0 2px 20px;}
@@ -445,39 +432,37 @@ html[data-mode="light"] .hv7-hero-drop-chip{background:rgba(255,255,255,.6);colo
 .hv7-hw-bar{width:5px;height:30px;border-radius:3px;background:rgba(255,255,255,.08);position:relative;overflow:hidden;}
 html[data-mode="light"] .hv7-hw-bar{background:rgba(0,0,0,.07);}
 .hv7-hw-bar b{position:absolute;bottom:0;left:0;width:100%;border-radius:3px;display:block;}
-.hv7-hw-bar b.done{background:rgba(var(--e-rgb),.4);}
-.hv7-hw-bar b.effort{background:linear-gradient(180deg,var(--e2),var(--e));box-shadow:0 0 12px rgba(var(--e-rgb),.6);}
+.hv7-hw-bar b.done{background:rgba(var(--e-rgb),.55);}
+.hv7-hw-bar b.effort{background:linear-gradient(180deg,var(--effort2),var(--effort));box-shadow:0 0 12px rgba(var(--effort-rgb),.5);}
 .hv7-hw-lab{font-family:'JetBrains Mono';font-size:9px;color:var(--dim);font-weight:600;}
 .hv7-hw-day.today .hv7-hw-lab{color:var(--snow);}
 .hv7-hw-day.today .hv7-hw-bar{box-shadow:0 0 0 1px var(--hair2) inset;}
 
 .hv7-krow3{display:flex;gap:8px;margin-bottom:6px;}
-.hv7-ktile{flex:1;background:rgba(255,255,255,.045);border:1px solid rgba(var(--e-rgb),.22);border-radius:16px;padding:12px 10px;text-align:center;}
+.hv7-ktile{flex:1;background:rgba(255,255,255,.045);border:1px solid var(--hair);border-radius:16px;padding:12px 10px;text-align:center;}
 html[data-mode="light"] .hv7-ktile{background:rgba(0,0,0,.025);}
-.hv7-ktile-ic{color:var(--e2);display:flex;align-items:center;justify-content:center;margin-bottom:5px;}
 .hv7-ktile-lab{font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:6px;}
 .hv7-ktile-val{font-family:'Unbounded';font-weight:800;font-size:14px;}
 .hv7-ktile-sub{font-size:9.5px;color:var(--ok);font-weight:700;margin-top:3px;}
 .hv7-ktile-sub.muted{color:var(--muted);}
 
-.hv7-sec-lab{font-size:10px;letter-spacing:.9px;color:var(--e2);font-weight:700;text-transform:uppercase;margin:6px 0 2px;
-  padding-top:16px;border-top:1px solid var(--hair);display:flex;justify-content:space-between;align-items:center;
-  text-shadow:0 0 10px rgba(var(--e-rgb),.35);}
+.hv7-sec-lab{font-size:10px;letter-spacing:.9px;color:var(--muted);font-weight:700;text-transform:uppercase;margin:6px 0 2px;
+  padding-top:16px;border-top:1px solid var(--hair);display:flex;justify-content:space-between;align-items:center;}
 .hv7-sec-lab .see{color:var(--e2);text-transform:none;font-weight:700;letter-spacing:0;font-size:11.5px;cursor:pointer;}
 
 .hv7-next-row{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--hair);cursor:pointer;}
-.hv7-next-ic{width:40px;height:40px;border-radius:12px;background:var(--s2);border:1px solid rgba(var(--e-rgb),.35);
-  box-shadow:0 0 16px -6px rgba(var(--e-rgb),.6);display:flex;align-items:center;justify-content:center;color:var(--e2);flex-shrink:0;}
+.hv7-next-ic{width:40px;height:40px;border-radius:12px;background:var(--s2);border:1px solid rgba(var(--effort-rgb),.3);
+  display:flex;align-items:center;justify-content:center;color:var(--effort2);flex-shrink:0;}
 .hv7-next-body{flex:1;min-width:0;}
 .hv7-next-title{font-family:'Unbounded';font-weight:700;font-size:14px;}
 .hv7-next-meta{color:var(--muted);font-size:11.5px;margin-top:3px;font-weight:500;}
 .hv7-next-when{color:var(--e2);font-size:11.5px;margin-top:2px;font-weight:600;}
-.hv7-next-arrow{color:var(--e2);flex-shrink:0;}
+.hv7-next-arrow{color:var(--dim);flex-shrink:0;}
 
 .hv7-plan-list{padding:2px 0;}
 .hv7-plan-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--hair);cursor:pointer;}
 .hv7-plan-row:last-child{border-bottom:none;}
-.hv7-plan-ic{width:28px;height:28px;border-radius:9px;background:var(--s2);border:1px solid rgba(var(--e-rgb),.3);color:var(--e2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:700;}
+.hv7-plan-ic{width:28px;height:28px;border-radius:9px;background:var(--s2);color:var(--e2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:700;}
 .hv7-plan-row.done .hv7-plan-ic{color:var(--ok);}
 .hv7-plan-row.missed .hv7-plan-ic{color:var(--bad);}
 .hv7-plan-body{flex:1;}
@@ -722,8 +707,11 @@ body[data-scr="home"] .topbar{display:none;}
   /* Pas de bordure : un bloc d'info se détache du fond via l'ombre (glass-shadow),
      la bordure est réservée aux éléments qu'on peut taper (boutons, pastilles, tuiles). */
   padding:13px 14px;margin-bottom:8px;box-shadow:var(--glass-shadow);position:relative;
-  isolation:isolate;transition:transform .18s var(--ease-spring),box-shadow .25s ease,background .25s ease,border-color .25s ease,color .25s ease;}
+  isolation:isolate;transition:transform .18s var(--ease-spring),box-shadow .25s ease;}
 .card:active{transform:scale(.985);}
+/* L'onglet Outils garde son style de carte d'origine (opaque, sans effet verre) */
+#s-outils .card{background:var(--s1);background-image:var(--grad-card);-webkit-backdrop-filter:none;backdrop-filter:none;
+  border:1px solid var(--hair);box-shadow:var(--sh-md);}
 .card-t{font-family:'Unbounded';font-weight:700;font-size:13.5px;margin-bottom:9px;display:flex;align-items:center;gap:9px;letter-spacing:-.1px;}
 .icb{width:26px;height:26px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
 .lab{font-family:'Unbounded';font-weight:700;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;color:var(--dim);}
@@ -738,7 +726,7 @@ body[data-scr="home"] .topbar{display:none;}
 .list-row .lr-txt{flex:1;min-width:0;}
 .list-row .lr-title{font-weight:700;font-size:13.5px;font-family:'Unbounded';}
 .list-row .lr-sub{font-size:11.5px;color:var(--muted);margin-top:1px;}
-.list-row .lr-chev{color:var(--e2);flex-shrink:0;}
+.list-row .lr-chev{color:var(--dim);flex-shrink:0;}
 /* GROUPED CARD LIST — une seule carte par section, lignes séparées par un filet
    (organisation "Profil / Réglages" classique : icône + libellé + valeur + chevron) */
 .grp-card{background:var(--s1);border:1px solid var(--hair);border-radius:16px;overflow:hidden;box-shadow:var(--float-sm);margin-bottom:16px;}
@@ -748,10 +736,10 @@ body[data-scr="home"] .topbar{display:none;}
 .grp-row .lr-icon{width:32px;height:32px;border-radius:9px;background:var(--ed);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--e);font-size:14.5px;}
 .grp-row .lr-title{font-weight:600;font-size:14px;flex:1;min-width:0;}
 .grp-row .lr-val{font-size:12.5px;color:var(--muted);flex-shrink:0;max-width:120px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;}
-.grp-row .lr-chev{color:var(--e2);flex-shrink:0;}
+.grp-row .lr-chev{color:var(--dim);flex-shrink:0;}
 .grp-row.no-chev{cursor:default;}
 .grp-row.no-chev:active{background:transparent;}
-.grp-lab{font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:var(--e2);font-weight:700;margin:0 2px 8px;text-shadow:0 0 10px rgba(var(--e-rgb),.3);}
+.grp-lab{font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-weight:700;margin:0 2px 8px;}
 .mini-ic{width:28px;height:28px;border-radius:9px;background:var(--s2);border:1px solid var(--hair);display:inline-flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;flex-shrink:0;}
 .mini-ic:active{transform:scale(.9);}
 
@@ -902,7 +890,7 @@ body[data-scr="home"] .topbar{display:none;}
 .btn{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--grad-btn);color:#fff;
   font-family:'Unbounded';font-weight:700;font-size:15px;letter-spacing:-.1px;border:1px solid rgba(255,255,255,.08);
   border-radius:var(--r-sm);padding:14px;box-shadow:var(--sh-e);
-  width:100%;cursor:pointer;position:relative;overflow:hidden;transition:transform .16s var(--ease-spring),box-shadow .2s var(--ease),filter .15s,background .25s ease,border-color .25s ease,color .25s ease;}
+  width:100%;cursor:pointer;position:relative;overflow:hidden;transition:transform .16s var(--ease-spring),box-shadow .2s var(--ease),filter .15s;}
 .btn::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.16),transparent 55%);pointer-events:none;}
 .btn:active{transform:scale(.972);box-shadow:0 3px 10px -4px rgba(var(--e-rgb),.4);filter:brightness(.96);}
 .btn.ghost{background:var(--s2);color:var(--snow);border:1px solid var(--hair2);box-shadow:var(--sh-sm);}
@@ -927,7 +915,7 @@ body[data-scr="home"] .topbar{display:none;}
 .field{margin-bottom:14px;}
 .field label{display:block;font-size:11.5px;color:var(--muted);margin-bottom:6px;font-weight:700;letter-spacing:.2px;}
 .inp{width:100%;background:var(--s2);border:1px solid var(--hair);border-radius:var(--r-xs);padding:13px 14px;
-  color:var(--snow);font-size:15px;font-family:'Inter';transition:border-color .15s,box-shadow .15s,background .25s ease,color .25s ease;}
+  color:var(--snow);font-size:15px;font-family:'Inter';transition:border-color .15s,box-shadow .15s;}
 .inp:focus{outline:none;border-color:var(--e);box-shadow:0 0 0 3px rgba(var(--e-rgb),.14);}
 .note{background:var(--ed);border:1px solid rgba(var(--e-rgb),.25);border-radius:12px;padding:10px 12px;font-size:12.5px;color:var(--muted);line-height:1.45;margin-bottom:14px;display:flex;gap:8px;}
 .note b{color:var(--e);}
@@ -958,7 +946,7 @@ input.inp[type="date"],input.inp[type="time"]{min-width:0;max-width:100%;padding
   border:1px solid var(--hair);
   box-shadow:var(--sh-md);
 }
-/* .card est géré plus haut (effet verre partout, y compris Outils) */
+/* .card est géré plus haut (glass everywhere, sauf #s-outils) — volontairement exclu d'ici */
 .inp,select.inp,.pkfield,.setcell{
   background:var(--s2);
   border:1px solid var(--hair);
@@ -1003,13 +991,10 @@ html[data-mode="light"]{
   backdrop-filter:blur(28px) saturate(1.4);-webkit-backdrop-filter:blur(28px) saturate(1.4);
   border:1px solid var(--chrome-border);border-radius:26px;overflow:hidden;
   box-shadow:0 20px 46px -16px rgba(0,0,0,.7),0 1px 0 rgba(255,255,255,.35) inset,0 -8px 14px -8px rgba(0,0,0,.45) inset;
-  display:flex;padding:7px 6px;transition:transform .38s var(--ease-spring),box-shadow .35s ease,opacity .3s ease;}
+  display:flex;padding:7px 6px;transition:transform .28s var(--ease-spring),box-shadow .35s ease;}
 #nav::before{content:'';position:absolute;inset:0;pointer-events:none;background:var(--chrome-edge);opacity:.5;border-radius:inherit;}
 #nav.nav-dragging{transform:translateX(-50%) scale(1.03);
   box-shadow:0 26px 54px -16px rgba(0,0,0,.78),0 1px 0 rgba(255,255,255,.4) inset,0 0 30px -8px rgba(var(--e-rgb),.3);}
-/* Masquage auto au scroll : descend hors écran (avec petite animation ressort)
-   quand on scrolle vers le bas, revient dès qu'on remonte. */
-#nav.nav-hidden{transform:translateX(-50%) translateY(calc(100% + 30px + env(safe-area-inset-bottom)));opacity:0;pointer-events:none;}
 #nav-pill{position:absolute;top:7px;height:44px;width:18%;border-radius:18px;background:var(--ed);
   box-shadow:0 0 0 1px rgba(var(--e-rgb),.18) inset;transition:left .38s var(--ease-spring),width .38s var(--ease-spring),background .3s ease,box-shadow .3s ease,border-color .3s ease;
   overflow:hidden;border:1px solid transparent;will-change:left;}
@@ -1057,8 +1042,6 @@ html[data-mode="light"]{
 .nb span{font-family:'Unbounded';font-weight:700;font-size:9.5px;letter-spacing:.1px;}
 .nb.on{color:var(--e2);}
 .nb.on svg{animation:navB .5s var(--ease-spring);}
-.nb.on::after{content:'';position:absolute;bottom:1px;width:20px;height:3px;border-radius:3px;
-  background:var(--e2);box-shadow:0 0 8px rgba(var(--e-rgb),.7);}
 @keyframes navB{0%,100%{transform:translateY(0);}40%{transform:translateY(-5px);}}
 
 /* OVERLAYS */
@@ -1107,33 +1090,6 @@ html[data-mode="light"]{
   overflow:hidden;padding:max(14px,env(safe-area-inset-top)) 20px max(20px,env(safe-area-inset-bottom));
   display:flex;flex-direction:column;transition:opacity .38s ease;}
 #appSkeleton.out{opacity:0;pointer-events:none;}
-
-/* ----- Intro logo : petit temps de marque avant que le squelette n'apparaisse,
-   façon écran de lancement natif. Overlay plein écran par-dessus le squelette,
-   qui s'efface tout seul après un court instant pour révéler ce qu'il y a dessous. */
-.skl-splash{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;
-  background:var(--bg);opacity:0;animation:sklSplashIn .4s ease forwards, sklSplashOut .45s ease forwards .68s;}
-.skl-splash-logo{width:80px;height:80px;border-radius:var(--r-md);overflow:hidden;
-  box-shadow:0 14px 34px -10px rgba(var(--e-rgb),.55),0 0 0 1px rgba(255,255,255,.08) inset;
-  animation:sklSplashPulse 1.05s ease-in-out infinite;}
-.skl-splash-logo img{width:100%;height:100%;object-fit:cover;display:block;}
-@keyframes sklSplashIn{from{opacity:0;transform:scale(.92);}to{opacity:1;transform:scale(1);}}
-@keyframes sklSplashOut{to{opacity:0;pointer-events:none;}}
-@keyframes sklSplashPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.07);}}
-
-/* ----- Variante "déconnecté" : dès qu'on sait (avant même que app.js ne
-   s'exécute — voir le script inline juste après #appSkeleton dans le body)
-   qu'aucune session Supabase n'est probablement persistée, on bascule le
-   squelette vers une forme qui ressemble à l'écran de connexion plutôt qu'au
-   tableau de bord, pour éviter le petit "saut" visuel dashboard → login. */
-#appSkeleton .skl-login-shape{display:none;}
-#appSkeleton.skl-login .skl-dash{display:none;}
-#appSkeleton.skl-login .skl-login-shape{display:flex;flex-direction:column;align-items:center;
-  justify-content:center;flex:1;width:100%;max-width:260px;margin:0 auto;gap:14px;}
-.skl-login-logo{width:76px;height:76px;border-radius:var(--r-md);margin-bottom:4px;}
-.skl-login-brand{width:150px;height:22px;border-radius:8px;}
-.skl-login-tag{width:190px;height:12px;border-radius:6px;}
-.skl-login-btn{width:100%;height:48px;border-radius:var(--r-sm);margin-top:8px;}
 @keyframes sklShimmer{0%{background-position:-360px 0;}100%{background-position:360px 0;}}
 .skl{border-radius:var(--r-sm);background-color:var(--s2);
   background-image:linear-gradient(90deg,var(--s2) 20%,var(--s3) 45%,var(--s2) 70%);
@@ -1568,7 +1524,7 @@ hr.hl{border:none;border-top:1px solid var(--hair);margin:14px 0;}
 .badge{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--r-pill);
   background:var(--ed);color:var(--e2);font-weight:800;font-size:11.5px;letter-spacing:.2px;border:1px solid rgba(var(--e-rgb),.22);}
 .favtile{background:var(--s1);border:1px solid var(--hair);border-radius:var(--r-sm);padding:14px 6px;
-  box-shadow:var(--float-sm);text-align:center;cursor:pointer;transition:transform .15s var(--ease-spring),border-color .15s,box-shadow .15s ease,background .25s ease,color .25s ease;}
+  box-shadow:var(--float-sm);text-align:center;cursor:pointer;transition:transform .15s var(--ease-spring),border-color .15s,box-shadow .15s ease;}
 .favtile:active{transform:scale(.95);border-color:var(--e);}
 .favlab{font-size:10.5px;font-weight:600;margin-top:7px;line-height:1.2;color:var(--snow);}
 .searchbox{position:relative;}
@@ -1619,8 +1575,8 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
   border-radius:999px;padding:5px 11px;font-size:11px;font-weight:700;color:#ffb35c;margin:8px 0 4px;}
 .streak b{font-weight:800;}
 
-.sec-lab{font-size:11px;letter-spacing:1px;color:var(--e2);font-weight:700;margin:16px 0 8px;text-transform:uppercase;
-  display:flex;justify-content:space-between;align-items:center;text-shadow:0 0 10px rgba(var(--e-rgb),.35);}
+.sec-lab{font-size:11px;letter-spacing:1px;color:var(--muted);font-weight:700;margin:16px 0 8px;text-transform:uppercase;
+  display:flex;justify-content:space-between;align-items:center;}
 .sec-lab .link{color:var(--e2);font-weight:600;text-transform:none;letter-spacing:0;font-size:12px;}
 
 .hero-quip{font-size:11.5px;color:var(--e2);font-weight:600;margin-top:4px;}
@@ -1723,13 +1679,12 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
 .ex-swipe-action.right{right:0;}
 /* La carte doit être OPAQUE ici : le glassmorphism (fond semi-transparent + flou 26px) laissait le rouge
    baver sur toute la carte au lieu de rester caché sur ses 88px. On repasse donc en fond plein, comme
-   le fait déjà pour les cartes en cours de glissement, pour la même raison. */
-.ex-swipe-card{position:relative;z-index:1;touch-action:none;margin-bottom:0 !important;
+   le fait déjà #s-outils .card ailleurs dans l'app pour la même raison. */
+.ex-swipe-card{position:relative;z-index:1;touch-action:pan-y;margin-bottom:0 !important;
   transition:transform .28s cubic-bezier(.2,.85,.3,1);will-change:transform;
   background:var(--s1);background-image:var(--grad-card);
   -webkit-backdrop-filter:none;backdrop-filter:none;
-  border:1px solid var(--hair);box-shadow:var(--float-md);
-  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+  border:1px solid var(--hair);box-shadow:var(--float-md);}
 .ex-swipe-card.dragging{transition:none;}
 
 /* Swipe sur une ligne de série (dans le tableau Set/Kg/Reps) — même logique, plus compact */
@@ -1740,60 +1695,22 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
 .set-swipe-action.left{left:0;}
 .set-swipe-action.right{right:0;}
 .set-swipe-row{position:relative;z-index:1;touch-action:pan-y;background:var(--s1);
-  transition:transform .28s cubic-bezier(.2,.85,.3,1);will-change:transform;border-radius:10px;
-  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+  transition:transform .28s cubic-bezier(.2,.85,.3,1);will-change:transform;border-radius:10px;}
 .set-swipe-row.dragging{transition:none;}
-/* La ligne contient des <input> pour kg/reps : eux doivent rester sélectionnables/éditables normalement */
-.set-swipe-row input{-webkit-user-select:text;user-select:text;}
-
-/* ===== RÉORGANISER UN EXERCICE (appui long : la carte se soulève et se glisse en place) ===== */
-.ex-swipe-wrap{will-change:transform;}
 </style>
 </head>
 <body>
 
 <!-- SKELETON — visible instantanément, masqué dès que login/app est prêt -->
 <div id="appSkeleton">
-  <div class="skl-splash"><div class="skl-splash-logo"><img src="icon-192.png" alt=""></div></div>
-
-  <div class="skl-dash">
-    <div class="skl-header"><div class="skl skl-logo"></div><div class="skl skl-bell"></div></div>
-    <div class="skl skl-streak"></div>
-    <div class="skl-greet"><div class="skl skl-line w70"></div><div class="skl skl-line w50"></div></div>
-    <div class="skl skl-hero"></div>
-    <div class="skl-grid"><div class="skl skl-stat"></div><div class="skl skl-stat"></div><div class="skl skl-stat"></div><div class="skl skl-stat"></div></div>
-    <div class="skl skl-session"></div>
-    <div class="skl-nav"><div class="skl skl-navicon"></div><div class="skl skl-navicon"></div><div class="skl skl-navicon"></div><div class="skl skl-navicon"></div><div class="skl skl-navicon"></div></div>
-  </div>
-
-  <!-- Forme "connexion" : utilisée à la place du tableau de bord ci-dessus
-       quand aucune session n'est probablement active (voir script juste
-       après cette div, qui ajoute la classe .skl-login au bon moment). -->
-  <div class="skl-login-shape">
-    <div class="skl skl-login-logo"></div>
-    <div class="skl skl-login-brand"></div>
-    <div class="skl skl-login-tag"></div>
-    <div class="skl skl-login-btn"></div>
-    <div class="skl skl-login-btn"></div>
-  </div>
+  <div class="skl-header"><div class="skl skl-logo"></div><div class="skl skl-bell"></div></div>
+  <div class="skl skl-streak"></div>
+  <div class="skl-greet"><div class="skl skl-line w70"></div><div class="skl skl-line w50"></div></div>
+  <div class="skl skl-hero"></div>
+  <div class="skl-grid"><div class="skl skl-stat"></div><div class="skl skl-stat"></div><div class="skl skl-stat"></div><div class="skl skl-stat"></div></div>
+  <div class="skl skl-session"></div>
+  <div class="skl-nav"><div class="skl skl-navicon"></div><div class="skl skl-navicon"></div><div class="skl skl-navicon"></div><div class="skl skl-navicon"></div><div class="skl skl-navicon"></div></div>
 </div>
-<script>
-/* Devine, de façon synchrone et avant même le chargement d'app.js, si une
-   session Supabase est probablement persistée (clé "sb-...-auth-token" dans
-   localStorage). Si non, on affiche tout de suite le squelette en forme
-   d'écran de connexion plutôt que celui du tableau de bord, pour que la
-   forme du squelette corresponde à la page qui va réellement s'afficher. */
-(function(){
-  try{
-    var hasSession=false;
-    for(var i=0;i<localStorage.length;i++){
-      var k=localStorage.key(i);
-      if(k && k.indexOf('sb-')===0 && k.indexOf('-auth-token')>-1){ hasSession=true; break; }
-    }
-    if(!hasSession) document.getElementById('appSkeleton').classList.add('skl-login');
-  }catch(e){}
-})();
-</script>
 
 <!-- LOGIN / AUTH -->
 <div id="login">
@@ -1803,7 +1720,7 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
       <div class="login-brand man">IKO<span>RUN</span></div>
       <div class="login-tag">Elite Athletic Intelligence</div>
     </div>
-    <div class="login-hero"><svg viewBox="0 0 24 24" width="72" height="72" fill="none" stroke="var(--e)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"/><path d="M5 21l3-6 4-2-2-5M12 8l4 2 2 4M7 12l-2 3"/></svg></div>
+    <div class="login-hero">🏃‍♂️</div>
     <div id="loginMain"></div>
     <div class="login-legal" id="loginLegal"></div>
   </div>
@@ -1814,7 +1731,7 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
   <div class="ob-prog" id="obProg"></div>
   <div class="ob-step on" data-step="1">
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;">
-      <div style="margin-bottom:16px;display:flex;justify-content:center"><svg viewBox="0 0 24 24" width="72" height="72" fill="none" stroke="var(--e)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"/><path d="M5 21l3-6 4-2-2-5M12 8l4 2 2 4M7 12l-2 3"/></svg></div>
+      <div style="font-size:60px;margin-bottom:16px;">🏃‍♂️</div>
       <h1>Bienvenue sur IKORUN</h1>
       <p class="intro">Elite Athletic Intelligence.<br>Ton coaching personnel, calculé scientifiquement, 100% hors-ligne.</p>
     </div>
@@ -1831,8 +1748,8 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
   </div>
   <div class="ob-step" data-step="3">
     <h1>Ton niveau</h1><p class="intro">Sois honnête, le plan s'adapte.</p>
-    <div class="note" style="display:flex;gap:8px;align-items:flex-start"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M9 18h6M10 22h4M12 2a6 6 0 0 0-3 11c1 .8 1 2 1 3h4c0-1 0-2.2 1-3a6 6 0 0 0-3-11z"/></svg><span>Le <b>niveau</b> ajuste l'intensité de ton plan et ton volume d'entraînement, calculés automatiquement. Pas sûr ? Touche <b>« Comment choisir ? »</b>.</span></div>
-    <div class="field"><label style="display:flex;align-items:center;justify-content:space-between">Niveau *<span style="color:var(--e);font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px" onclick="openLevelGuide()"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.7 1.2c0 1.6-2.2 1.8-2.2 3.3"/><path d="M12 17h.01"/></svg>Comment choisir ?</span></label>
+    <div class="note">💡 <span>Le <b>niveau</b> ajuste l'intensité de ton plan et ton volume d'entraînement, calculés automatiquement. Pas sûr ? Touche <b>« Comment choisir ? »</b>.</span></div>
+    <div class="field"><label style="display:flex;align-items:center;justify-content:space-between">Niveau *<span style="color:var(--e);font-size:12px;font-weight:600;cursor:pointer" onclick="openLevelGuide()">ℹ️ Comment choisir ?</span></label>
       <div class="pills" id="ob_level">
         <div class="pill" data-v="Débutant">Débutant</div><div class="pill" data-v="Intermédiaire">Intermédiaire</div>
         <div class="pill" data-v="Confirmé">Confirmé</div><div class="pill" data-v="Très avancé">Très avancé</div><div class="pill" data-v="Élite">Élite</div>
@@ -1847,7 +1764,7 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
   </div>
   <div class="ob-step" data-step="5">
     <h1>Tes performances</h1><p class="intro">Ajoute tes meilleurs chronos. Au moins un est requis.</p>
-    <div class="note" style="display:flex;gap:8px;align-items:flex-start"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M9 18h6M10 22h4M12 2a6 6 0 0 0-3 11c1 .8 1 2 1 3h4c0-1 0-2.2 1-3a6 6 0 0 0-3-11z"/></svg><span>Tes chronos calculent ton <b>VDOT</b> (ta « cylindrée ») et toutes tes <b>allures d'entraînement</b>. Donne au moins un chrono récent et fiable. Choisis la distance puis le temps avec les roues.</span></div>
+    <div class="note">💡 <span>Tes chronos calculent ton <b>VDOT</b> (ta « cylindrée ») et toutes tes <b>allures d'entraînement</b>. Donne au moins un chrono récent et fiable. Choisis la distance puis le temps avec les roues.</span></div>
     <div id="ob_perfs"></div>
     <button class="addperf" id="ob_addperf" onclick="addPerfRow()">＋ Ajouter une autre performance</button>
   </div>
@@ -1858,16 +1775,16 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
 </div>
 
 <!-- GENERIC OVERLAYS -->
-<div class="ov" id="ovSettings"><div class="ov-card"><div class="ov-head"><h2>Paramètres</h2><div class="x" onclick="closeOv('ovSettings')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg></div></div><div id="settingsBody"></div></div></div>
-<div class="ov" id="ovProfile"><div class="ov-card"><div class="ov-head"><h2>Modifier le profil</h2><div class="x" onclick="closeOv('ovProfile')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg></div></div><div id="profileEditBody"></div><div class="ov-foot-save" id="profileEditFoot"></div></div></div>
+<div class="ov" id="ovSettings"><div class="ov-card"><div class="ov-head"><h2>Paramètres</h2><div class="x" onclick="closeOv('ovSettings')">✕</div></div><div id="settingsBody"></div></div></div>
+<div class="ov" id="ovProfile"><div class="ov-card"><div class="ov-head"><h2>Modifier le profil</h2><div class="x" onclick="closeOv('ovProfile')">✕</div></div><div id="profileEditBody"></div><div class="ov-foot-save" id="profileEditFoot"></div></div></div>
 <div class="ov ov-push" id="ovV6Preview"><div class="ov-card"><div class="ov-push-edge" data-ovid="ovV6Preview"></div><div class="ov-head"><div class="x" onclick="closeOv('ovV6Preview')">‹</div><h2>Aperçu — Nouveau design</h2></div><div class="ov-body-scroll" style="padding:0;margin:0 -16px;flex:1;"><iframe id="v6Frame" style="width:100%;height:100%;border:0;background:#000;display:block;"></iframe></div></div></div><div class="ov ov-push" id="ovLib"><div class="ov-card"><div class="ov-push-edge" data-ovid="ovLib"></div><div class="ov-head"><div class="x" onclick="closeOv('ovLib')">‹</div><h2>Bibliothèque</h2></div><div class="ov-body-scroll"><div id="libBody"></div></div></div></div>
-<div class="ov" id="ovCfg"><div class="ov-card"><div class="ov-head"><h2>Configurer</h2><div class="x" onclick="closeOv('ovCfg')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg></div></div><div id="cfgBody"></div></div></div>
+<div class="ov" id="ovCfg"><div class="ov-card"><div class="ov-head"><h2>Configurer</h2><div class="x" onclick="closeOv('ovCfg')">✕</div></div><div id="cfgBody"></div></div></div>
 <div class="ov ov-push" id="ovProg"><div class="ov-card"><div class="ov-push-edge" data-ovid="ovProg"></div><div class="ov-head"><div class="x" onclick="closeOv('ovProg')">‹</div><h2 id="ovProgTitle">Programme</h2></div><div class="ov-body-scroll"><div id="progBody"></div></div></div></div>
-<div class="ov" id="ovLive"><div class="ov-card"><div class="ov-head"><h2 id="liveTitle">Séance</h2><div class="x" onclick="confirmCloseLive()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg></div></div><div id="liveBody"></div></div></div>
+<div class="ov" id="ovLive"><div class="ov-card"><div class="ov-head"><h2 id="liveTitle">Séance</h2><div class="x" onclick="confirmCloseLive()">✕</div></div><div id="liveBody"></div></div></div>
 <div class="ov ov-push" id="ovSheet"><div class="ov-card"><div class="ov-push-edge" data-ovid="ovSheet"></div><div class="ov-head"><div class="x" onclick="closeOv('ovSheet')">‹</div><h2 id="sheetTitle">Séance</h2></div><div class="ov-body-scroll"><div id="sheetBody"></div></div></div></div>
-<div class="ov" id="ovCreate"><div class="ov-card"><div class="ov-head"><h2>Nouveau programme</h2><div class="x" onclick="closeOv('ovCreate')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg></div></div><div id="createBody"></div></div></div>
-<div class="ov" id="ovBadges"><div class="ov-card"><div class="ov-head"><h2 id="ovBadgesTitle">Badges</h2><div class="x" onclick="closeOv('ovBadges')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg></div></div><div id="badgesBody"></div></div></div>
-<div class="ov" id="ovFullPlan"><div class="ov-card"><div class="ov-head"><h2>IKORUN</h2><div class="x" onclick="closeOv('ovFullPlan')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg></div></div><div id="fullPlanBody"></div></div></div>
+<div class="ov" id="ovCreate"><div class="ov-card"><div class="ov-head"><h2>Nouveau programme</h2><div class="x" onclick="closeOv('ovCreate')">✕</div></div><div id="createBody"></div></div></div>
+<div class="ov" id="ovBadges"><div class="ov-card"><div class="ov-head"><h2 id="ovBadgesTitle">Badges</h2><div class="x" onclick="closeOv('ovBadges')">✕</div></div><div id="badgesBody"></div></div></div>
+<div class="ov" id="ovFullPlan"><div class="ov-card"><div class="ov-head"><h2>IKORUN</h2><div class="x" onclick="closeOv('ovFullPlan')">✕</div></div><div id="fullPlanBody"></div></div></div>
 
 <!-- SCROLL ZONE -->
 <div id="scroll">
@@ -1895,7 +1812,7 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
 
 <!-- WHEEL PICKER -->
 <div class="ov" id="ovPicker" style="z-index:13800"><div class="ov-card" style="max-width:430px">
-  <div class="ov-head"><h2 id="pkTitle">Choisir</h2><div class="x" onclick="closeOv('ovPicker')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg></div></div>
+  <div class="ov-head"><h2 id="pkTitle">Choisir</h2><div class="x" onclick="closeOv('ovPicker')">✕</div></div>
   <div id="pkWheels" class="pk-wrap"></div>
   <button class="btn" style="margin-top:18px" id="pkOk">Valider</button>
 </div></div>
@@ -1924,6 +1841,6 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
     // reste same-origin donc fiable partout, y compris iOS.
   );
 </script>
-<script src="app.js?v=18"></script>
+<script src="app.js?v=17"></script>
 </body>
 </html>
