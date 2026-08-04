@@ -3371,7 +3371,10 @@ function boot(){
   if(P.notif!==false) ensureNotifPerm();
   positionNavPill(document.querySelector('.nb.on')||document.querySelector('.nb'));
   window.addEventListener('resize',()=>positionNavPill(document.querySelector('.nb.on')));
-  if(!P.setupDone){ startOnboarding(); return; }  // création profil
+  if(!P.setupDone){
+    alert('[DIAG] boot(): P.setupDone='+JSON.stringify(P.setupDone)+' | P.name='+JSON.stringify(P.name)+' | currentUserId='+JSON.stringify(window.currentUserId)+' | cache a la clé profile='+('profile' in DB._cache));
+    startOnboarding(); return;
+  }  // création profil
   initApp();                                      // app
 }
 /* Ne s'exécute qu'une fois, avant la création du profil : devine la langue
