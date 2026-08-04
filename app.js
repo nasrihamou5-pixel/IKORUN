@@ -8139,7 +8139,6 @@ function renderProfile(){
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('theme')+'</div>'+pfThemeSwitchHTML()+'</div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('appColor')+'</div>'+pfAccentPickerHTML()+'</div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('heart',20,'currentColor')+'</div><div><div class="lr-title">'+t('simplifiedMode')+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px;max-width:200px">'+t('simplifiedModeDesc')+'</div></div><div class="toggle'+(P.easyMode?' on':'')+'" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
-    '<div class="grp-row" onclick="openV6Preview()"><div class="lr-icon">'+ICN('star',20,'currentColor')+'</div><div><div class="lr-title">Aperçu — Nouveau design</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Maquette en test, le thème actuel reste inchangé</div></div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
   h+='<div class="grp-lab stag" style="animation-delay:.15s">'+t('support')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.16s">'+
