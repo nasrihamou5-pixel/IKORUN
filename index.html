@@ -1909,41 +1909,13 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
      URL, le hash ne correspondra plus et le script sera bloqué au lieu de s'exécuter.
      Si tu montes de version un jour, il faudra régénérer le hash sur jsdelivr.com
      (Files > sélectionner le fichier > Show & Configure all links > activer SRI). -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js" onerror="
-  console.error('[IKORUN] jsdelivr indisponible, tentative avec unpkg');
-  var s=document.createElement('script');
-  s.src='https://unpkg.com/@supabase/supabase-js@2.110.8/dist/umd/supabase.js';
-  s.onerror=function(){ alert('[DIAG] Impossible de charger le script Supabase (jsdelivr ET unpkg ont échoué). Vérifie ta connexion et réessaie.'); };
-  s.onload=function(){ window.dispatchEvent(new Event('supabaseScriptReady')); };
-  document.currentScript.after(s);
-"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js"></script>
 <script>
-  function initSupabaseClient(){
-    if(window.supabaseClient) return true; // déjà fait
-    if(typeof supabase === 'undefined') return false; // script pas encore chargé
-    try{
-      window.supabaseClient = supabase.createClient(
-        'https://bsrbzuhvqtjkkmpmxyzw.supabase.co',
-        'sb_publishable_d1eInkDkCJG-Fx4S8UqNgw_Bm6uQuKw',
-        { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
-        // persistSession:true -> le SDK garde la session dans le localStorage de
-        // github.io (premier parti, jamais bloqué). On avait tenté un cookie
-        // HttpOnly cross-site posé par la fonction "auth-session" pour éviter le
-        // localStorage, mais Safari iOS bloque systématiquement les cookies
-        // tiers (cross-site) : le cookie ne survivait jamais à un vrai rechargement
-        // de page, d'où la reconnexion obligatoire à chaque fois. localStorage
-        // reste same-origin donc fiable partout, y compris iOS.
-      );
-      return true;
-    }catch(e){
-      console.error('[IKORUN] createClient a échoué', e);
-      return false;
-    }
-  }
-  initSupabaseClient(); // tentative immédiate (cas normal : jsdelivr a chargé sans souci)
-  // Si le script principal a échoué et que le CDN de secours (unpkg) prend le relais,
-  // on retente dès qu'il signale être prêt (voir onerror du <script> précédent).
-  window.addEventListener('supabaseScriptReady', initSupabaseClient);
+  window.supabaseClient = supabase.createClient(
+    'https://bsrbzuhvqtjkkmpmxyzw.supabase.co',
+    'sb_publishable_d1eInkDkCJG-Fx4S8UqNgw_Bm6uQuKw',
+    { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
+  );
 </script>
 <script src="app.js?v=18"></script>
 </body>
