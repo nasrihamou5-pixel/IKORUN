@@ -6227,11 +6227,6 @@ function renderExDetail(){
     const vol=(e.sets||3)*(parseInt(e.reps)||10)*(e.weight||0);
     h+='<div class="card" style="padding:0;overflow:hidden"><div style="display:flex;text-align:center"><div style="flex:1;padding:13px 4px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0">'+t('setsCap')+'</div><div class="man" style="font-weight:800;font-size:18px">'+e.sets+'</div></div><div style="flex:1;padding:13px 4px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0">'+t('volumeCap')+'</div><div class="man" style="font-weight:800;font-size:18px">'+vol+' kg</div></div><div style="flex:1;padding:13px 4px"><div class="lab" style="margin:0">'+t('durationCap')+'</div><div class="man" style="font-weight:800;font-size:18px">~'+Math.round(e.sets*1.8)+'min</div></div></div></div>';
   } else if(exDetailTab==='muscles'){
-    // Schéma d'anatomie double (face + dos) à la place du tutoriel vidéo
-    const zoneInfo=anatomyZonesFor(f);
-    h+='<div class="card"><div class="card-t">'+t('targetedMusclesTitle')+'</div>'+
-       bodyAnatomyDualSVG(zoneInfo)+
-       '</div>';
     h+='<div class="card">'+
        '<div class="row" style="gap:8px;margin-bottom:6px"><span style="width:9px;height:9px;border-radius:50%;background:var(--bad);flex:0 0 9px"></span><span style="font-weight:800;font-size:14px">'+t('primaryMusclesLabel')+'</span></div>'+
        '<div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:'+(f.secondary&&f.secondary.length?'14px':'0')+'">'+((f.primary||[]).map(trMuscle).join(', ')||'—')+'</div>'+
