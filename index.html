@@ -50,7 +50,7 @@
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src https://fonts.gstatic.com;
   img-src 'self' data: https://raw.githubusercontent.com;
-  connect-src 'self' https://bsrbzuhvqtjkkmpmxyzw.supabase.co wss://bsrbzuhvqtjkkmpmxyzw.supabase.co;
+  connect-src 'self' https://bsrbzuhvqtjkkmpmxyzw.supabase.co wss://bsrbzuhvqtjkkmpmxyzw.supabase.co https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net;
   manifest-src 'self' blob:;
   worker-src 'self' blob:;
   object-src 'none';
@@ -1911,11 +1911,15 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
      (Files > sélectionner le fichier > Show & Configure all links > activer SRI). -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js"></script>
 <script>
-  window.supabaseClient = supabase.createClient(
-    'https://bsrbzuhvqtjkkmpmxyzw.supabase.co',
-    'sb_publishable_d1eInkDkCJG-Fx4S8UqNgw_Bm6uQuKw',
-    { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
-  );
+  try{
+    window.supabaseClient = supabase.createClient(
+      'https://bsrbzuhvqtjkkmpmxyzw.supabase.co',
+      'sb_publishable_d1eInkDkCJG-Fx4S8UqNgw_Bm6uQuKw',
+      { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
+    );
+  }catch(e){
+    console.error('[IKORUN] Le script Supabase (jsdelivr) n\'a pas pu charger, réessaie de recharger la page.', e);
+  }
 </script>
 <script src="app.js?v=18"></script>
 </body>
