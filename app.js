@@ -1068,6 +1068,7 @@ const I18N={
     exWorksAlsoSecondary:', ainsi que {0} en secondaire',severalMuscleGroups:'plusieurs groupes musculaires',
     restBetweenSetsLabel:'Repos entre les séries',volumeCap:'Volume',durationCap:'Durée',
     targetedMusclesTitle:'Muscles ciblés',primaryMusclesLabel:'Muscles primaires',secondaryMusclesLabel:'Muscles secondaires',
+    frontViewLabel:'Face',backViewLabel:'Dos',
     executionLabel:'Exécution',defaultExecutionHint:'Réalise le mouvement de façon contrôlée, amplitude complète.',
     adviceLabel:'Conseils',startLabel:'Démarrer',
     exBreathGeneric:'Inspire pendant la phase négative (descente/étirement), expire pendant l\u2019effort (poussée/contraction).',
@@ -1521,6 +1522,7 @@ const I18N={
     exWorksAlsoSecondary:', as well as {0} as secondary muscles',severalMuscleGroups:'several muscle groups',
     restBetweenSetsLabel:'Rest between sets',volumeCap:'Volume',durationCap:'Duration',
     targetedMusclesTitle:'Targeted muscles',primaryMusclesLabel:'Primary muscles',secondaryMusclesLabel:'Secondary muscles',
+    frontViewLabel:'Front',backViewLabel:'Back',
     executionLabel:'Execution',defaultExecutionHint:'Perform the movement in a controlled way, with a full range of motion.',
     adviceLabel:'Tips',startLabel:'Start',
     exBreathGeneric:'Inhale during the negative phase (lowering/stretch), exhale during the effort (push/contraction).',
@@ -1974,6 +1976,7 @@ const I18N={
     exWorksAlsoSecondary:'، بالإضافة إلى {0} كعضلات ثانوية',severalMuscleGroups:'عدة مجموعات عضلية',
     restBetweenSetsLabel:'الراحة بين المجموعات',volumeCap:'الحجم',durationCap:'المدة',
     targetedMusclesTitle:'العضلات المستهدفة',primaryMusclesLabel:'العضلات الأساسية',secondaryMusclesLabel:'العضلات الثانوية',
+    frontViewLabel:'أمامي',backViewLabel:'خلفي',
     executionLabel:'التنفيذ',defaultExecutionHint:'نفّذ الحركة بشكل متحكم به، بمدى حركة كامل.',
     adviceLabel:'نصائح',startLabel:'بدء',
     exBreathGeneric:'استنشق أثناء المرحلة السلبية (النزول/التمدد)، وازفر أثناء المجهود (الدفع/الانقباض).',
@@ -6108,96 +6111,92 @@ function addExToProg(progId,e){
   if(!p.kind){ toast(t('defaultProgramsNotEditable')); return; }
   closeOv('ovLib'); openCfg(e,(cfg)=>{ p.ex.push(cfg); saveAll(); openProg(progId); });
 }
-/* ===== ANATOMIE — zones de muscles pour l'onglet "Muscles" ===== */
+/* ===== ANATOMIE — silhouette réaliste face/dos pour l'onglet "Muscles" ===== */
+// Table de correspondance : nom de muscle (tel qu'utilisé dans les données d'exercices)
+// -> clé de zone visuelle sur la silhouette. Plusieurs noms peuvent pointer vers la même
+// zone (ex: 'Pectoraux haut'/'Pectoraux bas' -> 'Pectoraux').
+const MUSCLE_TO_ZONE={
+  'Cou':'Cou','Épaules':'Epaules','Deltoïde antérieur':'Epaules','Deltoïde latéral':'Epaules','Arrière épaules':'Epaules',
+  'Pectoraux':'Pectoraux','Pectoraux haut':'Pectoraux','Pectoraux bas':'Pectoraux',
+  'Abdominaux':'Abdominaux','Transverse':'Abdominaux','Core':'Abdominaux','Obliques':'Obliques',
+  'Biceps':'Biceps','Triceps':'Triceps','Avant-bras':'AvantBras',
+  'Dos':'Dos','Grand dorsal':'Dos','Trapèzes':'Trapezes','Lombaires':'Lombaires',
+  'Quadriceps':'Quadriceps','Ischios':'Ischios','Adducteurs':'Adducteurs','Abducteurs':'Abducteurs',
+  'Fessiers':'Fessiers','Mollets':'Mollets'
+};
+// Silhouette athlétique unique (tête+tronc+bras+mains+jambes+pieds) réutilisée pour les deux vues.
+function bodySilhouetteSVG(){
+  return '<path fill="var(--s3)" stroke="var(--hair2)" stroke-width="1.5" stroke-linejoin="round" d="M107,55 L107,74 Q120,80 133,74 L133,55 Z'+
+    'M107,66 Q88,68 80,80 Q70,84 60,96 Q46,104 40,124 L36,182 Q35,198 43,208 L52,206 Q46,196 48,182 L54,138 Q56,120 66,106 Q76,92 90,86 Q80,110 78,140 Q76,178 82,206 L76,236 L84,240 Q120,250 156,240 L164,236 L158,206 Q164,178 162,140 Q160,110 150,86 Q164,92 174,106 Q184,120 186,138 L192,182 Q194,196 188,206 L197,208 Q205,198 204,182 L200,124 Q194,104 180,96 Q170,84 160,80 Q152,68 133,66 Q120,76 107,66 Z'+
+    'M43,208 Q30,214 29,232 L28,296 Q28,312 38,320 Q47,324 52,317 Q44,308 46,294 L50,224 Q48,214 43,208 Z'+
+    'M197,208 Q210,214 211,232 L212,296 Q212,312 202,320 Q193,324 188,317 Q196,308 194,294 L190,224 Q192,214 197,208 Z'+
+    'M84,240 Q86,270 90,284 L84,352 L114,357 L118,292 Q119,272 120,264 Q121,272 122,292 L126,357 L156,352 L150,284 Q154,270 156,240 Q120,250 84,240 Z'+
+    'M84,352 L114,357 L112,432 Q110,472 103,496 Q99,507 90,505 Q83,503 84,492 L89,432 Z'+
+    'M156,352 L126,357 L128,432 Q130,472 137,496 Q141,507 150,505 Q157,503 156,492 L151,432 Z'+
+    '"/>'+
+    '<circle cx="120" cy="34" r="25" fill="var(--s3)" stroke="var(--hair2)" stroke-width="1.5"/>'+
+    '<ellipse cx="94" cy="500" rx="15" ry="9" fill="var(--s3)" stroke="var(--hair2)" stroke-width="1.5"/>'+
+    '<ellipse cx="146" cy="500" rx="15" ry="9" fill="var(--s3)" stroke="var(--hair2)" stroke-width="1.5"/>';
+}
+// Zones "vue de face" : formes anatomiques (pas de simples rectangles) épousant la silhouette.
 const ANATOMY_FRONT_ZONES={
-  'Cou':[{type:'rect',x:90,y:46,w:20,h:14,rx:6}],
-  'Épaules':[{type:'ellipse',cx:52,cy:70,rx:15,ry:14},{type:'ellipse',cx:148,cy:70,rx:15,ry:14}],
-  'Pectoraux':[{type:'rect',x:66,y:64,w:68,h:34,rx:14}],
-  'Abdominaux':[{type:'rect',x:76,y:102,w:48,h:55,rx:10}],
-  'Biceps':[{type:'rect',x:38,y:80,w:20,h:48,rx:10},{type:'rect',x:142,y:80,w:20,h:48,rx:10}],
-  'Avant-bras':[{type:'rect',x:34,y:130,w:18,h:48,rx:9},{type:'rect',x:148,y:130,w:18,h:48,rx:9}],
-  'Adducteurs':[{type:'rect',x:92,y:190,w:8,h:70,rx:4},{type:'rect',x:100,y:190,w:8,h:70,rx:4}],
-  'Quadriceps':[{type:'rect',x:70,y:185,w:26,h:78,rx:13},{type:'rect',x:104,y:185,w:26,h:78,rx:13}]
+  Cou:[{type:'rect',x:107,y:56,w:26,h:18,rx:8}],
+  Epaules:[{type:'ellipse',cx:58,cy:105,rx:16,ry:18},{type:'ellipse',cx:182,cy:105,rx:16,ry:18}],
+  Pectoraux:[{type:'path',d:'M119,94 Q100,89 91,101 Q85,113 91,126 Q100,135 119,131 Z'},{type:'path',d:'M121,94 Q140,89 149,101 Q155,113 149,126 Q140,135 121,131 Z'}],
+  Obliques:[{type:'path',d:'M80,150 Q76,175 82,205 L92,202 Q86,175 90,155 Z'},{type:'path',d:'M160,150 Q164,175 158,205 L148,202 Q154,175 150,155 Z'}],
+  Abdominaux:[
+    {type:'rect',x:101,y:141,w:17,h:26,rx:5},{type:'rect',x:122,y:141,w:17,h:26,rx:5},
+    {type:'rect',x:101,y:170,w:17,h:26,rx:5},{type:'rect',x:122,y:170,w:17,h:26,rx:5},
+    {type:'rect',x:103,y:199,w:15,h:26,rx:5},{type:'rect',x:122,y:199,w:15,h:26,rx:5}
+  ],
+  Biceps:[{type:'ellipse',cx:48,cy:155,rx:11,ry:30},{type:'ellipse',cx:192,cy:155,rx:11,ry:30}],
+  AvantBras:[{type:'ellipse',cx:43,cy:245,rx:9,ry:42},{type:'ellipse',cx:197,cy:245,rx:9,ry:42}],
+  Adducteurs:[{type:'rect',x:114,y:255,w:12,h:90,rx:5}],
+  Quadriceps:[{type:'path',d:'M86,250 Q84,300 90,345 L114,350 L112,255 Q100,250 86,250 Z'},{type:'path',d:'M154,250 Q156,300 150,345 L126,350 L128,255 Q140,250 154,250 Z'}]
 };
+// Zones "vue de dos".
 const ANATOMY_BACK_ZONES={
-  'Trapèzes':[{type:'rect',x:74,y:56,w:52,h:26,rx:10}],
-  'Épaules':[{type:'ellipse',cx:52,cy:70,rx:15,ry:14},{type:'ellipse',cx:148,cy:70,rx:15,ry:14}],
-  'Dos':[{type:'rect',x:66,y:82,w:68,h:56,rx:14}],
-  'Triceps':[{type:'rect',x:38,y:80,w:20,h:48,rx:10},{type:'rect',x:142,y:80,w:20,h:48,rx:10}],
-  'Avant-bras':[{type:'rect',x:34,y:130,w:18,h:48,rx:9},{type:'rect',x:148,y:130,w:18,h:48,rx:9}],
-  'Lombaires':[{type:'rect',x:76,y:138,w:48,h:24,rx:10}],
-  'Fessiers':[{type:'rect',x:70,y:162,w:60,h:36,rx:16}],
-  'Ischios':[{type:'rect',x:70,y:198,w:26,h:66,rx:13},{type:'rect',x:104,y:198,w:26,h:66,rx:13}],
-  'Abducteurs':[{type:'rect',x:60,y:198,w:10,h:66,rx:5},{type:'rect',x:130,y:198,w:10,h:66,rx:5}],
-  'Mollets':[{type:'rect',x:74,y:264,w:22,h:70,rx:11},{type:'rect',x:104,y:264,w:22,h:70,rx:11}]
+  Trapezes:[{type:'path',d:'M107,66 Q90,72 84,90 Q100,100 120,96 Q140,100 156,90 Q150,72 133,66 Q120,76 107,66 Z'}],
+  Epaules:[{type:'ellipse',cx:58,cy:105,rx:16,ry:18},{type:'ellipse',cx:182,cy:105,rx:16,ry:18}],
+  Dos:[{type:'path',d:'M96,100 Q80,110 78,140 Q77,168 88,192 L104,182 Q96,158 98,132 Q99,114 108,102 Z'},{type:'path',d:'M144,100 Q160,110 162,140 Q163,168 152,192 L136,182 Q144,158 142,132 Q141,114 132,102 Z'}],
+  Lombaires:[{type:'path',d:'M104,182 Q120,190 136,182 L134,225 Q120,231 106,225 Z'}],
+  Triceps:[{type:'ellipse',cx:48,cy:155,rx:11,ry:30},{type:'ellipse',cx:192,cy:155,rx:11,ry:30}],
+  AvantBras:[{type:'ellipse',cx:43,cy:245,rx:9,ry:42},{type:'ellipse',cx:197,cy:245,rx:9,ry:42}],
+  Fessiers:[{type:'path',d:'M84,240 Q86,260 92,270 Q120,278 148,270 Q154,260 156,240 Q120,250 84,240 Z'}],
+  Abducteurs:[{type:'path',d:'M78,244 Q73,258 78,273 L89,270 Q85,258 87,246 Z'},{type:'path',d:'M162,244 Q167,258 162,273 L151,270 Q155,258 153,246 Z'}],
+  Ischios:[{type:'path',d:'M88,284 Q86,318 90,345 L114,350 L113,272 Q100,278 88,284 Z'},{type:'path',d:'M152,284 Q154,318 150,345 L126,350 L127,272 Q140,278 152,284 Z'}],
+  Mollets:[{type:'path',d:'M89,362 Q86,395 92,422 L112,424 L110,366 Q100,362 89,362 Z'},{type:'path',d:'M151,362 Q154,395 148,422 L128,424 L130,366 Q140,362 151,362 Z'}]
 };
-function anatomyZoneKey(raw){
-  if(!raw) return null;
-  const keys=Object.keys(ANATOMY_FRONT_ZONES).concat(Object.keys(ANATOMY_BACK_ZONES));
-  let best=null;
-  keys.forEach(k=>{ if(raw.indexOf(k)!==-1 && (!best||k.length>best.length)) best=k; });
-  return best;
-}
-function anatomyZonesFor(f){
-  const zones=[];
-  (f.primary||[]).forEach(m=>{ const k=anatomyZoneKey(m); if(k && !zones.find(z=>z.key===k)) zones.push({key:k,strength:'primary'}); });
-  (f.secondary||[]).forEach(m=>{ const k=anatomyZoneKey(m); if(k && !zones.find(z=>z.key===k)) zones.push({key:k,strength:'secondary'}); });
-  const back=zones.some(z=>ANATOMY_BACK_ZONES[z.key] && !ANATOMY_FRONT_ZONES[z.key]);
-  return {zones,view:back?'back':'front'};
-}
 function anatomyShapeSVG(s,fill,opacity){
   if(s.type==='rect') return '<rect x="'+s.x+'" y="'+s.y+'" width="'+s.w+'" height="'+s.h+'" rx="'+s.rx+'" fill="'+fill+'" opacity="'+opacity+'"/>';
+  if(s.type==='path') return '<path d="'+s.d+'" fill="'+fill+'" opacity="'+opacity+'"/>';
   return '<ellipse cx="'+s.cx+'" cy="'+s.cy+'" rx="'+s.rx+'" ry="'+s.ry+'" fill="'+fill+'" opacity="'+opacity+'"/>';
 }
 const ANATOMY_STRENGTH_COLOR={primary:'var(--bad)',secondary:'var(--e)'};
-function bodySilhouetteSVG(){
-  return '<circle cx="100" cy="30" r="20" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<rect x="90" y="46" width="20" height="16" rx="6" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<rect x="64" y="60" width="72" height="80" rx="20" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<rect x="38" y="66" width="20" height="62" rx="10" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<rect x="142" y="66" width="20" height="62" rx="10" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<rect x="34" y="126" width="18" height="52" rx="9" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<rect x="148" y="126" width="18" height="52" rx="9" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<circle cx="43" cy="184" r="9" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<circle cx="157" cy="184" r="9" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<rect x="68" y="158" width="64" height="30" rx="14" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<rect x="70" y="185" width="26" height="80" rx="13" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<rect x="104" y="185" width="26" height="80" rx="13" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<rect x="74" y="264" width="22" height="72" rx="11" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<rect x="104" y="264" width="22" height="72" rx="11" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<ellipse cx="85" cy="342" rx="14" ry="8" fill="var(--s3)" stroke="var(--hair2)"/>'+
-    '<ellipse cx="115" cy="342" rx="14" ry="8" fill="var(--s3)" stroke="var(--hair2)"/>';
+function anatomyZonesFor(f){
+  const zones=[];
+  (f.primary||[]).forEach(m=>{ const k=MUSCLE_TO_ZONE[m]; if(k && !zones.find(z=>z.key===k)) zones.push({key:k,strength:'primary'}); });
+  (f.secondary||[]).forEach(m=>{ const k=MUSCLE_TO_ZONE[m]; if(k && !zones.find(z=>z.key===k)) zones.push({key:k,strength:'secondary'}); });
+  return {zones};
 }
-function bodyAnatomySVG(zoneInfo,view){
-  const ZONES=view==='back'?ANATOMY_BACK_ZONES:ANATOMY_FRONT_ZONES;
+function bodyAnatomySVGView(zoneInfo,ZONES){
   let overlays='';
   zoneInfo.zones.forEach(z=>{
     const shapes=ZONES[z.key]; if(!shapes) return;
     const fill=ANATOMY_STRENGTH_COLOR[z.strength]||'var(--e)';
-    const opacity=z.strength==='primary'?0.95:0.75;
+    const opacity=z.strength==='primary'?0.92:0.62;
     shapes.forEach(s=>{ overlays+=anatomyShapeSVG(s,fill,opacity); });
   });
-  return '<svg viewBox="0 0 200 360" style="width:100%;max-width:260px;display:block;margin:0 auto">'+bodySilhouetteSVG()+overlays+'</svg>';
+  return '<svg viewBox="0 0 240 520" style="width:100%;display:block">'+bodySilhouetteSVG()+overlays+'</svg>';
 }
-/* Double silhouette face+dos côte à côte, façon fiche "Muscles ciblés" */
+// Double silhouette face+dos côte à côte — toujours les deux vues, comme dans les apps premium.
 function bodyAnatomyDualSVG(zoneInfo){
-  const frontSVG=bodyAnatomySVGView(zoneInfo,'front');
-  const backSVG=bodyAnatomySVGView(zoneInfo,'back');
-  return '<div style="display:flex;gap:6px;align-items:flex-start">'+
-    '<div style="flex:1;min-width:0">'+frontSVG+'</div>'+
-    '<div style="flex:1;min-width:0">'+backSVG+'</div>'+
+  const frontSVG=bodyAnatomySVGView(zoneInfo,ANATOMY_FRONT_ZONES);
+  const backSVG=bodyAnatomySVGView(zoneInfo,ANATOMY_BACK_ZONES);
+  return '<div style="display:flex;gap:10px;align-items:flex-start">'+
+    '<div style="flex:1;min-width:0;text-align:center"><div class="lab" style="margin-bottom:2px">'+t('frontViewLabel')+'</div>'+frontSVG+'</div>'+
+    '<div style="flex:1;min-width:0;text-align:center"><div class="lab" style="margin-bottom:2px">'+t('backViewLabel')+'</div>'+backSVG+'</div>'+
     '</div>';
-}
-function bodyAnatomySVGView(zoneInfo,view){
-  const ZONES=view==='back'?ANATOMY_BACK_ZONES:ANATOMY_FRONT_ZONES;
-  let overlays='';
-  zoneInfo.zones.forEach(z=>{
-    const shapes=ZONES[z.key]; if(!shapes) return;
-    const fill=ANATOMY_STRENGTH_COLOR[z.strength]||'var(--e)';
-    const opacity=z.strength==='primary'?0.95:0.75;
-    shapes.forEach(s=>{ overlays+=anatomyShapeSVG(s,fill,opacity); });
-  });
-  return '<svg viewBox="0 0 200 360" style="width:100%;display:block">'+bodySilhouetteSVG()+overlays+'</svg>';
 }
 
 /* ===== VUE EXERCICE DÉTAILLÉE (onglets) ===== */
@@ -6227,6 +6226,10 @@ function renderExDetail(){
     const vol=(e.sets||3)*(parseInt(e.reps)||10)*(e.weight||0);
     h+='<div class="card" style="padding:0;overflow:hidden"><div style="display:flex;text-align:center"><div style="flex:1;padding:13px 4px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0">'+t('setsCap')+'</div><div class="man" style="font-weight:800;font-size:18px">'+e.sets+'</div></div><div style="flex:1;padding:13px 4px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0">'+t('volumeCap')+'</div><div class="man" style="font-weight:800;font-size:18px">'+vol+' kg</div></div><div style="flex:1;padding:13px 4px"><div class="lab" style="margin:0">'+t('durationCap')+'</div><div class="man" style="font-weight:800;font-size:18px">~'+Math.round(e.sets*1.8)+'min</div></div></div></div>';
   } else if(exDetailTab==='muscles'){
+    const zoneInfo=anatomyZonesFor(f);
+    h+='<div class="card"><div class="card-t">'+t('targetedMusclesTitle')+'</div>'+
+       bodyAnatomyDualSVG(zoneInfo)+
+       '</div>';
     h+='<div class="card">'+
        '<div class="row" style="gap:8px;margin-bottom:6px"><span style="width:9px;height:9px;border-radius:50%;background:var(--bad);flex:0 0 9px"></span><span style="font-weight:800;font-size:14px">'+t('primaryMusclesLabel')+'</span></div>'+
        '<div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:'+(f.secondary&&f.secondary.length?'14px':'0')+'">'+((f.primary||[]).map(trMuscle).join(', ')||'—')+'</div>'+
