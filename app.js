@@ -3371,10 +3371,7 @@ function boot(){
   if(P.notif!==false) ensureNotifPerm();
   positionNavPill(document.querySelector('.nb.on')||document.querySelector('.nb'));
   window.addEventListener('resize',()=>positionNavPill(document.querySelector('.nb.on')));
-  if(!P.setupDone){
-    alert('[DIAG2] boot(): setupDone='+JSON.stringify(P.setupDone)+' | currentUserId='+JSON.stringify(window.currentUserId)+' | supabaseClient existe='+(!!window.supabaseClient)+' | url='+location.href.slice(0,80));
-    startOnboarding(); return;
-  }  // création profil
+  if(!P.setupDone){ startOnboarding(); return; }  // création profil  // création profil
   initApp();                                      // app
 }
 /* Ne s'exécute qu'une fois, avant la création du profil : devine la langue
@@ -3429,12 +3426,26 @@ async function startApp(){
     ensurePublicProfile().then(syncPublicProfile);
   }
 
+  // IMPORTANT : on enregistre l'écouteur AVANT tout appel à getSession().
+  // Sinon, si le retour de Google (avec le jeton dans l'URL) est traité très
+  // vite par le SDK, l'évènement SIGNED_IN peut arriver avant que ce code
+  // n'écoute encore — et on le rate silencieusement (l'app reste bloquée sur
+  // l'onboarding malgré une connexion réussie côté serveur).
+  window.supabaseClient.auth.onAuthStateChange(async (event, session) => {
+    if((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session){
+      const wasFirstLogin = !_loggedInOnce;
+      await finishLogin(session.user.id, session.user.email);
+      if(wasFirstLogin){ toast(t('welcomeToast')); sfx&&sfx('goal'); }
+    } else if(event === 'SIGNED_OUT'){
+      location.reload();
+    }
+  });
+
   // getSession() ne dépend pas du cache local déchiffré : on le lance sans
   // attendre DB_READY, qui tourne déjà en tâche de fond depuis le chargement
   // du script (économise un aller-retour réseau + IndexedDB en série).
   try{
     const { data:{ session } } = await window.supabaseClient.auth.getSession();
-    alert('[DIAG3] getSession() -> session trouvée='+(!!session)+' | user='+(session&&session.user?session.user.email:'aucun')+' | hash présent dans URL='+(location.hash.length>0)+' | hash='+location.hash.slice(0,60));
     if(session && session.user){
       await finishLogin(session.user.id, session.user.email);
     } else {
@@ -3450,15 +3461,6 @@ async function startApp(){
     _markSettled();
     startLogin();
   }
-  window.supabaseClient.auth.onAuthStateChange(async (event, session) => {
-    if(event === 'SIGNED_IN' && session){
-      const wasFirstLogin = !_loggedInOnce;
-      await finishLogin(session.user.id, session.user.email);
-      if(wasFirstLogin){ toast(t('welcomeToast')); sfx&&sfx('goal'); }
-    } else if(event === 'SIGNED_OUT'){
-      location.reload();
-    }
-  });
 }
 
 function logout(){ signOutUser(); }
