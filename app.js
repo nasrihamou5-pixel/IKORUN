@@ -3480,8 +3480,13 @@ function initApp(){
   scheduleMotionSettle(1400);
   // Reprise automatique d'une séance muscu interrompue
   setTimeout(maybeResumeLive,600);
+  // Détection des séances passées non faites → marque s.missed=true et ouvre
+  // le flow "pourquoi manquée ?" (s'enchaîne tout seul sur les suivantes via
+  // finalizeMissedSession). AVANT weeklyAdaptiveRegen : sans ça, missedCount
+  // reste toujours à 0 et le plan ne s'adapte jamais après des jours d'absence.
+  setTimeout(checkMissedSessions,700);
   // Régénération hebdomadaire adaptative du plan (au moins 1x/semaine si nécessaire)
-  setTimeout(weeklyAdaptiveRegen,800);
+  setTimeout(weeklyAdaptiveRegen,1000);
 }
 function confirmRegenPlan(){
   customConfirm(t('regenConfirm'),()=>{ PLAN=null; openPlanSetup(); },{danger:true});
