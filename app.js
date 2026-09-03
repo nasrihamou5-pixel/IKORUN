@@ -783,6 +783,27 @@ const DB = {
   remove(k){ delete this._cache[k]; localStorage.removeItem('vvv_'+k); cloudPush(k, null); }
 };
 
+/* ---------- ISOLATION DES DONNÉES LOCALES ENTRE COMPTES ----------
+   Bug corrigé : le cache local (DB._cache / localStorage 'vvv_*') n'était
+   jamais rattaché à un utilisateur précis. En se déconnectant d'un compte
+   réel puis en se connectant en invité (ou avec un autre compte), l'app
+   réutilisait telle quelle l'ancienne donnée locale — et DB.save() la
+   repoussait même vers le cloud du NOUVEAU compte (fuite de données entre
+   comptes sur un même appareil). 'vvv_owner_uid' (en clair, ne contient que
+   l'identifiant, aucune donnée perso) mémorise à qui appartient le cache
+   local actuel ; tout changement d'utilisateur déclenche un nettoyage complet
+   avant la moindre lecture/écriture pour ce nouveau compte. */
+function wipeLocalCache(){
+  Object.keys(localStorage).filter(k=>k.startsWith('vvv_')).forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+  DB._cache={};
+}
+function ensureLocalCacheOwnership(uid){
+  let owner=null;
+  try{ owner=localStorage.getItem('vvv_owner_uid'); }catch(e){}
+  if(owner && owner!==uid) wipeLocalCache();
+  try{ localStorage.setItem('vvv_owner_uid', uid); }catch(e){}
+}
+
 /* ---------- STATE ---------- */
 let P, SESS, MSESS, CUSTOM, PLAN, GOALS, AGENDA, XP, RECORDS, PREFS, WEIGHTLOG, TRACKER, SESSLOG, MUSCU_PR;
 
@@ -3496,6 +3517,7 @@ async function startApp(){
     window.currentUserEmail = email;
     window.isGuestUser = !!isAnon;
     await window.DB_READY; // déchiffrement local — tourne en parallèle des appels réseau ci-dessus, donc déjà prêt ou presque
+    ensureLocalCacheOwnership(userId); // purge le cache d'un éventuel compte précédent avant toute lecture/écriture
     await cloudPullAll(userId);
     reloadState();
     saveAll();
@@ -3520,6 +3542,7 @@ async function startApp(){
       await finishLogin(session.user.id, session.user.email, isAnonSession(session.user));
       if(wasFirstLogin){ toast(t('welcomeToast')); sfx&&sfx('goal'); }
     } else if(event === 'SIGNED_OUT'){
+      wipeLocalCache(); // purge immédiate des données locales à la déconnexion (hygiène + sécurité sur appareil partagé)
       location.reload();
     }
   });
