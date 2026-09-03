@@ -196,7 +196,14 @@ function signOutUser(){
    #loginMain est généré ici (jamais du HTML statique) pour rester traduit
    dans les 3 langues de l'app — cf renderLoginMain() rappelée par setLang(). */
 let loginMode='login'; // 'login' | 'signup' | 'forgot'
-function switchLoginMode(m){ loginMode=m; renderLoginMain(); }
+function switchLoginMode(m){
+  loginMode=m; renderLoginMain();
+  if(m==='signup'){
+    let seen=false;
+    try{ seen=localStorage.getItem('ikorun_signupGuideSeen')==='1'; }catch(e){}
+    if(!seen) setTimeout(startSignupGuide,450);
+  }
+}
 function isEmailValid(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((v||'').trim()); }
 const GOOGLE_ICON_SVG='<svg viewBox="0 0 48 48" width="20" height="20"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.6 30.2 0 24 0 14.6 0 6.4 5.4 2.5 13.3l7.8 6C12.2 13.5 17.6 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.5 3-2.2 5.5-4.7 7.2l7.3 5.7c4.3-4 6.9-9.9 6.9-17.4z"/><path fill="#FBBC05" d="M10.3 28.3c-.5-1.4-.8-2.9-.8-4.3s.3-3 .8-4.3l-7.8-6C.9 16.9 0 20.3 0 24s.9 7.1 2.5 10.3l7.8-6z"/><path fill="#34A853" d="M24 48c6.2 0 11.5-2 15.3-5.5l-7.3-5.7c-2 1.4-4.7 2.3-8 2.3-6.4 0-11.8-4-13.7-9.8l-7.8 6C6.4 42.6 14.6 48 24 48z"/></svg>';
 function googleBtnHtml(){ return '<button class="gbtn" onclick="signInWithGoogle()"><span class="gicon">'+GOOGLE_ICON_SVG+'</span>'+t('continueWithGoogleBtn')+'</button>'; }
@@ -227,6 +234,7 @@ function renderLoginMain(){
     h+='<div class="login-or">'+t('orDividerLabel')+'</div>';
     h+=googleBtnHtml();
     h+='<div class="login-guest" onclick="switchLoginMode(\'login\')">'+t('haveAccountLink')+'</div>';
+    h+='<div class="login-guest subtle" onclick="startSignupGuide()">'+t('signupHelpLink')+'</div>';
   } else {
     h+='<h1 class="login-h1">'+t('forgotTitle')+'</h1>';
     h+='<p class="login-sub">'+t('forgotSub')+'</p>';
@@ -1282,7 +1290,12 @@ const I18N={
     tour_stats_t:'Tes statistiques',tour_stats_d:'Kilomètres, séances, VDOT, records personnels... tout ton historique et ta progression sont ici.',
     tour_outils_t:'La boîte à outils',tour_outils_d:'Calculateur d\'allure, VDOT, IMC, chrono, minuteur... Cherche l\'outil qu\'il te faut ou garde tes favoris à portée de main.',
     tour_profil_t:'Ton profil',tour_profil_d:'Niveau, XP, badges, thème, langue et réglages de compte : tout se gère depuis cet onglet.',
-    tour_final_t:'Prêt à commencer ?',tour_final_d:'Configure ton objectif et génère ton plan personnalisé — c\'est le moment !'
+    tour_final_t:'Prêt à commencer ?',tour_final_d:'Configure ton objectif et génère ton plan personnalisé — c\'est le moment !',
+    tourGotItBtn:'Compris',signupHelpLink:'Besoin d\'aide ?',
+    tour_sg_welcome_t:'On crée ton compte ?',tour_sg_welcome_d:'Trois petites infos et c\'est parti — ça prend 30 secondes.',
+    tour_sg_email_t:'Ton email',tour_sg_email_d:'Il te sert à te connecter et à recevoir le lien de confirmation. Pas de spam, promis.',
+    tour_sg_password_t:'Choisis un mot de passe',tour_sg_password_d:'8 caractères minimum. Tu le retaperas juste en dessous pour confirmer.',
+    tour_sg_submit_t:'C\'est prêt',tour_sg_submit_d:'Un email de confirmation t\'attend juste après — clique sur le lien, puis reviens créer ton profil.'
   },
   en:{
     nav_home:'Home',nav_sport:'Sport',nav_stats:'Stats',nav_outils:'Tools',nav_profil:'Profile',
@@ -1747,7 +1760,12 @@ const I18N={
     tour_stats_t:'Your statistics',tour_stats_d:'Kilometers, sessions, VDOT, personal records... your whole history and progress live here.',
     tour_outils_t:'The toolbox',tour_outils_d:'Pace calculator, VDOT, BMI, stopwatch, timer... find the tool you need or keep your favorites close by.',
     tour_profil_t:'Your profile',tour_profil_d:'Level, XP, badges, theme, language and account settings — all managed from this tab.',
-    tour_final_t:'Ready to start?',tour_final_d:'Set your goal and generate your personalized plan — now\'s the time!'
+    tour_final_t:'Ready to start?',tour_final_d:'Set your goal and generate your personalized plan — now\'s the time!',
+    tourGotItBtn:'Got it',signupHelpLink:'Need help?',
+    tour_sg_welcome_t:'Let\'s create your account',tour_sg_welcome_d:'Three quick things and you\'re set — takes 30 seconds.',
+    tour_sg_email_t:'Your email',tour_sg_email_d:'Used to sign in and to receive your confirmation link. No spam, promise.',
+    tour_sg_password_t:'Pick a password',tour_sg_password_d:'8 characters minimum. You\'ll retype it just below to confirm.',
+    tour_sg_submit_t:'All set',tour_sg_submit_d:'A confirmation email is waiting for you next — click the link, then come back to set up your profile.'
   },
   ar:{
     nav_home:'الرئيسية',nav_sport:'رياضة',nav_stats:'إحصائيات',nav_outils:'أدوات',nav_profil:'الملف',
@@ -2213,7 +2231,12 @@ const I18N={
     tour_stats_t:'إحصائياتك',tour_stats_d:'الكيلومترات، الحصص، VDOT، أرقامك القياسية... كل تاريخك وتقدمك هنا.',
     tour_outils_t:'صندوق الأدوات',tour_outils_d:'حاسبة الوتيرة، VDOT، مؤشر كتلة الجسم، ساعة الإيقاف، المؤقت... ابحث عن الأداة التي تحتاجها أو احتفظ بمفضلاتك في متناول يدك.',
     tour_profil_t:'ملفك الشخصي',tour_profil_d:'المستوى، نقاط الخبرة، الأوسمة، المظهر، اللغة، وإعدادات الحساب — كلها تُدار من هذا القسم.',
-    tour_final_t:'مستعد للبدء؟',tour_final_d:'حدّد هدفك وأنشئ خطتك المخصصة — الوقت الآن!'
+    tour_final_t:'مستعد للبدء؟',tour_final_d:'حدّد هدفك وأنشئ خطتك المخصصة — الوقت الآن!',
+    tourGotItBtn:'فهمت',signupHelpLink:'تحتاج مساعدة؟',
+    tour_sg_welcome_t:'لننشئ حسابك',tour_sg_welcome_d:'ثلاث معلومات صغيرة وننطلق — الأمر يستغرق 30 ثانية.',
+    tour_sg_email_t:'بريدك الإلكتروني',tour_sg_email_d:'يُستخدم لتسجيل الدخول ولاستلام رابط التأكيد. بلا رسائل مزعجة، وعد.',
+    tour_sg_password_t:'اختر كلمة مرور',tour_sg_password_d:'8 أحرف كحد أدنى. ستعيد كتابتها في الأسفل للتأكيد.',
+    tour_sg_submit_t:'كل شيء جاهز',tour_sg_submit_d:'بريد تأكيد ينتظرك بعدها مباشرة — اضغط على الرابط، ثم عد لإنشاء ملفك الشخصي.'
   }
 };
 function curLang(){ return (P&&P.lang)||'fr'; }
@@ -3593,6 +3616,9 @@ function startAppTour(){
   if($('#ovProg') && $('#ovProg').classList.contains('on')) closeOv('ovProg');
   _tourOn=true; _tourIdx=0;
   buildTourDom();
+  // La nav du bas reste visible et cliquable au-dessus du voile flouté :
+  // repère constant pour savoir sur quel onglet on se trouve pendant le tour.
+  const navEl=$('#nav'); if(navEl) navEl.style.zIndex=(parseInt($('#tourOv').style.zIndex,10)+1);
   const sc=$('#scroll'); if(sc) sc.style.overflow='hidden';
   window.addEventListener('resize',tourReposition);
   showTourStep(0);
@@ -3610,6 +3636,7 @@ function buildTourDom(){
     '<div class="tour-ring" id="tourRing"></div>'+
     '<div class="tour-card" id="tourCard">'+
       '<div class="tour-prog" id="tourDots"></div>'+
+      '<div class="tour-tab" id="tourTab"></div>'+
       '<div class="tour-t" id="tourT"></div>'+
       '<div class="tour-d" id="tourD"></div>'+
       '<div class="tour-actions">'+
@@ -3649,6 +3676,7 @@ async function showTourStep(startI){
       }
       $('#tourT').textContent=t('tour_'+step.key+'_t');
       $('#tourD').textContent=t('tour_'+step.key+'_d');
+      $('#tourTab').textContent = step.page?t('nav_'+step.page):'';
       $('#tourNext').textContent = step.final?t('tourFinalBtn'):(i===0?t('tourStartBtn'):t('tourNextBtn'));
       $('#tourSkip').style.visibility = step.final?'hidden':'visible';
       renderTourDots(i);
@@ -3667,6 +3695,7 @@ function endTour(){
   _tourOn=false;
   window.removeEventListener('resize',tourReposition);
   const sc=$('#scroll'); if(sc) sc.style.overflow='';
+  const navEl=$('#nav'); if(navEl) navEl.style.zIndex='';
   const ov=$('#tourOv'); if(ov) ov.remove();
 }
 function tourReposition(){
@@ -3718,6 +3747,74 @@ function positionTourOn(el){
     else top=Math.max(14,Math.min(H-cardH-14,(H-cardH)/2));
     card.style.top=top+'px';
   }
+}
+
+/* ============ GUIDE D'INSCRIPTION — aide dès l'écran email/mot de passe ============
+   Réutilise le même moteur bas niveau que le tour applicatif (buildTourDom,
+   positionTourOn, resetTourVeil, waitForTourEl...) puisque c'est exactement
+   le même composant visuel (voile flouté + anneau + carte), mais avec sa
+   propre séquence et sans navigation entre pages (un seul écran). Se lance
+   automatiquement une fois par appareil à l'ouverture du formulaire
+   d'inscription (switchLoginMode('signup')), et reste accessible ensuite via
+   le lien "Besoin d'aide ?". Les deux guides ne tournent jamais en même
+   temps (l'un est avant la création du compte, l'autre après l'onboarding),
+   donc le partage du même DOM #tourOv est sans risque tant que chacun le
+   nettoie correctement à la fin (ov.remove()). */
+const SIGNUP_GUIDE_STEPS=[
+  { key:'sg_welcome' },
+  { key:'sg_email', sel:'#li_email' },
+  { key:'sg_password', sel:'#li_password' },
+  { key:'sg_submit', sel:'#li_submit' }
+];
+let _sgOn=false, _sgIdx=0, _sgBusy=false;
+function startSignupGuide(){
+  if(_sgOn || _tourOn) return;
+  try{ localStorage.setItem('ikorun_signupGuideSeen','1'); }catch(e){}
+  _sgOn=true; _sgIdx=0;
+  buildTourDom();
+  $('#tourSkip').onclick=()=>endSignupGuide();
+  $('#tourNext').onclick=()=>signupGuideNext();
+  showSignupGuideStep(0);
+}
+function renderSgDots(i){
+  const el=$('#tourDots'); if(!el) return;
+  el.innerHTML=SIGNUP_GUIDE_STEPS.map((s,idx)=>'<div class="'+(idx<=i?'on':'')+'"></div>').join('');
+}
+async function showSignupGuideStep(i){
+  _sgBusy=true;
+  try{
+    const step=SIGNUP_GUIDE_STEPS[i];
+    if(!step){ endSignupGuide(); return; }
+    _sgIdx=i;
+    const ov=$('#tourOv'); if(!ov) return;
+    ov.classList.add('on');
+    resetTourVeil();
+    let el=null;
+    if(step.sel){
+      el=await waitForTourEl(step.sel,900);
+      if(!_sgOn || _sgIdx!==i) return; // guide fermé/étape changée entretemps
+      try{ el.scrollIntoView({block:'center',behavior:'smooth'}); }catch(e){}
+      await tourSleep(280);
+      if(!_sgOn || _sgIdx!==i) return;
+    }
+    $('#tourTab').textContent='';
+    $('#tourT').textContent=t('tour_'+step.key+'_t');
+    $('#tourD').textContent=t('tour_'+step.key+'_d');
+    const isLast = i===SIGNUP_GUIDE_STEPS.length-1;
+    $('#tourNext').textContent = isLast?t('tourGotItBtn'):(i===0?t('tourStartBtn'):t('tourNextBtn'));
+    $('#tourSkip').style.visibility = isLast?'hidden':'visible';
+    renderSgDots(i);
+    positionTourOn(el);
+  } finally { _sgBusy=false; }
+}
+function signupGuideNext(){
+  if(_sgBusy) return;
+  if(_sgIdx>=SIGNUP_GUIDE_STEPS.length-1){ endSignupGuide(); return; }
+  showSignupGuideStep(_sgIdx+1);
+}
+function endSignupGuide(){
+  _sgOn=false;
+  const ov=$('#tourOv'); if(ov) ov.remove();
 }
 function maybeResumeLive(){
   const snap=DB.load('live_active'); if(!snap||LIVE) return;
