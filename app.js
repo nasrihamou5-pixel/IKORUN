@@ -165,6 +165,24 @@ async function signInWithGoogle(){
   }catch(e){ toast(t('googleConnectFail')); console.error('signInWithGoogle exception',e); _googleAuthing=false; }
 }
 
+let _guestAuthing=false;
+async function continueAsGuest(){
+  if(!window.supabaseClient || _guestAuthing || _emailAuthing || _googleAuthing) return;
+  _guestAuthing=true;
+  setLoginStatus(t('guestConnectingToast'),'checking');
+  try{
+    // options.data sert de filet de secours pour identifier un compte invité
+    // (session.user.is_anonymous est la source normale, cf finishLogin) au cas
+    // où ce champ ne serait pas exposé sur une version antérieure du SDK.
+    const { error } = await window.supabaseClient.auth.signInAnonymously({ options:{ data:{ ikorun_guest:true } } });
+    if(error){
+      console.error('signInAnonymously error',error);
+      setLoginStatus(/anonymous|disabled/i.test(error.message||'')?t('guestDisabledToast'):t('authGenericErrorToast'),'bad');
+    }
+    // si pas d'erreur : onAuthStateChange (SIGNED_IN) prend le relais tout seul
+  }catch(e){ console.error('signInAnonymously exception',e); setLoginStatus(t('authGenericErrorToast'),'bad'); }
+  _guestAuthing=false;
+}
 function signOutUser(){
   customConfirm(t('confirmLogout'),async ()=>{
     await ikorunLogoutCookie();
@@ -197,6 +215,7 @@ function renderLoginMain(){
     h+='<div class="login-or">'+t('orDividerLabel')+'</div>';
     h+=googleBtnHtml();
     h+='<div class="login-guest" onclick="switchLoginMode(\'signup\')">'+t('noAccountLink')+'</div>';
+    h+='<div class="login-guest subtle" onclick="continueAsGuest()">'+t('continueAsGuestLink')+'</div>';
   } else if(loginMode==='signup'){
     h+='<h1 class="login-h1">'+t('signupTitle')+'</h1>';
     h+='<p class="login-sub">'+t('signupSub')+'</p>';
@@ -1252,7 +1271,18 @@ const I18N={
     passwordTooShortToast:'Mot de passe trop court (8 caractères min).',passwordsMismatchToast:'Les mots de passe ne correspondent pas.',
     wrongCredentialsToast:'Email ou mot de passe incorrect.',emailAlreadyUsedToast:'Un compte existe déjà avec cet email.',
     authGenericErrorToast:'Une erreur est survenue. Réessaie.',checkEmailConfirmToast:'Compte créé ✓ Vérifie ta boîte mail pour confirmer ton adresse.',
-    resetLinkSentToast:'Lien envoyé ✓ Vérifie ta boîte mail.',loggingInToast:'Connexion…',creatingAccountToast:'Création du compte…',sendingResetToast:'Envoi du lien…'
+    resetLinkSentToast:'Lien envoyé ✓ Vérifie ta boîte mail.',loggingInToast:'Connexion…',creatingAccountToast:'Création du compte…',sendingResetToast:'Envoi du lien…',
+    continueAsGuestLink:'Continuer en tant qu\'invité',guestConnectingToast:'Connexion en tant qu\'invité…',guestDisabledToast:'Le mode invité n\'est pas encore activé. Réessaie plus tard ou crée un compte.',
+    guestModeTitle:'Mode invité',guestModeLabel:'Mode invité',guestModeDesc:'Tes données sont liées à cet appareil. Si tu te déconnectes ou changes de téléphone, tu risques de les perdre. Ajoute un email pour les protéger.',
+    guestSaveAccountBtn:'Sauvegarder mon compte',guestUpgradeSentToast:'Vérifie ta boîte mail pour confirmer. Tu pourras ensuite te connecter avec cet email (utilise « mot de passe oublié » pour en choisir un).',guestUpgradeEmailUsedToast:'Cet email est déjà utilisé par un autre compte.',
+    tourSkip:'Passer',tourStartBtn:'Commencer',tourNextBtn:'Suivant',tourFinalBtn:'Créer mon plan',replayTourBtn:'Revoir le tutoriel',
+    tour_welcome_t:'Bienvenue sur IKORUN 👋',tour_welcome_d:'Petit tour rapide de l\'app avant de créer ton premier plan d\'entraînement. Ça prend une minute.',
+    tour_home_t:'Ton accueil',tour_home_d:'Ta séance du jour, ta progression de la semaine et tes stats essentielles s\'affichent ici en un coup d\'œil.',
+    tour_sport_t:'Crée ton plan d\'entraînement',tour_sport_d:'IKORUN génère un plan sur mesure selon ton niveau, ton objectif et ta date de course. Tu pourras le régénérer à tout moment.',
+    tour_stats_t:'Tes statistiques',tour_stats_d:'Kilomètres, séances, VDOT, records personnels... tout ton historique et ta progression sont ici.',
+    tour_outils_t:'La boîte à outils',tour_outils_d:'Calculateur d\'allure, VDOT, IMC, chrono, minuteur... Cherche l\'outil qu\'il te faut ou garde tes favoris à portée de main.',
+    tour_profil_t:'Ton profil',tour_profil_d:'Niveau, XP, badges, thème, langue et réglages de compte : tout se gère depuis cet onglet.',
+    tour_final_t:'Prêt à commencer ?',tour_final_d:'Configure ton objectif et génère ton plan personnalisé — c\'est le moment !'
   },
   en:{
     nav_home:'Home',nav_sport:'Sport',nav_stats:'Stats',nav_outils:'Tools',nav_profil:'Profile',
@@ -1706,7 +1736,18 @@ const I18N={
     passwordTooShortToast:'Password too short (8 characters min).',passwordsMismatchToast:'Passwords don\u2019t match.',
     wrongCredentialsToast:'Wrong email or password.',emailAlreadyUsedToast:'An account already exists with this email.',
     authGenericErrorToast:'Something went wrong. Try again.',checkEmailConfirmToast:'Account created ✓ Check your inbox to confirm your email.',
-    resetLinkSentToast:'Link sent ✓ Check your inbox.',loggingInToast:'Signing in…',creatingAccountToast:'Creating account…',sendingResetToast:'Sending link…'
+    resetLinkSentToast:'Link sent ✓ Check your inbox.',loggingInToast:'Signing in…',creatingAccountToast:'Creating account…',sendingResetToast:'Sending link…',
+    continueAsGuestLink:'Continue as guest',guestConnectingToast:'Signing in as guest…',guestDisabledToast:'Guest mode isn\'t enabled yet. Try again later or create an account.',
+    guestModeTitle:'Guest mode',guestModeLabel:'Guest mode',guestModeDesc:'Your data is tied to this device. If you sign out or switch phones, you could lose it. Add an email to protect it.',
+    guestSaveAccountBtn:'Save my account',guestUpgradeSentToast:'Check your inbox to confirm. You can then sign in with this email anytime (use "forgot password" to set one).',guestUpgradeEmailUsedToast:'This email is already used by another account.',
+    tourSkip:'Skip',tourStartBtn:'Let\'s go',tourNextBtn:'Next',tourFinalBtn:'Create my plan',replayTourBtn:'Replay the tutorial',
+    tour_welcome_t:'Welcome to IKORUN 👋',tour_welcome_d:'Quick tour of the app before you create your first training plan. It only takes a minute.',
+    tour_home_t:'Your home screen',tour_home_d:'Today\'s session, your weekly progress and key stats all show up here at a glance.',
+    tour_sport_t:'Create your training plan',tour_sport_d:'IKORUN builds a plan tailored to your level, goal and race date. You can regenerate it anytime.',
+    tour_stats_t:'Your statistics',tour_stats_d:'Kilometers, sessions, VDOT, personal records... your whole history and progress live here.',
+    tour_outils_t:'The toolbox',tour_outils_d:'Pace calculator, VDOT, BMI, stopwatch, timer... find the tool you need or keep your favorites close by.',
+    tour_profil_t:'Your profile',tour_profil_d:'Level, XP, badges, theme, language and account settings — all managed from this tab.',
+    tour_final_t:'Ready to start?',tour_final_d:'Set your goal and generate your personalized plan — now\'s the time!'
   },
   ar:{
     nav_home:'الرئيسية',nav_sport:'رياضة',nav_stats:'إحصائيات',nav_outils:'أدوات',nav_profil:'الملف',
@@ -2161,7 +2202,18 @@ const I18N={
     passwordTooShortToast:'كلمة المرور قصيرة جدًا (8 أحرف كحد أدنى).',passwordsMismatchToast:'كلمتا المرور غير متطابقتين.',
     wrongCredentialsToast:'بريد إلكتروني أو كلمة مرور غير صحيحة.',emailAlreadyUsedToast:'يوجد حساب بالفعل بهذا البريد الإلكتروني.',
     authGenericErrorToast:'حدث خطأ ما. حاول مرة أخرى.',checkEmailConfirmToast:'تم إنشاء الحساب ✓ تحقق من بريدك لتأكيد عنوانك.',
-    resetLinkSentToast:'تم إرسال الرابط ✓ تحقق من بريدك.',loggingInToast:'جارٍ تسجيل الدخول…',creatingAccountToast:'جارٍ إنشاء الحساب…',sendingResetToast:'جارٍ إرسال الرابط…'
+    resetLinkSentToast:'تم إرسال الرابط ✓ تحقق من بريدك.',loggingInToast:'جارٍ تسجيل الدخول…',creatingAccountToast:'جارٍ إنشاء الحساب…',sendingResetToast:'جارٍ إرسال الرابط…',
+    continueAsGuestLink:'المتابعة كضيف',guestConnectingToast:'جارٍ الدخول كضيف…',guestDisabledToast:'وضع الضيف غير مفعّل بعد. حاول لاحقًا أو أنشئ حسابًا.',
+    guestModeTitle:'وضع الضيف',guestModeLabel:'وضع الضيف',guestModeDesc:'بياناتك مرتبطة بهذا الجهاز. إذا سجّلت الخروج أو غيّرت الهاتف، قد تفقدها. أضف بريدًا إلكترونيًا لحمايتها.',
+    guestSaveAccountBtn:'حفظ حسابي',guestUpgradeSentToast:'تحقق من بريدك الإلكتروني للتأكيد. بعدها يمكنك تسجيل الدخول بهذا البريد في أي وقت (استخدم «نسيت كلمة المرور» لاختيار كلمة مرور).',guestUpgradeEmailUsedToast:'هذا البريد الإلكتروني مستخدم بالفعل من حساب آخر.',
+    tourSkip:'تخطي',tourStartBtn:'لنبدأ',tourNextBtn:'التالي',tourFinalBtn:'أنشئ خطتي',replayTourBtn:'إعادة مشاهدة الجولة التعريفية',
+    tour_welcome_t:'مرحبًا بك في IKORUN 👋',tour_welcome_d:'لنأخذ جولة سريعة قبل إنشاء أول خطة تدريبية لك. الأمر يستغرق دقيقة واحدة فقط.',
+    tour_home_t:'الشاشة الرئيسية',tour_home_d:'حصة اليوم وتقدمك الأسبوعي وأهم إحصائياتك، كلها هنا في لمحة واحدة.',
+    tour_sport_t:'أنشئ خطتك التدريبية',tour_sport_d:'يُنشئ IKORUN خطة مخصصة حسب مستواك وهدفك وتاريخ سباقك. يمكنك إعادة توليدها في أي وقت.',
+    tour_stats_t:'إحصائياتك',tour_stats_d:'الكيلومترات، الحصص، VDOT، أرقامك القياسية... كل تاريخك وتقدمك هنا.',
+    tour_outils_t:'صندوق الأدوات',tour_outils_d:'حاسبة الوتيرة، VDOT، مؤشر كتلة الجسم، ساعة الإيقاف، المؤقت... ابحث عن الأداة التي تحتاجها أو احتفظ بمفضلاتك في متناول يدك.',
+    tour_profil_t:'ملفك الشخصي',tour_profil_d:'المستوى، نقاط الخبرة، الأوسمة، المظهر، اللغة، وإعدادات الحساب — كلها تُدار من هذا القسم.',
+    tour_final_t:'مستعد للبدء؟',tour_final_d:'حدّد هدفك وأنشئ خطتك المخصصة — الوقت الآن!'
   }
 };
 function curLang(){ return (P&&P.lang)||'fr'; }
@@ -3415,10 +3467,11 @@ async function startApp(){
   // ---- FIN DIAGNOSTIC ----
 
   let _loggedInOnce=false;
-  async function finishLogin(userId,email){
+  async function finishLogin(userId,email,isAnon){
     if(_loggedInOnce) return; _loggedInOnce=true;
     window.currentUserId = userId;
     window.currentUserEmail = email;
+    window.isGuestUser = !!isAnon;
     await window.DB_READY; // déchiffrement local — tourne en parallèle des appels réseau ci-dessus, donc déjà prêt ou presque
     await cloudPullAll(userId);
     reloadState();
@@ -3428,6 +3481,10 @@ async function startApp(){
     _markSettled();
     ensurePublicProfile().then(syncPublicProfile);
   }
+  // is_anonymous est le champ officiel du SDK Supabase pour un compte invité ;
+  // le fallback sur user_metadata.ikorun_guest couvre le cas où ce champ ne
+  // serait pas exposé (cf continueAsGuest()).
+  function isAnonSession(u){ return !!(u && (u.is_anonymous || (u.user_metadata && u.user_metadata.ikorun_guest))); }
 
   // IMPORTANT : on enregistre l'écouteur AVANT tout appel à getSession().
   // Sinon, si le retour de Google (avec le jeton dans l'URL) est traité très
@@ -3437,7 +3494,7 @@ async function startApp(){
   window.supabaseClient.auth.onAuthStateChange(async (event, session) => {
     if((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session){
       const wasFirstLogin = !_loggedInOnce;
-      await finishLogin(session.user.id, session.user.email);
+      await finishLogin(session.user.id, session.user.email, isAnonSession(session.user));
       if(wasFirstLogin){ toast(t('welcomeToast')); sfx&&sfx('goal'); }
     } else if(event === 'SIGNED_OUT'){
       location.reload();
@@ -3450,7 +3507,7 @@ async function startApp(){
   try{
     const { data:{ session } } = await window.supabaseClient.auth.getSession();
     if(session && session.user){
-      await finishLogin(session.user.id, session.user.email);
+      await finishLogin(session.user.id, session.user.email, isAnonSession(session.user));
     } else {
       // Avec persistSession:true + autoRefreshToken:true, getSession() a déjà
       // restauré/renouvelé la session depuis le localStorage si elle existait.
@@ -3487,9 +3544,180 @@ function initApp(){
   setTimeout(checkMissedSessions,700);
   // Régénération hebdomadaire adaptative du plan (au moins 1x/semaine si nécessaire)
   setTimeout(weeklyAdaptiveRegen,1000);
+  if(window._launchTourAfterInit){
+    window._launchTourAfterInit=false;
+    setTimeout(startAppTour,1200);
+  }
 }
 function confirmRegenPlan(){
   customConfirm(t('regenConfirm'),()=>{ PLAN=null; openPlanSetup(); },{danger:true});
+}
+
+/* ============ TOUR GUIDÉ — visite de présentation après inscription ============
+   100% généré en JS (comme customConfirm) : pas de markup statique ajouté
+   dans index.html. Le voile flouté est composé de 4 bandes indépendantes
+   autour d'une zone découpée plutôt qu'un masque CSS sur data-URI, pour ne
+   dépendre d'aucune autorisation supplémentaire dans la Content-Security-
+   Policy. Séquence : accueil -> sport (création du plan) -> stats -> outils
+   -> profil -> retour sport (déclenche la création réelle du plan). Rejouable
+   à tout moment depuis Profil > Réglages > "Revoir le tutoriel", donc le
+   moteur ne suppose jamais qu'il s'agit d'un premier lancement — seul
+   finishOnboarding() pose le drapeau de lancement automatique (cf initApp). */
+const TOUR_STEPS=[
+  { key:'welcome' },
+  { key:'home', page:'home', sel:()=>P.easyMode?'#s-home .ik-greet':'#s-home .hv7-greet' },
+  { key:'sport', page:'sport', sel:'#tourPlanCta' },
+  { key:'stats', page:'stats', sel:()=>P.easyMode?'#s-stats .stat-quatro':'#s-stats .seg-ctrl' },
+  { key:'outils', page:'outils', sel:'#s-outils .searchbox' },
+  { key:'profil', page:'profil', sel:'#s-profil .pf-hero' },
+  { key:'final', page:'sport', sel:'#tourPlanCta', final:true }
+];
+let _tourOn=false, _tourIdx=0, _tourBusy=false;
+
+function tourSleep(ms){ return new Promise(res=>setTimeout(res,ms)); }
+async function waitForTourEl(sel,timeout){
+  timeout=timeout||1600;
+  const t0=Date.now();
+  while(Date.now()-t0<timeout){
+    const el=$(sel);
+    if(el) return el;
+    await tourSleep(60);
+  }
+  return $(sel)||null;
+}
+function startAppTour(){
+  if(_tourOn) return;
+  // Rejoué depuis Profil > Réglages : referme la feuille de réglages en
+  // dessous pour ne pas la laisser béante (avec un contenu qui n'aura pas
+  // suivi la navigation du tour) une fois le tour terminé.
+  if($('#ovProg') && $('#ovProg').classList.contains('on')) closeOv('ovProg');
+  _tourOn=true; _tourIdx=0;
+  buildTourDom();
+  const sc=$('#scroll'); if(sc) sc.style.overflow='hidden';
+  window.addEventListener('resize',tourReposition);
+  showTourStep(0);
+}
+function buildTourDom(){
+  if($('#tourOv')) return;
+  const ov=document.createElement('div');
+  ov.id='tourOv'; ov.className='tour-ov';
+  ov.style.zIndex=topZ();
+  ov.innerHTML=
+    '<div class="tour-band" id="tbTop"></div>'+
+    '<div class="tour-band" id="tbBottom"></div>'+
+    '<div class="tour-band" id="tbLeft"></div>'+
+    '<div class="tour-band" id="tbRight"></div>'+
+    '<div class="tour-ring" id="tourRing"></div>'+
+    '<div class="tour-card" id="tourCard">'+
+      '<div class="tour-prog" id="tourDots"></div>'+
+      '<div class="tour-t" id="tourT"></div>'+
+      '<div class="tour-d" id="tourD"></div>'+
+      '<div class="tour-actions">'+
+        '<span class="tour-skip" id="tourSkip">'+t('tourSkip')+'</span>'+
+        '<button class="btn" id="tourNext"></button>'+
+      '</div>'+
+    '</div>';
+  document.body.appendChild(ov);
+  $('#tourSkip').onclick=()=>endTour();
+  $('#tourNext').onclick=()=>tourNext();
+}
+function renderTourDots(i){
+  const el=$('#tourDots'); if(!el) return;
+  el.innerHTML=TOUR_STEPS.map((s,idx)=>'<div class="'+(idx<=i?'on':'')+'"></div>').join('');
+}
+async function showTourStep(startI){
+  _tourBusy=true;
+  try{
+    let i=startI;
+    while(true){
+      const step=TOUR_STEPS[i];
+      if(!step){ endTour(); return; }
+      _tourIdx=i;
+      const ov=$('#tourOv'); if(!ov) return;
+      ov.classList.add('on');
+      resetTourVeil();
+      if(step.page) nav(step.page);
+      const sel=typeof step.sel==='function'?step.sel():step.sel;
+      let el=null;
+      if(sel){
+        el=await waitForTourEl(sel);
+        if(!_tourOn || _tourIdx!==i) return; // le tour a été fermé/a changé d'étape entretemps
+        if(!el){ i=i+1; continue; } // cible introuvable (page vide, mode différent…) : passe à l'étape suivante sans jamais bloquer le tour
+        try{ el.scrollIntoView({block:'center',behavior:'smooth'}); }catch(e){}
+        await tourSleep(320);
+        if(!_tourOn || _tourIdx!==i) return;
+      }
+      $('#tourT').textContent=t('tour_'+step.key+'_t');
+      $('#tourD').textContent=t('tour_'+step.key+'_d');
+      $('#tourNext').textContent = step.final?t('tourFinalBtn'):(i===0?t('tourStartBtn'):t('tourNextBtn'));
+      $('#tourSkip').style.visibility = step.final?'hidden':'visible';
+      renderTourDots(i);
+      positionTourOn(el);
+      return;
+    }
+  } finally { _tourBusy=false; }
+}
+function tourNext(){
+  if(_tourBusy) return;
+  const step=TOUR_STEPS[_tourIdx];
+  if(step && step.final){ endTour(); openPlanSetup(); return; }
+  showTourStep(_tourIdx+1);
+}
+function endTour(){
+  _tourOn=false;
+  window.removeEventListener('resize',tourReposition);
+  const sc=$('#scroll'); if(sc) sc.style.overflow='';
+  const ov=$('#tourOv'); if(ov) ov.remove();
+}
+function tourReposition(){
+  if(!_tourOn) return;
+  const step=TOUR_STEPS[_tourIdx]; if(!step) return;
+  const sel=typeof step.sel==='function'?step.sel():step.sel;
+  positionTourOn(sel?$(sel):null);
+}
+function setTourBand(el,x,y,w,h){
+  if(!el) return;
+  if(w<=0||h<=0){ el.style.display='none'; return; }
+  el.style.display='block';
+  el.style.left=x+'px'; el.style.top=y+'px'; el.style.width=w+'px'; el.style.height=h+'px';
+}
+function resetTourVeil(){
+  const W=innerWidth,H=innerHeight;
+  setTourBand($('#tbTop'),0,0,W,H);
+  setTourBand($('#tbBottom'),0,0,0,0); setTourBand($('#tbLeft'),0,0,0,0); setTourBand($('#tbRight'),0,0,0,0);
+  const ring=$('#tourRing'); if(ring) ring.style.display='none';
+}
+function positionTourOn(el){
+  const card=$('#tourCard');
+  const W=innerWidth, H=innerHeight;
+  if(!el){
+    resetTourVeil();
+    if(card) card.classList.add('centered');
+    return;
+  }
+  if(card) card.classList.remove('centered');
+  const r=el.getBoundingClientRect();
+  const pad=10, rx=16;
+  const x=Math.max(0,r.left-pad), y=Math.max(0,r.top-pad);
+  const w=Math.min(W-x,r.width+pad*2), h=Math.min(H-y,r.height+pad*2);
+  setTourBand($('#tbTop'),0,0,W,y);
+  setTourBand($('#tbBottom'),0,y+h,W,H-(y+h));
+  setTourBand($('#tbLeft'),0,y,x,h);
+  setTourBand($('#tbRight'),x+w,y,W-(x+w),h);
+  const ring=$('#tourRing');
+  if(ring){
+    ring.style.display='block';
+    ring.style.left=x+'px'; ring.style.top=y+'px'; ring.style.width=w+'px'; ring.style.height=h+'px'; ring.style.borderRadius=rx+'px';
+  }
+  if(card){
+    const cardH=card.offsetHeight||190;
+    const spaceBelow=H-r.bottom, spaceAbove=r.top;
+    let top;
+    if(spaceBelow>=cardH+34) top=r.bottom+pad+18;
+    else if(spaceAbove>=cardH+34) top=r.top-pad-18-cardH;
+    else top=Math.max(14,Math.min(H-cardH-14,(H-cardH)/2));
+    card.style.top=top+'px';
+  }
 }
 function maybeResumeLive(){
   const snap=DB.load('live_active'); if(!snap||LIVE) return;
@@ -3736,6 +3964,11 @@ function finishOnboarding(){
       if(!ok) toast(t('usernameTakenMeanwhile'));
     });
   }
+  // Drapeau consommé une seule fois par initApp() juste après le premier
+  // rendu de l'accueil : lance le tour guidé uniquement pour un compte qui
+  // vient de terminer l'onboarding (inscription classique OU invité), jamais
+  // pour un compte existant qui rouvre l'app normalement.
+  window._launchTourAfterInit=true;
   setTimeout(initApp,400);
 }
 
@@ -5525,7 +5758,7 @@ function renderRunning(){
   let h='<div class="pills" style="margin-bottom:14px"><div class="pill '+(runSub==='ia'?'on':'')+'" onclick="runSub=\'ia\';renderSport()">'+t('planIkorunPill')+'</div><div class="pill '+(runSub==='perso'?'on':'')+'" onclick="runSub=\'perso\';renderSport()">'+t('myPlanPill')+'</div></div>';
   if(runSub==='ia'){
     if(!PLAN){
-      h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('bolt',36,'currentColor')+'</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">'+t('planIkorunTitle')+'</div><div style="font-size:13px;margin-bottom:16px">'+tp('planIkorunDescLong',(getUserVDOT()||'?'))+'</div><button class="btn" onclick="openPlanSetup()">'+t('configureGenerate')+'</button></div></div>';
+      h+='<div class="card" id="tourPlanCta"><div class="empty"><div class="em-ic">'+ICN('bolt',36,'currentColor')+'</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">'+t('planIkorunTitle')+'</div><div style="font-size:13px;margin-bottom:16px">'+tp('planIkorunDescLong',(getUserVDOT()||'?'))+'</div><button class="btn" onclick="openPlanSetup()">'+t('configureGenerate')+'</button></div></div>';
     } else {
       h+=planHeroHTML();
       // Seule la semaine en cours est affichée sur la page ; le reste du plan
@@ -8150,7 +8383,7 @@ function renderProfile(){
   h+='<div class="grp-card stag" style="animation-delay:.10s">'+
     '<div class="grp-row" onclick="openFriends()"><div class="lr-icon">'+ICN('users',20,'currentColor')+'</div><div class="lr-title">'+t('friendsRanking')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileEdit()"><div class="lr-icon">'+ICN('users',20,'currentColor')+'</div><div class="lr-title">'+t('manageProfile')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'account\')"><div class="lr-icon">'+ICN('lock',20,'currentColor')+'</div><div class="lr-title">'+t('passwordSecurity')+'</div><div class="lr-val">'+(window.currentUserEmail||t('notConnected'))+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'account\')"><div class="lr-icon">'+ICN('lock',20,'currentColor')+'</div><div class="lr-title">'+t('passwordSecurity')+'</div><div class="lr-val">'+(window.currentUserEmail||(window.isGuestUser?t('guestModeLabel'):t('notConnected')))+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileSection(\'notif\')"><div class="lr-icon">'+ICN('bell',20,'currentColor')+'</div><div class="lr-title">'+t('notifLabel')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileSection(\'lang\')"><div class="lr-icon">'+ICN('globe',20,'currentColor')+'</div><div class="lr-title">'+t('language')+'</div><div class="lr-val">'+langInfo[1]+' '+langInfo[2]+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
@@ -8161,6 +8394,7 @@ function renderProfile(){
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('theme')+'</div>'+pfThemeSwitchHTML()+'</div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('appColor')+'</div>'+pfAccentPickerHTML()+'</div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('heart',20,'currentColor')+'</div><div><div class="lr-title">'+t('simplifiedMode')+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px;max-width:200px">'+t('simplifiedModeDesc')+'</div></div><div class="toggle'+(P.easyMode?' on':'')+'" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
+    '<div class="grp-row" onclick="startAppTour()"><div class="lr-icon">'+ICN('flag',20,'currentColor')+'</div><div class="lr-title">'+t('replayTourBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
   h+='<div class="grp-lab stag" style="animation-delay:.15s">'+t('support')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.16s">'+
@@ -8191,6 +8425,7 @@ function renderProfileSimple(){
   h+='<div class="grp-lab stag" style="animation-delay:.08s">'+t('settings')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.09s">'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('heart',20,'currentColor')+'</div><div class="lr-title">'+t('simplifiedMode')+'</div><div class="toggle on" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
+    '<div class="grp-row" onclick="startAppTour()"><div class="lr-icon">'+ICN('flag',20,'currentColor')+'</div><div class="lr-title">'+t('replayTourBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileSection(\'account\')"><div class="lr-icon">'+ICN('lock',20,'currentColor')+'</div><div class="lr-title">'+t('account')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
   return h;
@@ -8233,7 +8468,48 @@ function pfAccountHTML(){
       '<button class="btn ghost sm" style="color:var(--bad);width:100%" onclick="deleteAccountCompletely()">Supprimer mon compte et mes données</button>'+
     '</div>';
   }
+  if(window.isGuestUser){
+    if(_guestUpgradeSent){
+      return '<div class="card" style="padding:16px">'+
+        '<div class="card-t">'+ICN('check',15,'var(--ok)')+t('guestModeTitle')+'</div>'+
+        '<div style="font-size:12.5px;color:var(--muted);line-height:1.5">'+t('guestUpgradeSentToast')+'</div>'+
+      '</div>';
+    }
+    return '<div class="card" style="padding:16px">'+
+      '<div class="row" style="gap:12px;align-items:center">'+
+        '<div style="width:44px;height:44px;border-radius:50%;background:var(--ed);color:var(--e);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0">'+(P.name?P.name[0].toUpperCase():'?')+'</div>'+
+        '<div><div style="font-weight:700">'+(P.name||'Athlète')+'</div><div style="font-size:12px;color:var(--muted)">'+t('guestModeTitle')+'</div></div>'+
+      '</div>'+
+      '<div style="font-size:12px;color:var(--muted);margin-top:12px;line-height:1.5">'+t('guestModeDesc')+'</div>'+
+      '<div class="field" style="margin-top:14px"><label>'+t('emailLabel')+'</label><input class="inp" id="guestEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="'+t('emailPlaceholder')+'"></div>'+
+      '<div class="uname-status" id="guestStatus"></div>'+
+      '<button class="btn sm" style="margin-top:6px" onclick="convertGuestAccount()">'+t('guestSaveAccountBtn')+'</button>'+
+    '</div>';
+  }
   return '<button class="btn" onclick="signInWithGoogle()">Se connecter</button>';
+}
+let _guestUpgradeSent=false;
+async function convertGuestAccount(){
+  if(!window.supabaseClient || _guestAuthing) return;
+  const emailEl=$('#guestEmail'), email=(emailEl&&emailEl.value||'').trim();
+  const st=$('#guestStatus');
+  const setSt=(msg,kind)=>{ if(st){ st.textContent=msg||''; st.className='uname-status'+(kind?(' '+kind):''); } };
+  if(!email || !isEmailValid(email)) return setSt(t('invalidEmailToast'),'bad');
+  _guestAuthing=true; setSt(t('sendingResetToast'),'checking');
+  try{
+    // Associe un email à la session invité en cours (même uid conservé) : le
+    // reste (choix du mot de passe) se fait via "mot de passe oublié" une fois
+    // l'email confirmé — cf convertGuestAccount() dans le message de livraison.
+    const { error } = await window.supabaseClient.auth.updateUser({ email });
+    if(error){
+      console.error('updateUser(email) error',error);
+      setSt(/already|exists|registered/i.test(error.message||'')?t('guestUpgradeEmailUsedToast'):t('authGenericErrorToast'),'bad');
+    } else {
+      _guestUpgradeSent=true;
+      refreshPfSheet();
+    }
+  }catch(e){ console.error('updateUser(email) exception',e); setSt(t('authGenericErrorToast'),'bad'); }
+  _guestAuthing=false;
 }
 function pfLangHTML(){
   return '<div class="pills">'+LANGS.map(l=>'<div class="pill '+(curLang()===l[0]?'on':'')+'" onclick="setLang(\''+l[0]+'\')">'+l[1]+' '+l[2]+'</div>').join('')+'</div>';
