@@ -1308,6 +1308,25 @@ const I18N={
     androidInstallStep1:'1. Appuie sur les trois petits points en haut à droite de Chrome.',
     androidInstallStep2:'2. Choisis « Installer l’application » (ou « Ajouter à l’écran d’accueil »).',
     termsOfUseLab:'Conditions d’utilisation',privacyPolicyLab:'Politique de confidentialité',
+    sessionPausedLab:'Séance en pause',createBtn:'Créer',libraryLab:'Bibliothèque',
+    defaultProgramsLab:'Programmes par défaut',myCreationsLab:'Mes créations',
+    exSetsSummary:'{0} exercices · {1} séries',exosShort:'{0} exos',
+    loadKgLab:'Charge (kg)',restLab2:'Repos',personalNotesLab:'Notes personnelles (optionnel)',notesPh:'ex : bien serrer les omoplates',
+    levelUpTitle:'NIVEAU SUPÉRIEUR',
+    syncedCloudLab:'Synchronisé sur le cloud',addAccountBtn:'Ajouter un compte',dangerZoneLab:'Zone de danger',
+    deleteAccountDesc:'Supprime définitivement ton compte et toutes tes données, sur le cloud et sur cet appareil.',
+    deleteAccountBtn:'Supprimer mon compte et mes données',
+    exportImportDesc:'Exporte une copie de tes données ou importe une sauvegarde existante.',
+    resetDesc:'Efface toutes les données de l’application sur cet appareil.',
+    profilePhotoTitle:'Photo de profil',choosePhotoLab:'Choisis ta photo de profil :',fromGalleryBtn:'Depuis la galerie',
+    takePhotoBtn:'Prendre une photo',removePhotoBtn:'Supprimer la photo actuelle',cropTitle:'Recadrer',zoomLab:'Zoom',validatePhotoBtn:'Valider la photo',
+    liftedLoadKgLab:'Charge soulevée (kg)',estimated1RMLab:'1RM estimé (Epley)',percentOf1RMLab:'% de ton 1RM',repsShort:'reps',
+    totalTonnageLab:'Tonnage total ({0}×{1}×{2}kg)',noDataLab:'Pas de données',distanceKmLab:'Distance (km)',
+    kcalBurnedLab:'kcal brûlées (~{0}kg)',currentLoadKgLab:'Charge actuelle (kg)',weeklyProgressKgLab:'Progression / semaine (kg)',
+    weeksLab:'Semaines',projectionLab:'Projection',
+    hrMaxLab:'FC max (bpm)',hrRestLab:'FC repos (bpm)',hrZonesLab:'Zones cardiaques (Karvonen)',
+    hrZ1:'Z1 Récupération',hrZ2:'Z2 Endurance',hrZ3:'Z3 Tempo',hrZ4:'Z4 Seuil',hrZ5:'Z5 VO2max',
+    restTimesLab:'Temps de repos recommandés',supersetLab:'Superset',pomoFocus:'Focus',pomoBreak:'Pause',pomodorosDoneLab:'Pomodoros complétés : {0}',
     fillEmailPasswordToast:'Remplis email et mot de passe.',invalidEmailToast:'Adresse email invalide.',
     passwordTooShortToast:'Mot de passe trop court (8 caractères min).',passwordsMismatchToast:'Les mots de passe ne correspondent pas.',
     wrongCredentialsToast:'Email ou mot de passe incorrect.',emailAlreadyUsedToast:'Un compte existe déjà avec cet email.',
@@ -1785,6 +1804,25 @@ const I18N={
     androidInstallStep1:'1. Tap the three dots at the top right of Chrome.',
     androidInstallStep2:'2. Choose "Install app" (or "Add to Home screen").',
     termsOfUseLab:'Terms of use',privacyPolicyLab:'Privacy policy',
+    sessionPausedLab:'Session paused',createBtn:'Create',libraryLab:'Library',
+    defaultProgramsLab:'Default programs',myCreationsLab:'My creations',
+    exSetsSummary:'{0} exercises · {1} sets',exosShort:'{0} exercises',
+    loadKgLab:'Load (kg)',restLab2:'Rest',personalNotesLab:'Personal notes (optional)',notesPh:'e.g. squeeze the shoulder blades',
+    levelUpTitle:'LEVEL UP',
+    syncedCloudLab:'Synced to the cloud',addAccountBtn:'Add an account',dangerZoneLab:'Danger zone',
+    deleteAccountDesc:'Permanently deletes your account and all your data, in the cloud and on this device.',
+    deleteAccountBtn:'Delete my account and my data',
+    exportImportDesc:'Export a copy of your data or import an existing backup.',
+    resetDesc:'Erases all app data on this device.',
+    profilePhotoTitle:'Profile photo',choosePhotoLab:'Choose your profile photo:',fromGalleryBtn:'From the gallery',
+    takePhotoBtn:'Take a photo',removePhotoBtn:'Remove current photo',cropTitle:'Crop',zoomLab:'Zoom',validatePhotoBtn:'Confirm photo',
+    liftedLoadKgLab:'Load lifted (kg)',estimated1RMLab:'Estimated 1RM (Epley)',percentOf1RMLab:'% of your 1RM',repsShort:'reps',
+    totalTonnageLab:'Total tonnage ({0}×{1}×{2}kg)',noDataLab:'No data',distanceKmLab:'Distance (km)',
+    kcalBurnedLab:'kcal burned (~{0}kg)',currentLoadKgLab:'Current load (kg)',weeklyProgressKgLab:'Progress / week (kg)',
+    weeksLab:'Weeks',projectionLab:'Projection',
+    hrMaxLab:'Max HR (bpm)',hrRestLab:'Resting HR (bpm)',hrZonesLab:'Heart rate zones (Karvonen)',
+    hrZ1:'Z1 Recovery',hrZ2:'Z2 Endurance',hrZ3:'Z3 Tempo',hrZ4:'Z4 Threshold',hrZ5:'Z5 VO2max',
+    restTimesLab:'Recommended rest times',supersetLab:'Superset',pomoFocus:'Focus',pomoBreak:'Break',pomodorosDoneLab:'Pomodoros completed: {0}',
     fillEmailPasswordToast:'Fill in email and password.',invalidEmailToast:'Invalid email address.',
     passwordTooShortToast:'Password too short (8 characters min).',passwordsMismatchToast:'Passwords don\u2019t match.',
     wrongCredentialsToast:'Wrong email or password.',emailAlreadyUsedToast:'An account already exists with this email.',
@@ -2263,6 +2301,25 @@ const I18N={
     androidInstallStep1:'1. اضغط على النقاط الثلاث أعلى يمين Chrome.',
     androidInstallStep2:'2. اختر «تثبيت التطبيق» (أو «إضافة إلى الشاشة الرئيسية»).',
     termsOfUseLab:'شروط الاستخدام',privacyPolicyLab:'سياسة الخصوصية',
+    sessionPausedLab:'الحصة موقوفة مؤقتًا',createBtn:'إنشاء',libraryLab:'المكتبة',
+    defaultProgramsLab:'البرامج الافتراضية',myCreationsLab:'إبداعاتي',
+    exSetsSummary:'{0} تمارين · {1} مجموعات',exosShort:'{0} تمارين',
+    loadKgLab:'الحمل (كغ)',restLab2:'الراحة',personalNotesLab:'ملاحظات شخصية (اختياري)',notesPh:'مثال: اضغط لوحي الكتف جيدًا',
+    levelUpTitle:'مستوى أعلى',
+    syncedCloudLab:'متزامن مع السحابة',addAccountBtn:'إضافة حساب',dangerZoneLab:'منطقة الخطر',
+    deleteAccountDesc:'يحذف نهائيًا حسابك وكل بياناتك، في السحابة وعلى هذا الجهاز.',
+    deleteAccountBtn:'حذف حسابي وبياناتي',
+    exportImportDesc:'صدّر نسخة من بياناتك أو استورد نسخة احتياطية موجودة.',
+    resetDesc:'يمسح كل بيانات التطبيق على هذا الجهاز.',
+    profilePhotoTitle:'صورة الملف الشخصي',choosePhotoLab:'اختر صورة ملفك الشخصي:',fromGalleryBtn:'من المعرض',
+    takePhotoBtn:'التقاط صورة',removePhotoBtn:'حذف الصورة الحالية',cropTitle:'اقتصاص',zoomLab:'تكبير',validatePhotoBtn:'تأكيد الصورة',
+    liftedLoadKgLab:'الحمل المرفوع (كغ)',estimated1RMLab:'أقصى تكرار مُقدَّر (Epley)',percentOf1RMLab:'٪ من أقصى تكرار',repsShort:'تكرار',
+    totalTonnageLab:'الحمولة الإجمالية ({0}×{1}×{2}كغ)',noDataLab:'لا توجد بيانات',distanceKmLab:'المسافة (كم)',
+    kcalBurnedLab:'سعرات محروقة (~{0}كغ)',currentLoadKgLab:'الحمل الحالي (كغ)',weeklyProgressKgLab:'التقدم / أسبوع (كغ)',
+    weeksLab:'الأسابيع',projectionLab:'التوقع',
+    hrMaxLab:'أقصى نبض (نبضة/د)',hrRestLab:'نبض الراحة (نبضة/د)',hrZonesLab:'مناطق النبض (Karvonen)',
+    hrZ1:'Z1 استشفاء',hrZ2:'Z2 تحمّل',hrZ3:'Z3 تيمبو',hrZ4:'Z4 عتبة',hrZ5:'Z5 VO2max',
+    restTimesLab:'أوقات الراحة الموصى بها',supersetLab:'سوبرسِت',pomoFocus:'تركيز',pomoBreak:'استراحة',pomodorosDoneLab:'بومودورو مكتملة: {0}',
     fillEmailPasswordToast:'أدخل البريد الإلكتروني وكلمة المرور.',invalidEmailToast:'عنوان بريد إلكتروني غير صالح.',
     passwordTooShortToast:'كلمة المرور قصيرة جدًا (8 أحرف كحد أدنى).',passwordsMismatchToast:'كلمتا المرور غير متطابقتين.',
     wrongCredentialsToast:'بريد إلكتروني أو كلمة مرور غير صحيحة.',emailAlreadyUsedToast:'يوجد حساب بالفعل بهذا البريد الإلكتروني.',
@@ -2982,11 +3039,11 @@ function levelUpAnimation(level){
   const ov=document.createElement('div');
   ov.style.cssText='position:fixed;inset:0;z-index:13500;display:flex;align-items:center;justify-content:center;background:rgba(5,7,10,.86);backdrop-filter:blur(8px);animation:fade .3s';
   ov.innerHTML='<div style="text-align:center;animation:popIn .6s cubic-bezier(.34,1.56,.64,1)">'+
-    '<div style="font-size:14px;letter-spacing:3px;color:var(--e);font-weight:700;font-family:Unbounded">NIVEAU SUPÉRIEUR</div>'+
+    '<div style="font-size:14px;letter-spacing:3px;color:var(--e);font-weight:700;font-family:Unbounded">'+t('levelUpTitle')+'</div>'+
     '<div style="margin:6px 0;filter:drop-shadow(0 0 20px var(--e));display:flex;justify-content:center">'+ICN('star',80,'var(--e)')+'</div>'+
     '<div class="man" style="font-weight:800;font-size:54px;background:linear-gradient(135deg,var(--e),#9FD8FF);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">Niv. '+level+'</div>'+
     '<div class="man" style="font-weight:700;font-size:22px;margin-top:4px">'+levelName(level)+'</div>'+
-    '<div style="color:var(--muted);font-size:13px;margin-top:14px">Touche pour continuer</div></div>';
+    '<div style="color:var(--muted);font-size:13px;margin-top:14px">'+t('tapToContinue')+'</div></div>';
   ov.onclick=()=>ov.remove();
   document.body.appendChild(ov);
   setTimeout(()=>{ if(ov.parentNode)ov.remove(); },4000);
@@ -6155,7 +6212,7 @@ function addPersoSession(){
        '<div class="pill on" onclick="psModeChanged(\'simple\')">Simple (km + allure)</div>'+
        '<div class="pill" onclick="psModeChanged(\'intervals\')">Par répétition (temps de chaque)</div>'+
      '</div></div>';
-  h+='<div id="ps_simple" class="row" style="gap:10px"><div class="field" style="flex:1"><label>Distance (km)</label><input class="inp" id="ps_km" type="number" placeholder="8"></div><div class="field" style="flex:1"><label>Allure /km</label><input class="inp" id="ps_pace" placeholder="4:30"></div></div>';
+  h+='<div id="ps_simple" class="row" style="gap:10px"><div class="field" style="flex:1"><label>'+t('distanceKmLab')+'</label><input class="inp" id="ps_km" type="number" placeholder="8"></div><div class="field" style="flex:1"><label>Allure /km</label><input class="inp" id="ps_pace" placeholder="4:30"></div></div>';
   h+='<div id="ps_intervals" style="display:none">'+
        '<div class="field"><label>Distance par répétition</label><div class="inp pkfield set" id="ps_int_dist" onclick="pickPsIntervalDist()">400 m</div></div>'+
        '<div id="ps_int_rows"></div>'+
@@ -6509,17 +6566,17 @@ function markRunDone(){
 /* ---------- MUSCULATION ---------- */
 function renderMuscu(){
   let h='';
-  if(DB.load('live_paused')){ const sv=DB.load('live_paused'); h+='<div class="card" style="border-color:var(--warn);background:rgba(255,180,84,.08)"><div class="row"><div><div style="font-weight:700">Séance en pause</div><div style="font-size:12px;color:var(--muted)">'+sv.prog.name+'</div></div><button class="btn sm" style="width:auto;padding:8px 14px" onclick="resumeLive()">Reprendre</button></div></div>'; }
-  h+='<div class="row" style="gap:10px;margin-bottom:14px"><button class="btn" onclick="openCreate()">＋ Créer</button><button class="btn ghost" onclick="openLibBrowse()">Bibliothèque</button></div>';
-  h+='<div class="lab" style="margin:6px 0 10px">Programmes par défaut</div>';
+  if(DB.load('live_paused')){ const sv=DB.load('live_paused'); h+='<div class="card" style="border-color:var(--warn);background:rgba(255,180,84,.08)"><div class="row"><div><div style="font-weight:700">'+t('sessionPausedLab')+'</div><div style="font-size:12px;color:var(--muted)">'+escHtml(sv.prog.name)+'</div></div><button class="btn sm" style="width:auto;padding:8px 14px" onclick="resumeLive()">'+t('resumeBtn')+'</button></div></div>'; }
+  h+='<div class="row" style="gap:10px;margin-bottom:14px"><button class="btn" onclick="openCreate()">＋ '+t('createBtn')+'</button><button class="btn ghost" onclick="openLibBrowse()">'+t('libraryLab')+'</button></div>';
+  h+='<div class="lab" style="margin:6px 0 10px">'+t('defaultProgramsLab')+'</div>';
   PROGS.forEach((p,i)=>{
-    h+='<div class="card" onclick="openProg(\''+p.id+'\')" style="cursor:pointer"><div class="row"><div><div class="badge" style="margin-bottom:8px">'+p.id+'</div><div style="font-weight:700;font-size:16px">'+p.name+'</div><div style="font-size:12px;color:var(--muted);margin-top:3px">'+p.ex.length+' exercices · '+p.ex.reduce((a,e)=>a+e.sets,0)+' séries</div></div>'+exThumb(p.ex[0].name,52)+'</div></div>';
+    h+='<div class="card" onclick="openProg(\''+p.id+'\')" style="cursor:pointer"><div class="row"><div><div class="badge" style="margin-bottom:8px">'+p.id+'</div><div style="font-weight:700;font-size:16px">'+escHtml(p.name)+'</div><div style="font-size:12px;color:var(--muted);margin-top:3px">'+tp('exSetsSummary',p.ex.length,p.ex.reduce((a,e)=>a+e.sets,0))+'</div></div>'+exThumb(p.ex[0].name,52)+'</div></div>';
   });
   const custs=CUSTOM.filter(p=>p.kind==='muscu');
   if(custs.length){
-    h+='<div class="lab" style="margin:16px 0 10px">Mes créations</div>';
+    h+='<div class="lab" style="margin:16px 0 10px">'+t('myCreationsLab')+'</div>';
     custs.forEach(p=>{
-      h+='<div class="card"><div class="row"><div onclick="openProg(\''+p.id+'\')" style="flex:1"><div style="font-weight:700;font-size:16px">'+p.name+'</div><div style="font-size:12px;color:var(--muted);margin-top:3px">'+p.objective+' · '+p.ex.length+' exos</div></div><button class="x" onclick="delProg(\''+p.id+'\')">'+ICN('trash',16)+'</button></div></div>';
+      h+='<div class="card"><div class="row"><div onclick="openProg(\''+p.id+'\')" style="flex:1"><div style="font-weight:700;font-size:16px">'+escHtml(p.name)+'</div><div style="font-size:12px;color:var(--muted);margin-top:3px">'+escHtml(p.objective)+' · '+tp('exosShort',p.ex.length)+'</div></div><button class="x" onclick="delProg(\''+p.id+'\')">'+ICN('trash',16)+'</button></div></div>';
     });
   }
   return h;
@@ -6528,7 +6585,7 @@ function delProg(id){ customConfirm(t('confirmDeleteProgram'),()=>{ CUSTOM=CUSTO
 /* ===== VUE ROUTINE (style Hevy) ===== */
 function exThumb(name,size){
   const g=exGif(name); size=size||64;
-  if(g) return '<div style="width:'+size+'px;height:'+size+'px;border-radius:12px;background:#0c0f15 url('+g[0]+') center/cover;flex-shrink:0;border:1px solid var(--hair)"></div>';
+  if(g) return '<div style="width:'+size+'px;height:'+size+'px;border-radius:12px;background:var(--s2) url('+g[0]+') center/cover;flex-shrink:0;border:1px solid var(--hair)"></div>';
   const e=findEx(name);
   return '<div style="width:'+size+'px;height:'+size+'px;border-radius:12px;background:var(--s2);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid var(--hair)">'+exGlyph(e,Math.round(size*0.55))+'</div>';
 }
@@ -6557,7 +6614,10 @@ function openProg(id){
       '<span style="color:var(--dim);font-size:18px;align-self:center">›</span></div></div>';
   });
   h+='<button class="btn ghost" style="margin:4px 0 12px" onclick="openLibFor(addExToProg.bind(null,\''+p.id+'\'))">＋ '+t('addExercise')+'</button>';
-  h+='<button class="btn" style="position:sticky;bottom:8px;background:#fff;color:#111;border-radius:26px" onclick="startLive(\''+p.id+'\')">'+t('startWorkout')+'</button>';
+  // Bouton "contrasté inversé" : var(--snow)/var(--bg) s'inversent avec le thème
+  // (clair sur fond sombre, sombre sur fond clair). En dur (#fff/#111) il devenait
+  // un bouton blanc quasi invisible sur le fond clair du mode jour.
+  h+='<button class="btn" style="position:sticky;bottom:8px;background:var(--snow);color:var(--bg);border-radius:26px" onclick="startLive(\''+p.id+'\')">'+t('startWorkout')+'</button>';
   $('#progBody').innerHTML=h;
   openOv('ovProg');
 }
@@ -6784,7 +6844,7 @@ function exDemoImgPair(g){
     '<img id="exDemoB" src="'+g[1]+'" '+onerr+' style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s ease">';
 }
 function exDemoMediaHTML(g,aspect){
-  return '<div data-exdemo style="position:relative;background:#0c0f15;border:1px solid var(--hair);border-radius:16px;overflow:hidden;margin-bottom:14px;aspect-ratio:'+aspect+'">'+exDemoImgPair(g)+'</div>';
+  return '<div data-exdemo style="position:relative;background:var(--s2);border:1px solid var(--hair);border-radius:16px;overflow:hidden;margin-bottom:14px;aspect-ratio:'+aspect+'">'+exDemoImgPair(g)+'</div>';
 }
 let _exDemo2=null;
 function startExDemoAuto(g){
@@ -7302,7 +7362,7 @@ function openFiche(name){
   // visuel animé (placeholder élégant simulant un GIF/avatar)
   if(f.gif){
     // Démonstration animée réelle (2 frames alternées = mouvement)
-    h+='<div data-exdemo style="position:relative;background:#fff;border:1px solid var(--hair);border-radius:18px;overflow:hidden;margin-bottom:14px;aspect-ratio:5/4">'+
+    h+='<div data-exdemo style="position:relative;background:var(--s2);border:1px solid var(--hair);border-radius:18px;overflow:hidden;margin-bottom:14px;aspect-ratio:5/4">'+
       exDemoImgPair(f.gif)+
       '<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));padding:10px 12px 8px;display:flex;align-items:center;gap:6px;font-size:11px;color:#fff;font-weight:700;z-index:1"><span style="width:7px;height:7px;border-radius:50%;background:var(--e);animation:demoPulse 1s infinite"></span>'+t('movementDemoCap')+'</div></div>';
     h+='<div id="exDemoFallback" style="display:none;position:relative;background:linear-gradient(135deg,var(--s2),var(--s1));border:1px solid var(--hair);border-radius:18px;padding:34px 16px;text-align:center;margin-bottom:14px"><div style="animation:demoFloat 1.5s ease-in-out infinite">'+exGlyph(f,68)+'</div><div style="font-size:11px;color:var(--dim);margin-top:8px">'+t('movementDemo')+'</div></div>';
@@ -7345,13 +7405,13 @@ function openCfg(e,cb){
 }
 function renderCfg(){
   const s=cfgState;
-  let h='<div style="text-align:center;margin-bottom:14px"><span style="display:inline-flex">'+exGlyph(s,40)+'</span><div class="man" style="font-weight:800;font-size:18px;margin-top:4px">'+s.name+'</div></div>';
-  h+='<div class="field"><label>Séries</label><div class="stepper"><button onclick="cfgAdj(\'sets\',-1)">−</button><span class="val" id="cfSets">'+s.sets+'</span><button onclick="cfgAdj(\'sets\',1)">+</button></div></div>';
-  h+='<div class="field"><label>Répétitions</label><div class="pills" style="margin-bottom:8px">'+['6','8','10','12','15'].map(r=>'<div class="pill '+(s.reps===r&&!s.amrap?'on':'')+'" onclick="cfgState.reps=\''+r+'\';cfgState.amrap=false;renderCfg()">'+r+'</div>').join('')+'<div class="pill '+(s.amrap?'on':'')+'" onclick="cfgState.amrap=true;cfgState.reps=\'AMRAP\';renderCfg()">AMRAP</div></div></div>';
-  h+='<div class="field"><label>Charge (kg)</label><div class="stepper"><button onclick="cfgAdj(\'weight\',-2.5)">−</button><button onclick="cfgAdj(\'weight\',-5)" style="font-size:12px">−5</button><span class="val" id="cfW">'+s.weight+'</span><button onclick="cfgAdj(\'weight\',5)" style="font-size:12px">+5</button><button onclick="cfgAdj(\'weight\',2.5)">+</button></div><div class="pills" style="margin-top:8px">'+[20,40,60,80,100].map(w=>'<div class="pill" onclick="cfgState.weight='+w+';renderCfg()">'+w+'kg</div>').join('')+'</div></div>';
-  h+='<div class="field"><label>Repos</label><div class="pills">'+[60,90,120,180].map(r=>'<div class="pill '+(s.rest===r?'on':'')+'" onclick="cfgState.rest='+r+';renderCfg()">'+r+'s</div>').join('')+'</div></div>';
-  h+='<div class="field"><label>Notes personnelles (optionnel)</label><textarea class="inp" rows="2" oninput="cfgState.note=this.value" placeholder="ex: bien serrer les omoplates">'+escHtml(s.note||'')+'</textarea></div>';
-  h+='<button class="btn" onclick="saveCfg()">Ajouter</button>';
+  let h='<div style="text-align:center;margin-bottom:14px"><span style="display:inline-flex">'+exGlyph(s,40)+'</span><div class="man" style="font-weight:800;font-size:18px;margin-top:4px">'+escHtml(trExName(s.name))+'</div></div>';
+  h+='<div class="field"><label>'+t('setsLab')+'</label><div class="stepper"><button onclick="cfgAdj(\'sets\',-1)">−</button><span class="val" id="cfSets">'+s.sets+'</span><button onclick="cfgAdj(\'sets\',1)">+</button></div></div>';
+  h+='<div class="field"><label>'+t('repsLab')+'</label><div class="pills" style="margin-bottom:8px">'+['6','8','10','12','15'].map(r=>'<div class="pill '+(s.reps===r&&!s.amrap?'on':'')+'" onclick="cfgState.reps=\''+r+'\';cfgState.amrap=false;renderCfg()">'+r+'</div>').join('')+'<div class="pill '+(s.amrap?'on':'')+'" onclick="cfgState.amrap=true;cfgState.reps=\'AMRAP\';renderCfg()">AMRAP</div></div></div>';
+  h+='<div class="field"><label>'+t('loadKgLab')+'</label><div class="stepper"><button onclick="cfgAdj(\'weight\',-2.5)">−</button><button onclick="cfgAdj(\'weight\',-5)" style="font-size:12px">−5</button><span class="val" id="cfW">'+s.weight+'</span><button onclick="cfgAdj(\'weight\',5)" style="font-size:12px">+5</button><button onclick="cfgAdj(\'weight\',2.5)">+</button></div><div class="pills" style="margin-top:8px">'+[20,40,60,80,100].map(w=>'<div class="pill" onclick="cfgState.weight='+w+';renderCfg()">'+w+'kg</div>').join('')+'</div></div>';
+  h+='<div class="field"><label>'+t('restLab2')+'</label><div class="pills">'+[60,90,120,180].map(r=>'<div class="pill '+(s.rest===r?'on':'')+'" onclick="cfgState.rest='+r+';renderCfg()">'+r+'s</div>').join('')+'</div></div>';
+  h+='<div class="field"><label>'+t('personalNotesLab')+'</label><textarea class="inp" rows="2" oninput="cfgState.note=this.value" placeholder="'+t('notesPh')+'">'+escHtml(s.note||'')+'</textarea></div>';
+  h+='<button class="btn" onclick="saveCfg()">'+t('add')+'</button>';
   $('#cfgBody').innerHTML=h;
 }
 function cfgAdj(k,v){ cfgState[k]=Math.max(k==='weight'?0:1,cfgState[k]+v); renderCfg(); }
@@ -8248,17 +8308,17 @@ function renderVDOTtool(){
 let rmW=80,rmR=5;
 function renderRMtool(){
   const rm=Math.round(rmW*(1+rmR/30)); // Epley
-  let h='<div class="card"><div class="field"><label>Charge soulevée (kg)</label><div class="stepper"><button onclick="rmW=Math.max(0,rmW-2.5);renderRMtool()">−</button><span class="val">'+rmW+'</span><button onclick="rmW+=2.5;renderRMtool()">+</button></div></div>';
-  h+='<div class="field"><label>Répétitions</label><div class="stepper"><button onclick="rmR=Math.max(1,rmR-1);renderRMtool()">−</button><span class="val">'+rmR+'</span><button onclick="rmR++;renderRMtool()">+</button></div></div></div>';
-  h+='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var(--e)">'+rm+' kg</div><div class="lab">1RM estimé (Epley)</div></div>';
-  h+='<div class="card"><div class="card-t">% de ton 1RM</div>'+[[95,2],[90,4],[85,6],[80,8],[75,10],[70,12],[60,15]].map(x=>'<div class="zrow"><span class="zname">'+x[0]+'% · ~'+x[1]+' reps</span><span class="zval mono">'+Math.round(rm*x[0]/100)+' kg</span></div>').join('')+'</div>';
+  let h='<div class="card"><div class="field"><label>'+t('liftedLoadKgLab')+'</label><div class="stepper"><button onclick="rmW=Math.max(0,rmW-2.5);renderRMtool()">−</button><span class="val">'+rmW+'</span><button onclick="rmW+=2.5;renderRMtool()">+</button></div></div>';
+  h+='<div class="field"><label>'+t('repsLab')+'</label><div class="stepper"><button onclick="rmR=Math.max(1,rmR-1);renderRMtool()">−</button><span class="val">'+rmR+'</span><button onclick="rmR++;renderRMtool()">+</button></div></div></div>';
+  h+='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var(--e)">'+rm+' kg</div><div class="lab">'+t('estimated1RMLab')+'</div></div>';
+  h+='<div class="card"><div class="card-t">'+t('percentOf1RMLab')+'</div>'+[[95,2],[90,4],[85,6],[80,8],[75,10],[70,12],[60,15]].map(x=>'<div class="zrow"><span class="zname">'+x[0]+'% · ~'+x[1]+' '+t('repsShort')+'</span><span class="zval mono">'+Math.round(rm*x[0]/100)+' kg</span></div>').join('')+'</div>';
   $('#outBody').innerHTML=h;
 }
 let tonW=60,tonS=4,tonR=10;
 function renderTonnageTool(){
   const ton=tonW*tonS*tonR;
-  let h='<div class="card"><div class="field"><label>Charge (kg)</label><div class="stepper"><button onclick="tonW=Math.max(0,tonW-2.5);renderTonnageTool()">−</button><span class="val">'+tonW+'</span><button onclick="tonW+=2.5;renderTonnageTool()">+</button></div></div><div class="field"><label>Séries</label><div class="stepper"><button onclick="tonS=Math.max(1,tonS-1);renderTonnageTool()">−</button><span class="val">'+tonS+'</span><button onclick="tonS++;renderTonnageTool()">+</button></div></div><div class="field"><label>Reps</label><div class="stepper"><button onclick="tonR=Math.max(1,tonR-1);renderTonnageTool()">−</button><span class="val">'+tonR+'</span><button onclick="tonR++;renderTonnageTool()">+</button></div></div></div>';
-  h+='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var(--e)">'+ton+' kg</div><div class="lab">Tonnage total ('+tonS+'×'+tonR+'×'+tonW+'kg)</div></div>';
+  let h='<div class="card"><div class="field"><label>'+t('loadKgLab')+'</label><div class="stepper"><button onclick="tonW=Math.max(0,tonW-2.5);renderTonnageTool()">−</button><span class="val">'+tonW+'</span><button onclick="tonW+=2.5;renderTonnageTool()">+</button></div></div><div class="field"><label>'+t('setsLab')+'</label><div class="stepper"><button onclick="tonS=Math.max(1,tonS-1);renderTonnageTool()">−</button><span class="val">'+tonS+'</span><button onclick="tonS++;renderTonnageTool()">+</button></div></div><div class="field"><label>'+t('repsShort')+'</label><div class="stepper"><button onclick="tonR=Math.max(1,tonR-1);renderTonnageTool()">−</button><span class="val">'+tonR+'</span><button onclick="tonR++;renderTonnageTool()">+</button></div></div></div>';
+  h+='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var(--e)">'+ton+' kg</div><div class="lab">'+tp('totalTonnageLab',tonS,tonR,tonW)+'</div></div>';
   $('#outBody').innerHTML=h;
 }
 function renderLoadTool(){
@@ -8269,7 +8329,7 @@ function renderLoadTool(){
   for(let i=0;i<28;i++){ const d=new Date(end);d.setDate(end.getDate()-i); const l=load[dateKey(d)]||0; chronic+=l; if(i<7)acute+=l; }
   acute/=7; chronic/=28;
   const ratio=chronic>0?(acute/chronic):0;
-  let status,col; if(ratio===0){status='Pas de données';col='--dim';} else if(ratio<0.8){status='Sous-charge';col='--platine';} else if(ratio<=1.3){status='Optimal';col='--ok';} else if(ratio<=1.5){status='Élevé';col='--warn';} else {status='Risque blessure';col='--bad';}
+  let status,col; if(ratio===0){status=t('noDataLab');col='--dim';} else if(ratio<0.8){status='Sous-charge';col='--platine';} else if(ratio<=1.3){status='Optimal';col='--ok';} else if(ratio<=1.5){status='Élevé';col='--warn';} else {status='Risque blessure';col='--bad';}
   let h='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var('+col+')">'+ratio.toFixed(2)+'</div><div class="lab">Ratio Aigu/Chronique (ACWR)</div><div class="badge" style="margin-top:10px;background:var(--ed);color:var('+col+')">'+status+'</div></div>';
   h+='<div class="sgrid"><div class="sbox"><div class="v">'+Math.round(acute)+'</div><div class="l">Charge aiguë (7j)</div></div><div class="sbox"><div class="v">'+Math.round(chronic)+'</div><div class="l">Charge chronique (28j)</div></div></div>';
   h+='<div class="tip" style="margin-top:12px">Zone optimale : 0,8–1,3. Au-dessus de 1,5, le risque de blessure augmente fortement.</div>';
@@ -8278,8 +8338,8 @@ function renderLoadTool(){
 let calKm=10,calMin=50;
 function renderCaloriesTool(){
   const w=P.weight||62; const cal=Math.round(0.9*w*calKm);
-  let h='<div class="card"><div class="field"><label>Distance (km)</label><div class="stepper"><button onclick="calKm=Math.max(1,calKm-1);renderCaloriesTool()">−</button><span class="val">'+calKm+'</span><button onclick="calKm++;renderCaloriesTool()">+</button></div></div></div>';
-  h+='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var(--e)">'+cal+'</div><div class="lab">kcal brûlées (~'+w+'kg)</div></div>';
+  let h='<div class="card"><div class="field"><label>'+t('distanceKmLab')+'</label><div class="stepper"><button onclick="calKm=Math.max(1,calKm-1);renderCaloriesTool()">−</button><span class="val">'+calKm+'</span><button onclick="calKm++;renderCaloriesTool()">+</button></div></div></div>';
+  h+='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var(--e)">'+cal+'</div><div class="lab">'+tp('kcalBurnedLab',w)+'</div></div>';
   $('#outBody').innerHTML=h;
 }
 function renderHydraTool(){
@@ -8309,15 +8369,15 @@ function renderConvertTool(){
 }
 let pgW=60,pgInc=2.5,pgWk=8;
 function renderProgTool(){
-  let h='<div class="card"><div class="field"><label>Charge actuelle (kg)</label><div class="stepper"><button onclick="pgW=Math.max(0,pgW-2.5);renderProgTool()">−</button><span class="val">'+pgW+'</span><button onclick="pgW+=2.5;renderProgTool()">+</button></div></div><div class="field"><label>Progression / semaine (kg)</label><div class="pills">'+[1.25,2.5,5].map(x=>'<div class="pill '+(pgInc===x?'on':'')+'" onclick="pgInc='+x+';renderProgTool()">+'+x+'</div>').join('')+'</div></div><div class="field"><label>Semaines</label><div class="stepper"><button onclick="pgWk=Math.max(1,pgWk-1);renderProgTool()">−</button><span class="val">'+pgWk+'</span><button onclick="pgWk++;renderProgTool()">+</button></div></div></div>';
-  h+='<div class="card"><div class="card-t">Projection</div>';
+  let h='<div class="card"><div class="field"><label>'+t('currentLoadKgLab')+'</label><div class="stepper"><button onclick="pgW=Math.max(0,pgW-2.5);renderProgTool()">−</button><span class="val">'+pgW+'</span><button onclick="pgW+=2.5;renderProgTool()">+</button></div></div><div class="field"><label>'+t('weeklyProgressKgLab')+'</label><div class="pills">'+[1.25,2.5,5].map(x=>'<div class="pill '+(pgInc===x?'on':'')+'" onclick="pgInc='+x+';renderProgTool()">+'+x+'</div>').join('')+'</div></div><div class="field"><label>'+t('weeksLab')+'</label><div class="stepper"><button onclick="pgWk=Math.max(1,pgWk-1);renderProgTool()">−</button><span class="val">'+pgWk+'</span><button onclick="pgWk++;renderProgTool()">+</button></div></div></div>';
+  h+='<div class="card"><div class="card-t">'+t('projectionLab')+'</div>';
   for(let i=1;i<=pgWk;i++){ h+='<div class="zrow"><span class="zname">Semaine '+i+'</span><span class="zval mono">'+(pgW+pgInc*i)+' kg</span></div>'; }
   h+='</div>';
   $('#outBody').innerHTML=h;
 }
 function renderReposTool(){
   const data=[['Force max (1-5 reps)','3-5 min'],['Hypertrophie (6-12)','60-90 s'],['Endurance (15+)','30-45 s'],['Puissance / explosif','2-3 min'],['Superset','0 s entre, 90 s après']];
-  let h='<div class="card"><div class="card-t">'+ICN('timer',15,'var(--e)')+'Temps de repos recommandés</div>'+data.map(d=>'<div class="zrow"><span class="zname">'+d[0]+'</span><span class="zval mono">'+d[1]+'</span></div>').join('')+'</div><div class="tip">Plus la charge est lourde, plus le repos doit être long pour récupérer le système nerveux.</div>';
+  let h='<div class="card"><div class="card-t">'+ICN('timer',15,'var(--e)')+t('restTimesLab')+'</div>'+data.map(d=>'<div class="zrow"><span class="zname">'+d[0]+'</span><span class="zval mono">'+d[1]+'</span></div>').join('')+'</div><div class="tip">Plus la charge est lourde, plus le repos doit être long pour récupérer le système nerveux.</div>';
   $('#outBody').innerHTML=h;
 }
 let pomoState={phase:'work',left:25*60,running:false,iv:null,count:0};
@@ -8325,10 +8385,10 @@ function renderPomodoro(){
   const total=pomoState.phase==='work'?25*60:(pomoState.phase==='long'?15*60:5*60);
   const pct=pomoState.left/total*100;
   const col=pomoState.phase==='work'?'var(--bad)':'var(--ok)';
-  const lab=pomoState.phase==='work'?'Focus':'Pause';
+  const lab=pomoState.phase==='work'?t('pomoFocus'):t('pomoBreak');
   let h='<div class="card" style="text-align:center"><div class="badge" style="background:var(--ed);color:'+col+'">'+lab+'</div><div class="ring-wrap" style="width:180px;height:180px;margin:14px auto"><span id="pmRing">'+ringSVG(180,pct,12,col)+'</span><div class="ring-c"><div class="big mono" id="pmNum" style="font-size:36px">'+fmtMS(pomoState.left)+'</div></div></div>';
   h+='<div class="row" style="gap:10px"><button class="btn" onclick="pomoToggle()">'+(pomoState.running?'Pause':'▶ Start')+'</button><button class="btn ghost" onclick="pomoReset()">↺</button></div>';
-  h+='<div style="margin-top:12px;font-size:12px;color:var(--muted)">Pomodoros complétés : '+pomoState.count+'</div></div>';
+  h+='<div style="margin-top:12px;font-size:12px;color:var(--muted)">'+tp('pomodorosDoneLab',pomoState.count)+'</div></div>';
   $('#outBody').innerHTML=h;
 }
 function pomoToggle(){
@@ -8466,10 +8526,10 @@ function calcAsGoal(){ addXP(10,t('goalAddedReason')); toast(t('goalAddedToast')
 /* ---------- FC KARVONEN ---------- */
 let fc={max:(P&&P.hrMax)||190,rest:(P&&P.hrRest)||60};
 function renderFC(){
-  let h='<div class="card"><div class="field"><label>FC max (bpm)</label><div class="stepper"><button onclick="fc.max--;renderFC()">−</button><span class="val">'+fc.max+'</span><button onclick="fc.max++;renderFC()">+</button></div></div>';
-  h+='<div class="field"><label>FC repos (bpm)</label><div class="stepper"><button onclick="fc.rest--;renderFC()">−</button><span class="val">'+fc.rest+'</span><button onclick="fc.rest++;renderFC()">+</button></div></div></div>';
-  const zones=[['Z1 Récupération',.5,.6,'--dim'],['Z2 Endurance',.6,.7,'--e'],['Z3 Tempo',.7,.8,'--diamant'],['Z4 Seuil',.8,.9,'--or'],['Z5 VO2max',.9,1,'--bad']];
-  h+='<div class="card"><div class="card-t">Zones cardiaques (Karvonen)</div>';
+  let h='<div class="card"><div class="field"><label>'+t('hrMaxLab')+'</label><div class="stepper"><button onclick="fc.max--;renderFC()">−</button><span class="val">'+fc.max+'</span><button onclick="fc.max++;renderFC()">+</button></div></div>';
+  h+='<div class="field"><label>'+t('hrRestLab')+'</label><div class="stepper"><button onclick="fc.rest--;renderFC()">−</button><span class="val">'+fc.rest+'</span><button onclick="fc.rest++;renderFC()">+</button></div></div></div>';
+  const zones=[[t('hrZ1'),.5,.6,'--dim'],[t('hrZ2'),.6,.7,'--e'],[t('hrZ3'),.7,.8,'--diamant'],[t('hrZ4'),.8,.9,'--or'],[t('hrZ5'),.9,1,'--bad']];
+  h+='<div class="card"><div class="card-t">'+t('hrZonesLab')+'</div>';
   zones.forEach(z=>{ const lo=Math.round(fc.rest+(fc.max-fc.rest)*z[1]); const hi=Math.round(fc.rest+(fc.max-fc.rest)*z[2]);
     h+='<div class="zrow"><span class="zdot" style="background:var('+z[3]+')"></span><span class="zname">'+z[0]+'</span><span class="zval mono">'+lo+'–'+hi+'</span></div>'; });
   h+='</div>';
@@ -8733,7 +8793,7 @@ function renderProfileSimple(){
 let _pfSheet=null;
 function openProfileSection(key){
   _pfSheet=key;
-  const titles={account:'Compte',lang:''+t('language'),appearance:''+t('appearance'),notif:''+t('notifsApp'),data:''+t('dataPrivacy'),terms:t('termsOfUseLab'),privacy:t('privacyPolicyLab')};
+  const titles={account:t('account'),lang:''+t('language'),appearance:''+t('appearance'),notif:''+t('notifsApp'),data:''+t('dataPrivacy'),terms:t('termsOfUseLab'),privacy:t('privacyPolicyLab')};
   $('#ovProgTitle').textContent=titles[key]||t('settings');
   $('#progBody').innerHTML=pfSectionHTML(key);
   openOv('ovProg');
@@ -8828,14 +8888,14 @@ function pfAccountHTML(){
         '</div>'+
         '<span class="badge" style="font-size:10px;flex-shrink:0">Google</span>'+
       '</div>'+
-      '<div style="font-size:11px;color:var(--dim);margin-top:12px">Synchronisé sur le cloud</div>'+
-      '<div class="row" style="gap:8px;margin-top:14px"><button class="btn ghost sm" style="flex:1" onclick="addAnotherAccount()">Ajouter un compte</button>'+
+      '<div style="font-size:11px;color:var(--dim);margin-top:12px">'+t('syncedCloudLab')+'</div>'+
+      '<div class="row" style="gap:8px;margin-top:14px"><button class="btn ghost sm" style="flex:1" onclick="addAnotherAccount()">'+t('addAccountBtn')+'</button>'+
       '<button class="btn ghost sm" style="flex:1;color:var(--bad)" onclick="logout()">'+t('logout')+'</button></div>'+
     '</div>'+
     '<div class="card" style="padding:16px;margin-top:12px;border-color:rgba(255,92,108,.35);background:rgba(255,92,108,.05)">'+
-      '<div class="card-t" style="color:var(--bad)">'+ICN('warning',15,'var(--bad)')+'Zone de danger</div>'+
-      '<div style="font-size:11.5px;color:var(--muted);margin-bottom:12px;line-height:1.5">Supprime définitivement ton compte et toutes tes données, sur le cloud et sur cet appareil.</div>'+
-      '<button class="btn ghost sm" style="color:var(--bad);width:100%" onclick="deleteAccountCompletely()">Supprimer mon compte et mes données</button>'+
+      '<div class="card-t" style="color:var(--bad)">'+ICN('warning',15,'var(--bad)')+t('dangerZoneLab')+'</div>'+
+      '<div style="font-size:11.5px;color:var(--muted);margin-bottom:12px;line-height:1.5">'+t('deleteAccountDesc')+'</div>'+
+      '<button class="btn ghost sm" style="color:var(--bad);width:100%" onclick="deleteAccountCompletely()">'+t('deleteAccountBtn')+'</button>'+
     '</div>';
   }
   if(window.isGuestUser){
@@ -8937,24 +8997,24 @@ function pfNotifHTML(){
 }
 function pfDataHTML(){
   return '<div class="card" style="padding:16px">'+
-      '<div style="font-size:11.5px;color:var(--muted);margin-bottom:14px;line-height:1.5">Exporte une copie de tes données ou importe une sauvegarde existante.</div>'+
+      '<div style="font-size:11.5px;color:var(--muted);margin-bottom:14px;line-height:1.5">'+t('exportImportDesc')+'</div>'+
       '<button class="btn ghost sm" style="width:100%;margin-bottom:8px" onclick="exportData()">'+t('exportData')+'</button>'+
       '<button class="btn ghost sm" style="width:100%" onclick="importData()">'+t('importData')+'</button>'+
     '</div>'+
     '<div class="card" style="padding:16px;margin-top:12px;border-color:rgba(255,92,108,.35);background:rgba(255,92,108,.05)">'+
-      '<div class="card-t" style="color:var(--bad)">'+ICN('warning',15,'var(--bad)')+'Zone de danger</div>'+
-      '<div style="font-size:11.5px;color:var(--muted);margin-bottom:12px;line-height:1.5">Efface toutes les données de l\u2019application sur cet appareil.</div>'+
+      '<div class="card-t" style="color:var(--bad)">'+ICN('warning',15,'var(--bad)')+t('dangerZoneLab')+'</div>'+
+      '<div style="font-size:11.5px;color:var(--muted);margin-bottom:12px;line-height:1.5">'+t('resetDesc')+'</div>'+
       '<button class="btn ghost sm" style="width:100%;color:var(--bad)" onclick="resetAll()">'+t('resetApp')+'</button>'+
     '</div>';
 }
 /* ---- Photo & Bio ---- */
 function changePhoto(){
   // Propose galerie OU appareil photo
-  let h='<div class="tip" style="margin-bottom:14px">Choisis ta photo de profil :</div>';
-  h+='<button class="btn" style="margin-bottom:10px" onclick="pickPhotoSource(false)">Depuis la galerie</button>';
-  h+='<button class="btn ghost" style="margin-bottom:10px" onclick="pickPhotoSource(true)">Prendre une photo</button>';
-  if(P.photo) h+='<button class="btn ghost" style="color:var(--bad)" onclick="removePhoto();closeOv(\'ovProg\')">Supprimer la photo actuelle</button>';
-  $('#ovProgTitle').textContent='Photo de profil'; $('#progBody').innerHTML=h; $('#ovProg').style.zIndex='13700'; openOv('ovProg');
+  let h='<div class="tip" style="margin-bottom:14px">'+t('choosePhotoLab')+'</div>';
+  h+='<button class="btn" style="margin-bottom:10px" onclick="pickPhotoSource(false)">'+t('fromGalleryBtn')+'</button>';
+  h+='<button class="btn ghost" style="margin-bottom:10px" onclick="pickPhotoSource(true)">'+t('takePhotoBtn')+'</button>';
+  if(P.photo) h+='<button class="btn ghost" style="color:var(--bad)" onclick="removePhoto();closeOv(\'ovProg\')">'+t('removePhotoBtn')+'</button>';
+  $('#ovProgTitle').textContent=t('profilePhotoTitle'); $('#progBody').innerHTML=h; $('#ovProg').style.zIndex='13700'; openOv('ovProg');
 }
 function pickPhotoSource(useCamera){
   const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*';
@@ -8972,9 +9032,9 @@ function openCropper(img){
   _crop={img,scale:1,x:0,y:0};
   let h='<div class="tip" style="margin-bottom:12px">Glisse pour déplacer, utilise le curseur pour zoomer.</div>';
   h+='<div id="cropStage" style="position:relative;width:'+CROP_VIEW+'px;height:'+CROP_VIEW+'px;max-width:100%;margin:0 auto 14px;border-radius:50%;overflow:hidden;background:#000;touch-action:none;border:2px solid var(--e)"><canvas id="cropCv" style="width:100%;height:100%;display:block"></canvas></div>';
-  h+='<div class="field"><label>Zoom</label><input id="cropZoom" type="range" min="1" max="4" step="0.01" value="1" style="width:100%"></div>';
-  h+='<button class="btn" onclick="applyCrop()">Valider la photo</button>';
-  $('#ovProgTitle').textContent='Recadrer'; $('#progBody').innerHTML=h; $('#ovProg').style.zIndex='13700'; openOv('ovProg');
+  h+='<div class="field"><label>'+t('zoomLab')+'</label><input id="cropZoom" type="range" min="1" max="4" step="0.01" value="1" style="width:100%"></div>';
+  h+='<button class="btn" onclick="applyCrop()">'+t('validatePhotoBtn')+'</button>';
+  $('#ovProgTitle').textContent=t('cropTitle'); $('#progBody').innerHTML=h; $('#ovProg').style.zIndex='13700'; openOv('ovProg');
   setTimeout(initCropper,40);
 }
 function drawCrop(){

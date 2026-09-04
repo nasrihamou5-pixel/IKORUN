@@ -269,6 +269,16 @@ html[data-accent="carbon"] #nav{border-color:var(--chrome-border);}
 html[data-accent="carbon"] .nb.on{color:var(--e2);text-shadow:0 0 12px rgba(var(--e-rgb),.5);}
 /* bouton carbone : filet chromé mobile sur nappe carbone — texte protégé par une ombre nette */
 html[data-accent="carbon"] .btn{text-shadow:0 1px 3px rgba(0,0,0,.85),0 0 10px rgba(0,0,0,.55);}
+/* ===== LISIBILITÉ DU TEXTE DES BOUTONS SUR LES ACCENTS CLAIRS =====
+   .btn est en texte blanc sur --grad-btn. Selon l'accent, le haut du dégradé est
+   clair (jaune, vert...) et le blanc y devient peu lisible. Deux mesures :
+   1) une ombre portée légère sur tous les accents (ce qui était déjà fait pour
+      le carbone) — détache le texte quel que soit le point du dégradé ;
+   2) pour le jaune en mode sombre, le dégradé est clair sur TOUTE sa hauteur :
+      l'ombre ne suffit pas, on passe donc le texte en foncé (contraste ~10:1). */
+.btn{text-shadow:0 1px 2px rgba(0,0,0,.45);}
+html[data-mode="dark"][data-accent="yellow"] .btn{color:#2A2205;text-shadow:0 1px 1px rgba(255,255,255,.35);}
+html[data-mode="dark"][data-accent="yellow"] .btn.ghost{color:var(--snow);text-shadow:none;}
 html[data-accent="carbon"] .accent-dot.on{box-shadow:var(--sh-sm),0 0 0 1px rgba(230,234,238,.5);}
 
 .accent-picker{display:flex;gap:9px;align-items:center;flex-wrap:wrap;}
@@ -300,10 +310,17 @@ html.easy-mode *{ -webkit-backdrop-filter:none!important; backdrop-filter:none!i
 html.easy-mode .stag{ opacity:1!important; animation:none!important; }
 html.easy-mode .icb svg,html.easy-mode .lr-icon svg,html.easy-mode .qa-pill svg,html.easy-mode .favtile svg,html.easy-mode .perfcard .pcl svg{ animation:none!important; }
 html.easy-mode .tip-tile::before,html.easy-mode .tip-glow,html.easy-mode .hero-glow,html.easy-mode .bd-ring,html.easy-mode .bd-spark,html.easy-mode .bd-unlock-badge::after{ animation:none!important; opacity:0!important; }
-html.easy-mode .card,html.easy-mode .grp-card,html.easy-mode .favtile,html.easy-mode .sbox,html.easy-mode .inp,html.easy-mode .pill,html.easy-mode .btn{
+html.easy-mode .card,html.easy-mode .grp-card,html.easy-mode .favtile,html.easy-mode .sbox,html.easy-mode .inp,html.easy-mode .pill{
   background:var(--s1)!important; box-shadow:none!important; border:2px solid var(--hair)!important;
 }
-html.easy-mode .btn{ font-weight:800; min-height:52px; }
+/* Les boutons étaient inclus dans la règle ci-dessus : leur fond devenait var(--s1)
+   alors que .btn garde color:#fff → en mode clair (--s1 = blanc) le texte blanc
+   passait sur fond blanc et les boutons devenaient invisibles.
+   On les en sort : .btn garde son dégradé d'accent normal (pensé avec son
+   contraste), le mode simplifié ne lui applique que la taille et la graisse. */
+html.easy-mode .btn{ font-weight:800; min-height:52px; box-shadow:none!important; }
+html.easy-mode .btn.ghost{
+  background:var(--s1)!important; color:var(--snow)!important; border:2px solid var(--hair2)!important; }
 html.easy-mode .man,html.easy-mode .lr-title,html.easy-mode .card-t{ font-weight:800!important; }
 html.easy-mode #nav{ background:var(--s1)!important; border-top:2px solid var(--hair); }
 html.easy-mode .topbar{ background:var(--bg)!important; border-bottom:2px solid var(--hair); }
