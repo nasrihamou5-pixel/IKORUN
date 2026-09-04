@@ -4104,6 +4104,10 @@ function applyTheme(){
   document.documentElement.setAttribute('data-accent',P.theme||'blue');
   document.documentElement.classList.toggle('easy-mode',!!P.easyMode);
   const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.content=(P.easyMode?(mode==='light'?'#FFFFFF':'#000000'):(mode==='light'?'#F2F4F8':'#0A0D12'));
+  // Miroir en clair (mode/accent/easyMode ne sont pas des données sensibles) pour que
+  // le script tout en haut de <head> puisse réappliquer le thème avant le premier
+  // paint au prochain chargement, sans attendre le déchiffrement async du profil.
+  try{ localStorage.setItem('ik_theme_prefs', JSON.stringify({mode, accent:P.theme||'blue', easyMode:!!P.easyMode})); }catch(e){}
 }
 /* Couleur d'accent de l'app : bleu (défaut) / vert militaire chromé / marron boisé chromé */
 const ACCENTS=[{key:'blue',name:'accentBlue'},{key:'red',name:'accentRed'},{key:'green',name:'accentGreen'},{key:'brown',name:'accentBrown'},{key:'yellow',name:'accentYellow'},{key:'carbon',name:'accentCarbon'}];

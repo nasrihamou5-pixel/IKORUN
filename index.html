@@ -2,6 +2,20 @@
 <html lang="fr">
 <head>
 <script>
+  // Anti-flash de thème : applique tout de suite (avant le premier paint, avant
+  // même app.js) le mode/couleur/accent déjà connus, à partir d'un petit miroir
+  // en clair (non sensible) posé par applyTheme() dans app.js. Sans ça, la page
+  // peint d'abord le thème sombre par défaut du CSS, puis bascule en clair une
+  // fois app.js chargé et le profil (chiffré, donc asynchrone) déchiffré — d'où
+  // le flash noir/blanc aléatoire selon le thème réellement choisi par la personne.
+  try{
+    const tp = JSON.parse(localStorage.getItem('ik_theme_prefs') || 'null');
+    if(tp){
+      if(tp.mode === 'light') document.documentElement.setAttribute('data-mode', 'light');
+      if(tp.accent) document.documentElement.setAttribute('data-accent', tp.accent);
+      if(tp.easyMode) document.documentElement.classList.add('easy-mode');
+    }
+  }catch(e){}
   window.__rawEntryUrl = location.href;
   // Filet de sécurité : si l'URL contient un "##" résiduel (icône PWA déjà
   // "polluée" par un ancien essai de connexion Google), on le nettoie avant
