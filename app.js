@@ -1121,6 +1121,7 @@ const I18N={
     restBetweenSetsLabel:'Repos entre les séries',volumeCap:'Volume',durationCap:'Durée',
     targetedMusclesTitle:'Muscles ciblés',primaryMusclesLabel:'Muscles primaires',secondaryMusclesLabel:'Muscles secondaires',
     frontViewLabel:'Face',backViewLabel:'Dos',
+    muscleHeatmapTitle:'Muscles les plus sollicités',lessLab:'Moins',moreLab:'Plus',mostTrainedLab:'Le plus travaillé : {0}',noMuscleDataLab:'Termine une séance de muscu pour voir apparaître ta carte de charge musculaire.',
     executionLabel:'Exécution',defaultExecutionHint:'Réalise le mouvement de façon contrôlée, amplitude complète.',
     adviceLabel:'Conseils',startLabel:'Démarrer',
     exBreathGeneric:'Inspire pendant la phase négative (descente/étirement), expire pendant l\u2019effort (poussée/contraction).',
@@ -1591,6 +1592,7 @@ const I18N={
     restBetweenSetsLabel:'Rest between sets',volumeCap:'Volume',durationCap:'Duration',
     targetedMusclesTitle:'Targeted muscles',primaryMusclesLabel:'Primary muscles',secondaryMusclesLabel:'Secondary muscles',
     frontViewLabel:'Front',backViewLabel:'Back',
+    muscleHeatmapTitle:'Most trained muscles',lessLab:'Less',moreLab:'More',mostTrainedLab:'Most trained: {0}',noMuscleDataLab:'Finish a strength session to see your muscle load map appear.',
     executionLabel:'Execution',defaultExecutionHint:'Perform the movement in a controlled way, with a full range of motion.',
     adviceLabel:'Tips',startLabel:'Start',
     exBreathGeneric:'Inhale during the negative phase (lowering/stretch), exhale during the effort (push/contraction).',
@@ -2061,6 +2063,7 @@ const I18N={
     restBetweenSetsLabel:'الراحة بين المجموعات',volumeCap:'الحجم',durationCap:'المدة',
     targetedMusclesTitle:'العضلات المستهدفة',primaryMusclesLabel:'العضلات الأساسية',secondaryMusclesLabel:'العضلات الثانوية',
     frontViewLabel:'أمامي',backViewLabel:'خلفي',
+    muscleHeatmapTitle:'العضلات الأكثر تدريبًا',lessLab:'أقل',moreLab:'أكثر',mostTrainedLab:'الأكثر تدريبًا: {0}',noMuscleDataLab:'أنهِ حصة تقوية لترى خريطة تحميل عضلاتك تظهر.',
     executionLabel:'التنفيذ',defaultExecutionHint:'نفّذ الحركة بشكل متحكم به، بمدى حركة كامل.',
     adviceLabel:'نصائح',startLabel:'بدء',
     exBreathGeneric:'استنشق أثناء المرحلة السلبية (النزول/التمدد)، وازفر أثناء المجهود (الدفع/الانقباض).',
@@ -3128,6 +3131,11 @@ let _ovZTop=12000;
 function topZ(){ return ++_ovZTop; }
 function openOv(id){ const el=$('#'+id); el.style.zIndex=topZ(); el.classList.add('on'); }
 function closeOv(id){ const el=$('#'+id); el.classList.remove('on'); el.style.zIndex=''; if(id==='ovProg') _pfSheet=null; if(id==='ovLib'&&typeof _exDemoTimer!=='undefined'){ clearInterval(_exDemoTimer); } if((id==='ovProg'||id==='ovLive')&&typeof _exDemo2!=='undefined'&&_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; }
+  // Garde-fou : openLibFor() ferme ovCreate pour ouvrir la bibliothèque par-dessus (voir plus
+  // bas). Sans ce bloc, annuler depuis la bibliothèque ou depuis "Configurer" (X, pas
+  // "Ajouter") fermait tout et faisait perdre le programme en cours de création — bug
+  // signalé par un utilisateur ("petit bug lors de la création d'un programme de muscu").
+  if((id==='ovLib'||id==='ovCfg') && _libFromCreate && typeof newProg!=='undefined' && newProg){ _libFromCreate=false; renderCreate(); openOv('ovCreate'); }
   // Garde-fou : si ovLive se ferme par un chemin qui n'est pas pauseLive/doCancelLive/finishLive,
   // on ne laisse jamais liveTimer/restTimer tourner en fond perdu.
   if(id==='ovLive'){ if(typeof liveTimer!=='undefined'){ clearInterval(liveTimer); } if(typeof restTimer!=='undefined'){ clearInterval(restTimer); } }
@@ -6583,6 +6591,64 @@ function bodyAnatomyDualSVG(zoneInfo){
     '</div>';
 }
 
+/* ===== CARTE DE CHALEUR MUSCULAIRE (stats muscu) =====
+   Agrège l'historique réel des séances (MSESS[].muscles, posé par finishLive()) pour
+   colorer la silhouette selon ce qui a été le plus sollicité, plutôt que primaire/
+   secondaire d'un seul exercice (bodyAnatomyDualSVG ci-dessus, réutilisé tel quel). */
+const ZONE_LABEL={neck:'Cou',deltoids:'Épaules',frontDeltoid:'Deltoïde antérieur',chest:'Pectoraux',upperChest:'Pectoraux haut',lowerChest:'Pectoraux bas',
+  abs:'Abdominaux',obliques:'Obliques',biceps:'Biceps',triceps:'Triceps',forearm:'Avant-bras',
+  upperBack:'Dos',trapezius:'Trapèzes',lowerBack:'Lombaires',
+  quadriceps:'Quadriceps',hamstring:'Ischios',adductors:'Adducteurs',gluteal:'Fessiers',calves:'Mollets'};
+function zoneLabel(slug){ return trMuscle(ZONE_LABEL[slug]||slug); }
+function computeMuscleLoad(){
+  const counts={};
+  MSESS.forEach(s=>{
+    const ms=s.muscles||[]; if(!ms.length) return;
+    const per=(s.sets||ms.length)/ms.length;
+    ms.forEach(m=>{ const z=MUSCLE_TO_ZONE[m]; if(z) counts[z]=(counts[z]||0)+per; });
+  });
+  return counts;
+}
+const HEAT_TIERS=['var(--e2)','var(--e)','var(--warn)','var(--bad)'];
+function heatColorFor(v,max){
+  if(!v||max<=0) return null;
+  const r=v/max;
+  const idx=Math.min(HEAT_TIERS.length-1,Math.floor(r*HEAT_TIERS.length));
+  return {fill:HEAT_TIERS[idx],opacity:0.55+r*0.45};
+}
+function bodyHeatmapSVGView(counts,max,PARTS,viewBox){
+  let out='';
+  Object.keys(PARTS).forEach(slug=>{
+    let fill='var(--s3)',opacity=1;
+    if(slug==='hair') fill='var(--card2)';
+    else { const c=heatColorFor(counts[slug],max); if(c){ fill=c.fill; opacity=c.opacity; } }
+    PARTS[slug].forEach(d=>{ out+='<path d="'+d+'" fill="'+fill+'" opacity="'+opacity+'"/>'; });
+  });
+  return '<svg viewBox="'+viewBox+'" style="width:100%;display:block">'+out+'</svg>';
+}
+function bodyHeatmapCard(){
+  const counts=computeMuscleLoad();
+  const entries=Object.entries(counts);
+  if(!entries.length) return '<div class="card"><div class="empty"><div class="em-ic">'+ICN('run',36,'currentColor')+'</div><div style="font-size:13px">'+t('noMuscleDataLab')+'</div></div></div>';
+  const max=Math.max(...entries.map(e=>e[1]));
+  const front=bodyHeatmapSVGView(counts,max,BODY_PARTS_FRONT,ANATOMY_VB_FRONT);
+  const back=bodyHeatmapSVGView(counts,max,BODY_PARTS_BACK,ANATOMY_VB_BACK);
+  const top=entries.sort((a,b)=>b[1]-a[1]).slice(0,3).map(e=>zoneLabel(e[0]));
+  let h='<div class="card"><div class="card-t">'+t('muscleHeatmapTitle')+'</div>';
+  h+='<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:12px">'+
+     '<div style="flex:1;min-width:0;text-align:center"><div class="lab" style="margin-bottom:2px">'+t('frontViewLabel')+'</div>'+front+'</div>'+
+     '<div style="flex:1;min-width:0;text-align:center"><div class="lab" style="margin-bottom:2px">'+t('backViewLabel')+'</div>'+back+'</div>'+
+     '</div>';
+  h+='<div style="display:flex;align-items:center;gap:5px;justify-content:center;margin-bottom:10px">'+
+     '<span style="font-size:10px;color:var(--muted)">'+t('lessLab')+'</span>'+
+     ['var(--s3)'].concat(HEAT_TIERS).map(c=>'<span style="width:15px;height:8px;border-radius:3px;background:'+c+';display:inline-block"></span>').join('')+
+     '<span style="font-size:10px;color:var(--muted)">'+t('moreLab')+'</span>'+
+     '</div>';
+  if(top.length) h+='<div style="font-size:12.5px;color:var(--muted);text-align:center">'+tp('mostTrainedLab',top.join(', '))+'</div>';
+  h+='</div>';
+  return h;
+}
+
 /* ===== VUE EXERCICE DÉTAILLÉE (onglets) ===== */
 let exDetailTab='exo', exDetailCtx=null, exAnatomyView=null;
 function openExDetail(progId,idx){
@@ -6599,7 +6665,7 @@ function renderExDetail(){
   if(exDetailTab==='exo'){
     // Média animé — démarre directement le tuto, sans bouton lecture/pause
     if(g){
-      h+='<div style="position:relative;background:#0c0f15;border:1px solid var(--hair);border-radius:16px;overflow:hidden;margin-bottom:14px"><img id="exDemo" src="'+g[0]+'" style="width:100%;display:block;aspect-ratio:16/11;object-fit:cover"></div>';
+      h+=exDemoMediaHTML(g,'16/11');
     } else {
       h+='<div style="background:linear-gradient(135deg,var(--s2),var(--s1));border:1px solid var(--hair);border-radius:16px;padding:36px;text-align:center;margin-bottom:14px"><div style="animation:demoFloat 1.5s infinite">'+exGlyph(e,64)+'</div></div>';
     }
@@ -6634,11 +6700,24 @@ function renderExDetail(){
   openOv('ovProg');
   if(exDetailTab==='exo' && g){ startExDemoAuto(g); } else if(_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; }
 }
+// Paire d'images superposées + fondu enchaîné (crossfade) entre les 2 frames de free-exercise-db,
+// pour simuler le mouvement bien plus proprement qu'un remplacement brut de src (qui saccadait).
+function exDemoImgPair(g){
+  const onerr='onerror="this.closest(\'[data-exdemo]\').style.display=\'none\';var fb=document.getElementById(\'exDemoFallback\');if(fb)fb.style.display=\'block\'"';
+  return '<img id="exDemoA" src="'+g[0]+'" '+onerr+' style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:1;transition:opacity .6s ease">'+
+    '<img id="exDemoB" src="'+g[1]+'" '+onerr+' style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s ease">';
+}
+function exDemoMediaHTML(g,aspect){
+  return '<div data-exdemo style="position:relative;background:#0c0f15;border:1px solid var(--hair);border-radius:16px;overflow:hidden;margin-bottom:14px;aspect-ratio:'+aspect+'">'+exDemoImgPair(g)+'</div>';
+}
 let _exDemo2=null;
 function startExDemoAuto(g){
   if(_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; }
-  g.forEach(s=>{const im=new Image();im.src=s;}); let i=0;
-  _exDemo2=setInterval(()=>{ const im=$('#exDemo'); if(!im){clearInterval(_exDemo2);_exDemo2=null;return;} i=1-i; im.src=g[i]; },650);
+  g.forEach(s=>{const im=new Image();im.src=s;}); let showA=true;
+  _exDemo2=setInterval(()=>{
+    const a=$('#exDemoA'),b=$('#exDemoB'); if(!a||!b){clearInterval(_exDemo2);_exDemo2=null;return;}
+    showA=!showA; a.style.opacity=showA?'1':'0'; b.style.opacity=showA?'0':'1';
+  },900);
 }
 
 /* ---------- LIVE MUSCU SESSION ---------- */
@@ -7098,7 +7177,8 @@ function saveNewProg(){
 
 /* ---------- BIBLIOTHÈQUE PREMIUM ---------- */
 let libFilterEquip='Tous', libFilterLevel='Tous', libSearch='', libBrowseMode=false;
-function openLibFor(cb){ libCallback=cb; libBrowseMode=false; closeOv('ovCreate'); renderLib(); openOv('ovLib'); }
+let _libFromCreate=false;
+function openLibFor(cb){ libCallback=cb; libBrowseMode=false; _libFromCreate=(cb===addToNewProg); closeOv('ovCreate'); renderLib(); openOv('ovLib'); }
 function openLibBrowse(){ libCallback=null; libBrowseMode=true; renderLib(); openOv('ovLib'); }
 let libView='grid';
 function renderLib(){
@@ -7146,9 +7226,9 @@ function openFiche(name){
   // visuel animé (placeholder élégant simulant un GIF/avatar)
   if(f.gif){
     // Démonstration animée réelle (2 frames alternées = mouvement)
-    h+='<div style="position:relative;background:#fff;border:1px solid var(--hair);border-radius:18px;overflow:hidden;margin-bottom:14px">'+
-      '<img id="exDemo" src="'+f.gif[0]+'" alt="démonstration" style="width:100%;display:block;aspect-ratio:5/4;object-fit:cover" onerror="this.parentNode.style.display=\'none\';document.getElementById(\'exDemoFallback\').style.display=\'block\'">'+
-      '<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));padding:10px 12px 8px;display:flex;align-items:center;gap:6px;font-size:11px;color:#fff;font-weight:700"><span style="width:7px;height:7px;border-radius:50%;background:var(--e);animation:demoPulse 1s infinite"></span>'+t('movementDemoCap')+'</div></div>';
+    h+='<div data-exdemo style="position:relative;background:#fff;border:1px solid var(--hair);border-radius:18px;overflow:hidden;margin-bottom:14px;aspect-ratio:5/4">'+
+      exDemoImgPair(f.gif)+
+      '<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));padding:10px 12px 8px;display:flex;align-items:center;gap:6px;font-size:11px;color:#fff;font-weight:700;z-index:1"><span style="width:7px;height:7px;border-radius:50%;background:var(--e);animation:demoPulse 1s infinite"></span>'+t('movementDemoCap')+'</div></div>';
     h+='<div id="exDemoFallback" style="display:none;position:relative;background:linear-gradient(135deg,var(--s2),var(--s1));border:1px solid var(--hair);border-radius:18px;padding:34px 16px;text-align:center;margin-bottom:14px"><div style="animation:demoFloat 1.5s ease-in-out infinite">'+exGlyph(f,68)+'</div><div style="font-size:11px;color:var(--dim);margin-top:8px">'+t('movementDemo')+'</div></div>';
     startExDemo(f.gif);
   } else {
@@ -7172,12 +7252,12 @@ function startExDemo(frames){
   clearInterval(_exDemoTimer);
   // précharge les 2 images
   frames.forEach(src=>{ const im=new Image(); im.src=src; });
-  let i=0;
+  let showA=true;
   _exDemoTimer=setInterval(()=>{
-    const img=document.getElementById('exDemo');
-    if(!img){ clearInterval(_exDemoTimer); return; }
-    i=1-i; img.src=frames[i];
-  },850);
+    const a=document.getElementById('exDemoA'),b=document.getElementById('exDemoB');
+    if(!a||!b){ clearInterval(_exDemoTimer); return; }
+    showA=!showA; a.style.opacity=showA?'1':'0'; b.style.opacity=showA?'0':'1';
+  },900);
 }
 
 /* ---------- CONFIG EXERCISE ---------- */
@@ -7470,7 +7550,10 @@ function statsMuscu(){
   const pr=MSESS.reduce((a,s)=>Math.max(a,s.tonnage||0),0);
   let h='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+MSESS.length+'</div><div class="l">'+t('sessionsCap')+'</div></div><div class="sbox"><div class="v">'+(totalTonnage()/1000).toFixed(1)+'t</div><div class="l">'+t('tonnageLab')+'</div></div><div class="sbox"><div class="v">'+Math.round(pr)+'</div><div class="l">'+t('prPerSession')+'</div></div><div class="sbox"><div class="v">'+MSESS.reduce((a,s)=>a+(s.sets||0),0)+'</div><div class="l">'+t('totalSets')+'</div></div></div>';
   if(!MSESS.length) h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('dumbbell',36,'currentColor')+'</div><div style="font-size:13px">'+t('startFirstMuscu')+'</div></div></div>';
-  else h+='<div class="card"><div class="card-t">'+t('lastSessions')+'</div>'+MSESS.slice(-6).reverse().map(s=>'<div class="zrow"><div><div class="zname">'+s.progName+'</div><div style="font-size:11px;color:var(--dim)">'+fmtDate(s.date)+'</div></div><span class="zval mono">'+Math.round(s.tonnage)+' kg</span></div>').join('')+'</div>';
+  else {
+    h+=bodyHeatmapCard();
+    h+='<div class="card"><div class="card-t">'+t('lastSessions')+'</div>'+MSESS.slice(-6).reverse().map(s=>'<div class="zrow"><div><div class="zname">'+s.progName+'</div><div style="font-size:11px;color:var(--dim)">'+fmtDate(s.date)+'</div></div><span class="zval mono">'+Math.round(s.tonnage)+' kg</span></div>').join('')+'</div>';
+  }
   return h;
 }
 /* ============ BADGES TROPHÉES (Accomplissement / Performance) ============

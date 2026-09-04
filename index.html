@@ -770,7 +770,8 @@ body[data-scr="home"] .topbar{display:none;}
 .mini-ic:active{transform:scale(.9);}
 
 /* ===== BIBLIOTHÈQUE — tuiles muscles (photo) + grille d'exercices en photo ===== */
-.mtile-row{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;margin-bottom:14px;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.mtile-row{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;margin-bottom:14px;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  -webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);}
 .mtile-row::-webkit-scrollbar{display:none;}
 .mtile{flex:0 0 60px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;}
 .mtile:active .mtile-img{transform:scale(.92);}
