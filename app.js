@@ -1302,9 +1302,11 @@ const I18N={
     haveAccountLink:'Déjà un compte ? Se connecter',backToLoginLink:'Retour à la connexion',
     orDividerLabel:'ou',continueWithGoogleBtn:'Continuer avec Google',
     loginLegalText:'En continuant, tu acceptes nos <span class="legal-link" onclick="openProfileSection(\'terms\')">conditions d’utilisation</span> et notre <span class="legal-link" onclick="openProfileSection(\'privacy\')">politique de confidentialité</span>.<br>Tes données sont synchronisées de façon sécurisée via ton compte.',
-    installAppBtn:'Installer l’application',installAcceptedToast:'Application installée !',installFallbackToast:'Utilise le menu de ton navigateur (⋮ ou icône d’installation dans la barre d’adresse) pour installer l’app.',
+    installAppBtn:'Installer l’application',installAcceptedToast:'Application installée !',installFallbackToast:'Utilise le menu de ton navigateur (ou l’icône d’installation dans la barre d’adresse) pour installer l’app.',
     iosInstallStep1:'1. Appuie sur l’icône Partager '+'⬆️'+' en bas de Safari.',
     iosInstallStep2:'2. Fais défiler puis appuie sur « Sur l’écran d’accueil ».',
+    androidInstallStep1:'1. Appuie sur les trois petits points en haut à droite de Chrome.',
+    androidInstallStep2:'2. Choisis « Installer l’application » (ou « Ajouter à l’écran d’accueil »).',
     termsOfUseLab:'Conditions d’utilisation',privacyPolicyLab:'Politique de confidentialité',
     fillEmailPasswordToast:'Remplis email et mot de passe.',invalidEmailToast:'Adresse email invalide.',
     passwordTooShortToast:'Mot de passe trop court (8 caractères min).',passwordsMismatchToast:'Les mots de passe ne correspondent pas.',
@@ -1777,9 +1779,11 @@ const I18N={
     haveAccountLink:'Already have an account? Sign in',backToLoginLink:'Back to sign in',
     orDividerLabel:'or',continueWithGoogleBtn:'Continue with Google',
     loginLegalText:'By continuing, you accept our <span class="legal-link" onclick="openProfileSection(\'terms\')">terms of use</span> and our <span class="legal-link" onclick="openProfileSection(\'privacy\')">privacy policy</span>.<br>Your data is synced securely via your account.',
-    installAppBtn:'Install the app',installAcceptedToast:'App installed!',installFallbackToast:'Use your browser menu (⋮ or the install icon in the address bar) to install the app.',
+    installAppBtn:'Install the app',installAcceptedToast:'App installed!',installFallbackToast:'Use your browser menu (or the install icon in the address bar) to install the app.',
     iosInstallStep1:'1. Tap the Share icon '+'⬆️'+' at the bottom of Safari.',
     iosInstallStep2:'2. Scroll down and tap "Add to Home Screen".',
+    androidInstallStep1:'1. Tap the three dots at the top right of Chrome.',
+    androidInstallStep2:'2. Choose "Install app" (or "Add to Home screen").',
     termsOfUseLab:'Terms of use',privacyPolicyLab:'Privacy policy',
     fillEmailPasswordToast:'Fill in email and password.',invalidEmailToast:'Invalid email address.',
     passwordTooShortToast:'Password too short (8 characters min).',passwordsMismatchToast:'Passwords don\u2019t match.',
@@ -2253,9 +2257,11 @@ const I18N={
     haveAccountLink:'لديك حساب بالفعل؟ سجّل الدخول',backToLoginLink:'العودة لتسجيل الدخول',
     orDividerLabel:'أو',continueWithGoogleBtn:'المتابعة عبر Google',
     loginLegalText:'بالمتابعة، فإنك توافق على <span class="legal-link" onclick="openProfileSection(\'terms\')">شروط الاستخدام</span> و<span class="legal-link" onclick="openProfileSection(\'privacy\')">سياسة الخصوصية</span> الخاصة بنا.<br>بياناتك مُزامَنة بأمان عبر حسابك.',
-    installAppBtn:'تثبيت التطبيق',installAcceptedToast:'تم تثبيت التطبيق!',installFallbackToast:'استخدم قائمة متصفحك (⋮ أو أيقونة التثبيت في شريط العنوان) لتثبيت التطبيق.',
+    installAppBtn:'تثبيت التطبيق',installAcceptedToast:'تم تثبيت التطبيق!',installFallbackToast:'استخدم قائمة متصفحك (أو أيقونة التثبيت في شريط العنوان) لتثبيت التطبيق.',
     iosInstallStep1:'1. اضغط على أيقونة المشاركة '+'⬆️'+' أسفل Safari.',
     iosInstallStep2:'2. مرّر لأسفل ثم اضغط على «إضافة إلى الشاشة الرئيسية».',
+    androidInstallStep1:'1. اضغط على النقاط الثلاث أعلى يمين Chrome.',
+    androidInstallStep2:'2. اختر «تثبيت التطبيق» (أو «إضافة إلى الشاشة الرئيسية»).',
     termsOfUseLab:'شروط الاستخدام',privacyPolicyLab:'سياسة الخصوصية',
     fillEmailPasswordToast:'أدخل البريد الإلكتروني وكلمة المرور.',invalidEmailToast:'عنوان بريد إلكتروني غير صالح.',
     passwordTooShortToast:'كلمة المرور قصيرة جدًا (8 أحرف كحد أدنى).',passwordsMismatchToast:'كلمتا المرور غير متطابقتين.',
@@ -4118,17 +4124,26 @@ function finishOnboarding(){
 }
 
 /* ---------- INSTALLATION (Ajouter à l'écran d'accueil) ----------
-   Chrome/Edge/Android déclenchent beforeinstallprompt et permettent de lancer
-   l'invite programmatiquement. Safari iOS ne le supporte pas du tout : on y
-   affiche à la place les 2 étapes manuelles (Partager > Sur l'écran d'accueil).
-   Sur desktop sans support de l'un ou l'autre, le bouton reste simplement
-   masqué (rien d'actionnable à proposer). */
+   Chrome/Edge/Android déclenchent beforeinstallprompt : on le capture pour
+   pouvoir ouvrir la vraie invite d'installation au clic sur notre bouton.
+   Trois replis quand cette invite n'est pas disponible :
+     - iOS : Safari ne supporte pas du tout beforeinstallprompt (aucune API
+       d'installation programmatique n'existe chez Apple) → guide en 2 étapes
+       (Partager > Sur l'écran d'accueil) ;
+     - Android sans invite (déjà refusée récemment, ou pas encore émise) →
+       guide en 2 étapes (menu ⋮ > Installer l'application) ;
+     - desktop → message renvoyant vers le menu du navigateur.
+   Prérequis côté navigateur pour que l'invite existe : HTTPS, service worker
+   avec handler fetch, et surtout un manifest VALIDE et accessible — voir
+   setupPWA() plus bas, dont l'ancien manifest blob cassait justement ce
+   critère. */
 let _installPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); _installPrompt=e; refreshInstallUI(); });
 window.addEventListener('appinstalled',()=>{ _installPrompt=null; refreshInstallUI(); });
 function isStandalone(){ try{ return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true; }catch(e){ return false; } }
 function isIOSDevice(){ return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1); }
-function canOfferInstall(){ return !isStandalone() && (!!_installPrompt || isIOSDevice()); }
+function isAndroidDevice(){ return /android/i.test(navigator.userAgent); }
+function canOfferInstall(){ return !isStandalone() && (!!_installPrompt || isIOSDevice() || isAndroidDevice()); }
 async function installApp(){
   if(_installPrompt){
     _installPrompt.prompt();
@@ -4137,19 +4152,23 @@ async function installApp(){
     if(choice && choice.outcome==='accepted') toast(t('installAcceptedToast'));
     return;
   }
-  if(isIOSDevice()){ showIosInstallGuide(); return; }
-  // Desktop / navigateur sans beforeinstallprompt (ou événement pas encore reçu) :
-  // pas d'invite programmatique possible, on oriente vers le menu du navigateur
-  // plutôt que de laisser le bouton ne rien faire.
+  // Pas d'invite programmatique disponible : soit la plateforme ne la supporte pas
+  // (iOS), soit le navigateur ne l'a pas (encore) déclenchée. On montre alors le
+  // chemin manuel correspondant à l'appareil plutôt que de ne rien faire.
+  if(isIOSDevice()){ showInstallGuide('ios'); return; }
+  if(isAndroidDevice()){ showInstallGuide('android'); return; }
   toast(t('installFallbackToast'));
 }
-function showIosInstallGuide(){
-  let h='<div style="text-align:center;padding:4px 0 14px;color:var(--e)">'+ICN('share',40,'currentColor')+'</div>'+
-    '<div class="tip" style="margin-bottom:10px">'+t('iosInstallStep1')+'</div>'+
-    '<div class="tip" style="margin-bottom:14px">'+t('iosInstallStep2')+'</div>'+
+function showInstallGuide(platform){
+  const ios=platform==='ios';
+  const h='<div style="text-align:center;padding:4px 0 14px;color:var(--e)">'+ICN(ios?'share':'download',40,'currentColor')+'</div>'+
+    '<div class="tip" style="margin-bottom:10px">'+t(ios?'iosInstallStep1':'androidInstallStep1')+'</div>'+
+    '<div class="tip" style="margin-bottom:14px">'+t(ios?'iosInstallStep2':'androidInstallStep2')+'</div>'+
     '<button class="btn" onclick="closeOv(\'ovProg\')">'+t('understoodLab')+'</button>';
   $('#ovProgTitle').textContent=t('installAppBtn'); $('#progBody').innerHTML=h; $('#ovProg').style.zIndex=topZ(); openOv('ovProg');
 }
+// Conservé pour compatibilité avec d'éventuels appels existants.
+function showIosInstallGuide(){ showInstallGuide('ios'); }
 // Le login se peint avant que beforeinstallprompt n'ait pu se déclencher (async) :
 // on réévalue le bouton une fois l'événement reçu, sans attendre une re-navigation.
 function refreshInstallUI(){
@@ -9105,21 +9124,27 @@ function resetAll(){
 
 /* ============ PWA : manifest + service worker (offline-first) ============ */
 function setupPWA(){
-  // Manifest dynamique
-  try{
-    const icon=appIconDataURL();
-    const manifest={ name:'IKORUN — Elite Athletic Intelligence', short_name:'IKORUN', start_url:'.', scope:'.',
-      display:'standalone', orientation:'portrait', background_color:'#0A0D12', theme_color:'#0A0D12',
-      icons:[{src:icon,sizes:'192x192',type:'image/svg+xml',purpose:'any maskable'},{src:icon,sizes:'512x512',type:'image/svg+xml',purpose:'any maskable'}] };
-    const blob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
-    const url=URL.createObjectURL(blob);
-    let link=document.querySelector('link[rel="manifest"]'); if(!link){ link=document.createElement('link'); link.rel='manifest'; document.head.appendChild(link); }
-    link.href=url;
-  }catch(e){}
-  // Service worker désactivé : l'enregistrement via Blob URL causait des
-  // blocages sur iOS (SW zombie servant une version périmée en boucle,
-  // empêchant les mises à jour de s'appliquer). Le kill-switch dans
-  // index.html nettoie les anciens enregistrements existants.
+  // NE PLUS générer de manifest dynamique ici.
+  //
+  // Historiquement, cette fonction fabriquait un manifest en JS, l'emballait
+  // dans un Blob et remplaçait le href du <link rel="manifest"> par une URL
+  // blob: — contournement de l'époque où aucun manifest.json n'était déployé.
+  // Depuis qu'un vrai /manifest.json existe, ce contournement était devenu la
+  // CAUSE du problème : il rendait l'application non installable.
+  //   - start_url:'.' / scope:'.' se résolvaient relativement à l'URL blob,
+  //     donc hors de l'origine du site → critère d'installabilité en échec ;
+  //   - les icônes étaient déclarées type:'image/svg+xml' alors que
+  //     icon-192.png / icon-512.png sont des PNG → icônes rejetées, donc plus
+  //     aucune icône valide 192/512 ;
+  //   - l'URL blob finissait révoquée ("Failed to fetch" au rechargement du
+  //     manifest par le navigateur).
+  // Résultat : Chrome ne déclenchait jamais beforeinstallprompt, et le bouton
+  // « Installer l'application » n'avait donc rien à proposer.
+  //
+  // Le <link rel="manifest" href="manifest.json"> statique d'index.html suffit
+  // et est valide (nom, icônes PNG 192+512, start_url '/', display standalone).
+  //
+  // Le service worker, lui, est enregistré depuis index.html (sw.js statique).
 }
 
 /* ============ ÉTAT EN LIGNE / HORS LIGNE + SYNC ============ */

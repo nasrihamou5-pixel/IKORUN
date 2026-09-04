@@ -2,7 +2,12 @@
 // via blob URL, qui empêchait le navigateur de détecter correctement les mises à jour).
 // Stratégie : network-first (toujours essayer le réseau en premier, no-store pour éviter
 // le cache HTTP du navigateur), avec repli sur le cache uniquement hors-ligne.
-const C = 'ikorun-v6';
+// v7 : purge forcée. Tant que manifest.json n'existait pas, l'hébergeur renvoyait
+// index.html (du HTML) à sa place, et ce SW a pu mettre cette mauvaise réponse en
+// cache. Changer le nom du cache supprime les anciennes entrées à l'activation, ce
+// qui garantit que le vrai manifest.json est bien récupéré — condition nécessaire
+// pour que le navigateur propose l'installation de l'app.
+const C = 'ikorun-v7';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
