@@ -684,7 +684,7 @@ html[data-mode="light"] .ch-bar{background:rgba(20,30,55,.1);}
 ::-webkit-scrollbar{display:none;}
 
 /* SCROLL ZONE */
-#scroll{height:100vh;overflow-y:auto;overflow-x:hidden;padding-bottom:98px;-webkit-overflow-scrolling:touch;}
+#scroll{height:100vh;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(140px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch;}
 .scr{display:none;padding:0 14px 20px;animation:pageIn .4s var(--ease-out);position:relative;}
 .scr.on{display:block;}
 @keyframes pageIn{from{opacity:0;transform:translateY(10px) scale(.99);}to{opacity:1;transform:translateY(0) scale(1);}}
@@ -1010,6 +1010,9 @@ html[data-mode="light"]{
 /* Masquage auto au scroll : descend hors écran (avec petite animation ressort)
    quand on scrolle vers le bas, revient dès qu'on remonte. */
 #nav.nav-hidden{transform:translateX(-50%) translateY(calc(100% + 30px + env(safe-area-inset-bottom)));opacity:0;pointer-events:none;}
+#navFade{position:fixed;left:0;right:0;bottom:0;height:calc(120px + env(safe-area-inset-bottom));
+  z-index:9998;pointer-events:none;max-width:430px;margin:0 auto;
+  background:linear-gradient(to bottom, transparent 0%, var(--bg) 78%);opacity:.92;}
 #nav-pill{position:absolute;top:7px;height:44px;width:18%;border-radius:18px;background:var(--ed);
   box-shadow:0 0 0 1px rgba(var(--e-rgb),.18) inset;transition:left .38s var(--ease-spring),width .38s var(--ease-spring),background .3s ease,box-shadow .3s ease,border-color .3s ease;
   overflow:hidden;border:1px solid transparent;will-change:left;}
@@ -1247,7 +1250,7 @@ html[data-mode="light"]{
 .ob-prog{display:flex;gap:5px;margin-bottom:26px;}
 .ob-prog div{flex:1;height:3.5px;border-radius:2px;background:var(--hair);transition:.3s var(--ease);}
 .ob-prog div.on{background:var(--e);box-shadow:0 0 8px rgba(var(--e-rgb),.5);}
-.ob-step{flex:1;overflow-y:auto;display:none;flex-direction:column;animation:slideUp .4s var(--ease-out);}
+.ob-step{flex:1;overflow-y:auto;display:none;flex-direction:column;justify-content:center;animation:slideUp .4s var(--ease-out);}
 .ob-step.on{display:flex;}
 .ob-step h1{font-family:'Unbounded';font-weight:800;font-size:27px;line-height:1.15;margin-bottom:8px;letter-spacing:-.6px;}
 .ob-step p.intro{color:var(--muted);font-size:14.5px;margin-bottom:24px;line-height:1.5;}
@@ -1916,6 +1919,10 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
   <div class="scr" id="s-profil"></div>
 </div>
 
+<!-- Voile de transition sous la nav flottante : évite qu'une carte/ligne de contenu
+     se termine "en franc coupé" pile sous la pilule de nav — purement décoratif,
+     ne capte aucun clic. -->
+<div id="navFade"></div>
 <!-- NAV -->
 <div id="nav">
   <div id="nav-pill"></div>
@@ -1942,7 +1949,7 @@ html[data-mode="light"] .minicard{background:rgba(0,0,0,.02);}
      URL, le hash ne correspondra plus et le script sera bloqué au lieu de s'exécuter.
      Si tu montes de version un jour, il faudra régénérer le hash sur jsdelivr.com
      (Files > sélectionner le fichier > Show & Configure all links > activer SRI). -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js" integrity="sha384-M65KxMm/JqBppck6onbmAgPVMBHrmPCf1L17Q+71EcvI9/VVI8j5cqoxQf6lj6h2" crossorigin="anonymous"></script>
 <script>
   try{
     window.supabaseClient = supabase.createClient(

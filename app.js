@@ -118,6 +118,10 @@ async function cloudPush(key, value){
       if(typeof toast==='function') toast(t('guardStorageTooBig'));
       return;
     }
+    if(value===null){
+      await window.supabaseClient.from('user_data').delete().eq('user_id', window.currentUserId).eq('key', key);
+      return;
+    }
     await window.supabaseClient.from('user_data').upsert(
       { user_id: window.currentUserId, key, value, updated_at: new Date().toISOString() },
       { onConflict: 'user_id,key' }
@@ -752,7 +756,7 @@ const DB = {
   _cache:{},
   async init(){
     await VVVCrypto.ready();
-    const keys=Object.keys(localStorage).filter(k=>k.startsWith('vvv_'));
+    const keys=Object.keys(localStorage).filter(k=>k.startsWith('vvv_')&&k!=='vvv_owner_uid');
     await Promise.all(keys.map(async raw=>{
       const k=raw.slice(4);
       const stored=localStorage.getItem(raw);
@@ -3087,14 +3091,14 @@ document.addEventListener('visibilitychange',async()=>{
   }
 });
 function appIconDataURL(){ return "icon-192.png"; }
-function ripple(e){
-  const b=e.currentTarget, r=document.createElement('span'); r.className='ripple';
+function ripple(e,b){
+  const r=document.createElement('span'); r.className='ripple';
   const rect=b.getBoundingClientRect(), sz=Math.max(rect.width,rect.height);
   r.style.width=r.style.height=sz+'px';
   r.style.left=(e.clientX-rect.left-sz/2)+'px'; r.style.top=(e.clientY-rect.top-sz/2)+'px';
   b.appendChild(r); setTimeout(()=>r.remove(),600);
 }
-document.addEventListener('click',e=>{ const b=e.target.closest('.btn'); if(b) ripple.call(null,Object.assign(e,{currentTarget:b})); });
+document.addEventListener('click',e=>{ const b=e.target.closest('.btn'); if(b) ripple(e,b); });
 
 /* ---------- CONFETTI ---------- */
 function burst(){
@@ -5579,7 +5583,7 @@ function homeGoalCard(){
   }
   return '<div class="card goal-card stag" style="animation-delay:.1s" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\'">'+
     '<div class="goal-top">'+
-      '<div><div class="goal-lab">'+t('objectiveCap')+'</div><div class="goal-race">'+(trRace(P.objRace)||P.goal||t('yourNextRaceDefault'))+(P.objTime?' — sub '+P.objTime:'')+'</div>'+
+      '<div><div class="goal-lab">'+t('objectiveCap')+'</div><div class="goal-race">'+escHtml(trRace(P.objRace)||P.goal||t('yourNextRaceDefault'))+(P.objTime?' — sub '+escHtml(P.objTime):'')+'</div>'+
       '<div class="goal-target">Course le '+fmtDate(P.compDate)+'</div></div>'+
       '<div class="goal-count"><div class="n">'+daysLeft+'</div><div class="u">'+t('daysLab')+'</div></div>'+
     '</div>'+
@@ -5702,7 +5706,7 @@ function renderHome(){
     const curSess=todaySess||upcoming||PLAN.sessions[PLAN.sessions.length-1];
     sub=tp('weekPhaseLabel',curSess.week,phaseName(curSess.phaseKey));
   } else {
-    sub=P.objTime?tp('quipTime',P.objTime):(P.goal?tp('quipGoal',P.goal):t('quipDefault'));
+    sub=P.objTime?tp('quipTime',escHtml(P.objTime)):(P.goal?tp('quipGoal',escHtml(P.goal)):t('quipDefault'));
   }
   html+='<div class="hv7-greet"><h1>'+t('greet')+' '+(first||t('you'))+'</h1><p>'+sub+'</p></div>';
 
@@ -6231,7 +6235,7 @@ function renderDebrief(){
   h+=scale('sleep',t('nightSleepLabel'),['\ud83d\ude34','\ud83d\ude2a','\ud83d\ude10','\ud83d\ude42','\ud83d\udca4']);
   h+=scale('nutrition',t('dayNutritionLabel'),['\ud83c\udf54','\ud83d\ude10','\ud83d\ude42','\ud83e\udd57','\ud83d\udcaa']);
   h+='<div class="field"><label>'+t('weatherLabel')+'</label><div class="pills">'+['sunny','cloudy','rain','wind','hot','cold'].map(w=>'<div class="pill '+(d.weather===w?'on':'')+'" onclick="debriefData.weather=\''+w+'\';renderDebrief()">'+ICN(w==='sunny'?'sun':w==='cloudy'?'moon':w==='rain'?'rain':w==='wind'?'wind':w==='hot'?'fire':'snow',18)+'</div>').join('')+'</div></div>';
-  h+='<div class="field"><label>'+t('freeCommentLabel')+'</label><textarea class="inp" rows="2" oninput="debriefData.note=this.value" placeholder="'+t('howDidYouFeelPlaceholder')+'">'+(d.note||'')+'</textarea></div>';
+  h+='<div class="field"><label>'+t('freeCommentLabel')+'</label><textarea class="inp" rows="2" oninput="debriefData.note=this.value" placeholder="'+t('howDidYouFeelPlaceholder')+'">'+escHtml(d.note||'')+'</textarea></div>';
   h+='<button class="btn" onclick="submitDebrief()">\ud83e\udde0 '+t('analyzeSessionBtn')+'</button>';
   $('#progBody').innerHTML=h;
 }
@@ -6641,6 +6645,7 @@ function startLive(id,startIdx){
     tonnage:0,setsDone:0};
   liveOpenEx=startIdx||0;
   renderLive(); openOv('ovLive');
+  clearInterval(liveTimer);
   liveTimer=setInterval(updateLiveTimer,500);
   sfx('start'); startBgActivity('Séance : '+p.name);
 }
@@ -7180,7 +7185,7 @@ function renderCfg(){
   h+='<div class="field"><label>Répétitions</label><div class="pills" style="margin-bottom:8px">'+['6','8','10','12','15'].map(r=>'<div class="pill '+(s.reps===r&&!s.amrap?'on':'')+'" onclick="cfgState.reps=\''+r+'\';cfgState.amrap=false;renderCfg()">'+r+'</div>').join('')+'<div class="pill '+(s.amrap?'on':'')+'" onclick="cfgState.amrap=true;cfgState.reps=\'AMRAP\';renderCfg()">AMRAP</div></div></div>';
   h+='<div class="field"><label>Charge (kg)</label><div class="stepper"><button onclick="cfgAdj(\'weight\',-2.5)">−</button><button onclick="cfgAdj(\'weight\',-5)" style="font-size:12px">−5</button><span class="val" id="cfW">'+s.weight+'</span><button onclick="cfgAdj(\'weight\',5)" style="font-size:12px">+5</button><button onclick="cfgAdj(\'weight\',2.5)">+</button></div><div class="pills" style="margin-top:8px">'+[20,40,60,80,100].map(w=>'<div class="pill" onclick="cfgState.weight='+w+';renderCfg()">'+w+'kg</div>').join('')+'</div></div>';
   h+='<div class="field"><label>Repos</label><div class="pills">'+[60,90,120,180].map(r=>'<div class="pill '+(s.rest===r?'on':'')+'" onclick="cfgState.rest='+r+';renderCfg()">'+r+'s</div>').join('')+'</div></div>';
-  h+='<div class="field"><label>Notes personnelles (optionnel)</label><textarea class="inp" rows="2" oninput="cfgState.note=this.value" placeholder="ex: bien serrer les omoplates">'+(s.note||'')+'</textarea></div>';
+  h+='<div class="field"><label>Notes personnelles (optionnel)</label><textarea class="inp" rows="2" oninput="cfgState.note=this.value" placeholder="ex: bien serrer les omoplates">'+escHtml(s.note||'')+'</textarea></div>';
   h+='<button class="btn" onclick="saveCfg()">Ajouter</button>';
   $('#cfgBody').innerHTML=h;
 }
@@ -8404,7 +8409,7 @@ function renderAgenda(){
   if(!evts.length) h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('calendar',36,'currentColor')+'</div><div style="font-size:13px">'+t('noEventLab')+'</div></div></div>';
   else evts.forEach((e,i)=>{
     const dd=daysBetween(new Date(),new Date(e.date));
-    h+='<div class="card"><div class="row"><div><div style="font-weight:700">'+e.title+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+fmtDate(e.date)+' · '+(dd>=0?'J-'+dd:t('pastLab'))+'</div></div>'+(e.fixed?'':'<button class="x" onclick="delEvent('+(i-(P.compDate?1:0))+')">'+ICN('trash',16)+'</button>')+'</div></div>';
+    h+='<div class="card"><div class="row"><div><div style="font-weight:700">'+escHtml(e.title)+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+fmtDate(e.date)+' · '+(dd>=0?'J-'+dd:t('pastLab'))+'</div></div>'+(e.fixed?'':'<button class="x" onclick="delEvent('+(i-(P.compDate?1:0))+')">'+ICN('trash',16)+'</button>')+'</div></div>';
   });
   $('#outBody').innerHTML=h;
 }
@@ -8470,7 +8475,7 @@ function renderProfile(){
   // ===== HERO — avatar + nom + email/bio, épuré (image de référence : Profil) =====
   h+='<div class="card stag pf-hero" style="animation-delay:0s"><div class="pf-avwrap">'+avatarHTML(88,34)+
     '<div class="pf-cam" onclick="changePhoto()">'+ICN('camera',16)+'</div></div>';
-  h+='<div class="pf-name-row"><div class="man" style="font-weight:800;font-size:20px">'+(P.name||t('athleteDefault'))+'</div>'+
+  h+='<div class="pf-name-row"><div class="man" style="font-weight:800;font-size:20px">'+escHtml(P.name||t('athleteDefault'))+'</div>'+
     '<div class="pf-edit" onclick="openProfileEdit()" title="'+t('editInfos')+'">'+ICN('edit',16)+'</div></div>';
   h+='<div style="font-size:12.5px;color:var(--muted);margin-top:3px" onclick="editBio()">'+escHtml(window.currentUserEmail||P.bio||t('addBioPrompt'))+'</div>';
   h+='<div class="rankchip" style="margin-top:11px;background:'+rk.bg+';color:#fff">'+t('level')+' '+XP.level+' · '+rk.name+' · '+XP.total+' XP</div>';
@@ -8480,7 +8485,7 @@ function renderProfile(){
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('scale',20,'currentColor')+'</div><div class="lr-title">'+t('heightWeight')+'</div><div class="lr-val">'+(P.height||'—')+' cm · '+(P.weight||'—')+' kg</div></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('calendar',20,'currentColor')+'</div><div class="lr-title">'+t('age')+'</div><div class="lr-val">'+age()+' '+(curLang()==='en'?'yo':curLang()==='ar'?'سنة':'ans')+'</div></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('chart',20,'currentColor')+'</div><div class="lr-title">VDOT</div><div class="lr-val">'+(getUserVDOT()||'—')+'</div></div>'+
-    '<div class="grp-row" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\';renderSport()"><div class="lr-icon">'+ICN('target',20,'currentColor')+'</div><div class="lr-title">'+t('objective')+'</div><div class="lr-val">'+(trRace(P.objRace)||P.goal||t('noObjective'))+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\';renderSport()"><div class="lr-icon">'+ICN('target',20,'currentColor')+'</div><div class="lr-title">'+t('objective')+'</div><div class="lr-val">'+escHtml(trRace(P.objRace)||P.goal||t('noObjective'))+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
   // ===== PROGRESSION — badges intégrés directement au profil =====
   { const unlocked=unlockedBadges(); const recent=[...unlocked].sort((a,b)=>b.date<a.date?-1:1).slice(0,5).map(u=>BADGE_TIERS.find(b=>b.key===u.key)).filter(Boolean);
@@ -8529,7 +8534,7 @@ function renderProfileSimple(){
   const compDays=P.compDate?daysBetween(new Date(),new Date(P.compDate)):null;
   let h='';
   h+='<div class="card stag pf-hero" style="animation-delay:0s;text-align:center"><div class="pf-avwrap">'+avatarHTML(72,28)+'</div>'+
-    '<div class="man" style="font-weight:800;font-size:18px;margin-top:8px">'+(P.name||t('athleteDefault'))+'</div>'+
+    '<div class="man" style="font-weight:800;font-size:18px;margin-top:8px">'+escHtml(P.name||t('athleteDefault'))+'</div>'+
     '<div style="font-size:12px;color:var(--muted);margin-top:2px">'+age()+' '+(curLang()==='en'?'yo':curLang()==='ar'?'سنة':'ans')+' · VDOT '+(getUserVDOT()||'—')+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div>'+
     '<div class="rankchip" style="margin-top:10px;background:'+rk.bg+';color:#fff;display:inline-block">'+t('level')+' '+XP.level+' · '+rk.name+'</div></div>';
 
@@ -8574,7 +8579,7 @@ function pfAccountHTML(){
       '<div class="row" style="justify-content:space-between;align-items:center">'+
         '<div class="row" style="gap:12px">'+
           '<div style="width:44px;height:44px;border-radius:50%;background:var(--ed);color:var(--e);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0">'+(P.name?P.name[0].toUpperCase():'?')+'</div>'+
-          '<div><div style="font-weight:700">'+(P.name||'Athlète')+'</div><div style="font-size:12px;color:var(--muted)">'+window.currentUserEmail+'</div></div>'+
+          '<div><div style="font-weight:700">'+escHtml(P.name||'Athlète')+'</div><div style="font-size:12px;color:var(--muted)">'+escHtml(window.currentUserEmail)+'</div></div>'+
         '</div>'+
         '<span class="badge" style="font-size:10px;flex-shrink:0">Google</span>'+
       '</div>'+
@@ -8598,7 +8603,7 @@ function pfAccountHTML(){
     return '<div class="card" style="padding:16px">'+
       '<div class="row" style="gap:12px;align-items:center">'+
         '<div style="width:44px;height:44px;border-radius:50%;background:var(--ed);color:var(--e);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0">'+(P.name?P.name[0].toUpperCase():'?')+'</div>'+
-        '<div><div style="font-weight:700">'+(P.name||'Athlète')+'</div><div style="font-size:12px;color:var(--muted)">'+t('guestModeTitle')+'</div></div>'+
+        '<div><div style="font-weight:700">'+escHtml(P.name||'Athlète')+'</div><div style="font-size:12px;color:var(--muted)">'+t('guestModeTitle')+'</div></div>'+
       '</div>'+
       '<div style="font-size:12px;color:var(--muted);margin-top:12px;line-height:1.5">'+t('guestModeDesc')+'</div>'+
       '<div class="field" style="margin-top:14px"><label>'+t('emailLabel')+'</label><input class="inp" id="guestEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="'+t('emailPlaceholder')+'"></div>'+
@@ -8744,7 +8749,7 @@ function initCropper(){
   let drag=false,lx=0,ly=0;
   stage.addEventListener('pointerdown',e=>{ drag=true; lx=e.clientX; ly=e.clientY; stage.setPointerCapture&&stage.setPointerCapture(e.pointerId); });
   stage.addEventListener('pointermove',e=>{ if(!drag)return; _crop.x+=e.clientX-lx; _crop.y+=e.clientY-ly; lx=e.clientX; ly=e.clientY; drawCrop(); });
-  window.addEventListener('pointerup',()=>drag=false);
+  stage.addEventListener('pointerup',()=>drag=false);
 }
 function applyCrop(){
   // Rendu final haute résolution directement depuis l'image source (net, non pixelisé)
