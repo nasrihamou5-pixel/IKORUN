@@ -5104,6 +5104,11 @@ function generatePlan(){
         desc:built.detail.objectif, detail:built.detail, genParams:built.genParams||null, deload:isDeload, done:false });
     });
   }
+  // Les jours d'entraînement sont générés dans l'ordre de leur numéro de jour de semaine
+  // (ex: lundi avant vendredi), pas dans l'ordre chronologique réel à partir d'aujourd'hui
+  // — sans ce tri, la 1re semaine affichait ses séances dans le désordre (ex: lun. 7 sept.
+  // avant ven. 4 sept.) dès que le plan était généré un autre jour que dimanche/lundi.
+  sessions.sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:0);
   PLAN={ created:todayKey(), vdot, weeks, seed, sessions, goal, race:P.objRace||'5 km' };
   DB.save('run_plan',PLAN);
   toast(''+tp('planGenerated',(trRace(P.objRace)||t('raceGeneric')),weeks,sessions.length));
@@ -6589,7 +6594,7 @@ function renderExDetail(){
   const f=exMeta(e.name)||{primary:e.muscles||[],secondary:[],steps:[],tips:[],mistakes:[],safety:[],equip:'',level:''};
   $('#ovProgTitle').textContent=trExName(e.name);
   const g=exGif(e.name);
-  let h='<div class="pills" style="margin-bottom:14px;overflow-x:auto;flex-wrap:nowrap">'+
+  let h='<div class="pills" style="margin-bottom:14px;overflow-x:auto;flex-wrap:nowrap;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent)">'+
     [['exo',t('exTabExercise')],['muscles',t('exTabMuscles')],['instr',t('exTabInstructions')]].map(tb=>'<div class="pill '+(exDetailTab===tb[0]?'on':'')+'" onclick="exDetailTab=\''+tb[0]+'\';renderExDetail()">'+tb[1]+'</div>').join('')+'</div>';
   if(exDetailTab==='exo'){
     // Média animé — démarre directement le tuto, sans bouton lecture/pause
@@ -7103,7 +7108,7 @@ function renderLib(){
     const img=muscleRepImg(m); const on=libFilter===m;
     return '<div class="mtile '+(on?'on':'')+'" onclick="libFilter=\''+m+'\';renderLib()"><div class="mtile-img" '+(img?'style="background-image:url(\''+img+'\')"':'')+'>'+(img?'':ICN(MUSCLE_ICONS[m]||'dumbbell',24,'var(--e)'))+'</div><div class="mtile-lab">'+(m==='Tous'?t('filterAll'):trMuscle(m))+'</div></div>';
   }).join('')+'</div>';
-  h+='<div class="lab" style="margin-bottom:6px">'+t('equipmentLabel')+'</div><div class="pills" style="margin-bottom:10px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px">'+EQUIPMENT.map(m=>'<div class="pill '+(libFilterEquip===m?'on':'')+'" onclick="libFilterEquip=\''+m+'\';renderLib()">'+(m==='Tous'?t('filterAll'):trEquip(m))+'</div>').join('')+'</div>';
+  h+='<div class="lab" style="margin-bottom:6px">'+t('equipmentLabel')+'</div><div class="pills" style="margin-bottom:10px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent)">'+EQUIPMENT.map(m=>'<div class="pill '+(libFilterEquip===m?'on':'')+'" onclick="libFilterEquip=\''+m+'\';renderLib()">'+(m==='Tous'?t('filterAll'):trEquip(m))+'</div>').join('')+'</div>';
   h+='<div class="lab" style="margin-bottom:6px">'+t('levelLabel')+'</div><div class="pills" style="margin-bottom:14px">'+['Tous',...LEVELS].map(m=>'<div class="pill '+(libFilterLevel===m?'on':'')+'" onclick="libFilterLevel=\''+m+'\';renderLib()">'+(m==='Tous'?t('filterAll'):trLevel(m))+'</div>').join('')+'</div>';
   const q=libSearch.toLowerCase().trim();
   const list=allExercises().filter(e=>{
@@ -8263,7 +8268,7 @@ let resultDist=5000;
 function renderCalcResult(){
   const vdot=getUserVDOT();
   let h='<div class="card popin"><div class="card-t">'+t('resultsLabel')+'</div>';
-  h+='<div class="pills" style="margin-bottom:14px;overflow-x:auto;flex-wrap:nowrap">'+Object.entries(DISTANCES).map(([k,v])=>'<div class="pill '+(resultDist===v?'on':'')+'" onclick="resultDist='+v+';renderCalc()">'+k+'</div>').join('')+'</div>';
+  h+='<div class="pills" style="margin-bottom:14px;overflow-x:auto;flex-wrap:nowrap;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent)">'+Object.entries(DISTANCES).map(([k,v])=>'<div class="pill '+(resultDist===v?'on':'')+'" onclick="resultDist='+v+';renderCalc()">'+k+'</div>').join('')+'</div>';
   const predT=vdot?predictTime(vdot,resultDist):calc.lastResult.spk*resultDist/1000;
   const spk=predT/(resultDist/1000); const kmh=(3600/spk).toFixed(1);
   h+='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v" style="font-size:18px">'+fmtTime(predT)+'</div><div class="l">'+t('predictedTimeLabel')+'</div></div><div class="sbox"><div class="v" style="font-size:18px">'+spkToStr(spk)+'</div><div class="l">'+t('paceKmLabel')+'</div></div><div class="sbox"><div class="v">'+kmh+'</div><div class="l">km/h</div></div><div class="sbox"><div class="v">'+(resultDist/1000)+'</div><div class="l">km</div></div></div>';
