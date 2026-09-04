@@ -214,6 +214,7 @@ function googleBtnHtml(){ return '<button class="gbtn" onclick="signInWithGoogle
 function renderLoginMain(){
   const el=$('#loginMain'); if(!el) return;
   const legal=$('#loginLegal'); if(legal) legal.innerHTML=t('loginLegalText');
+  const installRow=$('#loginInstallRow'); if(installRow) installRow.innerHTML=loginInstallButtonHTML();
   let h='';
   if(loginMode==='login'){
     h+='<h1 class="login-h1">'+t('loginWelcomeTitle')+'</h1>';
@@ -1300,7 +1301,11 @@ const I18N={
     forgotPasswordLink:'Mot de passe oublié ?',noAccountLink:'Pas de compte ? Créer un compte',
     haveAccountLink:'Déjà un compte ? Se connecter',backToLoginLink:'Retour à la connexion',
     orDividerLabel:'ou',continueWithGoogleBtn:'Continuer avec Google',
-    loginLegalText:'En continuant, tu acceptes nos conditions.<br>Tes données sont synchronisées de façon sécurisée via ton compte.',
+    loginLegalText:'En continuant, tu acceptes nos <span class="legal-link" onclick="openProfileSection(\'terms\')">conditions d’utilisation</span> et notre <span class="legal-link" onclick="openProfileSection(\'privacy\')">politique de confidentialité</span>.<br>Tes données sont synchronisées de façon sécurisée via ton compte.',
+    installAppBtn:'Installer l’application',installAcceptedToast:'Application installée !',installFallbackToast:'Utilise le menu de ton navigateur (⋮ ou icône d’installation dans la barre d’adresse) pour installer l’app.',
+    iosInstallStep1:'1. Appuie sur l’icône Partager '+'⬆️'+' en bas de Safari.',
+    iosInstallStep2:'2. Fais défiler puis appuie sur « Sur l’écran d’accueil ».',
+    termsOfUseLab:'Conditions d’utilisation',privacyPolicyLab:'Politique de confidentialité',
     fillEmailPasswordToast:'Remplis email et mot de passe.',invalidEmailToast:'Adresse email invalide.',
     passwordTooShortToast:'Mot de passe trop court (8 caractères min).',passwordsMismatchToast:'Les mots de passe ne correspondent pas.',
     wrongCredentialsToast:'Email ou mot de passe incorrect.',emailAlreadyUsedToast:'Un compte existe déjà avec cet email.',
@@ -1771,7 +1776,11 @@ const I18N={
     forgotPasswordLink:'Forgot password?',noAccountLink:'No account? Create one',
     haveAccountLink:'Already have an account? Sign in',backToLoginLink:'Back to sign in',
     orDividerLabel:'or',continueWithGoogleBtn:'Continue with Google',
-    loginLegalText:'By continuing, you accept our terms.<br>Your data is synced securely via your account.',
+    loginLegalText:'By continuing, you accept our <span class="legal-link" onclick="openProfileSection(\'terms\')">terms of use</span> and our <span class="legal-link" onclick="openProfileSection(\'privacy\')">privacy policy</span>.<br>Your data is synced securely via your account.',
+    installAppBtn:'Install the app',installAcceptedToast:'App installed!',installFallbackToast:'Use your browser menu (⋮ or the install icon in the address bar) to install the app.',
+    iosInstallStep1:'1. Tap the Share icon '+'⬆️'+' at the bottom of Safari.',
+    iosInstallStep2:'2. Scroll down and tap "Add to Home Screen".',
+    termsOfUseLab:'Terms of use',privacyPolicyLab:'Privacy policy',
     fillEmailPasswordToast:'Fill in email and password.',invalidEmailToast:'Invalid email address.',
     passwordTooShortToast:'Password too short (8 characters min).',passwordsMismatchToast:'Passwords don\u2019t match.',
     wrongCredentialsToast:'Wrong email or password.',emailAlreadyUsedToast:'An account already exists with this email.',
@@ -2243,7 +2252,11 @@ const I18N={
     forgotPasswordLink:'نسيت كلمة المرور؟',noAccountLink:'ليس لديك حساب؟ أنشئ واحدًا',
     haveAccountLink:'لديك حساب بالفعل؟ سجّل الدخول',backToLoginLink:'العودة لتسجيل الدخول',
     orDividerLabel:'أو',continueWithGoogleBtn:'المتابعة عبر Google',
-    loginLegalText:'بالمتابعة، فإنك توافق على شروطنا.<br>بياناتك مُزامَنة بأمان عبر حسابك.',
+    loginLegalText:'بالمتابعة، فإنك توافق على <span class="legal-link" onclick="openProfileSection(\'terms\')">شروط الاستخدام</span> و<span class="legal-link" onclick="openProfileSection(\'privacy\')">سياسة الخصوصية</span> الخاصة بنا.<br>بياناتك مُزامَنة بأمان عبر حسابك.',
+    installAppBtn:'تثبيت التطبيق',installAcceptedToast:'تم تثبيت التطبيق!',installFallbackToast:'استخدم قائمة متصفحك (⋮ أو أيقونة التثبيت في شريط العنوان) لتثبيت التطبيق.',
+    iosInstallStep1:'1. اضغط على أيقونة المشاركة '+'⬆️'+' أسفل Safari.',
+    iosInstallStep2:'2. مرّر لأسفل ثم اضغط على «إضافة إلى الشاشة الرئيسية».',
+    termsOfUseLab:'شروط الاستخدام',privacyPolicyLab:'سياسة الخصوصية',
     fillEmailPasswordToast:'أدخل البريد الإلكتروني وكلمة المرور.',invalidEmailToast:'عنوان بريد إلكتروني غير صالح.',
     passwordTooShortToast:'كلمة المرور قصيرة جدًا (8 أحرف كحد أدنى).',passwordsMismatchToast:'كلمتا المرور غير متطابقتين.',
     wrongCredentialsToast:'بريد إلكتروني أو كلمة مرور غير صحيحة.',emailAlreadyUsedToast:'يوجد حساب بالفعل بهذا البريد الإلكتروني.',
@@ -4102,6 +4115,50 @@ function finishOnboarding(){
   // pour un compte existant qui rouvre l'app normalement.
   window._launchTourAfterInit=true;
   setTimeout(initApp,400);
+}
+
+/* ---------- INSTALLATION (Ajouter à l'écran d'accueil) ----------
+   Chrome/Edge/Android déclenchent beforeinstallprompt et permettent de lancer
+   l'invite programmatiquement. Safari iOS ne le supporte pas du tout : on y
+   affiche à la place les 2 étapes manuelles (Partager > Sur l'écran d'accueil).
+   Sur desktop sans support de l'un ou l'autre, le bouton reste simplement
+   masqué (rien d'actionnable à proposer). */
+let _installPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); _installPrompt=e; refreshInstallUI(); });
+window.addEventListener('appinstalled',()=>{ _installPrompt=null; refreshInstallUI(); });
+function isStandalone(){ try{ return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true; }catch(e){ return false; } }
+function isIOSDevice(){ return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1); }
+function canOfferInstall(){ return !isStandalone() && (!!_installPrompt || isIOSDevice()); }
+async function installApp(){
+  if(_installPrompt){
+    _installPrompt.prompt();
+    const choice=await _installPrompt.userChoice;
+    _installPrompt=null; refreshInstallUI();
+    if(choice && choice.outcome==='accepted') toast(t('installAcceptedToast'));
+    return;
+  }
+  if(isIOSDevice()){ showIosInstallGuide(); return; }
+  // Desktop / navigateur sans beforeinstallprompt (ou événement pas encore reçu) :
+  // pas d'invite programmatique possible, on oriente vers le menu du navigateur
+  // plutôt que de laisser le bouton ne rien faire.
+  toast(t('installFallbackToast'));
+}
+function showIosInstallGuide(){
+  let h='<div style="text-align:center;padding:4px 0 14px;color:var(--e)">'+ICN('share',40,'currentColor')+'</div>'+
+    '<div class="tip" style="margin-bottom:10px">'+t('iosInstallStep1')+'</div>'+
+    '<div class="tip" style="margin-bottom:14px">'+t('iosInstallStep2')+'</div>'+
+    '<button class="btn" onclick="closeOv(\'ovProg\')">'+t('understoodLab')+'</button>';
+  $('#ovProgTitle').textContent=t('installAppBtn'); $('#progBody').innerHTML=h; $('#ovProg').style.zIndex=topZ(); openOv('ovProg');
+}
+// Le login se peint avant que beforeinstallprompt n'ait pu se déclencher (async) :
+// on réévalue le bouton une fois l'événement reçu, sans attendre une re-navigation.
+function refreshInstallUI(){
+  const el=$('#loginInstallRow'); if(el) el.innerHTML=loginInstallButtonHTML();
+  if($('#s-profil') && $('#s-profil').classList.contains('on')) renderProfile();
+}
+function loginInstallButtonHTML(){
+  if(!canOfferInstall()) return '';
+  return '<button class="btn ghost sm" style="width:100%;margin-top:12px" onclick="installApp()">'+ICN('download',16)+' '+t('installAppBtn')+'</button>';
 }
 
 /* ---------- THEME ---------- */
@@ -8615,7 +8672,10 @@ function renderProfile(){
   '</div>';
   h+='<div class="grp-lab stag" style="animation-delay:.15s">'+t('support')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.16s">'+
+    (isStandalone()?'':'<div class="grp-row" onclick="installApp()"><div class="lr-icon">'+ICN('download',20,'currentColor')+'</div><div class="lr-title">'+t('installAppBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>')+
     '<div class="grp-row" onclick="openProfileSection(\'data\')"><div class="lr-icon">'+ICN('lock',20,'currentColor')+'</div><div class="lr-title">'+t('dataPrivacy')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'terms\')"><div class="lr-icon">'+ICN('clipboard',20,'currentColor')+'</div><div class="lr-title">'+t('termsOfUseLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'privacy\')"><div class="lr-icon">'+ICN('shield',20,'currentColor')+'</div><div class="lr-title">'+t('privacyPolicyLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileSection(\'data\')"><div class="lr-icon">'+ICN('help',20,'currentColor')+'</div><div class="lr-title">'+t('helpCenter')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
   h+='<div style="text-align:center;color:var(--dim);font-size:12px;margin:20px 0">'+t('footerTag')+'</div>';
@@ -8644,6 +8704,9 @@ function renderProfileSimple(){
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('heart',20,'currentColor')+'</div><div class="lr-title">'+t('simplifiedMode')+'</div><div class="toggle on" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
     '<div class="grp-row" onclick="startAppTour()"><div class="lr-icon">'+ICN('flag',20,'currentColor')+'</div><div class="lr-title">'+t('replayTourBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileSection(\'account\')"><div class="lr-icon">'+ICN('lock',20,'currentColor')+'</div><div class="lr-title">'+t('account')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    (isStandalone()?'':'<div class="grp-row" onclick="installApp()"><div class="lr-icon">'+ICN('download',20,'currentColor')+'</div><div class="lr-title">'+t('installAppBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>')+
+    '<div class="grp-row" onclick="openProfileSection(\'terms\')"><div class="lr-icon">'+ICN('clipboard',20,'currentColor')+'</div><div class="lr-title">'+t('termsOfUseLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'privacy\')"><div class="lr-icon">'+ICN('shield',20,'currentColor')+'</div><div class="lr-title">'+t('privacyPolicyLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
   return h;
 }
@@ -8651,7 +8714,7 @@ function renderProfileSimple(){
 let _pfSheet=null;
 function openProfileSection(key){
   _pfSheet=key;
-  const titles={account:'Compte',lang:''+t('language'),appearance:''+t('appearance'),notif:''+t('notifsApp'),data:''+t('dataPrivacy')};
+  const titles={account:'Compte',lang:''+t('language'),appearance:''+t('appearance'),notif:''+t('notifsApp'),data:''+t('dataPrivacy'),terms:t('termsOfUseLab'),privacy:t('privacyPolicyLab')};
   $('#ovProgTitle').textContent=titles[key]||t('settings');
   $('#progBody').innerHTML=pfSectionHTML(key);
   openOv('ovProg');
@@ -8663,7 +8726,78 @@ function pfSectionHTML(key){
   if(key==='appearance') return pfAppearanceHTML();
   if(key==='notif') return pfNotifHTML();
   if(key==='data') return pfDataHTML();
+  if(key==='terms') return legalTermsHTML();
+  if(key==='privacy') return legalPrivacyHTML();
   return '';
+}
+/* ---------- CGU & CONFIDENTIALITÉ ----------
+   Contenu juridique volontairement gardé en français uniquement (langue de
+   référence), quelle que soit la langue de l'app : un texte légal traduit
+   à la volée risquerait de perdre en précision. À adapter/faire relire par
+   un professionnel avant publication — remplace les [crochets] par tes
+   vraies coordonnées (nom/société, email de contact). */
+const LEGAL_LAST_UPDATE='4 septembre 2026';
+function legalP(title,body){ return '<div style="font-weight:800;font-size:13.5px;margin:16px 0 6px;color:var(--snow)">'+title+'</div><div style="font-size:12.5px;color:var(--muted);line-height:1.65">'+body+'</div>'; }
+function legalWrapHTML(bodyHtml){
+  return '<div class="card" style="padding:16px">'+
+    '<div style="font-size:11px;color:var(--dim);margin-bottom:2px">Dernière mise à jour : '+LEGAL_LAST_UPDATE+'</div>'+
+    '<div style="font-size:11px;color:var(--dim);margin-bottom:4px">Document de référence rédigé en français.</div>'+
+    bodyHtml+
+    '</div>';
+}
+function legalTermsHTML(){
+  const b=legalP('1. Objet',
+    'Les présentes Conditions Générales d’Utilisation (« CGU ») régissent l’accès et l’utilisation de l’application IKORUN (« l’Application »), une application de coaching sportif (course à pied et musculation) éditée par [ton nom ou ta société — à compléter], ci-après « l’Éditeur ». En créant un compte ou en utilisant l’Application, tu acceptes sans réserve les présentes CGU.')
+  +legalP('2. Description du service',
+    'IKORUN propose : la génération de plans d’entraînement personnalisés (course à pied et musculation) à partir des informations que tu renseignes (niveau, objectif, performances passées…) ; le suivi de tes séances, statistiques et progrès ; des fonctionnalités sociales optionnelles (ajout d’amis, classement) ; des outils de calcul (allures, VDOT, etc.). L’Application fonctionne en mode « invité » (sans compte permanent) ou avec un compte (email/mot de passe ou connexion Google).')
+  +legalP('3. Avertissement santé et sport — à lire attentivement',
+    'IKORUN n’est pas un dispositif médical et ne fournit aucun avis médical. Les plans d’entraînement générés le sont par des algorithmes génériques et ne remplacent pas l’avis d’un professionnel de santé. Avant de commencer tout programme, en particulier en cas d’antécédents médicaux, de condition de santé particulière, ou de reprise d’activité après une longue interruption, consulte un médecin. Tu es seul(e) responsable de l’évaluation de ta condition physique et des risques liés à la pratique sportive. L’Éditeur ne pourra être tenu responsable de blessures, malaises ou dommages résultant de l’utilisation des plans ou conseils fournis par l’Application.')
+  +legalP('4. Compte utilisateur',
+    'Tu es responsable de la confidentialité de tes identifiants et de toute activité effectuée depuis ton compte. Les informations fournies doivent être exactes. Tu peux à tout moment supprimer ton compte et tes données depuis Profil > Données & confidentialité.')
+  +legalP('5. Contenu et comportement',
+    'Ton nom d’utilisateur, ta photo de profil et les contenus que tu partages via les fonctionnalités sociales doivent rester respectueux, ne pas usurper l’identité d’un tiers, et respecter la loi. L’Éditeur se réserve le droit de suspendre ou supprimer tout compte enfreignant ces règles.')
+  +legalP('6. Propriété intellectuelle',
+    'L’Application, son design, sa marque et son contenu (hors contenu fourni par les utilisateurs) sont la propriété de l’Éditeur ou de ses partenaires et protégés par le droit de la propriété intellectuelle. Certaines images d’exercices proviennent de la base de données publique « free-exercise-db » (domaine public).')
+  +legalP('7. Disponibilité du service',
+    'L’Éditeur s’efforce d’assurer un accès continu à l’Application, sans garantir une disponibilité ininterrompue (maintenance, mise à jour, cas de force majeure). L’Application fonctionne partiellement hors-ligne mais nécessite une connexion pour la synchronisation cloud, la connexion et les fonctionnalités sociales.')
+  +legalP('8. Limitation de responsabilité',
+    'Dans les limites permises par la loi, l’Éditeur ne pourra être tenu responsable des dommages indirects résultant de l’utilisation ou de l’impossibilité d’utiliser l’Application, ni de l’exactitude parfaite des calculs, statistiques ou plans générés, fournis « en l’état ».')
+  +legalP('9. Résiliation',
+    'Tu peux cesser d’utiliser l’Application et supprimer ton compte à tout moment. L’Éditeur peut suspendre ou résilier l’accès d’un utilisateur en cas de violation des présentes CGU.')
+  +legalP('10. Modification des CGU',
+    'L’Éditeur peut modifier les présentes CGU à tout moment, notamment pour refléter une évolution de l’Application ou de la réglementation. La date de dernière mise à jour figure en haut de ce document ; toute modification substantielle te sera signalée dans l’Application.')
+  +legalP('11. Droit applicable',
+    'Les présentes CGU sont soumises au droit français. Tout litige relève, à défaut de résolution amiable, des tribunaux compétents.')
+  +legalP('12. Contact',
+    'Pour toute question relative aux présentes CGU : [ton email de contact — à compléter].');
+  return legalWrapHTML(b);
+}
+function legalPrivacyHTML(){
+  const b=legalP('1. Responsable du traitement',
+    'Le responsable du traitement des données à caractère personnel collectées via IKORUN est [ton nom ou ta société — à compléter], contact : [ton email — à compléter].')
+  +legalP('2. Données collectées',
+    'Selon ton mode de connexion et ton usage de l’Application, nous traitons : les données de compte (email, mot de passe chiffré ou identifiant Google) ; les données de profil (prénom, date de naissance, sexe, taille, poids, niveau, objectifs, photo si tu en ajoutes une) ; les données d’entraînement (séances, performances, records, historique) que tu saisis ou qui sont calculées par l’Application ; les données sociales optionnelles (pseudo, liste d’amis) si tu utilises ces fonctionnalités. IKORUN ne collecte pas ta localisation GPS.')
+  +legalP('3. Finalités',
+    'Ces données sont utilisées pour fournir le service (génération de plans, suivi, statistiques), synchroniser tes données entre appareils, permettre les fonctionnalités sociales optionnelles, et améliorer l’Application. Elles ne sont jamais vendues à des tiers.')
+  +legalP('4. Base légale',
+    'Le traitement repose sur l’exécution du contrat qui te lie à l’Éditeur (fourniture du service demandé) et, pour les fonctionnalités optionnelles (photo, réseau social), sur ton consentement.')
+  +legalP('5. Hébergement',
+    'Tes données sont hébergées chez Supabase, sur des serveurs situés dans l’Union européenne (Irlande). La connexion via Google est gérée par Google LLC selon sa propre politique de confidentialité.')
+  +legalP('6. Durée de conservation',
+    'Tes données sont conservées tant que ton compte est actif. Tu peux les exporter ou supprimer ton compte à tout moment depuis Profil > Données & confidentialité — la suppression est définitive.')
+  +legalP('7. Tes droits',
+    'Conformément au RGPD, tu disposes d’un droit d’accès, de rectification, d’effacement, de portabilité (export JSON disponible dans l’Application) et d’opposition sur tes données. Pour les exercer, utilise les outils intégrés à l’Application ou contacte [ton email — à compléter]. Tu peux aussi introduire une réclamation auprès de la CNIL (www.cnil.fr).')
+  +legalP('8. Stockage local et cookies',
+    'L’Application utilise le stockage local de ton navigateur/appareil (localStorage) pour fonctionner hors-ligne et mémoriser tes préférences — pas de cookies publicitaires ni de traceurs tiers.')
+  +legalP('9. Sécurité',
+    'Tes données sont chiffrées avant stockage local, et les échanges avec le serveur sont chiffrés (HTTPS). Aucun système n’est infaillible ; en cas de faille de sécurité avérée, tu en serais informé(e) conformément à la réglementation.')
+  +legalP('10. Mineurs',
+    'L’Application est destinée aux personnes de 15 ans et plus. En dessous de cet âge, l’accord d’un parent ou tuteur légal est requis pour créer un compte, conformément à la réglementation française sur le consentement numérique.')
+  +legalP('11. Modifications',
+    'Cette politique peut évoluer ; la date de mise à jour est indiquée en haut de ce document.')
+  +legalP('12. Contact',
+    'Pour toute question relative à tes données : [ton email — à compléter].');
+  return legalWrapHTML(b);
 }
 function pfAccountHTML(){
   if(window.currentUserEmail){
