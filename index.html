@@ -25,8 +25,9 @@
     const fixed = location.href.replace('##', '#');
     history.replaceState(null, '', fixed);
   }
-  // Service Worker : nécessaire pour l'installabilité PWA / le packaging
-  // TWA (Play Store). Un ancien SW buggé (Blob URL) avait causé un problème
+  // Service Worker : nécessaire pour l'installabilité PWA (reste l'unique
+  // cible de distribution pour l'instant — pas de TWA/Play Store en vue).
+  // Un ancien SW buggé (Blob URL) avait causé un problème
   // de cache zombie sur iOS — d'où l'ancien kill-switch qui désinstallait
   // systématiquement tout SW. Le nouveau sw.js est "network-first" par
   // design (voir commentaires dans sw.js) : il ne sert jamais de version
@@ -1330,6 +1331,7 @@ html[data-mode="light"]{
 .ob-mode-t{font-family:'Unbounded';font-weight:700;font-size:16px;margin-bottom:5px;}
 .ob-mode-d{font-size:13px;color:var(--muted);line-height:1.5;}
 .ob-mode-hint{margin-top:14px;font-size:12.5px;color:var(--e2);text-align:center;min-height:16px;}
+.ps-hint{font-size:12.5px;color:var(--e2);text-align:center;margin:4px 0 2px;}
 .ob-foot{display:flex;gap:10px;margin-top:14px;}
 
 /* MEDAL TIERS */
@@ -2168,6 +2170,6 @@ html[data-mode="light"]{
     console.error('[IKORUN] Le script Supabase (jsdelivr) n\'a pas pu charger, réessaie de recharger la page.', e);
   }
 </script>
-<script src="app.js?v=25"></script>
+<script src="app.js?v=26"></script>
 </body>
 </html>

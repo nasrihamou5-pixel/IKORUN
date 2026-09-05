@@ -944,6 +944,7 @@ const I18N={
     regenBtn:'Régénérer / reconfigurer',planIkorunPill:'Plan IKORUN',myPlanPill:'Plan personnel',
     planIkorunTitle:'Plan IKORUN — moteur scientifique',
     planIkorunDescLong:'Génère un plan périodisé sur-mesure (méthode norvégienne + VDOT/Daniels) basé sur ton VDOT ({0}), ton objectif, tes préférences et ta date de course. Le plan se réajuste automatiquement si tu rates une séance.',
+    planIkorunDescSimple:'Crée ton plan d’entraînement, adapté à ton niveau et à ta course. Il s’ajuste tout seul si tu rates une séance.',
     configureGenerate:'Configurer & générer',weekN:'Semaine {0}',deloadTag:' · allégée',missedTag:'Manquée',restTag:'Repos',
     newPersoPlan:'Nouveau plan personnel',createCustomPlan:'Crée ton plan sur-mesure',
     createCustomPlanDesc:'Ajoute tes propres séances, choisis les dates, types et allures. Tout se synchronise avec ton accueil et tes stats.',
@@ -1349,6 +1350,7 @@ const I18N={
     sleepInsufficient:'Insuffisant — récupération compromise',sleepOptimal:'Optimal pour un athlète',sleepPlenty:'Beaucoup — écoute ton corps',
     speedLabel:'Vitesse',timeHMSLabel:'Temps (h : mm : ss)',
     configurePlanTitle:'Configurer mon plan',courseProfileLabel:'Profil du parcours',generateMyPlanBtn:'Générer mon plan',
+    planSetupSimpleHint:'On s’occupe du reste (rythme, distances, séances) et on ajuste tout au fil de tes séances.',
     maxKmWeekLabel:'Km/sem maxi (pic)',minKmWeekLabel:'Km/sem mini',preferredSessionsLabel:'Séances préférées (le coach les privilégiera)',
     preparedRaceLabel:'Course préparée',raceDateLabel:'Date de la course',targetTimeOptionalLabel:'Chrono visé (optionnel)',
     trainingDaysLabel:'Jours d\u2019entraînement',yourNextRaceDefault:'Ta prochaine course',
@@ -1458,6 +1460,7 @@ const I18N={
     regenBtn:'Regenerate / reconfigure',planIkorunPill:'IKORUN Plan',myPlanPill:'Custom plan',
     planIkorunTitle:'IKORUN Plan — scientific engine',
     planIkorunDescLong:'Generates a custom periodized plan (Norwegian method + VDOT/Daniels) based on your VDOT ({0}), goal, preferences and race date. The plan auto-adjusts if you miss a session.',
+    planIkorunDescSimple:'Creates your training plan, matched to your level and your race. It adjusts itself if you miss a session.',
     configureGenerate:'Configure & generate',weekN:'Week {0}',deloadTag:' · deload',missedTag:'Missed',restTag:'Rest',
     newPersoPlan:'New custom plan',createCustomPlan:'Build your custom plan',
     createCustomPlanDesc:'Add your own sessions, pick dates, types and paces. Everything syncs with your home and stats.',
@@ -1863,6 +1866,7 @@ const I18N={
     sleepInsufficient:'Insufficient — recovery compromised',sleepOptimal:'Optimal for an athlete',sleepPlenty:'A lot — listen to your body',
     speedLabel:'Speed',timeHMSLabel:'Time (h : mm : ss)',
     configurePlanTitle:'Configure my plan',courseProfileLabel:'Course profile',generateMyPlanBtn:'Generate my plan',
+    planSetupSimpleHint:'We handle the rest (pace, distances, sessions) and adjust everything as you go.',
     maxKmWeekLabel:'Max km/week (peak)',minKmWeekLabel:'Min km/week',preferredSessionsLabel:'Preferred sessions (the coach will favor these)',
     preparedRaceLabel:'Race you\u2019re preparing for',raceDateLabel:'Race date',targetTimeOptionalLabel:'Target time (optional)',
     trainingDaysLabel:'Training days',yourNextRaceDefault:'Your next race',
@@ -1972,6 +1976,7 @@ const I18N={
     regenBtn:'إعادة التوليد / الإعداد',planIkorunPill:'خطة IKORUN',myPlanPill:'خطة شخصية',
     planIkorunTitle:'خطة IKORUN — محرك علمي',
     planIkorunDescLong:'يولّد خطة مرحلية مخصصة (الطريقة النرويجية + VDOT/Daniels) بناءً على VDOT الخاص بك ({0})، هدفك، تفضيلاتك وتاريخ سباقك. تتعدل الخطة تلقائيًا إذا فاتتك حصة.',
+    planIkorunDescSimple:'\u064A\u0646\u0634\u0626 \u062E\u0637\u0629 \u062A\u062F\u0631\u064A\u0628\u0643 \u062D\u0633\u0628 \u0645\u0633\u062A\u0648\u0627\u0643 \u0648\u0633\u0628\u0627\u0642\u0643. \u062A\u062A\u0639\u062F\u0644 \u0627\u0644\u062E\u0637\u0629 \u062A\u0644\u0642\u0627\u0626\u064A\u064B\u0627 \u0625\u0630\u0627 \u0641\u0627\u062A\u062A\u0643 \u062D\u0635\u0629.',
     configureGenerate:'إعداد وتوليد',weekN:'الأسبوع {0}',deloadTag:' · مخففة',missedTag:'فائتة',restTag:'راحة',
     newPersoPlan:'خطة شخصية جديدة',createCustomPlan:'أنشئ خطتك المخصصة',
     createCustomPlanDesc:'أضف حصصك الخاصة، اختر التواريخ والأنواع والوتيرة. كل شيء يتزامن مع صفحتك الرئيسية وإحصائياتك.',
@@ -2378,6 +2383,7 @@ const I18N={
     sleepInsufficient:'غير كافٍ — التعافي مُعرَّض للخطر',sleepOptimal:'مثالي للرياضي',sleepPlenty:'كثير — استمع لجسدك',
     speedLabel:'السرعة',timeHMSLabel:'الزمن (س : د : ث)',
     configurePlanTitle:'إعداد خطتي',courseProfileLabel:'طبيعة المسار',generateMyPlanBtn:'أنشئ خطتي',
+    planSetupSimpleHint:'نتكفّل بالباقي (الوتيرة، المسافات، الحصص) ونعدّل كل شيء تدريجيًا مع تقدّمك.',
     maxKmWeekLabel:'أقصى كم/أسبوع (الذروة)',minKmWeekLabel:'أدنى كم/أسبوع',preferredSessionsLabel:'الحصص المفضلة (سيفضلها المدرب)',
     preparedRaceLabel:'السباق الذي تستعد له',raceDateLabel:'تاريخ السباق',targetTimeOptionalLabel:'الزمن المستهدف (اختياري)',
     trainingDaysLabel:'أيام التدريب',yourNextRaceDefault:'سباقك القادم',
@@ -5476,6 +5482,7 @@ function openPlanSetup(){
   renderPlanSetup(); $('#ovProgTitle').textContent=t('configurePlanTitle'); openOv('ovProg');
 }
 function renderPlanSetup(){
+  if(P.easyMode) return renderPlanSetupSimple();
   const s=setupTmp;
   const dn=[0,1,2,3,4,5,6].map(d=>new Date(2023,0,1+d).toLocaleDateString(localeCode(),{weekday:'short'}));
   let h='<div class="field"><label>'+t('preparedRaceLabel')+'</label><select class="inp" onchange="setupTmp.objRace=this.value">'+['5 km','10 km','Semi-marathon','Marathon','Ultra','Trail','Cross','Autre'].map(r=>'<option value="'+r+'" '+(s.objRace===r?'selected':'')+'>'+trRace(r)+'</option>').join('')+'</select></div>';
@@ -5486,6 +5493,19 @@ function renderPlanSetup(){
   h+='<div class="field"><label>'+t('trainingDaysLabel')+'</label><div class="pills">'+[1,2,3,4,5,6,0].map(d=>'<div class="pill '+(s.days.includes(d)?'on':'')+'" onclick="toggleSetupDay('+d+')">'+dn[d]+'</div>').join('')+'</div></div>';
   h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>'+t('minKmWeekLabel')+'</label><input class="inp" type="number" value="'+s.kmWeekMin+'" oninput="setupTmp.kmWeekMin=+this.value"></div><div class="field" style="flex:1"><label>'+t('maxKmWeekLabel')+'</label><input class="inp" type="number" value="'+s.kmWeekMax+'" oninput="setupTmp.kmWeekMax=+this.value"></div></div>';
   h+='<div class="field"><label>'+t('preferredSessionsLabel')+'</label><div class="pills">'+LIKED_TYPES.map(lt=>'<div class="pill '+(s.likedTypes.includes(lt)?'on':'')+'" onclick="toggleLiked(\''+lt.replace(/'/g,"\\'")+'\')">'+trLikedType(lt)+'</div>').join('')+'</div></div>';
+  h+='<button class="btn" onclick="confirmPlanSetup()">'+t('generateMyPlanBtn')+'</button>';
+  $('#progBody').innerHTML=h;
+}
+// Version allégée du formulaire de plan pour le mode simplifié : ne garde que les champs indispensables,
+// le reste (profil du parcours, temps cible, km/semaine, types de séances préférés) est déduit automatiquement.
+function renderPlanSetupSimple(){
+  const s=setupTmp;
+  const dn=[0,1,2,3,4,5,6].map(d=>new Date(2023,0,1+d).toLocaleDateString(localeCode(),{weekday:'short'}));
+  let h='<div class="field"><label>'+t('preparedRaceLabel')+'</label><select class="inp" onchange="setupTmp.objRace=this.value">'+['5 km','10 km','Semi-marathon','Marathon','Ultra','Trail','Cross','Autre'].map(r=>'<option value="'+r+'" '+(s.objRace===r?'selected':'')+'>'+trRace(r)+'</option>').join('')+'</select></div>';
+  h+='<div class="field"><label>'+t('raceDateLabel')+'</label><input class="inp" type="date" value="'+s.compDate+'" onchange="setupTmp.compDate=this.value"></div>';
+  h+='<div class="field"><label>'+t('objectiveCap')+'</label><div class="pills">'+['Finir','Record personnel','Podium'].map(o=>'<div class="pill '+(s.objGoal===o?'on':'')+'" onclick="setupTmp.objGoal=\''+o+'\';renderPlanSetup()">'+trGoal(o)+'</div>').join('')+'</div></div>';
+  h+='<div class="field"><label>'+t('trainingDaysLabel')+'</label><div class="pills">'+[1,2,3,4,5,6,0].map(d=>'<div class="pill '+(s.days.includes(d)?'on':'')+'" onclick="toggleSetupDay('+d+')">'+dn[d]+'</div>').join('')+'</div></div>';
+  h+='<p class="ps-hint">'+t('planSetupSimpleHint')+'</p>';
   h+='<button class="btn" onclick="confirmPlanSetup()">'+t('generateMyPlanBtn')+'</button>';
   $('#progBody').innerHTML=h;
 }
@@ -6313,9 +6333,40 @@ function renderSport(){
   let h='<div class="row" style="gap:8px;margin:6px 0 16px">'+
     '<div class="pills" style="flex:1;margin:0"><div class="pill '+(sportTab==='run'?'on':'')+'" onclick="sportTab=\'run\';curPerso=null;renderSport()">Running</div><div class="pill '+(sportTab==='muscu'?'on':'')+'" onclick="sportTab=\'muscu\';renderSport()">Musculation</div></div>'+
     '<div class="tb-gear" style="flex-shrink:0" onclick="sportView=\'calendar\';renderSport()">'+ICN('calendar',17)+'</div></div>';
+  if(P.easyMode){
+    h += sportTab==='run' ? renderRunningSimple() : renderMuscu();
+    $('#s-sport').innerHTML=h; return;
+  }
   if(sportTab==='run' && runSub==='perso' && curPerso){ h+=persoDetailHTML(); }
   else h+= sportTab==='run'?renderRunning():renderMuscu();
   $('#s-sport').innerHTML=h;
+}
+/* ---------- SPORT — MODE SIMPLIFIÉ ----------
+   Plan IKORUN uniquement (pas de sous-onglet "Plan personnel" à choisir en
+   plus) : le rail des phases, le delta de VDOT et "régénérer" disparaissent —
+   juste "Semaine X / Y" et la liste des séances de la semaine, déjà lisible
+   sans jargon (renderPlanRows en mode flat). La musculation n'a pas besoin
+   d'une version à part : c'est déjà une liste de programmes + une silhouette,
+   rien à simplifier de plus. */
+function renderRunningSimple(){
+  if(!PLAN){
+    return '<div class="card" id="tourPlanCta"><div class="empty"><div class="em-ic">'+ICN('bolt',36,'currentColor')+'</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">'+t('planIkorunTitle')+'</div><div style="font-size:13px;margin-bottom:16px">'+t('planIkorunDescSimple')+'</div><button class="btn" onclick="openPlanSetup()">'+t('configureGenerate')+'</button></div></div>';
+  }
+  const tk=todayKey();
+  const todaySess=PLAN.sessions.find(s=>s.date===tk);
+  const upcoming=PLAN.sessions.find(s=>s.date>=tk);
+  const curSess=todaySess||upcoming||PLAN.sessions[PLAN.sessions.length-1];
+  const comp=new Date(P.compDate+'T00:00:00'), today=new Date(tk+'T00:00:00');
+  const daysLeft=Math.max(0,Math.round((comp-today)/86400000));
+  let h='<div class="card" style="text-align:center;padding:18px">'+
+    '<div class="lab" style="margin-bottom:4px">'+tp('weekOf',curSess.week,PLAN.weeks)+'</div>'+
+    '<div class="man" style="font-weight:800;font-size:20px">'+escHtml(trRace(P.objRace)||t('courseDefault'))+'</div>'+
+    '<div style="font-size:13px;color:var(--muted);margin-top:4px">'+t('objectiveCap')+' · J-'+daysLeft+'</div>'+
+  '</div>';
+  h+='<div class="hv7-sec-lab" style="margin:16px 0 10px">'+t('thisWeek')+'</div>';
+  h+=renderPlanRows(PLAN.sessions.filter(s=>s.week===curSess.week),tk,{flat:true});
+  h+='<button class="btn ghost" style="margin-top:12px" onclick="openFullPlan()">'+t('seePlan')+'</button>';
+  return h;
 }
 let calMonthOffset=0;
 function calMonthNav(d){ calMonthOffset+=d; $('#s-sport').innerHTML=renderCalendarView(); }
