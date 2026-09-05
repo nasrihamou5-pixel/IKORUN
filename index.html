@@ -1316,6 +1316,7 @@ html[data-mode="light"]{
 .ob-pref #ob_lang.pills{justify-content:center;}
 .ob-pref #ob_accent .accent-picker{justify-content:center;}
 .ob-pref #ob_accent .accent-dot{width:28px;height:28px;}
+.ob-theme-row{display:flex;justify-content:center;}
 
 /* Choix du mode d'affichage : deux cartes comparées côte à côte plutôt que
    des puces de texte — la différence (dense vs épuré) se voit, elle ne se
@@ -2038,6 +2039,10 @@ html[data-mode="light"]{
       </div>
     </div>
     <div class="ob-pref">
+      <div class="ob-pref-lab" id="obThemeLab">Thème</div>
+      <div class="ob-theme-row" id="ob_theme"></div>
+    </div>
+    <div class="ob-pref">
       <div class="ob-pref-lab" id="obColorLab">Couleur</div>
       <div id="ob_accent"></div>
     </div>
@@ -2163,6 +2168,6 @@ html[data-mode="light"]{
     console.error('[IKORUN] Le script Supabase (jsdelivr) n\'a pas pu charger, réessaie de recharger la page.', e);
   }
 </script>
-<script src="app.js?v=22"></script>
+<script src="app.js?v=23"></script>
 </body>
 </html>

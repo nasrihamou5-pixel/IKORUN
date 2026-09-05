@@ -900,6 +900,7 @@ const I18N={
     googleStandaloneTitle:'Google et l\u2019app install\u00e9e',googleUseEmailBtn:'Se connecter par email',googleOpenSafariBtn:'Ouvrir dans Safari',googleStandaloneHint:'Indisponible depuis l\u2019app install\u00e9e',
     declineBtn:'Refuser',saveLabel:'Enregistrer',renameLab:'Renommer',favoriteLab:'Favori',
     langLab:'Langue',obModeTitle:'Ton affichage',obModeIntro:'Deux façons de voir IKORUN — change d\u2019avis à tout moment dans Profil.',obModeFullT:'Complet',obModeFullD:'Toutes les stats, tous les détails de chaque séance, l\u2019anatomie musculaire, les graphiques. Pour creuser.',obModeSimpleT:'Simplifié',obModeSimpleD:'Une carte, l\u2019essentiel : la séance du jour et un bouton. Rien d\u2019autre à l\u2019écran. Pour aller droit au but.',obModeSuggestion:'Suggestion selon ton âge : {0}. Choisis librement.',chooseModeLab:'Choisis un affichage pour continuer',
+    trackingLab:'Suivi',appearanceLab:'Apparence',
     playLab:'Démarrer',
     cvCat_dist:'Distance',cvCat_pace:'Allure',cvCat_weight:'Poids',cvTapToEdit:'Touche pour modifier',
     googleStandaloneBody:'Sur iPhone, quand IKORUN est ouvert depuis l\u2019ic\u00f4ne de l\u2019\u00e9cran d\u2019accueil, la connexion Google part dans Safari et n\u2019en revient pas : elle r\u00e9ussit, mais dans Safari, pas ici. Connecte-toi par email dans l\u2019app, ou ouvre IKORUN dans Safari pour utiliser Google.',
@@ -1410,6 +1411,7 @@ const I18N={
     googleStandaloneTitle:'Google and the installed app',googleUseEmailBtn:'Sign in with email',googleOpenSafariBtn:'Open in Safari',googleStandaloneHint:'Unavailable from the installed app',
     declineBtn:'Decline',saveLabel:'Save',renameLab:'Rename',favoriteLab:'Favourite',
     langLab:'Language',obModeTitle:'Your display',obModeIntro:'Two ways to see IKORUN \u2014 change your mind anytime in Profile.',obModeFullT:'Full',obModeFullD:'All the stats, every session detail, muscle anatomy, charts. For digging in.',obModeSimpleT:'Simplified',obModeSimpleD:'One card, the essentials: today\u2019s session and a button. Nothing else on screen. For going straight to it.',obModeSuggestion:'Suggestion based on your age: {0}. Choose freely.',chooseModeLab:'Choose a display to continue',
+    trackingLab:'Tracking',appearanceLab:'Appearance',
     playLab:'Start',
     cvCat_dist:'Distance',cvCat_pace:'Pace',cvCat_weight:'Weight',cvTapToEdit:'Tap to edit',
     googleStandaloneBody:'On iPhone, when IKORUN is opened from the home-screen icon, Google sign-in leaves for Safari and never comes back: it succeeds, but in Safari, not here. Sign in with email inside the app, or open IKORUN in Safari to use Google.',
@@ -1920,6 +1922,7 @@ const I18N={
     googleStandaloneTitle:'Google والتطبيق المثبّت',googleUseEmailBtn:'تسجيل الدخول بالبريد',googleOpenSafariBtn:'الفتح في Safari',googleStandaloneHint:'غير متاح من التطبيق المثبّت',
     declineBtn:'رفض',saveLabel:'حفظ',renameLab:'إعادة تسمية',favoriteLab:'مفضّل',
     langLab:'اللغة',obModeTitle:'طريقة العرض',obModeIntro:'طريقتان لرؤية IKORUN — غيّر رأيك في أي وقت من الملف الشخصي.',obModeFullT:'كامل',obModeFullD:'كل الإحصائيات، تفاصيل كل حصة، تشريح العضلات، الرسوم البيانية. للتعمّق.',obModeSimpleT:'مبسّط',obModeSimpleD:'بطاقة واحدة، الأساسيات: حصة اليوم وزر واحد. لا شيء آخر على الشاشة. للذهاب مباشرة إلى الهدف.',obModeSuggestion:'اقتراح حسب عمرك: {0}. اختر بحرية.',chooseModeLab:'اختر طريقة عرض للمتابعة',
+    trackingLab:'المتابعة',appearanceLab:'المظهر',
     playLab:'ابدأ',
     cvCat_dist:'المسافة',cvCat_pace:'الوتيرة',cvCat_weight:'الوزن',cvTapToEdit:'اضغط للتعديل',
     googleStandaloneBody:'على iPhone، عند فتح IKORUN من أيقونة الشاشة الرئيسية، يغادر تسجيل الدخول عبر Google إلى Safari ولا يعود: ينجح، لكن داخل Safari وليس هنا. سجّل الدخول بالبريد داخل التطبيق، أو افتح IKORUN في Safari لاستخدام Google.',
@@ -4045,6 +4048,7 @@ function startOnboarding(){
   // déjà dans la langue et la couleur choisies, au lieu de les découvrir
   // seulement après la création du compte.
   obRenderLangPicker();
+  obRenderThemePicker();
   obRenderAccentPicker();
   $('#ob_mode').querySelectorAll('.ob-mode-card').forEach(c=>c.onclick=()=>obPickMode(c.dataset.v));
   OB_PERFS=[{dist:null,meters:null,timeS:null}];
@@ -4066,6 +4070,10 @@ function obRenderLangPicker(){
     p.classList.toggle('on', p.dataset.l===curLang());
     p.onclick=()=>{ setLang(p.dataset.l); applyOnboardingLabels(); };
   });
+}
+function obRenderThemePicker(){
+  const box=$('#ob_theme'); if(!box) return;
+  box.innerHTML=pfThemeSwitchHTML();
 }
 function obRenderAccentPicker(){
   const box=$('#ob_accent'); if(!box) return;
@@ -4097,7 +4105,7 @@ function applyOnboardingLabels(){
   if(step1){
     const h1=step1.querySelector('h1'),p=step1.querySelector('.intro');
     if(h1)h1.textContent=t('obWelcomeTitle'); if(p)p.innerHTML=t('obWelcomeIntro');
-    $('#obLangLab').textContent=t('langLab'); $('#obColorLab').textContent=t('colorLab');
+    $('#obLangLab').textContent=t('langLab'); $('#obThemeLab').textContent=t('theme'); $('#obColorLab').textContent=t('colorLab');
     obRenderLangPicker();
   }
   const step2=$('.ob-step[data-step="2"]');
@@ -4297,13 +4305,14 @@ function finishOnboarding(){
   RECORDS=valid.map(p=>({dist:p.dist,meters:p.meters,time:fmtTime(p.timeS),date:todayKey()}));
   const find=m=>{ const r=valid.find(x=>x.meters===m); return r?fmtTime(r.timeS):''; };
   const level=$('#ob_level').querySelector('.pill.on').dataset.v;
-  // Langue et couleur ont déjà été appliquées en direct (obRenderLangPicker/
-  // setAccent) : on préserve simplement ce qui a été choisi avant l'écrasement
-  // de P ci-dessous, plutôt que de revenir à une langue détectée ou un bleu
-  // par défaut qui ignorerait le choix fait à l'étape 1.
-  const chosenLang=P.lang, chosenTheme=P.theme||'blue';
+  // Langue, thème clair/sombre et couleur ont déjà été appliqués en direct
+  // (obRenderLangPicker/toggleThemeSwitch/setAccent) : on préserve simplement
+  // ce qui a été choisi avant l'écrasement de P ci-dessous, plutôt que de
+  // revenir à une langue détectée ou des valeurs par défaut qui ignoreraient
+  // le choix fait à l'étape 1.
+  const chosenLang=P.lang, chosenMode=P.mode||'dark', chosenTheme=P.theme||'blue';
   P={
-    setupDone:true, joinedAt:Date.now(), lang:chosenLang,
+    setupDone:true, joinedAt:Date.now(), lang:chosenLang, mode:chosenMode,
     name:$('#ob_name').value.trim(), username:$('#ob_username').value.trim(), bday:$('#ob_bday').value, sex:$('#ob_sex').value,
     level, kmWeek:kmWeekFromLevel(level),
     goal:$('#ob_goal').value.trim(), compDate:$('#ob_compdate').value,
@@ -5434,7 +5443,7 @@ function renderPlanSetup(){
   h+='<div class="field"><label>'+t('raceDateLabel')+'</label><input class="inp" type="date" value="'+s.compDate+'" onchange="setupTmp.compDate=this.value"></div>';
   h+='<div class="field"><label>'+t('courseProfileLabel')+'</label><div class="pills">'+['Plate','Vallonnée','Montagne'].map(p=>'<div class="pill '+(s.objProfile===p?'on':'')+'" onclick="setupTmp.objProfile=\''+p+'\';renderPlanSetup()">'+trProfile(p)+'</div>').join('')+'</div></div>';
   h+='<div class="field"><label>'+t('objectiveCap')+'</label><div class="pills">'+['Finir','Record personnel','Qualification','Podium','Victoire'].map(o=>'<div class="pill '+(s.objGoal===o?'on':'')+'" onclick="setupTmp.objGoal=\''+o+'\';renderPlanSetup()">'+trGoal(o)+'</div>').join('')+'</div></div>';
-  h+='<div class="field"><label>'+t('targetTimeOptionalLabel')+'</label><input class="inp" value="'+(s.objTime||'')+'" oninput="setupTmp.objTime=this.value" placeholder="ex: 18:30"></div>';
+  h+='<div class="field"><label>'+t('targetTimeOptionalLabel')+'</label><input class="inp" value="'+escHtml(s.objTime||'')+'" oninput="setupTmp.objTime=this.value" placeholder="ex: 18:30"></div>';
   h+='<div class="field"><label>'+t('trainingDaysLabel')+'</label><div class="pills">'+[1,2,3,4,5,6,0].map(d=>'<div class="pill '+(s.days.includes(d)?'on':'')+'" onclick="toggleSetupDay('+d+')">'+dn[d]+'</div>').join('')+'</div></div>';
   h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>'+t('minKmWeekLabel')+'</label><input class="inp" type="number" value="'+s.kmWeekMin+'" oninput="setupTmp.kmWeekMin=+this.value"></div><div class="field" style="flex:1"><label>'+t('maxKmWeekLabel')+'</label><input class="inp" type="number" value="'+s.kmWeekMax+'" oninput="setupTmp.kmWeekMax=+this.value"></div></div>';
   h+='<div class="field"><label>'+t('preferredSessionsLabel')+'</label><div class="pills">'+LIKED_TYPES.map(lt=>'<div class="pill '+(s.likedTypes.includes(lt)?'on':'')+'" onclick="toggleLiked(\''+lt.replace(/'/g,"\\'")+'\')">'+trLikedType(lt)+'</div>').join('')+'</div></div>';
@@ -6539,7 +6548,7 @@ function renderDebrief(){
     h+='<div style="font-size:11px;color:var(--muted);margin-top:2px">'+t('repLegendLine')+'</div></div>';
   }
   h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>'+t('durationMinLabel')+'</label><input class="inp" type="number" max="1440" value="'+(d.duration||'')+'" oninput="debriefData.duration=Math.min(1440,+this.value||0)"></div><div class="field" style="flex:1"><label>'+t('distanceKmLabel')+'</label><input class="inp" type="number" value="'+(d.distance||'')+'" oninput="debriefData.distance=+this.value"></div></div>';
-  h+='<div class="field"><label>'+t('avgPaceKmLabel')+'</label><input class="inp" value="'+(d.pace||'')+'" oninput="debriefData.pace=this.value" placeholder="4:30"></div>';
+  h+='<div class="field"><label>'+t('avgPaceKmLabel')+'</label><input class="inp" value="'+escHtml(d.pace||'')+'" oninput="debriefData.pace=this.value" placeholder="4:30"></div>';
   h+='<div class="field"><label>'+t('elevationGainLabel')+'</label><input class="inp" type="number" value="'+(d.deniv||'')+'" oninput="debriefData.deniv=+this.value" placeholder="0"></div>';
   h+='<div class="field"><label>'+t('rpeFeltLabel')+' '+d.rpe+'/10</label><input type="range" min="1" max="10" value="'+d.rpe+'" style="width:100%" oninput="debriefData.rpe=+this.value;renderDebrief()"></div>';
   h+='<div class="field"><label>'+t('painLabel')+'</label><div class="pills">'+['Aucune','Légères','Gênantes','Importantes'].map(p=>'<div class="pill '+(d.pain===p?'on':'')+'" onclick="debriefData.pain=\''+p+'\';renderDebrief()">'+trPain(p)+'</div>').join('')+'</div></div>';
@@ -7547,8 +7556,8 @@ function openCreate(){
   renderCreate(); openOv('ovCreate');
 }
 function renderCreate(){
-  let h='<div class="field"><label>'+t('programNameLab')+'</label><input class="inp" id="npName" value="'+newProg.name+'" oninput="newProg.name=this.value" placeholder="'+t('programNamePh')+'"></div>';
-  h+='<div class="field"><label>'+t('descriptionLab')+'</label><textarea class="inp" rows="2" oninput="newProg.description=this.value" placeholder="'+t('descriptionPh')+'">'+(newProg.description||'')+'</textarea></div>';
+  let h='<div class="field"><label>'+t('programNameLab')+'</label><input class="inp" id="npName" value="'+escHtml(newProg.name||'')+'" oninput="newProg.name=this.value" placeholder="'+t('programNamePh')+'"></div>';
+  h+='<div class="field"><label>'+t('descriptionLab')+'</label><textarea class="inp" rows="2" oninput="newProg.description=this.value" placeholder="'+t('descriptionPh')+'">'+escHtml(newProg.description||'')+'</textarea></div>';
   h+='<div class="field"><label>'+t('objectiveLab2')+'</label><div class="pills">'+[['Force','objForce'],['Masse','objMass'],['Endurance','objEndurance'],['Perte poids','objWeightLoss'],['Maintien','objMaintain']].map(o=>'<div class="pill '+(newProg.objective===o[0]?'on':'')+'" onclick="newProg.objective=\''+o[0]+'\';renderCreate()">'+t(o[1])+'</div>').join('')+'</div></div>';
   h+='<div class="field"><label>'+t('iconLab')+'</label><div class="pills">'+PROG_ICONS.map(ic=>'<div class="pill '+(newProg.icon===ic?'on':'')+'" onclick="newProg.icon=\''+ic+'\';renderCreate()">'+ICN(ic,18)+'</div>').join('')+'</div></div>';
   h+='<div class="field"><label>'+t('colorLab')+'</label><div class="pills">'+PROG_COLORS.map(c=>'<div class="pill '+(newProg.color===c[0]?'on':'')+'" onclick="newProg.color=\''+c[0]+'\';renderCreate()"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var('+c[0]+');margin-right:6px"></span>'+t(c[1])+'</div>').join('')+'</div></div>';
@@ -7576,7 +7585,7 @@ function openLibFor(cb){ libCallback=cb; libBrowseMode=false; _libFromCreate=(cb
 function openLibBrowse(){ libCallback=null; libBrowseMode=true; renderLib(); openOv('ovLib'); }
 let libView='grid';
 function renderLib(){
-  let h='<input class="inp" style="margin-bottom:14px" placeholder="'+t('searchExercisePlaceholder')+'" value="'+libSearch+'" oninput="libSearch=this.value;renderLib();this.focus()">';
+  let h='<input class="inp" style="margin-bottom:14px" placeholder="'+t('searchExercisePlaceholder')+'" value="'+escHtml(libSearch||'')+'" oninput="libSearch=this.value;renderLib();this.focus()">';
   // Tuiles muscle en photo — navigation visuelle rapide, comme une planche anatomique
   h+='<div class="lab" style="margin-bottom:8px">'+t('muscleLabel')+'</div><div class="mtile-row">'+MUSCLE_GROUPS.map(m=>{
     const img=muscleRepImg(m); const on=libFilter===m;
@@ -8389,7 +8398,7 @@ function outilsHome(){
   let h='<div class="row" style="margin:2px 0 14px;justify-content:flex-end">'+vdotBadge()+'</div>';
   // Raccourcis rapides Chrono + Minuteur
   h+='<div style="display:flex;gap:10px;margin-bottom:16px"><div class="card" style="flex:1;padding:14px;margin:0;cursor:pointer;text-align:center" onclick="openTool(\'chrono\')"><div style="color:var(--e);display:flex;justify-content:center">'+ICN('stopwatch',26)+'</div><div style="font-weight:700;font-size:13px;margin-top:6px">'+t('toolChronoName')+'</div></div><div class="card" style="flex:1;padding:14px;margin:0;cursor:pointer;text-align:center" onclick="openQuickTimer()"><div style="color:var(--warn);display:flex;justify-content:center">'+ICN('timer',26)+'</div><div style="font-weight:700;font-size:13px;margin-top:6px">'+t('quickTimer')+'</div></div></div>';
-  h+='<div class="searchbox"><span class="searchic">'+ICN('search',18,'var(--muted)')+'</span><input class="inp" id="toolSearchInp" style="padding-left:42px" placeholder="'+t('searchTool')+'" value="'+toolSearch+'"></div>';
+  h+='<div class="searchbox"><span class="searchic">'+ICN('search',18,'var(--muted)')+'</span><input class="inp" id="toolSearchInp" style="padding-left:42px" placeholder="'+t('searchTool')+'" value="'+escHtml(toolSearch||'')+'"></div>';
   const q=toolSearch.toLowerCase().trim();
   if(q){
     const res=Object.entries(TOOLS).filter(([k,tl])=>tl.name.toLowerCase().includes(q));
@@ -8731,7 +8740,7 @@ function pomoToggle(){
 function pomoReset(){ clearInterval(pomoState.iv); pomoState={phase:'work',left:25*60,running:false,iv:null,count:pomoState.count}; renderPomodoro(); }
 function renderNotesTool(){
   const notes=PREFS.quickNotes||'';
-  let h='<div class="card"><div class="card-t">'+t('quickNotesTitle')+'</div><textarea class="inp" rows="12" id="qnotes" placeholder="'+t('notesPlaceholder')+'" oninput="PREFS.quickNotes=this.value;saveAll()">'+notes+'</textarea><div style="font-size:11px;color:var(--dim);margin-top:8px">'+t('autoSaveLocal')+'</div></div>';
+  let h='<div class="card"><div class="card-t">'+t('quickNotesTitle')+'</div><textarea class="inp" rows="12" id="qnotes" placeholder="'+t('notesPlaceholder')+'" oninput="PREFS.quickNotes=this.value;saveAll()">'+escHtml(notes)+'</textarea><div style="font-size:11px;color:var(--dim);margin-top:8px">'+t('autoSaveLocal')+'</div></div>';
   $('#outBody').innerHTML=h;
 }
 let sleepH=8;
@@ -9054,31 +9063,37 @@ function renderProfile(){
     }
     h+='</div>';
   }
-  // ===== SECTIONS GROUPÉES — Compte / Préférences / Support, une seule carte par groupe =====
-  h+='<div class="grp-lab stag" style="animation-delay:.09s">'+t('account')+'</div>';
+  // ===== SECTIONS GROUPÉES — 4 groupes à vocation unique (avant : 3 groupes qui
+  // mélangeaient données/apparence/compte, plus deux liens différents ("Données
+  // & confidentialité" et "Centre d'aide") qui ouvraient le MÊME écran — d'où
+  // la confusion. Suivi = regarder son historique ; Compte = son identité ;
+  // Apparence = ce que l'app montre ; Assistance = tout le reste, une fois. =====
+  h+='<div class="grp-lab stag" style="animation-delay:.09s">'+t('trackingLab')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.10s">'+
     '<div class="grp-row" onclick="openFriends()"><div class="lr-icon">'+ICN('users',20,'currentColor')+'</div><div class="lr-title">'+t('friendsRanking')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openRecords()"><div class="lr-icon">'+ICN('medal',20,'currentColor')+'</div><div class="lr-title">'+t('historyRecords')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">'+ICN('chart',20,'currentColor')+'</div><div class="lr-title">'+t('statistics')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+  '</div>';
+  h+='<div class="grp-lab stag" style="animation-delay:.12s">'+t('account')+'</div>';
+  h+='<div class="grp-card stag" style="animation-delay:.13s">'+
     '<div class="grp-row" onclick="openProfileEdit()"><div class="lr-icon">'+ICN('users',20,'currentColor')+'</div><div class="lr-title">'+t('manageProfile')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileSection(\'account\')"><div class="lr-icon">'+ICN('lock',20,'currentColor')+'</div><div class="lr-title">'+t('passwordSecurity')+'</div><div class="lr-val">'+(window.currentUserEmail||(window.isGuestUser?t('guestModeLabel'):t('notConnected')))+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileSection(\'notif\')"><div class="lr-icon">'+ICN('bell',20,'currentColor')+'</div><div class="lr-title">'+t('notifLabel')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'lang\')"><div class="lr-icon">'+ICN('globe',20,'currentColor')+'</div><div class="lr-title">'+t('language')+'</div><div class="lr-val">'+langInfo[1]+' '+langInfo[2]+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
-  h+='<div class="grp-lab stag" style="animation-delay:.12s">'+t('preferences')+'</div>';
-  h+='<div class="grp-card stag" style="animation-delay:.13s">'+
-    '<div class="grp-row" onclick="openRecords()"><div class="lr-icon">'+ICN('medal',20,'currentColor')+'</div><div class="lr-title">'+t('historyRecords')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">'+ICN('chart',20,'currentColor')+'</div><div class="lr-title">'+t('statistics')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+  h+='<div class="grp-lab stag" style="animation-delay:.15s">'+t('appearanceLab')+'</div>';
+  h+='<div class="grp-card stag" style="animation-delay:.16s">'+
+    '<div class="grp-row" onclick="openProfileSection(\'lang\')"><div class="lr-icon">'+ICN('globe',20,'currentColor')+'</div><div class="lr-title">'+t('language')+'</div><div class="lr-val">'+langInfo[1]+' '+langInfo[2]+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('theme')+'</div>'+pfThemeSwitchHTML()+'</div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('appColor')+'</div>'+pfAccentPickerHTML()+'</div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('heart',20,'currentColor')+'</div><div><div class="lr-title">'+t('simplifiedMode')+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px;max-width:200px">'+t('simplifiedModeDesc')+'</div></div><div class="toggle'+(P.easyMode?' on':'')+'" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
-    '<div class="grp-row" onclick="startAppTour()"><div class="lr-icon">'+ICN('flag',20,'currentColor')+'</div><div class="lr-title">'+t('replayTourBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
-  h+='<div class="grp-lab stag" style="animation-delay:.15s">'+t('support')+'</div>';
-  h+='<div class="grp-card stag" style="animation-delay:.16s">'+
+  h+='<div class="grp-lab stag" style="animation-delay:.18s">'+t('support')+'</div>';
+  h+='<div class="grp-card stag" style="animation-delay:.19s">'+
     (isStandalone()?'':'<div class="grp-row" onclick="installApp()"><div class="lr-icon">'+ICN('download',20,'currentColor')+'</div><div class="lr-title">'+t('installAppBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>')+
-    '<div class="grp-row" onclick="openProfileSection(\'data\')"><div class="lr-icon">'+ICN('lock',20,'currentColor')+'</div><div class="lr-title">'+t('dataPrivacy')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="startAppTour()"><div class="lr-icon">'+ICN('flag',20,'currentColor')+'</div><div class="lr-title">'+t('replayTourBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileSection(\'terms\')"><div class="lr-icon">'+ICN('clipboard',20,'currentColor')+'</div><div class="lr-title">'+t('termsOfUseLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileSection(\'privacy\')"><div class="lr-icon">'+ICN('shield',20,'currentColor')+'</div><div class="lr-title">'+t('privacyPolicyLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'data\')"><div class="lr-icon">'+ICN('help',20,'currentColor')+'</div><div class="lr-title">'+t('helpCenter')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'data\')"><div class="lr-icon">'+ICN('lock',20,'currentColor')+'</div><div class="lr-title">'+t('dataPrivacy')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
   h+='<div style="text-align:center;color:var(--dim);font-size:12px;margin:20px 0">'+t('footerTag')+'</div>';
   $('#s-profil').innerHTML=h;
@@ -9455,7 +9470,7 @@ function computeVDOTfromRecords(){
 }
 function openProfileEdit(){
   $('#ovProfile').querySelector('h2').textContent=t('editProfileTitle');
-  const f=(l,id,v,ty)=>'<div class="field"><label>'+l+'</label><input class="inp" id="'+id+'" value="'+(v||'')+'" '+(ty?'type="'+ty+'"':'')+'></div>';
+  const f=(l,id,v,ty)=>'<div class="field"><label>'+l+'</label><input class="inp" id="'+id+'" value="'+escHtml(v||'')+'" '+(ty?'type="'+ty+'"':'')+'></div>';
   let h='<div class="field"><label>'+t('usernameLab')+'</label><div class="uname-wrap"><span class="uname-at">@</span><input class="inp" id="pe_username" value="'+escHtml(P.username||'')+'" autocapitalize="off" autocorrect="off" spellcheck="false"></div><div class="uname-status" id="pe_username_status">'+t('usernameHint')+'</div></div>';
   h+=f(t('firstNameLab'),'pe_name',P.name)+f(t('cityLab'),'pe_city',P.city)+f(t('birthDateLab'),'pe_bday',P.bday,'date')+
     f(t('heightCmLab'),'pe_h',P.height,'number')+f(t('weightKgLab'),'pe_w',P.weight,'number')+
