@@ -899,6 +899,7 @@ const I18N={
     pauseLab:'Mettre en pause',restTimerBtn:'Minuteur de repos',
     googleStandaloneTitle:'Google et l\u2019app install\u00e9e',googleUseEmailBtn:'Se connecter par email',googleOpenSafariBtn:'Ouvrir dans Safari',googleStandaloneHint:'Indisponible depuis l\u2019app install\u00e9e',
     declineBtn:'Refuser',saveLabel:'Enregistrer',renameLab:'Renommer',favoriteLab:'Favori',
+    langLab:'Langue',obModeTitle:'Ton affichage',obModeIntro:'Deux façons de voir IKORUN — change d\u2019avis à tout moment dans Profil.',obModeFullT:'Complet',obModeFullD:'Toutes les stats, tous les détails de chaque séance, l\u2019anatomie musculaire, les graphiques. Pour creuser.',obModeSimpleT:'Simplifié',obModeSimpleD:'Une carte, l\u2019essentiel : la séance du jour et un bouton. Rien d\u2019autre à l\u2019écran. Pour aller droit au but.',obModeSuggestion:'Suggestion selon ton âge : {0}. Choisis librement.',chooseModeLab:'Choisis un affichage pour continuer',
     playLab:'Démarrer',
     cvCat_dist:'Distance',cvCat_pace:'Allure',cvCat_weight:'Poids',cvTapToEdit:'Touche pour modifier',
     googleStandaloneBody:'Sur iPhone, quand IKORUN est ouvert depuis l\u2019ic\u00f4ne de l\u2019\u00e9cran d\u2019accueil, la connexion Google part dans Safari et n\u2019en revient pas : elle r\u00e9ussit, mais dans Safari, pas ici. Connecte-toi par email dans l\u2019app, ou ouvre IKORUN dans Safari pour utiliser Google.',
@@ -1368,12 +1369,14 @@ const I18N={
     guestModeTitle:'Mode invité',guestModeLabel:'Mode invité',guestModeDesc:'Tes données sont liées à cet appareil. Si tu te déconnectes ou changes de téléphone, tu risques de les perdre. Ajoute un email pour les protéger.',
     guestSaveAccountBtn:'Sauvegarder mon compte',guestUpgradeSentToast:'Vérifie ta boîte mail pour confirmer. Tu pourras ensuite te connecter avec cet email (utilise « mot de passe oublié » pour en choisir un).',guestUpgradeEmailUsedToast:'Cet email est déjà utilisé par un autre compte.',
     tourSkip:'Passer',tourStartBtn:'Commencer',tourNextBtn:'Suivant',tourFinalBtn:'Créer mon plan',replayTourBtn:'Revoir le tutoriel',
-    tour_welcome_t:'Bienvenue sur IKORUN 👋',tour_welcome_d:'Petit tour rapide de l\'app avant de créer ton premier plan d\'entraînement. Ça prend une minute.',
-    tour_home_t:'Ton accueil',tour_home_d:'Ta séance du jour, ta progression de la semaine et tes stats essentielles s\'affichent ici en un coup d\'œil.',
-    tour_sport_t:'Crée ton plan d\'entraînement',tour_sport_d:'IKORUN génère un plan sur mesure selon ton niveau, ton objectif et ta date de course. Tu pourras le régénérer à tout moment.',
-    tour_stats_t:'Tes statistiques',tour_stats_d:'Kilomètres, séances, VDOT, records personnels... tout ton historique et ta progression sont ici.',
-    tour_outils_t:'La boîte à outils',tour_outils_d:'Calculateur d\'allure, VDOT, IMC, chrono, minuteur... Cherche l\'outil qu\'il te faut ou garde tes favoris à portée de main.',
-    tour_profil_t:'Ton profil',tour_profil_d:'Niveau, XP, badges, thème, langue et réglages de compte : tout se gère depuis cet onglet.',
+    tour_welcome_t:'Bienvenue {0} 👋',tour_welcome_d:'IKORUN n’est pas un GPS ni un podomètre : c’est un carnet d’entraînement intelligent qui génère ton plan et l’ajuste selon ce que tu lui dis. 8 étapes, une minute.',
+    tour_home_t:'Ton accueil',tour_home_d:'La carte du jour montre la séance prévue, avec le pourquoi. Une fois faite, touche « Je l’ai faite » — ou « Pas faite » si ce n’est pas le cas, ce n’est jamais grave.',
+    tour_loop_t:'Comment ça marche',tour_loop_d:'Le plan est généré à partir de ton niveau et de tes chronos. Après chaque séance, un bilan te demande ton ressenti (fatigue, douleur, allure) — c’est TOI qui dis si c’était dur, pas un capteur. IKORUN ne trace rien en arrière-plan.',
+    tour_sport_t:'Course et musculation',tour_sport_d:'L’onglet Sport génère ton plan de course sur mesure (niveau, objectif, date de course) et propose aussi des programmes de musculation. Régénère le plan à tout moment si ta vie change.',
+    tour_adapt_t:'Le plan s’ajuste tout seul',tour_adapt_d:'Séance ratée, fatigue élevée, douleur signalée : les séances à venir s’allègent automatiquement. Tout va bien : progression trop facile ? Elles montent en charge. Tu n’as jamais à recalculer quoi que ce soit.',
+    tour_stats_t:'Tes statistiques',tour_stats_d:'Kilomètres, séances, VDOT, records personnels — et ta progression en XP, niveaux et badges, gagnée uniquement par de vraies séances (l’app vérifie).',
+    tour_outils_t:'La boîte à outils',tour_outils_d:'Calculateur d’allure, VDOT, IMC, chrono, minuteur... Cherche l’outil qu’il te faut ou garde tes favoris à portée de main.',
+    tour_profil_t:'Ton profil',tour_profil_d:'Niveau, XP, badges — et tous les réglages : langue, couleur, et le mode simplifié que tu as choisi (modifiable à tout moment ici).',
     tour_final_t:'Prêt à commencer ?',tour_final_d:'Configure ton objectif et génère ton plan personnalisé — c\'est le moment !',
     tourGotItBtn:'Compris',signupHelpLink:'Besoin d\'aide ?',
     tour_sg_welcome_t:'On crée ton compte ?',tour_sg_welcome_d:'Trois petites infos et c\'est parti — ça prend 30 secondes.',
@@ -1406,6 +1409,7 @@ const I18N={
     pauseLab:'Pause',restTimerBtn:'Rest timer',
     googleStandaloneTitle:'Google and the installed app',googleUseEmailBtn:'Sign in with email',googleOpenSafariBtn:'Open in Safari',googleStandaloneHint:'Unavailable from the installed app',
     declineBtn:'Decline',saveLabel:'Save',renameLab:'Rename',favoriteLab:'Favourite',
+    langLab:'Language',obModeTitle:'Your display',obModeIntro:'Two ways to see IKORUN \u2014 change your mind anytime in Profile.',obModeFullT:'Full',obModeFullD:'All the stats, every session detail, muscle anatomy, charts. For digging in.',obModeSimpleT:'Simplified',obModeSimpleD:'One card, the essentials: today\u2019s session and a button. Nothing else on screen. For going straight to it.',obModeSuggestion:'Suggestion based on your age: {0}. Choose freely.',chooseModeLab:'Choose a display to continue',
     playLab:'Start',
     cvCat_dist:'Distance',cvCat_pace:'Pace',cvCat_weight:'Weight',cvTapToEdit:'Tap to edit',
     googleStandaloneBody:'On iPhone, when IKORUN is opened from the home-screen icon, Google sign-in leaves for Safari and never comes back: it succeeds, but in Safari, not here. Sign in with email inside the app, or open IKORUN in Safari to use Google.',
@@ -1875,13 +1879,15 @@ const I18N={
     guestModeTitle:'Guest mode',guestModeLabel:'Guest mode',guestModeDesc:'Your data is tied to this device. If you sign out or switch phones, you could lose it. Add an email to protect it.',
     guestSaveAccountBtn:'Save my account',guestUpgradeSentToast:'Check your inbox to confirm. You can then sign in with this email anytime (use "forgot password" to set one).',guestUpgradeEmailUsedToast:'This email is already used by another account.',
     tourSkip:'Skip',tourStartBtn:'Let\'s go',tourNextBtn:'Next',tourFinalBtn:'Create my plan',replayTourBtn:'Replay the tutorial',
-    tour_welcome_t:'Welcome to IKORUN 👋',tour_welcome_d:'Quick tour of the app before you create your first training plan. It only takes a minute.',
-    tour_home_t:'Your home screen',tour_home_d:'Today\'s session, your weekly progress and key stats all show up here at a glance.',
-    tour_sport_t:'Create your training plan',tour_sport_d:'IKORUN builds a plan tailored to your level, goal and race date. You can regenerate it anytime.',
-    tour_stats_t:'Your statistics',tour_stats_d:'Kilometers, sessions, VDOT, personal records... your whole history and progress live here.',
-    tour_outils_t:'The toolbox',tour_outils_d:'Pace calculator, VDOT, BMI, stopwatch, timer... find the tool you need or keep your favorites close by.',
-    tour_profil_t:'Your profile',tour_profil_d:'Level, XP, badges, theme, language and account settings — all managed from this tab.',
-    tour_final_t:'Ready to start?',tour_final_d:'Set your goal and generate your personalized plan — now\'s the time!',
+    tour_welcome_t:'Welcome {0} 👋',tour_welcome_d:'IKORUN isn’t a GPS or a pedometer: it’s a smart training log that generates your plan and adjusts it based on what you tell it. 8 steps, one minute.',
+    tour_home_t:'Your home screen',tour_home_d:'The day card shows your planned session, with the why behind it. Once done, tap "I did it" — or "Not done" if you didn’t, that’s never a problem.',
+    tour_loop_t:'How it works',tour_loop_d:'Your plan is generated from your level and your times. After each session, a debrief asks how it felt (fatigue, pain, pace) — YOU say how hard it was, not a sensor. IKORUN doesn’t track anything in the background.',
+    tour_sport_t:'Running and strength',tour_sport_d:'The Sport tab generates your custom running plan (level, goal, race date) and also offers strength programmes. Regenerate the plan anytime your life changes.',
+    tour_adapt_t:'The plan adjusts itself',tour_adapt_d:'Missed a session, high fatigue, reported pain: upcoming sessions get lighter automatically. Going too easy? They ramp up. You never have to recalculate anything yourself.',
+    tour_stats_t:'Your stats',tour_stats_d:'Kilometres, sessions, VDOT, personal records — and your XP, levels and badges, earned only from real sessions (the app checks).',
+    tour_outils_t:'The toolbox',tour_outils_d:'Pace calculator, VDOT, BMI, stopwatch, timer... Search for the tool you need or keep your favourites within reach.',
+    tour_profil_t:'Your profile',tour_profil_d:'Level, XP, badges — and every setting: language, colour, and the simplified mode you chose (changeable here anytime).',
+    tour_final_t:'Ready to start?',tour_final_d:'Set your goal and generate your personalized plan — now’s the time!',
     tourGotItBtn:'Got it',signupHelpLink:'Need help?',
     tour_sg_welcome_t:'Let\'s create your account',tour_sg_welcome_d:'Three quick things and you\'re set — takes 30 seconds.',
     tour_sg_email_t:'Your email',tour_sg_email_d:'Used to sign in and to receive your confirmation link. No spam, promise.',
@@ -1913,6 +1919,7 @@ const I18N={
     pauseLab:'إيقاف مؤقت',restTimerBtn:'مؤقّت الراحة',
     googleStandaloneTitle:'Google والتطبيق المثبّت',googleUseEmailBtn:'تسجيل الدخول بالبريد',googleOpenSafariBtn:'الفتح في Safari',googleStandaloneHint:'غير متاح من التطبيق المثبّت',
     declineBtn:'رفض',saveLabel:'حفظ',renameLab:'إعادة تسمية',favoriteLab:'مفضّل',
+    langLab:'اللغة',obModeTitle:'طريقة العرض',obModeIntro:'طريقتان لرؤية IKORUN — غيّر رأيك في أي وقت من الملف الشخصي.',obModeFullT:'كامل',obModeFullD:'كل الإحصائيات، تفاصيل كل حصة، تشريح العضلات، الرسوم البيانية. للتعمّق.',obModeSimpleT:'مبسّط',obModeSimpleD:'بطاقة واحدة، الأساسيات: حصة اليوم وزر واحد. لا شيء آخر على الشاشة. للذهاب مباشرة إلى الهدف.',obModeSuggestion:'اقتراح حسب عمرك: {0}. اختر بحرية.',chooseModeLab:'اختر طريقة عرض للمتابعة',
     playLab:'ابدأ',
     cvCat_dist:'المسافة',cvCat_pace:'الوتيرة',cvCat_weight:'الوزن',cvTapToEdit:'اضغط للتعديل',
     googleStandaloneBody:'على iPhone، عند فتح IKORUN من أيقونة الشاشة الرئيسية، يغادر تسجيل الدخول عبر Google إلى Safari ولا يعود: ينجح، لكن داخل Safari وليس هنا. سجّل الدخول بالبريد داخل التطبيق، أو افتح IKORUN في Safari لاستخدام Google.',
@@ -2383,12 +2390,14 @@ const I18N={
     guestModeTitle:'وضع الضيف',guestModeLabel:'وضع الضيف',guestModeDesc:'بياناتك مرتبطة بهذا الجهاز. إذا سجّلت الخروج أو غيّرت الهاتف، قد تفقدها. أضف بريدًا إلكترونيًا لحمايتها.',
     guestSaveAccountBtn:'حفظ حسابي',guestUpgradeSentToast:'تحقق من بريدك الإلكتروني للتأكيد. بعدها يمكنك تسجيل الدخول بهذا البريد في أي وقت (استخدم «نسيت كلمة المرور» لاختيار كلمة مرور).',guestUpgradeEmailUsedToast:'هذا البريد الإلكتروني مستخدم بالفعل من حساب آخر.',
     tourSkip:'تخطي',tourStartBtn:'لنبدأ',tourNextBtn:'التالي',tourFinalBtn:'أنشئ خطتي',replayTourBtn:'إعادة مشاهدة الجولة التعريفية',
-    tour_welcome_t:'مرحبًا بك في IKORUN 👋',tour_welcome_d:'لنأخذ جولة سريعة قبل إنشاء أول خطة تدريبية لك. الأمر يستغرق دقيقة واحدة فقط.',
-    tour_home_t:'الشاشة الرئيسية',tour_home_d:'حصة اليوم وتقدمك الأسبوعي وأهم إحصائياتك، كلها هنا في لمحة واحدة.',
-    tour_sport_t:'أنشئ خطتك التدريبية',tour_sport_d:'يُنشئ IKORUN خطة مخصصة حسب مستواك وهدفك وتاريخ سباقك. يمكنك إعادة توليدها في أي وقت.',
-    tour_stats_t:'إحصائياتك',tour_stats_d:'الكيلومترات، الحصص، VDOT، أرقامك القياسية... كل تاريخك وتقدمك هنا.',
-    tour_outils_t:'صندوق الأدوات',tour_outils_d:'حاسبة الوتيرة، VDOT، مؤشر كتلة الجسم، ساعة الإيقاف، المؤقت... ابحث عن الأداة التي تحتاجها أو احتفظ بمفضلاتك في متناول يدك.',
-    tour_profil_t:'ملفك الشخصي',tour_profil_d:'المستوى، نقاط الخبرة، الأوسمة، المظهر، اللغة، وإعدادات الحساب — كلها تُدار من هذا القسم.',
+    tour_welcome_t:'مرحبًا {0} 👋',tour_welcome_d:'IKORUN ليس جهاز GPS ولا عدّاد خطى: إنه سجل تدريب ذكي يُنشئ خطتك ويعدّلها حسب ما تخبره به. 8 خطوات، دقيقة واحدة.',
+    tour_home_t:'شاشتك الرئيسية',tour_home_d:'تعرض بطاقة اليوم حصتك المخطط لها، مع سبب اختيارها. بعد إنجازها، اضغط «أنجزتها» — أو «لم أنجزها» إن لم تفعل، لا مشكلة أبدًا.',
+    tour_loop_t:'كيف يعمل التطبيق',tour_loop_d:'تُنشأ خطتك من مستواك وأزمنتك. بعد كل حصة، يسألك تقييم عن شعورك (التعب، الألم، الوتيرة) — أنت من يقول كم كانت صعبة، وليس مستشعرًا. IKORUN لا يتتبّع أي شيء في الخلفية.',
+    tour_sport_t:'الجري وتمارين القوة',tour_sport_d:'تبويب «رياضة» يُنشئ خطة جري مخصّصة (المستوى، الهدف، تاريخ السباق) ويقترح أيضًا برامج تمارين قوة. أعد توليد الخطة في أي وقت إذا تغيّرت ظروفك.',
+    tour_adapt_t:'الخطة تتكيّف بنفسها',tour_adapt_d:'حصة فائتة، تعب مرتفع، ألم مُبلَّغ عنه: الحصص القادمة تخفّ تلقائيًا. والتقدّم سهل جدًا؟ فهي تزداد صعوبة. لا تحتاج أبدًا لإعادة الحساب بنفسك.',
+    tour_stats_t:'إحصائياتك',tour_stats_d:'الكيلومترات، الحصص، VDOT، الأرقام الشخصية — وتقدّمك من نقاط خبرة ومستويات وأوسمة، مكتسبة فقط من حصص حقيقية (يتحقّق التطبيق من ذلك).',
+    tour_outils_t:'صندوق الأدوات',tour_outils_d:'حاسبة الوتيرة، VDOT، مؤشر كتلة الجسم، ساعة إيقاف، مؤقّت... ابحث عن الأداة التي تحتاجها أو احتفظ بالمفضّلة في متناول يدك.',
+    tour_profil_t:'ملفك الشخصي',tour_profil_d:'المستوى، نقاط الخبرة، الأوسمة — وكل الإعدادات: اللغة، اللون، والوضع المبسّط الذي اخترته (قابل للتغيير هنا في أي وقت).',
     tour_final_t:'مستعد للبدء؟',tour_final_d:'حدّد هدفك وأنشئ خطتك المخصصة — الوقت الآن!',
     tourGotItBtn:'فهمت',signupHelpLink:'تحتاج مساعدة؟',
     tour_sg_welcome_t:'لننشئ حسابك',tour_sg_welcome_d:'ثلاث معلومات صغيرة وننطلق — الأمر يستغرق 30 ثانية.',
@@ -3767,10 +3776,18 @@ function confirmRegenPlan(){
    à tout moment depuis Profil > Réglages > "Revoir le tutoriel", donc le
    moteur ne suppose jamais qu'il s'agit d'un premier lancement — seul
    finishOnboarding() pose le drapeau de lancement automatique (cf initApp). */
+/* Le tour d'origine se contentait de nommer chaque onglet ("Tes statistiques :
+   kilomètres, séances, VDOT...") sans jamais expliquer le fonctionnement réel
+   de l'app — ce qu'est un bilan, pourquoi le plan change tout seul, qu'il n'y
+   a pas de GPS. Deux étapes sans cible d'écran (centrées, sel:null) couvrent
+   maintenant ce terrain conceptuel ; les autres restent ancrées sur un
+   élément réel mais avec un texte qui explique plutôt que nomme. */
 const TOUR_STEPS=[
   { key:'welcome' },
   { key:'home', page:'home', sel:()=>P.easyMode?'#s-home .ik-greet':'#s-home .hv7-greet' },
+  { key:'loop', page:'home' },
   { key:'sport', page:'sport', sel:'#tourPlanCta' },
+  { key:'adapt', page:'sport' },
   { key:'stats', page:'stats', sel:()=>P.easyMode?'#s-stats .stat-quatro':'#s-stats .seg-ctrl' },
   { key:'outils', page:'outils', sel:'#s-outils .searchbox' },
   { key:'profil', page:'profil', sel:'#s-profil .pf-hero' },
@@ -3855,7 +3872,7 @@ async function showTourStep(startI){
         await tourSleep(320);
         if(!_tourOn || _tourIdx!==i) return;
       }
-      $('#tourT').textContent=t('tour_'+step.key+'_t');
+      $('#tourT').textContent = step.key==='welcome' ? tp('tour_welcome_t',P.name?P.name.split(' ')[0]:t('you')) : t('tour_'+step.key+'_t');
       $('#tourD').textContent=t('tour_'+step.key+'_d');
       $('#tourTab').textContent = step.page?t('nav_'+step.page):'';
       $('#tourNext').textContent = step.final?t('tourFinalBtn'):(i===0?t('tourStartBtn'):t('tourNextBtn'));
@@ -4013,16 +4030,23 @@ function maybeResumeLive(){
 }
 
 /* ---------- ONBOARDING ---------- */
-let obStep=1; const OB_MAX=5;
-let obEasy=false; // true si >26 ans → mode simplifié activé auto (n'affecte plus la navigation de l'onboarding)
+let obStep=1; const OB_MAX=6;
+let obMode=null; // 'simple' | 'complet' — choisi explicitement à l'étape 4, jamais imposé
 function startOnboarding(){
-  obEasy=false;
+  obMode=null;
   applyOnboardingLabels();
   $('#ob').classList.add('on');
   const prog=$('#obProg'); prog.innerHTML='';
   for(let i=1;i<=OB_MAX;i++){ const d=document.createElement('div'); if(i===1)d.classList.add('on'); prog.appendChild(d); }
   // pill selectors
   $('#ob_level').querySelectorAll('.pill').forEach(p=>p.onclick=()=>{ $('#ob_level').querySelectorAll('.pill').forEach(x=>x.classList.remove('on')); p.classList.add('on'); });
+  // Langue et couleur : préférences appliquées EN DIRECT (applyTheme/setLang
+  // s'exécutent immédiatement) pour que le reste de l'onboarding s'affiche
+  // déjà dans la langue et la couleur choisies, au lieu de les découvrir
+  // seulement après la création du compte.
+  obRenderLangPicker();
+  obRenderAccentPicker();
+  $('#ob_mode').querySelectorAll('.ob-mode-card').forEach(c=>c.onclick=()=>obPickMode(c.dataset.v));
   OB_PERFS=[{dist:null,meters:null,timeS:null}];
   renderPerfRows();
   obUsernameOk=false;
@@ -4031,11 +4055,51 @@ function startOnboarding(){
   wireAutoUsername();
   obShow(1);
 }
+/* Langue et couleur choisies dès l'écran de bienvenue plutôt que devinées
+   (langue) ou laissées par défaut (couleur, toujours bleu jusqu'ici). setLang
+   et setAccent existent déjà (utilisées dans Profil) : on les réutilise telles
+   quelles, P étant déjà un objet valide (même sparse) avant la fin de
+   l'onboarding — voir reloadState(). */
+function obRenderLangPicker(){
+  const box=$('#ob_lang'); if(!box) return;
+  box.querySelectorAll('.pill').forEach(p=>{
+    p.classList.toggle('on', p.dataset.l===curLang());
+    p.onclick=()=>{ setLang(p.dataset.l); applyOnboardingLabels(); };
+  });
+}
+function obRenderAccentPicker(){
+  const box=$('#ob_accent'); if(!box) return;
+  box.innerHTML=pfAccentPickerHTML();
+  box.querySelectorAll('.accent-dot').forEach(d=>{
+    // pfAccentPickerHTML() pose déjà onclick="setAccent(...)" ; on ajoute
+    // juste le rafraîchissement visuel propre à l'onboarding par-dessus.
+    d.addEventListener('click',()=>setTimeout(obRenderAccentPicker,0));
+  });
+}
+// Mode d'affichage : deux cartes, aucune présélection imposée — seule une
+// suggestion textuelle apparaît une fois la date de naissance connue (l'âge
+// n'est qu'un indice, jamais une décision prise à la place de la personne).
+function obPickMode(v){
+  obMode=v;
+  $('#ob_mode').querySelectorAll('.ob-mode-card').forEach(c=>c.classList.toggle('on',c.dataset.v===v));
+  $('#ob_mode_hint').textContent='';
+}
+function obModeSuggestion(){
+  const bday=$('#ob_bday')?.value; if(!bday) return null;
+  const ageYears=Math.floor((Date.now()-new Date(bday))/31557600000);
+  return ageYears>26?'simple':'complet';
+}
 /* Traduit le HTML statique de l'onboarding (index.html) selon curLang().
    Les data-v des pills de niveau restent en français en interne (utilisés
    comme clés par kmWeekFromLevel/finishOnboarding) — seul l'affichage change. */
 function applyOnboardingLabels(){
-  const step1=$('.ob-step[data-step="1"]'); if(step1){ const h1=step1.querySelector('h1'),p=step1.querySelector('.intro'); if(h1)h1.textContent=t('obWelcomeTitle'); if(p)p.innerHTML=t('obWelcomeIntro'); }
+  const step1=$('.ob-step[data-step="1"]');
+  if(step1){
+    const h1=step1.querySelector('h1'),p=step1.querySelector('.intro');
+    if(h1)h1.textContent=t('obWelcomeTitle'); if(p)p.innerHTML=t('obWelcomeIntro');
+    $('#obLangLab').textContent=t('langLab'); $('#obColorLab').textContent=t('colorLab');
+    obRenderLangPicker();
+  }
   const step2=$('.ob-step[data-step="2"]');
   if(step2){
     step2.querySelector('h1').textContent=t('obWhoTitle'); step2.querySelector('.intro').textContent=t('obWhoIntro');
@@ -4057,16 +4121,22 @@ function applyOnboardingLabels(){
   }
   const step4=$('.ob-step[data-step="4"]');
   if(step4){
-    step4.querySelector('h1').textContent=t('obGoalTitle'); step4.querySelector('.intro').textContent=t('obGoalIntro');
-    const labels=step4.querySelectorAll('.field label');
-    labels[0].textContent=t('goalReq'); $('#ob_goal').placeholder=t('goalPh');
-    labels[1].textContent=t('compDateReq');
-    labels[2].textContent=t('coachOptional'); $('#ob_coach').placeholder=t('coachPh');
+    step4.querySelector('h1').textContent=t('obModeTitle'); step4.querySelector('.intro').textContent=t('obModeIntro');
+    const cards=$('#ob_mode').querySelectorAll('.ob-mode-card');
+    cards[0].querySelector('.ob-mode-t').textContent=t('obModeFullT'); cards[0].querySelector('.ob-mode-d').textContent=t('obModeFullD');
+    cards[1].querySelector('.ob-mode-t').textContent=t('obModeSimpleT'); cards[1].querySelector('.ob-mode-d').textContent=t('obModeSimpleD');
   }
   const step5=$('.ob-step[data-step="5"]');
   if(step5){
-    step5.querySelector('h1').textContent=t('obPerfTitle'); step5.querySelector('.intro').textContent=t('obPerfIntro');
-    step5.querySelector('.note span').innerHTML=t('perfNote');
+    step5.querySelector('h1').textContent=t('obGoalTitle'); step5.querySelector('.intro').textContent=t('obGoalIntro');
+    const labels=step5.querySelectorAll('.field label');
+    labels[0].textContent=t('goalReq'); $('#ob_goal').placeholder=t('goalPh');
+    labels[1].textContent=t('compDateReq');
+  }
+  const step6=$('.ob-step[data-step="6"]');
+  if(step6){
+    step6.querySelector('h1').textContent=t('obPerfTitle'); step6.querySelector('.intro').textContent=t('obPerfIntro');
+    step6.querySelector('.note span').innerHTML=t('perfNote');
     $('#ob_addperf').textContent=t('addAnotherPerf');
   }
   $('#obPrev').textContent=t('backLab');
@@ -4184,6 +4254,13 @@ function obShow(n){
   $('#obPrev').style.visibility=n===1?'hidden':'visible';
   $('#obNext').textContent=n===OB_MAX?t('finishLab'):t('continueLab');
   $('#ob').scrollTop=0;
+  // Étape "Ton affichage" : un simple indice textuel basé sur l'âge déjà
+  // saisi, jamais une présélection — la carte reste vide tant que personne
+  // n'a tapé dessus.
+  if(n===4 && !obMode){
+    const sugg=obModeSuggestion();
+    if(sugg) $('#ob_mode_hint').textContent=tp('obModeSuggestion',t(sugg==='simple'?'obModeSimpleT':'obModeFullT'));
+  }
 }
 $('#obPrev').onclick=()=>{
   if(obStep<=1) return;
@@ -4199,14 +4276,11 @@ function obValidate(n){
     if(!$('#ob_name').value.trim()||!$('#ob_bday').value||!$('#ob_sex').value){ toast(t('fillRequiredFields')); return false; }
     if(!$('#ob_username').value.trim()){ toast(t('chooseUsernameLab')); return false; }
     if(!obUsernameOk){ toast(t('usernameUnavailable')); return false; }
-    const bd=new Date($('#ob_bday').value);
-    const ageYears=Math.floor((Date.now()-bd)/31557600000);
-    obEasy = ageYears>26;
-    if(obEasy) toast(t('quickProfileEnabled'));
   }
   if(n===3){ if(!$('#ob_level').querySelector('.pill.on')){ toast(t('chooseLevelLab')); return false; } }
-  if(n===4){ if(!$('#ob_goal').value.trim()||!$('#ob_compdate').value){ toast(t('goalDateRequired')); return false; } }
-  if(n===5){ const valid=OB_PERFS.filter(p=>p.meters&&p.timeS); if(!valid.length){ toast(t('addAtLeastOnePerf')); return false; } }
+  if(n===4){ if(!obMode){ toast(t('chooseModeLab')); return false; } }
+  if(n===5){ if(!$('#ob_goal').value.trim()||!$('#ob_compdate').value){ toast(t('goalDateRequired')); return false; } }
+  if(n===6){ const valid=OB_PERFS.filter(p=>p.meters&&p.timeS); if(!valid.length){ toast(t('addAtLeastOnePerf')); return false; } }
   return true;
 }
 /* Volume hebdo initial déduit du niveau déclaré (l'utilisateur n'a plus à
@@ -4223,16 +4297,19 @@ function finishOnboarding(){
   RECORDS=valid.map(p=>({dist:p.dist,meters:p.meters,time:fmtTime(p.timeS),date:todayKey()}));
   const find=m=>{ const r=valid.find(x=>x.meters===m); return r?fmtTime(r.timeS):''; };
   const level=$('#ob_level').querySelector('.pill.on').dataset.v;
-  const detectedLang=P.lang; // préserve la langue détectée/choisie avant l'écrasement de P ci-dessous
+  // Langue et couleur ont déjà été appliquées en direct (obRenderLangPicker/
+  // setAccent) : on préserve simplement ce qui a été choisi avant l'écrasement
+  // de P ci-dessous, plutôt que de revenir à une langue détectée ou un bleu
+  // par défaut qui ignorerait le choix fait à l'étape 1.
+  const chosenLang=P.lang, chosenTheme=P.theme||'blue';
   P={
-    setupDone:true, joinedAt:Date.now(), lang:detectedLang,
+    setupDone:true, joinedAt:Date.now(), lang:chosenLang,
     name:$('#ob_name').value.trim(), username:$('#ob_username').value.trim(), bday:$('#ob_bday').value, sex:$('#ob_sex').value,
     level, kmWeek:kmWeekFromLevel(level),
     goal:$('#ob_goal').value.trim(), compDate:$('#ob_compdate').value,
     t5k:find(5000), t3k:find(3000), t1500:find(1500), t10k:find(10000),
-    coach:$('#ob_coach').value.trim(),
-    theme:'blue', pb5k:find(5000), pb1500:find(1500), pb10k:find(10000),
-    easyMode:obEasy // >26 ans → mode simplifié activé auto (modifiable ensuite dans Profil > Mode simplifié)
+    theme:chosenTheme, pb5k:find(5000), pb1500:find(1500), pb10k:find(10000),
+    easyMode:obMode==='simple' // choisi explicitement à l'étape 4 — jamais deviné (modifiable ensuite dans Profil > Mode simplifié)
   };
   P.vdot=computeVDOTfromRecords()||computeVDOT();
   DB.save('profile',P); DB.save('records',RECORDS); DB.save('xp',XP);
@@ -9384,7 +9461,7 @@ function openProfileEdit(){
     f(t('heightCmLab'),'pe_h',P.height,'number')+f(t('weightKgLab'),'pe_w',P.weight,'number')+
     f(t('hrMaxLab'),'pe_hrmax',P.hrMax,'number')+f(t('hrRestLab'),'pe_hrrest',P.hrRest,'number')+
     f(t('kmWeekLab'),'pe_km',P.kmWeek,'number')+f(t('objective'),'pe_goal',P.goal)+f(t('compDateLab'),'pe_comp',P.compDate,'date')+
-    f('5000m','pe_5k',P.t5k)+f('3000m','pe_3k',P.t3k)+f('1500m','pe_1500',P.t1500)+f('10km','pe_10k',P.t10k)+f(t('coachLab'),'pe_coach',P.coach);
+    f('5000m','pe_5k',P.t5k)+f('3000m','pe_3k',P.t3k)+f('1500m','pe_1500',P.t1500)+f('10km','pe_10k',P.t10k);
   $('#profileEditBody').innerHTML=h;
   $('#profileEditFoot').innerHTML='<button class="btn" onclick="saveProfileEdit()">'+t('saveBtn')+'</button>';
   openOv('ovProfile');
@@ -9406,7 +9483,6 @@ async function saveProfileEdit(){
   P.hrMax=+$('#pe_hrmax').value||P.hrMax; P.hrRest=+$('#pe_hrrest').value||P.hrRest;
   P.kmWeek=+$('#pe_km').value||P.kmWeek; P.goal=$('#pe_goal').value.trim(); P.compDate=$('#pe_comp').value;
   P.t5k=$('#pe_5k').value.trim(); P.t3k=$('#pe_3k').value.trim(); P.t1500=$('#pe_1500').value.trim(); P.t10k=$('#pe_10k').value.trim();
-  P.coach=$('#pe_coach').value.trim();
   P.pb5k=P.t5k; P.pb3k=P.t3k; P.pb1500=P.t1500; P.pb10k=P.t10k;
   P.vdot=computeVDOT();
   saveAll(); closeOv('ovProfile'); renderProfile(); toast(t('profileUpdated'));

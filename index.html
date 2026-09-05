@@ -1307,6 +1307,28 @@ html[data-mode="light"]{
 .uname-status.ok{color:var(--ok);}
 .uname-status.bad{color:var(--bad);}
 .uname-status.checking{color:var(--muted);}
+/* Choix langue/couleur sur l'écran de bienvenue — mêmes puces/pastilles que le
+   reste de l'app (pill, accent-dot), pour que la première chose vue ressemble
+   déjà à l'app plutôt qu'à un formulaire neutre. */
+.ob-pref{margin-top:22px;padding-top:18px;border-top:1px solid var(--hair);}
+.ob-pref-lab{font-size:11px;letter-spacing:.4px;color:var(--muted);font-weight:700;
+  text-transform:uppercase;margin-bottom:10px;text-align:left;}
+.ob-pref #ob_lang.pills{justify-content:center;}
+.ob-pref #ob_accent .accent-picker{justify-content:center;}
+.ob-pref #ob_accent .accent-dot{width:28px;height:28px;}
+
+/* Choix du mode d'affichage : deux cartes comparées côte à côte plutôt que
+   des puces de texte — la différence (dense vs épuré) se voit, elle ne se
+   lit pas seulement. */
+.ob-mode-cards{display:flex;flex-direction:column;gap:12px;}
+.ob-mode-card{border:1.5px solid var(--hair);border-radius:16px;padding:16px;cursor:pointer;
+  background:var(--s2);transition:border-color .18s,background .18s,transform .12s var(--ease-spring);}
+.ob-mode-card:active{transform:scale(.98);}
+.ob-mode-card.on{border-color:var(--e);background:var(--ed);}
+.ob-mode-ic{font-size:22px;color:var(--e);margin-bottom:6px;}
+.ob-mode-t{font-family:'Unbounded';font-weight:700;font-size:16px;margin-bottom:5px;}
+.ob-mode-d{font-size:13px;color:var(--muted);line-height:1.5;}
+.ob-mode-hint{margin-top:14px;font-size:12.5px;color:var(--e2);text-align:center;min-height:16px;}
 .ob-foot{display:flex;gap:10px;margin-top:14px;}
 
 /* MEDAL TIERS */
@@ -2009,6 +2031,16 @@ html[data-mode="light"]{
       <h1>Bienvenue sur IKORUN</h1>
       <p class="intro">Elite Athletic Intelligence.<br>Ton coaching personnel, calculé scientifiquement, 100% hors-ligne.</p>
     </div>
+    <div class="ob-pref">
+      <div class="ob-pref-lab" id="obLangLab">Langue</div>
+      <div class="pills" id="ob_lang">
+        <div class="pill" data-l="fr">FR · Français</div><div class="pill" data-l="en">EN · English</div><div class="pill" data-l="ar">AR · العربية</div>
+      </div>
+    </div>
+    <div class="ob-pref">
+      <div class="ob-pref-lab" id="obColorLab">Couleur</div>
+      <div id="ob_accent"></div>
+    </div>
   </div>
   <div class="ob-step" data-step="2">
     <h1>Qui es-tu ?</h1><p class="intro">Tes informations de base.</p>
@@ -2031,12 +2063,27 @@ html[data-mode="light"]{
     </div>
   </div>
   <div class="ob-step" data-step="4">
+    <h1>Ton affichage</h1><p class="intro">Deux façons de voir IKORUN — change d'avis à tout moment dans Profil.</p>
+    <div class="ob-mode-cards" id="ob_mode">
+      <div class="ob-mode-card" data-v="complet">
+        <div class="ob-mode-ic">◧</div>
+        <div class="ob-mode-t">Complet</div>
+        <div class="ob-mode-d">Toutes les stats, tous les détails de chaque séance, l'anatomie musculaire, les graphiques. Pour creuser.</div>
+      </div>
+      <div class="ob-mode-card" data-v="simple">
+        <div class="ob-mode-ic">◨</div>
+        <div class="ob-mode-t">Simplifié</div>
+        <div class="ob-mode-d">Une carte, l'essentiel : la séance du jour et un bouton. Rien d'autre à l'écran. Pour aller droit au but.</div>
+      </div>
+    </div>
+    <div class="ob-mode-hint" id="ob_mode_hint"></div>
+  </div>
+  <div class="ob-step" data-step="5">
     <h1>Ton objectif</h1><p class="intro">Ce qui te fait courir.</p>
     <div class="field"><label>Objectif *</label><input class="inp" id="ob_goal" placeholder="Ex : passer sous 20:00 au 5 km"></div>
     <div class="field"><label>Date de compétition *</label><input class="inp" id="ob_compdate" type="date"></div>
-    <div class="field"><label>Coach — optionnel</label><input class="inp" id="ob_coach" placeholder="Nom de ton coach"></div>
   </div>
-  <div class="ob-step" data-step="5">
+  <div class="ob-step" data-step="6">
     <h1>Tes performances</h1><p class="intro">Ajoute tes meilleurs chronos. Au moins un est requis.</p>
     <div class="note" style="display:flex;gap:8px;align-items:flex-start"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M9 18h6M10 22h4M12 2a6 6 0 0 0-3 11c1 .8 1 2 1 3h4c0-1 0-2.2 1-3a6 6 0 0 0-3-11z"/></svg><span>Tes chronos calculent ton <b>VDOT</b> (ta « cylindrée ») et toutes tes <b>allures d'entraînement</b>. Donne au moins un chrono récent et fiable. Choisis la distance puis le temps avec les roues.</span></div>
     <div id="ob_perfs"></div>
@@ -2116,6 +2163,6 @@ html[data-mode="light"]{
     console.error('[IKORUN] Le script Supabase (jsdelivr) n\'a pas pu charger, réessaie de recharger la page.', e);
   }
 </script>
-<script src="app.js?v=21"></script>
+<script src="app.js?v=22"></script>
 </body>
 </html>
