@@ -1562,6 +1562,29 @@ html.motion-settled .login-hero{
   mask-image:linear-gradient(180deg,transparent,#000 30%,#000 70%,transparent);
   -webkit-mask-image:linear-gradient(180deg,transparent,#000 30%,#000 70%,transparent);}
 .pkcol.wide{min-width:150px;flex:1 1 auto;}
+
+/* ===== CONVERTISSEUR — distance / allure / poids ===== */
+.cv-cats{margin-bottom:16px;}
+.cv-card{display:flex;align-items:stretch;gap:10px;background:var(--s2);border:1px solid var(--hair);
+  border-radius:20px;padding:16px 14px;}
+.cv-side{flex:1;min-width:0;display:flex;flex-direction:column;gap:9px;cursor:pointer;}
+.cv-lab{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.cv-val{font-family:'Unbounded';font-weight:800;font-size:26px;letter-spacing:-.4px;line-height:1.1;
+  word-break:break-word;}
+.cv-val.res{color:var(--e2);}
+.cv-swap{align-self:center;flex-shrink:0;width:36px;height:36px;border-radius:50%;background:var(--s3);
+  border:1px solid var(--hair);color:var(--e2);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:transform .18s var(--ease-spring);}
+.cv-swap:active{transform:rotate(180deg);}
+.cv-units{display:flex;flex-wrap:wrap;gap:6px;}
+.cv-unit{padding:5px 10px;border-radius:99px;font-size:11.5px;font-weight:700;background:var(--s3);
+  border:1px solid var(--hair);color:var(--muted);cursor:pointer;transition:background .15s,border-color .15s,color .15s;}
+.cv-unit.on{background:var(--ed);border-color:var(--e);color:var(--e2);}
+.cv-pace-hero{background:linear-gradient(150deg, rgba(var(--e-rgb),.16), rgba(var(--e2-rgb),.06));
+  border:1px solid rgba(var(--e-rgb),.24);border-radius:20px;padding:18px;text-align:center;
+  cursor:pointer;margin-bottom:12px;}
+.cv-pace-hero .cv-val{margin-top:6px;}
+.cv-pace-table .zrow:first-child{border-top:0;}
 .pkcol::-webkit-scrollbar{display:none;width:0;}
 .pkitem{height:42px;scroll-snap-align:center;display:flex;align-items:center;justify-content:center;
   font-family:'JetBrains Mono';font-weight:600;font-size:19px;color:var(--dim);
@@ -2093,6 +2116,6 @@ html[data-mode="light"]{
     console.error('[IKORUN] Le script Supabase (jsdelivr) n\'a pas pu charger, réessaie de recharger la page.', e);
   }
 </script>
-<script src="app.js?v=19"></script>
+<script src="app.js?v=20"></script>
 </body>
 </html>

@@ -898,6 +898,8 @@ const I18N={
     pauseLab:'Mettre en pause',restTimerBtn:'Minuteur de repos',
     googleStandaloneTitle:'Google et l\u2019app install\u00e9e',googleUseEmailBtn:'Se connecter par email',googleOpenSafariBtn:'Ouvrir dans Safari',googleStandaloneHint:'Indisponible depuis l\u2019app install\u00e9e',
     declineBtn:'Refuser',saveLabel:'Enregistrer',renameLab:'Renommer',favoriteLab:'Favori',
+    playLab:'Démarrer',
+    cvCat_dist:'Distance',cvCat_pace:'Allure',cvCat_weight:'Poids',cvTapToEdit:'Touche pour modifier',
     googleStandaloneBody:'Sur iPhone, quand IKORUN est ouvert depuis l\u2019ic\u00f4ne de l\u2019\u00e9cran d\u2019accueil, la connexion Google part dans Safari et n\u2019en revient pas : elle r\u00e9ussit, mais dans Safari, pas ici. Connecte-toi par email dans l\u2019app, ou ouvre IKORUN dans Safari pour utiliser Google.',
     progression:'Progression',planOfDay:'PLAN DU JOUR',planIkorunDesc:'Plans d\u2019entraînement conçus par des coaches',
     myPlanDesc:'Crée ton propre plan sur mesure',todayCap:'AUJOURD\u2019HUI',tapToStart:'Voir le détail',
@@ -1402,6 +1404,8 @@ const I18N={
     pauseLab:'Pause',restTimerBtn:'Rest timer',
     googleStandaloneTitle:'Google and the installed app',googleUseEmailBtn:'Sign in with email',googleOpenSafariBtn:'Open in Safari',googleStandaloneHint:'Unavailable from the installed app',
     declineBtn:'Decline',saveLabel:'Save',renameLab:'Rename',favoriteLab:'Favourite',
+    playLab:'Start',
+    cvCat_dist:'Distance',cvCat_pace:'Pace',cvCat_weight:'Weight',cvTapToEdit:'Tap to edit',
     googleStandaloneBody:'On iPhone, when IKORUN is opened from the home-screen icon, Google sign-in leaves for Safari and never comes back: it succeeds, but in Safari, not here. Sign in with email inside the app, or open IKORUN in Safari to use Google.',
     progression:'Progress',planOfDay:'PLAN OF THE DAY',planIkorunDesc:'Training plans designed by coaches',
     myPlanDesc:'Build your own custom plan',todayCap:'TODAY',tapToStart:'View details',
@@ -1906,6 +1910,8 @@ const I18N={
     pauseLab:'إيقاف مؤقت',restTimerBtn:'مؤقّت الراحة',
     googleStandaloneTitle:'Google والتطبيق المثبّت',googleUseEmailBtn:'تسجيل الدخول بالبريد',googleOpenSafariBtn:'الفتح في Safari',googleStandaloneHint:'غير متاح من التطبيق المثبّت',
     declineBtn:'رفض',saveLabel:'حفظ',renameLab:'إعادة تسمية',favoriteLab:'مفضّل',
+    playLab:'ابدأ',
+    cvCat_dist:'المسافة',cvCat_pace:'الوتيرة',cvCat_weight:'الوزن',cvTapToEdit:'اضغط للتعديل',
     googleStandaloneBody:'على iPhone، عند فتح IKORUN من أيقونة الشاشة الرئيسية، يغادر تسجيل الدخول عبر Google إلى Safari ولا يعود: ينجح، لكن داخل Safari وليس هنا. سجّل الدخول بالبريد داخل التطبيق، أو افتح IKORUN في Safari لاستخدام Google.',
     progression:'التقدم',planOfDay:'خطة اليوم',planIkorunDesc:'خطط تدريبية صممها مدربون',
     myPlanDesc:'أنشئ خطتك الخاصة',todayCap:'اليوم',tapToStart:'عرض التفاصيل',
@@ -8265,7 +8271,7 @@ function renderOutils(){
   if(outilsTab==='home'){ h=outilsHome(); $('#s-outils').innerHTML=h; bindToolSearch(); return; }
   if(outilsTab==='_timer'){ renderOutilsTimer(); return; }
   const tl=TOOLS[outilsTab]; if(!tl){ outilsTab='home'; return renderOutils(); }
-  h='<div class="row" style="margin-bottom:14px"><button class="x" onclick="outilsBack()">‹</button><div class="man" style="font-weight:800;font-size:17px;flex:1;text-align:center;margin:0 8px">'+tl.name+'</div><button class="x" onclick="toggleFav(\''+outilsTab+'\')" aria-label="'+t('favoriteLab')+'" style="color:'+(toolFav().includes(outilsTab)?'var(--or)':'var(--dim)')+'">'+ICN('star',17)+'</button></div><div id="outBody"></div>';
+  h='<div class="row" style="margin-bottom:14px"><button class="x" onclick="outilsBack()">‹</button><div class="man" style="font-weight:800;font-size:'+(tl.name.length>18?'15px':'17px')+';flex:1;text-align:center;margin:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+tl.name+'</div><button class="x" onclick="toggleFav(\''+outilsTab+'\')" aria-label="'+t('favoriteLab')+'" style="color:'+(toolFav().includes(outilsTab)?'var(--or)':'var(--dim)')+'">'+ICN('star',17)+'</button></div><div id="outBody"></div>';
   $('#s-outils').innerHTML=h;
   window[tl.fn] && window[tl.fn]();
 }
@@ -8503,16 +8509,81 @@ function renderBMRtool(){
   h+='<div class="card"><div class="card-t">'+t('needsByActivity')+'</div>'+[[t('actSedentary'),1.2],[t('actLight'),1.375],[t('actModerate'),1.55],[t('actIntense'),1.725],[t('actAthlete'),1.9]].map(x=>'<div class="zrow"><span class="zname">'+x[0]+'</span><span class="zval mono">'+Math.round(bmr*x[1])+' kcal</span></div>').join('')+'</div>';
   $('#outBody').innerHTML=h;
 }
-let cvVal=10,cvFrom='km',cvTo='miles';
+/* ---------- CONVERTISSEUR — distance / allure / poids ----------
+   L'ancienne version ne faisait que km<->miles alors que son propre sous-titre
+   promettait "Allure, distance, poids" : trois catégories, chacune avec ses
+   propres unités (l'allure n'est pas un simple facteur — km/h et min/km ne se
+   convertissent pas par multiplication). Les unités sont des puces tapables
+   plutôt que des <select>, pour rester dans le langage visuel de l'app. */
+let cvCat='dist';
+let cvDistVal=10, cvDistFrom='km', cvDistTo='mi';
+let cvWeightVal=70, cvWeightFrom='kg', cvWeightTo='lb';
+let cvPaceSpk=300; // secondes par km, unité canonique de l'allure
+
+const CV_DIST_UNITS={km:1000, mi:1609.344, m:1, yd:0.9144};
+const CV_DIST_LABEL={km:'km', mi:'mi', m:'m', yd:'yd'};
+const CV_WEIGHT_UNITS={kg:1, lb:0.453592};
+const CV_WEIGHT_LABEL={kg:'kg', lb:'lb'};
+
+function cvSetCat(c){ cvCat=c; renderConvertTool(); }
+function cvSwapDist(){ const t=cvDistFrom; cvDistFrom=cvDistTo; cvDistTo=t; renderConvertTool(); }
+function cvSwapWeight(){ const t=cvWeightFrom; cvWeightFrom=cvWeightTo; cvWeightTo=t; renderConvertTool(); }
+function cvSetDistUnit(which,u){ if(which==='from')cvDistFrom=u; else cvDistTo=u; renderConvertTool(); }
+function cvSetWeightUnit(which,u){ if(which==='from')cvWeightFrom=u; else cvWeightTo=u; renderConvertTool(); }
+function cvPickDist(){ pickDistance(t('toolConvertName'),cvDistVal,v=>{ cvDistVal=v; renderConvertTool(); }); }
+function cvPickWeight(){ pickInt(t('weightLab'),30,180,Math.round(cvWeightVal),'kg',v=>{ cvWeightVal=v; renderConvertTool(); }); }
+function cvPickPace(){ pickPace(t('toolConvertName'),cvPaceSpk,v=>{ cvPaceSpk=v; renderConvertTool(); }); }
+
+// Rangée de puces d'unité — remplace les <select> nus, cohérent avec .pill ailleurs dans l'app.
+function cvUnitPills(labels,cur,onPick){
+  return '<div class="cv-units">'+Object.keys(labels).map(u=>
+    '<div class="cv-unit'+(u===cur?' on':'')+'" onclick="'+onPick(u)+'">'+labels[u]+'</div>'
+  ).join('')+'</div>';
+}
+
+// Une conversion m -> yd peut donner un nombre à 5 chiffres : réduit la taille
+// de police du résultat plutôt que de le laisser déborder sur la puce d'unités.
+function cvValSize(str){ return str.length>7?'18px':(str.length>5?'22px':'26px'); }
 function renderConvertTool(){
-  const conv={km:1,miles:0.621371,m:1000,'min/km':1};
-  let res;
-  if(cvFrom==='km'&&cvTo==='miles') res=(cvVal*0.621371).toFixed(2)+' miles';
-  else if(cvFrom==='miles'&&cvTo==='km') res=(cvVal/0.621371).toFixed(2)+' km';
-  else res=cvVal;
-  let h='<div class="card"><div class="field"><label>'+t('valueField')+'</label><input class="inp" type="number" value="'+cvVal+'" oninput="cvVal=+this.value;renderConvertTool()"></div>';
-  h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>'+t('fromField')+'</label><select class="inp" onchange="cvFrom=this.value;renderConvertTool()"><option '+(cvFrom==='km'?'selected':'')+'>km</option><option '+(cvFrom==='miles'?'selected':'')+'>miles</option></select></div><div class="field" style="flex:1"><label>'+t('toField')+'</label><select class="inp" onchange="cvTo=this.value;renderConvertTool()"><option '+(cvTo==='km'?'selected':'')+'>km</option><option '+(cvTo==='miles'?'selected':'')+'>miles</option></select></div></div></div>';
-  h+='<div class="card" style="text-align:center"><div class="man" style="font-size:32px;font-weight:800;color:var(--e)">'+res+'</div></div>';
+  let h='<div class="pills sub cv-cats">'+
+    ['dist','pace','weight'].map(c=>'<div class="pill '+(cvCat===c?'on':'')+'" onclick="cvSetCat(\''+c+'\')">'+t('cvCat_'+c)+'</div>').join('')+
+  '</div>';
+
+  if(cvCat==='dist'){
+    const meters=cvDistVal*CV_DIST_UNITS[cvDistFrom];
+    const fromStr=cvDistVal.toLocaleString(localeCode(),{maximumFractionDigits:2});
+    const resStr=(meters/CV_DIST_UNITS[cvDistTo]).toLocaleString(localeCode(),{maximumFractionDigits:2});
+    h+='<div class="cv-card">'+
+      '<div class="cv-side" onclick="cvPickDist()"><div class="cv-lab">'+t('fromField')+'</div><div class="cv-val" style="font-size:'+cvValSize(fromStr)+'">'+fromStr+'</div>'+
+      cvUnitPills(CV_DIST_LABEL,cvDistFrom,u=>"event.stopPropagation();cvSetDistUnit('from','"+u+"')")+'</div>'+
+      '<div class="cv-swap" onclick="cvSwapDist()">'+ICN('convert',18)+'</div>'+
+      '<div class="cv-side"><div class="cv-lab">'+t('toField')+'</div><div class="cv-val res" style="font-size:'+cvValSize(resStr)+'">'+resStr+'</div>'+
+      cvUnitPills(CV_DIST_LABEL,cvDistTo,u=>"cvSetDistUnit('to','"+u+"')")+'</div>'+
+    '</div>';
+  } else if(cvCat==='weight'){
+    const kg=cvWeightVal*CV_WEIGHT_UNITS[cvWeightFrom];
+    const fromStr=cvWeightVal.toLocaleString(localeCode(),{maximumFractionDigits:1});
+    const resStr=(kg/CV_WEIGHT_UNITS[cvWeightTo]).toLocaleString(localeCode(),{maximumFractionDigits:1});
+    h+='<div class="cv-card">'+
+      '<div class="cv-side" onclick="cvPickWeight()"><div class="cv-lab">'+t('fromField')+'</div><div class="cv-val" style="font-size:'+cvValSize(fromStr)+'">'+fromStr+'</div>'+
+      cvUnitPills(CV_WEIGHT_LABEL,cvWeightFrom,u=>"event.stopPropagation();cvSetWeightUnit('from','"+u+"')")+'</div>'+
+      '<div class="cv-swap" onclick="cvSwapWeight()">'+ICN('convert',18)+'</div>'+
+      '<div class="cv-side"><div class="cv-lab">'+t('toField')+'</div><div class="cv-val res" style="font-size:'+cvValSize(resStr)+'">'+resStr+'</div>'+
+      cvUnitPills(CV_WEIGHT_LABEL,cvWeightTo,u=>"cvSetWeightUnit('to','"+u+"')")+'</div>'+
+    '</div>';
+  } else {
+    // Allure : une seule valeur canonique (sec/km), déclinée dans les quatre
+    // unités à la fois — plus utile qu'un simple from/to pour une app de course.
+    const spk=cvPaceSpk;
+    const rows=[
+      ['min/km', spkToStr(spk)+' /km'],
+      ['min/mi', spkToStr(spk*1.609344)+' /mi'],
+      ['km/h', (3600/spk).toFixed(2)],
+      ['mph', (3600/(spk*1.609344)).toFixed(2)]
+    ];
+    h+='<div class="cv-pace-hero" onclick="cvPickPace()"><div class="cv-lab">'+t('cvTapToEdit')+'</div><div class="cv-val" style="font-size:40px">'+spkToStr(spk)+'<span style="font-size:16px;color:var(--muted)"> /km</span></div></div>';
+    h+='<div class="card cv-pace-table">'+rows.map(r=>'<div class="zrow"><span class="zname">'+r[0]+'</span><span class="zval mono">'+r[1]+'</span></div>').join('')+'</div>';
+  }
   $('#outBody').innerHTML=h;
 }
 let pgW=60,pgInc=2.5,pgWk=8;
@@ -8702,14 +8773,14 @@ function renderChrono(){
   // Boutons
   h+='<div class="row" style="gap:14px;margin-top:24px;justify-content:center">';
   if(!chrono.running && total===0){
-    h+='<div style="width:62px"></div><button class="btn" style="width:84px;height:84px;border-radius:50%;font-size:30px;flex:0;background:var(--ok)" onclick="chronoToggle()">▶</button><div style="width:62px"></div>';
+    h+='<div style="width:62px"></div><button class="btn" style="width:84px;height:84px;border-radius:50%;font-size:30px;flex:none;background:var(--ok)" onclick="chronoToggle()" aria-label="'+t('playLab')+'">'+ICN('play',28,'#fff')+'</button><div style="width:62px"></div>';
   } else if(chrono.running){
     h+='<button class="chbtn" onclick="chronoLap()">'+t('lapBtn')+'</button>';
-    h+='<button class="btn" style="width:84px;height:84px;border-radius:50%;flex:0;background:var(--warn)" onclick="chronoToggle()" aria-label="'+t('pauseLab')+'">'+ICN('pause',30,'#fff')+'</button>';
+    h+='<button class="btn" style="width:84px;height:84px;border-radius:50%;flex:none;background:var(--warn)" onclick="chronoToggle()" aria-label="'+t('pauseLab')+'">'+ICN('pause',30,'#fff')+'</button>';
     h+='<button class="chbtn" style="border-color:var(--bad);color:var(--bad)" onclick="chronoStop()">'+t('stopBtn')+'</button>';
   } else {
     h+='<button class="chbtn" style="border-color:var(--bad);color:var(--bad)" onclick="chronoReset()">'+t('resetBtn2')+'</button>';
-    h+='<button class="btn" style="width:84px;height:84px;border-radius:50%;font-size:30px;flex:0;background:var(--ok)" onclick="chronoToggle()">▶</button>';
+    h+='<button class="btn" style="width:84px;height:84px;border-radius:50%;font-size:30px;flex:none;background:var(--ok)" onclick="chronoToggle()" aria-label="'+t('playLab')+'">'+ICN('play',28,'#fff')+'</button>';
     h+='<button class="chbtn" onclick="chronoLap()">'+t('lapBtn')+'</button>';
   }
   h+='</div></div>';
