@@ -385,13 +385,14 @@ async function syncPublicProfile(){
   try{
     // Le pseudo n'est JAMAIS écrasé ici : il est géré uniquement via claimUsername()
     // pour garantir son unicité (onboarding + modification dans le profil).
-    // total_km / total_sessions / total_tonnage / streak_days / km_week /
-    // sessions_week ne sont PLUS envoyés par le client : ils sont recalculés
-    // et écrits côté serveur par sync_verified_public_profile() depuis les
-    // vraies séances (user_data), donc impossibles à mentir via un PATCH direct.
+    // xp / level / total_km / total_sessions / total_tonnage / streak_days /
+    // km_week / sessions_week ne sont PLUS envoyés par le client : un trigger
+    // serveur (ikorun_enforce_verified_public_profile) les recalcule à chaque
+    // écriture depuis les vraies séances (user_data), quoi que ce PATCH envoie
+    // pour ces colonnes. Avant ce trigger, xp/level étaient acceptés tels
+    // quels — un simple appel REST direct suffisait à se mettre en tête du
+    // classement des amis sans avoir couru un mètre.
     await window.supabaseClient.from('public_profiles').update({
-      xp: (XP&&XP.total)||0,
-      level: (XP&&XP.level)||1,
       vdot: getUserVDOT()||null,
       photo_url: P.photo||null,
       updated_at: new Date().toISOString()
@@ -1318,6 +1319,7 @@ const I18N={
     preparedRaceLabel:'Course préparée',raceDateLabel:'Date de la course',targetTimeOptionalLabel:'Chrono visé (optionnel)',
     trainingDaysLabel:'Jours d\u2019entraînement',yourNextRaceDefault:'Ta prochaine course',
     guardFutureDate:'Impossible d\u2019enregistrer une séance à une date future.',
+    sessionNotYetLabel:'Cette séance n\u2019a pas encore eu lieu',guardFutureSession:'Impossible de valider une séance qui n\u2019a pas encore eu lieu',
     guardDistanceTooHigh:'Distance irréaliste par rapport à ton historique ({0} km max pour l\u2019instant).',
     guardPaceTooFast:'Cette allure est incompatible avec ton VDOT actuel ({0}). Vérifie ta saisie.',
     guardRecordTooFast:'Cette performance impliquerait un VDOT de {0}, trop éloigné de ton niveau actuel. Vérifie ton temps.',
@@ -1824,6 +1826,7 @@ const I18N={
     preparedRaceLabel:'Race you\u2019re preparing for',raceDateLabel:'Race date',targetTimeOptionalLabel:'Target time (optional)',
     trainingDaysLabel:'Training days',yourNextRaceDefault:'Your next race',
     guardFutureDate:'You can\u2019t log a session with a future date.',
+    sessionNotYetLabel:'This session hasn\u2019t happened yet',guardFutureSession:'You can\u2019t complete a session that hasn\u2019t happened yet',
     guardDistanceTooHigh:'Unrealistic distance compared to your history ({0} km max for now).',
     guardPaceTooFast:'This pace isn\u2019t consistent with your current VDOT ({0}). Check what you entered.',
     guardRecordTooFast:'This performance would imply a VDOT of {0}, too far from your current level. Check your time.',
@@ -2331,6 +2334,7 @@ const I18N={
     preparedRaceLabel:'السباق الذي تستعد له',raceDateLabel:'تاريخ السباق',targetTimeOptionalLabel:'الزمن المستهدف (اختياري)',
     trainingDaysLabel:'أيام التدريب',yourNextRaceDefault:'سباقك القادم',
     guardFutureDate:'لا يمكن تسجيل حصة بتاريخ مستقبلي.',
+    sessionNotYetLabel:'هذه الحصة لم تحن بعد',guardFutureSession:'لا يمكن تسجيل إنجاز حصة لم تحن بعد',
     guardDistanceTooHigh:'مسافة غير واقعية مقارنة بتاريخك ({0} كم كحد أقصى حاليًا).',
     guardPaceTooFast:'هذه الوتيرة لا تتوافق مع VDOT الحالي ({0}). تحقق مما أدخلته.',
     guardRecordTooFast:'هذا الأداء يعني VDOT قدره {0}، بعيد جدًا عن مستواك الحالي. تحقق من زمنك.',
@@ -6371,21 +6375,25 @@ function openPersoSheet(sid){
   curPersoSess=sid;
   $('#sheetTitle').textContent=s.title;
   const col='var('+(TYPE_COLORS[s.type]||'--e')+')';
-  let h='<div class="badge" style="background:rgba(var(--e-rgb),.15);color:'+col+';margin-bottom:14px">'+s.type+' · '+fmtDate(s.date)+'</div>';
-  if(s.km) h+='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+s.km+'</div><div class="l">km</div></div><div class="sbox"><div class="v" style="font-size:18px">'+s.pace+'</div><div class="l">/km moy.</div></div><div class="sbox"><div class="v">'+s.duration+'</div><div class="l">min</div></div></div>';
+  let h='<div class="badge" style="background:rgba(var(--e-rgb),.15);color:'+col+';margin-bottom:14px">'+escHtml(s.type)+' · '+fmtDate(s.date)+'</div>';
+  if(s.km) h+='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+s.km+'</div><div class="l">km</div></div><div class="sbox"><div class="v" style="font-size:18px">'+s.pace+'</div><div class="l">'+t('avgPerKmLabel')+'</div></div><div class="sbox"><div class="v">'+s.duration+'</div><div class="l">min</div></div></div>';
   if(s.intervals && s.intervals.length){
     h+='<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:8px">'+s.intervals.length+' × '+s.intervals[0].dist+' m</div><div style="display:flex;flex-direction:column;gap:6px">';
-    s.intervals.forEach((r,i)=>{ h+='<div class="row" style="font-size:13px"><span style="color:var(--muted)">Rép. '+(i+1)+' · '+r.dist+' m</span><span style="font-weight:700">'+fmtTime(r.timeS)+'</span></div>'; });
+    s.intervals.forEach((r,i)=>{ h+='<div class="row" style="font-size:13px"><span style="color:var(--muted)">'+t('lapBtn')+' '+(i+1)+' · '+r.dist+' m</span><span style="font-weight:700">'+fmtTime(r.timeS)+'</span></div>'; });
     h+='</div></div>';
   }
-  if(s.desc) h+='<div class="tip" style="margin-bottom:14px">'+s.desc+'</div>';
-  if(s.done) h+='<div class="badge" style="background:rgba(51,211,153,.18);color:var(--ok);width:100%;justify-content:center;padding:14px;border-radius:14px;margin-bottom:10px">Terminée</div>';
-  else h+='<button class="btn" style="margin-bottom:10px" onclick="markPersoDone()">Marquer terminée</button>';
-  h+='<button class="btn ghost sm" style="color:var(--bad)" onclick="delPersoSession()">Supprimer</button>';
+  if(s.desc) h+='<div class="tip" style="margin-bottom:14px">'+escHtml(s.desc)+'</div>';
+  // Même garde-fou anti-triche que le plan IKORUN (voir markPersoDone/markRunDone) :
+  // un plan perso peut tout autant contenir des séances datées dans le futur.
+  if(s.done) h+='<div class="badge" style="background:rgba(51,211,153,.18);color:var(--ok);width:100%;justify-content:center;padding:14px;border-radius:14px;margin-bottom:10px">'+t('sessionCompleted')+'</div>';
+  else if(s.date>todayKey()) h+='<div class="badge" style="background:var(--s2);color:var(--muted);width:100%;justify-content:center;padding:14px;border-radius:14px;margin-bottom:10px">'+t('sessionNotYetLabel')+'</div>';
+  else h+='<button class="btn" style="margin-bottom:10px" onclick="markPersoDone()">'+t('markCompleted')+'</button>';
+  h+='<button class="btn ghost sm" style="color:var(--bad)" onclick="delPersoSession()">'+t('delete')+'</button>';
   $('#sheetBody').innerHTML=h; openOv('ovSheet');
 }
 function markPersoDone(){
   const p=CUSTOM.find(x=>x.id===curPerso); const s=p.sessions.find(x=>x.id===curPersoSess); if(!s)return;
+  if(s.date>todayKey()){ toast(t('guardFutureSession')); return; }
   s.done=true;
   const sessRef=Date.now()+Math.random();
   SESS.push({sessRef,provisional:true,date:s.date,title:s.title,km:s.km,pace:s.pace,type:s.type,duration:s.duration,rpe:s.rpe});
@@ -6588,8 +6596,14 @@ function openRunSheet(id){
       +'<div class="rs-stat"><div class="v">'+s.duration+'</div><div class="l">min</div></div></div>';
   }
 
-  // CTA
+  // CTA — une séance dans le futur ne peut pas être "terminée" : depuis la
+  // page plan complet, toutes les semaines à venir sont ouvertes au même
+  // titre que celle du jour. Sans cette date de garde, valider en série
+  // les 44 séances d'un plan complet crédite des mois de kilomètres et
+  // d'XP jamais courus (voir markRunDone, qui applique le même garde-fou
+  // en dur — celui-ci n'est que l'état visuel correspondant).
   if(s.done) h+='<div class="badge" style="background:rgba(51,211,153,.18);color:var(--ok);width:100%;justify-content:center;padding:14px;border-radius:18px;margin-bottom:18px">'+t('sessionCompleted')+'</div>';
+  else if(s.date>todayKey()) h+='<div class="badge" style="background:var(--s2);color:var(--muted);width:100%;justify-content:center;padding:14px;border-radius:18px;margin-bottom:18px">'+t('sessionNotYetLabel')+'</div>';
   else if(s.type!=='Repos') h+='<button class="btn" style="margin-bottom:18px" onclick="markRunDone()">'+t('markCompleted')+'</button>';
 
   if(dt){
@@ -6632,6 +6646,10 @@ function openRunSheet(id){
 }
 function markRunDone(){
   const s=PLAN.sessions.find(x=>x.id===curRunId); if(!s) return;
+  // Garde-fou anti-triche : jamais de séance future validée, quel que soit le
+  // chemin d'appel (bouton masqué côté UI, mais ce garde est celui qui compte
+  // vraiment — voir openRunSheet pour l'équivalent visuel).
+  if(s.date>todayKey()){ toast(t('guardFutureSession')); return; }
   s.done=true;
   // Entrée provisoire (valeurs du plan) au cas où le bilan ne serait jamais validé —
   // elle sera écrasée par les vraies valeurs si l'athlète remplit le bilan.
@@ -7268,7 +7286,16 @@ function toggleLiveEx(i){
   }
   const c=$('#exChev'+i); if(c) c.style.transform=willOpen?'rotate(180deg)':'rotate(0deg)';
 }
-function setLog(i,j,k,v){ const st=LIVE.state[i]; st.log[j][k]=+v||0; if(k==='kg')st.weight=+v||st.weight; persistLive(); }
+// Plafonds larges mais réels (record du monde en deadlift ~500 kg, personne
+// ne fait 100 répétitions d'une série de musculation) : sans ça, une valeur
+// tapée par erreur ou en test (99999) gonflait le tonnage sans limite et
+// débloquait instantanément le trophée "Force" (20 000 kg cumulés / semaine).
+function setLog(i,j,k,v){
+  const st=LIVE.state[i]; let n=+v||0;
+  if(k==='kg') n=Math.min(500,Math.max(0,n));
+  else if(k==='reps') n=Math.min(100,Math.max(0,Math.round(n)));
+  st.log[j][k]=n; if(k==='kg')st.weight=n||st.weight; persistLive();
+}
 function changeRest(i){ const e=LIVE.prog.ex[i]; pickInt(t('restSeconds'),15,300,e.rest||90,'s',v=>{ e.rest=v; renderLive(); },15); }
 function addLiveSet(i){ const st=LIVE.state[i]; const last=st.log[st.log.length-1]||{kg:20,reps:10,rpe:8}; st.sets.push(false); st.log.push({kg:last.kg,reps:last.reps,rpe:last.rpe,done:false}); persistLive(); renderLive(); }
 function deleteLiveSet(i,j){
