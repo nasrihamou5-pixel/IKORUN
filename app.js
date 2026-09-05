@@ -164,7 +164,7 @@ async function signInWithGoogle(){
   _googleAuthing=true;
   toast(t('connectingGoogle'));
   try{
-    const { error } = await window.supabaseClient.auth.signInWithOAuth({
+    const { error } = await withAuthTimeout(window.supabaseClient.auth.signInWithOAuth({
       provider:'google',
       options:{
         // On reconstruit une URL propre (origine + chemin) au lieu de réutiliser
@@ -177,13 +177,31 @@ async function signInWithGoogle(){
         // au lieu de se reconnecter automatiquement avec le dernier compte utilisé
         queryParams:{ prompt:'select_account' }
       }
-    });
+    }));
     if(error){ toast(t('googleConnectFail')); console.error('signInWithGoogle error',error); _googleAuthing=false; }
     // si pas d'erreur, la page va rediriger vers Google : pas besoin de repasser _googleAuthing à false
-  }catch(e){ toast(t('googleConnectFail')); console.error('signInWithGoogle exception',e); _googleAuthing=false; }
+  }catch(e){
+    toast(e&&e.message==='auth_timeout'?t('authTimeoutToast'):t('googleConnectFail'));
+    console.error('signInWithGoogle exception',e); _googleAuthing=false;
+  }
 }
 
 let _guestAuthing=false;
+// Un appel réseau qui ne se règle jamais (coupure, tunnel captif, jsdelivr/
+// Supabase qui traîne) laissait le bouton bloqué pour toujours : le drapeau
+// "_xAuthing" posé juste avant l'await ne repassait à false qu'APRÈS l'await,
+// donc jamais si l'await ne se termine pas — et chaque appui suivant sur le
+// bouton se contentait de "return" silencieusement (garde en tête de
+// fonction), sans le moindre message. Une personne qui retape plusieurs fois
+// sur "Continuer en tant qu'invité" en pensant que ça ne marche pas se
+// heurtait exactement à ça. Ce timeout force l'abandon au bout de 15 s,
+// relâche le bouton et affiche un message clair au lieu du silence.
+function withAuthTimeout(promise, ms){
+  return Promise.race([
+    promise,
+    new Promise((_,reject)=>setTimeout(()=>reject(new Error('auth_timeout')),ms||15000))
+  ]);
+}
 async function continueAsGuest(){
   if(!window.supabaseClient || _guestAuthing || _emailAuthing || _googleAuthing) return;
   _guestAuthing=true;
@@ -192,13 +210,16 @@ async function continueAsGuest(){
     // options.data sert de filet de secours pour identifier un compte invité
     // (session.user.is_anonymous est la source normale, cf finishLogin) au cas
     // où ce champ ne serait pas exposé sur une version antérieure du SDK.
-    const { error } = await window.supabaseClient.auth.signInAnonymously({ options:{ data:{ ikorun_guest:true } } });
+    const { error } = await withAuthTimeout(window.supabaseClient.auth.signInAnonymously({ options:{ data:{ ikorun_guest:true } } }));
     if(error){
       console.error('signInAnonymously error',error);
       setLoginStatus(/anonymous|disabled/i.test(error.message||'')?t('guestDisabledToast'):t('authGenericErrorToast'),'bad');
     }
     // si pas d'erreur : onAuthStateChange (SIGNED_IN) prend le relais tout seul
-  }catch(e){ console.error('signInAnonymously exception',e); setLoginStatus(t('authGenericErrorToast'),'bad'); }
+  }catch(e){
+    console.error('signInAnonymously exception',e);
+    setLoginStatus(e&&e.message==='auth_timeout'?t('authTimeoutToast'):t('authGenericErrorToast'),'bad');
+  }
   _guestAuthing=false;
 }
 function signOutUser(){
@@ -282,13 +303,16 @@ async function submitEmailLogin(){
   if(!isEmailValid(email)) return setLoginStatus(t('invalidEmailToast'),'bad');
   _emailAuthing=true; setLoginStatus(t('loggingInToast'),'checking');
   try{
-    const { error } = await window.supabaseClient.auth.signInWithPassword({ email, password:pass });
+    const { error } = await withAuthTimeout(window.supabaseClient.auth.signInWithPassword({ email, password:pass }));
     if(error){
       console.error('signInWithPassword error',error);
       setLoginStatus(/invalid/i.test(error.message||'')?t('wrongCredentialsToast'):t('authGenericErrorToast'),'bad');
     }
     // si pas d'erreur : onAuthStateChange (SIGNED_IN) prend le relais tout seul
-  }catch(e){ console.error('signInWithPassword exception',e); setLoginStatus(t('authGenericErrorToast'),'bad'); }
+  }catch(e){
+    console.error('signInWithPassword exception',e);
+    setLoginStatus(e&&e.message==='auth_timeout'?t('authTimeoutToast'):t('authGenericErrorToast'),'bad');
+  }
   _emailAuthing=false;
 }
 async function submitEmailSignup(){
@@ -300,10 +324,10 @@ async function submitEmailSignup(){
   if(pass!==pass2) return setLoginStatus(t('passwordsMismatchToast'),'bad');
   _emailAuthing=true; setLoginStatus(t('creatingAccountToast'),'checking');
   try{
-    const { data, error } = await window.supabaseClient.auth.signUp({
+    const { data, error } = await withAuthTimeout(window.supabaseClient.auth.signUp({
       email, password:pass,
       options:{ emailRedirectTo: window.location.origin + window.location.pathname }
-    });
+    }));
     if(error){
       console.error('signUp error',error);
       setLoginStatus(/already|exists|registered/i.test(error.message||'')?t('emailAlreadyUsedToast'):t('authGenericErrorToast'),'bad');
@@ -313,7 +337,10 @@ async function submitEmailSignup(){
     }
     // si une session est déjà présente (confirmation email désactivée côté
     // projet), onAuthStateChange (SIGNED_IN) prend le relais tout seul.
-  }catch(e){ console.error('signUp exception',e); setLoginStatus(t('authGenericErrorToast'),'bad'); }
+  }catch(e){
+    console.error('signUp exception',e);
+    setLoginStatus(e&&e.message==='auth_timeout'?t('authTimeoutToast'):t('authGenericErrorToast'),'bad');
+  }
   _emailAuthing=false;
 }
 async function submitForgotPassword(){
@@ -323,12 +350,15 @@ async function submitForgotPassword(){
   if(!isEmailValid(email)) return setLoginStatus(t('invalidEmailToast'),'bad');
   _emailAuthing=true; setLoginStatus(t('sendingResetToast'),'checking');
   try{
-    const { error } = await window.supabaseClient.auth.resetPasswordForEmail(email,{
+    const { error } = await withAuthTimeout(window.supabaseClient.auth.resetPasswordForEmail(email,{
       redirectTo: window.location.origin + window.location.pathname
-    });
+    }));
     if(error){ console.error('resetPasswordForEmail error',error); setLoginStatus(t('authGenericErrorToast'),'bad'); }
     else setLoginStatus(t('resetLinkSentToast'),'ok');
-  }catch(e){ console.error('resetPasswordForEmail exception',e); setLoginStatus(t('authGenericErrorToast'),'bad'); }
+  }catch(e){
+    console.error('resetPasswordForEmail exception',e);
+    setLoginStatus(e&&e.message==='auth_timeout'?t('authTimeoutToast'):t('authGenericErrorToast'),'bad');
+  }
   _emailAuthing=false;
 }
 
@@ -1367,6 +1397,7 @@ const I18N={
     passwordTooShortToast:'Mot de passe trop court (8 caractères min).',passwordsMismatchToast:'Les mots de passe ne correspondent pas.',
     wrongCredentialsToast:'Email ou mot de passe incorrect.',emailAlreadyUsedToast:'Un compte existe déjà avec cet email.',
     authGenericErrorToast:'Une erreur est survenue. Réessaie.',checkEmailConfirmToast:'Compte créé ✓ Vérifie ta boîte mail pour confirmer ton adresse.',
+    authTimeoutToast:'La connexion prend trop de temps. Vérifie ta connexion internet et réessaie.',
     resetLinkSentToast:'Lien envoyé ✓ Vérifie ta boîte mail.',loggingInToast:'Connexion…',creatingAccountToast:'Création du compte…',sendingResetToast:'Envoi du lien…',
     continueAsGuestLink:'Continuer en tant qu\'invité',guestConnectingToast:'Connexion en tant qu\'invité…',guestDisabledToast:'Le mode invité n\'est pas encore activé. Réessaie plus tard ou crée un compte.',
     guestModeTitle:'Mode invité',guestModeLabel:'Mode invité',guestModeDesc:'Tes données sont liées à cet appareil. Si tu te déconnectes ou changes de téléphone, tu risques de les perdre. Ajoute un email pour les protéger.',
@@ -1880,6 +1911,7 @@ const I18N={
     passwordTooShortToast:'Password too short (8 characters min).',passwordsMismatchToast:'Passwords don\u2019t match.',
     wrongCredentialsToast:'Wrong email or password.',emailAlreadyUsedToast:'An account already exists with this email.',
     authGenericErrorToast:'Something went wrong. Try again.',checkEmailConfirmToast:'Account created ✓ Check your inbox to confirm your email.',
+    authTimeoutToast:'This is taking too long. Check your internet connection and try again.',
     resetLinkSentToast:'Link sent ✓ Check your inbox.',loggingInToast:'Signing in…',creatingAccountToast:'Creating account…',sendingResetToast:'Sending link…',
     continueAsGuestLink:'Continue as guest',guestConnectingToast:'Signing in as guest…',guestDisabledToast:'Guest mode isn\'t enabled yet. Try again later or create an account.',
     guestModeTitle:'Guest mode',guestModeLabel:'Guest mode',guestModeDesc:'Your data is tied to this device. If you sign out or switch phones, you could lose it. Add an email to protect it.',
@@ -2394,6 +2426,7 @@ const I18N={
     passwordTooShortToast:'كلمة المرور قصيرة جدًا (8 أحرف كحد أدنى).',passwordsMismatchToast:'كلمتا المرور غير متطابقتين.',
     wrongCredentialsToast:'بريد إلكتروني أو كلمة مرور غير صحيحة.',emailAlreadyUsedToast:'يوجد حساب بالفعل بهذا البريد الإلكتروني.',
     authGenericErrorToast:'حدث خطأ ما. حاول مرة أخرى.',checkEmailConfirmToast:'تم إنشاء الحساب ✓ تحقق من بريدك لتأكيد عنوانك.',
+    authTimeoutToast:'\u0627\u0644\u0627\u062A\u0635\u0627\u0644 \u064A\u0633\u062A\u063A\u0631\u0642 \u0648\u0642\u062A\u064B\u0627 \u0637\u0648\u064A\u0644\u0627\u064B. \u062A\u062D\u0642\u0642 \u0645\u0646 \u0627\u062A\u0635\u0627\u0644\u0643 \u0628\u0627\u0644\u0625\u0646\u062A\u0631\u0646\u062A \u0648\u0623\u0639\u062F \u0627\u0644\u0645\u062D\u0627\u0648\u0644\u0629.',
     resetLinkSentToast:'تم إرسال الرابط ✓ تحقق من بريدك.',loggingInToast:'جارٍ تسجيل الدخول…',creatingAccountToast:'جارٍ إنشاء الحساب…',sendingResetToast:'جارٍ إرسال الرابط…',
     continueAsGuestLink:'المتابعة كضيف',guestConnectingToast:'جارٍ الدخول كضيف…',guestDisabledToast:'وضع الضيف غير مفعّل بعد. حاول لاحقًا أو أنشئ حسابًا.',
     guestModeTitle:'وضع الضيف',guestModeLabel:'وضع الضيف',guestModeDesc:'بياناتك مرتبطة بهذا الجهاز. إذا سجّلت الخروج أو غيّرت الهاتف، قد تفقدها. أضف بريدًا إلكترونيًا لحمايتها.',
