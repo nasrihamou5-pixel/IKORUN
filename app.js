@@ -901,6 +901,8 @@ const I18N={
     declineBtn:'Refuser',saveLabel:'Enregistrer',renameLab:'Renommer',favoriteLab:'Favori',
     langLab:'Langue',obModeTitle:'Ton affichage',obModeIntro:'Deux façons de voir IKORUN — change d\u2019avis à tout moment dans Profil.',obModeFullT:'Complet',obModeFullD:'Toutes les stats, tous les détails de chaque séance, l\u2019anatomie musculaire, les graphiques. Pour creuser.',obModeSimpleT:'Simplifié',obModeSimpleD:'Une carte, l\u2019essentiel : la séance du jour et un bouton. Rien d\u2019autre à l\u2019écran. Pour aller droit au but.',obModeSuggestion:'Suggestion selon ton âge : {0}. Choisis librement.',chooseModeLab:'Choisis un affichage pour continuer',
     trackingLab:'Suivi',appearanceLab:'Apparence',
+    sendFeedbackLab:'Envoyer un commentaire',feedbackTitle:'Ton avis',feedbackIntro:'Une idée, un bug, un truc qui te gêne dans l\u2019app ? Écris-le ici, ça part directement dans ta boîte mail.',feedbackPh:'Écris ton commentaire...',feedbackEmptyToast:'Écris quelque chose avant d\u2019envoyer',feedbackSentToast:'Ton appli mail s\u2019est ouverte, il ne reste qu\u2019à envoyer',feedbackSignature:'Compte : {0} · Langue : {1}',
+    sendBtn:'Envoyer',
     playLab:'Démarrer',
     cvCat_dist:'Distance',cvCat_pace:'Allure',cvCat_weight:'Poids',cvTapToEdit:'Touche pour modifier',
     googleStandaloneBody:'Sur iPhone, quand IKORUN est ouvert depuis l\u2019ic\u00f4ne de l\u2019\u00e9cran d\u2019accueil, la connexion Google part dans Safari et n\u2019en revient pas : elle r\u00e9ussit, mais dans Safari, pas ici. Connecte-toi par email dans l\u2019app, ou ouvre IKORUN dans Safari pour utiliser Google.',
@@ -1377,7 +1379,7 @@ const I18N={
     tour_adapt_t:'Le plan s’ajuste tout seul',tour_adapt_d:'Séance ratée, fatigue élevée, douleur signalée : les séances à venir s’allègent automatiquement. Tout va bien : progression trop facile ? Elles montent en charge. Tu n’as jamais à recalculer quoi que ce soit.',
     tour_stats_t:'Tes statistiques',tour_stats_d:'Kilomètres, séances, VDOT, records personnels — et ta progression en XP, niveaux et badges, gagnée uniquement par de vraies séances (l’app vérifie).',
     tour_outils_t:'La boîte à outils',tour_outils_d:'Calculateur d’allure, VDOT, IMC, chrono, minuteur... Cherche l’outil qu’il te faut ou garde tes favoris à portée de main.',
-    tour_profil_t:'Ton profil',tour_profil_d:'Niveau, XP, badges — et tous les réglages : langue, couleur, et le mode simplifié que tu as choisi (modifiable à tout moment ici).',
+    tour_profil_t:'Ton profil',tour_profil_d:'Niveau, XP, badges — et tous les réglages : langue, couleur, et le mode simplifié que tu as choisi (modifiable à tout moment ici). Une idée ou un bug ? « Envoyer un commentaire », tout en bas, part directement dans notre boîte mail.',
     tour_final_t:'Prêt à commencer ?',tour_final_d:'Configure ton objectif et génère ton plan personnalisé — c\'est le moment !',
     tourGotItBtn:'Compris',signupHelpLink:'Besoin d\'aide ?',
     tour_sg_welcome_t:'On crée ton compte ?',tour_sg_welcome_d:'Trois petites infos et c\'est parti — ça prend 30 secondes.',
@@ -1412,6 +1414,8 @@ const I18N={
     declineBtn:'Decline',saveLabel:'Save',renameLab:'Rename',favoriteLab:'Favourite',
     langLab:'Language',obModeTitle:'Your display',obModeIntro:'Two ways to see IKORUN \u2014 change your mind anytime in Profile.',obModeFullT:'Full',obModeFullD:'All the stats, every session detail, muscle anatomy, charts. For digging in.',obModeSimpleT:'Simplified',obModeSimpleD:'One card, the essentials: today\u2019s session and a button. Nothing else on screen. For going straight to it.',obModeSuggestion:'Suggestion based on your age: {0}. Choose freely.',chooseModeLab:'Choose a display to continue',
     trackingLab:'Tracking',appearanceLab:'Appearance',
+    sendFeedbackLab:'Send feedback',feedbackTitle:'Your feedback',feedbackIntro:'An idea, a bug, something bothering you in the app? Write it here, it goes straight to your mail app.',feedbackPh:'Write your feedback...',feedbackEmptyToast:'Write something before sending',feedbackSentToast:'Your mail app just opened, all that\u2019s left is to hit send',feedbackSignature:'Account: {0} · Language: {1}',
+    sendBtn:'Send',
     playLab:'Start',
     cvCat_dist:'Distance',cvCat_pace:'Pace',cvCat_weight:'Weight',cvTapToEdit:'Tap to edit',
     googleStandaloneBody:'On iPhone, when IKORUN is opened from the home-screen icon, Google sign-in leaves for Safari and never comes back: it succeeds, but in Safari, not here. Sign in with email inside the app, or open IKORUN in Safari to use Google.',
@@ -1888,7 +1892,7 @@ const I18N={
     tour_adapt_t:'The plan adjusts itself',tour_adapt_d:'Missed a session, high fatigue, reported pain: upcoming sessions get lighter automatically. Going too easy? They ramp up. You never have to recalculate anything yourself.',
     tour_stats_t:'Your stats',tour_stats_d:'Kilometres, sessions, VDOT, personal records — and your XP, levels and badges, earned only from real sessions (the app checks).',
     tour_outils_t:'The toolbox',tour_outils_d:'Pace calculator, VDOT, BMI, stopwatch, timer... Search for the tool you need or keep your favourites within reach.',
-    tour_profil_t:'Your profile',tour_profil_d:'Level, XP, badges — and every setting: language, colour, and the simplified mode you chose (changeable here anytime).',
+    tour_profil_t:'Your profile',tour_profil_d:'Level, XP, badges — and every setting: language, colour, and the simplified mode you chose (changeable here anytime). Got an idea or found a bug? "Send feedback", at the bottom, goes straight to our inbox.',
     tour_final_t:'Ready to start?',tour_final_d:'Set your goal and generate your personalized plan — now’s the time!',
     tourGotItBtn:'Got it',signupHelpLink:'Need help?',
     tour_sg_welcome_t:'Let\'s create your account',tour_sg_welcome_d:'Three quick things and you\'re set — takes 30 seconds.',
@@ -1923,6 +1927,8 @@ const I18N={
     declineBtn:'رفض',saveLabel:'حفظ',renameLab:'إعادة تسمية',favoriteLab:'مفضّل',
     langLab:'اللغة',obModeTitle:'طريقة العرض',obModeIntro:'طريقتان لرؤية IKORUN — غيّر رأيك في أي وقت من الملف الشخصي.',obModeFullT:'كامل',obModeFullD:'كل الإحصائيات، تفاصيل كل حصة، تشريح العضلات، الرسوم البيانية. للتعمّق.',obModeSimpleT:'مبسّط',obModeSimpleD:'بطاقة واحدة، الأساسيات: حصة اليوم وزر واحد. لا شيء آخر على الشاشة. للذهاب مباشرة إلى الهدف.',obModeSuggestion:'اقتراح حسب عمرك: {0}. اختر بحرية.',chooseModeLab:'اختر طريقة عرض للمتابعة',
     trackingLab:'المتابعة',appearanceLab:'المظهر',
+    sendFeedbackLab:'إرسال تعليق',feedbackTitle:'رأيك',feedbackIntro:'فكرة، خلل، أو شيء يزعجك في التطبيق؟ اكتبه هنا، سيُفتح مباشرة في تطبيق بريدك.',feedbackPh:'اكتب تعليقك...',feedbackEmptyToast:'اكتب شيئًا قبل الإرسال',feedbackSentToast:'فُتح تطبيق البريد لديك، لم يبقَ سوى الضغط على إرسال',feedbackSignature:'الحساب: {0} · اللغة: {1}',
+    sendBtn:'إرسال',
     playLab:'ابدأ',
     cvCat_dist:'المسافة',cvCat_pace:'الوتيرة',cvCat_weight:'الوزن',cvTapToEdit:'اضغط للتعديل',
     googleStandaloneBody:'على iPhone، عند فتح IKORUN من أيقونة الشاشة الرئيسية، يغادر تسجيل الدخول عبر Google إلى Safari ولا يعود: ينجح، لكن داخل Safari وليس هنا. سجّل الدخول بالبريد داخل التطبيق، أو افتح IKORUN في Safari لاستخدام Google.',
@@ -2400,7 +2406,7 @@ const I18N={
     tour_adapt_t:'الخطة تتكيّف بنفسها',tour_adapt_d:'حصة فائتة، تعب مرتفع، ألم مُبلَّغ عنه: الحصص القادمة تخفّ تلقائيًا. والتقدّم سهل جدًا؟ فهي تزداد صعوبة. لا تحتاج أبدًا لإعادة الحساب بنفسك.',
     tour_stats_t:'إحصائياتك',tour_stats_d:'الكيلومترات، الحصص، VDOT، الأرقام الشخصية — وتقدّمك من نقاط خبرة ومستويات وأوسمة، مكتسبة فقط من حصص حقيقية (يتحقّق التطبيق من ذلك).',
     tour_outils_t:'صندوق الأدوات',tour_outils_d:'حاسبة الوتيرة، VDOT، مؤشر كتلة الجسم، ساعة إيقاف، مؤقّت... ابحث عن الأداة التي تحتاجها أو احتفظ بالمفضّلة في متناول يدك.',
-    tour_profil_t:'ملفك الشخصي',tour_profil_d:'المستوى، نقاط الخبرة، الأوسمة — وكل الإعدادات: اللغة، اللون، والوضع المبسّط الذي اخترته (قابل للتغيير هنا في أي وقت).',
+    tour_profil_t:'ملفك الشخصي',tour_profil_d:'المستوى، نقاط الخبرة، الأوسمة — وكل الإعدادات: اللغة، اللون، والوضع المبسّط الذي اخترته (قابل للتغيير هنا في أي وقت). لديك فكرة أو وجدت خللًا؟ «إرسال تعليق» أسفل الصفحة يصل مباشرة إلى بريدنا.',
     tour_final_t:'مستعد للبدء؟',tour_final_d:'حدّد هدفك وأنشئ خطتك المخصصة — الوقت الآن!',
     tourGotItBtn:'فهمت',signupHelpLink:'تحتاج مساعدة؟',
     tour_sg_welcome_t:'لننشئ حسابك',tour_sg_welcome_d:'ثلاث معلومات صغيرة وننطلق — الأمر يستغرق 30 ثانية.',
@@ -8181,6 +8187,7 @@ function statsMedals(){
 
 /* ---------- ICÔNES PREMIUM (SVG line, mode sombre) ---------- */
 const ICONS={
+  comment:'<path d="M4 4h16v12H8l-4 4V4z"/><path d="M8 9h8M8 12h5"/>',
   lab:'<path d="M9 3h6M10 3v6l-5 8a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-8V3"/><path d="M8 15h8"/>',
   health:'<path d="M3 12h4l2 5 4-12 2 7h6"/>',
   stopwatch:'<circle cx="12" cy="13" r="8"/><path d="M12 13V9M9 2h6M18 6l1.5-1.5"/>',
@@ -9089,6 +9096,7 @@ function renderProfile(){
   '</div>';
   h+='<div class="grp-lab stag" style="animation-delay:.18s">'+t('support')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.19s">'+
+    '<div class="grp-row" onclick="openFeedback()"><div class="lr-icon">'+ICN('comment',20,'currentColor')+'</div><div class="lr-title">'+t('sendFeedbackLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     (isStandalone()?'':'<div class="grp-row" onclick="installApp()"><div class="lr-icon">'+ICN('download',20,'currentColor')+'</div><div class="lr-title">'+t('installAppBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>')+
     '<div class="grp-row" onclick="startAppTour()"><div class="lr-icon">'+ICN('flag',20,'currentColor')+'</div><div class="lr-title">'+t('replayTourBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileSection(\'terms\')"><div class="lr-icon">'+ICN('clipboard',20,'currentColor')+'</div><div class="lr-title">'+t('termsOfUseLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
@@ -9121,6 +9129,7 @@ function renderProfileSimple(){
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('heart',20,'currentColor')+'</div><div class="lr-title">'+t('simplifiedMode')+'</div><div class="toggle on" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
     '<div class="grp-row" onclick="startAppTour()"><div class="lr-icon">'+ICN('flag',20,'currentColor')+'</div><div class="lr-title">'+t('replayTourBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileSection(\'account\')"><div class="lr-icon">'+ICN('lock',20,'currentColor')+'</div><div class="lr-title">'+t('account')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openFeedback()"><div class="lr-icon">'+ICN('comment',20,'currentColor')+'</div><div class="lr-title">'+t('sendFeedbackLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     (isStandalone()?'':'<div class="grp-row" onclick="installApp()"><div class="lr-icon">'+ICN('download',20,'currentColor')+'</div><div class="lr-title">'+t('installAppBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>')+
     '<div class="grp-row" onclick="openProfileSection(\'terms\')"><div class="lr-icon">'+ICN('clipboard',20,'currentColor')+'</div><div class="lr-title">'+t('termsOfUseLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileSection(\'privacy\')"><div class="lr-icon">'+ICN('shield',20,'currentColor')+'</div><div class="lr-title">'+t('privacyPolicyLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
@@ -9332,6 +9341,30 @@ function pfNotifHTML(){
   return '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('trainReminders')+'</span><div class="toggle'+(P.notif!==false?' on':'')+'" onclick="toggleNotif(this)"></div></div>'+
     '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('sounds')+'</span><div class="toggle'+(P.sounds!==false?' on':'')+'" onclick="toggleSounds(this)"></div></div>'+
     '<div class="row"><span style="font-size:14px">'+t('units')+'</span><div class="toggle on"></div></div>';
+}
+/* ---------- COMMENTAIRE / AVIS ----------
+   Volontairement le plus simple possible : une zone de texte, un bouton.
+   Envoi par mailto: (aucun service d'email tiers à configurer, aucune clé
+   API à sécuriser côté serveur) — ouvre l'appli mail déjà installée sur le
+   téléphone avec le message pré-rempli ; il ne reste qu'à taper "Envoyer"
+   dans cette appli. FEEDBACK_EMAIL est un espace réservé, comme les crochets
+   des CGU/politique de confidentialité : à remplacer par l'adresse réelle. */
+const FEEDBACK_EMAIL='[ton email — à compléter]';
+function openFeedback(){
+  let h='<div style="text-align:center;padding:4px 0 14px;color:var(--e)">'+ICN('comment',40,'currentColor')+'</div>';
+  h+='<div class="tip" style="margin-bottom:14px">'+t('feedbackIntro')+'</div>';
+  h+='<textarea class="inp" id="fb_text" rows="6" placeholder="'+t('feedbackPh')+'"></textarea>';
+  h+='<button class="btn" style="margin-top:14px" onclick="sendFeedback()">'+t('sendBtn')+'</button>';
+  $('#ovProgTitle').textContent=t('feedbackTitle'); $('#progBody').innerHTML=h; $('#ovProg').style.zIndex=topZ(); openOv('ovProg');
+}
+function sendFeedback(){
+  const txt=($('#fb_text').value||'').trim();
+  if(!txt){ toast(t('feedbackEmptyToast')); return; }
+  const subject=encodeURIComponent('IKORUN — '+t('feedbackTitle'));
+  const body=encodeURIComponent(txt+'\n\n—\n'+tp('feedbackSignature',P.username||P.name||'—',curLang().toUpperCase()));
+  window.location.href='mailto:'+FEEDBACK_EMAIL+'?subject='+subject+'&body='+body;
+  closeOv('ovProg');
+  toast(t('feedbackSentToast'));
 }
 function pfDataHTML(){
   return '<div class="card" style="padding:16px">'+
