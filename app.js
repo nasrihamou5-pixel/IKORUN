@@ -496,6 +496,17 @@ let friendsSelected=null;
 let friendsCache={friends:[],pending:[],sent:[]};
 let _friendsLoadSeq=0; // évite qu'une réponse réseau en retard (ouverture rapide/répétée) écrase un état plus récent
 let _friendsLoading=false;
+let clubCache={loaded:false,club:null,members:[]};
+let _clubLoading=false;
+let clubShowCreate=false;
+function openClub(){
+  friendsTab='club';
+  friendsSelected=null;
+  $('#ovProgTitle').textContent=t('clubTitle');
+  $('#progBody').innerHTML='<div id="friendsBody"><div class="card"><div class="empty"><div class="em-ic">'+ICN('stopwatch',36,'currentColor')+'</div><div style="font-size:13px">'+t('loadingLab')+'</div></div></div></div>';
+  openOv('ovProg');
+  loadClubData();
+}
 function openFriends(){
   friendsTab='list';
   friendsSelected=null;
@@ -541,12 +552,20 @@ async function loadFriendsData(){
     if(box) box.innerHTML='<div class="card"><div class="empty"><div class="em-ic">'+ICN('warning',36,'currentColor')+'</div><div style="font-size:13px">'+t('friendsLoadError')+'</div><button class="btn ghost sm" style="margin-top:10px;width:auto" onclick="loadFriendsData()">'+t('retryBtn')+'</button></div></div>';
   }
 }
+function switchSocialTab(tab){
+  friendsTab=tab;
+  $('#ovProgTitle').textContent=tab==='club'?t('clubTitle'):t('friendsTitle');
+  if(tab==='club' && !clubCache.loaded){ renderFriends(); loadClubData(); return; }
+  renderFriends();
+}
 function renderFriends(){
   if(friendsTab==='profile'){ $('#friendsBody').innerHTML=renderFriendProfileHTML(); return; }
+  if(friendsTab==='club'){ renderClubTab(); return; }
 
   let h='<div class="fr-tabs">'+
-    '<div class="fr-tab '+(friendsTab==='list'?'on':'')+'" onclick="friendsTab=\'list\';renderFriends()">'+t('tabFriendsList')+'</div>'+
-    '<div class="fr-tab '+(friendsTab==='rank'?'on':'')+'" onclick="friendsTab=\'rank\';renderFriends()">'+t('tabRank')+'</div>'+
+    '<div class="fr-tab '+(friendsTab==='list'?'on':'')+'" onclick="switchSocialTab(\'list\')">'+t('tabFriendsList')+'</div>'+
+    '<div class="fr-tab '+(friendsTab==='rank'?'on':'')+'" onclick="switchSocialTab(\'rank\')">'+t('tabRank')+'</div>'+
+    '<div class="fr-tab '+(friendsTab==='club'?'on':'')+'" onclick="switchSocialTab(\'club\')">'+t('tabClub')+'</div>'+
   '</div>';
 
   if(!window.supabaseClient || !window.currentUserId){
@@ -693,6 +712,124 @@ function renderFriendProfileHTML(){
   '</div>';
   h+='<div style="margin-top:12px">'+friendBadgesHTML(f)+'</div>';
   return h;
+}
+/* ---------- CLUBS ---------- */
+async function loadClubData(){
+  _clubLoading=true;
+  if(!window.supabaseClient || !window.currentUserId){ _clubLoading=false; clubCache.loaded=true; renderClubTab(); return; }
+  try{
+    const uid=window.currentUserId;
+    // On résout "mon club" par appartenance réelle (club_members), pas par propriété :
+    // un utilisateur qui a recréé un club peut rester "owner" d'un ancien club orphelin
+    // (0 membre) via la policy RLS owner_id=auth.uid(), ce qui rendrait un simple
+    // "select * from clubs" ambigu (plusieurs lignes "à moi" pour un seul club actif).
+    const { data:myId, error:e0 } = await window.supabaseClient.rpc('ikorun_my_club_id');
+    if(e0) throw e0;
+    let club=null;
+    if(myId){
+      const { data:clubRow, error:e1 } = await window.supabaseClient.from('clubs').select('*').eq('id',myId).maybeSingle();
+      if(e1) throw e1;
+      club=clubRow||null;
+    }
+    let members=[];
+    if(club){
+      const { data:mrows, error:e2 } = await window.supabaseClient.from('club_members').select('user_id').eq('club_id',club.id);
+      if(e2) throw e2;
+      const ids=(mrows||[]).map(r=>r.user_id);
+      if(ids.length){
+        const { data:profs, error:e3 } = await window.supabaseClient.from('public_profiles').select('user_id,username,xp,level,photo_url').in('user_id',ids);
+        if(e3) throw e3;
+        members=(profs||[]).map(p=>({...p,id:p.user_id,isOwner:p.user_id===club.owner_id,isMe:p.user_id===uid}));
+      }
+    }
+    clubCache={loaded:true,club,members};
+    _clubLoading=false;
+    renderClubTab();
+  }catch(e){
+    console.error('loadClubData error',e);
+    _clubLoading=false;
+    const box=$('#friendsBody');
+    if(box) box.innerHTML='<div class="card"><div class="empty"><div class="em-ic">'+ICN('warning',36,'currentColor')+'</div><div style="font-size:13px">'+t('friendsLoadError')+'</div><button class="btn ghost sm" style="margin-top:10px;width:auto" onclick="loadClubData()">'+t('retryBtn')+'</button></div></div>';
+  }
+}
+function renderClubTab(){
+  let h='<div class="fr-tabs">'+
+    '<div class="fr-tab '+(friendsTab==='list'?'on':'')+'" onclick="switchSocialTab(\'list\')">'+t('tabFriendsList')+'</div>'+
+    '<div class="fr-tab '+(friendsTab==='rank'?'on':'')+'" onclick="switchSocialTab(\'rank\')">'+t('tabRank')+'</div>'+
+    '<div class="fr-tab on" onclick="switchSocialTab(\'club\')">'+t('tabClub')+'</div>'+
+  '</div>';
+  if(!window.supabaseClient || !window.currentUserId){
+    h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('lock',36,'currentColor')+'</div><div style="font-size:13px">'+t('loginToAddFriends')+'</div></div></div>';
+    $('#friendsBody').innerHTML=h; return;
+  }
+  if(_clubLoading){ $('#friendsBody').innerHTML=h+'<div class="card"><div class="empty"><div class="em-ic">'+ICN('stopwatch',36,'currentColor')+'</div><div style="font-size:13px">'+t('loadingLab')+'</div></div></div>'; return; }
+  const c=clubCache.club;
+  if(!c){
+    h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('flag',36,'currentColor')+'</div><div style="font-weight:700;margin-bottom:4px;color:var(--snow)">'+t('noClubYet')+'</div><div style="font-size:13px">'+t('noClubYetDesc')+'</div></div></div>';
+    h+='<div class="sec-lab">'+t('joinClubCta')+'</div>';
+    h+='<div class="card" style="padding:14px"><div class="fr-search" style="margin-bottom:10px">'+ICN('flag',16)+'<input id="clubCodeInput" placeholder="'+t('clubCodePlaceholder')+'" maxlength="6" autocapitalize="characters" autocorrect="off" spellcheck="false" style="text-transform:uppercase;letter-spacing:2px;font-weight:700"></div><button class="btn sm" style="width:auto" onclick="submitJoinClub()">'+t('joinBtn')+'</button></div>';
+    h+='<div class="sec-lab">'+t('createClubCta')+'</div>';
+    if(!clubShowCreate){
+      h+='<div class="card" style="padding:14px"><button class="btn ghost sm" style="width:auto" onclick="clubShowCreate=true;renderClubTab()">'+t('createClubCta')+'</button></div>';
+    } else {
+      h+='<div class="card" style="padding:14px"><div class="fr-search" style="margin-bottom:10px">'+ICN('flag',16)+'<input id="clubNameInput" placeholder="'+t('clubNamePlaceholder')+'" maxlength="40"></div><button class="btn sm" style="width:auto" onclick="submitCreateClub()">'+t('createBtn')+'</button></div>';
+    }
+    $('#friendsBody').innerHTML=h;
+    const cIn=$('#clubCodeInput'); if(cIn) cIn.focus();
+    return;
+  }
+  const sorted=[...clubCache.members].sort((a,b)=>(b.xp||0)-(a.xp||0));
+  h+='<div class="card" style="padding:16px;text-align:center"><div style="font-weight:800;font-size:18px;color:var(--snow)">'+escHtml(c.name)+'</div>'+
+    '<div style="font-size:12.5px;color:var(--muted);margin-top:4px">'+tp('clubMembersCount',clubCache.members.length)+'</div>'+
+    '<div class="row" style="justify-content:center;gap:8px;margin-top:12px"><span style="font-family:monospace;font-weight:800;font-size:17px;letter-spacing:3px;background:var(--panel2);padding:6px 12px;border-radius:8px">'+escHtml(c.code)+'</span><span class="hv7-icon-btn" style="width:36px;height:36px" onclick="copyClubCode(\''+escHtml(c.code)+'\')" title="'+t('copyCodeBtn')+'">'+ICN('copy',16)+'</span></div>'+
+    '<div style="font-size:11.5px;color:var(--dim);margin-top:6px">'+t('shareCodeHint')+'</div>'+
+  '</div>';
+  h+='<div class="sec-lab">'+t('clubXpRanking')+'</div>';
+  h+='<div class="card" style="padding:2px 6px">'+sorted.map((m,i)=>{
+    const av=m.photo_url?'<div class="fr-avatar" style="background-image:url(\''+escHtml(m.photo_url)+'\')"></div>':'<div class="fr-avatar">'+(m.username?escHtml(m.username[0].toUpperCase()):'?')+'</div>';
+    return '<div class="fr-row'+(m.isMe?' me':'')+'" style="border-bottom:'+(i<sorted.length-1?'1px solid var(--hair)':'none')+(m.isMe?'':';cursor:pointer')+'"'+(m.isMe?'':' onclick="openFriendProfile(\''+m.id+'\')"')+'>'+
+      '<div class="fr-rank-num" style="width:22px">#'+(i+1)+'</div>'+av+
+      '<div class="fr-info"><div class="fr-name">'+escHtml(m.username||'?')+(m.isOwner?' '+ICN('flag',13,'var(--accent)'):'')+(m.isMe?t('youParen'):'')+'</div><div class="fr-meta"><span class="fr-lvl-chip">'+t('lvlDot')+' '+(m.level||1)+'</span><span class="fr-km-txt">'+(m.xp||0)+' XP</span></div></div>'+
+    '</div>';
+  }).join('')+'</div>';
+  h+='<button class="btn ghost sm" style="width:auto;margin-top:16px" onclick="leaveClubConfirm()">'+t('leaveClubBtn')+'</button>';
+  $('#friendsBody').innerHTML=h;
+}
+function copyClubCode(code){
+  try{ navigator.clipboard.writeText(code); toast(t('codeCopiedToast')); }catch(e){ toast(code); }
+}
+async function submitJoinClub(){
+  const el=$('#clubCodeInput'); const code=(el?el.value:'').trim();
+  if(!code){ toast(t('clubCodePlaceholder')); return; }
+  try{
+    const { error } = await window.supabaseClient.rpc('ikorun_join_club',{p_code:code});
+    if(error){
+      if(String(error.message).includes('club_not_found')) toast(t('clubNotFoundToast'));
+      else if(String(error.message).includes('rate_limited')) toast(t('tooManyAttemptsToast'));
+      else toast(t('genericErrorRetry'));
+      return;
+    }
+    toast(t('clubJoinedToast')); clubShowCreate=false; loadClubData();
+  }catch(e){ toast(t('genericErrorRetry')); }
+}
+async function submitCreateClub(){
+  const el=$('#clubNameInput'); const name=(el?el.value:'').trim();
+  if(!name){ toast(t('clubNamePlaceholder')); return; }
+  try{
+    const { error } = await window.supabaseClient.rpc('ikorun_create_club',{p_name:name});
+    if(error){
+      if(String(error.message).includes('rate_limited')) toast(t('tooManyAttemptsToast'));
+      else toast(t('genericErrorRetry'));
+      return;
+    }
+    toast(t('clubCreatedToast')); clubShowCreate=false; loadClubData();
+  }catch(e){ toast(t('genericErrorRetry')); }
+}
+function leaveClubConfirm(){
+  customConfirm(t('confirmLeaveClub'),async ()=>{
+    try{ await window.supabaseClient.rpc('ikorun_leave_club'); toast(t('clubLeftToast')); loadClubData(); }
+    catch(e){ toast(t('genericErrorRetry')); }
+  });
 }
 function removeFriend(otherId){
   customConfirm(t('confirmRemoveFriend'),async ()=>{
@@ -999,6 +1136,13 @@ const I18N={
     tomorrow:'Demain',noUpcomingSession:'Aucune séance planifiée prochainement.',addSession:'Ajouter une séance',
     showRestPlan:'Afficher le reste du plan · {0} semaines',calendarTitle:'Calendrier',calendarSub:'Planifie ta progression',
     friendsTitle:'Amis & Classement',tabFriendsList:'Amis',tabRank:'Classement',
+    clubTitle:'Mon club',tabClub:'Mon club',myClubLab:'Mon club',
+    noClubYet:'Pas encore de club',noClubYetDesc:'Rejoins le club de ton équipe avec un code, ou crée le tien pour rassembler tes coéquipiers.',
+    joinClubCta:'Rejoindre un club',createClubCta:'Créer un club',clubCodePlaceholder:'Code à 6 caractères',clubNamePlaceholder:'Nom du club',
+    joinBtn:'Rejoindre',clubMembersCount:'{0} membre(s)',copyCodeBtn:'Copier le code',shareCodeHint:'Partage ce code à tes coéquipiers pour qu’ils te rejoignent.',
+    clubXpRanking:'Classement du club (XP)',leaveClubBtn:'Quitter le club',confirmLeaveClub:'Quitter ce club ? Tu pourras en rejoindre un autre à tout moment.',
+    clubCreatedToast:'Club créé !',clubJoinedToast:'Bienvenue dans le club !',clubLeftToast:'Tu as quitté le club',clubNotFoundToast:'Aucun club avec ce code',
+    tooManyAttemptsToast:'Trop de tentatives, réessaie dans un instant',codeCopiedToast:'Code copié',
     loginToAddFriends:'Connecte-toi avec Google pour ajouter des amis et te comparer.',
     searchFriendPlaceholder:'Chercher un ami par pseudo',receivedRequests:'Demandes reçues',acceptBtn:'Accepter',
     yourFriendsCount:'Tes amis ({0})',noFriendsYet:'Pas encore d\u2019amis — cherche quelqu\u2019un par son pseudo !',
@@ -1413,6 +1557,7 @@ const I18N={
     tour_stats_t:'Tes statistiques',tour_stats_d:'Kilomètres, séances, VDOT, records personnels — et ta progression en XP, niveaux et badges, gagnée uniquement par de vraies séances (l’app vérifie).',
     tour_outils_t:'La boîte à outils',tour_outils_d:'Calculateur d’allure, VDOT, IMC, chrono, minuteur... Cherche l’outil qu’il te faut ou garde tes favoris à portée de main.',
     tour_profil_t:'Ton profil',tour_profil_d:'Niveau, XP, badges — et tous les réglages : langue, couleur, et le mode simplifié que tu as choisi (modifiable à tout moment ici). Une idée ou un bug ? « Envoyer un commentaire », tout en bas, part directement dans notre boîte mail.',
+    tour_club_t:'Rejoins ton club',tour_club_d:'Rejoins le club de ton équipe avec un code, ou crée le tien : classement dédié, coéquipiers visibles d’un coup d’œil. Un vrai esprit d’équipe, pas juste des amis un par un.',
     tour_final_t:'Prêt à commencer ?',tour_final_d:'Configure ton objectif et génère ton plan personnalisé — c\'est le moment !',
     tourGotItBtn:'Compris',signupHelpLink:'Besoin d\'aide ?',
     tour_sg_welcome_t:'On crée ton compte ?',tour_sg_welcome_d:'Trois petites infos et c\'est parti — ça prend 30 secondes.',
@@ -1515,6 +1660,13 @@ const I18N={
     tomorrow:'Tomorrow',noUpcomingSession:'No upcoming session planned.',addSession:'Add a session',
     showRestPlan:'Show the rest of the plan · {0} weeks',calendarTitle:'Calendar',calendarSub:'Plan your progress',
     friendsTitle:'Friends & Leaderboard',tabFriendsList:'Friends',tabRank:'Leaderboard',
+    clubTitle:'My club',tabClub:'My club',myClubLab:'My club',
+    noClubYet:'No club yet',noClubYetDesc:'Join your team’s club with a code, or create your own to bring your teammates together.',
+    joinClubCta:'Join a club',createClubCta:'Create a club',clubCodePlaceholder:'6-character code',clubNamePlaceholder:'Club name',
+    joinBtn:'Join',clubMembersCount:'{0} member(s)',copyCodeBtn:'Copy code',shareCodeHint:'Share this code with your teammates so they can join you.',
+    clubXpRanking:'Club leaderboard (XP)',leaveClubBtn:'Leave club',confirmLeaveClub:'Leave this club? You can join another one anytime.',
+    clubCreatedToast:'Club created!',clubJoinedToast:'Welcome to the club!',clubLeftToast:'You left the club',clubNotFoundToast:'No club found with this code',
+    tooManyAttemptsToast:'Too many attempts, try again shortly',codeCopiedToast:'Code copied',
     loginToAddFriends:'Sign in with Google to add friends and compare stats.',
     searchFriendPlaceholder:'Search a friend by username',receivedRequests:'Received requests',acceptBtn:'Accept',
     yourFriendsCount:'Your friends ({0})',noFriendsYet:'No friends yet — search for someone by their username!',
@@ -1929,6 +2081,7 @@ const I18N={
     tour_stats_t:'Your stats',tour_stats_d:'Kilometres, sessions, VDOT, personal records — and your XP, levels and badges, earned only from real sessions (the app checks).',
     tour_outils_t:'The toolbox',tour_outils_d:'Pace calculator, VDOT, BMI, stopwatch, timer... Search for the tool you need or keep your favourites within reach.',
     tour_profil_t:'Your profile',tour_profil_d:'Level, XP, badges — and every setting: language, colour, and the simplified mode you chose (changeable here anytime). Got an idea or found a bug? "Send feedback", at the bottom, goes straight to our inbox.',
+    tour_club_t:'Join your club',tour_club_d:'Join your team’s club with a code, or create your own: a dedicated leaderboard, teammates visible at a glance. Real team spirit, not just friends one by one.',
     tour_final_t:'Ready to start?',tour_final_d:'Set your goal and generate your personalized plan — now’s the time!',
     tourGotItBtn:'Got it',signupHelpLink:'Need help?',
     tour_sg_welcome_t:'Let\'s create your account',tour_sg_welcome_d:'Three quick things and you\'re set — takes 30 seconds.',
@@ -2031,6 +2184,13 @@ const I18N={
     tomorrow:'غدًا',noUpcomingSession:'لا توجد حصة مخططة قريبًا.',addSession:'إضافة حصة',
     showRestPlan:'عرض بقية الخطة · {0} أسابيع',calendarTitle:'التقويم',calendarSub:'خطط لتقدمك',
     friendsTitle:'الأصدقاء والترتيب',tabFriendsList:'الأصدقاء',tabRank:'الترتيب',
+    clubTitle:'ناديّ',tabClub:'ناديّ',myClubLab:'ناديّ',
+    noClubYet:'لا نادي بعد',noClubYetDesc:'انضم إلى نادي فريقك باستخدام رمز، أو أنشئ ناديك الخاص لتجميع زملائك.',
+    joinClubCta:'الانضمام إلى نادٍ',createClubCta:'إنشاء نادٍ',clubCodePlaceholder:'رمز من 6 أحرف',clubNamePlaceholder:'اسم النادي',
+    joinBtn:'انضمام',clubMembersCount:'{0} عضو',copyCodeBtn:'نسخ الرمز',shareCodeHint:'شارك هذا الرمز مع زملائك لينضموا إليك.',
+    clubXpRanking:'ترتيب النادي (نقاط الخبرة)',leaveClubBtn:'مغادرة النادي',confirmLeaveClub:'مغادرة هذا النادي؟ يمكنك الانضمام إلى نادٍ آخر في أي وقت.',
+    clubCreatedToast:'تم إنشاء النادي!',clubJoinedToast:'مرحبًا بك في النادي!',clubLeftToast:'لقد غادرت النادي',clubNotFoundToast:'لا يوجد نادٍ بهذا الرمز',
+    tooManyAttemptsToast:'محاولات كثيرة جدًا، أعد المحاولة بعد قليل',codeCopiedToast:'تم نسخ الرمز',
     loginToAddFriends:'سجّل الدخول عبر Google لإضافة أصدقاء ومقارنة نفسك.',
     searchFriendPlaceholder:'ابحث عن صديق بالاسم المستعار',receivedRequests:'الطلبات الواردة',acceptBtn:'قبول',
     yourFriendsCount:'أصدقاؤك ({0})',noFriendsYet:'لا يوجد أصدقاء بعد — ابحث عن أحدهم باسمه المستعار!',
@@ -2446,6 +2606,7 @@ const I18N={
     tour_stats_t:'إحصائياتك',tour_stats_d:'الكيلومترات، الحصص، VDOT، الأرقام الشخصية — وتقدّمك من نقاط خبرة ومستويات وأوسمة، مكتسبة فقط من حصص حقيقية (يتحقّق التطبيق من ذلك).',
     tour_outils_t:'صندوق الأدوات',tour_outils_d:'حاسبة الوتيرة، VDOT، مؤشر كتلة الجسم، ساعة إيقاف، مؤقّت... ابحث عن الأداة التي تحتاجها أو احتفظ بالمفضّلة في متناول يدك.',
     tour_profil_t:'ملفك الشخصي',tour_profil_d:'المستوى، نقاط الخبرة، الأوسمة — وكل الإعدادات: اللغة، اللون، والوضع المبسّط الذي اخترته (قابل للتغيير هنا في أي وقت). لديك فكرة أو وجدت خللًا؟ «إرسال تعليق» أسفل الصفحة يصل مباشرة إلى بريدنا.',
+    tour_club_t:'انضم إلى ناديك',tour_club_d:'انضم إلى نادي فريقك برمز، أو أنشئ ناديك الخاص: ترتيب مخصص، وزملاؤك في متناول نظرة واحدة. روح فريق حقيقية، وليس فقط أصدقاء واحدًا تلو الآخر.',
     tour_final_t:'مستعد للبدء؟',tour_final_d:'حدّد هدفك وأنشئ خطتك المخصصة — الوقت الآن!',
     tourGotItBtn:'فهمت',signupHelpLink:'تحتاج مساعدة؟',
     tour_sg_welcome_t:'لننشئ حسابك',tour_sg_welcome_d:'ثلاث معلومات صغيرة وننطلق — الأمر يستغرق 30 ثانية.',
@@ -3839,6 +4000,7 @@ const TOUR_STEPS=[
   { key:'stats', page:'stats', sel:()=>P.easyMode?'#s-stats .stat-quatro':'#s-stats .seg-ctrl' },
   { key:'outils', page:'outils', sel:'#s-outils .searchbox' },
   { key:'profil', page:'profil', sel:'#s-profil .pf-hero' },
+  { key:'club', page:'profil', sel:'#s-profil .pf-club-row' },
   { key:'final', page:'sport', sel:'#tourPlanCta', final:true }
 ];
 let _tourOn=false, _tourIdx=0, _tourBusy=false;
@@ -3916,7 +4078,11 @@ async function showTourStep(startI){
         el=await waitForTourEl(sel);
         if(!_tourOn || _tourIdx!==i) return; // le tour a été fermé/a changé d'étape entretemps
         if(!el){ i=i+1; continue; } // cible introuvable (page vide, mode différent…) : passe à l'étape suivante sans jamais bloquer le tour
-        try{ el.scrollIntoView({block:'center',behavior:'smooth'}); }catch(e){}
+        // "smooth" pouvait encore être en cours d'animation après les 320ms d'attente sur une
+        // longue distance de scroll (ex: une rangée bas de page Profil) : l'anneau se figeait
+        // alors sur la position mesurée avant la fin réelle du défilement, décalé de l'élément
+        // réellement visé. "auto" scrolle instantanément, donc la position est stable dès la mesure.
+        try{ el.scrollIntoView({block:'center',behavior:'auto'}); }catch(e){}
         await tourSleep(320);
         if(!_tourOn || _tourIdx!==i) return;
       }
@@ -3950,6 +4116,18 @@ function tourReposition(){
   const sel=typeof step.sel==='function'?step.sel():step.sel;
   positionTourOn(sel?$(sel):null);
 }
+// Le mode simplifié applique zoom:1.16 sur <html> (voir .easy-mode). Ce zoom
+// s'applique aussi à l'overlay du tour (attaché à document.body, donc dans le
+// même sous-arbre zoomé) : des coordonnées déjà à l'échelle réelle
+// (getBoundingClientRect, qui renvoie du px écran post-zoom) posées telles
+// quelles comme style brut sur l'overlay se retrouvaient re-multipliées par
+// ce même zoom, décalant l'anneau d'autant plus qu'on descend dans la page.
+// On compense en divisant toutes les coordonnées par le zoom ambiant avant
+// de les assigner en style — invisible hors mode simplifié (zoom=1).
+function tourZoomFactor(){
+  const z=parseFloat(getComputedStyle(document.documentElement).zoom);
+  return (z && isFinite(z) && z>0) ? z : 1;
+}
 function setTourBand(el,x,y,w,h){
   if(!el) return;
   if(w<=0||h<=0){ el.style.display='none'; return; }
@@ -3957,21 +4135,24 @@ function setTourBand(el,x,y,w,h){
   el.style.left=x+'px'; el.style.top=y+'px'; el.style.width=w+'px'; el.style.height=h+'px';
 }
 function resetTourVeil(){
-  const W=innerWidth,H=innerHeight;
+  const z=tourZoomFactor();
+  const W=innerWidth/z,H=innerHeight/z;
   setTourBand($('#tbTop'),0,0,W,H);
   setTourBand($('#tbBottom'),0,0,0,0); setTourBand($('#tbLeft'),0,0,0,0); setTourBand($('#tbRight'),0,0,0,0);
   const ring=$('#tourRing'); if(ring) ring.style.display='none';
 }
 function positionTourOn(el){
   const card=$('#tourCard');
-  const W=innerWidth, H=innerHeight;
+  const z=tourZoomFactor();
+  const W=innerWidth/z, H=innerHeight/z;
   if(!el){
     resetTourVeil();
     if(card) card.classList.add('centered');
     return;
   }
   if(card) card.classList.remove('centered');
-  const r=el.getBoundingClientRect();
+  const r0=el.getBoundingClientRect();
+  const r={left:r0.left/z, top:r0.top/z, right:r0.right/z, bottom:r0.bottom/z, width:r0.width/z, height:r0.height/z};
   const pad=10, rx=16;
   const x=Math.max(0,r.left-pad), y=Math.max(0,r.top-pad);
   const w=Math.min(W-x,r.width+pad*2), h=Math.min(H-y,r.height+pad*2);
@@ -8272,6 +8453,7 @@ function statsMedals(){
 /* ---------- ICÔNES PREMIUM (SVG line, mode sombre) ---------- */
 const ICONS={
   comment:'<path d="M4 4h16v12H8l-4 4V4z"/><path d="M8 9h8M8 12h5"/>',
+  copy:'<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>',
   lab:'<path d="M9 3h6M10 3v6l-5 8a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-8V3"/><path d="M8 15h8"/>',
   health:'<path d="M3 12h4l2 5 4-12 2 7h6"/>',
   stopwatch:'<circle cx="12" cy="13" r="8"/><path d="M12 13V9M9 2h6M18 6l1.5-1.5"/>',
@@ -9161,6 +9343,7 @@ function renderProfile(){
   // Apparence = ce que l'app montre ; Assistance = tout le reste, une fois. =====
   h+='<div class="grp-lab stag" style="animation-delay:.09s">'+t('trackingLab')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.10s">'+
+    '<div class="grp-row pf-club-row" onclick="openClub()"><div class="lr-icon">'+ICN('flag',20,'currentColor')+'</div><div class="lr-title">'+t('myClubLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openFriends()"><div class="lr-icon">'+ICN('users',20,'currentColor')+'</div><div class="lr-title">'+t('friendsRanking')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openRecords()"><div class="lr-icon">'+ICN('medal',20,'currentColor')+'</div><div class="lr-title">'+t('historyRecords')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">'+ICN('chart',20,'currentColor')+'</div><div class="lr-title">'+t('statistics')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
@@ -9201,6 +9384,7 @@ function renderProfileSimple(){
 
   h+='<div class="grp-lab stag" style="animation-delay:.05s">'+t('yourSpace')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.06s">'+
+    '<div class="grp-row pf-club-row" onclick="openClub()"><div class="lr-icon">'+ICN('flag',20,'currentColor')+'</div><div class="lr-title">'+t('myClubLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openFriends()"><div class="lr-icon">'+ICN('users',20,'currentColor')+'</div><div class="lr-title">'+t('friendsRanking')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">'+ICN('chart',20,'currentColor')+'</div><div class="lr-title">'+t('statistics')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openBadges()"><div class="lr-icon">'+ICN('medal',20,'currentColor')+'</div><div class="lr-title">'+t('badgesLabel')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
