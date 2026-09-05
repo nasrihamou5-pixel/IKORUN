@@ -76,18 +76,16 @@ async function cloudPullAll(uid){
     const { data:{ session } } = await window.supabaseClient.auth.getSession();
     if(!session){
       console.error('[IKORUN][DIAG] cloudPullAll: aucune session active au moment de la synchro');
-      if(typeof toast==='function') toast('⚠️ Diagnostic : aucune session active pendant la synchro cloud');
     }
     const { data, error } = await window.supabaseClient.from('user_data').select('key,value').eq('user_id', uid);
     if(error){
       console.error('cloud pull error', error);
-      if(typeof toast==='function') toast('⚠️ Erreur de synchronisation cloud : '+(error.message||error.code||'inconnue'));
+      if(typeof toast==='function') toast(t('syncCloudErrorToast'));
       return;
     }
     if(!data){ return; }
     if(data.length===0){
       console.warn('[IKORUN][DIAG] cloudPullAll: 0 ligne renvoyée pour uid='+uid);
-      if(typeof toast==='function') toast('⚠️ Diagnostic : 0 donnée reçue du cloud pour ce compte (uid '+uid.slice(0,8)+'…)');
     }
     data.forEach(row => {
       if(VVV_LOCAL_ONLY_KEYS.includes(row.key)){
@@ -143,9 +141,25 @@ async function ikorunLogoutCookie(){
   try{ await fetch(AUTH_FN_URL+'?action=logout', { method:'POST', credentials:'include' }); }catch(e){}
 }
 
+/* iPhone + app ajoutée à l'écran d'accueil : la connexion Google ne peut pas
+   aboutir. La redirection vers accounts.google.com sort de l'app installée, et
+   Safari — qui a son propre stockage — reçoit le jeton au retour. Côté serveur
+   la connexion réussit (les logs Supabase le montrent), mais l'app installée
+   n'en voit jamais rien et réaffiche l'écran de connexion. On l'explique au lieu
+   de laisser retenter en boucle. Le vrai correctif (connexion Google jouée dans
+   la page, sans redirection) demande une configuration Google Cloud côté compte. */
+function showGoogleStandaloneHelp(){
+  const h='<div style="text-align:center;padding:4px 0 14px;color:var(--e)">'+ICN('warning',40,'currentColor')+'</div>'+
+    '<div class="tip" style="margin-bottom:14px">'+t('googleStandaloneBody')+'</div>'+
+    '<button class="btn" style="margin-bottom:10px" onclick="closeOv(\'ovProg\');switchLoginMode(\'login\')">'+t('googleUseEmailBtn')+'</button>'+
+    '<button class="btn ghost" onclick="closeOv(\'ovProg\');window.open(location.href,\'_blank\')">'+t('googleOpenSafariBtn')+'</button>';
+  $('#ovProgTitle').textContent=t('googleStandaloneTitle'); $('#progBody').innerHTML=h;
+  $('#ovProg').style.zIndex=topZ(); openOv('ovProg');
+}
 let _googleAuthing=false;
 async function signInWithGoogle(){
   if(!window.supabaseClient) return;
+  if(isStandalone() && isIOSDevice()){ showGoogleStandaloneHelp(); return; }
   if(_googleAuthing) return; // évite les doubles-taps qui donnent l'impression que rien ne se passe
   _googleAuthing=true;
   toast(t('connectingGoogle'));
@@ -210,7 +224,13 @@ function switchLoginMode(m){
 }
 function isEmailValid(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((v||'').trim()); }
 const GOOGLE_ICON_SVG='<svg viewBox="0 0 48 48" width="20" height="20"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.6 30.2 0 24 0 14.6 0 6.4 5.4 2.5 13.3l7.8 6C12.2 13.5 17.6 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.5 3-2.2 5.5-4.7 7.2l7.3 5.7c4.3-4 6.9-9.9 6.9-17.4z"/><path fill="#FBBC05" d="M10.3 28.3c-.5-1.4-.8-2.9-.8-4.3s.3-3 .8-4.3l-7.8-6C.9 16.9 0 20.3 0 24s.9 7.1 2.5 10.3l7.8-6z"/><path fill="#34A853" d="M24 48c6.2 0 11.5-2 15.3-5.5l-7.3-5.7c-2 1.4-4.7 2.3-8 2.3-6.4 0-11.8-4-13.7-9.8l-7.8 6C6.4 42.6 14.6 48 24 48z"/></svg>';
-function googleBtnHtml(){ return '<button class="gbtn" onclick="signInWithGoogle()"><span class="gicon">'+GOOGLE_ICON_SVG+'</span>'+t('continueWithGoogleBtn')+'</button>'; }
+function googleBtnHtml(){
+  // Depuis l'app installée sur iPhone, le bouton n'aboutit pas (cf.
+  // showGoogleStandaloneHelp) : on le dit avant le clic, pas après.
+  const blocked=isStandalone()&&isIOSDevice();
+  return '<button class="gbtn'+(blocked?' muted':'')+'" onclick="signInWithGoogle()"><span class="gicon">'+GOOGLE_ICON_SVG+'</span>'+t('continueWithGoogleBtn')+'</button>'+
+    (blocked?'<div class="gbtn-hint">'+t('googleStandaloneHint')+'</div>':'');
+}
 function renderLoginMain(){
   const el=$('#loginMain'); if(!el) return;
   const legal=$('#loginLegal'); if(legal) legal.innerHTML=t('loginLegalText');
@@ -509,7 +529,7 @@ function renderFriends(){
     if(friendsCache.pending.length){
       h+='<div class="sec-lab">'+t('receivedRequests')+'</div>';
       friendsCache.pending.forEach(p=>{
-        h+='<div class="fr-req-card"><div class="row"><div style="font-weight:700">'+escHtml(p.username)+'</div><div class="row" style="gap:6px"><button class="btn sm" style="width:auto" onclick="respondFriend('+p.reqId+',true)">'+t('acceptBtn')+'</button><button class="btn ghost sm" style="width:auto" onclick="respondFriend('+p.reqId+',false)"></button></div></div></div>';
+        h+='<div class="fr-req-card"><div class="row"><div style="font-weight:700">'+escHtml(p.username)+'</div><div class="row" style="gap:6px"><button class="btn sm" style="width:auto" onclick="respondFriend('+p.reqId+',true)">'+t('acceptBtn')+'</button><button class="btn ghost sm" style="width:auto" onclick="respondFriend('+p.reqId+',false)">'+t('declineBtn')+'</button></div></div></div>';
       });
     }
     h+='<div class="sec-lab">'+tp('yourFriendsCount',friendsCache.friends.length)+'</div>';
@@ -871,8 +891,16 @@ const I18N={
     weekLoadTitle:'Charge hebdomadaire',levelXp:'Niveau {0} — {1} XP',xpBeforeLevel:'+{0} XP avant niveau {1}',
     sessionsCap:'Séances',tonnageKg:'Tonnage kg',formCap:'Forme',nextSession:'PROCHAINE SÉANCE',today:'Aujourd\u2019hui',
     restDay:'Jour de repos',noSessionToday:'Aucune séance planifiée aujourd\u2019hui',recordsPerso:'Records perso',
+    iDidIt:'Je l\u2019ai faite',notDone:'Pas faite',nextLab:'Ensuite',dayPlusShort:'J+{0}',rpeShort:'RPE',kmWeekShort:'km sem.',sessionsLab:'séances',
+    syncSlowToast:'Synchronisation lente — l\u2019app démarre, tes données arrivent',syncFailedLocalToast:'Synchronisation impossible — tu travailles sur tes données locales',syncCloudErrorToast:'Erreur de synchronisation avec le cloud',
+    doneTag:'Faite',
+    setsCount:'{0} séries',daysAgoShort:'il y a {0} j',neverDoneLab:'Jamais faite',
+    pauseLab:'Mettre en pause',restTimerBtn:'Minuteur de repos',
+    googleStandaloneTitle:'Google et l\u2019app install\u00e9e',googleUseEmailBtn:'Se connecter par email',googleOpenSafariBtn:'Ouvrir dans Safari',googleStandaloneHint:'Indisponible depuis l\u2019app install\u00e9e',
+    declineBtn:'Refuser',saveLabel:'Enregistrer',renameLab:'Renommer',favoriteLab:'Favori',
+    googleStandaloneBody:'Sur iPhone, quand IKORUN est ouvert depuis l\u2019ic\u00f4ne de l\u2019\u00e9cran d\u2019accueil, la connexion Google part dans Safari et n\u2019en revient pas : elle r\u00e9ussit, mais dans Safari, pas ici. Connecte-toi par email dans l\u2019app, ou ouvre IKORUN dans Safari pour utiliser Google.',
     progression:'Progression',planOfDay:'PLAN DU JOUR',planIkorunDesc:'Plans d\u2019entraînement conçus par des coaches',
-    myPlanDesc:'Crée ton propre plan sur mesure',todayCap:'AUJOURD\u2019HUI',tapToStart:'Toucher pour démarrer',
+    myPlanDesc:'Crée ton propre plan sur mesure',todayCap:'AUJOURD\u2019HUI',tapToStart:'Voir le détail',
     goalCap:'OBJECTIF',courseDefault:'Course',goalTimeColon:'Objectif : {0} · ',raceOn:'Course le {0}',raceDay:'Jour de course',
     currentVdot:'VDOT actuel',currentPhase:'Phase actuelle',thisWeek:'Cette semaine',weekOf:'Semaine {0}/{1}',
     weeklyLoad:'Charge hebdo',regenConfirm:'Régénérer un nouveau plan ? Tes séances faites restent dans tes stats.',
@@ -1367,8 +1395,16 @@ const I18N={
     weekLoadTitle:'Weekly load',levelXp:'Level {0} — {1} XP',xpBeforeLevel:'+{0} XP before level {1}',
     sessionsCap:'Sessions',tonnageKg:'Tonnage kg',formCap:'Form',nextSession:'NEXT SESSION',today:'Today',
     restDay:'Rest day',noSessionToday:'No session planned today',recordsPerso:'Personal records',
+    iDidIt:'I did it',notDone:'Not done',nextLab:'Next up',dayPlusShort:'D+{0}',rpeShort:'RPE',kmWeekShort:'km wk.',sessionsLab:'sessions',
+    syncSlowToast:'Sync is slow — the app is starting, your data is on its way',syncFailedLocalToast:'Sync unavailable — working from your local data',syncCloudErrorToast:'Cloud sync error',
+    doneTag:'Done',
+    setsCount:'{0} sets',daysAgoShort:'{0}d ago',neverDoneLab:'Never done',
+    pauseLab:'Pause',restTimerBtn:'Rest timer',
+    googleStandaloneTitle:'Google and the installed app',googleUseEmailBtn:'Sign in with email',googleOpenSafariBtn:'Open in Safari',googleStandaloneHint:'Unavailable from the installed app',
+    declineBtn:'Decline',saveLabel:'Save',renameLab:'Rename',favoriteLab:'Favourite',
+    googleStandaloneBody:'On iPhone, when IKORUN is opened from the home-screen icon, Google sign-in leaves for Safari and never comes back: it succeeds, but in Safari, not here. Sign in with email inside the app, or open IKORUN in Safari to use Google.',
     progression:'Progress',planOfDay:'PLAN OF THE DAY',planIkorunDesc:'Training plans designed by coaches',
-    myPlanDesc:'Build your own custom plan',todayCap:'TODAY',tapToStart:'Tap to start',
+    myPlanDesc:'Build your own custom plan',todayCap:'TODAY',tapToStart:'View details',
     goalCap:'GOAL',courseDefault:'Race',goalTimeColon:'Goal: {0} · ',raceOn:'Race on {0}',raceDay:'Race day',
     currentVdot:'Current VDOT',currentPhase:'Current phase',thisWeek:'This week',weekOf:'Week {0}/{1}',
     weeklyLoad:'Weekly load',regenConfirm:'Regenerate a new plan? Completed sessions stay in your stats.',
@@ -1863,8 +1899,16 @@ const I18N={
     weekLoadTitle:'الحمل الأسبوعي',levelXp:'المستوى {0} — {1} نقطة خبرة',xpBeforeLevel:'+{0} نقطة قبل المستوى {1}',
     sessionsCap:'الحصص',tonnageKg:'الحمولة كغ',formCap:'اللياقة',nextSession:'الحصة القادمة',today:'اليوم',
     restDay:'يوم راحة',noSessionToday:'لا توجد حصة مخططة اليوم',recordsPerso:'الأرقام الشخصية',
+    iDidIt:'أنجزتها',notDone:'لم أنجزها',nextLab:'التالي',dayPlusShort:'+{0} ي',rpeShort:'RPE',kmWeekShort:'كم/أسبوع',sessionsLab:'حصص',
+    syncSlowToast:'المزامنة بطيئة — التطبيق يبدأ وبياناتك في الطريق',syncFailedLocalToast:'تعذّرت المزامنة — أنت تعمل على بياناتك المحلية',syncCloudErrorToast:'خطأ في المزامنة مع السحابة',
+    doneTag:'تمّت',
+    setsCount:'{0} مجموعات',daysAgoShort:'قبل {0} ي',neverDoneLab:'لم تُنجز بعد',
+    pauseLab:'إيقاف مؤقت',restTimerBtn:'مؤقّت الراحة',
+    googleStandaloneTitle:'Google والتطبيق المثبّت',googleUseEmailBtn:'تسجيل الدخول بالبريد',googleOpenSafariBtn:'الفتح في Safari',googleStandaloneHint:'غير متاح من التطبيق المثبّت',
+    declineBtn:'رفض',saveLabel:'حفظ',renameLab:'إعادة تسمية',favoriteLab:'مفضّل',
+    googleStandaloneBody:'على iPhone، عند فتح IKORUN من أيقونة الشاشة الرئيسية، يغادر تسجيل الدخول عبر Google إلى Safari ولا يعود: ينجح، لكن داخل Safari وليس هنا. سجّل الدخول بالبريد داخل التطبيق، أو افتح IKORUN في Safari لاستخدام Google.',
     progression:'التقدم',planOfDay:'خطة اليوم',planIkorunDesc:'خطط تدريبية صممها مدربون',
-    myPlanDesc:'أنشئ خطتك الخاصة',todayCap:'اليوم',tapToStart:'اضغط للبدء',
+    myPlanDesc:'أنشئ خطتك الخاصة',todayCap:'اليوم',tapToStart:'عرض التفاصيل',
     goalCap:'الهدف',courseDefault:'سباق',goalTimeColon:'الهدف: {0} · ',raceOn:'السباق يوم {0}',raceDay:'يوم السباق',
     currentVdot:'VDOT الحالي',currentPhase:'المرحلة الحالية',thisWeek:'هذا الأسبوع',weekOf:'الأسبوع {0}/{1}',
     weeklyLoad:'الحمل الأسبوعي',regenConfirm:'إعادة توليد خطة جديدة؟ الحصص المنجزة تبقى في إحصائياتك.',
@@ -3580,23 +3624,23 @@ function endLogin(){ $('#login').classList.remove('on'); }
 async function startApp(){
   if(!window.supabaseClient){ await window.DB_READY; boot(); return; }
 
-  // Filet de sécurité : si l'init (réseau Supabase, cookie httpOnly, etc.)
-  // reste bloquée trop longtemps, on force l'affichage du login plutôt que
-  // de laisser le skeleton tourner indéfiniment.
+  // Filet de sécurité : si l'init reste bloquée trop longtemps, on débloque le
+  // skeleton. MAIS on ne renvoie vers le login QUE si aucune session n'existe :
+  // renvoyer quelqu'un de connecté sur l'écran de connexion (ce qui arrivait au
+  // retour de Google quand une étape d'après-connexion traînait ou plantait)
+  // donne exactement l'impression que « la connexion Google ne marche plus »,
+  // alors que le serveur a bien créé la session.
   let _startAppSettled=false;
-  const _forceUnstick=setTimeout(()=>{
+  const _forceUnstick=setTimeout(async ()=>{
     if(_startAppSettled) return;
     console.warn('[IKORUN] startApp trop long — déblocage forcé du skeleton');
-    startLogin();
+    let hasSession=false;
+    try{ const { data:{ session } } = await window.supabaseClient.auth.getSession(); hasSession=!!session; }catch(e){}
+    if(_startAppSettled) return;
+    if(hasSession){ hideAppSkeleton(); toast(t('syncSlowToast')); }
+    else startLogin();
   },10000);
   const _markSettled=()=>{ _startAppSettled=true; clearTimeout(_forceUnstick); };
-
-  // ---- Diagnostic silencieux (console uniquement, pas d'alerte) ----
-  (function diagOAuth(){
-    const entryUrl = window.__rawEntryUrl || window.location.href;
-    console.log('[DIAG] URL brute capturée à l\'entrée :', entryUrl);
-  })();
-  // ---- FIN DIAGNOSTIC ----
 
   let _loggedInOnce=false;
   async function finishLogin(userId,email,isAnon){
@@ -3604,15 +3648,31 @@ async function startApp(){
     window.currentUserId = userId;
     window.currentUserEmail = email;
     window.isGuestUser = !!isAnon;
-    await window.DB_READY; // déchiffrement local — tourne en parallèle des appels réseau ci-dessus, donc déjà prêt ou presque
-    ensureLocalCacheOwnership(userId); // purge le cache d'un éventuel compte précédent avant toute lecture/écriture
-    await cloudPullAll(userId);
-    reloadState();
-    saveAll();
-    endLogin();
-    boot();
-    _markSettled();
-    ensurePublicProfile().then(syncPublicProfile);
+    try{
+      await window.DB_READY; // déchiffrement local — lancé en parallèle au chargement du script
+      ensureLocalCacheOwnership(userId); // purge le cache d'un éventuel compte précédent avant toute lecture/écriture
+      await cloudPullAll(userId);
+      reloadState();
+      saveAll();
+    }catch(e){
+      // La synchro cloud ou le cache local a échoué : on continue quand même
+      // avec ce qu'on a en local. Rester bloqué (ou repartir au login) alors
+      // que la session est valide est bien pire qu'un démarrage hors-ligne.
+      console.error('[IKORUN] finishLogin — synchro impossible, démarrage local', e);
+      toast(t('syncFailedLocalToast'));
+    }
+    try{
+      endLogin();
+      boot();
+    }catch(e){
+      // Un plantage de rendu ne doit jamais laisser l'app sur l'écran de
+      // connexion : la session est bien là, on montre l'app.
+      console.error('[IKORUN] finishLogin — boot a échoué', e);
+      hideAppSkeleton(); endLogin();
+    }finally{
+      _markSettled();
+    }
+    try{ ensurePublicProfile().then(syncPublicProfile); }catch(e){}
   }
   // is_anonymous est le champ officiel du SDK Supabase pour un compte invité ;
   // le fallback sur user_metadata.ikorun_guest couvre le cas où ce champ ne
@@ -4752,7 +4812,7 @@ function allProgs(){ return [...PROGS,...CUSTOM]; }
 const TYPE_COLORS={EF:'--ok','Tempo':'--warn','Seuil':'--or','VMA':'--bad','Intervalle':'--bad','Récup':'--dim','Long':'--e','Course':'--e','Repos':'--dim'};
 // Couleur par baseType brut (codes générés par buildSessionV2) — utilisée pour la puce de type
 // affichée AVANT clic sur la carte de séance (aperçu rapide).
-const BASETYPE_COLORS={EF:'--ok',RECUP:'--dim',LONG:'--e',LONG_COURT:'--e',TEMPO:'--warn',TEMPO_SPE:'--warn',
+const BASETYPE_COLORS={EF:'--ok',RECUP:'--dim',LIGNES:'--ok',LONG:'--e',LONG_COURT:'--e',TEMPO:'--warn',TEMPO_SPE:'--warn',FARTLEK:'--warn',PROGRESSIF:'--warn',COTES:'--bad',SPE:'--e2',SPE_COURT:'--e2',
   SEUIL:'--or',DBLSEUIL:'--or',VMAc:'--bad',VMAl:'--bad',VO2:'--bad',INTERVAL:'--bad',COURSE:'--e',Repos:'--dim'};
 function baseTypeColor(bt){ return 'var('+(BASETYPE_COLORS[bt]||'--e')+')'; }
 
@@ -5688,6 +5748,8 @@ function donutSVG(segs,size,stroke,centerHTML){
   return '<div style="position:relative;width:'+size+'px;height:'+size+'px;margin:0 auto"><svg width="'+size+'" height="'+size+'" style="transform:rotate(-90deg)">'+arcs+'</svg>'+
     (centerHTML?'<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">'+centerHTML+'</div>':'')+'</div>';
 }
+// Durée de repos lisible : 90 -> 1min 30s, 45 -> 45s.
+function fmtRest(s){ s=Math.max(0,Math.round(s||0)); const m=Math.floor(s/60), r=s%60; return m?(m+"min"+(r?" "+r+"s":"")):(r+"s"); }
 function fmtHM(mins){ mins=Math.round(mins||0); const h=Math.floor(mins/60), m=mins%60; return h>0?(h+'h '+String(m).padStart(2,'0')+'min'):(m+'min'); }
 
 /* ---------- RENDER HOME HELPERS (Accueil A) ---------- */
@@ -5774,12 +5836,11 @@ function homeNextUpcoming(){
   const label=days===1?t('tomorrow'):fmtDate(nxt.date);
   return {session:nxt,label};
 }
-// Allure seuil approx. (~88% VMA) à partir du VDOT courant, pour la tuile hero-drop.
-function homeThresholdPace(vdot){
-  if(!vdot) return '—';
-  return spkToStr(paceFromPct(vdot,0.88))+'/km';
-}
-// 7 barres de charge quotidienne de la semaine (couleur = accent du thème actif, plus vif/lumineux pour les séances intenses), jour courant repéré.
+// Nombre de km à l'affichage — séparateur décimal de la langue active (20,7 en FR, 20.7 en EN).
+function hKm(v){ const n=Number(v); return isFinite(n)?n.toLocaleString(localeCode(),{maximumFractionDigits:1}):String(v); }
+// 7 barres de charge quotidienne de la semaine. Les jours déjà courus sont pleins ; les jours
+// à venir affichent en creux la charge PRÉVUE par le plan, pour que la semaine se lise en
+// entier et pas seulement dans sa partie écoulée. Le jour courant est mis en avant.
 function homeWeekBarsHTML(){
   const ws=weekStart(), dowLabels=t('dowShort').split(','), tk=todayKey();
   const EFFORT_TYPES=['Tempo','Seuil','VMA','Intervalle'];
@@ -5787,39 +5848,47 @@ function homeWeekBarsHTML(){
   for(let i=0;i<7;i++){
     const d=new Date(ws); d.setDate(ws.getDate()+i); const k=dateKey(d);
     const daySess=[...SESS,...MSESS].filter(s=>s.date===k);
-    week.push({k,km:daySess.reduce((a,s)=>a+(s.km||0),0),effort:daySess.some(s=>EFFORT_TYPES.includes(s.type))});
+    let km=daySess.reduce((a,s)=>a+(s.km||0),0);
+    let effort=daySess.some(s=>EFFORT_TYPES.includes(s.type)), planned=false;
+    if(!km && PLAN && PLAN.sessions){
+      const p=PLAN.sessions.find(s=>s.date===k && s.km>0 && s.type!=='Repos' && !s.missed);
+      if(p){ km=p.km; effort=HARD_TYPES.includes(p.baseType); planned=true; }
+    }
+    week.push({k,km,effort,planned});
   }
   const maxDay=Math.max(1,...week.map(w=>w.km));
   let bars='';
   week.forEach((w,i)=>{
     const isToday=w.k===tk;
-    const inner=w.km>0?'<b class="'+(w.effort?'effort':'done')+'" style="height:'+Math.max(10,Math.round(w.km/maxDay*100))+'%"></b>':'';
+    const cls=isToday?'now':(w.planned?'plan':(w.effort?'effort':'done'));
+    const inner=w.km>0?'<b class="'+cls+'" style="height:'+Math.max(12,Math.round(w.km/maxDay*100))+'%"></b>':'';
     bars+='<div class="hv7-hw-day'+(isToday?' today':'')+'"><div class="hv7-hw-bar">'+inner+'</div><span class="hv7-hw-lab">'+dowLabels[i]+'</span></div>';
   });
   return '<div class="hv7-hero-week">'+bars+'</div>';
 }
-// Lignes "Plan de la semaine" — uniquement les vraies séances (pas les jours de repos) de la semaine en cours du plan IA.
-function homeWeekPlanRows(){
-  if(!PLAN||!PLAN.sessions||!PLAN.sessions.length) return null;
-  const tk=todayKey();
-  const todaySess=PLAN.sessions.find(s=>s.date===tk);
-  const upcoming=PLAN.sessions.find(s=>s.date>=tk);
-  const curWeekNum=(todaySess||upcoming||PLAN.sessions[PLAN.sessions.length-1]).week;
-  const weekSess=PLAN.sessions.filter(s=>s.week===curWeekNum && s.km>0 && s.type!=='Repos').sort((a,b)=>a.date<b.date?-1:1);
-  if(!weekSess.length) return null;
+// Les n prochaines vraies séances du plan (hors repos), strictement après aujourd'hui.
+function homeNextRows(n){
+  if(!PLAN||!PLAN.sessions) return null;
+  const tk=todayKey(), today=new Date(tk+'T00:00:00');
+  const list=PLAN.sessions.filter(s=>s.date>tk && s.km>0 && s.type!=='Repos').slice(0,n||3);
+  if(!list.length) return null;
   let h='';
-  weekSess.forEach(s=>{
-    const dayName=new Date(s.date+'T00:00:00').toLocaleDateString(localeCode(),{weekday:'long'});
-    const dayCap=dayName.charAt(0).toUpperCase()+dayName.slice(1);
-    let ic='', cls='';
-    if(s.done){ ic=''; cls='done'; }
-    else if(s.missed){ ic=''; cls='missed'; }
-    else if(s.date===tk) cls='today';
-    h+='<div class="hv7-plan-row '+cls+'" onclick="openRunSheet('+s.id+')"><div class="hv7-plan-ic">'+ic+'</div>'+
-      '<div class="hv7-plan-body"><div class="hv7-plan-title">'+planSessTitle(s)+'</div><div class="hv7-plan-sub">'+dayCap+' · '+(planSessLabel(s)||'')+'</div></div></div>';
+  list.forEach(s=>{
+    const d=new Date(s.date+'T00:00:00');
+    const days=Math.max(1,Math.round((d-today)/86400000));
+    const dayRaw=d.toLocaleDateString(localeCode(),{weekday:'short'}).replace('.','');
+    const dayCap=dayRaw.charAt(0).toUpperCase()+dayRaw.slice(1);
+    const meta=dayCap+(s.km?' · '+hKm(s.km)+' km':'')+(s.pace?' · '+s.pace+'/km':'');
+    h+='<div class="hv7-nx" onclick="openRunSheet('+s.id+')"><i style="background:'+baseTypeColor(s.baseType)+'"></i>'+
+      '<div class="hv7-nx-b"><b>'+escHtml(planSessTitle(s))+'</b><span>'+escHtml(meta)+'</span></div>'+
+      '<em>'+(days===1?t('tomorrow'):tp('dayPlusShort',days))+'</em></div>';
   });
   return h;
 }
+// Bilan en un geste depuis l'accueil : « Je l'ai faite » enchaîne sur le debrief habituel,
+// « Pas faite » ouvre le flux séance manquée (raison → remplacement → ajustement du plan).
+function homeSessDone(id){ curRunId=id; markRunDone(); renderHome(); }
+function homeSessMissed(id){ openMissedFlow(id); }
 function renderHome(){
   const kmW=kmThisWeek();
   const sessW=runCountWeek()+muscuCountWeek(), sessTarget=(P.days&&P.days.length)||4;
@@ -5845,9 +5914,12 @@ function renderHome(){
       '</div></div>';
   }
 
-  // SALUTATION — semaine/phase du plan si actif, sinon quip objectif
+  // SALUTATION — semaine/phase du plan si actif, sinon quip objectif. La série en cours,
+  // quand il y en a une, est glissée en suffixe pour ne pas encombrer la carte du jour.
   const wdRaw=new Date().toLocaleDateString(localeCode(),{weekday:'long'});
   const wdCap=wdRaw.charAt(0).toUpperCase()+wdRaw.slice(1);
+  const wdShortRaw=new Date().toLocaleDateString(localeCode(),{weekday:'short'}).replace('.','');
+  const wdShort=wdShortRaw.charAt(0).toUpperCase()+wdShortRaw.slice(1);
   let sub;
   if(PLAN && PLAN.sessions && PLAN.sessions.length){
     const tk=todayKey();
@@ -5858,83 +5930,77 @@ function renderHome(){
   } else {
     sub=P.objTime?tp('quipTime',escHtml(P.objTime)):(P.goal?tp('quipGoal',escHtml(P.goal)):t('quipDefault'));
   }
-  html+='<div class="hv7-greet"><h1>'+t('greet')+' '+(first||t('you'))+'</h1><p>'+sub+'</p></div>';
-
-  // HERO-DROP — séance du jour (ou repos) + prochaine séance + VDOT/allure seuil/charge
   {
     const streak=streakDays();
-    const badgeHtml=streak>=2?('<div class="hv7-hero-drop-badge">'+tp('streakDaysShort',streak)+'</div>'):'';
-    let heroTitle, heroMeta, heroClick;
+    if(streak>=2) sub+=' · '+tp('streakDaysShort',streak);
+  }
+  html+='<div class="hv7-greet"><h1>'+t('greet')+' '+escHtml(first||t('you'))+'</h1><p>'+sub+'</p></div>';
+
+  // CARTE DU JOUR — pièce maîtresse : type, titre, pourquoi, cibles, et le bilan en un geste.
+  {
     if(ps && ps.type!=='Repos'){
-      heroTitle=planSessTitle(ps);
-      heroMeta=(ps.km?ps.km+' km · '+ps.pace+'/km'+(ps.duration?' · '+ps.duration+' min':''):t('today'));
-      heroClick=(ps._source==='perso'?"curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')":'openRunSheet('+ps.id+')');
-    } else {
-      heroTitle=t('restDay');
+      const isPerso=ps._source==='perso';
+      const col=isPerso?'var(--e2)':baseTypeColor(ps.baseType);
+      const lab=((isPerso?(ps.type||''):planSessLabel(ps))||'').toUpperCase();
+      const dt=isPerso?null:liveDetail(ps);
+      const why=(dt&&dt.objectif)?dt.objectif:'';
+      const open=isPerso?("curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')"):('openRunSheet('+ps.id+')');
+      html+='<div class="hv7-day" onclick="'+open+'">'+
+        '<div class="hv7-day-top">'+(lab?'<span class="hv7-day-chip" style="color:'+col+'">'+escHtml(lab)+'</span>':'<span></span>')+
+          '<span class="hv7-day-when">'+t('today')+' · '+escHtml(wdShort)+'</span></div>'+
+        '<div class="hv7-day-title">'+escHtml(isPerso?(ps.title||''):planSessTitle(ps))+'</div>'+
+        (why?'<div class="hv7-day-why">'+escHtml(why)+'</div>':'');
+      const cells=[];
+      if(ps.km) cells.push([hKm(ps.km),'km']);
+      if(ps.pace) cells.push([ps.pace,'/km']);
+      if(ps.rpe) cells.push([ps.rpe+'/10',t('rpeShort')]);
+      else if(ps.duration) cells.push([ps.duration,'min']);
+      if(cells.length) html+='<div class="hv7-day-targets">'+cells.map(c=>'<div><b>'+escHtml(String(c[0]))+'</b><span>'+escHtml(String(c[1]))+'</span></div>').join('')+'</div>';
+      if(ps.done) html+='<div class="hv7-day-state ok">'+t('sessionCompleted')+'</div>';
+      else if(ps.missed) html+='<div class="hv7-day-state ko">'+t('missedTag')+'</div>';
+      else if(!isPerso) html+='<div class="hv7-day-acts" onclick="event.stopPropagation()">'+
+          '<button class="hv7-act main" onclick="homeSessDone('+ps.id+')">'+t('iDidIt')+'</button>'+
+          '<button class="hv7-act ghost" onclick="homeSessMissed('+ps.id+')">'+t('notDone')+'</button></div>';
+      html+='</div>';
+    } else if(ps || PLAN){
       const nxt=homeNextUpcoming();
-      heroMeta=nxt?tp('nextSessionMeta',nxt.label):t('noUpcomingSession');
-      heroClick="nav('sport')";
+      html+='<div class="hv7-day" onclick="nav(\'sport\')">'+
+        '<div class="hv7-day-top"><span class="hv7-day-chip" style="color:var(--dim)">'+escHtml(t('restTag').toUpperCase())+'</span>'+
+          '<span class="hv7-day-when">'+t('today')+' · '+escHtml(wdShort)+'</span></div>'+
+        '<div class="hv7-day-title">'+t('restDay')+'</div>'+
+        '<div class="hv7-day-why">'+(nxt?tp('nextSessionMeta',nxt.label):t('noSessionToday'))+'</div>'+
+      '</div>';
+    } else {
+      html+='<div class="hv7-day" onclick="nav(\'sport\');openPlanSetup()">'+
+        '<div class="hv7-day-top"><span class="hv7-day-chip" style="color:var(--e2)">IKORUN</span>'+
+          '<span class="hv7-day-when">'+escHtml(wdCap)+'</span></div>'+
+        '<div class="hv7-day-title">'+t('planIkorunTitle')+'</div>'+
+        '<div class="hv7-day-why">'+tp('planIkorunDescLong',(vdot||'?'))+'</div>'+
+        '<div class="hv7-day-acts"><button class="hv7-act main">'+t('configureGenerate')+'</button></div>'+
+      '</div>';
     }
-    const prevKm=lastWeekKm();
-    const loadDelta=prevKm?Math.round((kmW-prevKm)/prevKm*100):null;
-    html+='<div class="hv7-hero-drop" onclick="'+heroClick+'">'+
-      '<div class="hv7-hero-drop-top"><div class="hv7-hero-drop-chip">'+t('today')+' · '+wdCap+'</div>'+badgeHtml+'</div>'+
-      '<div class="hv7-hero-drop-title">'+heroTitle+'</div>'+
-      '<div class="hv7-hero-drop-meta">'+heroMeta+'</div>'+
-      '<div class="hv7-hero-drop-row">'+
-        '<div class="hv7-hero-drop-stat"><b>'+(vdot||'—')+'</b><span>VDOT</span></div>'+
-        '<div class="hv7-hero-drop-stat"><b>'+homeThresholdPace(vdot)+'</b><span>'+t('thresholdPaceShort')+'</span></div>'+
-        '<div class="hv7-hero-drop-stat"><b>'+(loadDelta!==null?((loadDelta>0?'+':'')+loadDelta+'%'):'—')+'</b><span>'+t('vsLastWeekShort')+'</span></div>'+
-      '</div>'+
-    '</div>';
   }
 
-  // SEMAINE COMPACTE — 7 barres (couleur du thème actif, plus intense pour les séances soutenues)
+  // SEMAINE COMPACTE — 7 barres de charge, jour courant repéré
   html+=homeWeekBarsHTML();
 
-  // 3 TUILES — charge, temps total, séances restantes
+  // 3 TUILES — volume de la semaine, séances faites sur l'objectif, VDOT courant
+  html+='<div class="hv7-krow3" onclick="nav(\'stats\')">'+
+    '<div class="hv7-ktile"><div class="hv7-ktile-val">'+hKm(kmW)+'</div><div class="hv7-ktile-lab">'+t('kmWeekShort')+'</div></div>'+
+    '<div class="hv7-ktile"><div class="hv7-ktile-val">'+sessW+'/'+sessTarget+'</div><div class="hv7-ktile-lab">'+t('sessionsLab')+'</div></div>'+
+    '<div class="hv7-ktile"><div class="hv7-ktile-val">'+(vdot||'—')+'</div><div class="hv7-ktile-lab">VDOT</div></div>'+
+  '</div>';
+
+  // ENSUITE — les prochaines séances du plan
   {
-    const prevKm=lastWeekKm();
-    const deltaTxt=prevKm?((kmW>=prevKm?'':'')+Math.abs(Math.round((kmW-prevKm)/prevKm*100))+'%'):t('newWeekTag');
-    const ws=weekStart();
-    const totalMin=sessThisWeek().reduce((a,s)=>a+(s.duration||0),0)+MSESS.filter(s=>new Date(s.date)>=ws).reduce((a,s)=>a+(s.duration||0),0);
-    const remaining=Math.max(0,sessTarget-sessW);
-    html+='<div class="hv7-krow3">'+
-      '<div class="hv7-ktile"><div class="hv7-ktile-ic">'+ICN('road',14)+'</div><div class="hv7-ktile-lab">'+t('thisWeekCap')+'</div><div class="hv7-ktile-val">'+kmW.toFixed(1).replace('.',',')+' km</div>'+
-        '<div class="hv7-ktile-sub'+(prevKm?'':' muted')+'">'+deltaTxt+'</div></div>'+
-      '<div class="hv7-ktile"><div class="hv7-ktile-ic">'+ICN('timer',14)+'</div><div class="hv7-ktile-lab">'+t('totalTime')+'</div><div class="hv7-ktile-val">'+fmtHM(totalMin)+'</div>'+
-        '<div class="hv7-ktile-sub muted">'+tp('sessionsDoneShort',sessW)+'</div></div>'+
-      '<div class="hv7-ktile"><div class="hv7-ktile-ic">'+ICN('health',14)+'</div><div class="hv7-ktile-lab">'+t('remainingCap')+'</div><div class="hv7-ktile-val">'+(remaining>0?tp('sessionsRemainingVal',remaining):t('objectiveReached'))+'</div>'+
-        '<div class="hv7-ktile-sub muted">'+t('untilEndWeek')+'</div></div>'+
-    '</div>';
-  }
-
-  // SÉANCE SUIVANTE
-  html+='<div class="hv7-sec-lab">'+t('nextSession')+'</div>';
-  if(ps && ps.type!=='Repos'){
-    html+='<div class="hv7-next-row" onclick="'+(ps._source==='perso'?"curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')":'openRunSheet('+ps.id+')')+'">'+
-      '<div class="hv7-next-ic">'+ICN('bolt',20)+'</div>'+
-      '<div class="hv7-next-body"><div class="hv7-next-title">'+planSessTitle(ps)+'</div>'+
-      '<div class="hv7-next-meta">'+(ps.km?ps.km+' km · '+ps.pace+'/km'+(ps.duration?' · '+ps.duration+' min':''):'')+'</div>'+
-      '<div class="hv7-next-when">'+t('today')+'</div></div>'+
-      '<div class="hv7-next-arrow">'+ICN('chevronR',17)+'</div></div>';
-  } else {
-    html+='<div class="hv7-next-row" onclick="nav(\'sport\')">'+
-      '<div class="hv7-next-ic">'+ICN('moon',20)+'</div>'+
-      '<div class="hv7-next-body"><div class="hv7-next-title">'+t('restDay')+'</div>'+
-      '<div class="hv7-next-meta">'+t('noSessionToday')+'</div></div>'+
-      '<div class="hv7-next-arrow">'+ICN('chevronR',17)+'</div></div>';
-  }
-
-  // PLAN DE LA SEMAINE
-  const weekRows=homeWeekPlanRows();
-  html+='<div class="hv7-sec-lab">'+t('planOfWeek')+(weekRows?' <span class="see" onclick="openFullPlan()">'+t('seePlan')+' ›</span>':'')+'</div>';
-  if(weekRows){
-    html+='<div class="hv7-plan-list">'+weekRows+'</div>';
-  } else {
-    html+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('bolt',36,'currentColor')+'</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">'+t('planIkorunTitle')+'</div>'+
-      '<div style="font-size:13px;margin-bottom:16px">'+tp('planIkorunDescLong',(vdot||'?'))+'</div>'+
-      '<button class="btn" onclick="nav(\'sport\');openPlanSetup()">'+t('configureGenerate')+'</button></div></div>';
+    const nxRows=homeNextRows(3);
+    if(nxRows){
+      html+='<div class="hv7-sec-lab">'+t('nextLab')+' <span class="see" onclick="openFullPlan()">'+t('seePlan')+' ›</span></div>';
+      html+='<div>'+nxRows+'</div>';
+    } else if(PLAN){
+      html+='<div class="hv7-sec-lab">'+t('nextLab')+'</div>';
+      html+='<div class="hv7-nx"><div class="hv7-nx-b"><b>'+t('noUpcomingSession')+'</b></div></div>';
+    }
   }
 
   html+='</div>';
@@ -5946,13 +6012,13 @@ function renderHomeSimple(ps,sessW,sessTarget,vdot,form,first){
     '<div class="ik-logo-mark" style="-webkit-mask-image:url(\''+LOGO_MARK_URI+'\');mask-image:url(\''+LOGO_MARK_URI+'\')" role="img" aria-label="IKORUN"></div>'+
     '<span>IKORUN</span></div></div>';
   h+=homeStreakBadge();
-  h+='<div class="ik-greet"><h1>'+t('greet')+' '+(first||t('you'))+'</h1></div>';
+  h+='<div class="ik-greet"><h1>'+t('greet')+' '+escHtml(first||t('you'))+'</h1></div>';
 
   h+='<div class="next-lab">'+t('todayCap')+'</div>';
   if(ps && ps.type!=='Repos'){
     h+='<div class="card next-card stag" onclick="'+(ps._source==='perso'?"curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')":'openRunSheet('+ps.id+')')+'">'+
       '<div class="next-body"><div class="next-title">'+planSessTitle(ps)+'</div>'+
-      '<div class="next-meta">'+(ps.km?ps.km+' km · '+ps.pace+'/km'+(ps.duration?' · '+ps.duration+' min':''):'')+'</div>'+
+      '<div class="next-meta">'+(ps.km?hKm(ps.km)+' km · '+ps.pace+'/km'+(ps.duration?' · '+ps.duration+' min':''):'')+'</div>'+
       '<div class="next-when">'+t('tapToStart')+'</div></div>'+
       '<div class="next-ic">'+ICN('run',20)+'</div></div>';
   } else {
@@ -5977,95 +6043,101 @@ function fmtDate(s){ const d=new Date(s); return d.toLocaleDateString(localeCode
 
 /* ---------- SPORT ---------- */
 let sportTab='run', runSub='ia';
-/* ---------- HERO DU PLAN (design inspiré wireframe) ---------- */
+// Couleur d'une phase d'entraînement — échelle sémantique fixe (six phases),
+// volontairement indépendante de l'accent choisi : c'est une information, pas une déco.
+function phaseColor(key){ return 'var(--ph-'+(key||'PG')+')'; }
+/* Carte plan de l'onglet Sport : la course visée, le compte à rebours, le rail des
+   six phases (chaque barre large comme sa durée réelle), et trois chiffres qui
+   situent la semaine en cours. */
 function planHeroHTML(){
   const tk=todayKey();
-  const done=PLAN.sessions.filter(s=>s.done).length;
   const todaySess=PLAN.sessions.find(s=>s.date===tk);
   const upcoming=PLAN.sessions.find(s=>s.date>=tk);
-  const curWeekNum=(todaySess||upcoming||PLAN.sessions[PLAN.sessions.length-1]).week;
+  const curSess=todaySess||upcoming||PLAN.sessions[PLAN.sessions.length-1];
+  const curWeekNum=curSess.week;
   const weekSessions=PLAN.sessions.filter(s=>s.week===curWeekNum);
-  const phaseKey=weekSessions[0]?.phaseKey;
-  const phaseWeeks=[...new Set(PLAN.sessions.filter(s=>s.phaseKey===phaseKey).map(s=>s.week))].sort((a,b)=>a-b);
-  const phaseProgress=phaseWeeks.length>1?Math.round(((curWeekNum-phaseWeeks[0])/(phaseWeeks.length-1))*100):100;
+
+  const byPhase=[];
+  PLAN.sessions.forEach(s=>{
+    const last=byPhase[byPhase.length-1];
+    if(!last || last.key!==s.phaseKey) byPhase.push({key:s.phaseKey,weeks:new Set([s.week])});
+    else last.weeks.add(s.week);
+  });
+  const curIdx=byPhase.findIndex(p=>p.weeks.has(curWeekNum));
+  const rail=byPhase.map((p,i)=>'<i class="'+(i<curIdx?'past':(i===curIdx?'now':''))+'" style="flex:'+p.weeks.size+';color:'+phaseColor(p.key)+'"></i>').join('');
+
   const comp=new Date(P.compDate+'T00:00:00'), today=new Date(tk+'T00:00:00');
   const daysLeft=Math.max(0,Math.round((comp-today)/86400000));
-
-  const byDow={}; weekSessions.forEach(s=>{ byDow[new Date(s.date+'T00:00:00').getDay()]=s; });
-  const dowOrder=[1,2,3,4,5,6,0], dowLab=t('dowShort').split(',');
-  let dots='';
-  dowOrder.forEach((dow,i)=>{
-    const s=byDow[dow];
-    let cls='dotcell', ic='';
-    if(!s || s.km===0) cls+=' dot-rest';
-    else if(s.done){ cls+=' dot-done'; ic=''; }
-    else if(s.missed){ cls+=' dot-missed'; ic=''; }
-    else if(s.date===tk) cls+=' dot-today';
-    dots+='<div class="'+cls+'"><div class="dc-lab">'+dowLab[i]+'</div><div class="dc-circ">'+ic+'</div></div>';
-  });
 
   const curKm=Math.round(weekSessions.reduce((a,s)=>a+(s.km||0),0));
   const prevKm=Math.round(PLAN.sessions.filter(s=>s.week===curWeekNum-1).reduce((a,s)=>a+(s.km||0),0));
   const kmDelta=prevKm?Math.round((curKm-prevKm)/prevKm*100):null;
-
+  const realW=weekSessions.filter(s=>s.km>0 && s.type!=='Repos');
+  const doneW=realW.filter(s=>s.done).length;
   const curVdot=getUserVDOT()||PLAN.vdot;
   const vdotDelta=Math.round((curVdot-PLAN.vdot)*10)/10;
 
-  let h='<div class="card plan-hero">';
-  h+='<div class="lab">'+t('goalCap')+'</div><div class="plan-race">'+(trRace(P.objRace)||t('courseDefault'))+'</div>';
-  h+='<div class="plan-sub">'+(P.objTime?tp('goalTimeColon',P.objTime):'')+tp('raceOn',fmtDate(P.compDate))+'</div>';
-  h+='<div class="row" style="gap:10px;margin-top:16px">';
-  h+='<div class="minicard"><div class="lab">'+t('raceDay')+'</div><div class="v" style="color:var(--e)">J-'+daysLeft+'</div></div>';
-  h+='<div class="minicard"><div class="lab">'+t('currentVdot')+'</div><div class="v">'+curVdot+(vdotDelta?' <span class="'+(vdotDelta>0?'delta-up':'delta-down')+'">'+(vdotDelta>0?'+':'')+vdotDelta+'</span>':'')+'</div></div>';
-  h+='</div>';
-  h+='<div style="margin-top:16px"><div class="lab">'+t('currentPhase')+'</div><div class="man" style="font-weight:700;font-size:16px;margin:2px 0 8px">'+phaseName(weekSessions[0]?.phaseKey)+'</div><div class="pbar"><div style="width:'+phaseProgress+'%"></div></div></div>';
-  h+='<div style="margin-top:16px"><div class="row" style="margin-bottom:8px"><div class="lab">'+t('thisWeek')+'</div><div class="lab">'+tp('weekOf',curWeekNum,PLAN.weeks)+'</div></div><div class="dotrow">'+dots+'</div></div>';
-  h+='<div class="row" style="gap:10px;margin-top:16px">';
-  h+='<div class="minicard"><div class="lab">'+t('weeklyLoad')+'</div><div class="v">'+curKm+' km'+(kmDelta!==null?' <span class="'+(kmDelta>=0?'delta-up':'delta-down')+'">'+(kmDelta>=0?'+':'')+kmDelta+'%</span>':'')+'</div></div>';
-  h+='<div class="minicard"><div class="lab">'+t('sessionsCap')+'</div><div class="v">'+done+'/'+PLAN.sessions.length+'</div></div>';
-  h+='</div>';
-  h+='<button class="btn ghost sm" style="margin-top:16px" onclick="confirmRegenPlan()">'+t('regenBtn')+'</button>';
+  let h='<div class="sp-plan">';
+  h+='<div class="sp-plan-top"><div><div class="sp-race">'+escHtml(trRace(P.objRace)||t('courseDefault'))+'</div>'+
+    '<div class="sp-race-sub">'+(P.objTime?escHtml(P.objTime)+' · ':'')+fmtDate(P.compDate)+'</div></div>'+
+    '<div class="sp-days"><b>'+daysLeft+'</b><span>'+t('daysLab')+'</span></div></div>';
+  h+='<div class="sp-rail">'+rail+'</div>';
+  h+='<div class="sp-rail-lab"><b>'+phaseName(curSess.phaseKey)+'</b><span>'+tp('weekOf',curWeekNum,PLAN.weeks)+'</span></div>';
+  h+='<div class="sp-metrics">'+
+    '<div><b>'+curVdot+(vdotDelta?' <span class="sp-delta '+(vdotDelta>0?'up':'down')+'">'+(vdotDelta>0?'+':'')+vdotDelta+'</span>':'')+'</b><span>VDOT</span></div>'+
+    '<div><b>'+curKm+' km'+(kmDelta!==null?' <span class="sp-delta '+(kmDelta>=0?'up':'down')+'">'+(kmDelta>=0?'+':'')+kmDelta+'%</span>':'')+'</b><span>'+t('weeklyLoad')+'</span></div>'+
+    '<div><b>'+doneW+'/'+realW.length+'</b><span>'+t('sessionsCap')+'</span></div>'+
+    '</div>';
+  h+='<div class="sp-acts"><button onclick="openFullPlan()">'+t('seePlan')+'</button>'+
+    '<button class="lnk" onclick="confirmRegenPlan()">'+t('regenBtn')+'</button></div>';
   h+='</div>';
   return h;
 }
 function renderRunning(){
-  let h='<div class="pills" style="margin-bottom:14px"><div class="pill '+(runSub==='ia'?'on':'')+'" onclick="runSub=\'ia\';renderSport()">'+t('planIkorunPill')+'</div><div class="pill '+(runSub==='perso'?'on':'')+'" onclick="runSub=\'perso\';renderSport()">'+t('myPlanPill')+'</div></div>';
+  let h='<div class="pills sub" style="margin-bottom:14px"><div class="pill '+(runSub==='ia'?'on':'')+'" onclick="runSub=\'ia\';renderSport()">'+t('planIkorunPill')+'</div><div class="pill '+(runSub==='perso'?'on':'')+'" onclick="runSub=\'perso\';renderSport()">'+t('myPlanPill')+'</div></div>';
   if(runSub==='ia'){
     if(!PLAN){
       h+='<div class="card" id="tourPlanCta"><div class="empty"><div class="em-ic">'+ICN('bolt',36,'currentColor')+'</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">'+t('planIkorunTitle')+'</div><div style="font-size:13px;margin-bottom:16px">'+tp('planIkorunDescLong',(getUserVDOT()||'?'))+'</div><button class="btn" onclick="openPlanSetup()">'+t('configureGenerate')+'</button></div></div>';
     } else {
       h+=planHeroHTML();
-      // Seule la semaine en cours est affichée sur la page ; le reste du plan
-      // s'ouvre dans une page à part (overlay plein écran) pour ne pas dérouler
-      // la liste jusqu'en bas.
+      // Seule la semaine en cours est listée ici ; le reste du plan s'ouvre en
+      // plein écran depuis le bouton « Voir le plan » de la carte ci-dessus.
       const tk=todayKey();
       const todaySess=PLAN.sessions.find(s=>s.date===tk);
       const upcoming=PLAN.sessions.find(s=>s.date>=tk);
       const featuredWeek=(todaySess||upcoming||PLAN.sessions[PLAN.sessions.length-1]).week;
-      h+=renderPlanRows(PLAN.sessions.filter(s=>s.week===featuredWeek),tk);
-      const remaining=[...new Set(PLAN.sessions.filter(x=>x.week!==featuredWeek).map(x=>x.week))].length;
-      if(remaining>0) h+='<button class="btn ghost" style="margin:14px 0 4px" onclick="openFullPlan()">'+tp('showRestPlan',remaining)+'</button>';
+      h+='<div class="hv7-sec-lab" style="margin-bottom:10px">'+t('thisWeek')+'</div>';
+      h+=renderPlanRows(PLAN.sessions.filter(s=>s.week===featuredWeek),tk,{flat:true});
     }
   } else {
     h+=renderPersoList();
   }
   return h;
 }
-/* Rendu des lignes de séances d'un plan (groupées par phase puis semaine).
-   Réutilisé à la fois pour l'aperçu "semaine en cours" et pour la page
-   plein écran qui affiche tout le programme. */
-function renderPlanRows(sessions,tk){
-  tk=tk||todayKey();
+/* Rendu des lignes de séances d'un plan, groupées par phase puis semaine.
+   Réutilisé pour l'aperçu « cette semaine » (opts.flat : pas d'en-têtes, on est
+   déjà dans un contexte d'une seule semaine) et pour la page plein écran. */
+function renderPlanRows(sessions,tk,opts){
+  tk=tk||todayKey(); opts=opts||{};
   let h='', curPhase=null, curWeek=null;
   sessions.forEach(s=>{
-    if(s.phase!==curPhase){ curPhase=s.phase; h+='<div class="phase-head" style="color:var('+(s.color||'--e')+')">▸ '+phaseName(s.phaseKey)+'</div>'; }
-    if(s.week!==curWeek){ curWeek=s.week; h+='<div class="lab" style="margin:8px 0 6px">'+tp('weekN',s.week)+(s.deload?t('deloadTag'):'')+'</div>'; }
+    if(!opts.flat){
+      if(s.phaseKey!==curPhase){ curPhase=s.phaseKey; h+='<div class="phase-head" style="color:'+phaseColor(s.phaseKey)+'">'+phaseName(s.phaseKey)+'</div>'; }
+      if(s.week!==curWeek){ curWeek=s.week; h+='<div class="lab" style="margin:8px 0 6px">'+tp('weekN',s.week)+(s.deload?t('deloadTag'):'')+'</div>'; }
+    }
     const isToday=s.date===tk;
-    const qb=s.missed?'<div class="qbadge" style="background:rgba(255,92,108,.16);color:var(--bad)">'+t('missedTag')+'</div>'
-      :(s.km===0?'<div class="qbadge rest">'+t('restTag')+'</div>':'<div class="chrome-chip" style="color:'+baseTypeColor(s.baseType)+'">'+planSessLabel(s)+'</div>');
+    const rest=(!s.km || s.type==='Repos');
+    const qb = s.done   ? '<div class="qbadge done">'+t('doneTag')+'</div>'
+             : s.missed ? '<div class="qbadge missed">'+t('missedTag')+'</div>'
+             : rest     ? '<div class="qbadge rest">'+t('restTag')+'</div>'
+             : '<div class="chrome-chip" style="color:'+baseTypeColor(s.baseType)+'">'+escHtml(planSessLabel(s))+'</div>';
     const ssum=seriesSummary({...s,series:liveSeries(s)});
-    const line2=fmtDate(s.date)+(s.km?' · '+s.km+' km':' · Repos')+(s.km&&!ssum?' · '+s.pace+'/km':'');
-    h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'" onclick="openRunSheet('+s.id+')" style="'+(s.missed?'border-color:rgba(255,92,108,.35)':'')+'"><div class="row"><div><div style="font-weight:700;font-size:14px">'+planSessTitle(s)+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+line2+'</div>'+(ssum?'<div style="color:var(--e);font-size:12px;font-weight:700;margin-top:3px">'+ssum+'</div>':'')+'</div>'+qb+'</div></div>';
+    const line2=fmtDate(s.date)+(s.km?' · '+hKm(s.km)+' km':' · '+t('restTag'))+(s.km&&!ssum?' · '+s.pace+'/km':'');
+    h+='<div class="sess'+(s.done?' done':'')+(s.missed?' missed':'')+(isToday?' today':'')+'"'+
+      ' style="--sess-c:'+(rest?'var(--dim)':baseTypeColor(s.baseType))+'" onclick="openRunSheet('+s.id+')">'+
+      '<div class="row"><div><div class="sess-t">'+escHtml(planSessTitle(s))+'</div>'+
+      '<div class="sess-m">'+escHtml(line2)+'</div>'+
+      (ssum?'<div class="sess-s">'+escHtml(ssum)+'</div>':'')+'</div>'+qb+'</div></div>';
   });
   return h;
 }
@@ -6172,7 +6244,7 @@ function persoDetailHTML(){
   const p=CUSTOM.find(x=>x.id===curPerso); if(!p) return renderPersoList();
   const tk=todayKey();
   const following=P.followPerso===p.id;
-  let h='<div class="row" style="margin-bottom:14px"><button class="x" onclick="curPerso=null;renderSport()">‹</button><div class="man" style="font-weight:800;font-size:18px">'+p.name+'</div><button class="x" onclick="renamePerso(\''+p.id+'\')"></button></div>';
+  let h='<div class="row" style="margin-bottom:14px"><button class="x" onclick="curPerso=null;renderSport()">‹</button><div class="man" style="font-weight:800;font-size:18px">'+p.name+'</div><button class="x" onclick="renamePerso(\''+p.id+'\')" aria-label="'+t('renameLab')+'">'+ICN('edit',16)+'</button></div>';
   h+='<div class="chrome-box'+(following?' accent':'')+'" style="display:flex;align-items:center;gap:10px">'
     +'<div style="flex:1"><div class="cb-head" style="margin-bottom:2px">'+(following?'Plan suivi actuellement':'Suivre ce plan à la place du plan IKORUN')+'</div>'
     +'<div class="cb-body" style="font-size:12px;color:var(--muted)">'+(following?'Ton accueil et ton bilan utilisent ce plan. Le plan IKORUN continue de s\u2019ajuster en arrière-plan selon ce que tu fais ici.':'Ton accueil affichera les séances de ce plan au lieu du plan généré. Tu peux revenir au plan IKORUN quand tu veux.')+'</div></div>'
@@ -6360,7 +6432,7 @@ function syncDebriefFromReps(){
 function renderDebrief(){
   const d=debriefData;
   const scale=(key,label,icons)=>'<div class="field"><label>'+label+'</label><div class="pills">'+icons.map((ic,i)=>'<div class="pill '+(d[key]===i+1?'on':'')+'" onclick="debriefData.'+key+'='+(i+1)+';renderDebrief()">'+ic+'</div>').join('')+'</div></div>';
-  let h='<div class="tip" style="margin-bottom:14px">\U0001f4cb '+t('debriefIntro')+'</div>';
+  let h='<div class="tip" style="margin-bottom:14px">&#128203; '+t('debriefIntro')+'</div>';
   if(debriefReps.length){
     const doneCount=debriefReps.filter(r=>r.respected===true).length;
     h+='<div class="chrome-box"><div class="cb-head">\U0001f3c3 '+tp('repByRepSummary',debriefReps.length,debriefReps[0].dist)+' <span style="margin-left:auto;font-weight:600;color:var(--e2)">'+tp('respectedCount',doneCount,debriefReps.length)+'</span></div>';
@@ -6564,30 +6636,100 @@ function markRunDone(){
 }
 
 /* ---------- MUSCULATION ---------- */
+/* ===== MUSCULATION — LECTURE ANATOMIQUE DES PROGRAMMES =====
+   Une photo de salle ne dit pas ce qu'un programme travaille. La silhouette, si :
+   chaque carte porte sa propre carte du corps, muscles principaux en plein,
+   secondaires en retrait. C'est la même mécanique que la carte de chaleur des
+   stats (bodyPartsSVGView), appliquée au contenu d'un programme. */
+function progZones(p){
+  const prim=new Set(), sec=new Set();
+  (p.ex||[]).forEach(e=>{
+    const ms=e.muscles||((findEx(e.name)||{}).muscles)||[];
+    ms.forEach((m,i)=>{ const z=MUSCLE_TO_ZONE[m]; if(!z) return; (i===0?prim:sec).add(z); });
+  });
+  const zones=[];
+  prim.forEach(z=>zones.push({key:z,strength:'primary'}));
+  sec.forEach(z=>{ if(!prim.has(z)) zones.push({key:z,strength:'secondary'}); });
+  return {zones};
+}
+/* Regroupement grossier des zones pour l'étiquetage : « Pectoraux haut » et
+   « Pectoraux bas » sont deux zones distinctes sur la silhouette, mais une seule
+   étiquette sur la carte — sinon les puces répètent trois fois le même muscle. */
+const ZONE_GROUP={neck:'Cou',deltoids:'Épaules',frontDeltoid:'Épaules',
+  chest:'Pectoraux',upperChest:'Pectoraux',lowerChest:'Pectoraux',
+  abs:'Abdominaux',obliques:'Abdominaux',biceps:'Biceps',triceps:'Triceps',forearm:'Avant-bras',
+  upperBack:'Dos',trapezius:'Trapèzes',lowerBack:'Lombaires',
+  quadriceps:'Quadriceps',hamstring:'Ischios',adductors:'Adducteurs',gluteal:'Fessiers',calves:'Mollets'};
+// Les groupes musculaires les plus représentés dans un programme, traduits.
+function progTopMuscles(p,n){
+  const c={};
+  (p.ex||[]).forEach(e=>{
+    const m=(e.muscles||[])[0]; if(!m) return;
+    const g=ZONE_GROUP[MUSCLE_TO_ZONE[m]]||m;
+    c[g]=(c[g]||0)+1;
+  });
+  return Object.keys(c).sort((a,b)=>c[b]-c[a]).slice(0,n||3).map(m=>trMuscle(m));
+}
+// Dernière exécution du programme dans l'historique muscu, en libellé relatif.
+function progLastDone(p){
+  const rows=MSESS.filter(s=>s.progName===p.name).sort((a,b)=>a.date<b.date?1:-1);
+  if(!rows.length) return null;
+  const d=new Date(rows[0].date+'T00:00:00'), today=new Date(todayKey()+'T00:00:00');
+  const n=Math.max(0,Math.round((today-d)/86400000));
+  return n===0?t('today'):tp('daysAgoShort',n);
+}
+// Double silhouette compacte (face + dos) pour une carte de programme.
+function progBodyMini(p){
+  const zi=progZones(p);
+  return '<div class="mus-body">'+
+    bodyPartsSVGView(zi,BODY_PARTS_FRONT,ANATOMY_VB_FRONT)+
+    bodyPartsSVGView(zi,BODY_PARTS_BACK,ANATOMY_VB_BACK)+
+  '</div>';
+}
+function muscuCardHTML(p,opts){
+  opts=opts||{};
+  const sets=p.ex.reduce((a,e)=>a+(e.sets||0),0);
+  const dur=Math.round(progDuration(p));
+  const last=progLastDone(p);
+  const tags=progTopMuscles(p,3);
+  return '<div class="mus-card" onclick="openProg(\''+p.id+'\')">'+
+    '<div class="mus-card-b">'+
+      '<div class="mus-name">'+escHtml(p.name)+'</div>'+
+      (tags.length?'<div class="mus-tags">'+tags.map(m=>'<span>'+escHtml(m)+'</span>').join('')+'</div>':'')+
+      '<div class="mus-meta">'+tp('exercisesCount',p.ex.length)+' · '+tp('setsCount',sets)+' · ~'+dur+' min</div>'+
+      '<div class="mus-last'+(last?'':' never')+'">'+(last||t('neverDoneLab'))+'</div>'+
+    '</div>'+
+    progBodyMini(p)+
+    (opts.del?'<button class="x mus-del" onclick="event.stopPropagation();delProg(\''+p.id+'\')">'+ICN('trash',16)+'</button>':'')+
+  '</div>';
+}
 function renderMuscu(){
   let h='';
   if(DB.load('live_paused')){ const sv=DB.load('live_paused'); h+='<div class="card" style="border-color:var(--warn);background:rgba(255,180,84,.08)"><div class="row"><div><div style="font-weight:700">'+t('sessionPausedLab')+'</div><div style="font-size:12px;color:var(--muted)">'+escHtml(sv.prog.name)+'</div></div><button class="btn sm" style="width:auto;padding:8px 14px" onclick="resumeLive()">'+t('resumeBtn')+'</button></div></div>'; }
-  h+='<div class="row" style="gap:10px;margin-bottom:14px"><button class="btn" onclick="openCreate()">＋ '+t('createBtn')+'</button><button class="btn ghost" onclick="openLibBrowse()">'+t('libraryLab')+'</button></div>';
-  h+='<div class="lab" style="margin:6px 0 10px">'+t('defaultProgramsLab')+'</div>';
-  PROGS.forEach((p,i)=>{
-    h+='<div class="card" onclick="openProg(\''+p.id+'\')" style="cursor:pointer"><div class="row"><div><div class="badge" style="margin-bottom:8px">'+p.id+'</div><div style="font-weight:700;font-size:16px">'+escHtml(p.name)+'</div><div style="font-size:12px;color:var(--muted);margin-top:3px">'+tp('exSetsSummary',p.ex.length,p.ex.reduce((a,e)=>a+e.sets,0))+'</div></div>'+exThumb(p.ex[0].name,52)+'</div></div>';
-  });
+  h+='<div class="row" style="gap:10px;margin-bottom:16px"><button class="btn" onclick="openCreate()">＋ '+t('createBtn')+'</button><button class="btn ghost" onclick="openLibBrowse()">'+t('libraryLab')+'</button></div>';
   const custs=CUSTOM.filter(p=>p.kind==='muscu');
   if(custs.length){
-    h+='<div class="lab" style="margin:16px 0 10px">'+t('myCreationsLab')+'</div>';
-    custs.forEach(p=>{
-      h+='<div class="card"><div class="row"><div onclick="openProg(\''+p.id+'\')" style="flex:1"><div style="font-weight:700;font-size:16px">'+escHtml(p.name)+'</div><div style="font-size:12px;color:var(--muted);margin-top:3px">'+escHtml(p.objective)+' · '+tp('exosShort',p.ex.length)+'</div></div><button class="x" onclick="delProg(\''+p.id+'\')">'+ICN('trash',16)+'</button></div></div>';
-    });
+    h+='<div class="hv7-sec-lab" style="margin-bottom:10px">'+t('myCreationsLab')+'</div>';
+    custs.forEach(p=>{ h+=muscuCardHTML(p,{del:true}); });
   }
+  h+='<div class="hv7-sec-lab" style="margin-bottom:10px">'+t('defaultProgramsLab')+'</div>';
+  PROGS.forEach(p=>{ h+=muscuCardHTML(p); });
   return h;
 }
 function delProg(id){ customConfirm(t('confirmDeleteProgram'),()=>{ CUSTOM=CUSTOM.filter(p=>p.id!==id); saveAll(); renderSport(); },{danger:true}); }
 /* ===== VUE ROUTINE (style Hevy) ===== */
+/* Vignette d'exercice. Le pictogramme du groupe musculaire est TOUJOURS dessiné
+   dessous : la photo (dépôt free-exercise-db, donc réseau) vient le recouvrir
+   quand elle arrive, et se retire d'elle-même si elle ne charge pas. Sans ça,
+   une image lente ou absente laissait un carré vide dans la liste. */
 function exThumb(name,size){
-  const g=exGif(name); size=size||64;
-  if(g) return '<div style="width:'+size+'px;height:'+size+'px;border-radius:12px;background:var(--s2) url('+g[0]+') center/cover;flex-shrink:0;border:1px solid var(--hair)"></div>';
-  const e=findEx(name);
-  return '<div style="width:'+size+'px;height:'+size+'px;border-radius:12px;background:var(--s2);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid var(--hair)">'+exGlyph(e,Math.round(size*0.55))+'</div>';
+  size=size||64;
+  const g=exGif(name), e=findEx(name);
+  const box='width:'+size+'px;height:'+size+'px;';
+  if(!g) return '<div class="ex-thumb" style="'+box+'">'+exGlyph(e,Math.round(size*0.55))+'</div>';
+  return '<div class="ex-thumb" style="'+box+'">'+exGlyph(e,Math.round(size*0.55))+
+    '<img src="'+g[0]+'" alt="" loading="lazy" onerror="this.remove()">'+
+  '</div>';
 }
 function progDuration(p){ return p.ex.reduce((a,e)=>a+e.sets*1.8,0); } // estimation min
 function openProg(id){
@@ -6599,10 +6741,13 @@ function openProg(id){
   let h='<div class="row" style="margin-bottom:6px"><div class="man" style="font-weight:800;font-size:22px;display:flex;align-items:center;gap:8px">'+(p.icon&&ICONS[p.icon]?ICN(p.icon,20,'var(--e)'):'')+p.name+'</div></div>';
   h+='<div class="row" style="gap:8px;margin-bottom:14px"><span class="badge">'+lvl+'</span><span style="font-size:12px;color:var(--muted)">'+tp('exercisesCount',p.ex.length)+'</span></div>';
   // Carte stats
-  h+='<div class="card" style="padding:0;overflow:hidden"><div style="display:flex;text-align:center">'+
-    '<div style="flex:1;padding:14px 6px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0 0 4px">'+t('exercisesCap')+'</div><div class="man" style="font-weight:800;font-size:20px;color:var(--e)">'+p.ex.length+'</div></div>'+
-    '<div style="flex:1;padding:14px 6px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0 0 4px">'+t('setsCap')+'</div><div class="man" style="font-weight:800;font-size:20px">'+totalSets+'</div></div>'+
-    '<div style="flex:1.3;padding:14px 6px"><div class="lab" style="margin:0 0 4px">'+t('estDurationCap')+'</div><div class="man" style="font-weight:800;font-size:20px">~'+dur+' min</div></div></div></div>';
+  // Carte d'en-tête : séries, durée, et les silhouettes des muscles travaillés
+  // dans la même barre — on sait ce que vaut la séance sans dérouler la fiche.
+  h+='<div class="card prog-stats">'+
+    '<div class="prog-stats-c"><div class="lab">'+t('setsCap')+'</div><div class="v">'+totalSets+'</div></div>'+
+    '<div class="prog-stats-c"><div class="lab">'+t('estDurationCap')+'</div><div class="v">~'+dur+' min</div></div>'+
+    '<div class="prog-stats-c">'+progBodyMini(p)+'</div>'+
+  '</div>';
   // Liste d'exercices avec vignette + numéro
   p.ex.forEach((e,i)=>{
     h+='<div class="card" style="padding:13px;margin-bottom:10px;cursor:pointer" onclick="openExDetail(\''+p.id+'\','+i+')"><div class="row" style="align-items:flex-start"><div style="position:relative;margin-right:12px">'+exThumb(e.name,64)+
@@ -6807,7 +6952,7 @@ function renderExDetail(){
     }
     h+='<div class="card"><div class="card-t">'+t('aboutExerciseTitle')+'</div><div style="font-size:13px;color:var(--muted);line-height:1.55">'+tp('exWorksMainly',trExName(e.name),((f.primary||[]).map(trMuscle).join(', ')||t('severalMuscleGroups')))+(f.secondary&&f.secondary.length?tp('exWorksAlsoSecondary',f.secondary.map(trMuscle).join(', ')):'')+'.</div></div>';
     // Repos
-    h+='<div class="card"><div class="row"><div class="row" style="gap:10px"><span style="font-size:18px"></span><div><div style="font-size:11px;color:var(--muted)">'+t('restBetweenSetsLabel')+'</div><div style="font-weight:700">'+(e.rest||90)+'s</div></div></div></div></div>';
+    h+='<div class="card"><div class="row"><div class="row" style="gap:10px"><span style="color:var(--e2);display:flex">'+ICN('stopwatch',18)+'</span><div><div style="font-size:11px;color:var(--muted)">'+t('restBetweenSetsLabel')+'</div><div style="font-weight:700">'+(e.rest||90)+'s</div></div></div></div></div>';
     // mini stats
     const vol=(e.sets||3)*(parseInt(e.reps)||10)*(e.weight||0);
     h+='<div class="card" style="padding:0;overflow:hidden"><div style="display:flex;text-align:center"><div style="flex:1;padding:13px 4px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0">'+t('setsCap')+'</div><div class="man" style="font-weight:800;font-size:18px">'+e.sets+'</div></div><div style="flex:1;padding:13px 4px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0">'+t('volumeCap')+'</div><div class="man" style="font-weight:800;font-size:18px">'+vol+' kg</div></div><div style="flex:1;padding:13px 4px"><div class="lab" style="margin:0">'+t('durationCap')+'</div><div class="man" style="font-weight:800;font-size:18px">~'+Math.round(e.sets*1.8)+'min</div></div></div></div>';
@@ -6896,10 +7041,13 @@ function renderLive(){
   const totalSets=p.ex.reduce((a,x)=>a+x.sets,0);
   const dur=fmtTime((Date.now()-LIVE.start)/1000);
   // Barre du haut façon Hevy : chevron (mettre de côté) / minuteur rapide / Terminer
-  let h='<div class="row" style="margin-bottom:12px">'+
-    '<span onclick="pauseLive()" style="font-size:20px;color:var(--muted);cursor:pointer;padding:4px 8px">⌄</span>'+
+  // Le bouton minuteur était rendu vide (aucun contenu dans le span) : il occupait
+  // sa place sans rien afficher, donc invisible et introuvable. Les deux actions
+  // secondaires ont maintenant leur pictogramme et leur libellé accessible.
+  let h='<div class="live-top">'+
+    '<button class="live-ic" onclick="pauseLive()" aria-label="'+t('pauseLab')+'" title="'+t('pauseLab')+'">'+ICN('pause',17)+'</button>'+
     '<div style="flex:1"></div>'+
-    '<span onclick="openRest(90)" style="font-size:17px;color:var(--muted);cursor:pointer;padding:4px 8px"></span>'+
+    '<button class="live-ic" onclick="openRest(90)" aria-label="'+t('restTimerBtn')+'" title="'+t('restTimerBtn')+'">'+ICN('stopwatch',17)+'</button>'+
     '<button class="btn sm" style="width:auto;padding:8px 18px;background:linear-gradient(135deg,var(--e),var(--e2))" onclick="finishLive()">'+t('liveFinishBtn')+'</button>'+
     '</div>';
   // Stats : Durée / Volume / Séries
@@ -6927,7 +7075,7 @@ function renderLive(){
       '<span onclick="event.stopPropagation();openLiveExOptions('+i+')" style="color:var(--muted);font-size:20px;padding:4px 4px 4px 8px;cursor:pointer;letter-spacing:1px">⋯</span></div>';
     // Contenu repliable : notes, repos, tableau des séries
     h+='<div id="exBody'+i+'" style="max-height:'+(open?'1400px':'0')+'px;opacity:'+(open?'1':'0')+';overflow:hidden;transition:max-height .32s ease,opacity .22s ease,margin-top .32s ease;margin-top:'+(open?'12':'0')+'px">';
-    h+='<div class="row" style="margin-bottom:10px;font-size:12.5px"><span style="color:var(--e);cursor:pointer" onclick="changeRest('+i+')">'+tp('restTimerLab',e.rest?e.rest+'s':t('disabledLab'))+'</span></div>';
+    h+='<div class="live-rest" onclick="changeRest('+i+')">'+ICN('stopwatch',15)+'<span>'+tp('restTimerLab',e.rest?fmtRest(e.rest):t('disabledLab'))+'</span></div>';
     h+='<div style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:8px;text-align:center">'+
       '<div>'+t('setCol')+'</div><div>'+t('prevCol')+'</div><div>'+t('kgCol')+'</div><div>'+t('repsCol')+'</div><div></div></div>';
     st.log.forEach((s,j)=>{
@@ -6939,7 +7087,7 @@ function renderLive(){
         '<div style="text-align:center;font-size:11px;color:var(--dim)">'+(e.weight||20)+'kg×'+(parseInt(e.reps)||10)+'</div>'+
         '<input class="setcell" type="number" inputmode="decimal" value="'+s.kg+'" onchange="setLog('+i+','+j+',\'kg\',this.value)">'+
         '<input class="setcell" type="number" inputmode="numeric" value="'+s.reps+'" onchange="setLog('+i+','+j+',\'reps\',this.value)">'+
-        '<div onclick="toggleSet('+i+','+j+')" style="width:32px;height:32px;border-radius:50%;margin:0 auto;cursor:pointer;display:flex;align-items:center;justify-content:center;background:'+(s.done?'var(--e)':'var(--s2)')+';border:1px solid '+(s.done?'var(--e)':'var(--hair)')+';color:#fff;font-size:14px">'+(s.done?'':'')+'</div></div>'+
+        '<div class="setcheck'+(s.done?' on':'')+'" onclick="toggleSet('+i+','+j+')">'+ICN('check',16)+'</div></div>'+
         '</div>'; // fin .set-swipe-wrap
     });
     h+='<button class="btn ghost sm" style="margin-top:4px" onclick="addLiveSet('+i+')">'+t('addSetBtn')+'</button>';
@@ -7567,7 +7715,7 @@ function statsBilan(){
   // CARTE KILOMÉTRAGE — gros chiffre + delta + barres avec ligne de moyenne
   h+='<div class="kchart-card">'+
     '<div class="kchart-top"><div><div class="kchart-lab">'+t('mileage')+'</div><div class="kchart-val">'+km.toFixed(1)+'<span>'+t('kmCumulated')+'</span></div></div>'+
-    (deltaPct!==null?'<div><div class="kchart-delta'+(deltaPct<0?' bad':'')+'">'+(deltaPct>0?'':deltaPct<0?'':'')+Math.abs(deltaPct)+'%</div><div class="kchart-delta-sub">'+t('vsPrevPeriod')+'</div></div>':'')+
+    (deltaPct!==null?'<div><div class="kchart-delta'+(deltaPct<0?' bad':'')+'">'+(deltaPct>0?'+':deltaPct<0?'&#8722;':'')+Math.abs(deltaPct)+'%</div><div class="kchart-delta-sub">'+t('vsPrevPeriod')+'</div></div>':'')+
     '</div>'+
     kBarsHTML(bars.labels,bars.values,per==='week'?((new Date().getDay()+6)%7):null)+
   '</div>';
@@ -7605,7 +7753,7 @@ function statsBilan(){
   h+='<div class="kinsights-head">'+t('insightsTitle')+'</div>';
   h+='<div class="krow3">'+
     '<div class="ktile"><div class="ktile-lab">'+t('kmPerSession')+'</div><div class="ktile-val">'+avgKmSess.toFixed(1)+' km</div>'+
-      (avgDelta!==null?'<div class="ktile-sub'+(avgDelta<0?' bad':'')+'">'+(avgDelta>0?'':avgDelta<0?'':'')+Math.abs(avgDelta)+'% '+t('vsPrevShort')+'</div>':'<div class="ktile-sub" style="color:var(--muted)">—</div>')+
+      (avgDelta!==null?'<div class="ktile-sub'+(avgDelta<0?' bad':'')+'">'+(avgDelta>0?'+':avgDelta<0?'&#8722;':'')+Math.abs(avgDelta)+'% '+t('vsPrevShort')+'</div>':'<div class="ktile-sub" style="color:var(--muted)">—</div>')+
     '</div>'+
     '<div class="ktile" style="text-align:center"><div class="ktile-lab">'+t('sessionTypesLabel')+'</div>'+
       '<div class="ktile-donut">'+donutSVG(typeSegs,50,9,'')+'</div>'+
@@ -8117,7 +8265,7 @@ function renderOutils(){
   if(outilsTab==='home'){ h=outilsHome(); $('#s-outils').innerHTML=h; bindToolSearch(); return; }
   if(outilsTab==='_timer'){ renderOutilsTimer(); return; }
   const tl=TOOLS[outilsTab]; if(!tl){ outilsTab='home'; return renderOutils(); }
-  h='<div class="row" style="margin-bottom:14px"><button class="x" onclick="outilsBack()">‹</button><div class="man" style="font-weight:800;font-size:17px;flex:1;text-align:center;margin:0 8px">'+tl.name+'</div><button class="x" onclick="toggleFav(\''+outilsTab+'\')" style="color:'+(toolFav().includes(outilsTab)?'var(--or)':'var(--dim)')+'"></button></div><div id="outBody"></div>';
+  h='<div class="row" style="margin-bottom:14px"><button class="x" onclick="outilsBack()">‹</button><div class="man" style="font-weight:800;font-size:17px;flex:1;text-align:center;margin:0 8px">'+tl.name+'</div><button class="x" onclick="toggleFav(\''+outilsTab+'\')" aria-label="'+t('favoriteLab')+'" style="color:'+(toolFav().includes(outilsTab)?'var(--or)':'var(--dim)')+'">'+ICN('star',17)+'</button></div><div id="outBody"></div>';
   $('#s-outils').innerHTML=h;
   window[tl.fn] && window[tl.fn]();
 }
@@ -8165,7 +8313,7 @@ function editFavs(){
   $('#settingsBody').innerHTML=h; $('#ovSettings').querySelector('h2').textContent=t('editFavsTitle'); openOv('ovSettings');
 }
 function toolRow(k,tl){ const fav=toolFav().includes(k);
-  return '<div class="list-row"><div class="lr-icon" style="cursor:pointer" onclick="openTool(\''+k+'\')">'+tl.icon+'</div><div class="lr-txt" style="cursor:pointer" onclick="openTool(\''+k+'\')"><div class="lr-title">'+tl.name+'</div>'+(tl.sub?'<div class="lr-sub">'+tl.sub+'</div>':'')+'</div><span onclick="event.stopPropagation();toggleFav(\''+k+'\')" style="color:'+(fav?'var(--or)':'var(--dim)')+';font-size:17px;cursor:pointer;padding:4px"></span></div>'; }
+  return '<div class="list-row"><div class="lr-icon" style="cursor:pointer" onclick="openTool(\''+k+'\')">'+tl.icon+'</div><div class="lr-txt" style="cursor:pointer" onclick="openTool(\''+k+'\')"><div class="lr-title">'+tl.name+'</div>'+(tl.sub?'<div class="lr-sub">'+tl.sub+'</div>':'')+'</div><span onclick="event.stopPropagation();toggleFav(\''+k+'\')" title="'+t('favoriteLab')+'" style="color:'+(fav?'var(--or)':'var(--dim)')+';cursor:pointer;padding:4px;display:flex">'+ICN('star',17)+'</span></div>'; }
 function openQuickTimer(){ outilsFrom='home'; outilsTab='_timer'; renderOutilsTimer(); }
 function renderOutilsTimer(){ $('#s-outils').innerHTML='<div class="row" style="margin-bottom:14px"><button class="x" onclick="outilsTab=\'home\';renderOutils()">‹</button><div class="man" style="font-weight:800;font-size:17px;flex:1;text-align:center">'+t('quickTimer')+'</div><div style="width:34px"></div></div><div id="outBody"></div>'; renderTimer(); }
 
@@ -8497,7 +8645,7 @@ function renderCalcResult(){
   for(let k=1;k<=nk;k++){ const hi=[5,10,21,42].includes(k); h+='<div class="zrow" style="padding:8px 0"><span class="zname" style="'+(hi?'color:var(--e)':'')+'">km '+k+(hi?'':'')+'</span><span class="zval mono">'+fmtTime(spk*k)+'</span></div>'; }
   h+='</div>';
   // actions
-  h+='<div class="row" style="gap:8px;margin-top:14px"><button class="btn ghost sm" onclick="saveCalcResult()"></button><button class="btn ghost sm" onclick="copyCalc()">'+t('copyLabel')+'</button><button class="btn ghost sm" onclick="shareCalc()">↗</button></div>';
+  h+='<div class="row" style="gap:8px;margin-top:14px"><button class="btn ghost sm" onclick="saveCalcResult()">'+t('saveLabel')+'</button><button class="btn ghost sm" onclick="copyCalc()">'+t('copyLabel')+'</button><button class="btn ghost sm" onclick="shareCalc()">'+t('share')+'</button></div>';
   h+='<button class="btn sm" style="margin-top:8px" onclick="calcAsGoal()">'+t('addAsGoalLabel')+'</button></div>';
   $('#calcResult').innerHTML=h;
 }
@@ -8557,7 +8705,7 @@ function renderChrono(){
     h+='<div style="width:62px"></div><button class="btn" style="width:84px;height:84px;border-radius:50%;font-size:30px;flex:0;background:var(--ok)" onclick="chronoToggle()">▶</button><div style="width:62px"></div>';
   } else if(chrono.running){
     h+='<button class="chbtn" onclick="chronoLap()">'+t('lapBtn')+'</button>';
-    h+='<button class="btn" style="width:84px;height:84px;border-radius:50%;font-size:26px;flex:0;background:var(--warn)" onclick="chronoToggle()"></button>';
+    h+='<button class="btn" style="width:84px;height:84px;border-radius:50%;flex:0;background:var(--warn)" onclick="chronoToggle()" aria-label="'+t('pauseLab')+'">'+ICN('pause',30,'#fff')+'</button>';
     h+='<button class="chbtn" style="border-color:var(--bad);color:var(--bad)" onclick="chronoStop()">'+t('stopBtn')+'</button>';
   } else {
     h+='<button class="chbtn" style="border-color:var(--bad);color:var(--bad)" onclick="chronoReset()">'+t('resetBtn2')+'</button>';
