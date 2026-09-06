@@ -1454,7 +1454,10 @@ html.motion-settled .login-hero{
 .seg-btn:active{transform:scale(.95);}
 .seg-btn.on{background:linear-gradient(180deg,var(--e2),var(--e));color:#fff;box-shadow:0 4px 12px -4px rgba(var(--e-rgb),.55);}
 
-.kchart-card{background:var(--s1);border:1px solid var(--hair);border-radius:20px;padding:16px;box-shadow:var(--float-sm);margin-bottom:10px;}
+/* Rythme vertical du Bilan aligné sur celui de .card (8px) : avant, les blocs
+   "k*" espaçaient à 10px et .krow3 n'avait aucune marge basse, ce qui donnait
+   dans une même colonne des écarts de 2, 8, 10, 12 et 14px. */
+.kchart-card{background:var(--s1);border:1px solid var(--hair);border-radius:20px;padding:16px;box-shadow:var(--float-sm);margin-bottom:8px;}
 .kchart-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
 .kchart-lab{font-size:12.5px;color:var(--muted);font-weight:600;}
 .kchart-val{font-family:'Unbounded';font-weight:800;font-size:23px;margin-top:3px;}
@@ -1475,7 +1478,7 @@ html.motion-settled .login-hero{
 .kline-labs{display:flex;justify-content:space-between;margin-top:2px;}
 .kline-labs span{font-size:9.5px;color:var(--muted);font-weight:600;}
 
-.kduo{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.kduo{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
 .kduo-card{background:var(--s1);border:1px solid var(--hair);border-radius:18px;padding:14px;box-shadow:var(--float-sm);}
 .kduo-lab{font-size:12px;color:var(--muted);font-weight:600;}
 .kduo-val{font-family:'Unbounded';font-weight:800;font-size:20px;margin-top:6px;}
@@ -1484,7 +1487,7 @@ html.motion-settled .login-hero{
 .kgoal-bar div{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--e),var(--ok));transition:width .5s var(--ease-out);}
 
 .kinsights-head{font-family:'Unbounded';font-weight:800;font-size:16.5px;margin:14px 0 8px;}
-.krow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.krow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;}
 .ktile{background:var(--s1);border:1px solid var(--hair);border-radius:16px;padding:11px 10px;box-shadow:var(--float-sm);position:relative;min-height:86px;}
 .ktile-lab{font-size:9.5px;color:var(--muted);font-weight:700;line-height:1.2;}
 .ktile-val{font-family:'Unbounded';font-weight:800;font-size:14.5px;margin-top:8px;line-height:1.2;}
@@ -1632,7 +1635,12 @@ html[dir="rtl"] .nb span{direction:rtl;}
 .heat div{aspect-ratio:1;border-radius:3px;background:var(--s2);}
 
 /* TOAST */
-#toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);z-index:12000;
+/* Le toast doit rester AU-DESSUS de toutes les fenêtres : topZ() distribue des
+   z-index à partir de 12001, si bien qu'à 12000 le toast passait derrière la
+   moindre popup — or beaucoup de messages importants (« Code copié », erreurs
+   de formulaire, « Club créé ») s'affichent justement fenêtre ouverte. Bande
+   réservée : overlays plafonnés à 18000, toast à 19000, skeleton de boot 20000. */
+#toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);z-index:19000;
   background:var(--s1);border:1px solid var(--e);color:var(--snow);padding:12px 20px;border-radius:999px;
   font-size:14px;font-weight:600;opacity:0;transition:.3s;pointer-events:none;max-width:90%;text-align:center;}
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -2171,6 +2179,6 @@ html[data-mode="light"]{
     console.error('[IKORUN] Le script Supabase (jsdelivr) n\'a pas pu charger, réessaie de recharger la page.', e);
   }
 </script>
-<script src="app.js?v=27"></script>
+<script src="app.js?v=28"></script>
 </body>
 </html>

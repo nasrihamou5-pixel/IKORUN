@@ -585,7 +585,7 @@ function renderFriends(){
     h+='<div class="sec-lab">'+tp('yourFriendsCount',friendsCache.friends.length)+'</div>';
     if(!friendsCache.friends.length) h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('users',36,'currentColor')+'</div><div style="font-size:13px">'+t('noFriendsYet')+'</div></div></div>';
     else h+='<div class="card" style="padding:2px 6px">'+friendsCache.friends.map((f,i)=>{
-      const av=f.photo_url?'<div class="fr-avatar" style="background-image:url(\''+escHtml(f.photo_url)+'\')"></div>':'<div class="fr-avatar">'+(f.username?escHtml(f.username[0].toUpperCase()):'?')+'</div>';
+      const av=f.photo_url?'<div class="fr-avatar" style="background-image:url(\''+safePhotoUrl(f.photo_url)+'\')"></div>':'<div class="fr-avatar">'+(f.username?escHtml(f.username[0].toUpperCase()):'?')+'</div>';
       return '<div class="fr-row" style="border-bottom:'+(i<friendsCache.friends.length-1?'1px solid var(--hair)':'none')+'" onclick="openFriendProfile(\''+f.id+'\')">'+av+
         '<div class="fr-info"><div class="fr-name">'+escHtml(f.username)+'</div><div class="fr-meta"><span class="fr-lvl-chip">'+t('lvlDot')+' '+f.level+'</span><span class="fr-km-txt">'+tp('kmThisWeekShort',f.km_week)+'</span></div></div>'+
         '<span class="fr-del" onclick="event.stopPropagation();removeFriend(\''+f.id+'\')" title="'+t('removeLab')+'">'+ICN('trash',16)+'</span>'+
@@ -607,7 +607,7 @@ function renderFriends(){
       const medalCols=['var(--or)','var(--platine)','var(--bronze)'];
       const medals=top3.map((_,i)=>ICN('medal',22,medalCols[i]));
       h+='<div class="fr-podium">'+top3.map((f,i)=>{
-        const av=f.photo_url?'<div class="fr-pod-av" style="background-image:url(\''+escHtml(f.photo_url)+'\')"></div>':'<div class="fr-pod-av">'+(f.username?escHtml(f.username[0].toUpperCase()):'?')+'</div>';
+        const av=f.photo_url?'<div class="fr-pod-av" style="background-image:url(\''+safePhotoUrl(f.photo_url)+'\')"></div>':'<div class="fr-pod-av">'+(f.username?escHtml(f.username[0].toUpperCase()):'?')+'</div>';
         return '<div class="fr-pod-card p'+(i+1)+'"'+(f.id?' onclick="openFriendProfile(\''+f.id+'\')" style="cursor:pointer"':'')+'><div class="fr-pod-medal">'+medals[i]+'</div>'+av+'<div class="fr-pod-name">'+escHtml(f.username)+'</div><div class="fr-pod-xp">'+f.xp+' XP</div></div>';
       }).join('')+'</div>';
       if(rest.length) h+='<div class="card" style="padding:4px 14px">'+rest.map((f,i)=>
@@ -625,6 +625,17 @@ function escLike(s){ return s.replace(/[\\%_]/g,'\\$&'); }
 // on n'affiche jamais de texte contrôlé par un tiers sans l'échapper ici.
 function escHtml(s){
   return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+/* Une photo de profil est TOUJOURS produite ici par canvas.toDataURL() : c'est
+   donc forcément une image en base64, jamais une URL libre. On le vérifie avant
+   affichage plutôt que de se contenter d'échapper, car ces valeurs peuvent venir
+   d'un autre utilisateur (public_profiles.photo_url d'un ami ou d'un membre de
+   club) ou d'un fichier importé : échapper protégeait du HTML mais laissait
+   passer une fermeture de url('…') suivie de déclarations CSS arbitraires
+   (calque plein écran par-dessus l'app). Tout ce qui ne colle pas au format
+   attendu est simplement ignoré → on retombe sur l'avatar avec l'initiale. */
+function safePhotoUrl(u){
+  return /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=\s]+$/i.test(String(u||'')) ? String(u) : '';
 }
 function onFriendSearchInput(){
   clearTimeout(_friendSearchDeb);
@@ -694,7 +705,7 @@ function renderFriendProfileHTML(){
   const f=[...friendsCache.friends,...friendsCache.pending,...friendsCache.sent].find(x=>x.id===friendsSelected);
   const back='<div class="row" style="margin-bottom:14px;cursor:pointer" onclick="backToFriendsList()">'+ICN('chevronR',16).replace('<path','<path transform="rotate(180 12 12)"')+' <span style="font-weight:700;margin-left:4px">'+t('backToFriends')+'</span></div>';
   if(!f) return back+'<div class="card"><div class="empty"><div class="em-ic">'+ICN('search',36,'currentColor')+'</div><div style="font-size:13px">'+t('profileNotFound')+'</div></div></div>';
-  const av=f.photo_url?'<div class="fr-profile-av" style="background-image:url(\''+escHtml(f.photo_url)+'\')"></div>':'<div class="fr-profile-av">'+(f.username?escHtml(f.username[0].toUpperCase()):'?')+'</div>';
+  const av=f.photo_url?'<div class="fr-profile-av" style="background-image:url(\''+safePhotoUrl(f.photo_url)+'\')"></div>':'<div class="fr-profile-av">'+(f.username?escHtml(f.username[0].toUpperCase()):'?')+'</div>';
   let h=back;
   h+='<div class="fr-profile-hero">'+
     '<div style="position:relative;display:inline-block">'+av+'<span class="fr-profile-lvl">'+t('lvlDot')+' '+(f.level||1)+'</span></div>'+
@@ -781,12 +792,16 @@ function renderClubTab(){
   const sorted=[...clubCache.members].sort((a,b)=>(b.xp||0)-(a.xp||0));
   h+='<div class="card" style="padding:16px;text-align:center"><div style="font-weight:800;font-size:18px;color:var(--snow)">'+escHtml(c.name)+'</div>'+
     '<div style="font-size:12.5px;color:var(--muted);margin-top:4px">'+tp('clubMembersCount',clubCache.members.length)+'</div>'+
-    '<div class="row" style="justify-content:center;gap:8px;margin-top:12px"><span style="font-family:monospace;font-weight:800;font-size:17px;letter-spacing:3px;background:var(--panel2);padding:6px 12px;border-radius:8px">'+escHtml(c.code)+'</span><span class="hv7-icon-btn" style="width:36px;height:36px" onclick="copyClubCode(\''+escHtml(c.code)+'\')" title="'+t('copyCodeBtn')+'">'+ICN('copy',16)+'</span></div>'+
+    // Le code n'est JAMAIS interpolé dans un attribut onclick : l'échappement HTML
+    // n'y protège pas (le parseur décode les entités avant que le JS soit analysé,
+    // donc un &#39; redevient une apostrophe qui ferme la chaîne). copyClubCode()
+    // relit la valeur dans l'état JS, il n'y a donc plus rien à échapper ici.
+    '<div class="row" style="justify-content:center;gap:8px;margin-top:12px"><span style="font-family:monospace;font-weight:800;font-size:17px;letter-spacing:3px;background:var(--panel2);padding:6px 12px;border-radius:8px">'+escHtml(c.code)+'</span><span class="hv7-icon-btn" style="width:36px;height:36px" onclick="copyClubCode()" title="'+t('copyCodeBtn')+'">'+ICN('copy',16)+'</span></div>'+
     '<div style="font-size:11.5px;color:var(--dim);margin-top:6px">'+t('shareCodeHint')+'</div>'+
   '</div>';
   h+='<div class="sec-lab">'+t('clubXpRanking')+'</div>';
   h+='<div class="card" style="padding:2px 6px">'+sorted.map((m,i)=>{
-    const av=m.photo_url?'<div class="fr-avatar" style="background-image:url(\''+escHtml(m.photo_url)+'\')"></div>':'<div class="fr-avatar">'+(m.username?escHtml(m.username[0].toUpperCase()):'?')+'</div>';
+    const av=m.photo_url?'<div class="fr-avatar" style="background-image:url(\''+safePhotoUrl(m.photo_url)+'\')"></div>':'<div class="fr-avatar">'+(m.username?escHtml(m.username[0].toUpperCase()):'?')+'</div>';
     return '<div class="fr-row'+(m.isMe?' me':'')+'" style="border-bottom:'+(i<sorted.length-1?'1px solid var(--hair)':'none')+(m.isMe?'':';cursor:pointer')+'"'+(m.isMe?'':' onclick="openFriendProfile(\''+m.id+'\')"')+'>'+
       '<div class="fr-rank-num" style="width:22px">#'+(i+1)+'</div>'+av+
       '<div class="fr-info"><div class="fr-name">'+escHtml(m.username||'?')+(m.isOwner?' '+ICN('flag',13,'var(--accent)'):'')+(m.isMe?t('youParen'):'')+'</div><div class="fr-meta"><span class="fr-lvl-chip">'+t('lvlDot')+' '+(m.level||1)+'</span><span class="fr-km-txt">'+(m.xp||0)+' XP</span></div></div>'+
@@ -795,7 +810,8 @@ function renderClubTab(){
   h+='<button class="btn ghost sm" style="width:auto;margin-top:16px" onclick="leaveClubConfirm()">'+t('leaveClubBtn')+'</button>';
   $('#friendsBody').innerHTML=h;
 }
-function copyClubCode(code){
+function copyClubCode(){
+  const code=clubCache.club&&clubCache.club.code; if(!code) return;
   try{ navigator.clipboard.writeText(code); toast(t('codeCopiedToast')); }catch(e){ toast(code); }
 }
 async function submitJoinClub(){
@@ -1068,7 +1084,7 @@ const I18N={
     declineBtn:'Refuser',saveLabel:'Enregistrer',renameLab:'Renommer',favoriteLab:'Favori',
     langLab:'Langue',obModeTitle:'Ton affichage',obModeIntro:'Deux façons de voir IKORUN — change d\u2019avis à tout moment dans Profil.',obModeFullT:'Complet',obModeFullD:'Toutes les stats, tous les détails de chaque séance, l\u2019anatomie musculaire, les graphiques. Pour creuser.',obModeSimpleT:'Simplifié',obModeSimpleD:'Une carte, l\u2019essentiel : la séance du jour et un bouton. Rien d\u2019autre à l\u2019écran. Pour aller droit au but.',obModeSuggestion:'Suggestion selon ton âge : {0}. Choisis librement.',chooseModeLab:'Choisis un affichage pour continuer',
     trackingLab:'Suivi',appearanceLab:'Apparence',
-    sendFeedbackLab:'Envoyer un commentaire',feedbackTitle:'Ton avis',feedbackIntro:'Une idée, un bug, un truc qui te gêne dans l\u2019app ? Écris-le ici, ça part directement dans ta boîte mail.',feedbackPh:'Écris ton commentaire...',feedbackEmptyToast:'Écris quelque chose avant d\u2019envoyer',feedbackSentToast:'Ton appli mail s\u2019est ouverte, il ne reste qu\u2019à envoyer',feedbackSignature:'Compte : {0} · Langue : {1}',
+    sendFeedbackLab:'Envoyer un commentaire',feedbackNoAddressToast:'Adresse de contact pas encore configurée — réessaie après la prochaine mise à jour.',feedbackTitle:'Ton avis',feedbackIntro:'Une idée, un bug, un truc qui te gêne dans l\u2019app ? Écris-le ici, ça part directement dans ta boîte mail.',feedbackPh:'Écris ton commentaire...',feedbackEmptyToast:'Écris quelque chose avant d\u2019envoyer',feedbackSentToast:'Ton appli mail s\u2019est ouverte, il ne reste qu\u2019à envoyer',feedbackSignature:'Compte : {0} · Langue : {1}',
     sendBtn:'Envoyer',
     playLab:'Démarrer',
     cvCat_dist:'Distance',cvCat_pace:'Allure',cvCat_weight:'Poids',cvTapToEdit:'Touche pour modifier',
@@ -1162,7 +1178,7 @@ const I18N={
     perfAddedComp:'Performance ajoutée · +XP compétition',perfAdded:'Performance ajoutée',
     editProfileTitle:'Modifier le profil',usernameLab:'Nom d\u2019utilisateur',usernameHint:'Utilisé par tes amis pour te retrouver',
     firstNameLab:'Prénom',cityLab:'Ville',birthDateLab:'Date de naissance',heightCmLab:'Taille (cm)',weightKgLab:'Poids (kg)',
-    hrMaxLab:'FC max',hrRestLab:'FC repos',kmWeekLab:'Km / semaine',compDateLab:'Date compétition',coachLab:'Coach',saveBtn:'Sauver',
+    kmWeekLab:'Km / semaine',compDateLab:'Date compétition',coachLab:'Coach',saveBtn:'Sauver',
     filterAll:'Tous',filterObtained:'Obtenus',filterLocked:'Verrouillés',badgesObtainedCount:'{0} / {1} badges obtenus',
     badgeDetailTitle:'Détails du badge',tierOf:'Palier {0} sur {1}',newBadgeUnlocked:'NOUVEAU BADGE DÉBLOQUÉ',
     tapToContinue:'Touche pour continuer',seeDetails:'Voir les détails',tapToClose:'Touche pour fermer',previewLocked:'APERÇU · VERROUILLÉ',
@@ -1195,7 +1211,7 @@ const I18N={
     prayerTitle:'Prières · Béjaïa',uoifMethod:'Méthode UOIF · {0}',
     obWelcomeTitle:'Bienvenue sur IKORUN',obWelcomeIntro:'Elite Athletic Intelligence.<br>Ton coaching personnel, calculé scientifiquement, 100% hors-ligne.',
     obWhoTitle:'Qui es-tu ?',obWhoIntro:'Tes informations de base.',firstNamePh:'Ton prénom',firstNameReq:'Prénom *',
-    usernameReq:'Nom d\u2019utilisateur *',usernamePh:'pseudo_unique',usernameFormatHint:'3 à 20 caractères : lettres, chiffres, _',
+    usernameReq:'Nom d\u2019utilisateur *',usernamePh:'pseudo_unique',
     birthDateReq:'Date de naissance *',sexReq:'Sexe *',selectLab:'Sélectionner',maleLab:'Homme',femaleLab:'Femme',
     obLevelTitle:'Ton niveau',obLevelIntro:'Sois honnête, le plan s\u2019adapte.',
     levelNote:'Le <b>niveau</b> ajuste l\u2019intensité de ton plan et ton volume d\u2019entraînement, calculés automatiquement. Pas sûr ? Touche <b>« Comment choisir ? »</b>.',
@@ -1442,6 +1458,10 @@ const I18N={
     analyzeSessionBtn:'Analyser ma séance',autoLightenedFlag:'Séance allégée automatiquement (raison : {0} le {1}).',
     avgPaceKmLabel:'Allure moyenne /km',coachAnalysisTitle:'Analyse du Coach',
     coach_adj_continue:'Continue comme prévu, ton plan est bien calibré.',
+    coach_motiv1:'Une séance de plus dans les jambes — c’est la régularité qui construit la forme, pas les exploits isolés.',
+    coach_motiv2:'Tu as fait le plus dur : y aller. Le reste, ton corps s’en charge pendant la récupération.',
+    coach_motiv3:'Chaque sortie enregistrée rend le plan plus juste. Tu ne t’entraînes pas dans le vide.',
+    coach_motiv4:'Personne ne progresse en ligne droite. Ce qui compte, c’est que la courbe monte sur le mois.',
     coach_adj_increaseVolume:'Tu es en forme : on pourra augmenter légèrement le volume la semaine prochaine.',
     coach_adj_lighten48h:'Allège la prochaine séance dure de 48h pour bien récupérer.',
     coach_adj_rest:'Prochaine séance : remplace-la par du repos ou un footing très léger.',
@@ -1581,7 +1601,7 @@ const I18N={
     todayGoals:'Today\u2019s goals',weekLoad:'Weekly load',sessions:'sessions',form:'form',
     quipTime:'Chasing that {0}?',quipGoal:'Working toward: {0}?',quipDefault:'Ready to push your limits today?',
     weekLoadTitle:'Weekly load',levelXp:'Level {0} — {1} XP',xpBeforeLevel:'+{0} XP before level {1}',
-    sessionsCap:'Sessions',tonnageKg:'Tonnage kg',formCap:'Form',nextSession:'NEXT SESSION',today:'Today',
+    sessionsCap:'Sessions',tonnageKg:'Volume kg',formCap:'Form',nextSession:'NEXT SESSION',today:'Today',
     restDay:'Rest day',noSessionToday:'No session planned today',recordsPerso:'Personal records',
     iDidIt:'I did it',notDone:'Not done',nextLab:'Next up',dayPlusShort:'D+{0}',rpeShort:'RPE',kmWeekShort:'km wk.',sessionsLab:'sessions',
     syncSlowToast:'Sync is slow — the app is starting, your data is on its way',syncFailedLocalToast:'Sync unavailable — working from your local data',syncCloudErrorToast:'Cloud sync error',
@@ -1592,7 +1612,7 @@ const I18N={
     declineBtn:'Decline',saveLabel:'Save',renameLab:'Rename',favoriteLab:'Favourite',
     langLab:'Language',obModeTitle:'Your display',obModeIntro:'Two ways to see IKORUN \u2014 change your mind anytime in Profile.',obModeFullT:'Full',obModeFullD:'All the stats, every session detail, muscle anatomy, charts. For digging in.',obModeSimpleT:'Simplified',obModeSimpleD:'One card, the essentials: today\u2019s session and a button. Nothing else on screen. For going straight to it.',obModeSuggestion:'Suggestion based on your age: {0}. Choose freely.',chooseModeLab:'Choose a display to continue',
     trackingLab:'Tracking',appearanceLab:'Appearance',
-    sendFeedbackLab:'Send feedback',feedbackTitle:'Your feedback',feedbackIntro:'An idea, a bug, something bothering you in the app? Write it here, it goes straight to your mail app.',feedbackPh:'Write your feedback...',feedbackEmptyToast:'Write something before sending',feedbackSentToast:'Your mail app just opened, all that\u2019s left is to hit send',feedbackSignature:'Account: {0} · Language: {1}',
+    sendFeedbackLab:'Send feedback',feedbackNoAddressToast:'Contact address not set up yet — try again after the next update.',feedbackTitle:'Your feedback',feedbackIntro:'An idea, a bug, something bothering you in the app? Write it here, it goes straight to your mail app.',feedbackPh:'Write your feedback...',feedbackEmptyToast:'Write something before sending',feedbackSentToast:'Your mail app just opened, all that\u2019s left is to hit send',feedbackSignature:'Account: {0} · Language: {1}',
     sendBtn:'Send',
     playLab:'Start',
     cvCat_dist:'Distance',cvCat_pace:'Pace',cvCat_weight:'Weight',cvTapToEdit:'Tap to edit',
@@ -1629,7 +1649,7 @@ const I18N={
     toolImcName:'BMI',toolImcSub:'Body mass index',
     toolHydraName:'Hydration',toolHydraSub:'Your water needs',
     toolBmrName:'Calories & Metabolism',toolBmrSub:'Daily needs',
-    toolAgendaName:'Agenda',toolAgendaSub:'All your events',
+    toolAgendaName:'Calendar',toolAgendaSub:'All your events',
     toolPriereName:'Prayers',toolPriereSub:'All the times',
     // --- Profile ---
     athleteDefault:'Athlete',addBioPrompt:'Add a bio',heightWeight:'Height / weight',
@@ -1655,7 +1675,7 @@ const I18N={
     quickTimer:'Timer',lvlShort:'LVL',
     vdotReal:'Actual VDOT',sessionsRun:'Run sessions',kmTotal:'Total km',paceZones:'Pace zones',
     predictions:'Predictions',formFatigue:'Form / Fatigue',personalRecords:'Personal records',
-    chronic:'Chronic',acute:'Acute',tonnageLab:'Tonnage',prPerSession:'PR (kg/session)',totalSets:'Total sets',
+    chronic:'Chronic',acute:'Acute',tonnageLab:'Volume',prPerSession:'PR (kg/session)',totalSets:'Total sets',
     startFirstMuscu:'Start your first strength session!',lastSessions:'Recent sessions',
     tomorrow:'Tomorrow',noUpcomingSession:'No upcoming session planned.',addSession:'Add a session',
     showRestPlan:'Show the rest of the plan · {0} weeks',calendarTitle:'Calendar',calendarSub:'Plan your progress',
@@ -1676,7 +1696,7 @@ const I18N={
     loadingLab:'Loading…',friendsLoadError:'Couldn\'t load your friends. Check your connection.',retryBtn:'Retry',
     resumeBtn:'Resume',discardBtn:'Discard',
     alreadyLinked:'already linked',addBtn:'Add',searchError:'Search error',alreadySentOrFriend:'Already sent or already friends',
-    requestSent:'Request sent',friendProfileTitle:'Profile',removeLab:'Remove',lvlDot:'Lvl.',kmThisWeekShort:'{0} km this week',youDefaultName:'You',backToFriends:'Back to friends',profileNotFound:'Profile not found.',noBadgeUnlocked:'No badge unlocked yet.',kmPerWeek:'km/wk',daysStreak:'Day streak',kmTotalLab:'total km',tonnageKgLab:'Tonnage kg',
+    requestSent:'Request sent',friendProfileTitle:'Profile',removeLab:'Remove',lvlDot:'Lvl.',kmThisWeekShort:'{0} km this week',youDefaultName:'You',backToFriends:'Back to friends',profileNotFound:'Profile not found.',noBadgeUnlocked:'No badge unlocked yet.',kmPerWeek:'km/wk',daysStreak:'Day streak',kmTotalLab:'total km',tonnageKgLab:'Volume kg',
     addPerf:'Add a performance',addChronosHint:'Add your times: they power your VDOT and your plan.',
     bestPerf:'Best performance',avgHR:'avg HR',maxHRshort:'max',perfHistoryTitle:'Performance history',
     chooseDistance:'Choose the distance',otherDist:'Other',customDistance:'Custom distance',
@@ -1686,7 +1706,7 @@ const I18N={
     perfAddedComp:'Performance added · +XP competition',perfAdded:'Performance added',
     editProfileTitle:'Edit profile',usernameLab:'Username',usernameHint:'Used by your friends to find you',
     firstNameLab:'First name',cityLab:'City',birthDateLab:'Date of birth',heightCmLab:'Height (cm)',weightKgLab:'Weight (kg)',
-    hrMaxLab:'Max HR',hrRestLab:'Resting HR',kmWeekLab:'Km / week',compDateLab:'Race date',coachLab:'Coach',saveBtn:'Save',
+    kmWeekLab:'Km / week',compDateLab:'Race date',coachLab:'Coach',saveBtn:'Save',
     filterAll:'All',filterObtained:'Earned',filterLocked:'Locked',badgesObtainedCount:'{0} / {1} badges earned',
     badgeDetailTitle:'Badge details',tierOf:'Tier {0} of {1}',newBadgeUnlocked:'NEW BADGE UNLOCKED',
     tapToContinue:'Tap to continue',seeDetails:'See details',tapToClose:'Tap to close',previewLocked:'PREVIEW · LOCKED',
@@ -1719,7 +1739,7 @@ const I18N={
     prayerTitle:'Prayers · Béjaïa',uoifMethod:'UOIF method · {0}',
     obWelcomeTitle:'Welcome to IKORUN',obWelcomeIntro:'Elite Athletic Intelligence.<br>Your personal coaching, scientifically calculated, 100% offline.',
     obWhoTitle:'Who are you?',obWhoIntro:'Your basic info.',firstNamePh:'Your first name',firstNameReq:'First name *',
-    usernameReq:'Username *',usernamePh:'unique_username',usernameFormatHint:'3 to 20 characters: letters, digits, _',
+    usernameReq:'Username *',usernamePh:'unique_username',
     birthDateReq:'Date of birth *',sexReq:'Sex *',selectLab:'Select',maleLab:'Male',femaleLab:'Female',
     obLevelTitle:'Your level',obLevelIntro:'Be honest, the plan adapts.',
     levelNote:'Your <b>level</b> adjusts your plan\u2019s intensity and training volume, calculated automatically. Not sure? Tap <b>"How to choose?"</b>.',
@@ -1754,14 +1774,14 @@ const I18N={
     exerciseAdded:'Exercise added',sessionSaved:'Session saved — resume anytime',xpGain:'+5 XP',
     restTitle:'Rest',secLab:'sec',add30sLab:'+30s',skipLab:'Skip',cancelSessionTitle:'Cancel this session?',
     progressLostText:'Your progress on this session will be lost.',continueLab2:'Continue',yesCancelLab:'Yes, cancel',sessionCancelled:'Session cancelled',
-    sessionDoneTitle:'Session complete!',tonnageParenKg:'Tonnage (kg)',repsLab:'Reps',caloriesLab:'Calories',recordsBrokenLab:'Records broken',
+    sessionDoneTitle:'Session complete!',tonnageParenKg:'Volume (kg)',repsLab:'Reps',caloriesLab:'Calories',recordsBrokenLab:'Records broken',
     tonnageVsLastLab:'tonnage vs your last {0} session.',newRecordsLab:'New records',musclesWorkedLab:'Muscles worked',xpEarnedLab:'+50 XP earned!',
     programNameLab:'Program name',programNamePh:'My program',descriptionLab:'Description',descriptionPh:'Goal, split, frequency...',
     objectiveLab2:'Goal',iconLab:'Icon',colorLab:'Color',exercisesCountLab:'Exercises ({0})',addExFromLib:'Add exercises from the library.',
     addFromLibBtn:'Add from library',saveProgramBtn:'Save program',giveNameLab:'Give it a name',addExercisesLab:'Add exercises',programCreated:'Program created',
     sessTitle_EF:'Base Endurance',sessLabel_EF:'Easy',
     sessTitle_RECUP:'Active Recovery',sessLabel_RECUP:'Recovery',
-    sessTitle_LONG:'Long Run',sessLabel_LONG:'Long',progressiveSuffix:' progressive',
+    sessTitle_LONG:'Long Run',sessLabel_LONG:'Long run',progressiveSuffix:' (progressive)',
     sessTitle_TEMPO:'Tempo Run',sessLabel_TEMPO:'Tempo',
     sessTitle_TEMPO_SPE:'Race-Pace Tempo',sessLabel_TEMPO_SPE:'Pace tempo',
     sessTitle_SEUIL:'Threshold Session',sessLabel_SEUIL:'Threshold',
@@ -1878,7 +1898,7 @@ const I18N={
     wuTemplate:'15-20 min easy jogging at {0}/km + 4-5 progressive strides + drills (high knees, heel flicks, bounding).',
     cdTemplate:'10-15 min very easy jogging at {0}/km + gentle stretching.',
     recovLabel_2minTrot:'2 min jog',recovLabel_1minTrot:'1 min jog',recovLabel_30sTrot:'30 s jog',recovLabel_2to3minTrot:'2-3 min jog',recovLabel_90sTrot:'90 s jog',
-    repsTextTemplate:'{0} × {1} m at {2} ({3}/km)',seriesPyramid:'Pyramid {0}→{1} m',seriesRepsDist:'{0} × {1} m at {2}',seriesRepsOnly:'{0} × efforts',
+    repsTextTemplate:'{0} × {1} m at {2} ({3}/km)',seriesPyramid:'Pyramid {0}→{1} m',seriesRepsDist:'{0} × {1} m at {2}',seriesRepsOnly:'{0} × reps',
     deloadPrefixTemplate:'DELOAD WEEK — {0}',
     bs_ef_objectif:'Build your aerobic base — the foundation of all progress (80% of elite volume).',
     bs_ef_warmup:'Progressive warm-up over 10 min.',bs_ef_body:'{0} km at easy pace ({1}/km). You should be able to hold a conversation throughout.',
@@ -1966,6 +1986,10 @@ const I18N={
     analyzeSessionBtn:'Analyze my session',autoLightenedFlag:'Session automatically lightened (reason: {0} on {1}).',
     avgPaceKmLabel:'Average pace /km',coachAnalysisTitle:'Coach Analysis',
     coach_adj_continue:'Keep going as planned, your plan is well calibrated.',
+    coach_motiv1:'One more session in the legs — fitness is built by consistency, not by one-off heroics.',
+    coach_motiv2:'You did the hard part: showing up. Your body handles the rest during recovery.',
+    coach_motiv3:'Every logged run makes the plan more accurate. You are not training blind.',
+    coach_motiv4:'Nobody improves in a straight line. What matters is that the curve rises over the month.',
     coach_adj_increaseVolume:'You\u2019re in good shape: we can slightly increase the volume next week.',
     coach_adj_lighten48h:'Lighten your next hard session by 48h to recover well.',
     coach_adj_rest:'Next session: replace it with rest or a very light jog.',
@@ -2116,7 +2140,7 @@ const I18N={
     declineBtn:'رفض',saveLabel:'حفظ',renameLab:'إعادة تسمية',favoriteLab:'مفضّل',
     langLab:'اللغة',obModeTitle:'طريقة العرض',obModeIntro:'طريقتان لرؤية IKORUN — غيّر رأيك في أي وقت من الملف الشخصي.',obModeFullT:'كامل',obModeFullD:'كل الإحصائيات، تفاصيل كل حصة، تشريح العضلات، الرسوم البيانية. للتعمّق.',obModeSimpleT:'مبسّط',obModeSimpleD:'بطاقة واحدة، الأساسيات: حصة اليوم وزر واحد. لا شيء آخر على الشاشة. للذهاب مباشرة إلى الهدف.',obModeSuggestion:'اقتراح حسب عمرك: {0}. اختر بحرية.',chooseModeLab:'اختر طريقة عرض للمتابعة',
     trackingLab:'المتابعة',appearanceLab:'المظهر',
-    sendFeedbackLab:'إرسال تعليق',feedbackTitle:'رأيك',feedbackIntro:'فكرة، خلل، أو شيء يزعجك في التطبيق؟ اكتبه هنا، سيُفتح مباشرة في تطبيق بريدك.',feedbackPh:'اكتب تعليقك...',feedbackEmptyToast:'اكتب شيئًا قبل الإرسال',feedbackSentToast:'فُتح تطبيق البريد لديك، لم يبقَ سوى الضغط على إرسال',feedbackSignature:'الحساب: {0} · اللغة: {1}',
+    sendFeedbackLab:'إرسال تعليق',feedbackNoAddressToast:'لم يتم إعداد عنوان التواصل بعد — أعد المحاولة بعد التحديث القادم.',feedbackTitle:'رأيك',feedbackIntro:'فكرة، خلل، أو شيء يزعجك في التطبيق؟ اكتبه هنا، سيُفتح مباشرة في تطبيق بريدك.',feedbackPh:'اكتب تعليقك...',feedbackEmptyToast:'اكتب شيئًا قبل الإرسال',feedbackSentToast:'فُتح تطبيق البريد لديك، لم يبقَ سوى الضغط على إرسال',feedbackSignature:'الحساب: {0} · اللغة: {1}',
     sendBtn:'إرسال',
     playLab:'ابدأ',
     cvCat_dist:'المسافة',cvCat_pace:'الوتيرة',cvCat_weight:'الوزن',cvTapToEdit:'اضغط للتعديل',
@@ -2210,7 +2234,7 @@ const I18N={
     perfAddedComp:'تمت إضافة الأداء · +XP مسابقة',perfAdded:'تمت إضافة الأداء',
     editProfileTitle:'تعديل الملف الشخصي',usernameLab:'اسم المستخدم',usernameHint:'يُستخدم من قبل أصدقائك للعثور عليك',
     firstNameLab:'الاسم الأول',cityLab:'المدينة',birthDateLab:'تاريخ الميلاد',heightCmLab:'الطول (سم)',weightKgLab:'الوزن (كغ)',
-    hrMaxLab:'أقصى نبض',hrRestLab:'نبض الراحة',kmWeekLab:'كم / أسبوع',compDateLab:'تاريخ السباق',coachLab:'المدرب',saveBtn:'حفظ',
+    kmWeekLab:'كم / أسبوع',compDateLab:'تاريخ السباق',coachLab:'المدرب',saveBtn:'حفظ',
     filterAll:'الكل',filterObtained:'مكتسبة',filterLocked:'مغلقة',badgesObtainedCount:'{0} / {1} وسام مكتسب',
     badgeDetailTitle:'تفاصيل الوسام',tierOf:'المستوى {0} من {1}',newBadgeUnlocked:'وسام جديد مفتوح',
     tapToContinue:'اضغط للمتابعة',seeDetails:'عرض التفاصيل',tapToClose:'اضغط للإغلاق',previewLocked:'معاينة · مغلق',
@@ -2243,7 +2267,7 @@ const I18N={
     prayerTitle:'الصلوات · بجاية',uoifMethod:'طريقة UOIF · {0}',
     obWelcomeTitle:'مرحبًا بك في IKORUN',obWelcomeIntro:'Elite Athletic Intelligence.<br>تدريبك الشخصي، محسوب علميًا، بدون اتصال 100%.',
     obWhoTitle:'من أنت؟',obWhoIntro:'معلوماتك الأساسية.',firstNamePh:'اسمك الأول',firstNameReq:'الاسم الأول *',
-    usernameReq:'اسم المستخدم *',usernamePh:'اسم_مستخدم_فريد',usernameFormatHint:'3 إلى 20 حرفًا: أحرف، أرقام، _',
+    usernameReq:'اسم المستخدم *',usernamePh:'اسم_مستخدم_فريد',
     birthDateReq:'تاريخ الميلاد *',sexReq:'الجنس *',selectLab:'اختر',maleLab:'ذكر',femaleLab:'أنثى',
     obLevelTitle:'مستواك',obLevelIntro:'كن صادقًا، الخطة تتكيف.',
     levelNote:'يعدّل <b>المستوى</b> شدة خطتك وحجم تدريبك، محسوبان تلقائيًا. غير متأكد؟ اضغط <b>«كيف أختار؟»</b>.',
@@ -2491,6 +2515,10 @@ const I18N={
     analyzeSessionBtn:'حلّل حصتي',autoLightenedFlag:'تم تخفيف الحصة تلقائيًا (السبب: {0} بتاريخ {1}).',
     avgPaceKmLabel:'الوتيرة المتوسطة /كم',coachAnalysisTitle:'تحليل المدرب',
     coach_adj_continue:'واصل كما هو مخطط، خطتك معايرة جيدًا.',
+    coach_motiv1:'حصة إضافية في رصيدك — اللياقة تُبنى بالانتظام، لا بالإنجازات المتفرقة.',
+    coach_motiv2:'أنجزت الجزء الأصعب: أنك خرجت. الباقي يتكفّل به جسدك أثناء التعافي.',
+    coach_motiv3:'كل حصة تسجّلها تجعل الخطة أدقّ. أنت لا تتدرّب في الفراغ.',
+    coach_motiv4:'لا أحد يتقدّم في خط مستقيم. المهم أن يصعد المنحنى على مدى الشهر.',
     coach_adj_increaseVolume:'أنت في حالة جيدة: يمكننا زيادة الحجم قليلًا الأسبوع القادم.',
     coach_adj_lighten48h:'خفّف حصتك الشاقة القادمة لمدة 48 ساعة للتعافي جيدًا.',
     coach_adj_rest:'الحصة القادمة: استبدلها بالراحة أو بركض خفيف جدًا.',
@@ -3444,9 +3472,10 @@ document.addEventListener('visibilitychange',async()=>{
 function appIconDataURL(){ return "icon-192.png"; }
 function ripple(e,b){
   const r=document.createElement('span'); r.className='ripple';
-  const rect=b.getBoundingClientRect(), sz=Math.max(rect.width,rect.height);
+  const z=uiZoomFactor(); // rect et clientX sont en px écran, les styles posés en px CSS
+  const rect=b.getBoundingClientRect(), sz=Math.max(rect.width,rect.height)/z;
   r.style.width=r.style.height=sz+'px';
-  r.style.left=(e.clientX-rect.left-sz/2)+'px'; r.style.top=(e.clientY-rect.top-sz/2)+'px';
+  r.style.left=((e.clientX-rect.left)/z-sz/2)+'px'; r.style.top=((e.clientY-rect.top)/z-sz/2)+'px';
   b.appendChild(r); setTimeout(()=>r.remove(),600);
 }
 document.addEventListener('click',e=>{ const b=e.target.closest('.btn'); if(b) ripple(e,b); });
@@ -3476,7 +3505,10 @@ let _ovZTop=12000;
 // TOUJOURS au-dessus de l'overlay actif, même si celui-ci a été ouvert/réouvert
 // plusieurs fois avant (sinon un z-index fixe trop bas se retrouve caché "derrière"
 // la page et devient impossible à fermer/valider).
-function topZ(){ return ++_ovZTop; }
+// Plafonné pour rester sous la bande réservée au toast (19000) et au skeleton de
+// démarrage (20000) : sans borne, une session très longue finissait par distribuer
+// des z-index qui recouvraient même les messages système.
+function topZ(){ _ovZTop=Math.min(_ovZTop+1,18000); return _ovZTop; }
 function openOv(id){ const el=$('#'+id); el.style.zIndex=topZ(); el.classList.add('on'); }
 function closeOv(id){ const el=$('#'+id); el.classList.remove('on'); el.style.zIndex=''; if(id==='ovProg') _pfSheet=null; if(id==='ovLib'&&typeof _exDemoTimer!=='undefined'){ clearInterval(_exDemoTimer); } if((id==='ovProg'||id==='ovLive')&&typeof _exDemo2!=='undefined'&&_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; }
   // Garde-fou : openLibFor() ferme ovCreate pour ouvrir la bibliothèque par-dessus (voir plus
@@ -3602,6 +3634,16 @@ function pickSpeed(title,init,cb){
 
 /* ---------- NAV ---------- */
 const TITLES={home:['Accueil',''],sport:['Sport','Running & Musculation'],stats:['Statistiques','Tes données réelles'],outils:['Outils','Calculs & timers'],profil:['Profil','']};
+/* Le mode simplifié applique zoom:1.16 sur <html> (voir .easy-mode). Or
+   getBoundingClientRect() renvoie des pixels écran DÉJÀ mis à l'échelle par ce
+   zoom : reposer ces mêmes nombres en style brut (left/top/width...) sur un
+   élément qui subit lui aussi le zoom les fait multiplier une seconde fois.
+   Toute position calculée en JS à partir d'un rect doit donc être divisée par
+   ce facteur avant d'être écrite en style. Vaut 1 hors mode simplifié. */
+function uiZoomFactor(){
+  const z=parseFloat(getComputedStyle(document.documentElement).zoom);
+  return (z && isFinite(z) && z>0) ? z : 1;
+}
 function positionNavPill(btn){
   // Mesure réelle du bouton pour que la pastille soit toujours parfaitement
   // centrée sous l'onglet actif, quel que soit le nombre d'onglets ou le
@@ -3609,10 +3651,11 @@ function positionNavPill(btn){
   if(!btn) return;
   const nav=document.getElementById('nav'), pill=document.getElementById('nav-pill');
   if(!nav||!pill) return;
+  const z=uiZoomFactor();
   const navRect=nav.getBoundingClientRect(), btnRect=btn.getBoundingClientRect();
   const pad=3; // marge interne autour du bouton pour l'effet "capsule"
-  pill.style.left=(btnRect.left-navRect.left+pad)+'px';
-  pill.style.width=(btnRect.width-pad*2)+'px';
+  pill.style.left=((btnRect.left-navRect.left)/z+pad)+'px';
+  pill.style.width=(btnRect.width/z-pad*2)+'px';
 }
 function nav(s){
   $$('.scr').forEach(el=>el.classList.remove('on'));
@@ -3625,7 +3668,7 @@ function nav(s){
   document.body.dataset.scr=s;
   $('#tbTitle').textContent=t(s);
   $('#tbSub').textContent= s==='home'?greet():subs[s];
-  const av=$('#tbAvatar'); if(av){ if(P.photo){ av.style.background='url('+P.photo+') center/cover'; av.textContent=''; } else { av.style.background='var(--ed)'; av.style.color='var(--e)'; av.style.fontWeight='800'; av.textContent=P.name?P.name[0].toUpperCase():'?'; } }
+  const av=$('#tbAvatar'); if(av){ const ph=safePhotoUrl(P.photo); if(ph){ av.style.background="url('"+ph+"') center/cover"; av.textContent=''; } else { av.style.background='var(--ed)'; av.style.color='var(--e)'; av.style.fontWeight='800'; av.textContent=P.name?P.name[0].toUpperCase():'?'; } }
   $('#scroll').scrollTop=0;
   const navElReset=document.getElementById('nav'); if(navElReset) navElReset.classList.remove('nav-hidden');
   if(s==='home') renderHome();
@@ -3696,7 +3739,10 @@ $$('.nb').forEach(b=>b.onclick=()=>nav(b.dataset.s));
     const ddx=tx-startX, ddy=ty-startY;
     if(Math.abs(ddy)>Math.abs(ddx)&&Math.abs(ddy)>12){ dragging=false; ovEl.classList.remove('dragging'); return; }
     dx=Math.max(0,ddx);
-    const card=ovEl.querySelector('.ov-card'); if(card) card.style.transform='translateX('+dx+'px)';
+    // dx vient de clientX (pixels écran) alors que le transform s'applique dans
+    // le sous-arbre zoomé du mode simplifié : sans division la carte glissait
+    // 16% plus vite que le doigt (voir uiZoomFactor).
+    const card=ovEl.querySelector('.ov-card'); if(card) card.style.transform='translateX('+(dx/uiZoomFactor())+'px)';
   },{passive:true});
   document.addEventListener('touchend',()=>{
     if(!dragging||!ovEl){ dragging=false; return; }
@@ -3991,17 +4037,25 @@ function confirmRegenPlan(){
    a pas de GPS. Deux étapes sans cible d'écran (centrées, sel:null) couvrent
    maintenant ce terrain conceptuel ; les autres restent ancrées sur un
    élément réel mais avec un texte qui explique plutôt que nomme. */
+/* `sel` accepte une liste de sélecteurs candidats : le premier présent gagne.
+   Nécessaire parce que #tourPlanCta n'existe QUE tant qu'aucun plan n'a été
+   généré — or c'est justement l'inverse quand on rejoue le tour depuis le
+   Profil. Avant, ces deux étapes étaient purement sautées : l'utilisateur
+   perdait l'explication de l'onglet Sport ET la carte de fin, le tour
+   s'arrêtant sans conclusion. `skipIf` sert au cas inverse : une étape qui
+   parle d'un écran réellement inaccessible dans ce mode. */
 const TOUR_STEPS=[
   { key:'welcome' },
   { key:'home', page:'home', sel:()=>P.easyMode?'#s-home .ik-greet':'#s-home .hv7-greet' },
   { key:'loop', page:'home' },
-  { key:'sport', page:'sport', sel:'#tourPlanCta' },
+  { key:'sport', page:'sport', sel:['#tourPlanCta','#s-sport .sp-plan','#s-sport .pills'] },
   { key:'adapt', page:'sport' },
   { key:'stats', page:'stats', sel:()=>P.easyMode?'#s-stats .stat-quatro':'#s-stats .seg-ctrl' },
-  { key:'outils', page:'outils', sel:'#s-outils .searchbox' },
+  // L'onglet Outils est masqué en mode simplifié : on n'y emmène donc personne.
+  { key:'outils', page:'outils', sel:'#s-outils .searchbox', skipIf:()=>!!P.easyMode },
   { key:'profil', page:'profil', sel:'#s-profil .pf-hero' },
   { key:'club', page:'profil', sel:'#s-profil .pf-club-row' },
-  { key:'final', page:'sport', sel:'#tourPlanCta', final:true }
+  { key:'final', page:'sport', sel:['#tourPlanCta','#s-sport .sp-plan'], final:true }
 ];
 let _tourOn=false, _tourIdx=0, _tourBusy=false;
 
@@ -4067,24 +4121,30 @@ async function showTourStep(startI){
     while(true){
       const step=TOUR_STEPS[i];
       if(!step){ endTour(); return; }
+      if(step.skipIf && step.skipIf()){ i=i+1; continue; } // étape sans objet dans ce mode
       _tourIdx=i;
       const ov=$('#tourOv'); if(!ov) return;
       ov.classList.add('on');
       resetTourVeil();
       if(step.page) nav(step.page);
-      const sel=typeof step.sel==='function'?step.sel():step.sel;
+      let sel=typeof step.sel==='function'?step.sel():step.sel;
+      if(Array.isArray(sel)) sel=sel.find(s=>$(s))||sel[sel.length-1];
       let el=null;
       if(sel){
         el=await waitForTourEl(sel);
         if(!_tourOn || _tourIdx!==i) return; // le tour a été fermé/a changé d'étape entretemps
-        if(!el){ i=i+1; continue; } // cible introuvable (page vide, mode différent…) : passe à l'étape suivante sans jamais bloquer le tour
-        // "smooth" pouvait encore être en cours d'animation après les 320ms d'attente sur une
-        // longue distance de scroll (ex: une rangée bas de page Profil) : l'anneau se figeait
-        // alors sur la position mesurée avant la fin réelle du défilement, décalé de l'élément
-        // réellement visé. "auto" scrolle instantanément, donc la position est stable dès la mesure.
-        try{ el.scrollIntoView({block:'center',behavior:'auto'}); }catch(e){}
-        await tourSleep(320);
-        if(!_tourOn || _tourIdx!==i) return;
+        // Cible introuvable : on affiche quand même l'étape, carte centrée et sans
+        // anneau. La sauter faisait disparaître du contenu (et la carte de fin) selon
+        // l'état de l'app ; le contenu prime, l'ancrage visuel n'est qu'un bonus.
+        if(el){
+          // "smooth" pouvait encore être en cours d'animation après les 320ms d'attente sur une
+          // longue distance de scroll (ex: une rangée bas de page Profil) : l'anneau se figeait
+          // alors sur la position mesurée avant la fin réelle du défilement, décalé de l'élément
+          // réellement visé. "auto" scrolle instantanément, donc la position est stable dès la mesure.
+          try{ el.scrollIntoView({block:'center',behavior:'auto'}); }catch(e){}
+          await tourSleep(320);
+          if(!_tourOn || _tourIdx!==i) return;
+        }
       }
       $('#tourT').textContent = step.key==='welcome' ? tp('tour_welcome_t',P.name?P.name.split(' ')[0]:t('you')) : t('tour_'+step.key+'_t');
       $('#tourD').textContent=t('tour_'+step.key+'_d');
@@ -4093,6 +4153,12 @@ async function showTourStep(startI){
       $('#tourSkip').style.visibility = step.final?'hidden':'visible';
       renderTourDots(i);
       positionTourOn(el);
+      // Certains écrans se dessinent en deux temps (Stats affiche un squelette puis
+      // remplace tout son contenu une fois les calculs finis) : l'élément mesuré ici
+      // peut donc être détaché de la page juste après, laissant l'anneau sur une
+      // position fantôme. On recale sur la cible fraîchement retrouvée, deux fois,
+      // le temps que ces rendus différés se posent.
+      [260,760].forEach(d=>setTimeout(()=>{ if(_tourOn && _tourIdx===i) tourReposition(); },d));
       return;
     }
   } finally { _tourBusy=false; }
@@ -4113,21 +4179,14 @@ function endTour(){
 function tourReposition(){
   if(!_tourOn) return;
   const step=TOUR_STEPS[_tourIdx]; if(!step) return;
-  const sel=typeof step.sel==='function'?step.sel():step.sel;
+  let sel=typeof step.sel==='function'?step.sel():step.sel;
+  if(Array.isArray(sel)) sel=sel.find(s=>$(s))||null;
   positionTourOn(sel?$(sel):null);
 }
-// Le mode simplifié applique zoom:1.16 sur <html> (voir .easy-mode). Ce zoom
-// s'applique aussi à l'overlay du tour (attaché à document.body, donc dans le
-// même sous-arbre zoomé) : des coordonnées déjà à l'échelle réelle
-// (getBoundingClientRect, qui renvoie du px écran post-zoom) posées telles
-// quelles comme style brut sur l'overlay se retrouvaient re-multipliées par
-// ce même zoom, décalant l'anneau d'autant plus qu'on descend dans la page.
-// On compense en divisant toutes les coordonnées par le zoom ambiant avant
-// de les assigner en style — invisible hors mode simplifié (zoom=1).
-function tourZoomFactor(){
-  const z=parseFloat(getComputedStyle(document.documentElement).zoom);
-  return (z && isFinite(z) && z>0) ? z : 1;
-}
+// L'overlay du tour est attaché à document.body, donc dans le sous-arbre zoomé
+// du mode simplifié : ses coordonnées doivent être compensées comme partout
+// ailleurs (voir uiZoomFactor). Sans ça l'anneau dérivait d'autant plus qu'on
+// descendait dans la page.
 function setTourBand(el,x,y,w,h){
   if(!el) return;
   if(w<=0||h<=0){ el.style.display='none'; return; }
@@ -4135,7 +4194,7 @@ function setTourBand(el,x,y,w,h){
   el.style.left=x+'px'; el.style.top=y+'px'; el.style.width=w+'px'; el.style.height=h+'px';
 }
 function resetTourVeil(){
-  const z=tourZoomFactor();
+  const z=uiZoomFactor();
   const W=innerWidth/z,H=innerHeight/z;
   setTourBand($('#tbTop'),0,0,W,H);
   setTourBand($('#tbBottom'),0,0,0,0); setTourBand($('#tbLeft'),0,0,0,0); setTourBand($('#tbRight'),0,0,0,0);
@@ -4143,7 +4202,7 @@ function resetTourVeil(){
 }
 function positionTourOn(el){
   const card=$('#tourCard');
-  const z=tourZoomFactor();
+  const z=uiZoomFactor();
   const W=innerWidth/z, H=innerHeight/z;
   if(!el){
     resetTourVeil();
@@ -4651,6 +4710,10 @@ function toggleEasyMode(){
   P.easyMode=!P.easyMode; saveAll(); applyTheme();
   if($('#s-profil')&&$('#s-profil').classList.contains('on')) renderProfile();
   if($('#s-home')&&$('#s-home').classList.contains('on')) renderHome();
+  // Le mode simplifié masque l'onglet Outils et change le zoom : sans replacement
+  // explicite, la pastille de la nav restait sur l'ancienne position/largeur
+  // jusqu'au prochain changement d'onglet.
+  setTimeout(()=>positionNavPill(document.querySelector('.nb.on')),60);
   toast(P.easyMode?t('easyModeOn'):t('easyModeOff'));
 }
 function setMode(m){ P.mode=(m==='light')?'light':'dark'; saveAll(); applyTheme(); if($('#s-profil')&&$('#s-profil').classList.contains('on'))renderProfile(); refreshPfSheet(); }
@@ -6492,9 +6555,9 @@ function renderPersoList(){
   else persoPlans.forEach((p)=>{
     const done=p.sessions.filter(s=>s.done).length;
     const followBadge=P.followPerso===p.id?'<span class="chrome-chip" style="color:var(--ok);margin-left:6px">'+t('followedTag')+'</span>':'';
-    h+='<div class="card" style="padding:13px 14px"><div class="row" onclick="openPerso(\''+p.id+'\')" style="cursor:pointer"><div><div style="font-weight:700;font-size:14.5px">'+p.name+followBadge+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+tp('sessionsCount',p.sessions.length,done)+'</div></div><span style="color:var(--e);font-size:18px">›</span></div>'+
+    h+='<div class="card" style="padding:13px 14px"><div class="row" onclick="openPerso(\''+p.id+'\')" style="cursor:pointer"><div><div style="font-weight:700;font-size:14.5px">'+escHtml(p.name)+followBadge+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+tp('sessionsCount',p.sessions.length,done)+'</div></div><span style="color:var(--e);font-size:18px">›</span></div>'+
       '<div class="row" style="margin-top:9px;gap:8px"><div class="pbar" style="flex:1;margin-top:0"><div style="width:'+(p.sessions.length?done/p.sessions.length*100:0)+'%"></div></div>'+
-      '<span class="mini-ic" onclick="dupPerso(\''+p.id+'\')" title="'+t('duplicate')+'">⎘</span><span class="mini-ic" onclick="sharePlan(\''+p.name+'\')" title="'+t('share')+'">↗</span><span class="mini-ic" style="color:var(--bad)" onclick="delPerso(\''+p.id+'\')" title="'+t('delete')+'">'+ICN('trash',16)+'</span></div></div>';
+      '<span class="mini-ic" onclick="dupPerso(\''+p.id+'\')" title="'+t('duplicate')+'">⎘</span><span class="mini-ic" onclick="sharePlan(\''+p.id+'\')" title="'+t('share')+'">↗</span><span class="mini-ic" style="color:var(--bad)" onclick="delPerso(\''+p.id+'\')" title="'+t('delete')+'">'+ICN('trash',16)+'</span></div></div>';
   });
   return h;
 }
@@ -6761,7 +6824,12 @@ function delPersoSession(){
   const p=CUSTOM.find(x=>x.id===curPerso); p.sessions=p.sessions.filter(x=>x.id!==curPersoSess);
   saveAll(); closeOv('ovSheet'); renderSport();
 }
-function sharePlan(n){ if(navigator.share) navigator.share({title:'IKORUN Plan',text:tp('myPlanColon',n)}); else toast(t('shareNotSupported')); }
+// Reçoit l'id du plan et non son nom : un nom saisi par l'utilisateur (« Plan d'été »)
+// cassait l'attribut onclick où il était interpolé, rendant le bouton inopérant.
+function sharePlan(id){
+  const p=(CUSTOM||[]).find(x=>x.id===id); const n=p?p.name:'';
+  if(navigator.share) navigator.share({title:'IKORUN Plan',text:tp('myPlanColon',n)}); else toast(t('shareNotSupported'));
+}
 
 /* ---------- QUESTIONNAIRE POST-SÉANCE + ANALYSE MOTEUR IKORUN ---------- */
 let debriefData=null, debriefCtx=null, debriefReps=[];
@@ -7545,7 +7613,10 @@ function liveSwipeMove(e){
     }
     s.dragging=true; s.el.classList.add('dragging'); s.el.setPointerCapture&&s.el.setPointerCapture(e.pointerId);
   }
-  let x=s.baseX+dx;
+  // dx est en pixels écran, s.w/baseX en pixels CSS : en mode simplifié (zoom)
+  // les mélanger faisait filer la carte 16% plus vite que le doigt et faussait
+  // le clamp sur la largeur de la zone révélée.
+  let x=s.baseX+dx/uiZoomFactor();
   x=Math.max(-s.w,Math.min(s.w,x));
   s.curX=x;
   s.el.style.transform='translateX('+x+'px)';
@@ -7591,7 +7662,11 @@ function onExDragMove(e){
   const d=exDrag; if(!d) return;
   e.preventDefault&&e.preventDefault();
   const dy=e.clientY-d.startY;
-  d.wraps[d.idx].style.transform='translateY('+dy+'px) scale(1.015)';
+  // dy et d.step viennent de coordonnées écran ; réappliqués en transform ils
+  // repassent par le zoom du mode simplifié, d'où la division (voir uiZoomFactor).
+  // Le calcul de l'index cible, lui, compare deux grandeurs écran : il reste juste.
+  const z=uiZoomFactor();
+  d.wraps[d.idx].style.transform='translateY('+(dy/z)+'px) scale(1.015)';
   let target=d.idx+Math.round(dy/d.step);
   target=Math.max(0,Math.min(d.wraps.length-1,target));
   if(target!==d.target){
@@ -7602,7 +7677,7 @@ function onExDragMove(e){
     order.splice(target,0,d.idx);
     order.forEach((origK,pos)=>{
       if(origK===d.idx) return;
-      d.wraps[origK].style.transform='translateY('+((pos-origK)*d.step)+'px)';
+      d.wraps[origK].style.transform='translateY('+((pos-origK)*d.step/z)+'px)';
     });
   }
 }
@@ -8154,7 +8229,7 @@ function statsBilan(){
     '</div>'+
   '</div>';
   if(typeSegs[0].ty!=='—'){
-    h+='<div class="card" style="margin-top:2px"><div class="card-t">'+cardIcon('chart','var(--e)')+t('detailByType')+'</div>'+
+    h+='<div class="card"><div class="card-t">'+cardIcon('chart','var(--e)')+t('detailByType')+'</div>'+
       typeSegs.sort((a,b)=>b.ct-a.ct).map(s=>'<div class="row" style="gap:8px;margin-bottom:6px"><span class="zdot" style="background:'+s.color+'"></span><span style="flex:1;font-size:12.5px;font-weight:600">'+trSessType(s.ty)+'</span><span class="mono" style="font-size:12px;color:var(--muted)">'+s.ct+' · '+Math.round(s.ct/periodSess.length*100)+'%</span></div>').join('')+
     '</div>';
   }
@@ -8407,7 +8482,7 @@ function achievementsGridHTML(){
   const cats=['Accomplissement','Performance'];
   const unlockedCount=ACHIEVEMENTS.filter(achievementUnlocked).length;
   const years=achYears();
-  let h='<div class="card" style="margin-top:18px"><div class="row" style="margin-bottom:6px"><span class="card-t" style="margin:0">'+ICN('medal',15,'var(--e)')+t('tabTrophies')+'</span><span style="font-size:12px;color:var(--muted)">'+unlockedCount+' / '+ACHIEVEMENTS.length+'</span></div>'
+  let h='<div class="card"><div class="row" style="margin-bottom:6px"><span class="card-t" style="margin:0">'+ICN('medal',15,'var(--e)')+t('tabTrophies')+'</span><span style="font-size:12px;color:var(--muted)">'+unlockedCount+' / '+ACHIEVEMENTS.length+'</span></div>'
     +'<div style="font-size:11px;color:var(--dim);margin-bottom:8px">'+t('tapTrophyHint')+'</div>';
   if(years.length){
     h+='<div class="pills" style="margin-bottom:10px">'
@@ -9295,7 +9370,11 @@ function prayerTimes(){
 /* ---------- PROFILE ---------- */
 function age(){ if(!P.bday)return'—'; const d=new Date(P.bday); return Math.floor((Date.now()-d)/31557600000); }
 function avatarHTML(size,fs){
-  if(P.photo) return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background-image:url('+P.photo+');background-size:cover;background-position:center;margin:0 auto;border:2.5px solid rgba(var(--e-rgb),.35);box-shadow:0 6px 18px -6px rgba(var(--e-rgb),.4)"></div>';
+  // Photo validée (et non simplement échappée) : une valeur restaurée depuis un
+  // fichier importé ou une synchro pourrait sinon fermer l'attribut style et
+  // injecter du HTML ici, ce sink n'ayant historiquement aucun échappement.
+  const ph=safePhotoUrl(P.photo);
+  if(ph) return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background-image:url(\''+ph+'\');background-size:cover;background-position:center;margin:0 auto;border:2.5px solid rgba(var(--e-rgb),.35);box-shadow:0 6px 18px -6px rgba(var(--e-rgb),.4)"></div>';
   return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:linear-gradient(135deg,var(--e),var(--marineL));display:flex;align-items:center;justify-content:center;margin:0 auto;font-family:Unbounded;font-weight:800;font-size:'+fs+'px;border:2.5px solid rgba(var(--e-rgb),.35);box-shadow:0 6px 18px -6px rgba(var(--e-rgb),.4)">'+(P.name?P.name[0].toUpperCase():'?')+'</div>';
 }
 function renderProfile(){
@@ -9430,7 +9509,7 @@ function pfSectionHTML(key){
    à la volée risquerait de perdre en précision. À adapter/faire relire par
    un professionnel avant publication — remplace les [crochets] par tes
    vraies coordonnées (nom/société, email de contact). */
-const LEGAL_LAST_UPDATE='4 septembre 2026';
+const LEGAL_LAST_UPDATE='6 septembre 2026';
 function legalP(title,body){ return '<div style="font-weight:800;font-size:13.5px;margin:16px 0 6px;color:var(--snow)">'+title+'</div><div style="font-size:12.5px;color:var(--muted);line-height:1.65">'+body+'</div>'; }
 function legalWrapHTML(bodyHtml){
   return '<div class="card" style="padding:16px">'+
@@ -9443,11 +9522,11 @@ function legalTermsHTML(){
   const b=legalP('1. Objet',
     'Les présentes Conditions Générales d’Utilisation (« CGU ») régissent l’accès et l’utilisation de l’application IKORUN (« l’Application »), une application de coaching sportif (course à pied et musculation) éditée par [ton nom ou ta société — à compléter], ci-après « l’Éditeur ». En créant un compte ou en utilisant l’Application, tu acceptes sans réserve les présentes CGU.')
   +legalP('2. Description du service',
-    'IKORUN propose : la génération de plans d’entraînement personnalisés (course à pied et musculation) à partir des informations que tu renseignes (niveau, objectif, performances passées…) ; le suivi de tes séances, statistiques et progrès ; des fonctionnalités sociales optionnelles (ajout d’amis, classement) ; des outils de calcul (allures, VDOT, etc.). L’Application fonctionne en mode « invité » (sans compte permanent) ou avec un compte (email/mot de passe ou connexion Google).')
+    'IKORUN propose : la génération de plans d’entraînement personnalisés (course à pied et musculation) à partir des informations que tu renseignes (niveau, objectif, performances passées…) ; le suivi de tes séances, statistiques et progrès ; des fonctionnalités sociales optionnelles (ajout d’amis et classement entre amis, création ou adhésion à un club via un code à 6 caractères avec classement entre membres du club) ; des outils de calcul (allures, VDOT, etc.) ; un formulaire d’avis qui ouvre ton application mail avec un message pré-rempli, rien n’étant envoyé sans que tu appuies toi-même sur « Envoyer ». L’Application fonctionne en mode « invité » (sans compte permanent) ou avec un compte (email/mot de passe ou connexion Google). IKORUN est distribuée uniquement comme application web installable depuis ton navigateur : elle n’est présente ni sur l’App Store ni sur le Play Store.')
   +legalP('3. Avertissement santé et sport — à lire attentivement',
     'IKORUN n’est pas un dispositif médical et ne fournit aucun avis médical. Les plans d’entraînement générés le sont par des algorithmes génériques et ne remplacent pas l’avis d’un professionnel de santé. Avant de commencer tout programme, en particulier en cas d’antécédents médicaux, de condition de santé particulière, ou de reprise d’activité après une longue interruption, consulte un médecin. Tu es seul(e) responsable de l’évaluation de ta condition physique et des risques liés à la pratique sportive. L’Éditeur ne pourra être tenu responsable de blessures, malaises ou dommages résultant de l’utilisation des plans ou conseils fournis par l’Application.')
   +legalP('4. Compte utilisateur',
-    'Tu es responsable de la confidentialité de tes identifiants et de toute activité effectuée depuis ton compte. Les informations fournies doivent être exactes. Tu peux à tout moment supprimer ton compte et tes données depuis Profil > Données & confidentialité.')
+    'Tu es responsable de la confidentialité de tes identifiants et de toute activité effectuée depuis ton compte. Les informations fournies doivent être exactes. Tu peux à tout moment exporter tes données depuis Profil > Données & confidentialité, et supprimer définitivement ton compte depuis Profil > Compte > Zone de danger.')
   +legalP('5. Contenu et comportement',
     'Ton nom d’utilisateur, ta photo de profil et les contenus que tu partages via les fonctionnalités sociales doivent rester respectueux, ne pas usurper l’identité d’un tiers, et respecter la loi. L’Éditeur se réserve le droit de suspendre ou supprimer tout compte enfreignant ces règles.')
   +legalP('6. Propriété intellectuelle',
@@ -9460,8 +9539,8 @@ function legalTermsHTML(){
     'Tu peux cesser d’utiliser l’Application et supprimer ton compte à tout moment. L’Éditeur peut suspendre ou résilier l’accès d’un utilisateur en cas de violation des présentes CGU.')
   +legalP('10. Modification des CGU',
     'L’Éditeur peut modifier les présentes CGU à tout moment, notamment pour refléter une évolution de l’Application ou de la réglementation. La date de dernière mise à jour figure en haut de ce document ; toute modification substantielle te sera signalée dans l’Application.')
-  +legalP('11. Droit applicable',
-    'Les présentes CGU sont soumises au droit français. Tout litige relève, à défaut de résolution amiable, des tribunaux compétents.')
+  +legalP('11. Droit applicable et litiges',
+    'Les présentes CGU sont soumises au droit français. En cas de difficulté, commence par contacter l’Éditeur à l’adresse indiquée ci-dessous : la plupart des situations se règlent ainsi. À défaut d’accord, tu peux recourir gratuitement à un médiateur de la consommation, ou utiliser la plateforme européenne de règlement en ligne des litiges (ec.europa.eu/consumers/odr). Si aucune solution amiable n’aboutit, le litige relève des tribunaux français compétents ; en qualité de consommateur, tu peux saisir la juridiction de ton lieu de résidence.')
   +legalP('12. Contact',
     'Pour toute question relative aux présentes CGU : [ton email de contact — à compléter].');
   return legalWrapHTML(b);
@@ -9470,26 +9549,30 @@ function legalPrivacyHTML(){
   const b=legalP('1. Responsable du traitement',
     'Le responsable du traitement des données à caractère personnel collectées via IKORUN est [ton nom ou ta société — à compléter], contact : [ton email — à compléter].')
   +legalP('2. Données collectées',
-    'Selon ton mode de connexion et ton usage de l’Application, nous traitons : les données de compte (email, mot de passe chiffré ou identifiant Google) ; les données de profil (prénom, date de naissance, sexe, taille, poids, niveau, objectifs, photo si tu en ajoutes une) ; les données d’entraînement (séances, performances, records, historique) que tu saisis ou qui sont calculées par l’Application ; les données sociales optionnelles (pseudo, liste d’amis) si tu utilises ces fonctionnalités. IKORUN ne collecte pas ta localisation GPS.')
+    'Selon ton mode de connexion et ton usage de l’Application, nous traitons : les données de compte (email, mot de passe chiffré ou identifiant Google) ; les données de profil (prénom, date de naissance, sexe, taille, poids, niveau, objectifs, photo si tu en ajoutes une) ; les données d’entraînement et de ressenti que tu saisis (séances, performances, records, historique, mais aussi difficulté ressentie, fatigue, sommeil, douleurs éventuelles) ; les indicateurs calculés à partir de celles-ci (XP, niveau, VDOT, kilomètres et séances cumulés, série de jours consécutifs) ; les données sociales optionnelles (pseudo, liste d’amis, appartenance à un club) si tu utilises ces fonctionnalités ; enfin les données techniques inhérentes à tout service en ligne, conservées par notre hébergeur (adresse IP, journaux de connexion) ainsi qu’un compteur anti-abus limitant le nombre d’actions sensibles par heure. Certaines de ces informations touchent à ta santé (poids, douleurs, fatigue) : tu les saisis librement et rien ne t’oblige à les renseigner. IKORUN ne collecte pas ta localisation GPS et n’accède à aucun capteur de ton appareil. Le mode « invité » crée lui aussi un compte technique sur nos serveurs, avec un pseudo attribué automatiquement.')
   +legalP('3. Finalités',
-    'Ces données sont utilisées pour fournir le service (génération de plans, suivi, statistiques), synchroniser tes données entre appareils, permettre les fonctionnalités sociales optionnelles, et améliorer l’Application. Elles ne sont jamais vendues à des tiers.')
+    'Ces données sont utilisées pour fournir le service (génération de plans, suivi, statistiques), synchroniser tes données entre tes appareils, permettre les fonctionnalités sociales optionnelles que tu actives, et protéger le service contre les abus. Elles ne sont ni vendues ni louées, et ne servent à aucune publicité.')
   +legalP('4. Base légale',
     'Le traitement repose sur l’exécution du contrat qui te lie à l’Éditeur (fourniture du service demandé) et, pour les fonctionnalités optionnelles (photo, réseau social), sur ton consentement.')
-  +legalP('5. Hébergement',
-    'Tes données sont hébergées chez Supabase, sur des serveurs situés dans l’Union européenne (Irlande). La connexion via Google est gérée par Google LLC selon sa propre politique de confidentialité.')
-  +legalP('6. Durée de conservation',
-    'Tes données sont conservées tant que ton compte est actif. Tu peux les exporter ou supprimer ton compte à tout moment depuis Profil > Données & confidentialité — la suppression est définitive.')
-  +legalP('7. Tes droits',
-    'Conformément au RGPD, tu disposes d’un droit d’accès, de rectification, d’effacement, de portabilité (export JSON disponible dans l’Application) et d’opposition sur tes données. Pour les exercer, utilise les outils intégrés à l’Application ou contacte [ton email — à compléter]. Tu peux aussi introduire une réclamation auprès de la CNIL (www.cnil.fr).')
-  +legalP('8. Stockage local et cookies',
-    'L’Application utilise le stockage local de ton navigateur/appareil (localStorage) pour fonctionner hors-ligne et mémoriser tes préférences — pas de cookies publicitaires ni de traceurs tiers.')
-  +legalP('9. Sécurité',
-    'Tes données sont chiffrées avant stockage local, et les échanges avec le serveur sont chiffrés (HTTPS). Aucun système n’est infaillible ; en cas de faille de sécurité avérée, tu en serais informé(e) conformément à la réglementation.')
-  +legalP('10. Mineurs',
-    'L’Application est destinée aux personnes de 15 ans et plus. En dessous de cet âge, l’accord d’un parent ou tuteur légal est requis pour créer un compte, conformément à la réglementation française sur le consentement numérique.')
-  +legalP('11. Modifications',
+  +legalP('5. Données visibles par d’autres utilisateurs',
+    'Certaines fonctionnalités font volontairement sortir des données de ton espace privé — c’est leur raison d’être, et elles restent facultatives. Ton profil public (pseudo, photo, niveau, XP, VDOT, kilomètres et séances cumulés, série de jours) est visible par les autres utilisateurs connectés qui te recherchent par ton pseudo ou t’ajoutent en ami. Si tu crées ou rejoins un club, ton pseudo, ta photo, ton niveau et ton XP apparaissent dans le classement de ce club : toute personne détenant le code à 6 caractères du club peut le rejoindre et voir ces informations. En revanche, le détail de tes séances, tes ressentis, tes douleurs et tes mesures corporelles ne sont JAMAIS partagés, ni avec tes amis, ni avec les membres de ton club. Tu peux quitter un club ou retirer un ami à tout moment, ce qui te retire aussitôt du classement correspondant.')
+  +legalP('6. Hébergement et destinataires',
+    'Tes données sont hébergées chez Supabase, sur des serveurs situés dans l’Union européenne (Irlande). Y ont accès : l’Éditeur ; Supabase en tant qu’hébergeur ; les autres utilisateurs, uniquement dans les limites décrites à l’article précédent. Si tu choisis la connexion Google, celle-ci est gérée par Google LLC selon sa propre politique de confidentialité, ce qui implique un transfert vers les États-Unis encadré par le cadre de protection des données UE–États-Unis. Par ailleurs, pour afficher les polices de caractères, charger une bibliothèque technique et afficher les images d’exercices, ton navigateur contacte trois services externes : Google Fonts, jsDelivr et GitHub. Ces services reçoivent de ce fait ton adresse IP, sans qu’aucune donnée d’entraînement ne leur soit transmise. Tu peux les bloquer avec une extension de navigateur : l’Application reste utilisable, avec un affichage dégradé.')
+  +legalP('7. Durée de conservation et suppression',
+    'Tes données sont conservées tant que ton compte est actif. Tu peux exporter une copie complète au format JSON depuis Profil > Données & confidentialité, et supprimer définitivement ton compte depuis Profil > Compte > Zone de danger. La suppression efface ton compte, ton profil public, tes données d’entraînement, tes liens d’amitié, ton appartenance à un club et les clubs dont tu es propriétaire ; elle est immédiate et irréversible. Attention à ne pas confondre avec « Réinitialiser », dans Données & confidentialité, qui n’efface que cet appareil et laisse ton compte intact. Les sauvegardes techniques de l’hébergeur peuvent conserver une copie résiduelle quelques jours avant d’être écrasées.')
+  +legalP('8. Tes droits',
+    'Conformément au RGPD, tu disposes d’un droit d’accès, de rectification, d’effacement, de portabilité (export JSON disponible dans l’Application), de limitation du traitement et d’opposition sur tes données. Tu peux également retirer à tout moment ton consentement aux fonctionnalités optionnelles (photo de profil, amis, club) — le retrait ne remet pas en cause ce qui a été fait avant. Tu peux enfin définir des directives sur le sort de tes données après ton décès. Pour exercer ces droits, utilise les outils intégrés à l’Application ou contacte [ton email — à compléter]. Tu peux aussi introduire une réclamation auprès de la CNIL (www.cnil.fr).')
+  +legalP('9. Décisions automatisées',
+    'Tes plans d’entraînement sont générés et ajustés automatiquement par un moteur de règles qui fonctionne intégralement sur ton appareil, à partir des informations que tu renseignes. Aucune intelligence artificielle ni service tiers n’intervient dans ce calcul. Ces plans sont des suggestions sportives : ils ne produisent aucun effet juridique, et tu peux les modifier ou les ignorer à tout moment.')
+  +legalP('10. Stockage local et cookies',
+    'L’Application utilise le stockage local de ton navigateur (localStorage) pour fonctionner hors-ligne et mémoriser tes préférences, IndexedDB pour conserver la clé de chiffrement propre à ton appareil, et le cache d’un service worker pour l’affichage hors-ligne. Ces éléments restent sur ton appareil. Aucun cookie publicitaire, aucun traceur d’audience et aucun outil de mesure tiers ne sont utilisés.')
+  +legalP('11. Sécurité',
+    'Sur ton appareil, tes données d’entraînement sont chiffrées (AES-GCM 256 bits) avant d’être stockées dans le navigateur ; la clé est générée localement, non exportable, et n’est envoyée nulle part. Les échanges avec le serveur passent par HTTPS. En revanche, sois conscient(e) que la copie sauvegardée sur nos serveurs n’est pas chiffrée de bout en bout : elle est techniquement lisible par l’hébergeur et par l’Éditeur, et protégée par les contrôles d’accès de la base de données ainsi que par le chiffrement disque de l’hébergeur. Aucun système n’est infaillible ; en cas de faille de sécurité avérée, tu en serais informé(e) conformément à la réglementation.')
+  +legalP('12. Mineurs',
+    'L’Application s’adresse aux personnes de 15 ans et plus. En dessous de cet âge, l’accord d’un parent ou tuteur légal est requis pour créer un compte, conformément à la réglementation française sur le consentement numérique. Cette règle n’est pas vérifiée automatiquement à l’inscription : elle relève de ta responsabilité, et celle du représentant légal pour un mineur.')
+  +legalP('13. Modifications',
     'Cette politique peut évoluer ; la date de mise à jour est indiquée en haut de ce document.')
-  +legalP('12. Contact',
+  +legalP('14. Contact',
     'Pour toute question relative à tes données : [ton email — à compléter].');
   return legalWrapHTML(b);
 }
@@ -9628,6 +9711,11 @@ function openFeedback(){
 function sendFeedback(){
   const txt=($('#fb_text').value||'').trim();
   if(!txt){ toast(t('feedbackEmptyToast')); return; }
+  // Tant que l'adresse réelle n'a pas remplacé l'espace réservé, ouvrir le client
+  // mail produirait un brouillon adressé à « [ton email...] » — et annoncer
+  // « message envoyé » serait faux. On le dit franchement plutôt que de faire
+  // croire à un envoi.
+  if(/^\[|à compléter/.test(FEEDBACK_EMAIL)){ toast(t('feedbackNoAddressToast')); return; }
   const subject=encodeURIComponent('IKORUN — '+t('feedbackTitle'));
   const body=encodeURIComponent(txt+'\n\n—\n'+tp('feedbackSignature',P.username||P.name||'—',curLang().toUpperCase()));
   window.location.href='mailto:'+FEEDBACK_EMAIL+'?subject='+subject+'&body='+body;
@@ -9711,7 +9799,21 @@ function editBio(){ const v=prompt(t('bioPromptLabel'),P.bio||''); if(v!==null){
 function importData(){
   const inp=document.createElement('input'); inp.type='file'; inp.accept='.json';
   inp.onchange=e=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader();
-    r.onload=()=>{ try{ const d=JSON.parse(r.result); if(d.profile){P=d.profile;DB.save('profile',P);} if(d.sessions){SESS=d.sessions;DB.save('sessions',SESS);} if(d.muscu){MSESS=d.muscu;DB.save('muscu_sessions',MSESS);} if(d.xp){XP=d.xp;DB.save('xp',XP);} toast(t('dataImported')); applyTheme(); renderProfile(); }catch(err){ toast(t('invalidFile')); } };
+    r.onload=()=>{ try{ const d=JSON.parse(r.result);
+      // Un fichier importé est une source non fiable (il peut avoir été fabriqué
+      // puis envoyé à l'utilisateur) : on ne recopie jamais tel quel un champ qui
+      // finira dans du HTML. La photo est revalidée, le reste doit être du bon type.
+      if(d.profile && typeof d.profile==='object' && !Array.isArray(d.profile)){
+        P=d.profile;
+        if(P.photo && !safePhotoUrl(P.photo)) delete P.photo;
+        if(typeof P.name!=='string') delete P.name;
+        if(typeof P.bio!=='string') delete P.bio; else P.bio=P.bio.slice(0,160);
+        DB.save('profile',P);
+      }
+      if(Array.isArray(d.sessions)){SESS=d.sessions;DB.save('sessions',SESS);}
+      if(Array.isArray(d.muscu)){MSESS=d.muscu;DB.save('muscu_sessions',MSESS);}
+      if(d.xp && typeof d.xp==='object'){XP=d.xp;DB.save('xp',XP);}
+      toast(t('dataImported')); applyTheme(); renderProfile(); }catch(err){ toast(t('invalidFile')); } };
     r.readAsText(f); };
   inp.click();
 }
