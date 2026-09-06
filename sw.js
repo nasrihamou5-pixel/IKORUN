@@ -7,7 +7,7 @@
 // cache. Changer le nom du cache supprime les anciennes entrées à l'activation, ce
 // qui garantit que le vrai manifest.json est bien récupéré — condition nécessaire
 // pour que le navigateur propose l'installation de l'app.
-const C = 'ikorun-v29';
+const C = 'ikorun-v30';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
@@ -40,5 +40,33 @@ self.addEventListener('fetch', e => {
         return res;
       })
       .catch(() => caches.open(C).then(c => c.match(e.request)))
+  );
+});
+
+// Notifications push envoyées par l'Edge Function Supabase send-prayer-notifs
+// (voir app.js, subscribeToPush) — seule notification de l'app à passer par un
+// vrai serveur, puisque les horaires de prière sont une donnée publique alors
+// que le reste (séances, rappels d'entraînement) reste programmé localement,
+// le plan d'entraînement étant chiffré côté client.
+self.addEventListener('push', e => {
+  let data = {};
+  try { data = e.data ? e.data.json() : {}; } catch (err) {}
+  const title = data.title || 'IKORUN';
+  e.waitUntil(self.registration.showNotification(title, {
+    body: data.body || '',
+    tag: data.tag || 'ikorun-push',
+    renotify: true,
+    icon: 'icon-192.png',
+    badge: 'icon-192.png'
+  }));
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      for (const c of list) { if ('focus' in c) return c.focus(); }
+      if (clients.openWindow) return clients.openWindow('/');
+    })
   );
 });

@@ -275,6 +275,49 @@ const GOOGLE_ICON_SVG='<svg viewBox="0 0 48 48" width="20" height="20"><path fil
    nature (il apparaît déjà dans chaque URL d'autorisation Google). */
 const GOOGLE_CLIENT_ID='485792164068-08fq3cig2tc89ntv1ode319jps5rn9lh.apps.googleusercontent.com';
 let _gisLoading=null;
+
+/* ============ PUSH SERVEUR (rappels de prière) ============
+   Seule notification de l'app envoyée depuis le serveur plutôt que
+   programmée localement : les horaires de prière sont une donnée publique
+   (pas le plan d'entraînement, chiffré côté client avec une clé qui ne
+   quitte jamais l'appareil — voir la politique de confidentialité), donc le
+   serveur peut légitimement savoir "c'est l'heure de Dhuhr" et pousser une
+   notification même app fermée, ce qui est impossible avec un simple
+   setTimeout côté client. Clé VAPID publique — sa paire privée ne vit que
+   dans l'Edge Function Supabase send-prayer-notifs, jamais côté client. */
+const VAPID_PUBLIC_KEY='BO1YgzTtnAdn1qEI6uq6zioWSilWNhE8ScQqJJ8yAF_nAb6zZ8iOoUv7m82Fc8MW782t9_5z_rzAFJmPYpktx8Q';
+function urlBase64ToUint8Array(base64String){
+  const padding='='.repeat((4-base64String.length%4)%4);
+  const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
+  const raw=atob(base64);
+  const out=new Uint8Array(raw.length);
+  for(let i=0;i<raw.length;i++) out[i]=raw.charCodeAt(i);
+  return out;
+}
+async function subscribeToPush(){
+  if(!('serviceWorker'in navigator) || !('PushManager'in window)) return false;
+  if(!window.currentUserId || !window.supabaseClient) return false; // même un compte invité a un currentUserId
+  try{
+    const reg=await navigator.serviceWorker.ready;
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub) sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});
+    const j=sub.toJSON();
+    await window.supabaseClient.from('push_subscriptions').upsert({
+      user_id:window.currentUserId, endpoint:j.endpoint, p256dh:j.keys.p256dh, auth:j.keys.auth, prayer_enabled:true, lang:curLang(), updated_at:new Date().toISOString()
+    },{onConflict:'user_id,endpoint'});
+    return true;
+  }catch(e){ console.error('[IKORUN] subscribeToPush a échoué',e); return false; }
+}
+async function setPushPrayerEnabled(enabled){
+  try{
+    if(!('serviceWorker'in navigator)) return;
+    const reg=await navigator.serviceWorker.ready;
+    const sub=await reg.pushManager.getSubscription();
+    if(!sub){ if(enabled) await subscribeToPush(); return; }
+    if(!window.currentUserId || !window.supabaseClient) return;
+    await window.supabaseClient.from('push_subscriptions').update({prayer_enabled:enabled,updated_at:new Date().toISOString()}).eq('user_id',window.currentUserId).eq('endpoint',sub.endpoint);
+  }catch(e){}
+}
 function loadGoogleIdentityScript(){
   if(window.google && window.google.accounts && window.google.accounts.id) return Promise.resolve(true);
   if(_gisLoading) return _gisLoading;
@@ -1582,7 +1625,7 @@ const I18N={
     sessionInProgress:'Séance en cours',welcomeToast:'Bienvenue',
     bgMuscuBody:'💪 Séance de muscu en cours',bgChronoBody:'⏱ Chronomètre en cours',bgTimerBody:'⏳ Minuteur en cours',bgRunningBody:'🏃 Course en cours',
     reminderNotifTitle:'Séance du jour',reminderNotifBody:'Tu as « {0} » prévu aujourd’hui, pense à la faire !',
-    nextPrayerLabel:'Prochaine prière',inTimeLabel:'dans {0}',prayerTimeTitle:'Heure de {0}',prayerTimeBody:'C’est le moment de prier.',
+    nextPrayerLabel:'Prochaine prière',inTimeLabel:'dans {0}',
     prayerNotifLabel:'Rappels de prière',
     customizedTag:'Personnalisée',customizeSessionBtn:'Personnaliser cette séance',customizeMoveLabel:'Déplacer à un autre jour',
     customizeVolumeLabel:'Ajuster le volume',customizeSkipBtn:'Passer cette séance en repos',customizeResetBtn:'Réinitialiser',
@@ -2132,7 +2175,7 @@ const I18N={
     sessionInProgress:'Session in progress',welcomeToast:'Welcome',
     bgMuscuBody:'💪 Strength session in progress',bgChronoBody:'⏱ Stopwatch running',bgTimerBody:'⏳ Timer running',bgRunningBody:'🏃 Run in progress',
     reminderNotifTitle:'Today’s session',reminderNotifBody:'You have "{0}" planned today, don’t forget it!',
-    nextPrayerLabel:'Next prayer',inTimeLabel:'in {0}',prayerTimeTitle:'{0} time',prayerTimeBody:'Time to pray.',
+    nextPrayerLabel:'Next prayer',inTimeLabel:'in {0}',
     prayerNotifLabel:'Prayer reminders',
     customizedTag:'Customized',customizeSessionBtn:'Customize this session',customizeMoveLabel:'Move to another day',
     customizeVolumeLabel:'Adjust volume',customizeSkipBtn:'Turn into a rest day',customizeResetBtn:'Reset',
@@ -2682,7 +2725,7 @@ const I18N={
     sessionInProgress:'الحصة جارية',welcomeToast:'مرحبًا',
     bgMuscuBody:'💪 حصة تقوية عضلية جارية',bgChronoBody:'⏱ ساعة الإيقاف تعمل',bgTimerBody:'⏳ المؤقت يعمل',bgRunningBody:'🏃 الجري جارٍ',
     reminderNotifTitle:'حصة اليوم',reminderNotifBody:'لديك « {0} » مبرمجة اليوم، لا تنسها!',
-    nextPrayerLabel:'الصلاة القادمة',inTimeLabel:'خلال {0}',prayerTimeTitle:'حان وقت {0}',prayerTimeBody:'حان وقت الصلاة.',
+    nextPrayerLabel:'الصلاة القادمة',inTimeLabel:'خلال {0}',
     prayerNotifLabel:'تذكيرات الصلاة',
     customizedTag:'مخصّصة',customizeSessionBtn:'تخصيص هذه الحصة',customizeMoveLabel:'نقل إلى يوم آخر',
     customizeVolumeLabel:'تعديل الحجم',customizeSkipBtn:'تحويلها إلى يوم راحة',customizeResetBtn:'إعادة التعيين',
@@ -2973,6 +3016,7 @@ function localeCode(){ return curLang()==='en'?'en-US':(curLang()==='ar'?'ar-DZ'
 const LANGS=[['fr','FR','Français'],['en','EN','English'],['ar','AR','العربية']];
 function setLang(l){
   P.lang=l; saveAll();
+  if(P.prayerNotif!==false) subscribeToPush(); // resynchronise la langue de l'abonnement push côté serveur
   document.documentElement.lang=l;
   document.documentElement.dir=(l==='ar')?'rtl':'ltr';
   TOOLS=TOOLS_DEF(); BADGE_TIERS=BADGE_TIERS_DEF(); TIERS=TIERS_DEF(); MEDAL_CATS=MEDAL_CATS_DEF(); ACHIEVEMENTS=ACHIEVEMENTS_DEF();
@@ -3812,40 +3856,26 @@ function stopBgActivity(){
   try{ if(_bgNotif){ _bgNotif.close(); _bgNotif=null; } }catch(e){}
   try{ if(_wakeLock){ _wakeLock.release(); _wakeLock=null; } }catch(e){}
 }
-/* ============ RAPPELS DE PRIÈRE ============
-   Un setTimeout par prière restant à sonner aujourd'hui (calculés depuis
-   prayerTimes(), cf plus bas dans le fichier). Comme tout le reste du système
-   de notifications ici, c'est du local pur : aucun push serveur, donc ça ne
-   sonne que tant que l'onglet/l'app reste ouvert(e) — d'où le rappel de
-   planification à chaque retour au premier plan (visibilitychange ci-dessous),
-   pour rattraper les prières encore à venir après une mise en veille. Tag
-   distinct ('ikorun-prayer-<nom>') des autres notifications de l'app, avec
-   son/vibration puisqu'il s'agit d'un rappel à ne pas manquer, pas d'une
-   activité déjà en cours. */
-let _prayerTimers=[];
-function clearPrayerTimers(){ _prayerTimers.forEach(clearTimeout); _prayerTimers=[]; }
-function schedulePrayerNotifs(){
-  clearPrayerTimers();
+/* ============ RAPPELS DE PRIÈRE (push serveur) ============
+   Remplace une première version en setTimeout local (ne sonnait que tant que
+   l'onglet restait ouvert) par un vrai push serveur : voir subscribeToPush/
+   setPushPrayerEnabled plus haut, et l'Edge Function Supabase
+   send-prayer-notifs, appelée par un cron toutes les minutes, qui envoie la
+   notification même app fermée. Possible ici uniquement parce que les
+   horaires de prière sont une donnée publique — contrairement au plan
+   d'entraînement, chiffré côté client avec une clé qui ne quitte jamais
+   l'appareil. ensurePrayerPush() maintient l'abonnement à jour de façon
+   idempotente (ne redemande jamais la permission si déjà abonné). */
+function ensurePrayerPush(){
   if(!P || P.notif===false || P.prayerNotif===false) return;
   if(!('Notification'in window) || Notification.permission!=='granted') return;
-  const times=prayerTimes();
-  const now=new Date();
-  ['Fajr','Dhuhr','Asr','Maghrib','Isha'].forEach(p=>{
-    const [hh,mm]=times[p].split(':').map(Number);
-    const at=new Date(now.getFullYear(),now.getMonth(),now.getDate(),hh,mm,0,0).getTime();
-    const delay=at-now.getTime();
-    if(delay<=0) return; // déjà passée aujourd'hui — se reprogrammera demain à la prochaine ouverture
-    _prayerTimers.push(setTimeout(()=>{
-      try{ new Notification('🕌 '+tp('prayerTimeTitle',p),{body:t('prayerTimeBody'),icon:appIconDataURL(),badge:appIconDataURL(),tag:'ikorun-prayer-'+p,renotify:true}); }catch(e){}
-    },delay));
-  });
+  subscribeToPush();
 }
 // Réacquiert le wake lock au retour de veille si une activité tourne, et
-// reprogramme les rappels de prière (les setTimeout ne survivent pas à une
-// mise en veille prolongée sur mobile).
+// s'assure que l'abonnement push "rappels de prière" est toujours actif.
 document.addEventListener('visibilitychange',async()=>{
   if(document.visibilityState==='visible'){
-    schedulePrayerNotifs();
+    ensurePrayerPush();
     if(_bgActivity && !_wakeLock){
     try{ if('wakeLock'in navigator) _wakeLock=await navigator.wakeLock.request('screen'); }catch(e){}
     }
@@ -4422,7 +4452,7 @@ function initApp(){
   // Rappel "séance du jour pas encore faite" — après checkMissedSessions pour ne pas
   // se déclencher sur une séance déjà marquée manquée entre-temps.
   setTimeout(checkDailyReminder,900);
-  setTimeout(schedulePrayerNotifs,900);
+  setTimeout(ensurePrayerPush,900);
   if(window._launchTourAfterInit){
     window._launchTourAfterInit=false;
     setTimeout(startAppTour,1200);
@@ -10351,7 +10381,9 @@ function toggleNotif(el){
   P.notif=(P.notif===false)?true:false;
   if(el) el.classList.toggle('on',P.notif!==false);
   if(P.notif!==false) ensureNotifPerm();
-  saveAll(); schedulePrayerNotifs(); sfx('tap');
+  saveAll();
+  if(P.notif!==false) ensurePrayerPush(); else setPushPrayerEnabled(false);
+  sfx('tap');
 }
 // Bascule les sons (référencé par pfNotifHTML, existait pas -> toggle mort)
 function toggleSounds(el){
@@ -10363,7 +10395,9 @@ function togglePrayerNotif(el){
   P.prayerNotif=(P.prayerNotif===false)?true:false;
   if(el) el.classList.toggle('on',P.prayerNotif!==false);
   if(P.prayerNotif!==false) ensureNotifPerm();
-  saveAll(); schedulePrayerNotifs(); sfx('tap');
+  saveAll();
+  if(P.prayerNotif!==false) ensurePrayerPush(); else setPushPrayerEnabled(false);
+  sfx('tap');
 }
 function pfNotifHTML(){
   return '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('trainReminders')+'</span><div class="toggle'+(P.notif!==false?' on':'')+'" onclick="toggleNotif(this)"></div></div>'+
