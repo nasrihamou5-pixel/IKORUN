@@ -1674,6 +1674,10 @@ const I18N={
     sessionInProgress:'Séance en cours',welcomeToast:'Bienvenue',
     bgMuscuBody:'💪 Séance de muscu en cours',bgChronoBody:'⏱ Chronomètre en cours',bgTimerBody:'⏳ Minuteur en cours',bgRunningBody:'🏃 Course en cours',
     nextPrayerLabel:'Prochaine prière',inTimeLabel:'dans {0}',
+    enableNotifBtn:'Activer les notifications',enableNotifHomeSub:'Rappels de séance et de prière',
+    notifEnabledToast:'Notifications activées',notifDeniedToast:'Notifications refusées',
+    notifBlockedTip:'Notifications bloquées — active-les dans les réglages de ton téléphone pour cette app.',
+    notifUnsupportedToast:'Notifications non disponibles sur cet appareil',
     prayerNotifLabel:'Rappels de prière',
     customizedTag:'Personnalisée',customizeSessionBtn:'Personnaliser cette séance',customizeMoveLabel:'Déplacer à un autre jour',
     customizeVolumeLabel:'Ajuster le volume',customizeSkipBtn:'Passer cette séance en repos',customizeResetBtn:'Réinitialiser',
@@ -2223,6 +2227,10 @@ const I18N={
     sessionInProgress:'Session in progress',welcomeToast:'Welcome',
     bgMuscuBody:'💪 Strength session in progress',bgChronoBody:'⏱ Stopwatch running',bgTimerBody:'⏳ Timer running',bgRunningBody:'🏃 Run in progress',
     nextPrayerLabel:'Next prayer',inTimeLabel:'in {0}',
+    enableNotifBtn:'Enable notifications',enableNotifHomeSub:'Session and prayer reminders',
+    notifEnabledToast:'Notifications enabled',notifDeniedToast:'Notifications denied',
+    notifBlockedTip:'Notifications blocked — enable them in your phone settings for this app.',
+    notifUnsupportedToast:'Notifications not available on this device',
     prayerNotifLabel:'Prayer reminders',
     customizedTag:'Customized',customizeSessionBtn:'Customize this session',customizeMoveLabel:'Move to another day',
     customizeVolumeLabel:'Adjust volume',customizeSkipBtn:'Turn into a rest day',customizeResetBtn:'Reset',
@@ -2772,6 +2780,10 @@ const I18N={
     sessionInProgress:'الحصة جارية',welcomeToast:'مرحبًا',
     bgMuscuBody:'💪 حصة تقوية عضلية جارية',bgChronoBody:'⏱ ساعة الإيقاف تعمل',bgTimerBody:'⏳ المؤقت يعمل',bgRunningBody:'🏃 الجري جارٍ',
     nextPrayerLabel:'الصلاة القادمة',inTimeLabel:'خلال {0}',
+    enableNotifBtn:'تفعيل الإشعارات',enableNotifHomeSub:'تذكيرات الحصص والصلاة',
+    notifEnabledToast:'تم تفعيل الإشعارات',notifDeniedToast:'تم رفض الإشعارات',
+    notifBlockedTip:'الإشعارات محظورة — فعّلها من إعدادات هاتفك لهذا التطبيق.',
+    notifUnsupportedToast:'الإشعارات غير متوفرة على هذا الجهاز',
     prayerNotifLabel:'تذكيرات الصلاة',
     customizedTag:'مخصّصة',customizeSessionBtn:'تخصيص هذه الحصة',customizeMoveLabel:'نقل إلى يوم آخر',
     customizeVolumeLabel:'تعديل الحجم',customizeSkipBtn:'تحويلها إلى يوم راحة',customizeResetBtn:'إعادة التعيين',
@@ -6814,6 +6826,7 @@ function renderHome(){
       '</div></div>';
   }
 
+  html+=homeNotifPermBannerHTML();
   html+=homePrayerCardHTML();
 
   // SALUTATION — semaine/phase du plan si actif, sinon quip objectif. La série en cours,
@@ -6917,6 +6930,7 @@ function renderHomeSimple(ps,sessW,sessTarget,vdot,form,first){
   '</div>';
   h+=homeStreakBadge();
   h+='<div class="ik-greet"><h1>'+t('greet')+' '+escHtml(first||t('you'))+'</h1></div>';
+  h+=homeNotifPermBannerHTML();
   h+=homePrayerCardHTML();
 
   h+='<div class="next-lab">'+t('todayCap')+'</div>';
@@ -10072,6 +10086,20 @@ function nextPrayerInfo(){
   const [fh,fm]=times.Fajr.split(':').map(Number);
   return {name:'Fajr',time:times.Fajr,inMin:(24*60-nowMin)+(fh*60+fm)};
 }
+// Bannière d'activation affichée tant que la permission navigateur n'a jamais
+// été tranchée — sans elle, l'utilisateur qui laisse les réglages sur leur
+// valeur par défaut ("activé") ne tape jamais sur un toggle et la popup
+// système d'iOS n'apparaît donc jamais (voir requestNotifPermCTA).
+function homeNotifPermBannerHTML(){
+  if(!('Notification'in window) || Notification.permission!=='default') return '';
+  return '<div class="hv7-day" style="padding:14px 16px;margin-bottom:12px" onclick="requestNotifPermCTA()">'+
+    '<div class="row" style="justify-content:space-between;align-items:center">'+
+      '<div class="row" style="gap:10px;align-items:center">'+ICN('bell',20,'var(--e)')+
+        '<div><div style="font-weight:800;font-size:14px">'+t('enableNotifBtn')+'</div>'+
+        '<div style="font-size:12px;color:var(--muted)">'+t('enableNotifHomeSub')+'</div></div></div>'+
+      ICN('chevronR',16,'var(--dim)')+
+    '</div></div>';
+}
 function homePrayerCardHTML(){
   const np=nextPrayerInfo();
   const h=Math.floor(np.inMin/60), m=np.inMin%60;
@@ -10419,11 +10447,36 @@ function togglePrayerNotif(el){
   if(P.prayerNotif!==false) ensurePush(); else setPushFlag('prayer_enabled',false);
   sfx('tap');
 }
+// iOS n'affiche la popup système "Autoriser les notifications ?" que si
+// Notification.requestPermission() est appelé DEPUIS un vrai tap — un appel
+// automatique au démarrage (ensureNotifPerm dans boot()) est silencieusement
+// ignoré. Comme les réglages sont activés par défaut, l'utilisateur n'a
+// jamais besoin de taper sur un toggle déjà "on" : sans ce bouton explicite,
+// la popup ne sort donc jamais et AUCUNE notification ne peut fonctionner,
+// quel que soit l'état des toggles ci-dessous (trouvé en diagnostiquant un
+// signalement "aucune notification n'apparaît, sur les 3 types testés").
+function requestNotifPermCTA(){
+  if(!('Notification'in window) || typeof Notification.requestPermission!=='function'){ toast(t('notifUnsupportedToast')); return; }
+  try{
+    Promise.resolve(Notification.requestPermission()).then(perm=>{
+      renderProfile();
+      if(perm==='granted'){ ensurePush(); syncDailyReminderState(); toast(t('notifEnabledToast')); }
+      else toast(t('notifDeniedToast'));
+    }).catch(()=>toast(t('notifUnsupportedToast')));
+  }catch(e){ toast(t('notifUnsupportedToast')); }
+}
 function pfNotifHTML(){
-  return '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('trainReminders')+'</span><div class="toggle'+(P.notif!==false?' on':'')+'" onclick="toggleNotif(this)"></div></div>'+
+  let h='';
+  if('Notification'in window && Notification.permission==='default'){
+    h+='<button class="btn" style="margin-bottom:16px" onclick="requestNotifPermCTA()">'+ICN('bell',16)+' '+t('enableNotifBtn')+'</button>';
+  } else if('Notification'in window && Notification.permission==='denied'){
+    h+='<div class="tip" style="margin-bottom:16px">'+t('notifBlockedTip')+'</div>';
+  }
+  h+='<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('trainReminders')+'</span><div class="toggle'+(P.notif!==false?' on':'')+'" onclick="toggleNotif(this)"></div></div>'+
     '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('prayerNotifLabel')+'</span><div class="toggle'+(P.prayerNotif!==false?' on':'')+'" onclick="togglePrayerNotif(this)"></div></div>'+
     '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('sounds')+'</span><div class="toggle'+(P.sounds!==false?' on':'')+'" onclick="toggleSounds(this)"></div></div>'+
     '<div class="row"><span style="font-size:14px">'+t('units')+'</span><div class="toggle on"></div></div>';
+  return h;
 }
 /* ---------- COMMENTAIRE / AVIS ----------
    Volontairement le plus simple possible : une zone de texte, un bouton.
