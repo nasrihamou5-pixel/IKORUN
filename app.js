@@ -1618,6 +1618,10 @@ const I18N={
     coach_adj_lighten48h:'Allège la prochaine séance dure de 48h pour bien récupérer.',
     coach_adj_rest:'Prochaine séance : remplace-la par du repos ou un footing très léger.',
     coach_err_fatigue:'Niveau de fatigue élevé : attention au surentraînement.',
+    coach_err_paceMuchSlower:'Allure bien plus lente que prévu — vérifie si c’est la fatigue, la chaleur, ou si l’allure cible était trop ambitieuse.',
+    coach_tip_paceSlower:'Un peu plus lent que prévu avec un effort ressenti élevé : pense à repartir un cran plus doucement au prochain départ.',
+    coach_pos_paceFaster:'Plus rapide que prévu sans forcer : bon signe de forme.',
+    coach_err_paceFasterTooHard:'Plus rapide que prévu, mais au prix d’un effort très élevé — attention à ne pas cramer les prochaines séances.',
     coach_err_harderThanPlanned:'Ta séance a été bien plus dure que prévue (RPE {0} vs {1} attendu). Tu es peut-être parti trop vite ou tu es fatigué.',
     coach_err_pain:'Douleurs {0} : ne les ignore pas. Une douleur articulaire qui persiste = repos.',
     coach_err_sleep:'Sommeil insuffisant : tes performances et ta récup vont en souffrir.',
@@ -1645,7 +1649,7 @@ const I18N={
     missedSessionTitle:'Séance manquée',nightSleepLabel:'Sommeil de la nuit',
     note_cardioAlreadyCounted:'charge cardio déjà comptabilisée, plan inchangé',
     note_explosiveCaution:'vigilance sur ta prochaine séance explosive',note_nextHardLightened:'prochaine séance dure allégée',
-    notedCoachBtn:'C\u2019est noté, Coach !',notesOptionalLabel:'Notes (optionnel)',paceKmLabel:'Allure /km',painLabel:'Douleurs',
+    notedCoachBtn:'C\u2019est noté, Coach !',notesOptionalLabel:'Notes (optionnel)',paceKmLabel:'Allure /km',painLabel:'Douleurs',paceAdherenceLabel:'Allure respectée ?',paceFasterOpt:'Plus rapide',paceAsPlannedOpt:'Comme prévu',paceSlowerOpt:'Un peu plus lent',paceMuchSlowerOpt:'Beaucoup plus lent',moreDetailsBtn:'Plus de détails ↓',lessDetailsBtn:'Moins de détails ↑',
     planUpdatedWeekReason:'Plan mis à jour pour la semaine — {0}',positivePointsTitle:'Points positifs',
     recentMissesReducedMsg:'3 séances ratées récemment : volume des prochaines semaines réduit de 15%',
     repByRepSummary:'Bilan par répétition — {0} × {1} m',
@@ -2155,6 +2159,10 @@ const I18N={
     coach_adj_lighten48h:'Lighten your next hard session by 48h to recover well.',
     coach_adj_rest:'Next session: replace it with rest or a very light jog.',
     coach_err_fatigue:'High fatigue level: watch out for overtraining.',
+    coach_err_paceMuchSlower:'Much slower than planned — check whether it was fatigue, heat, or too ambitious a target pace.',
+    coach_tip_paceSlower:'A bit slower than planned with a high perceived effort: consider starting easier next time.',
+    coach_pos_paceFaster:'Faster than planned without forcing it: a good sign of fitness.',
+    coach_err_paceFasterTooHard:'Faster than planned, but at a very high effort cost — watch out for burning out the next sessions.',
     coach_err_harderThanPlanned:'Your session was much harder than planned (RPE {0} vs {1} expected). You may have started too fast or you\u2019re fatigued.',
     coach_err_pain:'Pain level: {0}. Don\u2019t ignore it. Persistent joint pain means rest.',
     coach_err_sleep:'Insufficient sleep: your performance and recovery will suffer.',
@@ -2182,7 +2190,7 @@ const I18N={
     missedSessionTitle:'Missed session',nightSleepLabel:'Night\u2019s sleep',
     note_cardioAlreadyCounted:'cardio load already accounted for, plan unchanged',
     note_explosiveCaution:'caution advised for your next explosive session',note_nextHardLightened:'next hard session lightened',
-    notedCoachBtn:'Got it, Coach!',notesOptionalLabel:'Notes (optional)',paceKmLabel:'Pace /km',painLabel:'Pain',
+    notedCoachBtn:'Got it, Coach!',notesOptionalLabel:'Notes (optional)',paceKmLabel:'Pace /km',painLabel:'Pain',paceAdherenceLabel:'Did you hold the pace?',paceFasterOpt:'Faster',paceAsPlannedOpt:'As planned',paceSlowerOpt:'A bit slower',paceMuchSlowerOpt:'Much slower',moreDetailsBtn:'More details ↓',lessDetailsBtn:'Less details ↑',
     planUpdatedWeekReason:'Plan updated for the week — {0}',positivePointsTitle:'Positive points',
     recentMissesReducedMsg:'3 recent missed sessions: upcoming weeks\u2019 volume reduced by 15%',
     repByRepSummary:'Rep-by-rep summary — {0} × {1} m',
@@ -2693,6 +2701,10 @@ const I18N={
     coach_adj_lighten48h:'خفّف حصتك الشاقة القادمة لمدة 48 ساعة للتعافي جيدًا.',
     coach_adj_rest:'الحصة القادمة: استبدلها بالراحة أو بركض خفيف جدًا.',
     coach_err_fatigue:'مستوى تعب مرتفع: انتبه من الإفراط في التدريب.',
+    coach_err_paceMuchSlower:'وتيرة أبطأ بكثير من المخطط — تحقق إن كان السبب التعب أو الحر أو أن الوتيرة المستهدفة كانت طموحة أكثر من اللازم.',
+    coach_tip_paceSlower:'أبطأ قليلاً من المخطط مع مجهود مُحسّ مرتفع: فكّر في الانطلاق بوتيرة أهدأ في المرة القادمة.',
+    coach_pos_paceFaster:'أسرع من المخطط دون إجهاد نفسك: علامة جيدة على لياقتك.',
+    coach_err_paceFasterTooHard:'أسرع من المخطط، لكن بمجهود مرتفع جدًا — انتبه من إرهاق نفسك قبل الحصص القادمة.',
     coach_err_harderThanPlanned:'كانت حصتك أصعب بكثير من المتوقع (RPE {0} مقابل {1} المتوقع). ربما انطلقت بسرعة زائدة أو أنك متعب.',
     coach_err_pain:'ألم {0}: لا تتجاهله. الألم المفصلي المستمر يعني الراحة.',
     coach_err_sleep:'نوم غير كافٍ: سيتأثر أداؤك وتعافيك.',
@@ -2721,6 +2733,8 @@ const I18N={
     note_cardioAlreadyCounted:'تم احتساب حمل الكارديو بالفعل، الخطة لم تتغير',
     note_explosiveCaution:'توخَّ الحذر في حصتك الانفجارية القادمة',note_nextHardLightened:'تم تخفيف الحصة الشاقة القادمة',
     notedCoachBtn:'تم الفهم، أيها المدرب!',notesOptionalLabel:'ملاحظات (اختياري)',paceKmLabel:'الوتيرة /كم',painLabel:'الألم',
+    paceAdherenceLabel:'هل احترمت الوتيرة؟',paceFasterOpt:'أسرع',paceAsPlannedOpt:'كما هو مخطط',paceSlowerOpt:'أبطأ قليلاً',paceMuchSlowerOpt:'أبطأ بكثير',
+    moreDetailsBtn:'المزيد من التفاصيل ↓',lessDetailsBtn:'تفاصيل أقل ↑',
     planUpdatedWeekReason:'تم تحديث الخطة لهذا الأسبوع — {0}',positivePointsTitle:'نقاط إيجابية',
     recentMissesReducedMsg:'3 حصص فائتة مؤخرًا: تم تقليل حجم الأسابيع القادمة بنسبة 15%',
     repByRepSummary:'ملخص لكل تكرار — {0} × {1} م',
@@ -7005,11 +7019,12 @@ function sharePlan(id){
 }
 
 /* ---------- QUESTIONNAIRE POST-SÉANCE + ANALYSE MOTEUR IKORUN ---------- */
-let debriefData=null, debriefCtx=null, debriefReps=[];
+let debriefData=null, debriefCtx=null, debriefReps=[], debriefExpanded=false;
 function openSessionDebrief(ctx){
   debriefCtx=ctx;
+  debriefExpanded=false;
   debriefData={ done:true, duration:ctx.duration||'', distance:ctx.km||'', pace:ctx.pace||'', deniv:ctx.deniv||'',
-    rpe:5, pain:'Aucune', fatigue:3, weather:'sunny', feel:3, sleep:3, nutrition:3, note:'' };
+    rpe:5, pain:'Aucune', paceAdherence:null, fatigue:3, weather:'sunny', feel:3, sleep:3, nutrition:3, note:'' };
   // Si la seance prevue est une serie de repetitions (400, 1000, pyramide simple...),
   // on propose une ligne par repetition : temps reel ou bouton rapide "Respecte"
   // qui remplit tout seul avec le temps de passage cible.
@@ -7061,15 +7076,31 @@ function renderDebrief(){
   }
   h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>'+t('durationMinLabel')+'</label><input class="inp" type="number" max="1440" value="'+(d.duration||'')+'" oninput="debriefData.duration=Math.min(1440,+this.value||0)"></div><div class="field" style="flex:1"><label>'+t('distanceKmLabel')+'</label><input class="inp" type="number" value="'+(d.distance||'')+'" oninput="debriefData.distance=+this.value"></div></div>';
   h+='<div class="field"><label>'+t('avgPaceKmLabel')+'</label><input class="inp" value="'+escHtml(d.pace||'')+'" oninput="debriefData.pace=this.value" placeholder="4:30"></div>';
-  h+='<div class="field"><label>'+t('elevationGainLabel')+'</label><input class="inp" type="number" value="'+(d.deniv||'')+'" oninput="debriefData.deniv=+this.value" placeholder="0"></div>';
   h+='<div class="field"><label>'+t('rpeFeltLabel')+' '+d.rpe+'/10</label><input type="range" min="1" max="10" value="'+d.rpe+'" style="width:100%" oninput="debriefData.rpe=+this.value;renderDebrief()"></div>';
   h+='<div class="field"><label>'+t('painLabel')+'</label><div class="pills">'+['Aucune','Légères','Gênantes','Importantes'].map(p=>'<div class="pill '+(d.pain===p?'on':'')+'" onclick="debriefData.pain=\''+p+'\';renderDebrief()">'+trPain(p)+'</div>').join('')+'</div></div>';
+  // Séance à répétitions : le respect de l'allure est déjà saisi ligne par ligne
+  // plus haut (bouton temps réel / "respecté"), donc redemander une adhérence
+  // globale ferait doublon.
+  if(!debriefReps.length){
+    h+='<div class="field"><label>'+t('paceAdherenceLabel')+'</label><div class="pills">'+
+      [['faster','⚡',t('paceFasterOpt')],['asPlanned','✅',t('paceAsPlannedOpt')],['slower','🐢',t('paceSlowerOpt')],['muchSlower','🥵',t('paceMuchSlowerOpt')]]
+      .map(o=>'<div class="pill '+(d.paceAdherence===o[0]?'on':'')+'" onclick="debriefData.paceAdherence=\''+o[0]+'\';renderDebrief()">'+o[1]+' '+o[2]+'</div>').join('')
+    +'</div></div>';
+  }
+  // Le bilan avait 10 champs affichés d'un bloc — signalé comme trop chargé. Ce qui
+  // sert le plus souvent (chiffres, effort, douleur, allure) reste immédiatement
+  // visible ; le reste se replie ici, toujours prérempli avec des valeurs par
+  // défaut sensées donc jamais bloquant si on ne l'ouvre pas.
+  h+='<div style="text-align:center;color:var(--e2);font-weight:700;font-size:12.5px;cursor:pointer;margin:14px 0" onclick="debriefExpanded=!debriefExpanded;renderDebrief()">'+(debriefExpanded?t('lessDetailsBtn'):t('moreDetailsBtn'))+'</div>';
+  if(debriefExpanded){
+  h+='<div class="field"><label>'+t('elevationGainLabel')+'</label><input class="inp" type="number" value="'+(d.deniv||'')+'" oninput="debriefData.deniv=+this.value" placeholder="0"></div>';
   h+=scale('fatigue',t('fatigueLabel'),['\ud83d\ude00','\ud83d\ude42','\ud83d\ude10','\ud83d\ude13','\ud83d\ude35']);
   h+=scale('feel',t('sensationsLabel'),['\ud83d\ude23','\ud83d\ude15','\ud83d\ude10','\ud83d\ude0a','\ud83e\udd29']);
   h+=scale('sleep',t('nightSleepLabel'),['\ud83d\ude34','\ud83d\ude2a','\ud83d\ude10','\ud83d\ude42','\ud83d\udca4']);
   h+=scale('nutrition',t('dayNutritionLabel'),['\ud83c\udf54','\ud83d\ude10','\ud83d\ude42','\ud83e\udd57','\ud83d\udcaa']);
   h+='<div class="field"><label>'+t('weatherLabel')+'</label><div class="pills">'+['sunny','cloudy','rain','wind','hot','cold'].map(w=>'<div class="pill '+(d.weather===w?'on':'')+'" onclick="debriefData.weather=\''+w+'\';renderDebrief()">'+ICN(w==='sunny'?'sun':w==='cloudy'?'moon':w==='rain'?'rain':w==='wind'?'wind':w==='hot'?'fire':'snow',18)+'</div>').join('')+'</div></div>';
   h+='<div class="field"><label>'+t('freeCommentLabel')+'</label><textarea class="inp" rows="2" oninput="debriefData.note=this.value" placeholder="'+t('howDidYouFeelPlaceholder')+'">'+escHtml(d.note||'')+'</textarea></div>';
+  }
   h+='<button class="btn" onclick="submitDebrief()">\ud83e\udde0 '+t('analyzeSessionBtn')+'</button>';
   $('#progBody').innerHTML=h;
 }
@@ -7122,6 +7153,15 @@ function coachAnalyze(e){
   if(e.pain==='Gênantes'||e.pain==='Importantes') errs.push(''+tp('coach_err_pain',trPain(e.pain).toLowerCase()));
   if(e.sleep<=2) errs.push(t('coach_err_sleep'));
   if(e.fatigue>=4) errs.push(t('coach_err_fatigue'));
+  // Allure respectée ou non (absent sur les séances à répétitions, déjà couvertes
+  // ligne par ligne par repsLog) : ça nourrit directement les points forts/à
+  // travailler plutôt que de rester une donnée saisie mais jamais réutilisée.
+  if(e.paceAdherence==='muchSlower') errs.push(t('coach_err_paceMuchSlower'));
+  else if(e.paceAdherence==='slower' && e.rpe>=7) tips.push(t('coach_tip_paceSlower'));
+  else if(e.paceAdherence==='faster'){
+    if(e.rpe<=6) pos.push(t('coach_pos_paceFaster'));
+    else if(e.rpe>=8) errs.push(t('coach_err_paceFasterTooHard'));
+  }
   // Conseils
   if(e.sleep<=2) tips.push(t('coach_tip_sleep'));
   if(e.nutrition<=2) tips.push(t('coach_tip_nutrition'));

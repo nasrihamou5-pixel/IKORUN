@@ -7,7 +7,7 @@
 // cache. Changer le nom du cache supprime les anciennes entrées à l'activation, ce
 // qui garantit que le vrai manifest.json est bien récupéré — condition nécessaire
 // pour que le navigateur propose l'installation de l'app.
-const C = 'ikorun-v18';
+const C = 'ikorun-v19';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
