@@ -324,17 +324,18 @@ async function mountGoogleNativeButton(){
   }
 }
 function googleBtnHtml(){
-  // Dans l'app installée sur iPhone, la redirection ne revient jamais : on
-  // monte à la place le bouton Google natif (jeton d'identité, sans quitter
-  // l'app). Partout ailleurs la redirection classique fonctionne très bien.
-  if(isStandalone()&&isIOSDevice()){
-    setTimeout(mountGoogleNativeButton,0);
-    // Filet de secours : si le bouton natif est refusé (origine pas encore
-    // autorisée côté Google), l'ancienne porte de sortie reste accessible.
-    return '<div id="gsiBtnHost" style="display:flex;justify-content:center;min-height:44px"></div>'+
-      '<div class="login-guest subtle" onclick="showGoogleStandaloneHelp()">'+t('googleNotWorkingLink')+'</div>';
-  }
-  return '<button class="gbtn" onclick="signInWithGoogle()"><span class="gicon">'+GOOGLE_ICON_SVG+'</span>'+t('continueWithGoogleBtn')+'</button>';
+  // Revenu en arrière : le bouton natif (Google Identity Services) exige que le
+  // domaine soit déclaré comme "origine JavaScript autorisée" dans la console
+  // Google Cloud du projet — une étape manuelle, pas encore faite. Sans elle,
+  // Google refuse la connexion sans le dire clairement : le bouton semblait
+  // fonctionner (il s'affichait) mais ne connectait jamais personne. Tant que
+  // cette étape n'est pas confirmée faite, mieux vaut le message clair et
+  // honnête d'avant (bouton grisé + explication) qu'un bouton qui a l'air bon
+  // mais ne marche pas. mountGoogleNativeButton()/onGoogleIdToken() restent
+  // définies, prêtes à réactiver dès que l'origine sera autorisée.
+  const blocked=isStandalone()&&isIOSDevice();
+  return '<button class="gbtn'+(blocked?' muted':'')+'" onclick="signInWithGoogle()"><span class="gicon">'+GOOGLE_ICON_SVG+'</span>'+t('continueWithGoogleBtn')+'</button>'+
+    (blocked?'<div class="gbtn-hint">'+t('googleStandaloneHint')+'</div>':'');
 }
 function renderLoginMain(){
   const el=$('#loginMain'); if(!el) return;
