@@ -288,7 +288,9 @@ function loadGoogleIdentityScript(){
   });
   return _gisLoading;
 }
+let _gisWatchdog=null;
 async function onGoogleIdToken(resp){
+  clearTimeout(_gisWatchdog);
   if(!resp || !resp.credential){ toast(t('googleConnectFail')); return; }
   try{
     const { error } = await withAuthTimeout(window.supabaseClient.auth.signInWithIdToken({
@@ -318,24 +320,37 @@ async function mountGoogleNativeButton(){
       type:'standard', theme:'outline', size:'large', shape:'pill',
       text:'continue_with', logo_alignment:'center', width:280
     });
+    // Filet de sécurité : si l'origine du site n'est pas déclarée comme "origine
+    // JavaScript autorisée" côté Google Cloud pour ce client, Google refuse la
+    // connexion SANS le dire — le bouton reste planté après le tap, sans erreur
+    // ni callback. On chronomètre donc chaque tap : si aucun jeton n'arrive dans
+    // les 6 s, on le dit clairement au lieu de laisser croire que ça a planté.
+    host.addEventListener('click',()=>{
+      clearTimeout(_gisWatchdog);
+      _gisWatchdog=setTimeout(()=>{ toast(t('googleNativeStuckToast')); },6000);
+    },true);
   }catch(e){
     console.error('GIS init error',e);
     host.innerHTML='<div class="gbtn-hint">'+t('googleStandaloneHint')+'</div>';
   }
 }
 function googleBtnHtml(){
-  // Revenu en arrière : le bouton natif (Google Identity Services) exige que le
-  // domaine soit déclaré comme "origine JavaScript autorisée" dans la console
-  // Google Cloud du projet — une étape manuelle, pas encore faite. Sans elle,
-  // Google refuse la connexion sans le dire clairement : le bouton semblait
-  // fonctionner (il s'affichait) mais ne connectait jamais personne. Tant que
-  // cette étape n'est pas confirmée faite, mieux vaut le message clair et
-  // honnête d'avant (bouton grisé + explication) qu'un bouton qui a l'air bon
-  // mais ne marche pas. mountGoogleNativeButton()/onGoogleIdToken() restent
-  // définies, prêtes à réactiver dès que l'origine sera autorisée.
-  const blocked=isStandalone()&&isIOSDevice();
-  return '<button class="gbtn'+(blocked?' muted':'')+'" onclick="signInWithGoogle()"><span class="gicon">'+GOOGLE_ICON_SVG+'</span>'+t('continueWithGoogleBtn')+'</button>'+
-    (blocked?'<div class="gbtn-hint">'+t('googleStandaloneHint')+'</div>':'');
+  // Dans l'app installée sur iPhone, la redirection classique (signInWithOAuth)
+  // quitte l'app vers Safari et n'en revient jamais — limitation d'iOS pour les
+  // PWA, pas quelque chose que le code peut contourner. Google Identity Services
+  // est la solution que Google recommande pour ce cas précis : la connexion se
+  // fait par-dessus l'app, sans la quitter. Elle suppose que ce domaine soit
+  // déclaré comme "origine JavaScript autorisée" dans la console Google Cloud du
+  // projet ; le filet de sécurité ci-dessus (mountGoogleNativeButton) prévient
+  // clairement si ça ne répond pas, et "Ça ne marche pas ?" reste toujours
+  // visible en dessous pour basculer vers Safari ou le mode invité sans être
+  // bloqué.
+  if(isStandalone()&&isIOSDevice()){
+    setTimeout(mountGoogleNativeButton,0);
+    return '<div id="gsiBtnHost" style="display:flex;justify-content:center;min-height:44px"></div>'+
+      '<div class="login-guest subtle" onclick="showGoogleStandaloneHelp()">'+t('googleNotWorkingLink')+'</div>';
+  }
+  return '<button class="gbtn" onclick="signInWithGoogle()"><span class="gicon">'+GOOGLE_ICON_SVG+'</span>'+t('continueWithGoogleBtn')+'</button>';
 }
 function renderLoginMain(){
   const el=$('#loginMain'); if(!el) return;
@@ -1550,7 +1565,7 @@ const I18N={
     colBlue:'Bleu',colRed:'Rouge',colGreen:'Vert',colGold:'Or',colPurple:'Violet',colCyan:'Cyan',
     newTrophyUnlocked:'NOUVEAU TROPHÉE DÉBLOQUÉ',
     markAsObtained:'Marquer comme obtenu',
-    connectingGoogle:'Connexion à Google…',googleConnectFail:'Connexion impossible, réessaie',googleNotWorkingLink:'Ça ne marche pas ?',googleReturnedNoSessionToast:'La connexion Google n’a pas abouti. Réessaie, ou utilise l’email / le mode invité.',
+    connectingGoogle:'Connexion à Google…',googleConnectFail:'Connexion impossible, réessaie',googleNotWorkingLink:'Ça ne marche pas ?',googleReturnedNoSessionToast:'La connexion Google n’a pas abouti. Réessaie, ou utilise le mode invité.',googleNativeStuckToast:'Google ne répond pas depuis l’app. Essaie « Ça ne marche pas ? » ci-dessous pour l’ouvrir dans Safari.',
     confirmLogout:'Se déconnecter ? Tes données restent sauvegardées sur ton compte.',
     confirmSwitchGoogle:'Tu vas être déconnecté(e) pour te reconnecter avec un autre compte Google. Tes données actuelles restent sauvegardées.',
     confirmDeleteAllData:'Cette action va supprimer TOUTES tes données (séances, records, XP, profil...) de façon définitive, sur le cloud et sur cet appareil. Continuer ?',
@@ -2091,7 +2106,7 @@ const I18N={
     colBlue:'Blue',colRed:'Red',colGreen:'Green',colGold:'Gold',colPurple:'Purple',colCyan:'Cyan',
     newTrophyUnlocked:'NEW TROPHY UNLOCKED',
     markAsObtained:'Mark as earned',
-    connectingGoogle:'Connecting to Google…',googleConnectFail:'Connection failed, try again',googleNotWorkingLink:'Not working?',googleReturnedNoSessionToast:'Google sign-in did not complete. Try again, or use email / guest mode.',
+    connectingGoogle:'Connecting to Google…',googleConnectFail:'Connection failed, try again',googleNotWorkingLink:'Not working?',googleReturnedNoSessionToast:'Google sign-in did not complete. Try again, or use guest mode.',googleNativeStuckToast:'Google isn’t responding from the app. Try "Not working?" below to open it in Safari.',
     confirmLogout:'Log out? Your data stays saved on your account.',
     confirmSwitchGoogle:'You\u2019ll be logged out so you can sign in with another Google account. Your current data stays saved.',
     confirmDeleteAllData:'This will permanently delete ALL your data (sessions, records, XP, profile...) from the cloud and this device. Continue?',
@@ -2632,7 +2647,7 @@ const I18N={
     colBlue:'أزرق',colRed:'أحمر',colGreen:'أخضر',colGold:'ذهبي',colPurple:'بنفسجي',colCyan:'سماوي',
     newTrophyUnlocked:'وسام جديد مفتوح',
     markAsObtained:'وضع علامة كمُحقق',
-    connectingGoogle:'جارٍ الاتصال بـ Google…',googleConnectFail:'تعذر الاتصال، أعد المحاولة',googleNotWorkingLink:'لا يعمل؟',googleReturnedNoSessionToast:'لم تكتمل عملية الدخول عبر Google. أعد المحاولة، أو استخدم البريد الإلكتروني / وضع الضيف.',
+    connectingGoogle:'جارٍ الاتصال بـ Google…',googleConnectFail:'تعذر الاتصال، أعد المحاولة',googleNotWorkingLink:'لا يعمل؟',googleReturnedNoSessionToast:'لم تكتمل عملية الدخول عبر Google. أعد المحاولة، أو استخدم وضع الضيف.',googleNativeStuckToast:'Google لا يستجيب داخل التطبيق. جرّب «لا يعمل؟» أدناه لفتحه في Safari.',
     confirmLogout:'تسجيل الخروج؟ بياناتك تبقى محفوظة في حسابك.',
     confirmSwitchGoogle:'سيتم تسجيل خروجك لتسجيل الدخول بحساب Google آخر. بياناتك الحالية تبقى محفوظة.',
     confirmDeleteAllData:'سيؤدي هذا إلى حذف جميع بياناتك (الحصص، الأرقام القياسية، XP، الملف الشخصي...) نهائيًا من السحابة ومن هذا الجهاز. متابعة؟',
