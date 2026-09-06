@@ -1394,6 +1394,8 @@ const I18N={
     completeProfileTitle:'Complète ton profil',completeProfileDesc:'Ta taille et ton poids servent à calculer ton IMC, tes calories et tes besoins.',
     chooseHeight:'Choisir ta taille',chooseWeight:'Choisir ton poids',
     mileage:'Kilométrage',kmCumulated:'km cumulés',vsPrevPeriod:'vs période préc.',
+    kgCumulated:'kg cumulés',tonnageTrendLab:'Tendance tonnage',kgThisWeek:'kg cette sem.',vsPrevCountShort:'vs {0} préc.',
+    tonnagePerSession:'TONNAGE / SÉANCE',programsLabel:'PROGRAMMES',detailByProgram:'Détail par programme',
     volumeTrend:'Tendance volume',kmThisWeek:'km cette sem.',eightWeeksLab:'8 sem.',weeksAgoLab:'Il y a 8 sem.',
     totalTime:'Temps total',overPeriod:'sur la période',goalReached:'Objectif atteint !',ofTarget:'{0}% de la cible',
     kmPerSession:'KM / SÉANCE',sessionTypesLabel:'TYPES DE SÉANCE',bestDayLab:'MEILLEUR JOUR',bestWeekLab:'MEILLEURE SEMAINE',bestMonthLab:'MEILLEUR MOIS',
@@ -1935,6 +1937,8 @@ const I18N={
     completeProfileTitle:'Complete your profile',completeProfileDesc:'Your height and weight are used to calculate your BMI, calories and needs.',
     chooseHeight:'Choose your height',chooseWeight:'Choose your weight',
     mileage:'Mileage',kmCumulated:'km total',vsPrevPeriod:'vs previous period',
+    kgCumulated:'kg total',tonnageTrendLab:'Volume trend',kgThisWeek:'kg this week',vsPrevCountShort:'vs {0} prev.',
+    tonnagePerSession:'VOLUME / SESSION',programsLabel:'PROGRAMS',detailByProgram:'Breakdown by program',
     volumeTrend:'Volume trend',kmThisWeek:'km this week',eightWeeksLab:'8 wks',weeksAgoLab:'8 weeks ago',
     totalTime:'Total time',overPeriod:'over the period',goalReached:'Goal reached!',ofTarget:'{0}% of target',
     kmPerSession:'KM / SESSION',sessionTypesLabel:'SESSION TYPES',bestDayLab:'BEST DAY',bestWeekLab:'BEST WEEK',bestMonthLab:'BEST MONTH',
@@ -2476,6 +2480,8 @@ const I18N={
     completeProfileTitle:'أكمل ملفك الشخصي',completeProfileDesc:'يُستخدم طولك ووزنك لحساب مؤشر كتلة جسمك وسعراتك واحتياجاتك.',
     chooseHeight:'اختر طولك',chooseWeight:'اختر وزنك',
     mileage:'المسافة المقطوعة',kmCumulated:'كم متراكمة',vsPrevPeriod:'مقارنة بالفترة السابقة',
+    kgCumulated:'كغ متراكمة',tonnageTrendLab:'اتجاه الحمولة',kgThisWeek:'كغ هذا الأسبوع',vsPrevCountShort:'مقارنة بـ {0} سابقًا',
+    tonnagePerSession:'الحمولة / الحصة',programsLabel:'البرامج',detailByProgram:'التفاصيل حسب البرنامج',
     volumeTrend:'اتجاه الحجم',kmThisWeek:'كم هذا الأسبوع',eightWeeksLab:'8 أسابيع',weeksAgoLab:'قبل 8 أسابيع',
     totalTime:'الوقت الإجمالي',overPeriod:'خلال الفترة',goalReached:'تم بلوغ الهدف!',ofTarget:'{0}% من الهدف',
     kmPerSession:'كم / حصة',sessionTypesLabel:'أنواع الحصص',bestDayLab:'أفضل يوم',bestWeekLab:'أفضل أسبوع',bestMonthLab:'أفضل شهر',
@@ -6381,6 +6387,45 @@ function kBarsHTML(labels,values,highlightIdx){
 }
 function totalKm(){ return SESS.reduce((a,s)=>a+(s.km||0),0); }
 function totalTonnage(){ return MSESS.reduce((a,s)=>a+(s.tonnage||0),0); }
+/* ---- Équivalents muscu des helpers "Bilan" course à pied ci-dessus : même
+   forme de données (labels/values/total/prevTotal), mais sur le tonnage des
+   séances MSESS plutôt que le kilométrage SESS+MSESS. Dupliqués plutôt que
+   généralisés en un seul helper paramétré : les deux métriques (km vs kg) et
+   leurs sources (courses+muscu vs muscu seul) divergent assez pour qu'un
+   paramètre générique aurait fini par être aussi long à lire que la copie. */
+function sumTonnageBetween(start,end){ return MSESS.filter(s=>{ const d=new Date(s.date+'T00:00:00'); return d>=start && d<end; }).reduce((a,s)=>a+(s.tonnage||0),0); }
+function muscuBetween(start,end){ return MSESS.filter(s=>{ const d=new Date(s.date+'T00:00:00'); return d>=start && d<end; }); }
+function tonnageBarSeries(period){
+  const ws=weekStart();
+  const {prev}=periodRanges(period);
+  const prevTotal=sumTonnageBetween(prev[0],prev[1]);
+  if(period==='month'){
+    const labels=[], values=[];
+    for(let w=3; w>=0; w--){ const st=new Date(ws); st.setDate(ws.getDate()-7*w); const en=new Date(st); en.setDate(st.getDate()+7);
+      values.push(sumTonnageBetween(st,en)); labels.push(w===0?'Cette sem.':'S-'+w); }
+    return {labels,values,total:values.reduce((a,v)=>a+v,0),prevTotal};
+  }
+  if(period==='3m'){
+    const labels=[], values=[]; const now=new Date();
+    for(let m=2;m>=0;m--){ const st=new Date(now.getFullYear(),now.getMonth()-m,1); const en=new Date(now.getFullYear(),now.getMonth()-m+1,1);
+      values.push(sumTonnageBetween(st,en)); labels.push(st.toLocaleDateString('fr-FR',{month:'short'}).replace('.','')); }
+    return {labels,values,total:values.reduce((a,v)=>a+v,0),prevTotal};
+  }
+  if(period==='year'){
+    const labels=[], values=[]; const now=new Date(); const initials=['J','F','M','A','M','J','J','A','S','O','N','D'];
+    for(let m=11;m>=0;m--){ const d=new Date(now.getFullYear(),now.getMonth()-m,1); const en=new Date(now.getFullYear(),now.getMonth()-m+1,1);
+      values.push(sumTonnageBetween(d,en)); labels.push(initials[d.getMonth()]); }
+    return {labels,values,total:values.reduce((a,v)=>a+v,0),prevTotal};
+  }
+  const labels=['L','M','M','J','V','S','D']; const values=[];
+  for(let i=0;i<7;i++){ const d=new Date(ws); d.setDate(ws.getDate()+i); const en=new Date(d); en.setDate(d.getDate()+1); values.push(sumTonnageBetween(d,en)); }
+  return {labels,values,total:values.reduce((a,v)=>a+v,0),prevTotal};
+}
+function weeklyTonnageTrend8(){
+  const ws=weekStart(); const values=[];
+  for(let w=7; w>=0; w--){ const st=new Date(ws); st.setDate(ws.getDate()-7*w); const en=new Date(st); en.setDate(st.getDate()+7); values.push(sumTonnageBetween(st,en)); }
+  return values;
+}
 function runCountWeek(){ return sessThisWeek().length; }
 function sessInPeriod(period){
   const now=new Date(); now.setHours(0,0,0,0);
@@ -8414,9 +8459,12 @@ function sklRun(){
     '<div class="skl-card"><div class="skl skl-line w70"></div><div class="skl skl-line"></div><div class="skl skl-line"></div></div>';
 }
 function sklMuscu(){
-  return '<div class="skl skl-seg"></div>'+
-    '<div class="skl-row3"><div class="skl"></div><div class="skl"></div><div class="skl"></div></div>'+
-    '<div class="skl-card"><div class="skl skl-line w70"></div><div class="skl skl-line"></div><div class="skl skl-line"></div><div class="skl skl-line w50"></div></div>';
+  return '<div class="skl-row4"><div class="skl"></div><div class="skl"></div><div class="skl"></div><div class="skl"></div></div>'+
+    '<div class="skl skl-seg" style="height:34px;margin-bottom:14px"></div>'+
+    '<div class="skl skl-kchart"></div>'+
+    '<div class="skl skl-kchart tall"></div>'+
+    '<div class="skl-duo"><div class="skl"></div><div class="skl"></div></div>'+
+    '<div class="skl-row3"><div class="skl"></div><div class="skl"></div><div class="skl"></div></div>';
 }
 function sklMedals(){
   return '<div class="skl skl-seg"></div>'+
@@ -8645,14 +8693,82 @@ function formChart(){
     '<span style="display:flex;align-items:center;gap:5px"><span class="zdot" style="background:var(--e)"></span>'+t('chronic')+'</span>'+
     '<span style="display:flex;align-items:center;gap:5px"><span class="zdot" style="background:var(--maitre)"></span>'+t('acute')+'</span></div>';
 }
+let muscuBilanPeriod='week';
 function statsMuscu(){
   const pr=MSESS.reduce((a,s)=>Math.max(a,s.tonnage||0),0);
   let h='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+MSESS.length+'</div><div class="l">'+t('sessionsCap')+'</div></div><div class="sbox"><div class="v">'+(totalTonnage()/1000).toFixed(1)+'t</div><div class="l">'+t('tonnageLab')+'</div></div><div class="sbox"><div class="v">'+Math.round(pr)+'</div><div class="l">'+t('prPerSession')+'</div></div><div class="sbox"><div class="v">'+MSESS.reduce((a,s)=>a+(s.sets||0),0)+'</div><div class="l">'+t('totalSets')+'</div></div></div>';
-  if(!MSESS.length) h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('dumbbell',36,'currentColor')+'</div><div style="font-size:13px">'+t('startFirstMuscu')+'</div></div></div>';
-  else {
-    h+=bodyHeatmapCard();
-    h+='<div class="card"><div class="card-t">'+t('lastSessions')+'</div>'+MSESS.slice(-6).reverse().map(s=>'<div class="zrow"><div><div class="zname">'+s.progName+'</div><div style="font-size:11px;color:var(--dim)">'+fmtDate(s.date)+'</div></div><span class="zval mono">'+Math.round(s.tonnage)+' kg</span></div>').join('')+'</div>';
+  if(!MSESS.length){ h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('dumbbell',36,'currentColor')+'</div><div style="font-size:13px">'+t('startFirstMuscu')+'</div></div></div>'; return h; }
+
+  // BILAN DE PROGRESSION — même structure que l'onglet Bilan course (chiffre
+  // + delta + barres, tendance 8 semaines, duo temps/séances, insights,
+  // détail par programme), appliquée au tonnage plutôt qu'au kilométrage.
+  const per=muscuBilanPeriod;
+  const {cur,prev}=periodRanges(per);
+  const tonnageCur=sumTonnageBetween(cur[0],cur[1]);
+  const tonnagePrev=sumTonnageBetween(prev[0],prev[1]);
+  const deltaPct=tonnagePrev>0?Math.round((tonnageCur-tonnagePrev)/tonnagePrev*100):(tonnageCur>0?100:null);
+  const bars=tonnageBarSeries(per);
+  const trend=weeklyTonnageTrend8();
+  const periodSessM=muscuBetween(cur[0],cur[1]);
+  const prevSessM=muscuBetween(prev[0],prev[1]);
+  const cnt=periodSessM.length, prevCnt=prevSessM.length;
+  const mins=periodSessM.reduce((a,s)=>a+(s.duration||0),0);
+
+  h+='<div class="seg-ctrl">'+
+    ['week','month','3m','year'].map(p=>'<div class="seg-btn'+(per===p?' on':'')+'" onclick="muscuBilanPeriod=\''+p+'\';renderStats()">'+periodTabLabel(p)+'</div>').join('')+
+  '</div>';
+
+  h+='<div class="kchart-card">'+
+    '<div class="kchart-top"><div><div class="kchart-lab">'+t('tonnageLab')+'</div><div class="kchart-val">'+Math.round(tonnageCur).toLocaleString(localeCode())+'<span>'+t('kgCumulated')+'</span></div></div>'+
+    (deltaPct!==null?'<div><div class="kchart-delta'+(deltaPct<0?' bad':'')+'">'+(deltaPct>0?'+':deltaPct<0?'−':'')+Math.abs(deltaPct)+'%</div><div class="kchart-delta-sub">'+t('vsPrevPeriod')+'</div></div>':'')+
+    '</div>'+
+    kBarsHTML(bars.labels,bars.values,per==='week'?((new Date().getDay()+6)%7):null)+
+  '</div>';
+
+  h+='<div class="kchart-card">'+
+    '<div class="kchart-top"><div><div class="kchart-lab">'+t('tonnageTrendLab')+'</div><div class="kchart-val">'+Math.round(trend[trend.length-1]).toLocaleString(localeCode())+'<span>'+t('kgThisWeek')+'</span></div></div>'+
+    '<div><div class="kchart-delta">'+t('eightWeeksLab')+'</div></div></div>'+
+    '<div style="margin-top:14px">'+lineChartSVG(trend,300,60,'var(--e2)')+'</div>'+
+    '<div class="kline-labs"><span>'+t('weeksAgoLab')+'</span><span>'+t('thisWeek')+'</span></div>'+
+  '</div>';
+
+  h+='<div class="kduo">'+
+    '<div class="kduo-card"><div class="kduo-lab">'+t('totalTime')+'</div><div class="kduo-val">'+fmtHM(mins)+'</div>'+
+      '<div class="kduo-sub" style="color:var(--muted)">'+t('overPeriod')+'</div></div>'+
+    '<div class="kduo-card"><div class="kduo-lab">'+t('sessionsCap')+'</div><div class="kduo-val">'+cnt+'</div>'+
+      '<div class="kduo-sub" style="color:var(--muted)">'+(prevCnt>0?tp('vsPrevCountShort',prevCnt):t('overPeriod'))+'</div></div>'+
+  '</div>';
+
+  const avgTonnageSess=cnt?(tonnageCur/cnt):0;
+  const prevAvgTonnageSess=prevCnt?(tonnagePrev/prevCnt):0;
+  const avgDelta=prevAvgTonnageSess>0?Math.round((avgTonnageSess-prevAvgTonnageSess)/prevAvgTonnageSess*100):null;
+  const byProg={}; periodSessM.forEach(s=>{ const nm=s.progName||'—'; byProg[nm]=(byProg[nm]||0)+1; });
+  const progSegs=Object.entries(byProg).map(([nm,ct],i)=>({v:ct,color:'var('+PROG_COLORS[i%PROG_COLORS.length][0]+')',ty:nm,ct}));
+  if(!progSegs.length) progSegs.push({v:1,color:'rgba(255,255,255,.08)',ty:'—',ct:0});
+  const bestI=bars.values.reduce((bi,v,i)=>v>bars.values[bi]?i:bi,0);
+  const bestLab={week:t('bestDayLab'),month:t('bestWeekLab'),['3m']:t('bestMonthLab'),year:t('bestMonthLab')}[per];
+
+  h+='<div class="kinsights-head">'+t('insightsTitle')+'</div>';
+  h+='<div class="krow3">'+
+    '<div class="ktile"><div class="ktile-lab">'+t('tonnagePerSession')+'</div><div class="ktile-val">'+Math.round(avgTonnageSess)+' kg</div>'+
+      (avgDelta!==null?'<div class="ktile-sub'+(avgDelta<0?' bad':'')+'">'+(avgDelta>0?'+':avgDelta<0?'−':'')+Math.abs(avgDelta)+'% '+t('vsPrevShort')+'</div>':'<div class="ktile-sub" style="color:var(--muted)">—</div>')+
+    '</div>'+
+    '<div class="ktile" style="text-align:center"><div class="ktile-lab">'+t('programsLabel')+'</div>'+
+      '<div class="ktile-donut">'+donutSVG(progSegs,50,9,'')+'</div>'+
+    '</div>'+
+    '<div class="ktile"><span class="ktile-star">'+ICN('star',16,'var(--or)')+'</span><div class="ktile-lab">'+bestLab+'</div>'+
+      '<div class="ktile-val">'+bars.labels[bestI]+'</div>'+
+      '<div class="ktile-sub">'+Math.round(bars.values[bestI])+' kg</div>'+
+    '</div>'+
+  '</div>';
+  if(progSegs[0].ty!=='—'){
+    h+='<div class="card"><div class="card-t">'+cardIcon('chart','var(--e)')+t('detailByProgram')+'</div>'+
+      progSegs.sort((a,b)=>b.ct-a.ct).map(s=>'<div class="row" style="gap:8px;margin-bottom:6px"><span class="zdot" style="background:'+s.color+'"></span><span style="flex:1;font-size:12.5px;font-weight:600">'+escHtml(s.ty)+'</span><span class="mono" style="font-size:12px;color:var(--muted)">'+s.ct+' · '+Math.round(s.ct/periodSessM.length*100)+'%</span></div>').join('')+
+    '</div>';
   }
+
+  h+=bodyHeatmapCard();
+  h+='<div class="card"><div class="card-t">'+t('lastSessions')+'</div>'+MSESS.slice(-6).reverse().map(s=>'<div class="zrow"><div><div class="zname">'+escHtml(s.progName||'')+'</div><div style="font-size:11px;color:var(--dim)">'+fmtDate(s.date)+'</div></div><span class="zval mono">'+Math.round(s.tonnage)+' kg</span></div>').join('')+'</div>';
   return h;
 }
 /* ============ BADGES TROPHÉES (Accomplissement / Performance) ============
