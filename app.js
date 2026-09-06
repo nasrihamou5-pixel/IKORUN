@@ -3862,9 +3862,10 @@ function notify(title,body){
 }
 let _bgNotif=null, _bgTick=null;
 // Le corps du message diffère selon le type d'activité (muscu/chrono/minuteur/course) : une
-// notification d'activité en cours ne doit jamais ressembler à un rappel de séance à faire
-// (cf checkDailyReminder, tag 'ikorun-reminder' distinct, avec son/vibration contrairement à
-// celle-ci qui reste silencieuse puisqu'elle ne fait qu'accompagner une activité déjà lancée).
+// notification d'activité en cours ne doit jamais ressembler au rappel "séance du jour pas
+// faite" poussé par le serveur (tag 'ikorun-reminder' distinct, avec son/vibration,
+// contrairement à celle-ci qui reste silencieuse puisqu'elle ne fait qu'accompagner une
+// activité déjà lancée en local).
 function bgActivityBody(kind){
   if(kind==='muscu') return t('bgMuscuBody');
   if(kind==='chrono') return t('bgChronoBody');
