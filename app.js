@@ -276,15 +276,28 @@ const GOOGLE_ICON_SVG='<svg viewBox="0 0 48 48" width="20" height="20"><path fil
 const GOOGLE_CLIENT_ID='485792164068-08fq3cig2tc89ntv1ode319jps5rn9lh.apps.googleusercontent.com';
 let _gisLoading=null;
 
-/* ============ PUSH SERVEUR (rappels de prière) ============
-   Seule notification de l'app envoyée depuis le serveur plutôt que
-   programmée localement : les horaires de prière sont une donnée publique
-   (pas le plan d'entraînement, chiffré côté client avec une clé qui ne
-   quitte jamais l'appareil — voir la politique de confidentialité), donc le
-   serveur peut légitimement savoir "c'est l'heure de Dhuhr" et pousser une
-   notification même app fermée, ce qui est impossible avec un simple
-   setTimeout côté client. Clé VAPID publique — sa paire privée ne vit que
-   dans l'Edge Function Supabase send-prayer-notifs, jamais côté client. */
+/* ============ PUSH SERVEUR ============
+   Toutes les notifications de l'app passent par un vrai push serveur plutôt
+   que par un setTimeout local : le seul moment où une notification a un
+   intérêt réel, c'est pour rouvrir l'app quand elle est fermée — si elle est
+   déjà ouverte, l'utilisateur le sait déjà. Un setTimeout local ne peut de
+   toute façon pas sonner app fermée.
+   Deux catégories poussées par le serveur, chacune avec son interrupteur
+   (push_subscriptions.prayer_enabled / .reminder_enabled) :
+   - prière (Edge Function send-prayer-notifs, cron chaque minute) : donnée
+     publique, aucun souci de confidentialité ;
+   - rappel "séance du jour pas faite" (Edge Function send-daily-reminders,
+     cron 12h/16h Algérie) : nécessite de faire sortir le TITRE de la séance
+     du bac chiffré côté client vers daily_reminder_state (jamais le
+     RPE/douleur/allures, qui restent uniquement dans le stockage chiffré) —
+     voir syncDailyReminderState plus bas et la politique de confidentialité,
+     mise à jour en conséquence.
+   La notification "séance en cours" (muscu/chrono/minuteur), elle, reste
+   purement locale : elle n'a de sens que pendant qu'une séance tourne déjà
+   dans l'app — rien à réveiller si l'app est fermée, la séance s'arrête avec
+   elle. Voir startBgActivity.
+   Clé VAPID publique ci-dessous — sa paire privée ne vit que dans les Edge
+   Functions Supabase, jamais côté client. */
 const VAPID_PUBLIC_KEY='BO1YgzTtnAdn1qEI6uq6zioWSilWNhE8ScQqJJ8yAF_nAb6zZ8iOoUv7m82Fc8MW782t9_5z_rzAFJmPYpktx8Q';
 function urlBase64ToUint8Array(base64String){
   const padding='='.repeat((4-base64String.length%4)%4);
@@ -294,29 +307,65 @@ function urlBase64ToUint8Array(base64String){
   for(let i=0;i<raw.length;i++) out[i]=raw.charCodeAt(i);
   return out;
 }
+// navigator.serviceWorker.ready ne se résout jamais si l'enregistrement du SW
+// échoue silencieusement — un timeout évite qu'un appel ici reste bloqué à vie.
+function swReady(){
+  return Promise.race([
+    navigator.serviceWorker.ready,
+    new Promise((_,rej)=>setTimeout(()=>rej(new Error('sw-timeout')),8000))
+  ]);
+}
 async function subscribeToPush(){
   if(!('serviceWorker'in navigator) || !('PushManager'in window)) return false;
   if(!window.currentUserId || !window.supabaseClient) return false; // même un compte invité a un currentUserId
   try{
-    const reg=await navigator.serviceWorker.ready;
+    const reg=await swReady();
     let sub=await reg.pushManager.getSubscription();
     if(!sub) sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});
     const j=sub.toJSON();
     await window.supabaseClient.from('push_subscriptions').upsert({
-      user_id:window.currentUserId, endpoint:j.endpoint, p256dh:j.keys.p256dh, auth:j.keys.auth, prayer_enabled:true, lang:curLang(), updated_at:new Date().toISOString()
+      user_id:window.currentUserId, endpoint:j.endpoint, p256dh:j.keys.p256dh, auth:j.keys.auth,
+      prayer_enabled:P.prayerNotif!==false, reminder_enabled:P.notif!==false, lang:curLang(), updated_at:new Date().toISOString()
     },{onConflict:'user_id,endpoint'});
     return true;
   }catch(e){ console.error('[IKORUN] subscribeToPush a échoué',e); return false; }
 }
-async function setPushPrayerEnabled(enabled){
+async function setPushFlag(field,enabled){
+  if(!window.currentUserId || !window.supabaseClient) return; // vérifié avant tout await bloquant
+  if(!('serviceWorker'in navigator)) return;
   try{
-    if(!('serviceWorker'in navigator)) return;
-    const reg=await navigator.serviceWorker.ready;
+    const reg=await swReady();
     const sub=await reg.pushManager.getSubscription();
     if(!sub){ if(enabled) await subscribeToPush(); return; }
-    if(!window.currentUserId || !window.supabaseClient) return;
-    await window.supabaseClient.from('push_subscriptions').update({prayer_enabled:enabled,updated_at:new Date().toISOString()}).eq('user_id',window.currentUserId).eq('endpoint',sub.endpoint);
+    const patch={updated_at:new Date().toISOString()}; patch[field]=enabled;
+    await window.supabaseClient.from('push_subscriptions').update(patch).eq('user_id',window.currentUserId).eq('endpoint',sub.endpoint);
   }catch(e){}
+}
+function ensurePush(){
+  if(!P || (P.notif===false && P.prayerNotif===false)) return;
+  if(!('Notification'in window) || Notification.permission!=='granted') return;
+  subscribeToPush();
+}
+// Fait sortir UNIQUEMENT le titre + statut fait/pas fait de la séance du jour
+// du stockage chiffré, vers une table dédiée, pour que le rappel serveur
+// sache s'il doit pousser une notification — jamais le RPE, la douleur, les
+// allures ou le détail de la séance, qui restent exclusivement chiffrés en
+// local. Appelée à chaque saveAll() mais déduplique via _lastReminderSync
+// pour ne pas spammer le serveur d'écritures identiques.
+let _lastReminderSync=null;
+function syncDailyReminderState(){
+  if(!window.currentUserId || !window.supabaseClient) return;
+  if(P.notif===false) return; // rappels coupés : rien à annoncer au serveur
+  const ps=(typeof planSessionToday==='function')?planSessionToday():null;
+  const tk=todayKey();
+  const done=!ps || ps.type==='Repos' || !!ps.done || !!ps.missed;
+  const title=(!done && ps)?(ps._source==='perso'?(ps.title||''):planSessTitle(ps)):'';
+  const key=tk+'|'+title+'|'+done;
+  if(_lastReminderSync===key) return;
+  _lastReminderSync=key;
+  window.supabaseClient.from('daily_reminder_state').upsert({
+    user_id:window.currentUserId, date:tk, title, done, updated_at:new Date().toISOString()
+  },{onConflict:'user_id'}).then(({error})=>{ if(error) _lastReminderSync=null; }).catch(()=>{ _lastReminderSync=null; });
 }
 function loadGoogleIdentityScript(){
   if(window.google && window.google.accounts && window.google.accounts.id) return Promise.resolve(true);
@@ -1350,7 +1399,7 @@ function saveAll(){
   DB.save('agenda',AGENDA); DB.save('xp',XP);
   DB.save('records',RECORDS); DB.save('prefs',PREFS); DB.save('weightlog',WEIGHTLOG);
   DB.save('tracker',TRACKER); DB.save('sesslog',SESSLOG);
-  if(window.currentUserId) syncPublicProfile();
+  if(window.currentUserId){ syncPublicProfile(); try{ syncDailyReminderState(); }catch(e){} }
 }
 
 /* ============ INTERNATIONALISATION (FR / EN / AR) ============ */
@@ -1624,7 +1673,6 @@ const I18N={
     stopAlarm:'Arrêter l\u2019alarme',remindIn5Min:'Rappel dans 5 min',reminderCap:'Rappel',fiveMinElapsed:'5 minutes écoulées',
     sessionInProgress:'Séance en cours',welcomeToast:'Bienvenue',
     bgMuscuBody:'💪 Séance de muscu en cours',bgChronoBody:'⏱ Chronomètre en cours',bgTimerBody:'⏳ Minuteur en cours',bgRunningBody:'🏃 Course en cours',
-    reminderNotifTitle:'Séance du jour',reminderNotifBody:'Tu as « {0} » prévu aujourd’hui, pense à la faire !',
     nextPrayerLabel:'Prochaine prière',inTimeLabel:'dans {0}',
     prayerNotifLabel:'Rappels de prière',
     customizedTag:'Personnalisée',customizeSessionBtn:'Personnaliser cette séance',customizeMoveLabel:'Déplacer à un autre jour',
@@ -2174,7 +2222,6 @@ const I18N={
     stopAlarm:'Stop alarm',remindIn5Min:'Remind in 5 min',reminderCap:'Reminder',fiveMinElapsed:'5 minutes elapsed',
     sessionInProgress:'Session in progress',welcomeToast:'Welcome',
     bgMuscuBody:'💪 Strength session in progress',bgChronoBody:'⏱ Stopwatch running',bgTimerBody:'⏳ Timer running',bgRunningBody:'🏃 Run in progress',
-    reminderNotifTitle:'Today’s session',reminderNotifBody:'You have "{0}" planned today, don’t forget it!',
     nextPrayerLabel:'Next prayer',inTimeLabel:'in {0}',
     prayerNotifLabel:'Prayer reminders',
     customizedTag:'Customized',customizeSessionBtn:'Customize this session',customizeMoveLabel:'Move to another day',
@@ -2724,7 +2771,6 @@ const I18N={
     stopAlarm:'إيقاف المنبّه',remindIn5Min:'تذكير بعد 5 دقائق',reminderCap:'تذكير',fiveMinElapsed:'مرت 5 دقائق',
     sessionInProgress:'الحصة جارية',welcomeToast:'مرحبًا',
     bgMuscuBody:'💪 حصة تقوية عضلية جارية',bgChronoBody:'⏱ ساعة الإيقاف تعمل',bgTimerBody:'⏳ المؤقت يعمل',bgRunningBody:'🏃 الجري جارٍ',
-    reminderNotifTitle:'حصة اليوم',reminderNotifBody:'لديك « {0} » مبرمجة اليوم، لا تنسها!',
     nextPrayerLabel:'الصلاة القادمة',inTimeLabel:'خلال {0}',
     prayerNotifLabel:'تذكيرات الصلاة',
     customizedTag:'مخصّصة',customizeSessionBtn:'تخصيص هذه الحصة',customizeMoveLabel:'نقل إلى يوم آخر',
@@ -3836,46 +3882,18 @@ async function startBgActivity(type,kind){
     try{ _bgNotif=new Notification('IKORUN · '+type,{body:bgActivityBody(kind),icon:appIconDataURL(),badge:appIconDataURL(),tag:'ikorun-activity',renotify:false,silent:true}); }catch(e){}
   }
 }
-// Rappel qu'une séance du plan est prévue aujourd'hui et pas encore faite — distinct de
-// startBgActivity : tag et style différents (son/vibration, pas "silent") pour ne jamais être
-// confondu avec la notification d'activité en cours, et affiché au plus une fois par jour.
-function checkDailyReminder(){
-  if(P.notif===false) return;
-  if(!('Notification'in window) || Notification.permission!=='granted') return;
-  const tk=todayKey();
-  if(P.lastReminderShown===tk) return;
-  const ps=planSessionToday();
-  if(!ps || ps.type==='Repos' || ps.done || ps.missed) return;
-  P.lastReminderShown=tk; saveAll();
-  try{
-    new Notification('🔔 '+t('reminderNotifTitle'),{body:tp('reminderNotifBody',planSessTitle(ps)),icon:appIconDataURL(),badge:appIconDataURL(),tag:'ikorun-reminder',renotify:true});
-  }catch(e){}
-}
 function stopBgActivity(){
   _bgActivity=null; clearInterval(_bgTick);
   try{ if(_bgNotif){ _bgNotif.close(); _bgNotif=null; } }catch(e){}
   try{ if(_wakeLock){ _wakeLock.release(); _wakeLock=null; } }catch(e){}
 }
-/* ============ RAPPELS DE PRIÈRE (push serveur) ============
-   Remplace une première version en setTimeout local (ne sonnait que tant que
-   l'onglet restait ouvert) par un vrai push serveur : voir subscribeToPush/
-   setPushPrayerEnabled plus haut, et l'Edge Function Supabase
-   send-prayer-notifs, appelée par un cron toutes les minutes, qui envoie la
-   notification même app fermée. Possible ici uniquement parce que les
-   horaires de prière sont une donnée publique — contrairement au plan
-   d'entraînement, chiffré côté client avec une clé qui ne quitte jamais
-   l'appareil. ensurePrayerPush() maintient l'abonnement à jour de façon
-   idempotente (ne redemande jamais la permission si déjà abonné). */
-function ensurePrayerPush(){
-  if(!P || P.notif===false || P.prayerNotif===false) return;
-  if(!('Notification'in window) || Notification.permission!=='granted') return;
-  subscribeToPush();
-}
 // Réacquiert le wake lock au retour de veille si une activité tourne, et
-// s'assure que l'abonnement push "rappels de prière" est toujours actif.
+// s'assure que l'abonnement push (prière + rappel de séance) est toujours
+// actif et que le serveur a bien le dernier état "séance du jour faite ou non".
 document.addEventListener('visibilitychange',async()=>{
   if(document.visibilityState==='visible'){
-    ensurePrayerPush();
+    ensurePush();
+    syncDailyReminderState();
     if(_bgActivity && !_wakeLock){
     try{ if('wakeLock'in navigator) _wakeLock=await navigator.wakeLock.request('screen'); }catch(e){}
     }
@@ -4449,10 +4467,11 @@ function initApp(){
   setTimeout(checkMissedSessions,700);
   // Régénération hebdomadaire adaptative du plan (au moins 1x/semaine si nécessaire)
   setTimeout(weeklyAdaptiveRegen,1000);
-  // Rappel "séance du jour pas encore faite" — après checkMissedSessions pour ne pas
-  // se déclencher sur une séance déjà marquée manquée entre-temps.
-  setTimeout(checkDailyReminder,900);
-  setTimeout(ensurePrayerPush,900);
+  // Abonnement push (prière + rappel de séance) et état "séance du jour" —
+  // après checkMissedSessions pour ne pas synchroniser un statut qui vient
+  // tout juste d'être marqué manquée.
+  setTimeout(ensurePush,900);
+  setTimeout(syncDailyReminderState,900);
   if(window._launchTourAfterInit){
     window._launchTourAfterInit=false;
     setTimeout(startAppTour,1200);
@@ -10254,7 +10273,7 @@ function legalPrivacyHTML(){
   +legalP('4. Base légale',
     'Le traitement repose sur l’exécution du contrat qui te lie à l’Éditeur (fourniture du service demandé) et, pour les fonctionnalités optionnelles (photo, réseau social), sur ton consentement.')
   +legalP('5. Données visibles par d’autres utilisateurs',
-    'Certaines fonctionnalités font volontairement sortir des données de ton espace privé — c’est leur raison d’être, et elles restent facultatives. Ton profil public (pseudo, photo, niveau, XP, VDOT, kilomètres et séances cumulés, série de jours) est visible par les autres utilisateurs connectés qui te recherchent par ton pseudo ou t’ajoutent en ami. Si tu crées ou rejoins un club, ton pseudo, ta photo, ton niveau et ton XP apparaissent dans le classement de ce club : toute personne détenant le code à 6 caractères du club peut le rejoindre et voir ces informations. En revanche, le détail de tes séances, tes ressentis, tes douleurs et tes mesures corporelles ne sont JAMAIS partagés, ni avec tes amis, ni avec les membres de ton club. Tu peux quitter un club ou retirer un ami à tout moment, ce qui te retire aussitôt du classement correspondant.')
+    'Certaines fonctionnalités font volontairement sortir des données de ton espace privé — c’est leur raison d’être, et elles restent facultatives. Ton profil public (pseudo, photo, niveau, XP, VDOT, kilomètres et séances cumulés, série de jours) est visible par les autres utilisateurs connectés qui te recherchent par ton pseudo ou t’ajoutent en ami. Si tu crées ou rejoins un club, ton pseudo, ta photo, ton niveau et ton XP apparaissent dans le classement de ce club : toute personne détenant le code à 6 caractères du club peut le rejoindre et voir ces informations. En revanche, le détail de tes séances, tes ressentis, tes douleurs et tes mesures corporelles ne sont JAMAIS partagés, ni avec tes amis, ni avec les membres de ton club. Tu peux quitter un club ou retirer un ami à tout moment, ce qui te retire aussitôt du classement correspondant. Seule exception, technique et non sociale : si tu actives les rappels de notification, le TITRE de la séance du jour et son statut fait/pas fait (jamais le RPE, la douleur, les allures ni le détail complet) sortent du stockage chiffré de ton appareil pour permettre au serveur de te notifier même l’Application fermée ; désactive les rappels dans Profil > Notifications pour arrêter cet envoi.')
   +legalP('6. Hébergement et destinataires',
     'Tes données sont hébergées chez Supabase, sur des serveurs situés dans l’Union européenne (Irlande). Y ont accès : l’Éditeur ; Supabase en tant qu’hébergeur ; les autres utilisateurs, uniquement dans les limites décrites à l’article précédent. Si tu choisis la connexion Google, celle-ci est gérée par Google LLC selon sa propre politique de confidentialité, ce qui implique un transfert vers les États-Unis encadré par le cadre de protection des données UE–États-Unis. Par ailleurs, pour afficher les polices de caractères, charger une bibliothèque technique et afficher les images d’exercices, ton navigateur contacte trois services externes : Google Fonts, jsDelivr et GitHub. Ces services reçoivent de ce fait ton adresse IP, sans qu’aucune donnée d’entraînement ne leur soit transmise. Tu peux les bloquer avec une extension de navigateur : l’Application reste utilisable, avec un affichage dégradé.')
   +legalP('7. Durée de conservation et suppression',
@@ -10382,7 +10401,7 @@ function toggleNotif(el){
   if(el) el.classList.toggle('on',P.notif!==false);
   if(P.notif!==false) ensureNotifPerm();
   saveAll();
-  if(P.notif!==false) ensurePrayerPush(); else setPushPrayerEnabled(false);
+  if(P.notif!==false){ ensurePush(); syncDailyReminderState(); } else setPushFlag('reminder_enabled',false);
   sfx('tap');
 }
 // Bascule les sons (référencé par pfNotifHTML, existait pas -> toggle mort)
@@ -10396,7 +10415,7 @@ function togglePrayerNotif(el){
   if(el) el.classList.toggle('on',P.prayerNotif!==false);
   if(P.prayerNotif!==false) ensureNotifPerm();
   saveAll();
-  if(P.prayerNotif!==false) ensurePrayerPush(); else setPushPrayerEnabled(false);
+  if(P.prayerNotif!==false) ensurePush(); else setPushFlag('prayer_enabled',false);
   sfx('tap');
 }
 function pfNotifHTML(){
