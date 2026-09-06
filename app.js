@@ -499,9 +499,12 @@ let _friendsLoading=false;
 let clubCache={loaded:false,club:null,members:[]};
 let _clubLoading=false;
 let clubShowCreate=false;
+let clubPlanEditing=false;
+let clubPlanTmp=null;
 function openClub(){
   friendsTab='club';
   friendsSelected=null;
+  clubPlanEditing=false;
   $('#ovProgTitle').textContent=t('clubTitle');
   $('#progBody').innerHTML='<div id="friendsBody"><div class="card"><div class="empty"><div class="em-ic">'+ICN('stopwatch',36,'currentColor')+'</div><div style="font-size:13px">'+t('loadingLab')+'</div></div></div></div>';
   openOv('ovProg');
@@ -789,6 +792,7 @@ function renderClubTab(){
     const cIn=$('#clubCodeInput'); if(cIn) cIn.focus();
     return;
   }
+  if(clubPlanEditing){ h+=renderClubPlanSetupHTML(); $('#friendsBody').innerHTML=h; return; }
   const sorted=[...clubCache.members].sort((a,b)=>(b.xp||0)-(a.xp||0));
   h+='<div class="card" style="padding:16px;text-align:center"><div style="font-weight:800;font-size:18px;color:var(--snow)">'+escHtml(c.name)+'</div>'+
     '<div style="font-size:12.5px;color:var(--muted);margin-top:4px">'+tp('clubMembersCount',clubCache.members.length)+'</div>'+
@@ -799,6 +803,7 @@ function renderClubTab(){
     '<div class="row" style="justify-content:center;gap:8px;margin-top:12px"><span style="font-family:monospace;font-weight:800;font-size:17px;letter-spacing:3px;background:var(--panel2);padding:6px 12px;border-radius:8px">'+escHtml(c.code)+'</span><span class="hv7-icon-btn" style="width:36px;height:36px" onclick="copyClubCode()" title="'+t('copyCodeBtn')+'">'+ICN('copy',16)+'</span></div>'+
     '<div style="font-size:11.5px;color:var(--dim);margin-top:6px">'+t('shareCodeHint')+'</div>'+
   '</div>';
+  h+=clubPlanHTML(c);
   h+='<div class="sec-lab">'+t('clubXpRanking')+'</div>';
   h+='<div class="card" style="padding:2px 6px">'+sorted.map((m,i)=>{
     const av=m.photo_url?'<div class="fr-avatar" style="background-image:url(\''+safePhotoUrl(m.photo_url)+'\')"></div>':'<div class="fr-avatar">'+(m.username?escHtml(m.username[0].toUpperCase()):'?')+'</div>';
@@ -813,6 +818,144 @@ function renderClubTab(){
 function copyClubCode(){
   const code=clubCache.club&&clubCache.club.code; if(!code) return;
   try{ navigator.clipboard.writeText(code); toast(t('codeCopiedToast')); }catch(e){ toast(code); }
+}
+/* ---------- PLAN PARTAGÉ DU CLUB ----------
+   Le créateur du club choisit soit son plan IKORUN généré, soit l'un de ses
+   plans persos, et l'envoie tel quel (séances déjà datées) : tout le club suit
+   le même calendrier réel, pas un gabarit générique par jour de semaine. Il
+   ajoute un horaire + lieu de regroupement, ou une description libre à la
+   place. Snapshot, pas de lien live : si le créateur modifie son plan perso
+   ensuite, il doit republier pour que le club voie la mise à jour — plus
+   simple et plus prévisible qu'une synchronisation continue. */
+function buildGeneratedSnapshot(){
+  if(!PLAN) return null;
+  return {type:'generated', sourceId:null, name:trRace(P.objRace)||t('planIkorunPill'),
+    sessions:PLAN.sessions.filter(s=>s.km>0).map(s=>({date:s.date,title:s.title,type:s.type,km:s.km,pace:s.pace})).slice(0,200),
+    weeks:PLAN.weeks};
+}
+function buildCustomSnapshot(id){
+  const p=CUSTOM.find(x=>x.id===id); if(!p) return null;
+  return {type:'custom', sourceId:p.id, name:p.name,
+    sessions:(p.sessions||[]).map(s=>({date:s.date,title:s.title,type:s.type,km:s.km||null,pace:s.pace||null})).slice(0,200)};
+}
+function clubPlanHTML(c){
+  const isOwnerClub=c.owner_id===window.currentUserId;
+  let h='<div class="sec-lab">'+t('clubPlanTitle')+'</div>';
+  const sp=c.shared_plan;
+  if(!sp){
+    h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('calendar',36,'currentColor')+'</div><div style="font-size:13px">'+(isOwnerClub?t('clubPlanNoneOwner'):t('clubPlanNoneMember'))+'</div>'+
+      (isOwnerClub?'<button class="btn" style="margin-top:12px;width:auto" onclick="openClubPlanSetup()">'+t('clubPlanConfigureBtn')+'</button>':'')+
+    '</div></div>';
+  } else {
+    const tk=todayKey();
+    const upcoming=(sp.sessions||[]).filter(s=>s.date>=tk).slice(0,5);
+    h+='<div class="card" style="padding:16px">'+
+      '<div style="font-weight:800;font-size:15px;color:var(--snow)">'+escHtml(sp.name||'')+'</div>'+
+      (upcoming.length?upcoming.map(s=>'<div class="row" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--hair)"><div style="flex:1"><div style="font-weight:700;font-size:13.5px">'+escHtml(s.title||'')+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+fmtDate(s.date)+(s.km?' · '+s.km+' km':'')+(s.pace?' · '+escHtml(s.pace)+'/km':'')+'</div></div></div>').join(''):'<div style="font-size:12.5px;color:var(--muted);margin-top:8px">'+t('clubPlanNoUpcoming')+'</div>')+
+    '</div>';
+    if(isOwnerClub) h+='<button class="btn ghost sm" style="width:auto;margin-top:8px" onclick="openClubPlanSetup()">'+t('clubPlanEditBtn')+'</button>';
+  }
+  const mu=c.meetup;
+  if(mu && ((mu.mode==='text'&&mu.text) || (mu.mode==='slot'&&(mu.place||mu.time)))){
+    const dn=[0,1,2,3,4,5,6].map(d=>new Date(2023,0,1+d).toLocaleDateString(localeCode(),{weekday:'long'}));
+    const dayLab=mu.day!=null?(dn[mu.day][0].toUpperCase()+dn[mu.day].slice(1)):'';
+    h+='<div class="card" style="padding:14px;margin-top:'+(sp&&isOwnerClub?'8px':'10px')+'"><div class="row" style="gap:10px;align-items:flex-start">'+
+      '<div class="lr-icon">'+ICN('flag',18,'currentColor')+'</div><div style="flex:1">'+
+      (mu.mode==='text'
+        ? '<div style="font-size:13px;white-space:pre-wrap">'+escHtml(mu.text)+'</div>'
+        : '<div style="font-weight:700;font-size:13.5px">'+escHtml(dayLab)+(mu.time?' · '+escHtml(mu.time):'')+'</div>'+(mu.place?'<div style="font-size:12px;color:var(--muted);margin-top:2px">'+escHtml(mu.place)+'</div>':''))
+      +'</div></div></div>';
+  }
+  return h;
+}
+function openClubPlanSetup(){
+  const c=clubCache.club; if(!c) return;
+  const sp=c.shared_plan, mu=c.meetup;
+  const runPlans=CUSTOM.filter(x=>x.kind==='run');
+  clubPlanTmp={
+    source: sp?sp.type:(PLAN?'generated':(runPlans.length?'custom':null)),
+    customId: (sp&&sp.type==='custom'&&sp.sourceId)||(runPlans[0]&&runPlans[0].id)||null,
+    meetupMode: mu?mu.mode:'slot',
+    day: mu&&mu.day!=null?mu.day:1,
+    time: mu&&mu.time?mu.time:'18:30',
+    place: mu&&mu.place?mu.place:'',
+    text: mu&&mu.text?mu.text:''
+  };
+  clubPlanEditing=true;
+  renderClubTab();
+}
+function closeClubPlanSetup(){ clubPlanEditing=false; renderClubTab(); }
+function renderClubPlanSetupHTML(){
+  const tt=clubPlanTmp;
+  const runPlans=CUSTOM.filter(x=>x.kind==='run');
+  let h='<div class="row" style="margin-bottom:14px;cursor:pointer" onclick="closeClubPlanSetup()">'+ICN('chevronR',16).replace('<path','<path transform="rotate(180 12 12)"')+' <span style="font-weight:700;margin-left:4px">'+t('backLab')+'</span></div>';
+  h+='<div class="sec-lab">'+t('clubPlanSourceLabel')+'</div>';
+  h+='<div class="pills">'+
+    '<div class="pill '+(tt.source==='generated'?'on':'')+'" onclick="clubPlanTmp.source=\'generated\';renderClubTab()">'+t('clubPlanSourceGenerated')+'</div>'+
+    '<div class="pill '+(tt.source==='custom'?'on':'')+'" onclick="clubPlanTmp.source=\'custom\';renderClubTab()">'+t('clubPlanSourceCustom')+'</div>'+
+  '</div>';
+  if(tt.source==='generated'){
+    if(!PLAN) h+='<div class="tip" style="margin-top:10px">'+t('clubPlanNoGeneratedYet')+'</div>';
+    else h+='<div class="card" style="padding:12px;margin-top:8px"><div style="font-weight:700">'+escHtml(trRace(P.objRace)||'')+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+tp('clubPlanSessionsCount',PLAN.sessions.filter(s=>s.km>0).length)+'</div></div>';
+  } else if(tt.source==='custom'){
+    if(!runPlans.length) h+='<div class="tip" style="margin-top:10px">'+t('clubPlanNoCustomYet')+'</div>';
+    else h+='<div class="pills" style="flex-wrap:wrap">'+runPlans.map(p=>'<div class="pill '+(tt.customId===p.id?'on':'')+'" onclick="clubPlanTmp.customId=\''+p.id+'\';renderClubTab()">'+escHtml(p.name)+'</div>').join('')+'</div>';
+  } else {
+    h+='<div class="tip" style="margin-top:10px">'+t('clubPlanNoGeneratedYet')+'</div>';
+  }
+  h+='<div class="sec-lab" style="margin-top:18px">'+t('clubMeetupLabel')+'</div>';
+  h+='<div class="pills">'+
+    '<div class="pill '+(tt.meetupMode==='slot'?'on':'')+'" onclick="clubPlanTmp.meetupMode=\'slot\';renderClubTab()">'+t('clubMeetupModeSlot')+'</div>'+
+    '<div class="pill '+(tt.meetupMode==='text'?'on':'')+'" onclick="clubPlanTmp.meetupMode=\'text\';renderClubTab()">'+t('clubMeetupModeText')+'</div>'+
+  '</div>';
+  if(tt.meetupMode==='slot'){
+    const dn=[0,1,2,3,4,5,6].map(d=>new Date(2023,0,1+d).toLocaleDateString(localeCode(),{weekday:'short'}));
+    h+='<div class="field"><label>'+t('trainingDaysLabel')+'</label><div class="pills">'+[1,2,3,4,5,6,0].map(d=>'<div class="pill '+(tt.day===d?'on':'')+'" onclick="clubPlanTmp.day='+d+';renderClubTab()">'+dn[d]+'</div>').join('')+'</div></div>';
+    h+='<div class="field"><label>'+t('clubMeetupTimeLabel')+'</label><input class="inp" type="time" value="'+escHtml(tt.time)+'" oninput="clubPlanTmp.time=this.value"></div>';
+    h+='<div class="field"><label>'+t('clubMeetupPlaceLabel')+'</label><input class="inp" maxlength="120" value="'+escHtml(tt.place)+'" oninput="clubPlanTmp.place=this.value" placeholder="'+t('clubMeetupPlacePh')+'"></div>';
+  } else {
+    h+='<div class="field"><label>'+t('clubMeetupTextLabel')+'</label><textarea class="inp" maxlength="500" rows="4" oninput="clubPlanTmp.text=this.value" placeholder="'+t('clubMeetupTextPh')+'">'+escHtml(tt.text)+'</textarea></div>';
+  }
+  h+='<button class="btn" style="margin-top:14px" onclick="submitClubPlan()">'+t('clubPlanPublishBtn')+'</button>';
+  if(clubCache.club && (clubCache.club.shared_plan||clubCache.club.meetup)) h+='<button class="btn ghost sm" style="margin-top:8px;width:auto;color:var(--bad)" onclick="clearClubPlan()">'+t('clubPlanRemoveBtn')+'</button>';
+  return h;
+}
+async function submitClubPlan(){
+  const tt=clubPlanTmp; if(!tt||!clubCache.club) return;
+  let snap=null;
+  if(tt.source==='generated'){
+    snap=buildGeneratedSnapshot();
+    if(!snap){ toast(t('clubPlanNoGeneratedYet')); return; }
+  } else if(tt.source==='custom'){
+    if(!tt.customId){ toast(t('clubPlanNoCustomYet')); return; }
+    snap=buildCustomSnapshot(tt.customId);
+    if(!snap){ toast(t('clubPlanNoCustomYet')); return; }
+  } else { toast(t('clubPlanNoGeneratedYet')); return; }
+  let meetup=null;
+  if(tt.meetupMode==='slot'){
+    const place=(tt.place||'').trim().slice(0,120);
+    if(place||tt.time) meetup={mode:'slot',day:tt.day,time:tt.time||null,place};
+  } else {
+    const txt=(tt.text||'').trim().slice(0,500);
+    if(txt) meetup={mode:'text',text:txt};
+  }
+  try{
+    const { error } = await window.supabaseClient.rpc('ikorun_set_club_plan',{p_club_id:clubCache.club.id,p_shared_plan:snap,p_meetup:meetup});
+    if(error){ toast(t('genericErrorRetry')); return; }
+    toast(t('clubPlanPublishedToast'));
+    clubPlanEditing=false;
+    loadClubData();
+  }catch(e){ toast(t('genericErrorRetry')); }
+}
+function clearClubPlan(){
+  if(!clubCache.club) return;
+  customConfirm(t('clubPlanRemoveConfirm'),async ()=>{
+    try{
+      const { error } = await window.supabaseClient.rpc('ikorun_set_club_plan',{p_club_id:clubCache.club.id,p_shared_plan:null,p_meetup:null});
+      if(error){ toast(t('genericErrorRetry')); return; }
+      clubPlanEditing=false; toast(t('clubPlanRemovedToast')); loadClubData();
+    }catch(e){ toast(t('genericErrorRetry')); }
+  },{danger:true});
 }
 async function submitJoinClub(){
   const el=$('#clubCodeInput'); const code=(el?el.value:'').trim();
@@ -1159,6 +1302,15 @@ const I18N={
     clubXpRanking:'Classement du club (XP)',leaveClubBtn:'Quitter le club',confirmLeaveClub:'Quitter ce club ? Tu pourras en rejoindre un autre à tout moment.',
     clubCreatedToast:'Club créé !',clubJoinedToast:'Bienvenue dans le club !',clubLeftToast:'Tu as quitté le club',clubNotFoundToast:'Aucun club avec ce code',
     tooManyAttemptsToast:'Trop de tentatives, réessaie dans un instant',codeCopiedToast:'Code copié',
+    clubPlanTitle:'Plan du club',clubPlanNoneOwner:'Pas encore de plan partagé. Choisis ton plan IKORUN ou l’un de tes plans persos pour que tout le club s’entraîne ensemble.',clubPlanNoneMember:'Le créateur du club n’a pas encore publié de plan partagé.',
+    clubPlanConfigureBtn:'Configurer le plan du club',clubPlanEditBtn:'Modifier le plan du club',clubPlanNoUpcoming:'Aucune séance à venir dans ce plan.',
+    clubPlanSourceLabel:'Quel plan partager ?',clubPlanSourceGenerated:'Mon plan IKORUN',clubPlanSourceCustom:'Un de mes plans persos',
+    clubPlanNoGeneratedYet:'Tu n’as pas encore de plan IKORUN généré. Va dans Sport pour en créer un, puis reviens ici.',clubPlanNoCustomYet:'Tu n’as pas encore de plan perso. Crée-en un dans Sport > Plan personnel.',
+    clubPlanSessionsCount:'{0} séances programmées',clubMeetupLabel:'Regroupement',clubMeetupModeSlot:'Heure & lieu',clubMeetupModeText:'Description libre',
+    clubMeetupTimeLabel:'Heure',clubMeetupPlaceLabel:'Lieu',clubMeetupPlacePh:'ex : Parc de la Tête d’Or, entrée nord',
+    clubMeetupTextLabel:'Description',clubMeetupTextPh:'ex : On se retrouve devant la mairie, chacun vient quand il peut...',
+    clubPlanPublishBtn:'Publier',clubPlanRemoveBtn:'Retirer le plan du club',clubPlanPublishedToast:'Plan du club publié !',clubPlanRemovedToast:'Plan du club retiré',
+    clubPlanRemoveConfirm:'Retirer le plan et le regroupement du club ? Les membres ne les verront plus.',
     loginToAddFriends:'Connecte-toi avec Google pour ajouter des amis et te comparer.',
     searchFriendPlaceholder:'Chercher un ami par pseudo',receivedRequests:'Demandes reçues',acceptBtn:'Accepter',
     yourFriendsCount:'Tes amis ({0})',noFriendsYet:'Pas encore d\u2019amis — cherche quelqu\u2019un par son pseudo !',
@@ -1577,7 +1729,7 @@ const I18N={
     tour_stats_t:'Tes statistiques',tour_stats_d:'Kilomètres, séances, VDOT, records personnels — et ta progression en XP, niveaux et badges, gagnée uniquement par de vraies séances (l’app vérifie).',
     tour_outils_t:'La boîte à outils',tour_outils_d:'Calculateur d’allure, VDOT, IMC, chrono, minuteur... Cherche l’outil qu’il te faut ou garde tes favoris à portée de main.',
     tour_profil_t:'Ton profil',tour_profil_d:'Niveau, XP, badges — et tous les réglages : langue, couleur, et le mode simplifié que tu as choisi (modifiable à tout moment ici). Une idée ou un bug ? « Envoyer un commentaire », tout en bas, part directement dans notre boîte mail.',
-    tour_club_t:'Rejoins ton club',tour_club_d:'Rejoins le club de ton équipe avec un code, ou crée le tien : classement dédié, coéquipiers visibles d’un coup d’œil. Un vrai esprit d’équipe, pas juste des amis un par un.',
+    tour_club_t:'Rejoins ton club',tour_club_d:'Rejoins le club de ton équipe avec un code, ou crée le tien : classement dédié, coéquipiers visibles d’un coup d’œil. Le créateur peut même publier un plan d’entraînement commun avec un lieu et une heure de regroupement, pour s’entraîner ensemble. Un vrai esprit d’équipe, pas juste des amis un par un.',
     tour_final_t:'Prêt à commencer ?',tour_final_d:'Configure ton objectif et génère ton plan personnalisé — c\'est le moment !',
     tourGotItBtn:'Compris',signupHelpLink:'Besoin d\'aide ?',
     tour_sg_welcome_t:'On crée ton compte ?',tour_sg_welcome_d:'Trois petites infos et c\'est parti — ça prend 30 secondes.',
@@ -1687,6 +1839,15 @@ const I18N={
     clubXpRanking:'Club leaderboard (XP)',leaveClubBtn:'Leave club',confirmLeaveClub:'Leave this club? You can join another one anytime.',
     clubCreatedToast:'Club created!',clubJoinedToast:'Welcome to the club!',clubLeftToast:'You left the club',clubNotFoundToast:'No club found with this code',
     tooManyAttemptsToast:'Too many attempts, try again shortly',codeCopiedToast:'Code copied',
+    clubPlanTitle:'Club plan',clubPlanNoneOwner:'No shared plan yet. Pick your IKORUN plan or one of your custom plans so the whole club trains together.',clubPlanNoneMember:'The club creator hasn’t published a shared plan yet.',
+    clubPlanConfigureBtn:'Configure the club plan',clubPlanEditBtn:'Edit the club plan',clubPlanNoUpcoming:'No upcoming sessions in this plan.',
+    clubPlanSourceLabel:'Which plan to share?',clubPlanSourceGenerated:'My IKORUN plan',clubPlanSourceCustom:'One of my custom plans',
+    clubPlanNoGeneratedYet:'You don’t have a generated IKORUN plan yet. Go to Sport to create one, then come back here.',clubPlanNoCustomYet:'You don’t have a custom plan yet. Create one in Sport > Custom plan.',
+    clubPlanSessionsCount:'{0} sessions scheduled',clubMeetupLabel:'Meetup',clubMeetupModeSlot:'Time & place',clubMeetupModeText:'Free description',
+    clubMeetupTimeLabel:'Time',clubMeetupPlaceLabel:'Place',clubMeetupPlacePh:'e.g. Central Park, north entrance',
+    clubMeetupTextLabel:'Description',clubMeetupTextPh:'e.g. We meet in front of the town hall, join whenever you can...',
+    clubPlanPublishBtn:'Publish',clubPlanRemoveBtn:'Remove the club plan',clubPlanPublishedToast:'Club plan published!',clubPlanRemovedToast:'Club plan removed',
+    clubPlanRemoveConfirm:'Remove the plan and meetup from the club? Members will no longer see them.',
     loginToAddFriends:'Sign in with Google to add friends and compare stats.',
     searchFriendPlaceholder:'Search a friend by username',receivedRequests:'Received requests',acceptBtn:'Accept',
     yourFriendsCount:'Your friends ({0})',noFriendsYet:'No friends yet — search for someone by their username!',
@@ -2105,7 +2266,7 @@ const I18N={
     tour_stats_t:'Your stats',tour_stats_d:'Kilometres, sessions, VDOT, personal records — and your XP, levels and badges, earned only from real sessions (the app checks).',
     tour_outils_t:'The toolbox',tour_outils_d:'Pace calculator, VDOT, BMI, stopwatch, timer... Search for the tool you need or keep your favourites within reach.',
     tour_profil_t:'Your profile',tour_profil_d:'Level, XP, badges — and every setting: language, colour, and the simplified mode you chose (changeable here anytime). Got an idea or found a bug? "Send feedback", at the bottom, goes straight to our inbox.',
-    tour_club_t:'Join your club',tour_club_d:'Join your team’s club with a code, or create your own: a dedicated leaderboard, teammates visible at a glance. Real team spirit, not just friends one by one.',
+    tour_club_t:'Join your club',tour_club_d:'Join your team’s club with a code, or create your own: a dedicated leaderboard, teammates visible at a glance. The creator can even publish a shared training plan with a meeting time and place, so everyone trains together. Real team spirit, not just friends one by one.',
     tour_final_t:'Ready to start?',tour_final_d:'Set your goal and generate your personalized plan — now’s the time!',
     tourGotItBtn:'Got it',signupHelpLink:'Need help?',
     tour_sg_welcome_t:'Let\'s create your account',tour_sg_welcome_d:'Three quick things and you\'re set — takes 30 seconds.',
@@ -2215,6 +2376,15 @@ const I18N={
     clubXpRanking:'ترتيب النادي (نقاط الخبرة)',leaveClubBtn:'مغادرة النادي',confirmLeaveClub:'مغادرة هذا النادي؟ يمكنك الانضمام إلى نادٍ آخر في أي وقت.',
     clubCreatedToast:'تم إنشاء النادي!',clubJoinedToast:'مرحبًا بك في النادي!',clubLeftToast:'لقد غادرت النادي',clubNotFoundToast:'لا يوجد نادٍ بهذا الرمز',
     tooManyAttemptsToast:'محاولات كثيرة جدًا، أعد المحاولة بعد قليل',codeCopiedToast:'تم نسخ الرمز',
+    clubPlanTitle:'خطة النادي',clubPlanNoneOwner:'لا توجد خطة مشتركة بعد. اختر خطتك في IKORUN أو إحدى خططك الشخصية ليتدرب النادي كله معًا.',clubPlanNoneMember:'لم ينشر منشئ النادي خطة مشتركة بعد.',
+    clubPlanConfigureBtn:'إعداد خطة النادي',clubPlanEditBtn:'تعديل خطة النادي',clubPlanNoUpcoming:'لا توجد حصص قادمة في هذه الخطة.',
+    clubPlanSourceLabel:'أي خطة تريد مشاركتها؟',clubPlanSourceGenerated:'خطتي في IKORUN',clubPlanSourceCustom:'إحدى خططي الشخصية',
+    clubPlanNoGeneratedYet:'ليس لديك خطة IKORUN مُولَّدة بعد. اذهب إلى رياضة لإنشاء واحدة، ثم عد إلى هنا.',clubPlanNoCustomYet:'ليس لديك خطة شخصية بعد. أنشئ واحدة من رياضة > خطة شخصية.',
+    clubPlanSessionsCount:'{0} حصة مبرمجة',clubMeetupLabel:'مكان التجمّع',clubMeetupModeSlot:'الوقت والمكان',clubMeetupModeText:'وصف حر',
+    clubMeetupTimeLabel:'الوقت',clubMeetupPlaceLabel:'المكان',clubMeetupPlacePh:'مثال: الحديقة المركزية، المدخل الشمالي',
+    clubMeetupTextLabel:'الوصف',clubMeetupTextPh:'مثال: نلتقي أمام البلدية، انضم عندما تستطيع...',
+    clubPlanPublishBtn:'نشر',clubPlanRemoveBtn:'إزالة خطة النادي',clubPlanPublishedToast:'تم نشر خطة النادي!',clubPlanRemovedToast:'تمت إزالة خطة النادي',
+    clubPlanRemoveConfirm:'إزالة الخطة ومكان التجمّع من النادي؟ لن يراهما الأعضاء بعد الآن.',
     loginToAddFriends:'سجّل الدخول عبر Google لإضافة أصدقاء ومقارنة نفسك.',
     searchFriendPlaceholder:'ابحث عن صديق بالاسم المستعار',receivedRequests:'الطلبات الواردة',acceptBtn:'قبول',
     yourFriendsCount:'أصدقاؤك ({0})',noFriendsYet:'لا يوجد أصدقاء بعد — ابحث عن أحدهم باسمه المستعار!',
@@ -2634,7 +2804,7 @@ const I18N={
     tour_stats_t:'إحصائياتك',tour_stats_d:'الكيلومترات، الحصص، VDOT، الأرقام الشخصية — وتقدّمك من نقاط خبرة ومستويات وأوسمة، مكتسبة فقط من حصص حقيقية (يتحقّق التطبيق من ذلك).',
     tour_outils_t:'صندوق الأدوات',tour_outils_d:'حاسبة الوتيرة، VDOT، مؤشر كتلة الجسم، ساعة إيقاف، مؤقّت... ابحث عن الأداة التي تحتاجها أو احتفظ بالمفضّلة في متناول يدك.',
     tour_profil_t:'ملفك الشخصي',tour_profil_d:'المستوى، نقاط الخبرة، الأوسمة — وكل الإعدادات: اللغة، اللون، والوضع المبسّط الذي اخترته (قابل للتغيير هنا في أي وقت). لديك فكرة أو وجدت خللًا؟ «إرسال تعليق» أسفل الصفحة يصل مباشرة إلى بريدنا.',
-    tour_club_t:'انضم إلى ناديك',tour_club_d:'انضم إلى نادي فريقك برمز، أو أنشئ ناديك الخاص: ترتيب مخصص، وزملاؤك في متناول نظرة واحدة. روح فريق حقيقية، وليس فقط أصدقاء واحدًا تلو الآخر.',
+    tour_club_t:'انضم إلى ناديك',tour_club_d:'انضم إلى نادي فريقك برمز، أو أنشئ ناديك الخاص: ترتيب مخصص، وزملاؤك في متناول نظرة واحدة. يمكن لمنشئ النادي حتى نشر خطة تدريب مشتركة مع مكان ووقت للتجمّع، ليتدرب الجميع معًا. روح فريق حقيقية، وليس فقط أصدقاء واحدًا تلو الآخر.',
     tour_final_t:'مستعد للبدء؟',tour_final_d:'حدّد هدفك وأنشئ خطتك المخصصة — الوقت الآن!',
     tourGotItBtn:'فهمت',signupHelpLink:'تحتاج مساعدة؟',
     tour_sg_welcome_t:'لننشئ حسابك',tour_sg_welcome_d:'ثلاث معلومات صغيرة وننطلق — الأمر يستغرق 30 ثانية.',
@@ -6309,6 +6479,7 @@ function renderHome(){
       '<div class="hv7-header-right">'+
         '<div class="hv7-icon-btn" onclick="shareApp()" title="'+t('share')+'">'+ICN('share',17)+'</div>'+
         '<div class="hv7-icon-btn" onclick="openProfileSection(\'notif\')" title="'+t('notifLabel')+'">'+ICN('bell',17)+(hasReminderDot?'<span class="dot"></span>':'')+'</div>'+
+        '<div class="hv7-icon-btn" onclick="openClub()" title="'+t('myClubLab')+'">'+ICN('flag',17)+'</div>'+
         '<div class="hv7-people" onclick="openFriends()">'+ICN('users',18)+'</div>'+
       '</div></div>';
   }
@@ -6409,7 +6580,9 @@ function renderHomeSimple(ps,sessW,sessTarget,vdot,form,first){
   let h='';
   h+='<div class="ik-header"><div class="ik-logo">'+
     '<div class="ik-logo-mark" style="-webkit-mask-image:url(\''+LOGO_MARK_URI+'\');mask-image:url(\''+LOGO_MARK_URI+'\')" role="img" aria-label="IKORUN"></div>'+
-    '<span>IKORUN</span></div></div>';
+    '<span>IKORUN</span></div>'+
+    '<div class="hv7-icon-btn" onclick="openClub()" title="'+t('myClubLab')+'">'+ICN('flag',17)+'</div>'+
+  '</div>';
   h+=homeStreakBadge();
   h+='<div class="ik-greet"><h1>'+t('greet')+' '+escHtml(first||t('you'))+'</h1></div>';
 
@@ -9520,7 +9693,7 @@ function legalWrapHTML(bodyHtml){
 }
 function legalTermsHTML(){
   const b=legalP('1. Objet',
-    'Les présentes Conditions Générales d’Utilisation (« CGU ») régissent l’accès et l’utilisation de l’application IKORUN (« l’Application »), une application de coaching sportif (course à pied et musculation) éditée par [ton nom ou ta société — à compléter], ci-après « l’Éditeur ». En créant un compte ou en utilisant l’Application, tu acceptes sans réserve les présentes CGU.')
+    'Les présentes Conditions Générales d’Utilisation (« CGU ») régissent l’accès et l’utilisation de l’application IKORUN (« l’Application »), une application de coaching sportif (course à pied et musculation) éditée par IKORUN, ci-après « l’Éditeur ». En créant un compte ou en utilisant l’Application, tu acceptes sans réserve les présentes CGU.')
   +legalP('2. Description du service',
     'IKORUN propose : la génération de plans d’entraînement personnalisés (course à pied et musculation) à partir des informations que tu renseignes (niveau, objectif, performances passées…) ; le suivi de tes séances, statistiques et progrès ; des fonctionnalités sociales optionnelles (ajout d’amis et classement entre amis, création ou adhésion à un club via un code à 6 caractères avec classement entre membres du club) ; des outils de calcul (allures, VDOT, etc.) ; un formulaire d’avis qui ouvre ton application mail avec un message pré-rempli, rien n’étant envoyé sans que tu appuies toi-même sur « Envoyer ». L’Application fonctionne en mode « invité » (sans compte permanent) ou avec un compte (email/mot de passe ou connexion Google). IKORUN est distribuée uniquement comme application web installable depuis ton navigateur : elle n’est présente ni sur l’App Store ni sur le Play Store.')
   +legalP('3. Avertissement santé et sport — à lire attentivement',
@@ -9542,12 +9715,12 @@ function legalTermsHTML(){
   +legalP('11. Droit applicable et litiges',
     'Les présentes CGU sont soumises au droit français. En cas de difficulté, commence par contacter l’Éditeur à l’adresse indiquée ci-dessous : la plupart des situations se règlent ainsi. À défaut d’accord, tu peux recourir gratuitement à un médiateur de la consommation, ou utiliser la plateforme européenne de règlement en ligne des litiges (ec.europa.eu/consumers/odr). Si aucune solution amiable n’aboutit, le litige relève des tribunaux français compétents ; en qualité de consommateur, tu peux saisir la juridiction de ton lieu de résidence.')
   +legalP('12. Contact',
-    'Pour toute question relative aux présentes CGU : [ton email de contact — à compléter].');
+    'Pour toute question relative aux présentes CGU : ikorunn@gmail.com.');
   return legalWrapHTML(b);
 }
 function legalPrivacyHTML(){
   const b=legalP('1. Responsable du traitement',
-    'Le responsable du traitement des données à caractère personnel collectées via IKORUN est [ton nom ou ta société — à compléter], contact : [ton email — à compléter].')
+    'Le responsable du traitement des données à caractère personnel collectées via IKORUN est l’éditeur de l’application, joignable à ikorunn@gmail.com.')
   +legalP('2. Données collectées',
     'Selon ton mode de connexion et ton usage de l’Application, nous traitons : les données de compte (email, mot de passe chiffré ou identifiant Google) ; les données de profil (prénom, date de naissance, sexe, taille, poids, niveau, objectifs, photo si tu en ajoutes une) ; les données d’entraînement et de ressenti que tu saisis (séances, performances, records, historique, mais aussi difficulté ressentie, fatigue, sommeil, douleurs éventuelles) ; les indicateurs calculés à partir de celles-ci (XP, niveau, VDOT, kilomètres et séances cumulés, série de jours consécutifs) ; les données sociales optionnelles (pseudo, liste d’amis, appartenance à un club) si tu utilises ces fonctionnalités ; enfin les données techniques inhérentes à tout service en ligne, conservées par notre hébergeur (adresse IP, journaux de connexion) ainsi qu’un compteur anti-abus limitant le nombre d’actions sensibles par heure. Certaines de ces informations touchent à ta santé (poids, douleurs, fatigue) : tu les saisis librement et rien ne t’oblige à les renseigner. IKORUN ne collecte pas ta localisation GPS et n’accède à aucun capteur de ton appareil. Le mode « invité » crée lui aussi un compte technique sur nos serveurs, avec un pseudo attribué automatiquement.')
   +legalP('3. Finalités',
@@ -9561,7 +9734,7 @@ function legalPrivacyHTML(){
   +legalP('7. Durée de conservation et suppression',
     'Tes données sont conservées tant que ton compte est actif. Tu peux exporter une copie complète au format JSON depuis Profil > Données & confidentialité, et supprimer définitivement ton compte depuis Profil > Compte > Zone de danger. La suppression efface ton compte, ton profil public, tes données d’entraînement, tes liens d’amitié, ton appartenance à un club et les clubs dont tu es propriétaire ; elle est immédiate et irréversible. Attention à ne pas confondre avec « Réinitialiser », dans Données & confidentialité, qui n’efface que cet appareil et laisse ton compte intact. Les sauvegardes techniques de l’hébergeur peuvent conserver une copie résiduelle quelques jours avant d’être écrasées.')
   +legalP('8. Tes droits',
-    'Conformément au RGPD, tu disposes d’un droit d’accès, de rectification, d’effacement, de portabilité (export JSON disponible dans l’Application), de limitation du traitement et d’opposition sur tes données. Tu peux également retirer à tout moment ton consentement aux fonctionnalités optionnelles (photo de profil, amis, club) — le retrait ne remet pas en cause ce qui a été fait avant. Tu peux enfin définir des directives sur le sort de tes données après ton décès. Pour exercer ces droits, utilise les outils intégrés à l’Application ou contacte [ton email — à compléter]. Tu peux aussi introduire une réclamation auprès de la CNIL (www.cnil.fr).')
+    'Conformément au RGPD, tu disposes d’un droit d’accès, de rectification, d’effacement, de portabilité (export JSON disponible dans l’Application), de limitation du traitement et d’opposition sur tes données. Tu peux également retirer à tout moment ton consentement aux fonctionnalités optionnelles (photo de profil, amis, club) — le retrait ne remet pas en cause ce qui a été fait avant. Tu peux enfin définir des directives sur le sort de tes données après ton décès. Pour exercer ces droits, utilise les outils intégrés à l’Application ou contacte ikorunn@gmail.com. Tu peux aussi introduire une réclamation auprès de la CNIL (www.cnil.fr).')
   +legalP('9. Décisions automatisées',
     'Tes plans d’entraînement sont générés et ajustés automatiquement par un moteur de règles qui fonctionne intégralement sur ton appareil, à partir des informations que tu renseignes. Aucune intelligence artificielle ni service tiers n’intervient dans ce calcul. Ces plans sont des suggestions sportives : ils ne produisent aucun effet juridique, et tu peux les modifier ou les ignorer à tout moment.')
   +legalP('10. Stockage local et cookies',
@@ -9573,7 +9746,7 @@ function legalPrivacyHTML(){
   +legalP('13. Modifications',
     'Cette politique peut évoluer ; la date de mise à jour est indiquée en haut de ce document.')
   +legalP('14. Contact',
-    'Pour toute question relative à tes données : [ton email — à compléter].');
+    'Pour toute question relative à tes données : ikorunn@gmail.com.');
   return legalWrapHTML(b);
 }
 function pfAccountHTML(){
@@ -9700,7 +9873,7 @@ function pfNotifHTML(){
    téléphone avec le message pré-rempli ; il ne reste qu'à taper "Envoyer"
    dans cette appli. FEEDBACK_EMAIL est un espace réservé, comme les crochets
    des CGU/politique de confidentialité : à remplacer par l'adresse réelle. */
-const FEEDBACK_EMAIL='[ton email — à compléter]';
+const FEEDBACK_EMAIL='ikorunn@gmail.com';
 function openFeedback(){
   let h='<div style="text-align:center;padding:4px 0 14px;color:var(--e)">'+ICN('comment',40,'currentColor')+'</div>';
   h+='<div class="tip" style="margin-bottom:14px">'+t('feedbackIntro')+'</div>';
