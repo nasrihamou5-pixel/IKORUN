@@ -163,6 +163,9 @@ async function signInWithGoogle(){
   if(_googleAuthing) return; // évite les doubles-taps qui donnent l'impression que rien ne se passe
   _googleAuthing=true;
   toast(t('connectingGoogle'));
+  // Trace l'aller-retour : si on revient sans session, startLogin() sait qu'il
+  // faut expliquer l'échec au lieu de réafficher l'écran de connexion muet.
+  try{ localStorage.setItem('ikorun_googleAttempt', String(Date.now())); }catch(e){}
   try{
     const { error } = await withAuthTimeout(window.supabaseClient.auth.signInWithOAuth({
       provider:'google',
@@ -202,6 +205,15 @@ function withAuthTimeout(promise, ms){
     new Promise((_,reject)=>setTimeout(()=>reject(new Error('auth_timeout')),ms||15000))
   ]);
 }
+/* Les envois d'emails (inscription, mot de passe oublié) sont plafonnés côté
+   serveur : quelques-uns par heure, plus un délai minimum entre deux demandes.
+   Sans détection, ces refus tombaient dans le message d'erreur générique et
+   la personne réessayait en boucle — ce qui ne faisait qu'aggraver le blocage. */
+function isAuthRateLimit(err){
+  if(!err) return false;
+  if(err.status===429) return true;
+  return /rate limit|only request this after|too many requests/i.test(err.message||'');
+}
 async function continueAsGuest(){
   if(!window.supabaseClient || _guestAuthing || _emailAuthing || _googleAuthing) return;
   _guestAuthing=true;
@@ -222,8 +234,15 @@ async function continueAsGuest(){
   }
   _guestAuthing=false;
 }
+/* Distingue une déconnexion VOULUE d'une session perdue toute seule (jeton de
+   rafraîchissement expiré ou introuvable). supabase-js émet SIGNED_OUT dans les
+   deux cas : sans ce drapeau, une simple coupure réseau effaçait toutes les
+   données locales. Pour un compte invité c'était définitif — un compte anonyme
+   ne peut jamais être reconnecté, donc la copie locale était la seule. */
+let _intentionalSignOut=false;
 function signOutUser(){
   customConfirm(t('confirmLogout'),async ()=>{
+    _intentionalSignOut=true;
     await ikorunLogoutCookie();
     if(window.supabaseClient) window.supabaseClient.auth.signOut();
     else location.reload();
@@ -306,7 +325,14 @@ async function submitEmailLogin(){
     const { error } = await withAuthTimeout(window.supabaseClient.auth.signInWithPassword({ email, password:pass }));
     if(error){
       console.error('signInWithPassword error',error);
-      setLoginStatus(/invalid/i.test(error.message||'')?t('wrongCredentialsToast'):t('authGenericErrorToast'),'bad');
+      // Supabase renvoie le MÊME "Invalid login credentials" pour un mot de passe
+      // faux ET pour un compte dont l'email n'a jamais été confirmé (il ne dit pas
+      // lequel, pour ne pas révéler quels emails existent). Dire seulement "mot de
+      // passe incorrect" envoyait donc les gens réinitialiser un mot de passe qui
+      // était bon : le message couvre maintenant les deux cas.
+      setLoginStatus(isAuthRateLimit(error)?t('emailRateLimitToast')
+        :/invalid/i.test(error.message||'')?t('wrongCredentialsToast')
+        :t('authGenericErrorToast'),'bad');
     }
     // si pas d'erreur : onAuthStateChange (SIGNED_IN) prend le relais tout seul
   }catch(e){
@@ -330,7 +356,9 @@ async function submitEmailSignup(){
     }));
     if(error){
       console.error('signUp error',error);
-      setLoginStatus(/already|exists|registered/i.test(error.message||'')?t('emailAlreadyUsedToast'):t('authGenericErrorToast'),'bad');
+      setLoginStatus(isAuthRateLimit(error)?t('emailRateLimitToast')
+        :/already|exists|registered/i.test(error.message||'')?t('emailAlreadyUsedToast')
+        :t('authGenericErrorToast'),'bad');
     } else if(data && data.user && !data.session){
       // Confirmation email activée côté projet : pas de session immédiate.
       setLoginStatus(t('checkEmailConfirmToast'),'ok');
@@ -353,7 +381,7 @@ async function submitForgotPassword(){
     const { error } = await withAuthTimeout(window.supabaseClient.auth.resetPasswordForEmail(email,{
       redirectTo: window.location.origin + window.location.pathname
     }));
-    if(error){ console.error('resetPasswordForEmail error',error); setLoginStatus(t('authGenericErrorToast'),'bad'); }
+    if(error){ console.error('resetPasswordForEmail error',error); setLoginStatus(isAuthRateLimit(error)?t('emailRateLimitToast'):t('authGenericErrorToast'),'bad'); }
     else setLoginStatus(t('resetLinkSentToast'),'ok');
   }catch(e){
     console.error('resetPasswordForEmail exception',e);
@@ -364,6 +392,7 @@ async function submitForgotPassword(){
 
 function addAnotherAccount(){
   customConfirm(t('confirmSwitchGoogle'),async ()=>{
+    _intentionalSignOut=true; // changement de compte volontaire : la purge locale est voulue
     await ikorunLogoutCookie();
     if(window.supabaseClient) window.supabaseClient.auth.signOut();
     else location.reload();
@@ -387,6 +416,7 @@ function deleteAccountCompletely(){
           }
         }
       }catch(e){ console.error('delete account data error', e); }
+      _intentionalSignOut=true; // suppression de compte : l'effacement local est justement le but
       Object.keys(localStorage).filter(k=>k.startsWith('vvv_')).forEach(k=>localStorage.removeItem(k));
       await ikorunLogoutCookie();
       if(window.supabaseClient) await window.supabaseClient.auth.signOut();
@@ -1453,7 +1483,7 @@ const I18N={
     colBlue:'Bleu',colRed:'Rouge',colGreen:'Vert',colGold:'Or',colPurple:'Violet',colCyan:'Cyan',
     newTrophyUnlocked:'NOUVEAU TROPHÉE DÉBLOQUÉ',
     markAsObtained:'Marquer comme obtenu',
-    connectingGoogle:'Connexion à Google…',googleConnectFail:'Connexion impossible, réessaie',
+    connectingGoogle:'Connexion à Google…',googleConnectFail:'Connexion impossible, réessaie',googleReturnedNoSessionToast:'La connexion Google n’a pas abouti. Réessaie, ou utilise l’email / le mode invité.',
     confirmLogout:'Se déconnecter ? Tes données restent sauvegardées sur ton compte.',
     confirmSwitchGoogle:'Tu vas être déconnecté(e) pour te reconnecter avec un autre compte Google. Tes données actuelles restent sauvegardées.',
     confirmDeleteAllData:'Cette action va supprimer TOUTES tes données (séances, records, XP, profil...) de façon définitive, sur le cloud et sur cet appareil. Continuer ?',
@@ -1717,7 +1747,7 @@ const I18N={
     restTimesLab:'Temps de repos recommandés',supersetLab:'Superset',pomoFocus:'Focus',pomoBreak:'Pause',pomodorosDoneLab:'Pomodoros complétés : {0}',
     fillEmailPasswordToast:'Remplis email et mot de passe.',invalidEmailToast:'Adresse email invalide.',
     passwordTooShortToast:'Mot de passe trop court (8 caractères min).',passwordsMismatchToast:'Les mots de passe ne correspondent pas.',
-    wrongCredentialsToast:'Email ou mot de passe incorrect.',emailAlreadyUsedToast:'Un compte existe déjà avec cet email.',
+    wrongCredentialsToast:'Email ou mot de passe incorrect — et si tu viens de créer ton compte, valide d’abord l’email de confirmation.',emailRateLimitToast:'Trop de demandes d’email d’affilée. Attends quelques minutes avant de réessayer.',sessionExpiredToast:'Session expirée, reconnecte-toi. Tes données restent sur cet appareil.',emailAlreadyUsedToast:'Un compte existe déjà avec cet email.',
     authGenericErrorToast:'Une erreur est survenue. Réessaie.',checkEmailConfirmToast:'Compte créé ✓ Vérifie ta boîte mail pour confirmer ton adresse.',
     authTimeoutToast:'La connexion prend trop de temps. Vérifie ta connexion internet et réessaie.',
     resetLinkSentToast:'Lien envoyé ✓ Vérifie ta boîte mail.',loggingInToast:'Connexion…',creatingAccountToast:'Création du compte…',sendingResetToast:'Envoi du lien…',
@@ -1994,7 +2024,7 @@ const I18N={
     colBlue:'Blue',colRed:'Red',colGreen:'Green',colGold:'Gold',colPurple:'Purple',colCyan:'Cyan',
     newTrophyUnlocked:'NEW TROPHY UNLOCKED',
     markAsObtained:'Mark as earned',
-    connectingGoogle:'Connecting to Google…',googleConnectFail:'Connection failed, try again',
+    connectingGoogle:'Connecting to Google…',googleConnectFail:'Connection failed, try again',googleReturnedNoSessionToast:'Google sign-in did not complete. Try again, or use email / guest mode.',
     confirmLogout:'Log out? Your data stays saved on your account.',
     confirmSwitchGoogle:'You\u2019ll be logged out so you can sign in with another Google account. Your current data stays saved.',
     confirmDeleteAllData:'This will permanently delete ALL your data (sessions, records, XP, profile...) from the cloud and this device. Continue?',
@@ -2258,7 +2288,7 @@ const I18N={
     restTimesLab:'Recommended rest times',supersetLab:'Superset',pomoFocus:'Focus',pomoBreak:'Break',pomodorosDoneLab:'Pomodoros completed: {0}',
     fillEmailPasswordToast:'Fill in email and password.',invalidEmailToast:'Invalid email address.',
     passwordTooShortToast:'Password too short (8 characters min).',passwordsMismatchToast:'Passwords don\u2019t match.',
-    wrongCredentialsToast:'Wrong email or password.',emailAlreadyUsedToast:'An account already exists with this email.',
+    wrongCredentialsToast:'Wrong email or password — and if you just created your account, confirm your email first.',emailRateLimitToast:'Too many email requests in a row. Wait a few minutes before trying again.',sessionExpiredToast:'Session expired, please sign in again. Your data stays on this device.',emailAlreadyUsedToast:'An account already exists with this email.',
     authGenericErrorToast:'Something went wrong. Try again.',checkEmailConfirmToast:'Account created ✓ Check your inbox to confirm your email.',
     authTimeoutToast:'This is taking too long. Check your internet connection and try again.',
     resetLinkSentToast:'Link sent ✓ Check your inbox.',loggingInToast:'Signing in…',creatingAccountToast:'Creating account…',sendingResetToast:'Sending link…',
@@ -2535,7 +2565,7 @@ const I18N={
     colBlue:'أزرق',colRed:'أحمر',colGreen:'أخضر',colGold:'ذهبي',colPurple:'بنفسجي',colCyan:'سماوي',
     newTrophyUnlocked:'وسام جديد مفتوح',
     markAsObtained:'وضع علامة كمُحقق',
-    connectingGoogle:'جارٍ الاتصال بـ Google…',googleConnectFail:'تعذر الاتصال، أعد المحاولة',
+    connectingGoogle:'جارٍ الاتصال بـ Google…',googleConnectFail:'تعذر الاتصال، أعد المحاولة',googleReturnedNoSessionToast:'لم تكتمل عملية الدخول عبر Google. أعد المحاولة، أو استخدم البريد الإلكتروني / وضع الضيف.',
     confirmLogout:'تسجيل الخروج؟ بياناتك تبقى محفوظة في حسابك.',
     confirmSwitchGoogle:'سيتم تسجيل خروجك لتسجيل الدخول بحساب Google آخر. بياناتك الحالية تبقى محفوظة.',
     confirmDeleteAllData:'سيؤدي هذا إلى حذف جميع بياناتك (الحصص، الأرقام القياسية، XP، الملف الشخصي...) نهائيًا من السحابة ومن هذا الجهاز. متابعة؟',
@@ -2802,7 +2832,7 @@ const I18N={
     restTimesLab:'أوقات الراحة الموصى بها',supersetLab:'سوبرسِت',pomoFocus:'تركيز',pomoBreak:'استراحة',pomodorosDoneLab:'بومودورو مكتملة: {0}',
     fillEmailPasswordToast:'أدخل البريد الإلكتروني وكلمة المرور.',invalidEmailToast:'عنوان بريد إلكتروني غير صالح.',
     passwordTooShortToast:'كلمة المرور قصيرة جدًا (8 أحرف كحد أدنى).',passwordsMismatchToast:'كلمتا المرور غير متطابقتين.',
-    wrongCredentialsToast:'بريد إلكتروني أو كلمة مرور غير صحيحة.',emailAlreadyUsedToast:'يوجد حساب بالفعل بهذا البريد الإلكتروني.',
+    wrongCredentialsToast:'بريد إلكتروني أو كلمة مرور غير صحيحة — وإذا أنشأت حسابك للتو، فأكّد بريدك الإلكتروني أولًا.',emailRateLimitToast:'طلبات بريد كثيرة متتالية. انتظر بضع دقائق قبل إعادة المحاولة.',sessionExpiredToast:'انتهت الجلسة، سجّل الدخول من جديد. بياناتك تبقى على هذا الجهاز.',emailAlreadyUsedToast:'يوجد حساب بالفعل بهذا البريد الإلكتروني.',
     authGenericErrorToast:'حدث خطأ ما. حاول مرة أخرى.',checkEmailConfirmToast:'تم إنشاء الحساب ✓ تحقق من بريدك لتأكيد عنوانك.',
     authTimeoutToast:'\u0627\u0644\u0627\u062A\u0635\u0627\u0644 \u064A\u0633\u062A\u063A\u0631\u0642 \u0648\u0642\u062A\u064B\u0627 \u0637\u0648\u064A\u0644\u0627\u064B. \u062A\u062D\u0642\u0642 \u0645\u0646 \u0627\u062A\u0635\u0627\u0644\u0643 \u0628\u0627\u0644\u0625\u0646\u062A\u0631\u0646\u062A \u0648\u0623\u0639\u062F \u0627\u0644\u0645\u062D\u0627\u0648\u0644\u0629.',
     resetLinkSentToast:'تم إرسال الرابط ✓ تحقق من بريدك.',loggingInToast:'جارٍ تسجيل الدخول…',creatingAccountToast:'جارٍ إنشاء الحساب…',sendingResetToast:'جارٍ إرسال الرابط…',
@@ -4076,7 +4106,21 @@ function detectLangIfUnset(){
 }
 
 /* ============ CONNEXION / COMPTE (Supabase) ============ */
-function startLogin(){ hideAppSkeleton(); loginMode='login'; renderLoginMain(); $('#login').classList.add('on'); scheduleMotionSettle(2200); }
+function startLogin(){
+  hideAppSkeleton(); loginMode='login'; renderLoginMain(); $('#login').classList.add('on'); scheduleMotionSettle(2200);
+  // Retour d'un aller-retour Google qui n'a pas abouti : sans ce message, la
+  // personne revient sur un écran de connexion identique à celui qu'elle vient
+  // de quitter, sans la moindre explication — d'où l'impression que le bouton
+  // Google "ne fait rien". Le drapeau est posé juste avant la redirection et
+  // effacé dès qu'une session existe (cf. finishLogin).
+  try{
+    const ts=+(localStorage.getItem('ikorun_googleAttempt')||0);
+    if(ts){
+      localStorage.removeItem('ikorun_googleAttempt');
+      if(Date.now()-ts < 10*60*1000) setTimeout(()=>setLoginStatus(t('googleReturnedNoSessionToast'),'bad'),300);
+    }
+  }catch(e){}
+}
 function endLogin(){ $('#login').classList.remove('on'); }
 
 async function startApp(){
@@ -4103,6 +4147,7 @@ async function startApp(){
   let _loggedInOnce=false;
   async function finishLogin(userId,email,isAnon){
     if(_loggedInOnce) return; _loggedInOnce=true;
+    try{ localStorage.removeItem('ikorun_googleAttempt'); }catch(e){} // aller-retour Google réussi
     window.currentUserId = userId;
     window.currentUserEmail = email;
     window.isGuestUser = !!isAnon;
@@ -4148,8 +4193,18 @@ async function startApp(){
       await finishLogin(session.user.id, session.user.email, isAnonSession(session.user));
       if(wasFirstLogin){ toast(t('welcomeToast')); sfx&&sfx('goal'); }
     } else if(event === 'SIGNED_OUT'){
-      wipeLocalCache(); // purge immédiate des données locales à la déconnexion (hygiène + sécurité sur appareil partagé)
-      location.reload();
+      if(_intentionalSignOut){
+        wipeLocalCache(); // purge immédiate des données locales à la déconnexion (hygiène + sécurité sur appareil partagé)
+        location.reload();
+      } else {
+        // Session perdue sans que l'utilisateur ait rien demandé (jeton expiré,
+        // rafraîchissement refusé, réseau coupé au mauvais moment) : on ne touche
+        // PAS aux données locales, on renvoie simplement vers l'écran de connexion.
+        // Se reconnecter avec le même compte les retrouve intactes.
+        console.warn('[IKORUN] session perdue sans déconnexion volontaire — cache local conservé');
+        try{ toast(t('sessionExpiredToast')); }catch(e){}
+        try{ startLogin(); }catch(e){ location.reload(); }
+      }
     }
   });
 
