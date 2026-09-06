@@ -61,11 +61,12 @@
   -->
 <meta http-equiv="Content-Security-Policy" content="
   default-src 'self';
-  script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
-  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://accounts.google.com;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com;
   font-src https://fonts.gstatic.com;
-  img-src 'self' data: https://raw.githubusercontent.com;
-  connect-src 'self' https://bsrbzuhvqtjkkmpmxyzw.supabase.co wss://bsrbzuhvqtjkkmpmxyzw.supabase.co https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net;
+  img-src 'self' data: https://raw.githubusercontent.com https://lh3.googleusercontent.com;
+  connect-src 'self' https://bsrbzuhvqtjkkmpmxyzw.supabase.co wss://bsrbzuhvqtjkkmpmxyzw.supabase.co https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://accounts.google.com;
+  frame-src https://accounts.google.com;
   manifest-src 'self' blob:;
   worker-src 'self' blob:;
   object-src 'none';
@@ -2179,6 +2180,6 @@ html[data-mode="light"]{
     console.error('[IKORUN] Le script Supabase (jsdelivr) n\'a pas pu charger, réessaie de recharger la page.', e);
   }
 </script>
-<script src="app.js?v=31"></script>
+<script src="app.js?v=32"></script>
 </body>
 </html>

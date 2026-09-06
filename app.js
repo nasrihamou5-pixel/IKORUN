@@ -264,12 +264,77 @@ function switchLoginMode(m){
 }
 function isEmailValid(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((v||'').trim()); }
 const GOOGLE_ICON_SVG='<svg viewBox="0 0 48 48" width="20" height="20"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.6 30.2 0 24 0 14.6 0 6.4 5.4 2.5 13.3l7.8 6C12.2 13.5 17.6 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.5 3-2.2 5.5-4.7 7.2l7.3 5.7c4.3-4 6.9-9.9 6.9-17.4z"/><path fill="#FBBC05" d="M10.3 28.3c-.5-1.4-.8-2.9-.8-4.3s.3-3 .8-4.3l-7.8-6C.9 16.9 0 20.3 0 24s.9 7.1 2.5 10.3l7.8-6z"/><path fill="#34A853" d="M24 48c6.2 0 11.5-2 15.3-5.5l-7.3-5.7c-2 1.4-4.7 2.3-8 2.3-6.4 0-11.8-4-13.7-9.8l-7.8 6C6.4 42.6 14.6 48 24 48z"/></svg>';
+/* ---------- CONNEXION GOOGLE DANS L'APP INSTALLÉE (iOS) ----------
+   La méthode par redirection (signInWithOAuth) quitte l'app installée : iOS
+   ouvre Google dans Safari, la connexion y réussit… et le jeton reste dans
+   Safari, jamais dans l'app. D'où le bouton grisé jusqu'ici.
+   Google Identity Services règle ça autrement : la connexion se fait dans un
+   cadre affiché PAR-DESSUS l'app, sans jamais la quitter, et renvoie un jeton
+   d'identité directement en JS — qu'on échange ensuite contre une session
+   Supabase (signInWithIdToken). L'identifiant client ci-dessous est public par
+   nature (il apparaît déjà dans chaque URL d'autorisation Google). */
+const GOOGLE_CLIENT_ID='485792164068-08fq3cig2tc89ntv1ode319jps5rn9lh.apps.googleusercontent.com';
+let _gisLoading=null;
+function loadGoogleIdentityScript(){
+  if(window.google && window.google.accounts && window.google.accounts.id) return Promise.resolve(true);
+  if(_gisLoading) return _gisLoading;
+  _gisLoading=new Promise(resolve=>{
+    const s=document.createElement('script');
+    s.src='https://accounts.google.com/gsi/client'; s.async=true; s.defer=true;
+    s.onload=()=>resolve(!!(window.google&&window.google.accounts&&window.google.accounts.id));
+    s.onerror=()=>resolve(false);
+    document.head.appendChild(s);
+    setTimeout(()=>resolve(!!(window.google&&window.google.accounts&&window.google.accounts.id)),8000);
+  });
+  return _gisLoading;
+}
+async function onGoogleIdToken(resp){
+  if(!resp || !resp.credential){ toast(t('googleConnectFail')); return; }
+  try{
+    const { error } = await withAuthTimeout(window.supabaseClient.auth.signInWithIdToken({
+      provider:'google', token:resp.credential
+    }));
+    if(error){ console.error('signInWithIdToken error',error); toast(t('googleConnectFail')); }
+    // succès : onAuthStateChange (SIGNED_IN) prend le relais
+  }catch(e){
+    console.error('signInWithIdToken exception',e);
+    toast(e&&e.message==='auth_timeout'?t('authTimeoutToast'):t('googleConnectFail'));
+  }
+}
+async function mountGoogleNativeButton(){
+  const host=document.getElementById('gsiBtnHost'); if(!host) return;
+  const ok=await loadGoogleIdentityScript();
+  if(!ok){ host.innerHTML='<div class="gbtn-hint">'+t('googleStandaloneHint')+'</div>'; return; }
+  try{
+    window.google.accounts.id.initialize({
+      client_id:GOOGLE_CLIENT_ID,
+      callback:onGoogleIdToken,
+      ux_mode:'popup',
+      auto_select:false,
+      itp_support:true // indispensable sur Safari/iOS (protection anti-pistage)
+    });
+    host.innerHTML='';
+    window.google.accounts.id.renderButton(host,{
+      type:'standard', theme:'outline', size:'large', shape:'pill',
+      text:'continue_with', logo_alignment:'center', width:280
+    });
+  }catch(e){
+    console.error('GIS init error',e);
+    host.innerHTML='<div class="gbtn-hint">'+t('googleStandaloneHint')+'</div>';
+  }
+}
 function googleBtnHtml(){
-  // Depuis l'app installée sur iPhone, le bouton n'aboutit pas (cf.
-  // showGoogleStandaloneHelp) : on le dit avant le clic, pas après.
-  const blocked=isStandalone()&&isIOSDevice();
-  return '<button class="gbtn'+(blocked?' muted':'')+'" onclick="signInWithGoogle()"><span class="gicon">'+GOOGLE_ICON_SVG+'</span>'+t('continueWithGoogleBtn')+'</button>'+
-    (blocked?'<div class="gbtn-hint">'+t('googleStandaloneHint')+'</div>':'');
+  // Dans l'app installée sur iPhone, la redirection ne revient jamais : on
+  // monte à la place le bouton Google natif (jeton d'identité, sans quitter
+  // l'app). Partout ailleurs la redirection classique fonctionne très bien.
+  if(isStandalone()&&isIOSDevice()){
+    setTimeout(mountGoogleNativeButton,0);
+    // Filet de secours : si le bouton natif est refusé (origine pas encore
+    // autorisée côté Google), l'ancienne porte de sortie reste accessible.
+    return '<div id="gsiBtnHost" style="display:flex;justify-content:center;min-height:44px"></div>'+
+      '<div class="login-guest subtle" onclick="showGoogleStandaloneHelp()">'+t('googleNotWorkingLink')+'</div>';
+  }
+  return '<button class="gbtn" onclick="signInWithGoogle()"><span class="gicon">'+GOOGLE_ICON_SVG+'</span>'+t('continueWithGoogleBtn')+'</button>';
 }
 function renderLoginMain(){
   const el=$('#loginMain'); if(!el) return;
@@ -277,16 +342,17 @@ function renderLoginMain(){
   const installRow=$('#loginInstallRow'); if(installRow) installRow.innerHTML=loginInstallButtonHTML();
   let h='';
   if(loginMode==='login'){
+    // Connexion par email retirée pour l'instant : les emails de confirmation et
+    // de réinitialisation partent par le service intégré de Supabase, plafonné à
+    // quelques envois par heure. Une fois le quota atteint (ce qui arrive vite),
+    // l'inscription échouait en 429 et personne ne pouvait plus confirmer son
+    // compte — aucun des comptes email créés n'a jamais réussi à se connecter.
+    // Le code (submitEmailLogin/Signup/ForgotPassword) reste en place : il suffira
+    // de remettre ces champs le jour où un vrai SMTP sera branché.
     h+='<h1 class="login-h1">'+t('loginWelcomeTitle')+'</h1>';
     h+='<p class="login-sub">'+t('loginSubConnect')+'</p>';
-    h+='<div class="field"><label>'+t('emailLabel')+'</label><input class="inp" id="li_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="'+t('emailPlaceholder')+'"></div>';
-    h+='<div class="field"><label>'+t('passwordLabel')+'</label><input class="inp" id="li_password" type="password" autocomplete="current-password" placeholder=""></div>';
     h+='<div class="uname-status" id="li_status"></div>';
-    h+='<button class="btn" style="margin-bottom:11px" onclick="submitEmailLogin()" id="li_submit">'+t('loginBtnLabel')+'</button>';
-    h+='<div class="login-guest" onclick="switchLoginMode(\'forgot\')">'+t('forgotPasswordLink')+'</div>';
-    h+='<div class="login-or">'+t('orDividerLabel')+'</div>';
     h+=googleBtnHtml();
-    h+='<div class="login-guest" onclick="switchLoginMode(\'signup\')">'+t('noAccountLink')+'</div>';
     h+='<div class="login-guest subtle" onclick="continueAsGuest()">'+t('continueAsGuestLink')+'</div>';
   } else if(loginMode==='signup'){
     h+='<h1 class="login-h1">'+t('signupTitle')+'</h1>';
@@ -1483,7 +1549,7 @@ const I18N={
     colBlue:'Bleu',colRed:'Rouge',colGreen:'Vert',colGold:'Or',colPurple:'Violet',colCyan:'Cyan',
     newTrophyUnlocked:'NOUVEAU TROPHÉE DÉBLOQUÉ',
     markAsObtained:'Marquer comme obtenu',
-    connectingGoogle:'Connexion à Google…',googleConnectFail:'Connexion impossible, réessaie',googleReturnedNoSessionToast:'La connexion Google n’a pas abouti. Réessaie, ou utilise l’email / le mode invité.',
+    connectingGoogle:'Connexion à Google…',googleConnectFail:'Connexion impossible, réessaie',googleNotWorkingLink:'Ça ne marche pas ?',googleReturnedNoSessionToast:'La connexion Google n’a pas abouti. Réessaie, ou utilise l’email / le mode invité.',
     confirmLogout:'Se déconnecter ? Tes données restent sauvegardées sur ton compte.',
     confirmSwitchGoogle:'Tu vas être déconnecté(e) pour te reconnecter avec un autre compte Google. Tes données actuelles restent sauvegardées.',
     confirmDeleteAllData:'Cette action va supprimer TOUTES tes données (séances, records, XP, profil...) de façon définitive, sur le cloud et sur cet appareil. Continuer ?',
@@ -2024,7 +2090,7 @@ const I18N={
     colBlue:'Blue',colRed:'Red',colGreen:'Green',colGold:'Gold',colPurple:'Purple',colCyan:'Cyan',
     newTrophyUnlocked:'NEW TROPHY UNLOCKED',
     markAsObtained:'Mark as earned',
-    connectingGoogle:'Connecting to Google…',googleConnectFail:'Connection failed, try again',googleReturnedNoSessionToast:'Google sign-in did not complete. Try again, or use email / guest mode.',
+    connectingGoogle:'Connecting to Google…',googleConnectFail:'Connection failed, try again',googleNotWorkingLink:'Not working?',googleReturnedNoSessionToast:'Google sign-in did not complete. Try again, or use email / guest mode.',
     confirmLogout:'Log out? Your data stays saved on your account.',
     confirmSwitchGoogle:'You\u2019ll be logged out so you can sign in with another Google account. Your current data stays saved.',
     confirmDeleteAllData:'This will permanently delete ALL your data (sessions, records, XP, profile...) from the cloud and this device. Continue?',
@@ -2565,7 +2631,7 @@ const I18N={
     colBlue:'أزرق',colRed:'أحمر',colGreen:'أخضر',colGold:'ذهبي',colPurple:'بنفسجي',colCyan:'سماوي',
     newTrophyUnlocked:'وسام جديد مفتوح',
     markAsObtained:'وضع علامة كمُحقق',
-    connectingGoogle:'جارٍ الاتصال بـ Google…',googleConnectFail:'تعذر الاتصال، أعد المحاولة',googleReturnedNoSessionToast:'لم تكتمل عملية الدخول عبر Google. أعد المحاولة، أو استخدم البريد الإلكتروني / وضع الضيف.',
+    connectingGoogle:'جارٍ الاتصال بـ Google…',googleConnectFail:'تعذر الاتصال، أعد المحاولة',googleNotWorkingLink:'لا يعمل؟',googleReturnedNoSessionToast:'لم تكتمل عملية الدخول عبر Google. أعد المحاولة، أو استخدم البريد الإلكتروني / وضع الضيف.',
     confirmLogout:'تسجيل الخروج؟ بياناتك تبقى محفوظة في حسابك.',
     confirmSwitchGoogle:'سيتم تسجيل خروجك لتسجيل الدخول بحساب Google آخر. بياناتك الحالية تبقى محفوظة.',
     confirmDeleteAllData:'سيؤدي هذا إلى حذف جميع بياناتك (الحصص، الأرقام القياسية، XP، الملف الشخصي...) نهائيًا من السحابة ومن هذا الجهاز. متابعة؟',
@@ -9877,9 +9943,11 @@ function pfAccountHTML(){
         '<div><div style="font-weight:700">'+escHtml(P.name||'Athlète')+'</div><div style="font-size:12px;color:var(--muted)">'+t('guestModeTitle')+'</div></div>'+
       '</div>'+
       '<div style="font-size:12px;color:var(--muted);margin-top:12px;line-height:1.5">'+t('guestModeDesc')+'</div>'+
-      '<div class="field" style="margin-top:14px"><label>'+t('emailLabel')+'</label><input class="inp" id="guestEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="'+t('emailPlaceholder')+'"></div>'+
+      // Le passage invité -> compte durable passait par un email de confirmation,
+      // soumis au même quota d'envoi que l'inscription : il échouait donc sans
+      // rien dire. On propose Google à la place tant qu'aucun SMTP n'est branché.
       '<div class="uname-status" id="guestStatus"></div>'+
-      '<button class="btn sm" style="margin-top:6px" onclick="convertGuestAccount()">'+t('guestSaveAccountBtn')+'</button>'+
+      googleBtnHtml()+
     '</div>';
   }
   return '<button class="btn" onclick="signInWithGoogle()">Se connecter</button>';
