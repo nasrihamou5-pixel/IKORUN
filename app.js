@@ -1580,6 +1580,8 @@ const I18N={
     alarmDefaultTitle:'Alarme',timeUpMsg:'Le temps est écoulé !',timeUpTitle:'Temps écoulé !',
     stopAlarm:'Arrêter l\u2019alarme',remindIn5Min:'Rappel dans 5 min',reminderCap:'Rappel',fiveMinElapsed:'5 minutes écoulées',
     sessionInProgress:'Séance en cours',welcomeToast:'Bienvenue',
+    bgMuscuBody:'💪 Séance de muscu en cours',bgChronoBody:'⏱ Chronomètre en cours',bgTimerBody:'⏳ Minuteur en cours',bgRunningBody:'🏃 Course en cours',
+    reminderNotifTitle:'Séance du jour',reminderNotifBody:'Tu as « {0} » prévu aujourd’hui, pense à la faire !',
     resumeSessionConfirm:'Une séance « {0} » était en cours ({1} min). Reprendre ?',sessionColonName:'Séance : {0}',
     accentBlue:'Bleu',accentRed:'Rouge',accentGreen:'Vert militaire',accentBrown:'Marron boisé',accentYellow:'Jaune',accentCarbon:'Fibre de carbone',
     colorApplied:'Couleur appliquée',easyModeOn:'Mode simplifié activé',easyModeOff:'Mode simplifié désactivé',
@@ -2123,6 +2125,8 @@ const I18N={
     alarmDefaultTitle:'Alarm',timeUpMsg:'Time\u2019s up!',timeUpTitle:'Time\u2019s up!',
     stopAlarm:'Stop alarm',remindIn5Min:'Remind in 5 min',reminderCap:'Reminder',fiveMinElapsed:'5 minutes elapsed',
     sessionInProgress:'Session in progress',welcomeToast:'Welcome',
+    bgMuscuBody:'💪 Strength session in progress',bgChronoBody:'⏱ Stopwatch running',bgTimerBody:'⏳ Timer running',bgRunningBody:'🏃 Run in progress',
+    reminderNotifTitle:'Today’s session',reminderNotifBody:'You have "{0}" planned today, don’t forget it!',
     resumeSessionConfirm:'A "{0}" session was in progress ({1} min). Resume?',sessionColonName:'Session: {0}',
     accentBlue:'Blue',accentRed:'Red',accentGreen:'Military green',accentBrown:'Woodland brown',accentYellow:'Yellow',accentCarbon:'Carbon fiber',
     colorApplied:'Color applied',easyModeOn:'Simplified mode enabled',easyModeOff:'Simplified mode disabled',
@@ -2666,6 +2670,8 @@ const I18N={
     alarmDefaultTitle:'منبّه',timeUpMsg:'انتهى الوقت!',timeUpTitle:'انتهى الوقت!',
     stopAlarm:'إيقاف المنبّه',remindIn5Min:'تذكير بعد 5 دقائق',reminderCap:'تذكير',fiveMinElapsed:'مرت 5 دقائق',
     sessionInProgress:'الحصة جارية',welcomeToast:'مرحبًا',
+    bgMuscuBody:'💪 حصة تقوية عضلية جارية',bgChronoBody:'⏱ ساعة الإيقاف تعمل',bgTimerBody:'⏳ المؤقت يعمل',bgRunningBody:'🏃 الجري جارٍ',
+    reminderNotifTitle:'حصة اليوم',reminderNotifBody:'لديك « {0} » مبرمجة اليوم، لا تنسها!',
     resumeSessionConfirm:'كانت حصة « {0} » جارية ({1} د). المتابعة؟',sessionColonName:'حصة: {0}',
     accentBlue:'أزرق',accentRed:'أحمر',accentGreen:'أخضر عسكري',accentBrown:'بني خشبي',accentYellow:'أصفر',accentCarbon:'ألياف الكربون',
     colorApplied:'تم تطبيق اللون',easyModeOn:'تم تفعيل الوضع المبسّط',easyModeOff:'تم إلغاء الوضع المبسّط',
@@ -3750,15 +3756,41 @@ function notify(title,body){
   sfx('notif');
 }
 let _bgNotif=null, _bgTick=null;
-async function startBgActivity(type){
+// Le corps du message diffère selon le type d'activité (muscu/chrono/minuteur/course) : une
+// notification d'activité en cours ne doit jamais ressembler à un rappel de séance à faire
+// (cf checkDailyReminder, tag 'ikorun-reminder' distinct, avec son/vibration contrairement à
+// celle-ci qui reste silencieuse puisqu'elle ne fait qu'accompagner une activité déjà lancée).
+function bgActivityBody(kind){
+  if(kind==='muscu') return t('bgMuscuBody');
+  if(kind==='chrono') return t('bgChronoBody');
+  if(kind==='timer') return t('bgTimerBody');
+  if(kind==='running') return t('bgRunningBody');
+  return '▶ '+t('sessionInProgress');
+}
+async function startBgActivity(type,kind){
   _bgActivity={type,start:Date.now(),paused:false};
   try{ if('wakeLock'in navigator){ _wakeLock=await navigator.wakeLock.request('screen'); } }catch(e){}
   // Une seule notification fixe au démarrage — pas de recréation en boucle (ça spammait avant)
   clearInterval(_bgTick); _bgTick=null;
   if(P.notif!==false && 'Notification'in window && Notification.permission==='granted'){
     try{ if(_bgNotif){ _bgNotif.close(); _bgNotif=null; } }catch(e){}
-    try{ _bgNotif=new Notification('IKORUN · '+type,{body:'▶ '+t('sessionInProgress'),icon:appIconDataURL(),tag:'ikorun-activity',renotify:false,silent:true}); }catch(e){}
+    try{ _bgNotif=new Notification('IKORUN · '+type,{body:bgActivityBody(kind),icon:appIconDataURL(),badge:appIconDataURL(),tag:'ikorun-activity',renotify:false,silent:true}); }catch(e){}
   }
+}
+// Rappel qu'une séance du plan est prévue aujourd'hui et pas encore faite — distinct de
+// startBgActivity : tag et style différents (son/vibration, pas "silent") pour ne jamais être
+// confondu avec la notification d'activité en cours, et affiché au plus une fois par jour.
+function checkDailyReminder(){
+  if(P.notif===false) return;
+  if(!('Notification'in window) || Notification.permission!=='granted') return;
+  const tk=todayKey();
+  if(P.lastReminderShown===tk) return;
+  const ps=planSessionToday();
+  if(!ps || ps.type==='Repos' || ps.done || ps.missed) return;
+  P.lastReminderShown=tk; saveAll();
+  try{
+    new Notification('🔔 '+t('reminderNotifTitle'),{body:tp('reminderNotifBody',planSessTitle(ps)),icon:appIconDataURL(),badge:appIconDataURL(),tag:'ikorun-reminder',renotify:true});
+  }catch(e){}
 }
 function stopBgActivity(){
   _bgActivity=null; clearInterval(_bgTick);
@@ -4339,6 +4371,9 @@ function initApp(){
   setTimeout(checkMissedSessions,700);
   // Régénération hebdomadaire adaptative du plan (au moins 1x/semaine si nécessaire)
   setTimeout(weeklyAdaptiveRegen,1000);
+  // Rappel "séance du jour pas encore faite" — après checkMissedSessions pour ne pas
+  // se déclencher sur une séance déjà marquée manquée entre-temps.
+  setTimeout(checkDailyReminder,900);
   if(window._launchTourAfterInit){
     window._launchTourAfterInit=false;
     setTimeout(startAppTour,1200);
@@ -4640,7 +4675,7 @@ function maybeResumeLive(){
   customConfirm(tp('resumeSessionConfirm',prog.name,mins),()=>{
     LIVE={prog,idx:snap.idx,start:snap.start,state:snap.state,tonnage:snap.tonnage,setsDone:snap.setsDone};
     liveOpenEx=snap.idx||0;
-    renderLive(); openOv('ovLive'); liveTimer=setInterval(updateLiveTimer,500); startBgActivity(tp('sessionColonName',prog.name));
+    renderLive(); openOv('ovLive'); liveTimer=setInterval(updateLiveTimer,500); startBgActivity(tp('sessionColonName',prog.name),'muscu');
   },{yesLabel:t('resumeBtn'),noLabel:t('discardBtn'),onNo:()=>{ DB.remove('live_active'); }});
 }
 
@@ -7860,7 +7895,7 @@ function startLive(id,startIdx){
   renderLive(); openOv('ovLive');
   clearInterval(liveTimer);
   liveTimer=setInterval(updateLiveTimer,500);
-  sfx('start'); startBgActivity('Séance : '+p.name);
+  sfx('start'); startBgActivity('Séance : '+p.name,'muscu');
 }
 function updateLiveTimer(){
   if(!LIVE) return;
@@ -9731,7 +9766,7 @@ function exportLaps(){
 function fmtChrono(ms){ const t=Math.floor(ms); const m=Math.floor(t/60000),s=Math.floor((t%60000)/1000),cs=Math.floor((t%1000)/10); return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+String(cs).padStart(2,'0'); }
 function chronoToggle(){
   if(chrono.running){ chrono.running=false; chrono.elapsed+=Date.now()-chrono.start; cancelAnimationFrame(chrono.raf); sfx('stop'); stopBgActivity(); }
-  else { chrono.running=true; chrono.start=Date.now(); chronoTick(); sfx('start'); startBgActivity('Chronomètre'); }
+  else { chrono.running=true; chrono.start=Date.now(); chronoTick(); sfx('start'); startBgActivity('Chronomètre','chrono'); }
   renderChrono();
 }
 function chronoTick(){ if(!chrono.running)return; const d=$('#chDisp'); if(d)d.textContent=fmtChrono(chrono.elapsed+Date.now()-chrono.start); chrono.raf=requestAnimationFrame(chronoTick); }
@@ -9762,7 +9797,7 @@ function timerToggle(){
   if(timer.running){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; stopBgActivity(); renderTimer(); return; }
   if(timer.left<=0){ timer.left=timer.total=timer.m*60+timer.s; }
   if(timer.left<=0){ toast(t('setDuration')); return; }
-  timer.running=true; timer.endAt=Date.now()+timer.left*1000; sfx('start'); startBgActivity(t('quickTimer')); renderTimer();
+  timer.running=true; timer.endAt=Date.now()+timer.left*1000; sfx('start'); startBgActivity(t('quickTimer'),'timer'); renderTimer();
   timer.iv=setInterval(()=>{
     // basé sur l'horloge → reste exact même en arrière-plan
     timer.left=Math.max(0,Math.round((timer.endAt-Date.now())/1000));
