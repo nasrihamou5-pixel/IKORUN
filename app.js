@@ -1582,6 +1582,9 @@ const I18N={
     sessionInProgress:'Séance en cours',welcomeToast:'Bienvenue',
     bgMuscuBody:'💪 Séance de muscu en cours',bgChronoBody:'⏱ Chronomètre en cours',bgTimerBody:'⏳ Minuteur en cours',bgRunningBody:'🏃 Course en cours',
     reminderNotifTitle:'Séance du jour',reminderNotifBody:'Tu as « {0} » prévu aujourd’hui, pense à la faire !',
+    customizedTag:'Personnalisée',customizeSessionBtn:'Personnaliser cette séance',customizeMoveLabel:'Déplacer à un autre jour',
+    customizeVolumeLabel:'Ajuster le volume',customizeSkipBtn:'Passer cette séance en repos',customizeResetBtn:'Réinitialiser',
+    customizeMovedToast:'Séance déplacée',customizeSkippedToast:'Séance passée en repos',customizeResetToast:'Séance réinitialisée',
     resumeSessionConfirm:'Une séance « {0} » était en cours ({1} min). Reprendre ?',sessionColonName:'Séance : {0}',
     accentBlue:'Bleu',accentRed:'Rouge',accentGreen:'Vert militaire',accentBrown:'Marron boisé',accentYellow:'Jaune',accentCarbon:'Fibre de carbone',
     colorApplied:'Couleur appliquée',easyModeOn:'Mode simplifié activé',easyModeOff:'Mode simplifié désactivé',
@@ -2127,6 +2130,9 @@ const I18N={
     sessionInProgress:'Session in progress',welcomeToast:'Welcome',
     bgMuscuBody:'💪 Strength session in progress',bgChronoBody:'⏱ Stopwatch running',bgTimerBody:'⏳ Timer running',bgRunningBody:'🏃 Run in progress',
     reminderNotifTitle:'Today’s session',reminderNotifBody:'You have "{0}" planned today, don’t forget it!',
+    customizedTag:'Customized',customizeSessionBtn:'Customize this session',customizeMoveLabel:'Move to another day',
+    customizeVolumeLabel:'Adjust volume',customizeSkipBtn:'Turn into a rest day',customizeResetBtn:'Reset',
+    customizeMovedToast:'Session moved',customizeSkippedToast:'Session turned into rest',customizeResetToast:'Session reset',
     resumeSessionConfirm:'A "{0}" session was in progress ({1} min). Resume?',sessionColonName:'Session: {0}',
     accentBlue:'Blue',accentRed:'Red',accentGreen:'Military green',accentBrown:'Woodland brown',accentYellow:'Yellow',accentCarbon:'Carbon fiber',
     colorApplied:'Color applied',easyModeOn:'Simplified mode enabled',easyModeOff:'Simplified mode disabled',
@@ -2672,6 +2678,9 @@ const I18N={
     sessionInProgress:'الحصة جارية',welcomeToast:'مرحبًا',
     bgMuscuBody:'💪 حصة تقوية عضلية جارية',bgChronoBody:'⏱ ساعة الإيقاف تعمل',bgTimerBody:'⏳ المؤقت يعمل',bgRunningBody:'🏃 الجري جارٍ',
     reminderNotifTitle:'حصة اليوم',reminderNotifBody:'لديك « {0} » مبرمجة اليوم، لا تنسها!',
+    customizedTag:'مخصّصة',customizeSessionBtn:'تخصيص هذه الحصة',customizeMoveLabel:'نقل إلى يوم آخر',
+    customizeVolumeLabel:'تعديل الحجم',customizeSkipBtn:'تحويلها إلى يوم راحة',customizeResetBtn:'إعادة التعيين',
+    customizeMovedToast:'تم نقل الحصة',customizeSkippedToast:'تم تحويل الحصة إلى راحة',customizeResetToast:'تمت إعادة تعيين الحصة',
     resumeSessionConfirm:'كانت حصة « {0} » جارية ({1} د). المتابعة؟',sessionColonName:'حصة: {0}',
     accentBlue:'أزرق',accentRed:'أحمر',accentGreen:'أخضر عسكري',accentBrown:'بني خشبي',accentYellow:'أصفر',accentCarbon:'ألياف الكربون',
     colorApplied:'تم تطبيق اللون',easyModeOn:'تم تفعيل الوضع المبسّط',easyModeOff:'تم إلغاء الوضع المبسّط',
@@ -2953,7 +2962,7 @@ const I18N={
 };
 function curLang(){ return (P&&P.lang)||'fr'; }
 function t(key){ const l=curLang(); return (I18N[l]&&I18N[l][key])||I18N.fr[key]||key; }
-function tp(key,...args){ let s=t(key); args.forEach((a,i)=>{ s=s.split('{'+i+'}').join(a); }); return s; }
+function tp(key,...args){ let s=t(key); args.forEach((a,i)=>{ s=s.split('{'+i+'}').join(a==null?'':a); }); return s; }
 function localeCode(){ return curLang()==='en'?'en-US':(curLang()==='ar'?'ar-DZ':'fr-FR'); }
 const LANGS=[['fr','FR','Français'],['en','EN','English'],['ar','AR','العربية']];
 function setLang(l){
@@ -6939,7 +6948,7 @@ function renderPlanRows(sessions,tk,opts){
     h+='<div class="sess'+(s.done?' done':'')+(s.missed?' missed':'')+(isToday?' today':'')+'"'+
       ' style="--sess-c:'+(rest?'var(--dim)':baseTypeColor(s.baseType))+'" onclick="openRunSheet('+s.id+')">'+
       '<div class="row"><div><div class="sess-t">'+escHtml(planSessTitle(s))+'</div>'+
-      '<div class="sess-m">'+escHtml(line2)+'</div>'+
+      '<div class="sess-m">'+escHtml(line2)+(s.customized?' · '+t('customizedTag'):'')+'</div>'+
       (ssum?'<div class="sess-s">'+escHtml(ssum)+'</div>':'')+'</div>'+qb+'</div></div>';
   });
   return h;
@@ -7441,7 +7450,7 @@ function openRunSheet(id){
 
   // EN-TÊTE — badge type, titre, sous-titre semaine/objectif
   h+='<div class="rs-badge" style="background:'+col+'22;color:'+col+'">'+(planSessLabel(s)||'').slice(0,2).toUpperCase()+'</div>';
-  h+='<div class="rs-title">'+planSessTitle(s)+'</div>';
+  h+='<div class="rs-title">'+planSessTitle(s)+(s.customized?' <span class="chrome-chip" style="font-size:10px;vertical-align:middle">'+t('customizedTag')+'</span>':'')+'</div>';
   h+='<span class="rs-sub">'+(PLAN.weekLabel?PLAN.weekLabel:t('weekLabelWithNum')+' '+s.week)+' · '+(trRace(P.objRace)||t('objectiveWord'))+'</span>';
 
   // 3 STATS
@@ -7460,6 +7469,10 @@ function openRunSheet(id){
   if(s.done) h+='<div class="badge" style="background:rgba(51,211,153,.18);color:var(--ok);width:100%;justify-content:center;padding:14px;border-radius:18px;margin-bottom:18px">'+t('sessionCompleted')+'</div>';
   else if(s.date>todayKey()) h+='<div class="badge" style="background:var(--s2);color:var(--muted);width:100%;justify-content:center;padding:14px;border-radius:18px;margin-bottom:18px">'+t('sessionNotYetLabel')+'</div>';
   else if(s.type!=='Repos') h+='<button class="btn" style="margin-bottom:18px" onclick="markRunDone()">'+t('markCompleted')+'</button>';
+  // Personnalisation : uniquement pour une séance future non encore validée — une fois
+  // done, ou dans le passé, s.km/s.date ont déjà servi à créditer le bilan ou à détecter
+  // une séance manquée, les modifier après coup désynchroniserait l'historique.
+  if(!s.done && s.date>=todayKey()) h+='<button class="btn ghost sm" style="margin-bottom:14px" onclick="openPlanCustomize('+s.id+')">'+ICN('edit',15)+' '+t('customizeSessionBtn')+'</button>';
 
   if(dt){
     h+='<div class="rs-obj-lab">'+t('objectiveCap')+'</div><div class="rs-obj-txt">'+dt.objectif+'</div>';
@@ -7512,6 +7525,92 @@ function markRunDone(){
   SESS.push({sessRef,provisional:true,date:s.date,title:s.title,km:s.km,pace:s.pace,type:s.type,duration:s.duration,rpe:s.rpe});
   saveAll(); refreshXP({animate:true}); closeOv('ovSheet'); renderSport();
   openSessionDebrief({date:s.date,title:s.title,km:s.km,pace:s.pace,type:s.type,duration:s.duration,plannedRpe:s.rpe,planSessionId:s.id,sessRef,series:s.series||null});
+}
+
+/* ---------- PERSONNALISATION D'UNE SÉANCE DU PLAN IKORUN ----------
+   Le plan généré est jusqu'ici tout ou rien : on l'accepte tel quel ou on le
+   régénère en entier (confirmRegenPlan). Trois leviers ciblés, sans jamais
+   casser la cohérence du plan (dates uniques, aucun trou ni doublon) :
+   - déplacer une séance en l'échangeant avec un autre jour de la même
+     semaine (jamais de collision puisqu'on échange les dates, jamais de trou
+     puisque le nombre de séances/repos de la semaine ne change pas) ;
+   - ajuster son volume de ±10/20% (recalcule juste la durée depuis l'allure
+     cible déjà prévue, sans toucher à l'intensité) ;
+   - la passer en repos exceptionnellement — différent d'une séance
+     "manquée" : le type devient 'Repos' donc checkMissedSessions et
+     weeklyAdaptiveRegen l'ignorent, aucun impact sur l'adhérence.
+   s.origSnapshot garde les valeurs d'origine pour permettre "Réinitialiser"
+   tant que la séance n'est pas encore faite. */
+let planCustomId=null;
+function backupPlanSession(s){ if(!s.origSnapshot) s.origSnapshot={date:s.date,km:s.km,duration:s.duration,type:s.type,baseType:s.baseType,title:s.title,pace:s.pace,desc:s.desc,series:s.series||null}; }
+function openPlanCustomize(id){
+  const s=PLAN.sessions.find(x=>x.id===id); if(!s||s.done||s.date<todayKey()) return;
+  planCustomId=id;
+  renderPlanCustomizeHTML();
+}
+function renderPlanCustomizeHTML(){
+  const s=PLAN.sessions.find(x=>x.id===planCustomId); if(!s) return;
+  let h='<div class="row" style="margin-bottom:14px;cursor:pointer" onclick="openRunSheet('+s.id+')">'+ICN('chevronR',16).replace('<path','<path transform="rotate(180 12 12)"')+' <span style="font-weight:700;margin-left:4px">'+t('backLab')+'</span></div>';
+  h+='<div class="rs-title" style="margin-bottom:14px">'+t('customizeSessionBtn')+'</div>';
+
+  const weekMates=PLAN.sessions.filter(x=>x.week===s.week && x.id!==s.id && !x.done && x.date>=todayKey());
+  if(weekMates.length){
+    h+='<div class="sec-lab">'+t('customizeMoveLabel')+'</div>';
+    h+='<div class="pills" style="flex-wrap:wrap;margin-bottom:16px">'+weekMates.map(x=>{
+      const dn=new Date(x.date+'T00:00:00').toLocaleDateString(localeCode(),{weekday:'short'});
+      const label=(!x.km||x.type==='Repos')?t('restTag'):escHtml(planSessLabel(x));
+      return '<div class="pill" onclick="swapPlanSession('+s.id+','+x.id+')">'+dn+' · '+label+'</div>';
+    }).join('')+'</div>';
+  }
+
+  if(s.km>0){
+    h+='<div class="sec-lab">'+t('customizeVolumeLabel')+'</div>';
+    h+='<div class="row" style="margin-bottom:16px;gap:6px">'+
+      '<button class="btn ghost sm" onclick="adjustPlanSessionKm(-0.2)">-20%</button>'+
+      '<button class="btn ghost sm" onclick="adjustPlanSessionKm(-0.1)">-10%</button>'+
+      '<div style="font-weight:800;font-size:16px;padding:0 6px">'+hKm(s.km)+' km</div>'+
+      '<button class="btn ghost sm" onclick="adjustPlanSessionKm(0.1)">+10%</button>'+
+      '<button class="btn ghost sm" onclick="adjustPlanSessionKm(0.2)">+20%</button></div>';
+  }
+
+  if(s.type!=='Repos') h+='<button class="btn ghost sm" style="margin-bottom:10px;color:var(--bad)" onclick="skipPlanSession('+s.id+')">'+t('customizeSkipBtn')+'</button>';
+
+  if(s.origSnapshot) h+='<button class="btn ghost sm" style="color:var(--muted)" onclick="resetPlanSessionCustom('+s.id+')">'+t('customizeResetBtn')+'</button>';
+
+  $('#sheetBody').innerHTML=h;
+}
+function swapPlanSession(idA,idB){
+  const a=PLAN.sessions.find(x=>x.id===idA), b=PLAN.sessions.find(x=>x.id===idB); if(!a||!b) return;
+  backupPlanSession(a); backupPlanSession(b);
+  const d=a.date; a.date=b.date; b.date=d;
+  a.customized=true; b.customized=true;
+  saveAll(); toast(t('customizeMovedToast')); renderPlanCustomizeHTML(); renderSport();
+}
+function adjustPlanSessionKm(deltaPct){
+  const s=PLAN.sessions.find(x=>x.id===planCustomId); if(!s||!s.km) return;
+  backupPlanSession(s);
+  const secPerKm=parseTime(s.pace)||300;
+  const km=Math.max(2,Math.round(s.km*(1+deltaPct)*2)/2);
+  s.km=km; s.duration=Math.round(km*secPerKm/60); s.customized=true;
+  saveAll(); renderPlanCustomizeHTML(); renderSport();
+}
+function skipPlanSession(id){
+  const s=PLAN.sessions.find(x=>x.id===id); if(!s) return;
+  backupPlanSession(s);
+  s.type='Repos'; s.baseType='Repos'; s.title=t('restTag'); s.km=0; s.duration=0; s.pace=null; s.desc=''; s.series=null;
+  s.customized=true;
+  saveAll(); toast(t('customizeSkippedToast')); renderPlanCustomizeHTML(); renderSport();
+}
+function resetPlanSessionCustom(id){
+  const s=PLAN.sessions.find(x=>x.id===id); if(!s||!s.origSnapshot) return;
+  const targetDate=s.origSnapshot.date;
+  if(targetDate!==s.date){
+    const occupying=PLAN.sessions.find(x=>x.date===targetDate && x.id!==s.id);
+    if(occupying) occupying.date=s.date;
+  }
+  Object.assign(s,s.origSnapshot);
+  delete s.origSnapshot; delete s.customized;
+  saveAll(); toast(t('customizeResetToast')); renderPlanCustomizeHTML(); renderSport();
 }
 
 /* ---------- MUSCULATION ---------- */
