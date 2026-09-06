@@ -151,7 +151,7 @@ async function ikorunLogoutCookie(){
 function showGoogleStandaloneHelp(){
   const h='<div style="text-align:center;padding:4px 0 14px;color:var(--e)">'+ICN('warning',40,'currentColor')+'</div>'+
     '<div class="tip" style="margin-bottom:14px">'+t('googleStandaloneBody')+'</div>'+
-    '<button class="btn" style="margin-bottom:10px" onclick="closeOv(\'ovProg\');switchLoginMode(\'login\')">'+t('googleUseEmailBtn')+'</button>'+
+    '<button class="btn" style="margin-bottom:10px" onclick="closeOv(\'ovProg\');continueAsGuest()">'+t('googleUseGuestBtn')+'</button>'+
     '<button class="btn ghost" onclick="closeOv(\'ovProg\');window.open(location.href,\'_blank\')">'+t('googleOpenSafariBtn')+'</button>';
   $('#ovProgTitle').textContent=t('googleStandaloneTitle'); $('#progBody').innerHTML=h;
   $('#ovProg').style.zIndex=topZ(); openOv('ovProg');
@@ -1320,7 +1320,7 @@ const I18N={
     doneTag:'Faite',
     setsCount:'{0} séries',daysAgoShort:'il y a {0} j',neverDoneLab:'Jamais faite',
     pauseLab:'Mettre en pause',restTimerBtn:'Minuteur de repos',
-    googleStandaloneTitle:'Google et l\u2019app install\u00e9e',googleUseEmailBtn:'Se connecter par email',googleOpenSafariBtn:'Ouvrir dans Safari',googleStandaloneHint:'Indisponible depuis l\u2019app install\u00e9e',
+    googleStandaloneTitle:'Google et l\u2019app install\u00e9e',googleUseGuestBtn:'Continuer en tant qu\u2019invit\u00e9',googleOpenSafariBtn:'Ouvrir dans Safari',googleStandaloneHint:'Indisponible depuis l\u2019app install\u00e9e',
     declineBtn:'Refuser',saveLabel:'Enregistrer',renameLab:'Renommer',favoriteLab:'Favori',
     langLab:'Langue',obModeTitle:'Ton affichage',obModeIntro:'Deux façons de voir IKORUN — change d\u2019avis à tout moment dans Profil.',obModeFullT:'Complet',obModeFullD:'Toutes les stats, tous les détails de chaque séance, l\u2019anatomie musculaire, les graphiques. Pour creuser.',obModeSimpleT:'Simplifié',obModeSimpleD:'Une carte, l\u2019essentiel : la séance du jour et un bouton. Rien d\u2019autre à l\u2019écran. Pour aller droit au but.',obModeSuggestion:'Suggestion selon ton âge : {0}. Choisis librement.',chooseModeLab:'Choisis un affichage pour continuer',
     trackingLab:'Suivi',appearanceLab:'Apparence',
@@ -1328,7 +1328,7 @@ const I18N={
     sendBtn:'Envoyer',
     playLab:'Démarrer',
     cvCat_dist:'Distance',cvCat_pace:'Allure',cvCat_weight:'Poids',cvTapToEdit:'Touche pour modifier',
-    googleStandaloneBody:'Sur iPhone, quand IKORUN est ouvert depuis l\u2019ic\u00f4ne de l\u2019\u00e9cran d\u2019accueil, la connexion Google part dans Safari et n\u2019en revient pas : elle r\u00e9ussit, mais dans Safari, pas ici. Connecte-toi par email dans l\u2019app, ou ouvre IKORUN dans Safari pour utiliser Google.',
+    googleStandaloneBody:'Sur iPhone, quand IKORUN est ouvert depuis l\u2019ic\u00f4ne de l\u2019\u00e9cran d\u2019accueil, la connexion Google part dans Safari et n\u2019en revient pas : elle r\u00e9ussit, mais dans Safari, pas ici. Continue en tant qu\u2019invit\u00e9 dans l\u2019app, ou ouvre IKORUN dans Safari pour utiliser Google.',
     progression:'Progression',planOfDay:'PLAN DU JOUR',planIkorunDesc:'Plans d\u2019entraînement conçus par des coaches',
     myPlanDesc:'Crée ton propre plan sur mesure',todayCap:'AUJOURD\u2019HUI',tapToStart:'Voir le détail',
     goalCap:'OBJECTIF',courseDefault:'Course',goalTimeColon:'Objectif : {0} · ',raceOn:'Course le {0}',raceDay:'Jour de course',
@@ -1861,7 +1861,7 @@ const I18N={
     doneTag:'Done',
     setsCount:'{0} sets',daysAgoShort:'{0}d ago',neverDoneLab:'Never done',
     pauseLab:'Pause',restTimerBtn:'Rest timer',
-    googleStandaloneTitle:'Google and the installed app',googleUseEmailBtn:'Sign in with email',googleOpenSafariBtn:'Open in Safari',googleStandaloneHint:'Unavailable from the installed app',
+    googleStandaloneTitle:'Google and the installed app',googleUseGuestBtn:'Continue as guest',googleOpenSafariBtn:'Open in Safari',googleStandaloneHint:'Unavailable from the installed app',
     declineBtn:'Decline',saveLabel:'Save',renameLab:'Rename',favoriteLab:'Favourite',
     langLab:'Language',obModeTitle:'Your display',obModeIntro:'Two ways to see IKORUN \u2014 change your mind anytime in Profile.',obModeFullT:'Full',obModeFullD:'All the stats, every session detail, muscle anatomy, charts. For digging in.',obModeSimpleT:'Simplified',obModeSimpleD:'One card, the essentials: today\u2019s session and a button. Nothing else on screen. For going straight to it.',obModeSuggestion:'Suggestion based on your age: {0}. Choose freely.',chooseModeLab:'Choose a display to continue',
     trackingLab:'Tracking',appearanceLab:'Appearance',
@@ -1869,7 +1869,7 @@ const I18N={
     sendBtn:'Send',
     playLab:'Start',
     cvCat_dist:'Distance',cvCat_pace:'Pace',cvCat_weight:'Weight',cvTapToEdit:'Tap to edit',
-    googleStandaloneBody:'On iPhone, when IKORUN is opened from the home-screen icon, Google sign-in leaves for Safari and never comes back: it succeeds, but in Safari, not here. Sign in with email inside the app, or open IKORUN in Safari to use Google.',
+    googleStandaloneBody:'On iPhone, when IKORUN is opened from the home-screen icon, Google sign-in leaves for Safari and never comes back: it succeeds, but in Safari, not here. Continue as a guest inside the app, or open IKORUN in Safari to use Google.',
     progression:'Progress',planOfDay:'PLAN OF THE DAY',planIkorunDesc:'Training plans designed by coaches',
     myPlanDesc:'Build your own custom plan',todayCap:'TODAY',tapToStart:'View details',
     goalCap:'GOAL',courseDefault:'Race',goalTimeColon:'Goal: {0} · ',raceOn:'Race on {0}',raceDay:'Race day',
@@ -2402,7 +2402,7 @@ const I18N={
     doneTag:'تمّت',
     setsCount:'{0} مجموعات',daysAgoShort:'قبل {0} ي',neverDoneLab:'لم تُنجز بعد',
     pauseLab:'إيقاف مؤقت',restTimerBtn:'مؤقّت الراحة',
-    googleStandaloneTitle:'Google والتطبيق المثبّت',googleUseEmailBtn:'تسجيل الدخول بالبريد',googleOpenSafariBtn:'الفتح في Safari',googleStandaloneHint:'غير متاح من التطبيق المثبّت',
+    googleStandaloneTitle:'Google والتطبيق المثبّت',googleUseGuestBtn:'المتابعة كضيف',googleOpenSafariBtn:'الفتح في Safari',googleStandaloneHint:'غير متاح من التطبيق المثبّت',
     declineBtn:'رفض',saveLabel:'حفظ',renameLab:'إعادة تسمية',favoriteLab:'مفضّل',
     langLab:'اللغة',obModeTitle:'طريقة العرض',obModeIntro:'طريقتان لرؤية IKORUN — غيّر رأيك في أي وقت من الملف الشخصي.',obModeFullT:'كامل',obModeFullD:'كل الإحصائيات، تفاصيل كل حصة، تشريح العضلات، الرسوم البيانية. للتعمّق.',obModeSimpleT:'مبسّط',obModeSimpleD:'بطاقة واحدة، الأساسيات: حصة اليوم وزر واحد. لا شيء آخر على الشاشة. للذهاب مباشرة إلى الهدف.',obModeSuggestion:'اقتراح حسب عمرك: {0}. اختر بحرية.',chooseModeLab:'اختر طريقة عرض للمتابعة',
     trackingLab:'المتابعة',appearanceLab:'المظهر',
@@ -2410,7 +2410,7 @@ const I18N={
     sendBtn:'إرسال',
     playLab:'ابدأ',
     cvCat_dist:'المسافة',cvCat_pace:'الوتيرة',cvCat_weight:'الوزن',cvTapToEdit:'اضغط للتعديل',
-    googleStandaloneBody:'على iPhone، عند فتح IKORUN من أيقونة الشاشة الرئيسية، يغادر تسجيل الدخول عبر Google إلى Safari ولا يعود: ينجح، لكن داخل Safari وليس هنا. سجّل الدخول بالبريد داخل التطبيق، أو افتح IKORUN في Safari لاستخدام Google.',
+    googleStandaloneBody:'على iPhone، عند فتح IKORUN من أيقونة الشاشة الرئيسية، يغادر تسجيل الدخول عبر Google إلى Safari ولا يعود: ينجح، لكن داخل Safari وليس هنا. تابع كضيف داخل التطبيق، أو افتح IKORUN في Safari لاستخدام Google.',
     progression:'التقدم',planOfDay:'خطة اليوم',planIkorunDesc:'خطط تدريبية صممها مدربون',
     myPlanDesc:'أنشئ خطتك الخاصة',todayCap:'اليوم',tapToStart:'عرض التفاصيل',
     goalCap:'الهدف',courseDefault:'سباق',goalTimeColon:'الهدف: {0} · ',raceOn:'السباق يوم {0}',raceDay:'يوم السباق',
