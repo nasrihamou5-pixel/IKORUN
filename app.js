@@ -1582,6 +1582,8 @@ const I18N={
     sessionInProgress:'Séance en cours',welcomeToast:'Bienvenue',
     bgMuscuBody:'💪 Séance de muscu en cours',bgChronoBody:'⏱ Chronomètre en cours',bgTimerBody:'⏳ Minuteur en cours',bgRunningBody:'🏃 Course en cours',
     reminderNotifTitle:'Séance du jour',reminderNotifBody:'Tu as « {0} » prévu aujourd’hui, pense à la faire !',
+    nextPrayerLabel:'Prochaine prière',inTimeLabel:'dans {0}',prayerTimeTitle:'Heure de {0}',prayerTimeBody:'C’est le moment de prier.',
+    prayerNotifLabel:'Rappels de prière',
     customizedTag:'Personnalisée',customizeSessionBtn:'Personnaliser cette séance',customizeMoveLabel:'Déplacer à un autre jour',
     customizeVolumeLabel:'Ajuster le volume',customizeSkipBtn:'Passer cette séance en repos',customizeResetBtn:'Réinitialiser',
     customizeMovedToast:'Séance déplacée',customizeSkippedToast:'Séance passée en repos',customizeResetToast:'Séance réinitialisée',
@@ -2130,6 +2132,8 @@ const I18N={
     sessionInProgress:'Session in progress',welcomeToast:'Welcome',
     bgMuscuBody:'💪 Strength session in progress',bgChronoBody:'⏱ Stopwatch running',bgTimerBody:'⏳ Timer running',bgRunningBody:'🏃 Run in progress',
     reminderNotifTitle:'Today’s session',reminderNotifBody:'You have "{0}" planned today, don’t forget it!',
+    nextPrayerLabel:'Next prayer',inTimeLabel:'in {0}',prayerTimeTitle:'{0} time',prayerTimeBody:'Time to pray.',
+    prayerNotifLabel:'Prayer reminders',
     customizedTag:'Customized',customizeSessionBtn:'Customize this session',customizeMoveLabel:'Move to another day',
     customizeVolumeLabel:'Adjust volume',customizeSkipBtn:'Turn into a rest day',customizeResetBtn:'Reset',
     customizeMovedToast:'Session moved',customizeSkippedToast:'Session turned into rest',customizeResetToast:'Session reset',
@@ -2678,6 +2682,8 @@ const I18N={
     sessionInProgress:'الحصة جارية',welcomeToast:'مرحبًا',
     bgMuscuBody:'💪 حصة تقوية عضلية جارية',bgChronoBody:'⏱ ساعة الإيقاف تعمل',bgTimerBody:'⏳ المؤقت يعمل',bgRunningBody:'🏃 الجري جارٍ',
     reminderNotifTitle:'حصة اليوم',reminderNotifBody:'لديك « {0} » مبرمجة اليوم، لا تنسها!',
+    nextPrayerLabel:'الصلاة القادمة',inTimeLabel:'خلال {0}',prayerTimeTitle:'حان وقت {0}',prayerTimeBody:'حان وقت الصلاة.',
+    prayerNotifLabel:'تذكيرات الصلاة',
     customizedTag:'مخصّصة',customizeSessionBtn:'تخصيص هذه الحصة',customizeMoveLabel:'نقل إلى يوم آخر',
     customizeVolumeLabel:'تعديل الحجم',customizeSkipBtn:'تحويلها إلى يوم راحة',customizeResetBtn:'إعادة التعيين',
     customizeMovedToast:'تم نقل الحصة',customizeSkippedToast:'تم تحويل الحصة إلى راحة',customizeResetToast:'تمت إعادة تعيين الحصة',
@@ -3806,10 +3812,43 @@ function stopBgActivity(){
   try{ if(_bgNotif){ _bgNotif.close(); _bgNotif=null; } }catch(e){}
   try{ if(_wakeLock){ _wakeLock.release(); _wakeLock=null; } }catch(e){}
 }
-// Réacquiert le wake lock au retour de veille si une activité tourne
+/* ============ RAPPELS DE PRIÈRE ============
+   Un setTimeout par prière restant à sonner aujourd'hui (calculés depuis
+   prayerTimes(), cf plus bas dans le fichier). Comme tout le reste du système
+   de notifications ici, c'est du local pur : aucun push serveur, donc ça ne
+   sonne que tant que l'onglet/l'app reste ouvert(e) — d'où le rappel de
+   planification à chaque retour au premier plan (visibilitychange ci-dessous),
+   pour rattraper les prières encore à venir après une mise en veille. Tag
+   distinct ('ikorun-prayer-<nom>') des autres notifications de l'app, avec
+   son/vibration puisqu'il s'agit d'un rappel à ne pas manquer, pas d'une
+   activité déjà en cours. */
+let _prayerTimers=[];
+function clearPrayerTimers(){ _prayerTimers.forEach(clearTimeout); _prayerTimers=[]; }
+function schedulePrayerNotifs(){
+  clearPrayerTimers();
+  if(!P || P.notif===false || P.prayerNotif===false) return;
+  if(!('Notification'in window) || Notification.permission!=='granted') return;
+  const times=prayerTimes();
+  const now=new Date();
+  ['Fajr','Dhuhr','Asr','Maghrib','Isha'].forEach(p=>{
+    const [hh,mm]=times[p].split(':').map(Number);
+    const at=new Date(now.getFullYear(),now.getMonth(),now.getDate(),hh,mm,0,0).getTime();
+    const delay=at-now.getTime();
+    if(delay<=0) return; // déjà passée aujourd'hui — se reprogrammera demain à la prochaine ouverture
+    _prayerTimers.push(setTimeout(()=>{
+      try{ new Notification('🕌 '+tp('prayerTimeTitle',p),{body:t('prayerTimeBody'),icon:appIconDataURL(),badge:appIconDataURL(),tag:'ikorun-prayer-'+p,renotify:true}); }catch(e){}
+    },delay));
+  });
+}
+// Réacquiert le wake lock au retour de veille si une activité tourne, et
+// reprogramme les rappels de prière (les setTimeout ne survivent pas à une
+// mise en veille prolongée sur mobile).
 document.addEventListener('visibilitychange',async()=>{
-  if(document.visibilityState==='visible' && _bgActivity && !_wakeLock){
+  if(document.visibilityState==='visible'){
+    schedulePrayerNotifs();
+    if(_bgActivity && !_wakeLock){
     try{ if('wakeLock'in navigator) _wakeLock=await navigator.wakeLock.request('screen'); }catch(e){}
+    }
   }
 });
 function appIconDataURL(){ return "icon-192.png"; }
@@ -4383,6 +4422,7 @@ function initApp(){
   // Rappel "séance du jour pas encore faite" — après checkMissedSessions pour ne pas
   // se déclencher sur une séance déjà marquée manquée entre-temps.
   setTimeout(checkDailyReminder,900);
+  setTimeout(schedulePrayerNotifs,900);
   if(window._launchTourAfterInit){
     window._launchTourAfterInit=false;
     setTimeout(startAppTour,1200);
@@ -6724,6 +6764,8 @@ function renderHome(){
       '</div></div>';
   }
 
+  html+=homePrayerCardHTML();
+
   // SALUTATION — semaine/phase du plan si actif, sinon quip objectif. La série en cours,
   // quand il y en a une, est glissée en suffixe pour ne pas encombrer la carte du jour.
   const wdRaw=new Date().toLocaleDateString(localeCode(),{weekday:'long'});
@@ -6825,6 +6867,7 @@ function renderHomeSimple(ps,sessW,sessTarget,vdot,form,first){
   '</div>';
   h+=homeStreakBadge();
   h+='<div class="ik-greet"><h1>'+t('greet')+' '+escHtml(first||t('you'))+'</h1></div>';
+  h+=homePrayerCardHTML();
 
   h+='<div class="next-lab">'+t('todayCap')+'</div>';
   if(ps && ps.type!=='Repos'){
@@ -9966,6 +10009,32 @@ function prayerTimes(){
   const f=t=>{ t=(t+24)%24; let hh=Math.floor(t),mm=Math.round((t-hh)*60); if(mm===60){hh++;mm=0;} return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0'); };
   return {Fajr:f(fajr),Sunrise:f(sunrise),Dhuhr:f(Dhuhr+1/60),Asr:f(asr),Maghrib:f(maghrib),Isha:f(isha)};
 }
+// Prochaine prière à venir (bascule sur le Fajr du lendemain une fois Isha passée) —
+// utilisé pour la mise en avant sur l'accueil (homePrayerCardHTML).
+function nextPrayerInfo(){
+  const times=prayerTimes();
+  const now=new Date(); const nowMin=now.getHours()*60+now.getMinutes();
+  for(const p of ['Fajr','Dhuhr','Asr','Maghrib','Isha']){
+    const [hh,mm]=times[p].split(':').map(Number);
+    const mins=hh*60+mm;
+    if(mins>nowMin) return {name:p,time:times[p],inMin:mins-nowMin};
+  }
+  const [fh,fm]=times.Fajr.split(':').map(Number);
+  return {name:'Fajr',time:times.Fajr,inMin:(24*60-nowMin)+(fh*60+fm)};
+}
+function homePrayerCardHTML(){
+  const np=nextPrayerInfo();
+  const h=Math.floor(np.inMin/60), m=np.inMin%60;
+  const cd=h>0?(h+'h'+String(m).padStart(2,'0')):(m+' min');
+  return '<div class="hv7-day" style="padding:14px 16px;margin-bottom:12px" onclick="openPrayerFromHome()">'+
+    '<div class="row" style="justify-content:space-between;align-items:center">'+
+      '<div class="row" style="gap:10px;align-items:center">'+ICN('mosque',20,'var(--e)')+
+        '<div><div style="font-weight:800;font-size:14px">'+t('nextPrayerLabel')+' · '+np.name+'</div>'+
+        '<div style="font-size:12px;color:var(--muted)">'+np.time+' · '+tp('inTimeLabel',cd)+'</div></div></div>'+
+      ICN('chevronR',16,'var(--dim)')+
+    '</div></div>';
+}
+function openPrayerFromHome(){ outilsFrom='home'; outilsTab='priere'; nav('outils'); }
 
 /* ---------- PROFILE ---------- */
 function age(){ if(!P.bday)return'—'; const d=new Date(P.bday); return Math.floor((Date.now()-d)/31557600000); }
@@ -10282,7 +10351,7 @@ function toggleNotif(el){
   P.notif=(P.notif===false)?true:false;
   if(el) el.classList.toggle('on',P.notif!==false);
   if(P.notif!==false) ensureNotifPerm();
-  saveAll(); sfx('tap');
+  saveAll(); schedulePrayerNotifs(); sfx('tap');
 }
 // Bascule les sons (référencé par pfNotifHTML, existait pas -> toggle mort)
 function toggleSounds(el){
@@ -10290,8 +10359,15 @@ function toggleSounds(el){
   if(el) el.classList.toggle('on',P.sounds!==false);
   saveAll(); sfx('tap');
 }
+function togglePrayerNotif(el){
+  P.prayerNotif=(P.prayerNotif===false)?true:false;
+  if(el) el.classList.toggle('on',P.prayerNotif!==false);
+  if(P.prayerNotif!==false) ensureNotifPerm();
+  saveAll(); schedulePrayerNotifs(); sfx('tap');
+}
 function pfNotifHTML(){
   return '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('trainReminders')+'</span><div class="toggle'+(P.notif!==false?' on':'')+'" onclick="toggleNotif(this)"></div></div>'+
+    '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('prayerNotifLabel')+'</span><div class="toggle'+(P.prayerNotif!==false?' on':'')+'" onclick="togglePrayerNotif(this)"></div></div>'+
     '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('sounds')+'</span><div class="toggle'+(P.sounds!==false?' on':'')+'" onclick="toggleSounds(this)"></div></div>'+
     '<div class="row"><span style="font-size:14px">'+t('units')+'</span><div class="toggle on"></div></div>';
 }
