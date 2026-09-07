@@ -766,6 +766,12 @@ function switchSocialTab(tab){
   renderFriends();
 }
 function renderFriends(){
+  // #friendsBody n'existe que tant que l'écran Amis/Club est ouvert. loadFriendsData
+  // et loadClubData redessinent APRÈS deux allers-retours réseau : si l'écran a été
+  // refermé entre-temps (fréquent en 4G lente), l'écriture partait sur null. L'erreur
+  // était avalée par le try/catch appelant et ressortait en « loadFriendsData error »,
+  // ce qui faisait passer un abandon volontaire pour une panne de chargement.
+  if(!$('#friendsBody')) return;
   if(friendsTab==='profile'){ $('#friendsBody').innerHTML=renderFriendProfileHTML(); return; }
   if(friendsTab==='club'){ renderClubTab(); return; }
 
@@ -978,6 +984,7 @@ async function loadClubData(){
   }
 }
 function renderClubTab(){
+  if(!$('#friendsBody')) return; // même raison que renderFriends : écran refermé pendant le chargement
   let h='<div class="fr-tabs">'+
     '<div class="fr-tab '+(friendsTab==='list'?'on':'')+'" onclick="switchSocialTab(\'list\')">'+t('tabFriendsList')+'</div>'+
     '<div class="fr-tab '+(friendsTab==='rank'?'on':'')+'" onclick="switchSocialTab(\'rank\')">'+t('tabRank')+'</div>'+
@@ -1260,7 +1267,7 @@ function shareCardImage(title,subtitle,emoji){
 }
 function shareBadge(key){
   const b=BADGE_TIERS.find(x=>x.key===key); if(!b) return;
-  shareCardImage(b.name,'Badge débloqué sur IKORUN');
+  shareCardImage(b.name,t('badgeUnlockedShare'));
 }
 
 
@@ -1716,6 +1723,10 @@ const I18N={
     usernameFormatHint:'3 à 20 caractères : lettres, chiffres, _',checkingEllipsis:'Vérification…',
     available:'Disponible',alreadyTaken:'Déjà pris',
     alarmDefaultTitle:'Alarme',timeUpMsg:'Le temps est écoulé !',timeUpTitle:'Temps écoulé !',
+    rkNovice:'Novice',rkAthlete:'Athlète',rkCompetitor:'Compétiteur',rkElite:'Élite',rkChampion:'Champion',rkLegend:'Légende',rkImmortal:'Immortel',rkIkorunElite:'IKORUN Elite',
+    bpXpTotal:'XP total',bpTotalDistance:'Distance cumulée',bpAccountAge:'Ancienneté du compte',
+    badgeTierReached:'Palier atteint',badgeAlmostThere:'Continue, tu y es presque.',badgeRemainDay:'Encore {0} jour avant de débloquer ce badge.',badgeRemainDays:'Encore {0} jours avant de débloquer ce badge.',badgeRemainUnit:'Encore {0} {1} avant de débloquer ce badge.',
+    syncedToast:'Synchronisé',langChangedToast:'Langue mise à jour',timerSetLabel:'Régler (min : sec)',pauseShort:'Pause',timerDoneTitle:'Minuteur terminé',badgeUnlockedShare:'Badge débloqué sur IKORUN',
     stopAlarm:'Arrêter l\u2019alarme',remindIn5Min:'Rappel dans 5 min',reminderCap:'Rappel',fiveMinElapsed:'5 minutes écoulées',
     sessionInProgress:'Séance en cours',welcomeToast:'Bienvenue',
     bgMuscuBody:'💪 Séance de muscu en cours',bgChronoBody:'⏱ Chronomètre en cours',bgTimerBody:'⏳ Minuteur en cours',bgRunningBody:'🏃 Course en cours',
@@ -2270,6 +2281,10 @@ const I18N={
     usernameFormatHint:'3 to 20 characters: letters, numbers, _',checkingEllipsis:'Checking…',
     available:'Available',alreadyTaken:'Already taken',
     alarmDefaultTitle:'Alarm',timeUpMsg:'Time\u2019s up!',timeUpTitle:'Time\u2019s up!',
+    rkNovice:'Novice',rkAthlete:'Athlete',rkCompetitor:'Competitor',rkElite:'Elite',rkChampion:'Champion',rkLegend:'Legend',rkImmortal:'Immortal',rkIkorunElite:'IKORUN Elite',
+    bpXpTotal:'Total XP',bpTotalDistance:'Total distance',bpAccountAge:'Account age',
+    badgeTierReached:'Tier reached',badgeAlmostThere:'Keep going, you\u2019re almost there.',badgeRemainDay:'{0} more day to unlock this badge.',badgeRemainDays:'{0} more days to unlock this badge.',badgeRemainUnit:'{0} more {1} to unlock this badge.',
+    syncedToast:'Synced',langChangedToast:'Language updated',timerSetLabel:'Set (min : sec)',pauseShort:'Pause',timerDoneTitle:'Timer finished',badgeUnlockedShare:'Badge unlocked on IKORUN',
     stopAlarm:'Stop alarm',remindIn5Min:'Remind in 5 min',reminderCap:'Reminder',fiveMinElapsed:'5 minutes elapsed',
     sessionInProgress:'Session in progress',welcomeToast:'Welcome',
     bgMuscuBody:'💪 Strength session in progress',bgChronoBody:'⏱ Stopwatch running',bgTimerBody:'⏳ Timer running',bgRunningBody:'🏃 Run in progress',
@@ -2824,6 +2839,10 @@ const I18N={
     usernameFormatHint:'3 إلى 20 حرفًا: أحرف، أرقام، _',checkingEllipsis:'جارٍ التحقق…',
     available:'متاح',alreadyTaken:'مُستخدم بالفعل',
     alarmDefaultTitle:'منبّه',timeUpMsg:'انتهى الوقت!',timeUpTitle:'انتهى الوقت!',
+    rkNovice:'مبتدئ',rkAthlete:'رياضي',rkCompetitor:'منافس',rkElite:'نخبة',rkChampion:'بطل',rkLegend:'أسطورة',rkImmortal:'خالد',rkIkorunElite:'نخبة IKORUN',
+    bpXpTotal:'إجمالي XP',bpTotalDistance:'المسافة الإجمالية',bpAccountAge:'عمر الحساب',
+    badgeTierReached:'تم بلوغ المستوى',badgeAlmostThere:'واصل، أوشكت على ذلك.',badgeRemainDay:'يتبقّى يوم واحد لفتح هذا الوسام.',badgeRemainDays:'يتبقّى {0} يوم لفتح هذا الوسام.',badgeRemainUnit:'يتبقّى {0} {1} لفتح هذا الوسام.',
+    syncedToast:'تمت المزامنة',langChangedToast:'تم تحديث اللغة',timerSetLabel:'الضبط (دقيقة : ثانية)',pauseShort:'إيقاف',timerDoneTitle:'انتهى المؤقّت',badgeUnlockedShare:'وسام مفتوح على IKORUN',
     stopAlarm:'إيقاف المنبّه',remindIn5Min:'تذكير بعد 5 دقائق',reminderCap:'تذكير',fiveMinElapsed:'مرت 5 دقائق',
     sessionInProgress:'الحصة جارية',welcomeToast:'مرحبًا',
     bgMuscuBody:'💪 حصة تقوية عضلية جارية',bgChronoBody:'⏱ ساعة الإيقاف تعمل',bgTimerBody:'⏳ المؤقت يعمل',bgRunningBody:'🏃 الجري جارٍ',
@@ -3126,14 +3145,15 @@ function setLang(l){
   if(P.prayerNotif!==false) subscribeToPush(); // resynchronise la langue de l'abonnement push côté serveur
   document.documentElement.lang=l;
   document.documentElement.dir=(l==='ar')?'rtl':'ltr';
-  TOOLS=TOOLS_DEF(); BADGE_TIERS=BADGE_TIERS_DEF(); TIERS=TIERS_DEF(); MEDAL_CATS=MEDAL_CATS_DEF(); ACHIEVEMENTS=ACHIEVEMENTS_DEF();
+  TOOLS=TOOLS_DEF(); BADGE_TIERS=BADGE_TIERS_DEF(); TIERS=TIERS_DEF(); MEDAL_CATS=MEDAL_CATS_DEF(); ACHIEVEMENTS=ACHIEVEMENTS_DEF(); RANKS=RANKS_DEF();
+  try{ refreshXP(); }catch(e){ console.error('[IKORUN] setLang refreshXP',e); } // XP.name/XP.rank contiennent le libellé du rang : à recalculer dans la nouvelle langue
   applyNavLabels();
   applyStaticLabels();
   if($('#login') && $('#login').classList.contains('on')) renderLoginMain();
   // re-render la vue active
   const active=document.querySelector('.nb.on'); if(active) nav(active.dataset.s);
   refreshPfSheet();
-  toast('');
+  toast(t('langChangedToast')); // était toast('') : une pastille vide s'affichait 2,2 s à chaque changement de langue
 }
 function applyNavLabels(){
   document.querySelectorAll('.nb').forEach(b=>{ const s=b.dataset.s; const sp=b.querySelector('span'); if(sp) sp.textContent=t('nav_'+s); });
@@ -3372,16 +3392,22 @@ function recordGuard(meters,timeS,dateStr){
    réelles, des records, des cycles/préparations terminés et des
    compétitions. */
 const MAX_LEVEL=70;
-const RANKS=[
-  {min:1,  max:9,  name:'Novice',      slug:'novice',     color:'#8993A6', bg:'linear-gradient(135deg,#3a4048,#5c6473)'},
-  {min:10, max:19, name:'Athlète',     slug:'athlete',    color:'#3D7FFF', bg:'linear-gradient(135deg,#1b3a7a,#3D7FFF)'},
-  {min:20, max:29, name:'Compétiteur', slug:'competiteur',color:'#33D399', bg:'linear-gradient(135deg,#0d5c3f,#33D399)'},
-  {min:30, max:39, name:'Élite',       slug:'elite',      color:'#4d9dff', bg:'linear-gradient(135deg,#0d2f7a,#4d9dff)'},
-  {min:40, max:49, name:'Champion',    slug:'champion',   color:'#F2B84B', bg:'linear-gradient(135deg,#a5720f,#F2B84B)'},
-  {min:50, max:59, name:'Légende',     slug:'legende',    color:'#FFD76A', bg:'linear-gradient(135deg,#7a5c0d,#FFD76A)'},
-  {min:60, max:69, name:'Immortel',    slug:'immortel',   color:'#b57dff', bg:'linear-gradient(135deg,#4a1a7a,#b57dff)'},
-  {min:70, max:9999,name:'IKORUN Elite',slug:'ikorun-elite',color:'#ffffff', bg:'linear-gradient(135deg,#0a0a0a,#ffd76a)'}
-];
+/* Comme TOOLS/BADGE_TIERS/TIERS/MEDAL_CATS : table reconstruite à chaque
+   changement de langue (voir setLang). Les noms de rang étaient les seuls restés
+   codés en français — un compte en anglais ou en arabe voyait "Compétiteur" et
+   "Légende" dans sa pastille de niveau. Le slug (jamais affiché) sert de clé
+   stable pour les visuels et ne bouge pas. */
+function RANKS_DEF(){ return [
+  {min:1,  max:9,  name:t('rkNovice'),      slug:'novice',     color:'#8993A6', bg:'linear-gradient(135deg,#3a4048,#5c6473)'},
+  {min:10, max:19, name:t('rkAthlete'),     slug:'athlete',    color:'#3D7FFF', bg:'linear-gradient(135deg,#1b3a7a,#3D7FFF)'},
+  {min:20, max:29, name:t('rkCompetitor'),  slug:'competiteur',color:'#33D399', bg:'linear-gradient(135deg,#0d5c3f,#33D399)'},
+  {min:30, max:39, name:t('rkElite'),       slug:'elite',      color:'#4d9dff', bg:'linear-gradient(135deg,#0d2f7a,#4d9dff)'},
+  {min:40, max:49, name:t('rkChampion'),    slug:'champion',   color:'#F2B84B', bg:'linear-gradient(135deg,#a5720f,#F2B84B)'},
+  {min:50, max:59, name:t('rkLegend'),      slug:'legende',    color:'#FFD76A', bg:'linear-gradient(135deg,#7a5c0d,#FFD76A)'},
+  {min:60, max:69, name:t('rkImmortal'),    slug:'immortel',   color:'#b57dff', bg:'linear-gradient(135deg,#4a1a7a,#b57dff)'},
+  {min:70, max:9999,name:t('rkIkorunElite'),slug:'ikorun-elite',color:'#ffffff', bg:'linear-gradient(135deg,#0a0a0a,#ffd76a)'}
+]; }
+let RANKS=RANKS_DEF();
 function rankFor(level){ return RANKS.find(r=>level>=r.min&&level<=r.max)||RANKS[RANKS.length-1]; }
 
 /* Petites actions quotidiennes → XP volontairement minuscule */
@@ -3557,9 +3583,9 @@ function daysSinceJoin(){
 }
 function badgeProgress(b){
   const parts=[
-    {label:'XP total',             have:XP.total||0,                  need:b.xpMin,   unit:'XP'},
-    {label:'Distance cumulée',     have:Math.round(totalKm()*10)/10,  need:b.kmMin,   unit:'km'},
-    {label:'Ancienneté du compte', have:daysSinceJoin(),               need:b.daysMin, unit:'j'}
+    {label:t('bpXpTotal'),         have:XP.total||0,                  need:b.xpMin,   unit:'XP'},
+    {label:t('bpTotalDistance'),   have:Math.round(totalKm()*10)/10,  need:b.kmMin,   unit:'km'},
+    {label:t('bpAccountAge'),      have:daysSinceJoin(),               need:b.daysMin, unit:'j'}
   ];
   const ratio=p=> p.need ? Math.min(100,(p.have/p.need)*100) : 100;
   const unlocked=parts.every(p=>p.have>=p.need);
@@ -3575,12 +3601,12 @@ function badgeBottleneck(prog){
   }, prog.parts[0]);
 }
 function badgeHintText(prog){
-  if(prog.unlocked) return 'Palier atteint';
+  if(prog.unlocked) return t('badgeTierReached');
   const p=badgeBottleneck(prog);
   const remain=Math.ceil(p.need-p.have);
-  if(remain<=0) return 'Continue, tu y es presque.';
-  if(p.unit==='j') return 'Encore '+remain+' jour'+(remain>1?'s':'')+' avant de pouvoir débloquer ce badge.';
-  return 'Encore '+remain+' '+p.unit+' avant de débloquer ce badge.';
+  if(remain<=0) return t('badgeAlmostThere');
+  if(p.unit==='j') return tp(remain>1?'badgeRemainDays':'badgeRemainDay',remain);
+  return tp('badgeRemainUnit',remain,p.unit);
 }
 /* Migration : les paliers ont été renommés (anciennes clés → nouvelles).
    On réécrit les enregistrements déjà obtenus pour éviter les doublons
@@ -3867,7 +3893,7 @@ function sfx(name){
 }
 
 /* ============ VRAIE ALARME (son répété + vibration + écran d'arrêt) ============ */
-let _alarmIv=null, _alarmStart=0;
+let _alarmIv=null, _alarmStart=0, _alarmGen=0, _snoozeTo=null;
 function alarmRing(){
   // motif d'alarme mélodique (joué en boucle), volume plus fort que les sfx
   if(soundsOn()){
@@ -3880,11 +3906,15 @@ function alarmRing(){
 function startAlarm(title,msg){
   stopAlarm();
   _alarmStart=Date.now();
+  const gen=++_alarmGen; // identifie CETTE alarme
   try{ audioCtx(); }catch(e){}
   alarmRing();
   _alarmIv=setInterval(alarmRing,1300);
-  // sécurité : arrêt automatique après 60 s
-  setTimeout(()=>{ if(_alarmIv) stopAlarm(); },60000);
+  // Sécurité : arrêt automatique après 60 s — mais seulement de l'alarme qui a
+  // armé ce minuteur. Avant, le test portait sur "_alarmIv est non nul" : une
+  // alarme arrêtée puis une NOUVELLE déclenchée 30 s plus tard se faisait couper
+  // au bout de 30 s par le minuteur de la précédente.
+  setTimeout(()=>{ if(_alarmGen===gen && _alarmIv) stopAlarm(); },60000);
   notify(title||''+t('alarmDefaultTitle'),msg||t('timeUpMsg'));
   showAlarmScreen(title||''+t('timeUpTitle'),msg||'');
 }
@@ -3908,7 +3938,10 @@ function showAlarmScreen(title,msg){
 function snoozeAlarm(){
   stopAlarm();
   toast(''+t('remindIn5Min'));
-  setTimeout(()=>startAlarm(''+t('reminderCap'),t('fiveMinElapsed')),5*60*1000);
+  // Un seul report en attente à la fois : sans ce garde, deux taps sur « Rappeler
+  // dans 5 min » armaient deux alarmes, et le report survivait à un « Arrêter ».
+  clearTimeout(_snoozeTo);
+  _snoozeTo=setTimeout(()=>{ _snoozeTo=null; startAlarm(''+t('reminderCap'),t('fiveMinElapsed')); },5*60*1000);
 }
 
 /* ============ NOTIFICATIONS & ACTIVITÉ EN ARRIÈRE-PLAN ============ */
@@ -4342,7 +4375,7 @@ $$('.nb').forEach(b=>b.onclick=()=>nav(b.dataset.s));
       try{
         if(window.currentUserId) await cloudPullAll(window.currentUserId);
         nav(document.body.dataset.scr||'home');
-        toast('Synchronisé');
+        toast(t('syncedToast'));
       }catch(e){ /* pas de cloud dispo (hors-ligne) : on referme juste l'indicateur */ }
       busy=false;
     }
@@ -4903,7 +4936,7 @@ function maybeResumeLive(){
   customConfirm(tp('resumeSessionConfirm',prog.name,mins),()=>{
     LIVE={prog,idx:snap.idx,start:snap.start,state:snap.state,tonnage:snap.tonnage,setsDone:snap.setsDone};
     liveOpenEx=snap.idx||0;
-    renderLive(); openOv('ovLive'); liveTimer=setInterval(updateLiveTimer,500); startBgActivity(tp('sessionColonName',prog.name),'muscu');
+    renderLive(); openOv('ovLive'); clearInterval(liveTimer); liveTimer=setInterval(updateLiveTimer,500); startBgActivity(tp('sessionColonName',prog.name),'muscu');
   },{yesLabel:t('resumeBtn'),noLabel:t('discardBtn'),onNo:()=>{ DB.remove('live_active'); }});
 }
 
@@ -8226,7 +8259,7 @@ function startLive(id,startIdx){
   renderLive(); openOv('ovLive');
   clearInterval(liveTimer);
   liveTimer=setInterval(updateLiveTimer,500);
-  sfx('start'); startBgActivity('Séance : '+p.name,'muscu');
+  sfx('start'); startBgActivity(tp('sessionColonName',p.name),'muscu');
 }
 function updateLiveTimer(){
   if(!LIVE) return;
@@ -8566,7 +8599,7 @@ function resumeLive(){
   LIVE.start=Date.now()-(saved.savedElapsed||0);
   liveOpenEx=saved.idx||0;
   DB.remove('live_paused');
-  renderLive(); openOv('ovLive'); liveTimer=setInterval(updateLiveTimer,500);
+  renderLive(); openOv('ovLive'); clearInterval(liveTimer); liveTimer=setInterval(updateLiveTimer,500);
 }
 function toggleSet(exIdx,setIdx){
   const st=LIVE.state[exIdx];
@@ -8579,6 +8612,14 @@ function toggleSet(exIdx,setIdx){
   persistLive(); renderLive();
 }
 function openRest(secs){
+  // Deux chemins ouvrent ce minuteur : la validation d'une série et le bouton ⏱
+  // de l'en-tête. Sans ce nettoyage, un second appel pendant qu'un repos tourne
+  // laissait le premier setInterval vivant ET un second #restOv dans la page :
+  // deux éléments portant le même id ($ renvoie le premier), donc le nouveau
+  // minuteur mettait à jour l'ANCIEN affichage, et l'ancien intervalle appelait
+  // skipRest() à SON échéance — coupant le repos en cours avant l'heure.
+  clearInterval(restTimer);
+  const prev=$('#restOv'); if(prev) prev.remove();
   let sec=secs||90; const total=sec; const endAt=Date.now()+sec*1000;
   const ov=document.createElement('div'); ov.className='ov on'; ov.id='restOv'; ov.style.zIndex=topZ();
   ov.innerHTML='<div class="ov-card" style="text-align:center"><div class="card-t" style="justify-content:center">'+t('restTitle')+'</div><div class="ring-wrap" style="width:170px;height:170px;margin:10px auto"><span id="restRing"></span><div class="ring-c"><div class="big mono" id="restNum" style="font-size:38px">'+sec+'</div><div class="sm">'+t('secLab')+'</div></div></div><div class="row" style="gap:10px"><button class="btn ghost" onclick="addRest(30)">'+t('add30sLab')+'</button><button class="btn" onclick="skipRest()">'+t('skipLab')+'</button></div></div>';
@@ -10095,8 +10136,13 @@ function renderChrono(){
   }
   $('#outBody').innerHTML=h;
 }
-function chronoStop(){ chrono.running=false; chrono.elapsed+=Date.now()-chrono.start; cancelAnimationFrame(chrono.raf); sfx('stop'); stopBgActivity(); renderChrono(); }
-function chronoReset(){ chrono={running:false,start:0,elapsed:0,laps:[],raf:null}; renderChrono(); }
+/* Même précaution que pour le minuteur : les boutons « Pause » / « Arrêter » de la
+   notification d'activité peuvent être tapés alors que l'app est sur un tout autre
+   écran (voir le relais bgActivityAction). Redessiner sans vérifier écrasait l'outil
+   affiché à ce moment-là, ou levait une erreur si #outBody n'existait plus. */
+function renderChronoIfVisible(){ if(outilsTab!=='chrono' || !$('#outBody')) return; renderChrono(); }
+function chronoStop(){ chrono.running=false; chrono.elapsed+=Date.now()-chrono.start; cancelAnimationFrame(chrono.raf); sfx('stop'); stopBgActivity(); renderChronoIfVisible(); }
+function chronoReset(){ chrono={running:false,start:0,elapsed:0,laps:[],raf:null}; renderChronoIfVisible(); }
 function exportLaps(){
   let txt='IKORUN Chronomètre\n'; chrono.laps.forEach((l,i)=>txt+=t('lapBtn')+' '+(i+1)+' : '+fmtChrono(l)+'\n');
   if(navigator.share) navigator.share({title:'Chrono IKORUN',text:txt}); else { navigator.clipboard&&navigator.clipboard.writeText(txt); toast(t('lapsCopied')); }
@@ -10104,8 +10150,8 @@ function exportLaps(){
 function fmtChrono(ms){ const t=Math.floor(ms); const m=Math.floor(t/60000),s=Math.floor((t%60000)/1000),cs=Math.floor((t%1000)/10); return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+String(cs).padStart(2,'0'); }
 function chronoToggle(){
   if(chrono.running){ chrono.running=false; chrono.elapsed+=Date.now()-chrono.start; cancelAnimationFrame(chrono.raf); sfx('stop'); stopBgActivity(); }
-  else { chrono.running=true; chrono.start=Date.now(); chronoTick(); sfx('start'); startBgActivity('Chronomètre','chrono'); }
-  renderChrono();
+  else { chrono.running=true; chrono.start=Date.now(); chronoTick(); sfx('start'); startBgActivity(t('toolChronoName'),'chrono'); }
+  renderChronoIfVisible();
 }
 function chronoTick(){ if(!chrono.running)return; const d=$('#chDisp'); if(d)d.textContent=fmtChrono(chrono.elapsed+Date.now()-chrono.start); chrono.raf=requestAnimationFrame(chronoTick); }
 function chronoLap(){ const total=chrono.elapsed+(chrono.running?Date.now()-chrono.start:0); if(total<=0)return; const prev=chrono.laps.reduce((a,b)=>a+b,0); chrono.laps.push(total-prev); renderChrono(); }
@@ -10115,14 +10161,24 @@ let timer={total:300,left:300,running:false,iv:null,m:5,s:0};
 function renderTimer(){
   let h='<div class="card"><div class="pills" style="margin-bottom:14px">'+[['1:00',60],['3:00',180],['5:00',300],['10:00',600]].map(p=>'<div class="pill" onclick="setTimer('+p[1]+')">'+p[0]+'</div>').join('')+'</div>';
   if(!timer.running){
-    h+='<div class="field"><label>Régler (min : sec)</label><div class="wheels">'+wheel('TM',0,59,timer.m)+'<span class="wheel-sep">:</span>'+wheel('TS',0,59,timer.s)+'</div></div>';
+    h+='<div class="field"><label>'+t('timerSetLabel')+'</label><div class="wheels">'+wheel('TM',0,59,timer.m)+'<span class="wheel-sep">:</span>'+wheel('TS',0,59,timer.s)+'</div></div>';
   }
   const pct=timer.total>0?timer.left/timer.total*100:0;
   const col=pct>50?'var(--e)':pct>20?'var(--warn)':'var(--bad)';
   h+='<div class="ring-wrap" style="width:180px;height:180px;margin:14px auto"><span id="tmRing">'+ringSVG(180,pct,12,col)+'</span><div class="ring-c"><div class="big mono" id="tmNum" style="font-size:36px">'+fmtMS(timer.left)+'</div></div></div>';
-  h+='<div class="row" style="gap:10px"><button class="btn ghost" onclick="addTimer(60)">+1min</button><button class="btn" onclick="timerToggle()">'+(timer.running?'Pause':'▶ Start')+'</button><button class="btn ghost" onclick="resetTimer()">↺</button></div></div>';
+  h+='<div class="row" style="gap:10px"><button class="btn ghost" onclick="addTimer(60)">+1min</button><button class="btn" onclick="timerToggle()">'+(timer.running?t('pauseShort'):'▶ '+t('playLab'))+'</button><button class="btn ghost" onclick="resetTimer()">↺</button></div></div>';
   $('#outBody').innerHTML=h;
   if(!timer.running) attachWheels();
+}
+/* Le minuteur continue de tourner quand on quitte son écran (c'est voulu : il
+   sonne même si tu es ailleurs dans l'app). Mais à l'arrivée à zéro il appelait
+   renderTimer() sans vérifier ce qui est affiché : soit #outBody n'existait plus
+   et l'écriture levait une erreur, soit un AUTRE outil était ouvert et son
+   contenu se faisait remplacer par le minuteur. On ne redessine donc que si
+   l'écran du minuteur est bien celui à l'écran. */
+function renderTimerIfVisible(){
+  if(outilsTab!=='_timer' || !$('#outBody')) return;
+  renderTimer();
 }
 function fmtMS(s){ return String(Math.floor(s/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0'); }
 function setTimer(s){ timer.total=timer.left=s; timer.m=Math.floor(s/60); timer.s=s%60; if(timer.running){clearInterval(timer.iv);timer.running=false;} renderTimer(); }
@@ -10132,10 +10188,10 @@ setWheelVal=function(key,val){ if(key==='TM'){timer.m=val;timer.total=timer.left
 function addTimer(s){ timer.left+=s; timer.total=Math.max(timer.total,timer.left); const n=$('#tmNum'); if(n)n.textContent=fmtMS(timer.left); }
 function timerToggle(){
   stopAlarm();
-  if(timer.running){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; stopBgActivity(); renderTimer(); return; }
+  if(timer.running){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; stopBgActivity(); renderTimerIfVisible(); return; }
   if(timer.left<=0){ timer.left=timer.total=timer.m*60+timer.s; }
   if(timer.left<=0){ toast(t('setDuration')); return; }
-  timer.running=true; timer.endAt=Date.now()+timer.left*1000; sfx('start'); startBgActivity(t('quickTimer'),'timer'); renderTimer();
+  timer.running=true; timer.endAt=Date.now()+timer.left*1000; sfx('start'); startBgActivity(t('quickTimer'),'timer'); renderTimerIfVisible();
   timer.iv=setInterval(()=>{
     // basé sur l'horloge → reste exact même en arrière-plan
     timer.left=Math.max(0,Math.round((timer.endAt-Date.now())/1000));
@@ -10143,10 +10199,10 @@ function timerToggle(){
     const col=pct>50?'var(--e)':pct>20?'var(--warn)':'var(--bad)';
     const r=$('#tmRing'),n=$('#tmNum');
     if(r)r.innerHTML=ringSVG(180,pct,12,col); if(n)n.textContent=fmtMS(timer.left);
-    if(timer.left<=0){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; burst(); stopBgActivity(); startAlarm('Minuteur terminé','Le temps est écoulé !'); renderTimer(); }
+    if(timer.left<=0){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; burst(); stopBgActivity(); startAlarm(t('timerDoneTitle'),t('timeUpMsg')); renderTimerIfVisible(); }
   },250);
 }
-function resetTimer(){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; stopAlarm(); stopBgActivity(); timer.left=timer.total=timer.m*60+timer.s||300; renderTimer(); }
+function resetTimer(){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; stopAlarm(); stopBgActivity(); timer.left=timer.total=timer.m*60+timer.s||300; renderTimerIfVisible(); }
 
 /* ---------- AGENDA ---------- */
 function renderAgenda(){
