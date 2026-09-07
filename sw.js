@@ -7,7 +7,7 @@
 // cache. Changer le nom du cache supprime les anciennes entrées à l'activation, ce
 // qui garantit que le vrai manifest.json est bien récupéré — condition nécessaire
 // pour que le navigateur propose l'installation de l'app.
-const C = 'ikorun-v33';
+const C = 'ikorun-v34';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
@@ -43,11 +43,12 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// Notifications push envoyées par l'Edge Function Supabase send-prayer-notifs
-// (voir app.js, subscribeToPush) — seule notification de l'app à passer par un
-// vrai serveur, puisque les horaires de prière sont une donnée publique alors
-// que le reste (séances, rappels d'entraînement) reste programmé localement,
-// le plan d'entraînement étant chiffré côté client.
+// Notifications push envoyées par les Edge Functions Supabase send-prayer-notifs
+// et send-daily-reminders (voir app.js, subscribeToPush) : les seules à passer par
+// un vrai serveur, puisqu'elles ne portent que des données publiques ou volontairement
+// extraites du chiffrement (titre de séance + statut, jamais le détail) — voir
+// syncDailyReminderState. Le reste (activité en cours) est affiché localement par la
+// page elle-même via reg.showNotification (cf. startBgActivity dans app.js), pas ici.
 self.addEventListener('push', e => {
   let data = {};
   try { data = e.data ? e.data.json() : {}; } catch (err) {}
@@ -61,8 +62,25 @@ self.addEventListener('push', e => {
   }));
 });
 
+// Gère aussi bien un tap simple (ouvrir/focus l'app) que les boutons d'action de la
+// notification "activité en cours" (pause/annuler/arrêter) : ces actions ne peuvent être
+// exécutées que par la page elle-même (LIVE/chrono/timer ne vivent qu'en mémoire côté page),
+// le Service Worker se contente donc de relayer l'action via postMessage. On ne ferme PAS
+// la notification sur un tap simple (juste focus/ouverture) : ça reste une activité en
+// cours tant qu'aucune action de fin (pause/annuler/arrêter) n'a été explicitement tapée.
 self.addEventListener('notificationclick', e => {
-  e.notification.close();
+  const tag = e.notification.tag;
+  const action = e.action;
+  if (tag === 'ikorun-activity' && action) {
+    e.waitUntil(
+      clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+        list.forEach(c => c.postMessage({ type: 'bgActivityAction', action }));
+        for (const c of list) { if ('focus' in c) return c.focus(); }
+        if (clients.openWindow) return clients.openWindow('/');
+      })
+    );
+    return;
+  }
   e.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
       for (const c of list) { if ('focus' in c) return c.focus(); }

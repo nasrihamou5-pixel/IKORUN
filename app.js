@@ -1673,8 +1673,9 @@ const I18N={
     stopAlarm:'Arrêter l\u2019alarme',remindIn5Min:'Rappel dans 5 min',reminderCap:'Rappel',fiveMinElapsed:'5 minutes écoulées',
     sessionInProgress:'Séance en cours',welcomeToast:'Bienvenue',
     bgMuscuBody:'💪 Séance de muscu en cours',bgChronoBody:'⏱ Chronomètre en cours',bgTimerBody:'⏳ Minuteur en cours',bgRunningBody:'🏃 Course en cours',
+    bgChronoElapsed:'⏱ {0}',bgTimerRemaining:'⏳ Reste {0}',cancelSessionLab:'Annuler la séance',
     nextPrayerLabel:'Prochaine prière',inTimeLabel:'dans {0}',
-    enableNotifBtn:'Activer les notifications',enableNotifHomeSub:'Rappels de séance et de prière',
+    notifBubbleText:'Active les notifications pour ne rater aucune séance ni prière.',notifBubbleAction:'Autoriser',
     notifEnabledToast:'Notifications activées',notifDeniedToast:'Notifications refusées',
     notifBlockedTip:'Notifications bloquées — active-les dans les réglages de ton téléphone pour cette app.',
     notifUnsupportedToast:'Notifications non disponibles sur cet appareil',
@@ -2226,8 +2227,9 @@ const I18N={
     stopAlarm:'Stop alarm',remindIn5Min:'Remind in 5 min',reminderCap:'Reminder',fiveMinElapsed:'5 minutes elapsed',
     sessionInProgress:'Session in progress',welcomeToast:'Welcome',
     bgMuscuBody:'💪 Strength session in progress',bgChronoBody:'⏱ Stopwatch running',bgTimerBody:'⏳ Timer running',bgRunningBody:'🏃 Run in progress',
+    bgChronoElapsed:'⏱ {0}',bgTimerRemaining:'⏳ {0} left',cancelSessionLab:'Cancel session',
     nextPrayerLabel:'Next prayer',inTimeLabel:'in {0}',
-    enableNotifBtn:'Enable notifications',enableNotifHomeSub:'Session and prayer reminders',
+    notifBubbleText:'Enable notifications so you never miss a session or a prayer.',notifBubbleAction:'Allow',
     notifEnabledToast:'Notifications enabled',notifDeniedToast:'Notifications denied',
     notifBlockedTip:'Notifications blocked — enable them in your phone settings for this app.',
     notifUnsupportedToast:'Notifications not available on this device',
@@ -2779,8 +2781,9 @@ const I18N={
     stopAlarm:'إيقاف المنبّه',remindIn5Min:'تذكير بعد 5 دقائق',reminderCap:'تذكير',fiveMinElapsed:'مرت 5 دقائق',
     sessionInProgress:'الحصة جارية',welcomeToast:'مرحبًا',
     bgMuscuBody:'💪 حصة تقوية عضلية جارية',bgChronoBody:'⏱ ساعة الإيقاف تعمل',bgTimerBody:'⏳ المؤقت يعمل',bgRunningBody:'🏃 الجري جارٍ',
+    bgChronoElapsed:'⏱ {0}',bgTimerRemaining:'⏳ متبقٍ {0}',cancelSessionLab:'إلغاء الحصة',
     nextPrayerLabel:'الصلاة القادمة',inTimeLabel:'خلال {0}',
-    enableNotifBtn:'تفعيل الإشعارات',enableNotifHomeSub:'تذكيرات الحصص والصلاة',
+    notifBubbleText:'فعّل الإشعارات حتى لا تفوّت أي حصة أو صلاة.',notifBubbleAction:'السماح',
     notifEnabledToast:'تم تفعيل الإشعارات',notifDeniedToast:'تم رفض الإشعارات',
     notifBlockedTip:'الإشعارات محظورة — فعّلها من إعدادات هاتفك لهذا التطبيق.',
     notifUnsupportedToast:'الإشعارات غير متوفرة على هذا الجهاز',
@@ -3872,33 +3875,74 @@ function notify(title,body){
   }
   sfx('notif');
 }
-let _bgNotif=null, _bgTick=null;
-// Le corps du message diffère selon le type d'activité (muscu/chrono/minuteur/course) : une
+// Le corps du message diffère selon le type d'activité (muscu/chrono/minuteur) et inclut le
+// temps écoulé (ou restant pour le minuteur), recalculé à chaque rafraîchissement — une
 // notification d'activité en cours ne doit jamais ressembler au rappel "séance du jour pas
 // faite" poussé par le serveur (tag 'ikorun-reminder' distinct, avec son/vibration,
 // contrairement à celle-ci qui reste silencieuse puisqu'elle ne fait qu'accompagner une
 // activité déjà lancée en local).
+function bgActivityLiveText(kind){
+  if(kind==='muscu' && _bgActivity) return fmtTime((Date.now()-_bgActivity.start)/1000);
+  if(kind==='chrono') return fmtChrono(chrono.elapsed+(chrono.running?Date.now()-chrono.start:0));
+  if(kind==='timer'){ const left=timer.running?Math.max(0,Math.round((timer.endAt-Date.now())/1000)):timer.left; return fmtMS(left); }
+  return '';
+}
 function bgActivityBody(kind){
-  if(kind==='muscu') return t('bgMuscuBody');
-  if(kind==='chrono') return t('bgChronoBody');
-  if(kind==='timer') return t('bgTimerBody');
+  const live=bgActivityLiveText(kind);
+  if(kind==='muscu') return t('bgMuscuBody')+(live?' · '+live:'');
+  if(kind==='chrono') return live?tp('bgChronoElapsed',live):t('bgChronoBody');
+  if(kind==='timer') return live?tp('bgTimerRemaining',live):t('bgTimerBody');
   if(kind==='running') return t('bgRunningBody');
   return '▶ '+t('sessionInProgress');
 }
+// Boutons d'action affichés directement dans la notification — seules les notifications
+// affichées via le Service Worker (reg.showNotification, pas new Notification()) supportent
+// des actions ; leurs clics sont relayés à la page par sw.js (message 'bgActivityAction'),
+// voir le listener navigator.serviceWorker plus bas.
+function bgActivityActions(kind){
+  if(kind==='muscu') return [{action:'pause',title:t('pauseLab')},{action:'cancel',title:t('cancelSessionLab')}];
+  if(kind==='chrono') return [{action:'toggle',title:t('pauseLab')},{action:'stop',title:t('stopBtn')}];
+  if(kind==='timer') return [{action:'toggle',title:t('pauseLab')},{action:'reset',title:t('resetBtn2')}];
+  return [];
+}
+let _bgNotifTick=null;
+async function showBgActivityNotif(type,kind){
+  if(!(P.notif!==false && 'Notification'in window && Notification.permission==='granted' && 'serviceWorker'in navigator)) return;
+  try{
+    const reg=await swReady();
+    await reg.showNotification('IKORUN · '+type,{
+      body:bgActivityBody(kind), icon:appIconDataURL(), badge:appIconDataURL(),
+      tag:'ikorun-activity', renotify:false, silent:true, actions:bgActivityActions(kind)
+    });
+  }catch(e){}
+}
 async function startBgActivity(type,kind){
-  _bgActivity={type,start:Date.now(),paused:false};
+  _bgActivity={type,kind,start:Date.now(),paused:false};
   try{ if('wakeLock'in navigator){ _wakeLock=await navigator.wakeLock.request('screen'); } }catch(e){}
-  // Une seule notification fixe au démarrage — pas de recréation en boucle (ça spammait avant)
   clearInterval(_bgTick); _bgTick=null;
-  if(P.notif!==false && 'Notification'in window && Notification.permission==='granted'){
-    try{ if(_bgNotif){ _bgNotif.close(); _bgNotif=null; } }catch(e){}
-    try{ _bgNotif=new Notification('IKORUN · '+type,{body:bgActivityBody(kind),icon:appIconDataURL(),badge:appIconDataURL(),tag:'ikorun-activity',renotify:false,silent:true}); }catch(e){}
-  }
+  clearInterval(_bgNotifTick);
+  await showBgActivityNotif(type,kind);
+  // Le texte (temps écoulé/restant) est rafraîchi régulièrement pour ne pas laisser une
+  // notification figée qui donnerait l'impression d'être périmée — sans repasser par un son
+  // ou une vibration (renotify:false dans showBgActivityNotif) à chaque rafraîchissement.
+  _bgNotifTick=setInterval(()=>showBgActivityNotif(type,kind),15000);
 }
 function stopBgActivity(){
-  _bgActivity=null; clearInterval(_bgTick);
-  try{ if(_bgNotif){ _bgNotif.close(); _bgNotif=null; } }catch(e){}
+  _bgActivity=null; clearInterval(_bgTick); clearInterval(_bgNotifTick); _bgNotifTick=null;
+  try{ if('serviceWorker'in navigator){ navigator.serviceWorker.ready.then(reg=>reg.getNotifications({tag:'ikorun-activity'})).then(ns=>ns.forEach(n=>n.close())); } }catch(e){}
   try{ if(_wakeLock){ _wakeLock.release(); _wakeLock=null; } }catch(e){}
+}
+// Relais des boutons d'action tapés directement dans la notification (voir sw.js,
+// notificationclick) : la page reste seule source de vérité de l'activité en cours
+// (LIVE/chrono/timer ne vivent qu'en mémoire ici), le Service Worker ne fait que transmettre.
+if('serviceWorker'in navigator){
+  navigator.serviceWorker.addEventListener('message',e=>{
+    const d=e.data||{}; if(d.type!=='bgActivityAction' || !_bgActivity) return;
+    const kind=_bgActivity.kind;
+    if(kind==='muscu'){ if(d.action==='pause') pauseLive(); else if(d.action==='cancel') doCancelLive(); }
+    else if(kind==='chrono'){ if(d.action==='toggle') chronoToggle(); else if(d.action==='stop') chronoStop(); }
+    else if(kind==='timer'){ if(d.action==='toggle') timerToggle(); else if(d.action==='reset') resetTimer(); }
+  });
 }
 // Réacquiert le wake lock au retour de veille si une activité tourne, et
 // s'assure que l'abonnement push (prière + rappel de séance) est toujours
@@ -6826,7 +6870,7 @@ function renderHome(){
       '</div></div>';
   }
 
-  html+=homeNotifPermBannerHTML();
+  html+=notifPermBubbleHTML();
   html+=homePrayerCardHTML();
 
   // SALUTATION — semaine/phase du plan si actif, sinon quip objectif. La série en cours,
@@ -6930,7 +6974,7 @@ function renderHomeSimple(ps,sessW,sessTarget,vdot,form,first){
   '</div>';
   h+=homeStreakBadge();
   h+='<div class="ik-greet"><h1>'+t('greet')+' '+escHtml(first||t('you'))+'</h1></div>';
-  h+=homeNotifPermBannerHTML();
+  h+=notifPermBubbleHTML();
   h+=homePrayerCardHTML();
 
   h+='<div class="next-lab">'+t('todayCap')+'</div>';
@@ -10086,19 +10130,20 @@ function nextPrayerInfo(){
   const [fh,fm]=times.Fajr.split(':').map(Number);
   return {name:'Fajr',time:times.Fajr,inMin:(24*60-nowMin)+(fh*60+fm)};
 }
-// Bannière d'activation affichée tant que la permission navigateur n'a jamais
+// Bulle discrète (pas un bouton) tant que la permission navigateur n'a jamais
 // été tranchée — sans elle, l'utilisateur qui laisse les réglages sur leur
 // valeur par défaut ("activé") ne tape jamais sur un toggle et la popup
-// système d'iOS n'apparaît donc jamais (voir requestNotifPermCTA).
-function homeNotifPermBannerHTML(){
+// système d'iOS n'apparaît donc jamais (voir requestNotifPermCTA). Une croix
+// permet de la retirer définitivement (P.notifPromptDismissed) sans agir.
+function dismissNotifBubble(e){ if(e) e.stopPropagation(); P.notifPromptDismissed=true; saveAll(); const active=document.querySelector('.nb.on'); if(active) nav(active.dataset.s); }
+function notifPermBubbleHTML(){
+  if(P.notifPromptDismissed) return '';
   if(!('Notification'in window) || Notification.permission!=='default') return '';
-  return '<div class="hv7-day" style="padding:14px 16px;margin-bottom:12px" onclick="requestNotifPermCTA()">'+
-    '<div class="row" style="justify-content:space-between;align-items:center">'+
-      '<div class="row" style="gap:10px;align-items:center">'+ICN('bell',20,'var(--e)')+
-        '<div><div style="font-weight:800;font-size:14px">'+t('enableNotifBtn')+'</div>'+
-        '<div style="font-size:12px;color:var(--muted)">'+t('enableNotifHomeSub')+'</div></div></div>'+
-      ICN('chevronR',16,'var(--dim)')+
-    '</div></div>';
+  return '<div class="row" style="align-items:center;gap:10px;padding:11px 12px;border-radius:16px;background:rgba(var(--e-rgb),.10);border:1px solid rgba(var(--e-rgb),.28);margin-bottom:12px">'+
+    '<span style="display:inline-flex;flex-shrink:0">'+ICN('bell',17,'var(--e)')+'</span>'+
+    '<span style="flex:1;font-size:12.5px;line-height:1.4;cursor:pointer" onclick="requestNotifPermCTA()">'+t('notifBubbleText')+' <b style="color:var(--e)">'+t('notifBubbleAction')+'</b></span>'+
+    '<span onclick="dismissNotifBubble(event)" style="flex-shrink:0;padding:4px;cursor:pointer;color:var(--dim)">'+ICN('close',15)+'</span>'+
+  '</div>';
 }
 function homePrayerCardHTML(){
   const np=nextPrayerInfo();
@@ -10468,7 +10513,12 @@ function requestNotifPermCTA(){
 function pfNotifHTML(){
   let h='';
   if('Notification'in window && Notification.permission==='default'){
-    h+='<button class="btn" style="margin-bottom:16px" onclick="requestNotifPermCTA()">'+ICN('bell',16)+' '+t('enableNotifBtn')+'</button>';
+    // Toujours visible ici même si la bulle d'accueil a été retirée : Profil >
+    // Notifications est l'endroit explicite où on vient chercher ce réglage.
+    h+='<div class="row" style="align-items:center;gap:10px;padding:11px 12px;border-radius:16px;background:rgba(var(--e-rgb),.10);border:1px solid rgba(var(--e-rgb),.28);margin-bottom:16px;cursor:pointer" onclick="requestNotifPermCTA()">'+
+      '<span style="display:inline-flex;flex-shrink:0">'+ICN('bell',17,'var(--e)')+'</span>'+
+      '<span style="flex:1;font-size:12.5px;line-height:1.4">'+t('notifBubbleText')+' <b style="color:var(--e)">'+t('notifBubbleAction')+'</b></span>'+
+    '</div>';
   } else if('Notification'in window && Notification.permission==='denied'){
     h+='<div class="tip" style="margin-bottom:16px">'+t('notifBlockedTip')+'</div>';
   }
