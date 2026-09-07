@@ -1482,7 +1482,17 @@ const DB = {
   degraded:false,
   async init(){
     try{
-      await VVVCrypto.ready();
+      // Un IndexedDB BLOQUÉ ne rejette pas toujours : la demande d'ouverture peut
+      // rester en suspens indéfiniment (stockage cloisonné, contexte sandboxé,
+      // profil verrouillé par une politique). Le repli ci-dessous n'était armé que
+      // sur un REJET : sur un blocage, DB_READY restait en attente pour toujours,
+      // reloadState() ne tournait jamais, P restait vide et l'app se figeait sur
+      // l'écran de connexion — le chien de garde débloquait l'affichage, mais rien
+      // ne fonctionnait derrière. Constaté en production le 07/09/2026.
+      await Promise.race([
+        VVVCrypto.ready(),
+        new Promise((_,rej)=>setTimeout(()=>rej(new Error('crypto_timeout')),6000))
+      ]);
     }catch(e){
       // IndexedDB ou WebCrypto indisponible (mode privé strict, stockage de site
       // bloqué, politique d'entreprise). Avant ce repli, le rejet remontait jusqu'à

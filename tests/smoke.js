@@ -106,6 +106,7 @@
 
     // Les tables de libellés doivent réellement changer avec la langue.
     // C'est RANKS qui était resté figé en français jusqu'au 7/9/2026.
+    if(!P){ ok(c,'bascule de langue','ignorée — profil non chargé'); return; }
     var avant=P&&P.lang;
     try{
       P.lang='fr'; var rFr=RANKS_DEF().map(function(r){return r.name;}).join('|');
@@ -363,6 +364,7 @@
 
   /* ======================= ENCHAÎNEMENT ================================== */
   function lancer(){
+    window.__smokeState='en cours';
     bloquerEcritures();
     testDemarrage();
     testI18n();
@@ -372,15 +374,24 @@
     Promise.resolve(testI18nUsage())
       .then(function(){ return testSon(); })
       .catch(function(e){ ko('0. Suite','exécution', e && e.message); })
-      .then(function(){ debloquerEcritures(); rapport(); });
+      .then(function(){ debloquerEcritures(); window.__smokeState='terminé'; rapport(); });
   }
 
-  // On attend que l'app ait fini de démarrer (P peuplé), sinon la moitié des
-  // tests mesurerait un état incomplet et échouerait pour de mauvaises raisons.
+  // On laisse à l'app le temps de finir son démarrage (P peuplé), sinon la
+  // moitié des tests mesurerait un état incomplet. Mais on lance la suite DANS
+  // TOUS LES CAS au bout du délai : une première version restait muette quand P
+  // n'arrivait jamais — c'est-à-dire exactement dans la situation où le rapport
+  // est le plus utile. C'est ce silence qui a masqué, en production, un
+  // DB_READY qui ne se résolvait jamais.
+  window.__smokeState='attente du démarrage';
   var essais=0;
   (function attend(){
-    if(typeof P!=='undefined' && P) return setTimeout(lancer,300);
-    if(++essais>60){ ko('0. Suite','démarrage de l\'app','P toujours nul après 18 s'); return rapport(); }
+    if(typeof P!=='undefined' && P){ window.__smokeState='démarrage ok'; return setTimeout(lancer,300); }
+    if(++essais>40){
+      window.__smokeState='démarrage incomplet — suite lancée quand même';
+      ko('0. Suite','l\'app a fini de démarrer','P toujours vide après 12 s — cache local (DB_READY) non résolu');
+      return lancer();
+    }
     setTimeout(attend,300);
   })();
 })();
