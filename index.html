@@ -2187,6 +2187,17 @@ html[data-mode="light"]{
     console.error('[IKORUN] Le script Supabase (jsdelivr) n\'a pas pu charger, réessaie de recharger la page.', e);
   }
 </script>
-<script src="app.js?v=57"></script>
+<script src="app.js?v=58"></script>
+<!-- Suite de fumée : chargée uniquement avec ?selftest=1 (voir tests/smoke.js).
+     Second script classique de la page, donc il partage l'environnement lexical
+     d'app.js et peut tester l'app réelle (P, SESS, RANKS...) sans imitation.
+     La suite ne persiste RIEN : elle photographie l'état, teste, restaure. -->
+<script>
+  if (location.search.indexOf('selftest=1') > -1) {
+    var _st = document.createElement('script');
+    _st.src = 'tests/smoke.js?v=1';
+    document.body.appendChild(_st);
+  }
+</script>
 </body>
 </html>
