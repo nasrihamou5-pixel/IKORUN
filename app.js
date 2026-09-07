@@ -826,7 +826,6 @@ function renderFriends(){
   $('#friendsBody').innerHTML=h;
 }
 let _friendSearchDeb=null;
-function escLike(s){ return s.replace(/[\\%_]/g,'\\$&'); }
 // Échappe tout texte injecté dans du innerHTML (pseudos, URLs de photo, etc.).
 // Sécurité en profondeur : même si le serveur revalide déjà le format des pseudos,
 // on n'affiche jamais de texte contrôlé par un tiers sans l'échapper ici.
@@ -856,11 +855,15 @@ async function searchFriendCandidates(v){
   const box=$('#friendSearchResults'); if(!box) return;
   if(!window.supabaseClient || !window.currentUserId){ box.innerHTML='<div style="font-size:12px;color:var(--muted);padding:6px 2px">'+t('loginToSearchFriends')+'</div>'; return; }
   try{
-    const { data } = await window.supabaseClient.from('public_profiles')
-      .select('user_id,username,level')
-      .ilike('username_lower','%'+escLike(v.toLowerCase())+'%')
-      .neq('user_id',window.currentUserId)
-      .limit(8);
+    // Recherche par pseudo EXACT via une RPC dédiée, et non plus par lecture
+    // directe de public_profiles : la table n'est plus lisible en entier (un
+    // simple compte invité pouvait auparavant l'aspirer intégralement, photos
+    // comprises). La RPC est rate-limitée et ne renvoie ni stats ni photo.
+    // Effet de bord assumé : il faut désormais le pseudo complet, plus une
+    // correspondance partielle — c'est aussi ce que la politique de
+    // confidentialité annonce depuis le début.
+    const { data, error } = await window.supabaseClient.rpc('ikorun_find_profile',{ p_username:v.trim() });
+    if(error) throw error;
     const results=data||[];
     if(!results.length){ box.innerHTML='<div style="font-size:12px;color:var(--muted);padding:6px 2px">'+t('noUsernameFound')+'</div>'; return; }
     const known=new Set([...friendsCache.friends,...friendsCache.pending,...friendsCache.sent].map(f=>f.id));
@@ -955,7 +958,11 @@ async function loadClubData(){
       if(e2) throw e2;
       const ids=(mrows||[]).map(r=>r.user_id);
       if(ids.length){
-        const { data:profs, error:e3 } = await window.supabaseClient.from('public_profiles').select('user_id,username,xp,level,photo_url').in('user_id',ids);
+        // photo_url n'est PAS chargée ici : chaque photo pèse jusqu'à 300 Ko en
+        // base64, donc un club de 200 membres représentait jusqu'à 60 Mo par
+        // ouverture de l'onglet, sur mobile. Le classement affiche l'initiale ;
+        // la photo reste visible sur la fiche individuelle d'un membre.
+        const { data:profs, error:e3 } = await window.supabaseClient.from('public_profiles').select('user_id,username,xp,level').in('user_id',ids);
         if(e3) throw e3;
         members=(profs||[]).map(p=>({...p,id:p.user_id,isOwner:p.user_id===club.owner_id,isMe:p.user_id===uid}));
       }
@@ -1170,10 +1177,17 @@ function clearClubPlan(){
 async function submitJoinClub(){
   const el=$('#clubCodeInput'); const code=(el?el.value:'').trim();
   if(!code){ toast(t('clubCodePlaceholder')); return; }
+  // Consentement explicite : rejoindre un club fait sortir des informations du
+  // profil vers ses membres. L'utilisateur doit savoir précisément quoi — et
+  // surtout ce qui NE sort pas (séances, ressentis, douleurs restent privés).
+  customConfirm(t('clubJoinConsent'),()=>doJoinClub(code),{yesLabel:t('clubJoinConfirmBtn')});
+}
+async function doJoinClub(code){
   try{
     const { error } = await window.supabaseClient.rpc('ikorun_join_club',{p_code:code});
     if(error){
       if(String(error.message).includes('club_not_found')) toast(t('clubNotFoundToast'));
+      else if(String(error.message).includes('club_full')) toast(t('clubFullToast'));
       else if(String(error.message).includes('rate_limited')) toast(t('tooManyAttemptsToast'));
       else toast(t('genericErrorRetry'));
       return;
@@ -1529,7 +1543,7 @@ const I18N={
     joinClubCta:'Rejoindre un club',createClubCta:'Créer un club',clubCodePlaceholder:'Code à 6 caractères',clubNamePlaceholder:'Nom du club',
     joinBtn:'Rejoindre',clubMembersCount:'{0} membre(s)',copyCodeBtn:'Copier le code',shareCodeHint:'Partage ce code à tes coéquipiers pour qu’ils te rejoignent.',
     clubXpRanking:'Classement du club (XP)',leaveClubBtn:'Quitter le club',confirmLeaveClub:'Quitter ce club ? Tu pourras en rejoindre un autre à tout moment.',
-    clubCreatedToast:'Club créé !',clubJoinedToast:'Bienvenue dans le club !',clubLeftToast:'Tu as quitté le club',clubNotFoundToast:'Aucun club avec ce code',
+    clubFullToast:'Ce club est complet (200 membres maximum).',clubJoinConsent:'En rejoignant ce club, ton pseudo, ton niveau et ton XP apparaîtront dans son classement, visibles par tous ses membres. Tes séances, tes ressentis, ta fatigue et tes douleurs restent privés et ne sont partagés avec personne. Tu peux quitter le club à tout moment.',clubJoinConfirmBtn:'Rejoindre',clubCreatedToast:'Club créé !',clubJoinedToast:'Bienvenue dans le club !',clubLeftToast:'Tu as quitté le club',clubNotFoundToast:'Aucun club avec ce code',
     tooManyAttemptsToast:'Trop de tentatives, réessaie dans un instant',codeCopiedToast:'Code copié',
     clubPlanTitle:'Plan du club',clubPlanNoneOwner:'Pas encore de plan partagé. Choisis ton plan IKORUN ou l’un de tes plans persos pour que tout le club s’entraîne ensemble.',clubPlanNoneMember:'Le créateur du club n’a pas encore publié de plan partagé.',
     clubPlanConfigureBtn:'Configurer le plan du club',clubPlanEditBtn:'Modifier le plan du club',clubPlanNoUpcoming:'Aucune séance à venir dans ce plan.',
@@ -1545,7 +1559,7 @@ const I18N={
     yourFriendsCount:'Tes amis ({0})',noFriendsYet:'Pas encore d\u2019amis — cherche quelqu\u2019un par son pseudo !',
     sentRequests:'Demandes envoyées',awaitingResponse:'En attente de réponse…',xpRanking:'Classement XP entre amis',
     addFriendsUnlock:'Ajoute des amis pour débloquer le classement !',youParen:' (toi)',
-    searchingLab:'Recherche…',loginToSearchFriends:'Connecte-toi pour chercher des amis',noUsernameFound:'Aucun pseudo trouvé',
+    searchingLab:'Recherche…',loginToSearchFriends:'Connecte-toi pour chercher des amis',noUsernameFound:'Aucun pseudo trouvé — il faut le pseudo exact',
     loadingLab:'Chargement…',friendsLoadError:'Impossible de charger tes amis. Vérifie ta connexion.',retryBtn:'Réessayer',
     resumeBtn:'Reprendre',discardBtn:'Abandonner',
     alreadyLinked:'déjà lié',addBtn:'Ajouter',searchError:'Erreur de recherche',alreadySentOrFriend:'Déjà envoyé ou déjà ami',
@@ -2083,7 +2097,7 @@ const I18N={
     joinClubCta:'Join a club',createClubCta:'Create a club',clubCodePlaceholder:'6-character code',clubNamePlaceholder:'Club name',
     joinBtn:'Join',clubMembersCount:'{0} member(s)',copyCodeBtn:'Copy code',shareCodeHint:'Share this code with your teammates so they can join you.',
     clubXpRanking:'Club leaderboard (XP)',leaveClubBtn:'Leave club',confirmLeaveClub:'Leave this club? You can join another one anytime.',
-    clubCreatedToast:'Club created!',clubJoinedToast:'Welcome to the club!',clubLeftToast:'You left the club',clubNotFoundToast:'No club found with this code',
+    clubFullToast:'This club is full (200 members maximum).',clubJoinConsent:'By joining this club, your username, level and XP will appear in its leaderboard, visible to all its members. Your sessions, how you felt, your fatigue and your pain stay private and are shared with no one. You can leave the club at any time.',clubJoinConfirmBtn:'Join',clubCreatedToast:'Club created!',clubJoinedToast:'Welcome to the club!',clubLeftToast:'You left the club',clubNotFoundToast:'No club found with this code',
     tooManyAttemptsToast:'Too many attempts, try again shortly',codeCopiedToast:'Code copied',
     clubPlanTitle:'Club plan',clubPlanNoneOwner:'No shared plan yet. Pick your IKORUN plan or one of your custom plans so the whole club trains together.',clubPlanNoneMember:'The club creator hasn’t published a shared plan yet.',
     clubPlanConfigureBtn:'Configure the club plan',clubPlanEditBtn:'Edit the club plan',clubPlanNoUpcoming:'No upcoming sessions in this plan.',
@@ -2099,7 +2113,7 @@ const I18N={
     yourFriendsCount:'Your friends ({0})',noFriendsYet:'No friends yet — search for someone by their username!',
     sentRequests:'Sent requests',awaitingResponse:'Awaiting response…',xpRanking:'XP leaderboard among friends',
     addFriendsUnlock:'Add friends to unlock the leaderboard!',youParen:' (you)',
-    searchingLab:'Searching…',loginToSearchFriends:'Sign in to search for friends',noUsernameFound:'No username found',
+    searchingLab:'Searching…',loginToSearchFriends:'Sign in to search for friends',noUsernameFound:'No username found — the exact username is required',
     loadingLab:'Loading…',friendsLoadError:'Couldn\'t load your friends. Check your connection.',retryBtn:'Retry',
     resumeBtn:'Resume',discardBtn:'Discard',
     alreadyLinked:'already linked',addBtn:'Add',searchError:'Search error',alreadySentOrFriend:'Already sent or already friends',
@@ -2637,7 +2651,7 @@ const I18N={
     joinClubCta:'الانضمام إلى نادٍ',createClubCta:'إنشاء نادٍ',clubCodePlaceholder:'رمز من 6 أحرف',clubNamePlaceholder:'اسم النادي',
     joinBtn:'انضمام',clubMembersCount:'{0} عضو',copyCodeBtn:'نسخ الرمز',shareCodeHint:'شارك هذا الرمز مع زملائك لينضموا إليك.',
     clubXpRanking:'ترتيب النادي (نقاط الخبرة)',leaveClubBtn:'مغادرة النادي',confirmLeaveClub:'مغادرة هذا النادي؟ يمكنك الانضمام إلى نادٍ آخر في أي وقت.',
-    clubCreatedToast:'تم إنشاء النادي!',clubJoinedToast:'مرحبًا بك في النادي!',clubLeftToast:'لقد غادرت النادي',clubNotFoundToast:'لا يوجد نادٍ بهذا الرمز',
+    clubFullToast:'هذا النادي ممتلئ (200 عضو كحد أقصى).',clubJoinConsent:'بالانضمام إلى هذا النادي، سيظهر اسمك المستعار ومستواك ونقاط الخبرة في ترتيبه، ويراها جميع أعضائه. أما حصصك وإحساسك وتعبك وآلامك فتبقى خاصة ولا تُشارك مع أحد. يمكنك مغادرة النادي في أي وقت.',clubJoinConfirmBtn:'انضمام',clubCreatedToast:'تم إنشاء النادي!',clubJoinedToast:'مرحبًا بك في النادي!',clubLeftToast:'لقد غادرت النادي',clubNotFoundToast:'لا يوجد نادٍ بهذا الرمز',
     tooManyAttemptsToast:'محاولات كثيرة جدًا، أعد المحاولة بعد قليل',codeCopiedToast:'تم نسخ الرمز',
     clubPlanTitle:'خطة النادي',clubPlanNoneOwner:'لا توجد خطة مشتركة بعد. اختر خطتك في IKORUN أو إحدى خططك الشخصية ليتدرب النادي كله معًا.',clubPlanNoneMember:'لم ينشر منشئ النادي خطة مشتركة بعد.',
     clubPlanConfigureBtn:'إعداد خطة النادي',clubPlanEditBtn:'تعديل خطة النادي',clubPlanNoUpcoming:'لا توجد حصص قادمة في هذه الخطة.',
@@ -2653,7 +2667,7 @@ const I18N={
     yourFriendsCount:'أصدقاؤك ({0})',noFriendsYet:'لا يوجد أصدقاء بعد — ابحث عن أحدهم باسمه المستعار!',
     sentRequests:'الطلبات المرسلة',awaitingResponse:'بانتظار الرد…',xpRanking:'ترتيب نقاط الخبرة بين الأصدقاء',
     addFriendsUnlock:'أضف أصدقاء لفتح الترتيب!',youParen:' (أنت)',
-    searchingLab:'جارٍ البحث…',loginToSearchFriends:'سجّل الدخول للبحث عن أصدقاء',noUsernameFound:'لم يتم العثور على اسم مستعار',
+    searchingLab:'جارٍ البحث…',loginToSearchFriends:'سجّل الدخول للبحث عن أصدقاء',noUsernameFound:'لم يتم العثور على اسم مستعار — يلزم الاسم الكامل بالضبط',
     loadingLab:'جارٍ التحميل…',friendsLoadError:'تعذّر تحميل أصدقائك. تحقّق من اتصالك.',retryBtn:'إعادة المحاولة',
     resumeBtn:'استئناف',discardBtn:'التخلي',
     alreadyLinked:'مرتبط بالفعل',addBtn:'إضافة',searchError:'خطأ في البحث',alreadySentOrFriend:'تم الإرسال بالفعل أو صديق بالفعل',
