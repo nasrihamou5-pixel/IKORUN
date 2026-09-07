@@ -263,6 +263,23 @@ function switchLoginMode(m){
   }
 }
 function isEmailValid(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((v||'').trim()); }
+/* Barrage minimal contre les mots de passe évidents, côté client.
+   Ce n'est PAS un remplacement de la protection « mot de passe fuité » de Supabase
+   (comparaison avec HaveIBeenPwned côté serveur, à activer dans le tableau de bord) :
+   celle-ci couvre des centaines de millions de mots de passe, celle-là seulement les
+   plus courants. Mais elle attrape les cas les plus fréquents avant même l'envoi,
+   et elle explique pourquoi, ce qu'un rejet serveur ne fait pas. */
+const WEAK_PASSWORDS=['password','passwordd','motdepasse','azertyui','qwertyui','12345678','123456789','1234567890','11111111','00000000','abcd1234','a1b2c3d4','iloveyou','princess','football','baseball','sunshine','superman','trustno1','welcome1','admin123','qwerty123','azerty123','password1','password123','motdepasse1','ikorun123','running1','jesuisla','coucou12','bonjour1','soleil12','chocolat','doudou12'];
+function passwordWeakness(pass,email){
+  const p=(pass||'');
+  const low=p.toLowerCase();
+  if(WEAK_PASSWORDS.indexOf(low)>=0) return 'common';
+  if(/^(.)\1+$/.test(p)) return 'repeat';                       // aaaaaaaa
+  if(/^(0123456789|123456789|12345678|abcdefgh|azertyuiop|qwertyuiop)/.test(low)) return 'sequence';
+  const local=((email||'').split('@')[0]||'').toLowerCase();
+  if(local.length>=3 && low.indexOf(local)>=0) return 'email';  // le mot de passe contient l'adresse
+  return null;
+}
 const GOOGLE_ICON_SVG='<svg viewBox="0 0 48 48" width="20" height="20"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.6 30.2 0 24 0 14.6 0 6.4 5.4 2.5 13.3l7.8 6C12.2 13.5 17.6 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.5 3-2.2 5.5-4.7 7.2l7.3 5.7c4.3-4 6.9-9.9 6.9-17.4z"/><path fill="#FBBC05" d="M10.3 28.3c-.5-1.4-.8-2.9-.8-4.3s.3-3 .8-4.3l-7.8-6C.9 16.9 0 20.3 0 24s.9 7.1 2.5 10.3l7.8-6z"/><path fill="#34A853" d="M24 48c6.2 0 11.5-2 15.3-5.5l-7.3-5.7c-2 1.4-4.7 2.3-8 2.3-6.4 0-11.8-4-13.7-9.8l-7.8 6C6.4 42.6 14.6 48 24 48z"/></svg>';
 /* ---------- CONNEXION GOOGLE DANS L'APP INSTALLÉE (iOS) ----------
    La méthode par redirection (signInWithOAuth) quitte l'app installée : iOS
@@ -450,24 +467,33 @@ function renderLoginMain(){
   const installRow=$('#loginInstallRow'); if(installRow) installRow.innerHTML=loginInstallButtonHTML();
   let h='';
   if(loginMode==='login'){
-    // Connexion par email retirée pour l'instant : les emails de confirmation et
-    // de réinitialisation partent par le service intégré de Supabase, plafonné à
-    // quelques envois par heure. Une fois le quota atteint (ce qui arrive vite),
-    // l'inscription échouait en 429 et personne ne pouvait plus confirmer son
-    // compte — aucun des comptes email créés n'a jamais réussi à se connecter.
-    // Le code (submitEmailLogin/Signup/ForgotPassword) reste en place : il suffira
-    // de remettre ces champs le jour où un vrai SMTP sera branché.
+    // Connexion par email : les emails de confirmation et de réinitialisation
+    // partent par le service intégré de Supabase, plafonné à quelques envois par
+    // heure. Le 429 qui en découle est explicitement traité (emailRateLimitToast)
+    // au lieu d'échouer en silence comme avant. Se connecter et créer un compte
+    // ne consomment aucun email tant que « Confirm email » est désactivé côté
+    // projet ; seul « mot de passe oublié » dépend vraiment du quota.
     h+='<h1 class="login-h1">'+t('loginWelcomeTitle')+'</h1>';
     h+='<p class="login-sub">'+t('loginSubConnect')+'</p>';
+    h+='<div class="field"><label>'+t('emailLabel')+'</label><input class="inp" id="li_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="'+t('emailPlaceholder')+'"></div>';
+    h+='<div class="field"><label>'+t('passwordLabel')+'</label><input class="inp" id="li_password" type="password" autocomplete="current-password" placeholder="" onkeydown="if(event.key===\'Enter\')submitEmailLogin()"></div>';
     h+='<div class="uname-status" id="li_status"></div>';
+    h+='<button class="btn" style="margin-bottom:11px" onclick="submitEmailLogin()" id="li_submit">'+t('loginBtnLabel')+'</button>';
+    h+='<div class="login-guest subtle" onclick="switchLoginMode(\'forgot\')">'+t('forgotPasswordLink')+'</div>';
+    // Sans ce lien, un compte créé mais jamais confirmé est définitivement bloqué :
+    // « mot de passe oublié » n'y change rien, et Supabase renvoie le même message
+    // d'erreur que pour un mot de passe faux (voir submitEmailLogin).
+    h+='<div class="login-guest subtle" onclick="resendConfirmation()">'+t('resendConfirmLink')+'</div>';
+    h+='<div class="login-or">'+t('orDividerLabel')+'</div>';
     h+=googleBtnHtml();
+    h+='<div class="login-guest" onclick="switchLoginMode(\'signup\')">'+t('noAccountLink')+'</div>';
     h+='<div class="login-guest subtle" onclick="continueAsGuest()">'+t('continueAsGuestLink')+'</div>';
   } else if(loginMode==='signup'){
     h+='<h1 class="login-h1">'+t('signupTitle')+'</h1>';
     h+='<p class="login-sub">'+t('signupSub')+'</p>';
     h+='<div class="field"><label>'+t('emailLabel')+'</label><input class="inp" id="li_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="'+t('emailPlaceholder')+'"></div>';
     h+='<div class="field"><label>'+t('passwordLabel')+'</label><input class="inp" id="li_password" type="password" autocomplete="new-password" placeholder=""></div>';
-    h+='<div class="field"><label>'+t('confirmPasswordLabel')+'</label><input class="inp" id="li_password2" type="password" autocomplete="new-password" placeholder=""></div>';
+    h+='<div class="field"><label>'+t('confirmPasswordLabel')+'</label><input class="inp" id="li_password2" type="password" autocomplete="new-password" placeholder="" onkeydown="if(event.key===\'Enter\')submitEmailSignup()"></div>';
     h+='<div class="uname-status" id="li_status"></div>';
     h+='<button class="btn" style="margin-bottom:11px" onclick="submitEmailSignup()" id="li_submit">'+t('signupBtnLabel')+'</button>';
     h+='<div class="login-or">'+t('orDividerLabel')+'</div>';
@@ -477,7 +503,7 @@ function renderLoginMain(){
   } else {
     h+='<h1 class="login-h1">'+t('forgotTitle')+'</h1>';
     h+='<p class="login-sub">'+t('forgotSub')+'</p>';
-    h+='<div class="field"><label>'+t('emailLabel')+'</label><input class="inp" id="li_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="'+t('emailPlaceholder')+'"></div>';
+    h+='<div class="field"><label>'+t('emailLabel')+'</label><input class="inp" id="li_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="'+t('emailPlaceholder')+'" onkeydown="if(event.key===\'Enter\')submitForgotPassword()"></div>';
     h+='<div class="uname-status" id="li_status"></div>';
     h+='<button class="btn" style="margin-bottom:11px" onclick="submitForgotPassword()" id="li_submit">'+t('sendResetLinkBtn')+'</button>';
     h+='<div class="login-guest" onclick="switchLoginMode(\'login\')">'+t('backToLoginLink')+'</div>';
@@ -522,6 +548,8 @@ async function submitEmailSignup(){
   if(!isEmailValid(email)) return setLoginStatus(t('invalidEmailToast'),'bad');
   if(pass.length<8) return setLoginStatus(t('passwordTooShortToast'),'bad');
   if(pass!==pass2) return setLoginStatus(t('passwordsMismatchToast'),'bad');
+  const weak=passwordWeakness(pass,email);
+  if(weak) return setLoginStatus(t(weak==='email'?'passwordContainsEmailToast':'passwordTooCommonToast'),'bad');
   _emailAuthing=true; setLoginStatus(t('creatingAccountToast'),'checking');
   try{
     const { data, error } = await withAuthTimeout(window.supabaseClient.auth.signUp({
@@ -541,6 +569,30 @@ async function submitEmailSignup(){
     // projet), onAuthStateChange (SIGNED_IN) prend le relais tout seul.
   }catch(e){
     console.error('signUp exception',e);
+    setLoginStatus(e&&e.message==='auth_timeout'?t('authTimeoutToast'):t('authGenericErrorToast'),'bad');
+  }
+  _emailAuthing=false;
+}
+/* Renvoi de l'email de confirmation. Utile parce que le projet demande une
+   confirmation par email : sans elle, le compte existe mais ne peut pas ouvrir de
+   session, et aucun autre écran ne permet de relancer l'envoi. Comme les autres
+   envois, il passe par le service intégré de Supabase et peut donc être limité en
+   fréquence — le 429 est explicitement affiché plutôt qu'avalé. */
+async function resendConfirmation(){
+  if(!window.supabaseClient || _emailAuthing) return;
+  const email=(($('#li_email')||{}).value||'').trim();
+  if(!email) return setLoginStatus(t('fillEmailFirstToast'),'bad');
+  if(!isEmailValid(email)) return setLoginStatus(t('invalidEmailToast'),'bad');
+  _emailAuthing=true; setLoginStatus(t('sendingResetToast'),'checking');
+  try{
+    const { error } = await withAuthTimeout(window.supabaseClient.auth.resend({
+      type:'signup', email,
+      options:{ emailRedirectTo: window.location.origin + window.location.pathname }
+    }));
+    if(error){ console.error('resend confirmation error',error); setLoginStatus(isAuthRateLimit(error)?t('emailRateLimitToast'):t('authGenericErrorToast'),'bad'); }
+    else setLoginStatus(t('confirmResentToast'),'ok');
+  }catch(e){
+    console.error('resend confirmation exception',e);
     setLoginStatus(e&&e.message==='auth_timeout'?t('authTimeoutToast'):t('authGenericErrorToast'),'bad');
   }
   _emailAuthing=false;
@@ -1981,7 +2033,7 @@ const I18N={
     exportImportDesc:'Exporte une copie de tes données ou importe une sauvegarde existante.',
     resetDesc:'Efface toutes les données de l’application sur cet appareil.',
     profilePhotoTitle:'Photo de profil',choosePhotoLab:'Choisis ta photo de profil :',fromGalleryBtn:'Depuis la galerie',
-    takePhotoBtn:'Prendre une photo',removePhotoBtn:'Supprimer la photo actuelle',cropTitle:'Recadrer',zoomLab:'Zoom',validatePhotoBtn:'Valider la photo',
+    takePhotoBtn:'Prendre une photo',removePhotoBtn:'Supprimer la photo actuelle',cropTitle:'Recadrer',zoomLab:'Zoom',validatePhotoBtn:'Valider la photo',cropHintText:'Glisse pour déplacer, utilise le curseur pour zoomer.',
     liftedLoadKgLab:'Charge soulevée (kg)',estimated1RMLab:'1RM estimé (Epley)',percentOf1RMLab:'% de ton 1RM',repsShort:'reps',
     totalTonnageLab:'Tonnage total ({0}×{1}×{2}kg)',noDataLab:'Pas de données',distanceKmLab:'Distance (km)',
     kcalBurnedLab:'kcal brûlées (~{0}kg)',currentLoadKgLab:'Charge actuelle (kg)',weeklyProgressKgLab:'Progression / semaine (kg)',
@@ -1991,6 +2043,8 @@ const I18N={
     restTimesLab:'Temps de repos recommandés',supersetLab:'Superset',pomoFocus:'Focus',pomoBreak:'Pause',pomodorosDoneLab:'Pomodoros complétés : {0}',
     fillEmailPasswordToast:'Remplis email et mot de passe.',invalidEmailToast:'Adresse email invalide.',
     passwordTooShortToast:'Mot de passe trop court (8 caractères min).',passwordsMismatchToast:'Les mots de passe ne correspondent pas.',
+    passwordTooCommonToast:'Ce mot de passe est trop courant : il figure dans les listes utilisées pour forcer les comptes. Choisis-en un autre.',passwordContainsEmailToast:'Ton mot de passe contient ton adresse email — trop facile à deviner. Choisis-en un autre.',
+    resendConfirmLink:'Je n’ai pas reçu l’email de confirmation',fillEmailFirstToast:'Écris d’abord ton adresse email ci-dessus.',confirmResentToast:'Email de confirmation renvoyé. Pense à regarder dans les spams.',
     wrongCredentialsToast:'Email ou mot de passe incorrect — et si tu viens de créer ton compte, valide d’abord l’email de confirmation.',emailRateLimitToast:'Trop de demandes d’email d’affilée. Attends quelques minutes avant de réessayer.',sessionExpiredToast:'Session expirée, reconnecte-toi. Tes données restent sur cet appareil.',sessionLostDuringActivity:'Ton activité en cours continue et reste enregistrée sur cet appareil.',storageBlockedToast:'Ton navigateur bloque le stockage : l’app fonctionne, mais rien ne sera conservé en quittant.',storageFullToast:'Mémoire de l’appareil pleine : tes dernières données n’ont pas pu être enregistrées. Exporte tes données depuis Profil > Données.',swInactiveTip:'Le composant hors-ligne de l’app n’est pas actif sur cet appareil : les notifications ne peuvent pas fonctionner. Recharge la page, et vérifie que le stockage de site n’est pas bloqué.',emailAlreadyUsedToast:'Un compte existe déjà avec cet email.',
     authGenericErrorToast:'Une erreur est survenue. Réessaie.',checkEmailConfirmToast:'Compte créé ✓ Vérifie ta boîte mail pour confirmer ton adresse.',
     authTimeoutToast:'La connexion prend trop de temps. Vérifie ta connexion internet et réessaie.',
@@ -2539,7 +2593,7 @@ const I18N={
     exportImportDesc:'Export a copy of your data or import an existing backup.',
     resetDesc:'Erases all app data on this device.',
     profilePhotoTitle:'Profile photo',choosePhotoLab:'Choose your profile photo:',fromGalleryBtn:'From the gallery',
-    takePhotoBtn:'Take a photo',removePhotoBtn:'Remove current photo',cropTitle:'Crop',zoomLab:'Zoom',validatePhotoBtn:'Confirm photo',
+    takePhotoBtn:'Take a photo',removePhotoBtn:'Remove current photo',cropTitle:'Crop',zoomLab:'Zoom',validatePhotoBtn:'Confirm photo',cropHintText:'Drag to move, use the slider to zoom.',
     liftedLoadKgLab:'Load lifted (kg)',estimated1RMLab:'Estimated 1RM (Epley)',percentOf1RMLab:'% of your 1RM',repsShort:'reps',
     totalTonnageLab:'Total tonnage ({0}×{1}×{2}kg)',noDataLab:'No data',distanceKmLab:'Distance (km)',
     kcalBurnedLab:'kcal burned (~{0}kg)',currentLoadKgLab:'Current load (kg)',weeklyProgressKgLab:'Progress / week (kg)',
@@ -2549,6 +2603,8 @@ const I18N={
     restTimesLab:'Recommended rest times',supersetLab:'Superset',pomoFocus:'Focus',pomoBreak:'Break',pomodorosDoneLab:'Pomodoros completed: {0}',
     fillEmailPasswordToast:'Fill in email and password.',invalidEmailToast:'Invalid email address.',
     passwordTooShortToast:'Password too short (8 characters min).',passwordsMismatchToast:'Passwords don\u2019t match.',
+    passwordTooCommonToast:'That password is too common \u2014 it appears in the lists used to break into accounts. Pick another one.',passwordContainsEmailToast:'Your password contains your email address \u2014 too easy to guess. Pick another one.',
+    resendConfirmLink:'I didn\u2019t get the confirmation email',fillEmailFirstToast:'Type your email address above first.',confirmResentToast:'Confirmation email sent again. Remember to check your spam folder.',
     wrongCredentialsToast:'Wrong email or password — and if you just created your account, confirm your email first.',emailRateLimitToast:'Too many email requests in a row. Wait a few minutes before trying again.',sessionExpiredToast:'Session expired, please sign in again. Your data stays on this device.',sessionLostDuringActivity:'Your ongoing activity keeps running and stays saved on this device.',storageBlockedToast:'Your browser blocks storage: the app works, but nothing will be kept when you leave.',storageFullToast:'Device storage is full: your latest data could not be saved. Export your data from Profile > Data.',swInactiveTip:'The app’s offline component is not active on this device: notifications cannot work. Reload the page and check that site storage is not blocked.',emailAlreadyUsedToast:'An account already exists with this email.',
     authGenericErrorToast:'Something went wrong. Try again.',checkEmailConfirmToast:'Account created ✓ Check your inbox to confirm your email.',
     authTimeoutToast:'This is taking too long. Check your internet connection and try again.',
@@ -3100,7 +3156,7 @@ const I18N={
     exportImportDesc:'صدّر نسخة من بياناتك أو استورد نسخة احتياطية موجودة.',
     resetDesc:'يمسح كل بيانات التطبيق على هذا الجهاز.',
     profilePhotoTitle:'صورة الملف الشخصي',choosePhotoLab:'اختر صورة ملفك الشخصي:',fromGalleryBtn:'من المعرض',
-    takePhotoBtn:'التقاط صورة',removePhotoBtn:'حذف الصورة الحالية',cropTitle:'اقتصاص',zoomLab:'تكبير',validatePhotoBtn:'تأكيد الصورة',
+    takePhotoBtn:'التقاط صورة',removePhotoBtn:'حذف الصورة الحالية',cropTitle:'اقتصاص',zoomLab:'تكبير',validatePhotoBtn:'تأكيد الصورة',cropHintText:'اسحب للتحريك، واستخدم شريط التمرير للتكبير.',
     liftedLoadKgLab:'الحمل المرفوع (كغ)',estimated1RMLab:'أقصى تكرار مُقدَّر (Epley)',percentOf1RMLab:'٪ من أقصى تكرار',repsShort:'تكرار',
     totalTonnageLab:'الحمولة الإجمالية ({0}×{1}×{2}كغ)',noDataLab:'لا توجد بيانات',distanceKmLab:'المسافة (كم)',
     kcalBurnedLab:'سعرات محروقة (~{0}كغ)',currentLoadKgLab:'الحمل الحالي (كغ)',weeklyProgressKgLab:'التقدم / أسبوع (كغ)',
@@ -3110,6 +3166,8 @@ const I18N={
     restTimesLab:'أوقات الراحة الموصى بها',supersetLab:'سوبرسِت',pomoFocus:'تركيز',pomoBreak:'استراحة',pomodorosDoneLab:'بومودورو مكتملة: {0}',
     fillEmailPasswordToast:'أدخل البريد الإلكتروني وكلمة المرور.',invalidEmailToast:'عنوان بريد إلكتروني غير صالح.',
     passwordTooShortToast:'كلمة المرور قصيرة جدًا (8 أحرف كحد أدنى).',passwordsMismatchToast:'كلمتا المرور غير متطابقتين.',
+    passwordTooCommonToast:'كلمة المرور هذه شائعة جدًا — وهي موجودة في القوائم المستخدمة لاختراق الحسابات. اختر غيرها.',passwordContainsEmailToast:'كلمة المرور تحتوي على بريدك الإلكتروني — يسهل تخمينها. اختر غيرها.',
+    resendConfirmLink:'لم يصلني بريد التأكيد',fillEmailFirstToast:'اكتب بريدك الإلكتروني في الأعلى أولًا.',confirmResentToast:'تم إرسال بريد التأكيد من جديد. تحقّق من مجلد الرسائل غير المرغوب فيها.',
     wrongCredentialsToast:'بريد إلكتروني أو كلمة مرور غير صحيحة — وإذا أنشأت حسابك للتو، فأكّد بريدك الإلكتروني أولًا.',emailRateLimitToast:'طلبات بريد كثيرة متتالية. انتظر بضع دقائق قبل إعادة المحاولة.',sessionExpiredToast:'انتهت الجلسة، سجّل الدخول من جديد. بياناتك تبقى على هذا الجهاز.',sessionLostDuringActivity:'نشاطك الجاري يستمر ويبقى محفوظًا على هذا الجهاز.',storageBlockedToast:'متصفحك يحظر التخزين: التطبيق يعمل، لكن لن يُحفظ شيء عند الخروج.',storageFullToast:'ذاكرة الجهاز ممتلئة: تعذّر حفظ أحدث بياناتك. صدّر بياناتك من الملف الشخصي > البيانات.',swInactiveTip:'المكوّن دون اتصال غير مفعّل على هذا الجهاز: لا يمكن للإشعارات أن تعمل. أعد تحميل الصفحة وتأكد أن تخزين المواقع غير محظور.',emailAlreadyUsedToast:'يوجد حساب بالفعل بهذا البريد الإلكتروني.',
     authGenericErrorToast:'حدث خطأ ما. حاول مرة أخرى.',checkEmailConfirmToast:'تم إنشاء الحساب ✓ تحقق من بريدك لتأكيد عنوانك.',
     authTimeoutToast:'\u0627\u0644\u0627\u062A\u0635\u0627\u0644 \u064A\u0633\u062A\u063A\u0631\u0642 \u0648\u0642\u062A\u064B\u0627 \u0637\u0648\u064A\u0644\u0627\u064B. \u062A\u062D\u0642\u0642 \u0645\u0646 \u0627\u062A\u0635\u0627\u0644\u0643 \u0628\u0627\u0644\u0625\u0646\u062A\u0631\u0646\u062A \u0648\u0623\u0639\u062F \u0627\u0644\u0645\u062D\u0627\u0648\u0644\u0629.',
@@ -4125,6 +4183,34 @@ function customConfirm(msg,onYes,opts){
   document.body.appendChild(ov);
   $('#genConfirmNo').onclick=()=>{ ov.remove(); if(opts.onNo) opts.onNo(); };
   $('#genConfirmYes').onclick=()=>{ ov.remove(); onYes(); };
+}
+/* Même problème que confirm() : prompt() ne s'affiche pas dans une app ajoutée à
+   l'écran d'accueil sur iOS. Il restait utilisé pour nommer un plan perso, le
+   renommer, ajouter un événement à l'agenda et modifier la bio — sur un iPhone en
+   mode installé, ces actions ne faisaient donc simplement rien. Même structure que
+   customConfirm, avec un champ de saisie et un rappel par fonction. */
+function customPrompt(msg,defVal,onOk,opts){
+  opts=opts||{};
+  const old=$('#genPromptOv'); if(old) old.remove();
+  const ov=document.createElement('div'); ov.className='ov on'; ov.id='genPromptOv'; ov.style.zIndex=topZ();
+  ov.innerHTML='<div class="ov-card">'+
+    '<div class="card-t" style="justify-content:center;margin-bottom:12px">'+escHtml(msg||'')+'</div>'+
+    '<div class="field"><input class="inp" id="genPromptInp" type="'+(opts.type||'text')+'"'+
+      (opts.maxLength?' maxlength="'+opts.maxLength+'"':'')+
+      ' value="'+escHtml(defVal==null?'':String(defVal))+'"'+
+      (opts.placeholder?' placeholder="'+escHtml(opts.placeholder)+'"':'')+'></div>'+
+    '<div class="row" style="gap:10px">'+
+      '<button class="btn ghost" style="flex:1" id="genPromptNo">'+(opts.noLabel||t('cancel'))+'</button>'+
+      '<button class="btn" style="flex:1" id="genPromptYes">'+(opts.yesLabel||t('validate'))+'</button>'+
+    '</div></div>';
+  document.body.appendChild(ov);
+  const inp=$('#genPromptInp');
+  const done=()=>{ const v=(inp.value||'').trim(); ov.remove(); if(v) onOk(v); else if(opts.onCancel) opts.onCancel(); };
+  $('#genPromptNo').onclick=()=>{ ov.remove(); if(opts.onCancel) opts.onCancel(); };
+  $('#genPromptYes').onclick=done;
+  inp.onkeydown=e=>{ if(e.key==='Enter') done(); };
+  // Le focus doit venir après l'insertion dans la page, sinon le clavier ne s'ouvre pas.
+  setTimeout(()=>{ try{ inp.focus(); inp.select&&inp.select(); }catch(e){} },60);
 }
 
 /* ============ WHEEL PICKER réutilisable ============ */
@@ -7234,9 +7320,10 @@ function renderPersoList(){
   return h;
 }
 function addPersoPlan(){
-  const n=prompt(t('planNamePrompt'),t('myPersoPlanDefault')); if(!n) return;
-  const id='P'+Date.now();
-  CUSTOM.push({id,kind:'run',name:n,sessions:[]}); saveAll(); openPerso(id);
+  customPrompt(t('planNamePrompt'),t('myPersoPlanDefault'),n=>{
+    const id='P'+Date.now();
+    CUSTOM.push({id,kind:'run',name:n.slice(0,60),sessions:[]}); saveAll(); openPerso(id);
+  },{maxLength:60});
 }
 function openPerso(id){ curPerso=id; renderSport(); setTimeout(()=>renderPersoDetail(),0); }
 let sportView='list';
@@ -7370,7 +7457,7 @@ function toggleFollowPerso(id){
   toast(P.followPerso?t('followingPersoPlan'):t('backToIkorunPlan'));
   renderSport();
 }
-function renamePerso(id){ const p=CUSTOM.find(x=>x.id===id); const n=prompt(t('namePromptLabel'),p.name); if(n){p.name=n;saveAll();renderSport();} }
+function renamePerso(id){ const p=CUSTOM.find(x=>x.id===id); if(!p) return; customPrompt(t('namePromptLabel'),p.name,n=>{ p.name=n.slice(0,60); saveAll(); renderSport(); },{maxLength:60}); }
 function dupPerso(id){ const p=CUSTOM.find(x=>x.id===id); CUSTOM.push({...JSON.parse(JSON.stringify(p)),id:'P'+Date.now(),name:p.name+' '+t('copySuffix')}); saveAll(); renderSport(); }
 function delPerso(id){ customConfirm(t('confirmDeletePlan'),()=>{ CUSTOM=CUSTOM.filter(x=>x.id!==id); if(P.followPerso===id) P.followPerso=null; curPerso=null; saveAll(); renderSport(); },{danger:true}); }
 let psType='EF';
@@ -10219,9 +10306,13 @@ function renderAgenda(){
   $('#outBody').innerHTML=h;
 }
 function addEvent(){
-  const ti=prompt(t('eventTitlePrompt')); if(!ti)return;
-  const d=prompt(t('eventDatePrompt'),todayKey()); if(!d)return;
-  AGENDA.push({title:ti,date:d}); saveAll(); renderAgenda(); toast(t('eventAdded'));
+  customPrompt(t('eventTitlePrompt'),'',ti=>{
+    // Deuxième étape enchaînée : le champ date utilise le sélecteur natif du
+    // téléphone (type="date"), plus fiable qu'une saisie libre au format AAAA-MM-JJ.
+    customPrompt(t('eventDatePrompt'),todayKey(),d=>{
+      AGENDA.push({title:ti.slice(0,80),date:d}); saveAll(); renderAgenda(); toast(t('eventAdded'));
+    },{type:'date'});
+  },{maxLength:80});
 }
 function delEvent(i){ AGENDA.splice(i,1); saveAll(); renderAgenda(); }
 
@@ -10576,15 +10667,25 @@ async function convertGuestAccount(){
     // Associe un email à la session invité en cours (même uid conservé) : le
     // reste (choix du mot de passe) se fait via "mot de passe oublié" une fois
     // l'email confirmé — cf convertGuestAccount() dans le message de livraison.
-    const { error } = await window.supabaseClient.auth.updateUser({ email });
+    // withAuthTimeout + isAuthRateLimit comme les trois autres appels d'authentification :
+    // c'est le seul qui ne les avait pas. Sans le délai maximum, une requête qui ne
+    // revient jamais laissait _guestAuthing à true et le bouton définitivement mort ;
+    // sans le test de quota, le 429 (fréquent, l'envoi d'emails est très limité)
+    // s'affichait en « une erreur est survenue », donc réessayer semblait inutile.
+    const { error } = await withAuthTimeout(window.supabaseClient.auth.updateUser({ email }));
     if(error){
       console.error('updateUser(email) error',error);
-      setSt(/already|exists|registered/i.test(error.message||'')?t('guestUpgradeEmailUsedToast'):t('authGenericErrorToast'),'bad');
+      setSt(isAuthRateLimit(error)?t('emailRateLimitToast')
+        :/already|exists|registered/i.test(error.message||'')?t('guestUpgradeEmailUsedToast')
+        :t('authGenericErrorToast'),'bad');
     } else {
       _guestUpgradeSent=true;
       refreshPfSheet();
     }
-  }catch(e){ console.error('updateUser(email) exception',e); setSt(t('authGenericErrorToast'),'bad'); }
+  }catch(e){
+    console.error('updateUser(email) exception',e);
+    setSt(e&&e.message==='auth_timeout'?t('authTimeoutToast'):t('authGenericErrorToast'),'bad');
+  }
   _guestAuthing=false;
 }
 function pfLangHTML(){
@@ -10761,7 +10862,7 @@ const CROP_VIEW=300, CROP_DPR=Math.min(3,window.devicePixelRatio||2), CROP_OUT=5
 function openCropper(img){
   closeOv('ovProg');
   _crop={img,scale:1,x:0,y:0};
-  let h='<div class="tip" style="margin-bottom:12px">Glisse pour déplacer, utilise le curseur pour zoomer.</div>';
+  let h='<div class="tip" style="margin-bottom:12px">'+t('cropHintText')+'</div>';
   h+='<div id="cropStage" style="position:relative;width:'+CROP_VIEW+'px;height:'+CROP_VIEW+'px;max-width:100%;margin:0 auto 14px;border-radius:50%;overflow:hidden;background:#000;touch-action:none;border:2px solid var(--e)"><canvas id="cropCv" style="width:100%;height:100%;display:block"></canvas></div>';
   h+='<div class="field"><label>'+t('zoomLab')+'</label><input id="cropZoom" type="range" min="1" max="4" step="0.01" value="1" style="width:100%"></div>';
   h+='<button class="btn" onclick="applyCrop()">'+t('validatePhotoBtn')+'</button>';
@@ -10799,7 +10900,7 @@ function applyCrop(){
   P.photo=out.toDataURL('image/jpeg',0.9); saveAll(); closeOv('ovProg'); renderProfile(); toast(t('photoUpdated')); sfx&&sfx('goal');
 }
 function removePhoto(){ delete P.photo; saveAll(); renderProfile(); toast(t('photoRemoved')); }
-function editBio(){ const v=prompt(t('bioPromptLabel'),P.bio||''); if(v!==null){ P.bio=v.trim().slice(0,160); saveAll(); renderProfile(); } }
+function editBio(){ customPrompt(t('bioPromptLabel'),P.bio||'',v=>{ P.bio=v.slice(0,160); saveAll(); renderProfile(); },{maxLength:160}); }
 function importData(){
   const inp=document.createElement('input'); inp.type='file'; inp.accept='.json';
   inp.onchange=e=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader();

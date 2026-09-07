@@ -1267,6 +1267,9 @@ html[data-mode="light"]{
   box-shadow:0 14px 34px -8px rgba(var(--e-rgb),.6),0 2px 8px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.18) inset;
   animation:glassFloat 4.2s ease-in-out infinite;}
 .login-logo img{width:100%;height:100%;object-fit:cover;display:block;}
+.login-logo-fb{display:none;font-family:'Unbounded',system-ui,sans-serif;font-weight:800;font-size:26px;letter-spacing:1px;color:#fff;}
+.login-logo.noimg{background:linear-gradient(135deg,var(--e),var(--e2));}
+.login-logo.noimg .login-logo-fb{display:block;}
 .login-brand{font-weight:800;font-size:25px;letter-spacing:.5px;}
 .login-brand span{color:var(--e2);}
 .login-tag{color:rgba(244,246,249,.82);font-size:11.5px;letter-spacing:1px;margin-top:3px;text-transform:uppercase;font-weight:600;}
@@ -2024,7 +2027,11 @@ html[data-mode="light"]{
 <div id="login">
   <div class="login-card">
     <div class="login-top">
-      <div class="login-logo"><img src="icon-192.png" alt="IKORUN"></div>
+      <!-- Si icon-192.png ne charge pas (réseau coupé au mauvais moment, cache du
+           service worker vidé par une mise à jour), le navigateur affichait le texte
+           alternatif brut : un « IKORUN » nu au milieu du cadre, sans image ni fond.
+           On bascule maintenant sur une tuile dessinée en CSS avec le monogramme. -->
+      <div class="login-logo" role="img" aria-label="IKORUN"><img src="icon-192.png" alt="" onerror="this.closest('.login-logo').classList.add('noimg');this.remove()"><span class="login-logo-fb" aria-hidden="true">IK</span></div>
       <div class="login-brand man">IKO<span>RUN</span></div>
       <div class="login-tag">Elite Athletic Intelligence</div>
     </div>
@@ -2180,6 +2187,6 @@ html[data-mode="light"]{
     console.error('[IKORUN] Le script Supabase (jsdelivr) n\'a pas pu charger, réessaie de recharger la page.', e);
   }
 </script>
-<script src="app.js?v=53"></script>
+<script src="app.js?v=54"></script>
 </body>
 </html>

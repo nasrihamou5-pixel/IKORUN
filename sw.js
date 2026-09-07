@@ -7,9 +7,33 @@
 // cache. Changer le nom du cache supprime les anciennes entrées à l'activation, ce
 // qui garantit que le vrai manifest.json est bien récupéré — condition nécessaire
 // pour que le navigateur propose l'installation de l'app.
-const C = 'ikorun-v42';
+const C = 'ikorun-v43';
+
+// Coquille de base mise en cache dès l'installation. Sans ça, le cache ne se
+// remplissait qu'au fil des requêtes réussies : à chaque changement de nom de
+// cache (donc à chaque mise à jour), l'activation supprimait tout et laissait
+// une fenêtre où l'app ouverte hors-ligne — ou sur un réseau qui décroche —
+// n'avait plus ses icônes. L'écran de connexion affichait alors le texte
+// alternatif de l'image à la place du logo. On ne précharge PAS app.js : son
+// URL porte un numéro de version, le réseau-d'abord s'en charge tout seul.
+const SHELL = [
+  './',
+  'manifest.json',
+  'icon-192.png',
+  'icon-512.png',
+  'apple-touch-icon.png',
+  'favicon-32.png',
+  'favicon-16.png'
+];
 
 self.addEventListener('install', e => {
+  // Chaque entrée est ajoutée separement : avec cache.addAll(), un seul fichier
+  // manquant ferait echouer TOUTE l'installation du service worker.
+  e.waitUntil(
+    caches.open(C)
+      .then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => {}))))
+      .catch(() => {})
+  );
   self.skipWaiting();
 });
 
