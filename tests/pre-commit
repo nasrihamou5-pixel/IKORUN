@@ -42,8 +42,13 @@ if [ "$node_absent" -eq 0 ] && [ -f app.js ]; then
   node -e '
     const src=require("fs").readFileSync("app.js","utf8");
     const m=src.match(/const I18N *= *\{[\s\S]*?\n\};/);
-    if(!m){ console.log("i18n: bloc introuvable, verification ignoree"); process.exit(0); }
-    let I18N; try{ I18N=eval("("+m[0].replace(/^const I18N *= */,"")+")"); }catch(e){ console.log("i18n: non evaluable, ignore"); process.exit(0); }
+    // Un controle qui abandonne en silence est pire que pas de controle : on
+    // lui fait confiance a tort. Ici, ne pas pouvoir verifier EST une erreur.
+    if(!m){ console.log("ERREUR i18n : bloc I18N introuvable dans app.js"); process.exit(1); }
+    // Le bloc capture se termine par "};" — le point-virgule doit sauter, sinon
+    // eval("({...};)") est une erreur de syntaxe et le controle passait a vide.
+    const brut=m[0].replace(/^const I18N *= */,"").replace(/;\s*$/,"");
+    let I18N; try{ I18N=eval("("+brut+")"); }catch(e){ console.log("ERREUR i18n : bloc non evaluable -",e.message); process.exit(1); }
     const fr=Object.keys(I18N.fr||{});
     const manqEn=fr.filter(k=>!(k in (I18N.en||{})));
     const manqAr=fr.filter(k=>!(k in (I18N.ar||{})));
