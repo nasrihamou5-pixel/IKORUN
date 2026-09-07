@@ -2149,6 +2149,7 @@ const I18N={
     accountReadySlowEmailToast:'Compte créé, tu peux commencer. L’envoi de l’email a été long — vérifie ta boîte, ou relance depuis Profil > Compte.',
     accountReadyNoPwToast:'Compte créé, tu peux commencer. Ton mot de passe sera à choisir après confirmation de l’adresse — tout est expliqué dans Profil > Compte.',
     linkGoogleBtn:'Rattacher mon compte Google',
+    soundVolumeLab:'Volume des effets',sndTest1:'Départ',sndTest2:'Série',sndTest3:'Objectif',sndTest4:'Badge',sndTest5:'Séance finie',
     guestLinkUnavailableTitle:'Rattachement impossible',
     guestLinkUnavailableWarn:'Ton compte invité ne peut pas être rattaché à Google pour l’instant.\n\nSe connecter avec Google créerait un compte séparé : tes séances, tes records et tes mesures resteraient sur le compte invité, sans aucun moyen d’y revenir.\n\nExporte tes données avant toute chose — tu pourras les réimporter dans le nouveau compte.',
     exportBeforeBtn:'Exporter mes données',
@@ -2725,6 +2726,7 @@ const I18N={
     accountReadySlowEmailToast:'Account created, you can start now. Sending the email took a while — check your inbox, or resend from Profile > Account.',
     accountReadyNoPwToast:'Account created, you can start now. You’ll pick your password once the address is confirmed — it’s all explained in Profile > Account.',
     linkGoogleBtn:'Link my Google account',
+    soundVolumeLab:'Effects volume',sndTest1:'Start',sndTest2:'Set',sndTest3:'Goal',sndTest4:'Badge',sndTest5:'Session done',
     guestLinkUnavailableTitle:'Linking unavailable',
     guestLinkUnavailableWarn:'Your guest account can’t be linked to Google right now.\n\nSigning in with Google would create a separate account: your sessions, records and measurements would stay on the guest account, with no way back to it.\n\nExport your data first — you’ll be able to import it into the new account.',
     exportBeforeBtn:'Export my data',
@@ -3304,6 +3306,7 @@ const I18N={
     accountReadySlowEmailToast:'تم إنشاء الحساب، يمكنك البدء الآن. استغرق إرسال البريد وقتًا — تحقّق من صندوقك أو أعد الإرسال من الملف الشخصي > الحساب.',
     accountReadyNoPwToast:'تم إنشاء الحساب، يمكنك البدء الآن. ستختار كلمة المرور بعد تأكيد البريد — التفاصيل في الملف الشخصي > الحساب.',
     linkGoogleBtn:'ربط حساب Google',
+    soundVolumeLab:'مستوى المؤثرات',sndTest1:'البداية',sndTest2:'المجموعة',sndTest3:'الهدف',sndTest4:'وسام',sndTest5:'انتهت الحصة',
     guestLinkUnavailableTitle:'الربط غير متاح',
     guestLinkUnavailableWarn:'لا يمكن ربط حساب الضيف بحساب Google حاليًا.\n\nتسجيل الدخول عبر Google سينشئ حسابًا منفصلًا: ستبقى حصصك وأرقامك القياسية وقياساتك على حساب الضيف، دون أي وسيلة للعودة إليه.\n\nصدّر بياناتك أولًا — ستتمكن من استيرادها في الحساب الجديد.',
     exportBeforeBtn:'تصدير بياناتي',
@@ -4057,49 +4060,179 @@ function dateKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(
 function daysBetween(a,b){ return Math.round((b-a)/86400000); }
 function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),2200); }
 
-/* ============ SONS PREMIUM (Web Audio, synthétisés, discrets) ============ */
-let _actx=null;
-function audioCtx(){ if(!_actx){ try{ _actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } } if(_actx.state==='suspended') _actx.resume(); return _actx; }
-function soundsOn(){ return P.sounds!==false; }
+/* ============ SONS (Web Audio, synthétisés) ============
+   Les oscillateurs étaient branchés directement sur la sortie : aucun filtrage,
+   aucun espace. Une onde carrée à 880 Hz sans filtre, c'est un bip de réveil des
+   années 90 — le son était « juste » mais nu. La chaîne est maintenant :
+
+     oscillateurs (2, légèrement désaccordés)
+       → filtre passe-bas (coupe les harmoniques dures)
+       → enveloppe
+       → bus sec ─┬→ gain maître (volume réglable) → sortie
+          bus réverb ┘ (réverbération courte générée, donne une profondeur)
+
+   Trois apports concrets : le filtre enlève l'agressivité, le désaccordage
+   épaissit le timbre, la réverbération sort les sons de la « boîte ». L'alarme
+   garde son propre gain : elle doit rester audible même si le volume des effets
+   est baissé, c'est son rôle. */
+let _actx=null, _busDry=null, _busWet=null, _master=null, _alarmBus=null;
+// isFinite, pas seulement typeof : un NaN venu d'un fichier importé passerait le
+// test "c'est un nombre", et un gain à NaN coupe tout le son sans rien signaler.
+function soundVol(){ const v=(P&&typeof P.soundVol==='number'&&isFinite(P.soundVol))?P.soundVol:0.7; return Math.max(0,Math.min(1,v)); }
+/* Réponse impulsionnelle générée : bruit décroissant. Beaucoup plus crédible
+   qu'un simple écho, pour ~10 lignes et un seul calcul au démarrage. */
+function _makeIR(ctx,dur,decay){
+  const n=Math.max(1,Math.floor(ctx.sampleRate*dur));
+  const buf=ctx.createBuffer(2,n,ctx.sampleRate);
+  for(let ch=0;ch<2;ch++){
+    const d=buf.getChannelData(ch);
+    for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/n,decay);
+  }
+  return buf;
+}
+function _buildAudioGraph(){
+  const ctx=_actx;
+  _master=ctx.createGain(); _master.gain.value=soundVol(); _master.connect(ctx.destination);
+  _busDry=ctx.createGain(); _busDry.gain.value=1; _busDry.connect(_master);
+  try{
+    const conv=ctx.createConvolver(); conv.buffer=_makeIR(ctx,0.55,2.6);
+    // Un passe-haut avant la réverb évite que les graves ne la rendent boueuse.
+    const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=500;
+    _busWet=ctx.createGain(); _busWet.gain.value=1;
+    _busWet.connect(hp); hp.connect(conv); conv.connect(_master);
+  }catch(e){ _busWet=null; console.error('[IKORUN] reverb indisponible',e); }
+  _alarmBus=ctx.createGain();
+  _alarmBus.gain.value=Math.max(0.6,soundVol()); // plancher : une alarme baissée ne sert à rien
+  _alarmBus.connect(ctx.destination);
+}
+function audioCtx(){
+  if(!_actx){
+    try{ _actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; }
+    try{ _buildAudioGraph(); }catch(e){ console.error('[IKORUN] graphe audio',e); }
+  }
+  if(_actx.state==='suspended') _actx.resume();
+  return _actx;
+}
+function applySoundVol(){
+  if(!_actx||!_master) return;
+  const v=soundVol();
+  _master.gain.setTargetAtTime(v,_actx.currentTime,0.02);
+  if(_alarmBus) _alarmBus.gain.setTargetAtTime(Math.max(0.6,v),_actx.currentTime,0.02);
+}
+// P n'existe qu'après DB_READY : un sfx déclenché avant (tap sur l'écran de
+// connexion pendant le déchiffrement) plantait ici. Défaut = son actif, comme
+// pour un profil neuf.
+function soundsOn(){ return !P || P.sounds!==false; }
 // Débloque l'audio au premier geste utilisateur (politique navigateur)
 document.addEventListener('pointerdown',function unlockAudio(){ try{ audioCtx(); }catch(e){} document.removeEventListener('pointerdown',unlockAudio); },{once:true});
-// note: fréquence, durée, type, volume, délai, glide vers
-function _note(freq,dur,type,vol,delay,toFreq){
-  const ctx=audioCtx(); if(!ctx) return;
+/* note : fréquence, durée, type, volume, délai, glide vers, options
+   opt.cut    fréquence de coupure du passe-bas (défaut : 4,5 × la fondamentale)
+   opt.detune désaccordage en cents entre les deux oscillateurs (0 = un seul)
+   opt.wet    dose de réverbération (0 à 1)
+   opt.atk    durée d'attaque
+   opt.alarm  route vers le bus d'alarme, qui ignore le volume bas */
+function _note(freq,dur,type,vol,delay,toFreq,opt){
+  const ctx=audioCtx(); if(!ctx||!_busDry) return;
+  opt=opt||{};
   const t0=ctx.currentTime+(delay||0);
-  const o=ctx.createOscillator(), g=ctx.createGain();
-  o.type=type||'sine'; o.frequency.setValueAtTime(freq,t0);
-  if(toFreq) o.frequency.exponentialRampToValueAtTime(toFreq,t0+dur);
-  g.gain.setValueAtTime(0,t0);
-  g.gain.linearRampToValueAtTime(vol||0.18,t0+0.012);
+  const nyq=ctx.sampleRate/2;
+  const filt=ctx.createBiquadFilter();
+  filt.type='lowpass';
+  filt.frequency.setValueAtTime(Math.min(nyq*0.9, opt.cut||freq*4.5), t0);
+  filt.Q.setValueAtTime(opt.q||0.7, t0);
+  const g=ctx.createGain();
+  const det=(opt.detune==null)?7:opt.detune;
+  // Deux voix = environ deux fois plus fort : on compense pour garder le même
+  // niveau perçu qu'avant, sinon tous les sons deviennent brutalement plus forts.
+  const v=Math.max(0.0002,(vol||0.18)*(det?0.62:1));
+  g.gain.setValueAtTime(0.0001,t0);
+  g.gain.linearRampToValueAtTime(v,t0+(opt.atk||0.014));
   g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
-  o.connect(g); g.connect(ctx.destination);
-  o.start(t0); o.stop(t0+dur+0.02);
+  const spread=det?[-det,det]:[0];
+  for(const d of spread){
+    const o=ctx.createOscillator();
+    o.type=type||'sine';
+    o.detune.setValueAtTime(d,t0);
+    o.frequency.setValueAtTime(freq,t0);
+    if(toFreq) o.frequency.exponentialRampToValueAtTime(Math.max(1,toFreq),t0+dur);
+    o.connect(filt);
+    o.start(t0); o.stop(t0+dur+0.03);
+  }
+  filt.connect(g);
+  if(opt.alarm && _alarmBus){ g.connect(_alarmBus); return; }
+  g.connect(_busDry);
+  if(_busWet && opt.wet){ const w=ctx.createGain(); w.gain.value=opt.wet; g.connect(w); w.connect(_busWet); }
 }
+// Micro-variation de hauteur sur les sons répétés (tap, tick) : sans elle, dix
+// appuis d'affilée sonnent comme une mitraillette, toujours à la note exacte.
+function _vary(f,pct){ const p=pct||0.02; return f*(1+(Math.random()*2-1)*p); }
 function sfx(name){
   if(!soundsOn()) return;
   switch(name){
-    case 'tick': _note(880,0.05,'square',0.06); break;
-    case 'start': _note(523,0.12,'sine',0.15); _note(784,0.16,'sine',0.15,0.1); break;
-    case 'stop': _note(523,0.14,'sine',0.13); _note(392,0.2,'sine',0.13,0.1); break;
-    case 'goal': _note(659,0.1,'sine',0.16); _note(880,0.18,'sine',0.16,0.09); break;
-    case 'xp': _note(1046,0.08,'triangle',0.13); _note(1318,0.12,'triangle',0.13,0.07); break;
-    case 'medal': _note(659,0.12,'sine',0.16); _note(880,0.12,'sine',0.16,0.1); _note(1318,0.25,'sine',0.18,0.2); break;
-    case 'finish': [523,659,784,1046].forEach((f,i)=>_note(f,0.22,'sine',0.16,i*0.11)); break;
-    case 'timer': for(let i=0;i<3;i++){ _note(1046,0.16,'sine',0.2,i*0.28); } break;
-    case 'notif': _note(880,0.13,'sine',0.18); _note(1174,0.22,'sine',0.18,0.12); break;
-    case 'tap': _note(660,0.04,'sine',0.07); break;
+    // Retour d'appui : très court, sourd, presque subliminal.
+    case 'tap':
+      _note(_vary(520),0.055,'sine',0.075,0,null,{cut:1300,detune:0,wet:0.05});
+      break;
+    // Série validée : net, avec un petit éclat au-dessus au lieu d'une onde carrée.
+    case 'tick':
+      _note(_vary(1046),0.05,'triangle',0.09,0,null,{cut:3000,detune:0,wet:0.08});
+      _note(_vary(2093),0.028,'sine',0.035,0.004,null,{cut:6000,detune:0});
+      break;
+    // Départ : quinte montante + une basse discrète qui donne du corps.
+    case 'start':
+      _note(523,0.14,'sine',0.16,0,null,{cut:2200,wet:0.14});
+      _note(784,0.22,'sine',0.16,0.10,null,{cut:2600,wet:0.20});
+      _note(261,0.24,'sine',0.07,0,null,{cut:800,detune:0});
+      break;
+    // Arrêt : la même chose à l'envers, ça se pose.
+    case 'stop':
+      _note(523,0.16,'sine',0.14,0,null,{cut:1800,wet:0.12});
+      _note(392,0.28,'sine',0.14,0.10,null,{cut:1400,wet:0.18});
+      break;
+    // Objectif atteint : sixte majeure, chaleureux, plus une pointe brillante.
+    case 'goal':
+      _note(659,0.12,'sine',0.15,0,null,{cut:2400,wet:0.16});
+      _note(880,0.22,'sine',0.15,0.09,null,{cut:2800,wet:0.24});
+      _note(1318,0.18,'triangle',0.055,0.16,null,{cut:5000,detune:0,wet:0.3});
+      break;
+    // XP : léger, scintillant, ne doit jamais couvrir le reste.
+    case 'xp':
+      _note(1046,0.075,'triangle',0.09,0,null,{cut:4000,wet:0.18});
+      _note(1568,0.12,'triangle',0.08,0.06,null,{cut:5500,wet:0.28});
+      break;
+    // Badge débloqué : arpège majeur, réverbération plus généreuse.
+    case 'medal':
+      [523,659,784,1046].forEach((f,i)=>_note(f,0.30,'sine',0.15,i*0.075,null,{cut:f*4,wet:0.34}));
+      _note(1568,0.45,'triangle',0.05,0.30,null,{cut:6000,detune:0,wet:0.45});
+      break;
+    // Séance terminée : montée puis accord tenu — le seul son vraiment "grand".
+    case 'finish':
+      [523,659,784,1046].forEach((f,i)=>_note(f,0.24,'sine',0.15,i*0.10,null,{cut:f*4,wet:0.26}));
+      [523,659,784].forEach(f=>_note(f,0.75,'sine',0.055,0.42,null,{cut:2400,wet:0.4,atk:0.05}));
+      break;
+    // Notification : petite cloche à deux notes.
+    case 'notif':
+      _note(880,0.14,'triangle',0.14,0,null,{cut:3600,wet:0.22});
+      _note(1174,0.26,'triangle',0.13,0.11,null,{cut:4200,wet:0.3});
+      break;
+    case 'timer':
+      for(let i=0;i<3;i++) _note(1046,0.16,'sine',0.18,i*0.28,null,{cut:3000,wet:0.15});
+      break;
   }
 }
 
 /* ============ VRAIE ALARME (son répété + vibration + écran d'arrêt) ============ */
 let _alarmIv=null, _alarmStart=0, _alarmGen=0, _snoozeTo=null;
 function alarmRing(){
-  // motif d'alarme mélodique (joué en boucle), volume plus fort que les sfx
+  // Motif d'alarme mélodique joué en boucle. Il passe par le bus d'alarme, qui
+  // ignore un volume d'effets bas : une alarme doit réveiller, c'est sa fonction.
+  // L'onde carrée est conservée (elle porte, elle réveille) mais désormais
+  // filtrée : avant, ses harmoniques hautes passaient brutes et le son était
+  // strident au point qu'on coupait le son de l'app plutôt que de le supporter.
   if(soundsOn()){
     const seq=[[880,0],[1175,0.18],[880,0.36],[1175,0.54]];
-    seq.forEach(([f,d])=>_note(f,0.16,'square',0.32,d));
-    _note(660,0.5,'sine',0.18,0.74);
+    seq.forEach(([f,d])=>_note(f,0.16,'square',0.30,d,null,{cut:2600,detune:4,alarm:true}));
+    _note(660,0.5,'sine',0.17,0.74,null,{cut:1800,alarm:true});
   }
   if(navigator.vibrate) navigator.vibrate([400,150,400,150,400]);
 }
@@ -10970,6 +11103,26 @@ function toggleSounds(el){
   P.sounds=(P.sounds===false)?true:false;
   if(el) el.classList.toggle('on',P.sounds!==false);
   saveAll(); sfx('tap');
+  // Le curseur de volume et les boutons d'écoute apparaissent/disparaissent avec
+  // l'interrupteur : il faut redessiner la section.
+  try{ refreshPfSheet(); }catch(e){}
+}
+/* Volume des effets. Écrit dans le profil (donc synchronisé) et appliqué en
+   direct sur le gain maître : on entend le résultat pendant qu'on glisse. */
+function setSoundVol(v){
+  const n=Math.max(0,Math.min(100,parseInt(v,10)||0));
+  P.soundVol=n/100;
+  const lab=$('#sndVolVal'); if(lab) lab.textContent=n+'%';
+  applySoundVol();
+  saveAll();
+  // Un repère sonore au relâchement, sinon on règle un volume à l'aveugle.
+  clearTimeout(window._sndVolTo);
+  window._sndVolTo=setTimeout(()=>{ sfx('tick'); },260);
+}
+function previewSfx(name){
+  // Force l'écoute même si le son vient d'être réactivé : c'est le but du bouton.
+  try{ audioCtx(); }catch(e){}
+  sfx(name);
 }
 function togglePrayerNotif(el){
   P.prayerNotif=(P.prayerNotif===false)?true:false;
@@ -11027,6 +11180,19 @@ function pfNotifHTML(){
   h+='<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('trainReminders')+'</span><div class="toggle'+(P.notif!==false?' on':'')+'" onclick="toggleNotif(this)"></div></div>'+
     '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('prayerNotifLabel')+'</span><div class="toggle'+(P.prayerNotif!==false?' on':'')+'" onclick="togglePrayerNotif(this)"></div></div>'+
     '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('sounds')+'</span><div class="toggle'+(P.sounds!==false?' on':'')+'" onclick="toggleSounds(this)"></div></div>'+
+    // Le volume et l'écoute n'apparaissent que si les sons sont actifs : un
+    // curseur sur un réglage éteint ne veut rien dire.
+    (P.sounds!==false
+      ? '<div style="margin-bottom:14px">'+
+          '<div class="row" style="margin-bottom:7px"><span style="font-size:13px;color:var(--muted)">'+t('soundVolumeLab')+'</span>'+
+            '<span class="mono" style="font-size:12px;color:var(--e)" id="sndVolVal">'+Math.round(soundVol()*100)+'%</span></div>'+
+          '<input type="range" min="0" max="100" step="5" value="'+Math.round(soundVol()*100)+'" style="width:100%" oninput="setSoundVol(this.value)">'+
+          '<div class="pills" style="margin-top:10px;flex-wrap:wrap">'+
+            [['start','sndTest1'],['tick','sndTest2'],['goal','sndTest3'],['medal','sndTest4'],['finish','sndTest5']]
+              .map(x=>'<div class="pill" onclick="previewSfx(\''+x[0]+'\')">'+t(x[1])+'</div>').join('')+
+          '</div>'+
+        '</div>'
+      : '')+
     '<div class="row"><span style="font-size:14px">'+t('units')+'</span><div class="toggle on"></div></div>';
   return h;
 }
