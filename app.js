@@ -2148,6 +2148,10 @@ const I18N={
     resendConfirmBtn:'Renvoyer l’email de confirmation',
     accountReadySlowEmailToast:'Compte créé, tu peux commencer. L’envoi de l’email a été long — vérifie ta boîte, ou relance depuis Profil > Compte.',
     accountReadyNoPwToast:'Compte créé, tu peux commencer. Ton mot de passe sera à choisir après confirmation de l’adresse — tout est expliqué dans Profil > Compte.',
+    linkGoogleBtn:'Rattacher mon compte Google',
+    guestLinkUnavailableTitle:'Rattachement impossible',
+    guestLinkUnavailableWarn:'Ton compte invité ne peut pas être rattaché à Google pour l’instant.\n\nSe connecter avec Google créerait un compte séparé : tes séances, tes records et tes mesures resteraient sur le compte invité, sans aucun moyen d’y revenir.\n\nExporte tes données avant toute chose — tu pourras les réimporter dans le nouveau compte.',
+    exportBeforeBtn:'Exporter mes données',
     pendingEmailNoPwDesc:'Ton compte fonctionne et tes données sont sauvegardées. Confirme cette adresse depuis l’email reçu, puis choisis ton mot de passe avec « Mot de passe oublié ? » sur l’écran de connexion. C’est ce qui te permettra de te reconnecter depuis un autre appareil. Regarde aussi dans tes spams.',
     wrongCredentialsToast:'Email ou mot de passe incorrect — et si tu viens de créer ton compte, valide d’abord l’email de confirmation.',emailRateLimitToast:'Trop de demandes d’email d’affilée. Attends quelques minutes avant de réessayer.',sessionExpiredToast:'Session expirée, reconnecte-toi. Tes données restent sur cet appareil.',sessionLostDuringActivity:'Ton activité en cours continue et reste enregistrée sur cet appareil.',storageBlockedToast:'Ton navigateur bloque le stockage : l’app fonctionne, mais rien ne sera conservé en quittant.',storageFullToast:'Mémoire de l’appareil pleine : tes dernières données n’ont pas pu être enregistrées. Exporte tes données depuis Profil > Données.',swInactiveTip:'Le composant hors-ligne de l’app n’est pas actif sur cet appareil : les notifications ne peuvent pas fonctionner. Recharge la page, et vérifie que le stockage de site n’est pas bloqué.',emailAlreadyUsedToast:'Un compte existe déjà avec cet email.',
     authGenericErrorToast:'Une erreur est survenue. Réessaie.',checkEmailConfirmToast:'Compte créé ✓ Vérifie ta boîte mail pour confirmer ton adresse.',
@@ -2720,6 +2724,10 @@ const I18N={
     resendConfirmBtn:'Resend the confirmation email',
     accountReadySlowEmailToast:'Account created, you can start now. Sending the email took a while — check your inbox, or resend from Profile > Account.',
     accountReadyNoPwToast:'Account created, you can start now. You’ll pick your password once the address is confirmed — it’s all explained in Profile > Account.',
+    linkGoogleBtn:'Link my Google account',
+    guestLinkUnavailableTitle:'Linking unavailable',
+    guestLinkUnavailableWarn:'Your guest account can’t be linked to Google right now.\n\nSigning in with Google would create a separate account: your sessions, records and measurements would stay on the guest account, with no way back to it.\n\nExport your data first — you’ll be able to import it into the new account.',
+    exportBeforeBtn:'Export my data',
     pendingEmailNoPwDesc:'Your account works and your data is saved. Confirm this address from the email you received, then pick your password with “Forgot password?” on the sign-in screen. That’s what lets you sign in from another device. Check your spam folder too.',
     wrongCredentialsToast:'Wrong email or password — and if you just created your account, confirm your email first.',emailRateLimitToast:'Too many email requests in a row. Wait a few minutes before trying again.',sessionExpiredToast:'Session expired, please sign in again. Your data stays on this device.',sessionLostDuringActivity:'Your ongoing activity keeps running and stays saved on this device.',storageBlockedToast:'Your browser blocks storage: the app works, but nothing will be kept when you leave.',storageFullToast:'Device storage is full: your latest data could not be saved. Export your data from Profile > Data.',swInactiveTip:'The app’s offline component is not active on this device: notifications cannot work. Reload the page and check that site storage is not blocked.',emailAlreadyUsedToast:'An account already exists with this email.',
     authGenericErrorToast:'Something went wrong. Try again.',checkEmailConfirmToast:'Account created ✓ Check your inbox to confirm your email.',
@@ -3295,6 +3303,10 @@ const I18N={
     resendConfirmBtn:'إعادة إرسال بريد التأكيد',
     accountReadySlowEmailToast:'تم إنشاء الحساب، يمكنك البدء الآن. استغرق إرسال البريد وقتًا — تحقّق من صندوقك أو أعد الإرسال من الملف الشخصي > الحساب.',
     accountReadyNoPwToast:'تم إنشاء الحساب، يمكنك البدء الآن. ستختار كلمة المرور بعد تأكيد البريد — التفاصيل في الملف الشخصي > الحساب.',
+    linkGoogleBtn:'ربط حساب Google',
+    guestLinkUnavailableTitle:'الربط غير متاح',
+    guestLinkUnavailableWarn:'لا يمكن ربط حساب الضيف بحساب Google حاليًا.\n\nتسجيل الدخول عبر Google سينشئ حسابًا منفصلًا: ستبقى حصصك وأرقامك القياسية وقياساتك على حساب الضيف، دون أي وسيلة للعودة إليه.\n\nصدّر بياناتك أولًا — ستتمكن من استيرادها في الحساب الجديد.',
+    exportBeforeBtn:'تصدير بياناتي',
     pendingEmailNoPwDesc:'حسابك يعمل وبياناتك محفوظة. أكّد هذا البريد من الرسالة التي وصلتك، ثم اختر كلمة المرور عبر «نسيت كلمة المرور؟» في شاشة الدخول. هذا ما يتيح لك الدخول من جهاز آخر. تحقّق أيضًا من مجلد الرسائل غير المرغوب فيها.',
     wrongCredentialsToast:'بريد إلكتروني أو كلمة مرور غير صحيحة — وإذا أنشأت حسابك للتو، فأكّد بريدك الإلكتروني أولًا.',emailRateLimitToast:'طلبات بريد كثيرة متتالية. انتظر بضع دقائق قبل إعادة المحاولة.',sessionExpiredToast:'انتهت الجلسة، سجّل الدخول من جديد. بياناتك تبقى على هذا الجهاز.',sessionLostDuringActivity:'نشاطك الجاري يستمر ويبقى محفوظًا على هذا الجهاز.',storageBlockedToast:'متصفحك يحظر التخزين: التطبيق يعمل، لكن لن يُحفظ شيء عند الخروج.',storageFullToast:'ذاكرة الجهاز ممتلئة: تعذّر حفظ أحدث بياناتك. صدّر بياناتك من الملف الشخصي > البيانات.',swInactiveTip:'المكوّن دون اتصال غير مفعّل على هذا الجهاز: لا يمكن للإشعارات أن تعمل. أعد تحميل الصفحة وتأكد أن تخزين المواقع غير محظور.',emailAlreadyUsedToast:'يوجد حساب بالفعل بهذا البريد الإلكتروني.',
     authGenericErrorToast:'حدث خطأ ما. حاول مرة أخرى.',checkEmailConfirmToast:'تم إنشاء الحساب ✓ تحقق من بريدك لتأكيد عنوانك.',
@@ -10769,7 +10781,7 @@ function pfAccountHTML(){
     // normalement, seule la reconnexion depuis un autre appareil attend. On
     // affiche l'adresse concernée et un bouton de renvoi, parce que l'email de
     // confirmation est justement ce qui se perd le plus souvent (quota, spam).
-    if(P.pendingEmail){
+    if(P && P.pendingEmail){ // P n'existe qu'après DB_READY : même garde que setPendingEmail
       return '<div class="card" style="padding:16px">'+
         '<div class="card-t">'+ICN('warning',15,'var(--warn)')+t('pendingEmailTitle')+'</div>'+
         '<div style="font-weight:700;font-size:14px;margin-bottom:8px;word-break:break-all">'+escHtml(P.pendingEmail)+'</div>'+
@@ -10793,7 +10805,10 @@ function pfAccountHTML(){
       '<div class="uname-status" id="guestStatus"></div>'+
       '<button class="btn" style="margin-bottom:11px" onclick="convertGuestAccount()">'+t('guestSaveAccountBtn')+'</button>'+
       '<div class="login-or">'+t('orDividerLabel')+'</div>'+
-      googleBtnHtml()+
+      // PAS googleBtnHtml() ici : ses deux chemins (redirection et bouton natif
+      // iOS) ouvrent une session sur un autre compte et effacent les données de
+      // l'invité. Voir linkGoogleToGuest.
+      '<button class="gbtn" onclick="linkGoogleToGuest()"><span class="gicon">'+GOOGLE_ICON_SVG+'</span>'+t('linkGoogleBtn')+'</button>'+
     '</div>';
   }
   return '<button class="btn" onclick="signInWithGoogle()">Se connecter</button>';
@@ -10821,6 +10836,47 @@ async function resendPendingConfirmation(){
     setSt(e&&e.message==='auth_timeout'?t('authTimeoutToast'):t('authGenericErrorToast'),'bad');
   }
   _guestAuthing=false;
+}
+/* PERTE DE DONNÉES — rattacher Google à un compte invité.
+   Le panneau « Mode invité » proposait le bouton Google standard. Or celui-ci
+   (signInWithOAuth, comme signInWithIdToken sur iPhone installé) ouvre une
+   session sur un AUTRE identifiant utilisateur. Au retour, finishLogin appelle
+   ensureLocalCacheOwnership, constate que le propriétaire du cache a changé et
+   exécute wipeLocalCache(). Les séances, records et mesures de l'invité
+   restaient alors accrochés au compte anonyme — auquel personne ne peut plus se
+   reconnecter, un compte anonyme n'ayant aucun moyen d'authentification. Perte
+   sèche et définitive, déclenchée par le bouton qui promet précisément de
+   « sauvegarder le compte ».
+   linkIdentity rattache l'identité Google au MÊME identifiant : rien ne bouge.
+   Si le projet n'autorise pas le rattachement manuel, on refuse d'enchaîner sur
+   une connexion classique et on propose d'abord l'export. */
+async function linkGoogleToGuest(){
+  if(!window.supabaseClient || _googleAuthing) return;
+  if(isStandalone() && isIOSDevice()){ showGoogleStandaloneHelp(); return; }
+  const setSt=guestStatusSetter();
+  _googleAuthing=true; setSt(t('connectingGoogle'),'checking');
+  try{
+    const { error } = await withAuthTimeout(window.supabaseClient.auth.linkIdentity({
+      provider:'google',
+      options:{
+        redirectTo: window.location.origin + window.location.pathname,
+        queryParams:{ prompt:'select_account' }
+      }
+    }));
+    if(error){
+      console.error('linkIdentity google error',error);
+      setSt('','');
+      _googleAuthing=false;
+      customConfirm(t('guestLinkUnavailableWarn'),()=>{ try{ exportData(); }catch(e){ console.error('exportData',e); } },
+        { title:t('guestLinkUnavailableTitle'), yesLabel:t('exportBeforeBtn'), noLabel:t('cancel') });
+      return;
+    }
+    // Succès : le navigateur part vers Google, la page reviendra sur le même compte.
+  }catch(e){
+    console.error('linkIdentity google exception',e);
+    setSt(e&&e.message==='auth_timeout'?t('authTimeoutToast'):t('authGenericErrorToast'),'bad');
+  }
+  _googleAuthing=false;
 }
 async function convertGuestAccount(){
   if(!window.supabaseClient || _guestAuthing) return;
