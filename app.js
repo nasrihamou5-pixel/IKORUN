@@ -3146,7 +3146,9 @@ function setLang(l){
   document.documentElement.lang=l;
   document.documentElement.dir=(l==='ar')?'rtl':'ltr';
   TOOLS=TOOLS_DEF(); BADGE_TIERS=BADGE_TIERS_DEF(); TIERS=TIERS_DEF(); MEDAL_CATS=MEDAL_CATS_DEF(); ACHIEVEMENTS=ACHIEVEMENTS_DEF(); RANKS=RANKS_DEF();
-  try{ refreshXP(); }catch(e){ console.error('[IKORUN] setLang refreshXP',e); } // XP.name/XP.rank contiennent le libellé du rang : à recalculer dans la nouvelle langue
+  // Pas de refreshXP() ici : XP.name / XP.rank sont écrits par refreshXP mais jamais
+  // relus (ni affichés, ni envoyés au serveur) — les pastilles de rang appellent
+  // rankFor(XP.level) au moment du rendu, donc RANKS=RANKS_DEF() suffit à traduire.
   applyNavLabels();
   applyStaticLabels();
   if($('#login') && $('#login').classList.contains('on')) renderLoginMain();
