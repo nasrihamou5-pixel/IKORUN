@@ -489,11 +489,14 @@ function renderLoginMain(){
     h+='<div class="login-guest" onclick="switchLoginMode(\'signup\')">'+t('noAccountLink')+'</div>';
     h+='<div class="login-guest subtle" onclick="continueAsGuest()">'+t('continueAsGuestLink')+'</div>';
   } else if(loginMode==='signup'){
+    // Deux champs au lieu de trois : le champ « confirmer le mot de passe » est
+    // remplacé par un bouton afficher/masquer, qui règle le même problème (la
+    // faute de frappe) sans imposer une seconde saisie à l'aveugle.
     h+='<h1 class="login-h1">'+t('signupTitle')+'</h1>';
-    h+='<p class="login-sub">'+t('signupSub')+'</p>';
+    h+='<p class="login-sub">'+t('signupInstantSub')+'</p>';
     h+='<div class="field"><label>'+t('emailLabel')+'</label><input class="inp" id="li_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="'+t('emailPlaceholder')+'"></div>';
-    h+='<div class="field"><label>'+t('passwordLabel')+'</label><input class="inp" id="li_password" type="password" autocomplete="new-password" placeholder=""></div>';
-    h+='<div class="field"><label>'+t('confirmPasswordLabel')+'</label><input class="inp" id="li_password2" type="password" autocomplete="new-password" placeholder="" onkeydown="if(event.key===\'Enter\')submitEmailSignup()"></div>';
+    h+='<div class="field"><label>'+t('passwordLabel')+'</label><input class="inp" id="li_password" type="password" autocomplete="new-password" placeholder="" onkeydown="if(event.key===\'Enter\')submitEmailSignup()">'+
+       '<div class="login-guest subtle" style="margin-top:7px;text-align:left" id="li_pwToggle" onclick="togglePwVisible(\'li_password\',this)">'+t('showPasswordLink')+'</div></div>';
     h+='<div class="uname-status" id="li_status"></div>';
     h+='<button class="btn" style="margin-bottom:11px" onclick="submitEmailSignup()" id="li_submit">'+t('signupBtnLabel')+'</button>';
     h+='<div class="login-or">'+t('orDividerLabel')+'</div>';
@@ -510,11 +513,21 @@ function renderLoginMain(){
   }
   el.innerHTML=h;
 }
+function togglePwVisible(inputId,el){
+  const i=$('#'+inputId); if(!i) return;
+  const show=i.type==='password';
+  i.type=show?'text':'password';
+  if(el) el.textContent=show?t('hidePasswordLink'):t('showPasswordLink');
+}
 function setLoginStatus(msg,kind){
   const s=$('#li_status'); if(!s) return;
   s.textContent=msg||''; s.className='uname-status'+(kind?(' '+kind):'');
 }
 let _emailAuthing=false;
+/* Vrai quand le mot de passe n'a pas pu être posé en même temps que l'adresse
+   (voir submitEmailSignup) : il faudra passer par « mot de passe oublié » après
+   confirmation. Mémorisé dans le profil pour survivre à un rechargement. */
+let _signupPasswordDeferred=false;
 async function submitEmailLogin(){
   if(!window.supabaseClient || _emailAuthing) return;
   const email=($('#li_email').value||'').trim(), pass=$('#li_password').value||'';
@@ -541,37 +554,116 @@ async function submitEmailLogin(){
   }
   _emailAuthing=false;
 }
+/* INSCRIPTION — pourquoi ce n'est pas un simple signUp().
+   Le projet exige la confirmation de l'adresse, et les emails partent par le
+   service intégré de Supabase, plafonné à quelques envois par heure. Avec un
+   signUp() classique, l'utilisateur restait donc devant « vérifie ta boîte
+   mail » avec un compte inutilisable — et sur les deux comptes email créés
+   jusqu'ici, aucun n'a jamais réussi à confirmer, donc à se connecter.
+
+   On inverse l'ordre : on ouvre d'abord une session (compte anonyme, immédiat,
+   sans aucun email), puis on y rattache l'adresse et le mot de passe. Le mot de
+   passe est pris en compte tout de suite ; seule l'adresse attend la
+   confirmation. Conséquence : l'utilisateur entre dans l'app immédiatement, et
+   la confirmation ne bloque plus l'accès — elle ne conditionne que la
+   reconnexion depuis un autre appareil. Un échec d'email dégrade au lieu de
+   bloquer.
+
+   NB : le vrai réglage propre reste « Confirm email » désactivé, ou un SMTP
+   branché, côté tableau de bord Supabase. Ce chemin fonctionne dans les deux
+   cas — si la confirmation est désactivée, l'adresse est active aussitôt. */
 async function submitEmailSignup(){
   if(!window.supabaseClient || _emailAuthing) return;
-  const email=($('#li_email').value||'').trim(), pass=$('#li_password').value||'', pass2=$('#li_password2').value||'';
+  const email=(($('#li_email')||{}).value||'').trim(), pass=($('#li_password')||{}).value||'';
   if(!email||!pass) return setLoginStatus(t('fillEmailPasswordToast'),'bad');
   if(!isEmailValid(email)) return setLoginStatus(t('invalidEmailToast'),'bad');
   if(pass.length<8) return setLoginStatus(t('passwordTooShortToast'),'bad');
-  if(pass!==pass2) return setLoginStatus(t('passwordsMismatchToast'),'bad');
   const weak=passwordWeakness(pass,email);
   if(weak) return setLoginStatus(t(weak==='email'?'passwordContainsEmailToast':'passwordTooCommonToast'),'bad');
   _emailAuthing=true; setLoginStatus(t('creatingAccountToast'),'checking');
   try{
-    const { data, error } = await withAuthTimeout(window.supabaseClient.auth.signUp({
+    // 1. Session immédiate. On réutilise celle en cours si l'utilisateur est
+    //    déjà entré en invité : son historique reste attaché au même compte.
+    const { data:{ session } } = await window.supabaseClient.auth.getSession();
+    if(!session){
+      const { error:e1 } = await withAuthTimeout(window.supabaseClient.auth.signInAnonymously({ options:{ data:{ ikorun_guest:true } } }));
+      if(e1){
+        console.error('signup: signInAnonymously error',e1);
+        setLoginStatus(/anonymous|disabled/i.test(e1.message||'')?t('guestDisabledToast'):t('authGenericErrorToast'),'bad');
+        _emailAuthing=false; return;
+      }
+    }
+    // 2. Rattache l'adresse ET le mot de passe au compte qui vient d'être ouvert.
+    //    Délai plus large que les autres appels (15 s) : celui-ci déclenche un
+    //    envoi d'email côté serveur, qui peut être lent quand le domaine de
+    //    destination répond mal. Constaté en test : 16 s.
+    let { error:e2 } = await withAuthTimeout(window.supabaseClient.auth.updateUser({
       email, password:pass,
       options:{ emailRedirectTo: window.location.origin + window.location.pathname }
-    }));
-    if(error){
-      console.error('signUp error',error);
-      setLoginStatus(isAuthRateLimit(error)?t('emailRateLimitToast')
-        :/already|exists|registered/i.test(error.message||'')?t('emailAlreadyUsedToast')
-        :t('authGenericErrorToast'),'bad');
-    } else if(data && data.user && !data.session){
-      // Confirmation email activée côté projet : pas de session immédiate.
-      setLoginStatus(t('checkEmailConfirmToast'),'ok');
+    }), 30000);
+    // Supabase refuse de poser un mot de passe sur un compte anonyme tant qu'aucune
+    // adresse n'y est rattachée (« Updating password of an anonymous user without an
+    // email or phone is not allowed »). Selon la version, une adresse encore EN ATTENTE
+    // de confirmation peut ne pas compter. Dans ce cas on rattache l'adresse seule :
+    // le compte reste utilisable, et le mot de passe se choisira via « mot de passe
+    // oublié » une fois l'adresse confirmée. On le dit clairement plutôt que de
+    // laisser croire à un mot de passe enregistré qui ne l'est pas.
+    _signupPasswordDeferred=false;
+    if(e2 && /anonymous user without an email|without an email or phone/i.test(e2.message||'')){
+      const retry = await withAuthTimeout(window.supabaseClient.auth.updateUser({
+        email,
+        options:{ emailRedirectTo: window.location.origin + window.location.pathname }
+      }), 30000);
+      if(!retry.error){ e2=null; _signupPasswordDeferred=true; }
     }
-    // si une session est déjà présente (confirmation email désactivée côté
-    // projet), onAuthStateChange (SIGNED_IN) prend le relais tout seul.
+    if(e2){
+      console.error('signup: updateUser error',e2);
+      if(/already|exists|registered/i.test(e2.message||'')){
+        // L'adresse appartient déjà à quelqu'un : la session anonyme ouverte à
+        // l'étape 1 n'a plus lieu d'être, on la referme et on renvoie vers la
+        // connexion plutôt que de laisser l'utilisateur dans un compte vide.
+        _intentionalSignOut=false;
+        try{ await window.supabaseClient.auth.signOut(); }catch(x){}
+        loginMode='login'; renderLoginMain();
+        setLoginStatus(t('signupEmailUsedToast'),'bad');
+      } else {
+        // Quota d'envoi atteint ou adresse refusée : le compte EXISTE et
+        // fonctionne, seule l'adresse n'a pas pu être rattachée. On le dit.
+        setPendingEmail(null);
+        setLoginStatus(isAuthRateLimit(e2)?t('emailRateLimitToast')
+          :/invalid/i.test(e2.message||'')?t('emailRefusedToast')
+          :t('authGenericErrorToast'),'bad');
+        toast(t('accountReadyNoEmailToast'));
+      }
+    } else {
+      // Succès. Si la confirmation est exigée, l'adresse reste « en attente » :
+      // on la mémorise pour l'afficher dans Profil > Compte avec un bouton de renvoi.
+      setPendingEmail(email,_signupPasswordDeferred);
+      toast(t(_signupPasswordDeferred?'accountReadyNoPwToast':'accountReadyPendingToast'));
+    }
   }catch(e){
-    console.error('signUp exception',e);
-    setLoginStatus(e&&e.message==='auth_timeout'?t('authTimeoutToast'):t('authGenericErrorToast'),'bad');
+    console.error('signup exception',e);
+    if(e && e.message==='auth_timeout'){
+      // Le délai est côté client : le serveur a très bien pu enregistrer le
+      // changement malgré la lenteur. Le compte, lui, est ouvert de façon
+      // certaine (étape 1). On mémorise donc l'adresse pour que « Profil >
+      // Compte » propose le renvoi, plutôt que de laisser croire à un échec sec.
+      setPendingEmail(email);
+      toast(t('accountReadySlowEmailToast'));
+    } else {
+      setLoginStatus(t('authGenericErrorToast'),'bad');
+    }
   }
   _emailAuthing=false;
+}
+/* P n'est peuplé qu'après DB_READY (reloadState). Sur un appareil lent, un tap
+   sur « Créer mon compte » peut arriver avant : sans ce garde, l'écriture
+   plantait sur un profil encore nul, en plein milieu de l'inscription. */
+function setPendingEmail(v,deferredPw){
+  if(!P) return;
+  P.pendingEmail=v||null;
+  P.pendingNoPw=v?!!deferredPw:false; // survit au rechargement : l'écran doit rester juste
+  try{ saveAll(); }catch(e){ console.error('[IKORUN] setPendingEmail saveAll',e); }
 }
 /* Renvoi de l'email de confirmation. Utile parce que le projet demande une
    confirmation par email : sans elle, le compte existe mais ne peut pas ouvrir de
@@ -2045,6 +2137,18 @@ const I18N={
     passwordTooShortToast:'Mot de passe trop court (8 caractères min).',passwordsMismatchToast:'Les mots de passe ne correspondent pas.',
     passwordTooCommonToast:'Ce mot de passe est trop courant : il figure dans les listes utilisées pour forcer les comptes. Choisis-en un autre.',passwordContainsEmailToast:'Ton mot de passe contient ton adresse email — trop facile à deviner. Choisis-en un autre.',
     resendConfirmLink:'Je n’ai pas reçu l’email de confirmation',fillEmailFirstToast:'Écris d’abord ton adresse email ci-dessus.',confirmResentToast:'Email de confirmation renvoyé. Pense à regarder dans les spams.',
+    showPasswordLink:'Afficher le mot de passe',hidePasswordLink:'Masquer le mot de passe',
+    signupInstantSub:'Deux champs, et tu commences tout de suite. La confirmation de ton adresse se fait après, tranquillement — elle ne sert qu’à te reconnecter depuis un autre appareil.',
+    accountReadyPendingToast:'Compte créé, tu peux commencer. Confirme ton adresse quand tu veux pour pouvoir te reconnecter ailleurs.',
+    accountReadyNoEmailToast:'Ton compte est créé et tes données sont sauvegardées. L’adresse n’a pas pu être rattachée — réessaie depuis Profil > Compte.',
+    signupEmailUsedToast:'Cette adresse a déjà un compte. Connecte-toi plutôt.',
+    emailRefusedToast:'Cette adresse email est refusée par le serveur. Essaie-en une autre.',
+    pendingEmailTitle:'Adresse à confirmer',
+    pendingEmailDesc:'Ton compte fonctionne et tes données sont sauvegardées. Il ne reste qu’à confirmer cette adresse — c’est ce qui te permettra de te reconnecter depuis un autre appareil. Regarde aussi dans tes spams.',
+    resendConfirmBtn:'Renvoyer l’email de confirmation',
+    accountReadySlowEmailToast:'Compte créé, tu peux commencer. L’envoi de l’email a été long — vérifie ta boîte, ou relance depuis Profil > Compte.',
+    accountReadyNoPwToast:'Compte créé, tu peux commencer. Ton mot de passe sera à choisir après confirmation de l’adresse — tout est expliqué dans Profil > Compte.',
+    pendingEmailNoPwDesc:'Ton compte fonctionne et tes données sont sauvegardées. Confirme cette adresse depuis l’email reçu, puis choisis ton mot de passe avec « Mot de passe oublié ? » sur l’écran de connexion. C’est ce qui te permettra de te reconnecter depuis un autre appareil. Regarde aussi dans tes spams.',
     wrongCredentialsToast:'Email ou mot de passe incorrect — et si tu viens de créer ton compte, valide d’abord l’email de confirmation.',emailRateLimitToast:'Trop de demandes d’email d’affilée. Attends quelques minutes avant de réessayer.',sessionExpiredToast:'Session expirée, reconnecte-toi. Tes données restent sur cet appareil.',sessionLostDuringActivity:'Ton activité en cours continue et reste enregistrée sur cet appareil.',storageBlockedToast:'Ton navigateur bloque le stockage : l’app fonctionne, mais rien ne sera conservé en quittant.',storageFullToast:'Mémoire de l’appareil pleine : tes dernières données n’ont pas pu être enregistrées. Exporte tes données depuis Profil > Données.',swInactiveTip:'Le composant hors-ligne de l’app n’est pas actif sur cet appareil : les notifications ne peuvent pas fonctionner. Recharge la page, et vérifie que le stockage de site n’est pas bloqué.',emailAlreadyUsedToast:'Un compte existe déjà avec cet email.',
     authGenericErrorToast:'Une erreur est survenue. Réessaie.',checkEmailConfirmToast:'Compte créé ✓ Vérifie ta boîte mail pour confirmer ton adresse.',
     authTimeoutToast:'La connexion prend trop de temps. Vérifie ta connexion internet et réessaie.',
@@ -2605,6 +2709,18 @@ const I18N={
     passwordTooShortToast:'Password too short (8 characters min).',passwordsMismatchToast:'Passwords don\u2019t match.',
     passwordTooCommonToast:'That password is too common \u2014 it appears in the lists used to break into accounts. Pick another one.',passwordContainsEmailToast:'Your password contains your email address \u2014 too easy to guess. Pick another one.',
     resendConfirmLink:'I didn\u2019t get the confirmation email',fillEmailFirstToast:'Type your email address above first.',confirmResentToast:'Confirmation email sent again. Remember to check your spam folder.',
+    showPasswordLink:'Show password',hidePasswordLink:'Hide password',
+    signupInstantSub:'Two fields and you\u2019re in. Confirming your address comes later, at your own pace \u2014 it only matters for signing in from another device.',
+    accountReadyPendingToast:'Account created, you can start now. Confirm your address whenever you like to sign in from elsewhere.',
+    accountReadyNoEmailToast:'Your account is created and your data is saved. The address couldn\u2019t be attached \u2014 try again from Profile > Account.',
+    signupEmailUsedToast:'That address already has an account. Sign in instead.',
+    emailRefusedToast:'That email address was rejected by the server. Try another one.',
+    pendingEmailTitle:'Address to confirm',
+    pendingEmailDesc:'Your account works and your data is saved. All that\u2019s left is confirming this address \u2014 that\u2019s what lets you sign in from another device. Check your spam folder too.',
+    resendConfirmBtn:'Resend the confirmation email',
+    accountReadySlowEmailToast:'Account created, you can start now. Sending the email took a while — check your inbox, or resend from Profile > Account.',
+    accountReadyNoPwToast:'Account created, you can start now. You’ll pick your password once the address is confirmed — it’s all explained in Profile > Account.',
+    pendingEmailNoPwDesc:'Your account works and your data is saved. Confirm this address from the email you received, then pick your password with “Forgot password?” on the sign-in screen. That’s what lets you sign in from another device. Check your spam folder too.',
     wrongCredentialsToast:'Wrong email or password — and if you just created your account, confirm your email first.',emailRateLimitToast:'Too many email requests in a row. Wait a few minutes before trying again.',sessionExpiredToast:'Session expired, please sign in again. Your data stays on this device.',sessionLostDuringActivity:'Your ongoing activity keeps running and stays saved on this device.',storageBlockedToast:'Your browser blocks storage: the app works, but nothing will be kept when you leave.',storageFullToast:'Device storage is full: your latest data could not be saved. Export your data from Profile > Data.',swInactiveTip:'The app’s offline component is not active on this device: notifications cannot work. Reload the page and check that site storage is not blocked.',emailAlreadyUsedToast:'An account already exists with this email.',
     authGenericErrorToast:'Something went wrong. Try again.',checkEmailConfirmToast:'Account created ✓ Check your inbox to confirm your email.',
     authTimeoutToast:'This is taking too long. Check your internet connection and try again.',
@@ -3168,6 +3284,18 @@ const I18N={
     passwordTooShortToast:'كلمة المرور قصيرة جدًا (8 أحرف كحد أدنى).',passwordsMismatchToast:'كلمتا المرور غير متطابقتين.',
     passwordTooCommonToast:'كلمة المرور هذه شائعة جدًا — وهي موجودة في القوائم المستخدمة لاختراق الحسابات. اختر غيرها.',passwordContainsEmailToast:'كلمة المرور تحتوي على بريدك الإلكتروني — يسهل تخمينها. اختر غيرها.',
     resendConfirmLink:'لم يصلني بريد التأكيد',fillEmailFirstToast:'اكتب بريدك الإلكتروني في الأعلى أولًا.',confirmResentToast:'تم إرسال بريد التأكيد من جديد. تحقّق من مجلد الرسائل غير المرغوب فيها.',
+    showPasswordLink:'إظهار كلمة المرور',hidePasswordLink:'إخفاء كلمة المرور',
+    signupInstantSub:'حقلان فقط وتبدأ فورًا. تأكيد بريدك يأتي لاحقًا على راحتك — فهو يلزم فقط لتسجيل الدخول من جهاز آخر.',
+    accountReadyPendingToast:'تم إنشاء الحساب، يمكنك البدء الآن. أكّد بريدك متى شئت لتتمكن من الدخول من جهاز آخر.',
+    accountReadyNoEmailToast:'تم إنشاء حسابك وحُفظت بياناتك. لم يتم ربط البريد — أعد المحاولة من الملف الشخصي > الحساب.',
+    signupEmailUsedToast:'هذا البريد له حساب بالفعل. سجّل الدخول بدلًا من ذلك.',
+    emailRefusedToast:'رفض الخادم هذا البريد الإلكتروني. جرّب عنوانًا آخر.',
+    pendingEmailTitle:'بريد بانتظار التأكيد',
+    pendingEmailDesc:'حسابك يعمل وبياناتك محفوظة. لم يبقَ سوى تأكيد هذا البريد — وهو ما يتيح لك تسجيل الدخول من جهاز آخر. تحقّق أيضًا من مجلد الرسائل غير المرغوب فيها.',
+    resendConfirmBtn:'إعادة إرسال بريد التأكيد',
+    accountReadySlowEmailToast:'تم إنشاء الحساب، يمكنك البدء الآن. استغرق إرسال البريد وقتًا — تحقّق من صندوقك أو أعد الإرسال من الملف الشخصي > الحساب.',
+    accountReadyNoPwToast:'تم إنشاء الحساب، يمكنك البدء الآن. ستختار كلمة المرور بعد تأكيد البريد — التفاصيل في الملف الشخصي > الحساب.',
+    pendingEmailNoPwDesc:'حسابك يعمل وبياناتك محفوظة. أكّد هذا البريد من الرسالة التي وصلتك، ثم اختر كلمة المرور عبر «نسيت كلمة المرور؟» في شاشة الدخول. هذا ما يتيح لك الدخول من جهاز آخر. تحقّق أيضًا من مجلد الرسائل غير المرغوب فيها.',
     wrongCredentialsToast:'بريد إلكتروني أو كلمة مرور غير صحيحة — وإذا أنشأت حسابك للتو، فأكّد بريدك الإلكتروني أولًا.',emailRateLimitToast:'طلبات بريد كثيرة متتالية. انتظر بضع دقائق قبل إعادة المحاولة.',sessionExpiredToast:'انتهت الجلسة، سجّل الدخول من جديد. بياناتك تبقى على هذا الجهاز.',sessionLostDuringActivity:'نشاطك الجاري يستمر ويبقى محفوظًا على هذا الجهاز.',storageBlockedToast:'متصفحك يحظر التخزين: التطبيق يعمل، لكن لن يُحفظ شيء عند الخروج.',storageFullToast:'ذاكرة الجهاز ممتلئة: تعذّر حفظ أحدث بياناتك. صدّر بياناتك من الملف الشخصي > البيانات.',swInactiveTip:'المكوّن دون اتصال غير مفعّل على هذا الجهاز: لا يمكن للإشعارات أن تعمل. أعد تحميل الصفحة وتأكد أن تخزين المواقع غير محظور.',emailAlreadyUsedToast:'يوجد حساب بالفعل بهذا البريد الإلكتروني.',
     authGenericErrorToast:'حدث خطأ ما. حاول مرة أخرى.',checkEmailConfirmToast:'تم إنشاء الحساب ✓ تحقق من بريدك لتأكيد عنوانك.',
     authTimeoutToast:'\u0627\u0644\u0627\u062A\u0635\u0627\u0644 \u064A\u0633\u062A\u063A\u0631\u0642 \u0648\u0642\u062A\u064B\u0627 \u0637\u0648\u064A\u0644\u0627\u064B. \u062A\u062D\u0642\u0642 \u0645\u0646 \u0627\u062A\u0635\u0627\u0644\u0643 \u0628\u0627\u0644\u0625\u0646\u062A\u0631\u0646\u062A \u0648\u0623\u0639\u062F \u0627\u0644\u0645\u062D\u0627\u0648\u0644\u0629.',
@@ -4614,6 +4742,9 @@ async function startApp(){
       ensureLocalCacheOwnership(userId); // purge le cache d'un éventuel compte précédent avant toute lecture/écriture
       await cloudPullAll(userId);
       reloadState();
+      // L'adresse est revenue sur la session : la confirmation a abouti, l'écran
+      // « adresse à confirmer » (Profil > Compte) n'a plus lieu d'être.
+      if(email && P.pendingEmail) P.pendingEmail=null;
       saveAll();
     }catch(e){
       // La synchro cloud ou le cache local a échoué : on continue quand même
@@ -10634,10 +10765,17 @@ function pfAccountHTML(){
     '</div>';
   }
   if(window.isGuestUser){
-    if(_guestUpgradeSent){
+    // Adresse déjà rattachée mais pas encore confirmée : l'app fonctionne
+    // normalement, seule la reconnexion depuis un autre appareil attend. On
+    // affiche l'adresse concernée et un bouton de renvoi, parce que l'email de
+    // confirmation est justement ce qui se perd le plus souvent (quota, spam).
+    if(P.pendingEmail){
       return '<div class="card" style="padding:16px">'+
-        '<div class="card-t">'+ICN('check',15,'var(--ok)')+t('guestModeTitle')+'</div>'+
-        '<div style="font-size:12.5px;color:var(--muted);line-height:1.5">'+t('guestUpgradeSentToast')+'</div>'+
+        '<div class="card-t">'+ICN('warning',15,'var(--warn)')+t('pendingEmailTitle')+'</div>'+
+        '<div style="font-weight:700;font-size:14px;margin-bottom:8px;word-break:break-all">'+escHtml(P.pendingEmail)+'</div>'+
+        '<div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:14px">'+t(P.pendingNoPw?'pendingEmailNoPwDesc':'pendingEmailDesc')+'</div>'+
+        '<div class="uname-status" id="guestStatus"></div>'+
+        '<button class="btn ghost sm" style="width:100%" onclick="resendPendingConfirmation()">'+t('resendConfirmBtn')+'</button>'+
       '</div>';
     }
     return '<div class="card" style="padding:16px">'+
@@ -10646,22 +10784,53 @@ function pfAccountHTML(){
         '<div><div style="font-weight:700">'+escHtml(P.name||'Athlète')+'</div><div style="font-size:12px;color:var(--muted)">'+t('guestModeTitle')+'</div></div>'+
       '</div>'+
       '<div style="font-size:12px;color:var(--muted);margin-top:12px;line-height:1.5">'+t('guestModeDesc')+'</div>'+
-      // Le passage invité -> compte durable passait par un email de confirmation,
-      // soumis au même quota d'envoi que l'inscription : il échouait donc sans
-      // rien dire. On propose Google à la place tant qu'aucun SMTP n'est branché.
+      // Email + mot de passe en une seule étape : avant, on ne demandait que
+      // l'adresse et il fallait ensuite passer par « mot de passe oublié » pour
+      // s'en choisir un — deux emails au lieu d'un, sur un quota déjà minuscule.
+      '<div class="field" style="margin-top:14px"><label>'+t('emailLabel')+'</label><input class="inp" id="guestEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="'+t('emailPlaceholder')+'"></div>'+
+      '<div class="field"><label>'+t('passwordLabel')+'</label><input class="inp" id="guestPassword" type="password" autocomplete="new-password">'+
+        '<div class="login-guest subtle" style="margin-top:7px;text-align:left" onclick="togglePwVisible(\'guestPassword\',this)">'+t('showPasswordLink')+'</div></div>'+
       '<div class="uname-status" id="guestStatus"></div>'+
+      '<button class="btn" style="margin-bottom:11px" onclick="convertGuestAccount()">'+t('guestSaveAccountBtn')+'</button>'+
+      '<div class="login-or">'+t('orDividerLabel')+'</div>'+
       googleBtnHtml()+
     '</div>';
   }
   return '<button class="btn" onclick="signInWithGoogle()">Se connecter</button>';
 }
 let _guestUpgradeSent=false;
+function guestStatusSetter(){
+  const st=$('#guestStatus');
+  return (msg,kind)=>{ if(st){ st.textContent=msg||''; st.className='uname-status'+(kind?(' '+kind):''); } };
+}
+/* Renvoi de la confirmation pour une adresse déjà rattachée (voir P.pendingEmail).
+   updateUser avec la MÊME adresse relance l'envoi sans rien changer d'autre. */
+async function resendPendingConfirmation(){
+  if(!window.supabaseClient || _guestAuthing || !P.pendingEmail) return;
+  const setSt=guestStatusSetter();
+  _guestAuthing=true; setSt(t('sendingResetToast'),'checking');
+  try{
+    const { error } = await withAuthTimeout(window.supabaseClient.auth.updateUser({
+      email:P.pendingEmail,
+      options:{ emailRedirectTo: window.location.origin + window.location.pathname }
+    }));
+    if(error){ console.error('resendPendingConfirmation error',error); setSt(isAuthRateLimit(error)?t('emailRateLimitToast'):t('authGenericErrorToast'),'bad'); }
+    else setSt(t('confirmResentToast'),'ok');
+  }catch(e){
+    console.error('resendPendingConfirmation exception',e);
+    setSt(e&&e.message==='auth_timeout'?t('authTimeoutToast'):t('authGenericErrorToast'),'bad');
+  }
+  _guestAuthing=false;
+}
 async function convertGuestAccount(){
   if(!window.supabaseClient || _guestAuthing) return;
   const emailEl=$('#guestEmail'), email=(emailEl&&emailEl.value||'').trim();
-  const st=$('#guestStatus');
-  const setSt=(msg,kind)=>{ if(st){ st.textContent=msg||''; st.className='uname-status'+(kind?(' '+kind):''); } };
+  const pass=(($('#guestPassword')||{}).value)||'';
+  const setSt=guestStatusSetter();
   if(!email || !isEmailValid(email)) return setSt(t('invalidEmailToast'),'bad');
+  if(pass.length<8) return setSt(t('passwordTooShortToast'),'bad');
+  const weakG=passwordWeakness(pass,email);
+  if(weakG) return setSt(t(weakG==='email'?'passwordContainsEmailToast':'passwordTooCommonToast'),'bad');
   _guestAuthing=true; setSt(t('sendingResetToast'),'checking');
   try{
     // Associe un email à la session invité en cours (même uid conservé) : le
@@ -10672,13 +10841,20 @@ async function convertGuestAccount(){
     // revient jamais laissait _guestAuthing à true et le bouton définitivement mort ;
     // sans le test de quota, le 429 (fréquent, l'envoi d'emails est très limité)
     // s'affichait en « une erreur est survenue », donc réessayer semblait inutile.
-    const { error } = await withAuthTimeout(window.supabaseClient.auth.updateUser({ email }));
+    const { error } = await withAuthTimeout(window.supabaseClient.auth.updateUser({
+      email, password:pass,
+      options:{ emailRedirectTo: window.location.origin + window.location.pathname }
+    }));
     if(error){
       console.error('updateUser(email) error',error);
       setSt(isAuthRateLimit(error)?t('emailRateLimitToast')
         :/already|exists|registered/i.test(error.message||'')?t('guestUpgradeEmailUsedToast')
+        :/invalid/i.test(error.message||'')?t('emailRefusedToast')
         :t('authGenericErrorToast'),'bad');
     } else {
+      // Le mot de passe est actif immédiatement ; seule l'adresse attend la
+      // confirmation. On la mémorise pour afficher l'écran « à confirmer ».
+      setPendingEmail(email);
       _guestUpgradeSent=true;
       refreshPfSheet();
     }
