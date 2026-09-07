@@ -1055,14 +1055,20 @@ function clubPlanHTML(c){
     const upcoming=(sp.sessions||[]).filter(s=>s.date>=tk).slice(0,5);
     h+='<div class="card" style="padding:16px">'+
       '<div style="font-weight:800;font-size:15px;color:var(--snow)">'+escHtml(sp.name||'')+'</div>'+
-      (upcoming.length?upcoming.map(s=>'<div class="row" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--hair)"><div style="flex:1"><div style="font-weight:700;font-size:13.5px">'+escHtml(s.title||'')+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+fmtDate(s.date)+(s.km?' · '+s.km+' km':'')+(s.pace?' · '+escHtml(s.pace)+'/km':'')+'</div></div></div>').join(''):'<div style="font-size:12.5px;color:var(--muted);margin-top:8px">'+t('clubPlanNoUpcoming')+'</div>')+
+      (upcoming.length?upcoming.map(s=>'<div class="row" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--hair)"><div style="flex:1"><div style="font-weight:700;font-size:13.5px">'+escHtml(s.title||'')+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+fmtDate(s.date)+(s.km?' · '+escHtml(s.km)+' km':'')+(s.pace?' · '+escHtml(s.pace)+'/km':'')+'</div></div></div>').join(''):'<div style="font-size:12.5px;color:var(--muted);margin-top:8px">'+t('clubPlanNoUpcoming')+'</div>')+
     '</div>';
     if(isOwnerClub) h+='<button class="btn ghost sm" style="width:auto;margin-top:8px" onclick="openClubPlanSetup()">'+t('clubPlanEditBtn')+'</button>';
   }
   const mu=c.meetup;
   if(mu && ((mu.mode==='text'&&mu.text) || (mu.mode==='slot'&&(mu.place||mu.time)))){
     const dn=[0,1,2,3,4,5,6].map(d=>new Date(2023,0,1+d).toLocaleDateString(localeCode(),{weekday:'long'}));
-    const dayLab=mu.day!=null?(dn[mu.day][0].toUpperCase()+dn[mu.day].slice(1)):'';
+    // c.meetup/c.shared_plan viennent d'un JSONB écrit par le propriétaire du club :
+    // rien ne garantit le type ni les bornes. Un mu.day hors 0-6 faisait planter tout
+    // le rendu de l'onglet Club pour CHAQUE membre (dn[99] -> undefined[0]), et une
+    // valeur texte dans s.km s'injectait telle quelle dans le HTML. On borne et on
+    // échappe systématiquement toute valeur venant de cette source.
+    const dIdx=(typeof mu.day==='number' && mu.day>=0 && mu.day<=6)?mu.day:null;
+    const dayLab=dIdx!==null?(dn[dIdx][0].toUpperCase()+dn[dIdx].slice(1)):'';
     h+='<div class="card" style="padding:14px;margin-top:'+(sp&&isOwnerClub?'8px':'10px')+'"><div class="row" style="gap:10px;align-items:flex-start">'+
       '<div class="lr-icon">'+ICN('flag',18,'currentColor')+'</div><div style="flex:1">'+
       (mu.mode==='text'
