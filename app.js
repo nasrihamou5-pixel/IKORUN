@@ -3919,16 +3919,19 @@ async function showBgActivityNotif(type,kind){
 async function startBgActivity(type,kind){
   _bgActivity={type,kind,start:Date.now(),paused:false};
   try{ if('wakeLock'in navigator){ _wakeLock=await navigator.wakeLock.request('screen'); } }catch(e){}
-  clearInterval(_bgTick); _bgTick=null;
   clearInterval(_bgNotifTick);
   await showBgActivityNotif(type,kind);
-  // Le texte (temps écoulé/restant) est rafraîchi régulièrement pour ne pas laisser une
-  // notification figée qui donnerait l'impression d'être périmée — sans repasser par un son
-  // ou une vibration (renotify:false dans showBgActivityNotif) à chaque rafraîchissement.
-  _bgNotifTick=setInterval(()=>showBgActivityNotif(type,kind),15000);
+  // Rafraîchi chaque seconde pour un effet aussi proche du temps réel que l'API Notification
+  // le permet — il n'existe pas de compteur qui "tourne" nativement dans une notification web,
+  // seule la re-génération du texte peut donner cette impression. Sans son ni vibration
+  // (renotify:false dans showBgActivityNotif) à chaque rafraîchissement. Limite qu'aucun
+  // intervalle ne peut lever : dès que l'onglet est réellement mis en arrière-plan (écran
+  // verrouillé, app quittée), le système (surtout iOS) suspend l'exécution JS qui pilote ce
+  // rafraîchissement — ça continue tant que l'app reste active quelque part, pas au-delà.
+  _bgNotifTick=setInterval(()=>showBgActivityNotif(type,kind),1000);
 }
 function stopBgActivity(){
-  _bgActivity=null; clearInterval(_bgTick); clearInterval(_bgNotifTick); _bgNotifTick=null;
+  _bgActivity=null; clearInterval(_bgNotifTick); _bgNotifTick=null;
   try{ if('serviceWorker'in navigator){ navigator.serviceWorker.ready.then(reg=>reg.getNotifications({tag:'ikorun-activity'})).then(ns=>ns.forEach(n=>n.close())); } }catch(e){}
   try{ if(_wakeLock){ _wakeLock.release(); _wakeLock=null; } }catch(e){}
 }
