@@ -1673,7 +1673,7 @@ const I18N={
     stopAlarm:'Arrêter l\u2019alarme',remindIn5Min:'Rappel dans 5 min',reminderCap:'Rappel',fiveMinElapsed:'5 minutes écoulées',
     sessionInProgress:'Séance en cours',welcomeToast:'Bienvenue',
     bgMuscuBody:'💪 Séance de muscu en cours',bgChronoBody:'⏱ Chronomètre en cours',bgTimerBody:'⏳ Minuteur en cours',bgRunningBody:'🏃 Course en cours',
-    bgChronoElapsed:'⏱ {0}',bgTimerRemaining:'⏳ Reste {0}',cancelSessionLab:'Annuler la séance',
+    cancelSessionLab:'Annuler la séance',
     nextPrayerLabel:'Prochaine prière',inTimeLabel:'dans {0}',
     notifBubbleText:'Active les notifications pour ne rater aucune séance ni prière.',notifBubbleAction:'Autoriser',
     notifEnabledToast:'Notifications activées',notifDeniedToast:'Notifications refusées',
@@ -2227,7 +2227,7 @@ const I18N={
     stopAlarm:'Stop alarm',remindIn5Min:'Remind in 5 min',reminderCap:'Reminder',fiveMinElapsed:'5 minutes elapsed',
     sessionInProgress:'Session in progress',welcomeToast:'Welcome',
     bgMuscuBody:'💪 Strength session in progress',bgChronoBody:'⏱ Stopwatch running',bgTimerBody:'⏳ Timer running',bgRunningBody:'🏃 Run in progress',
-    bgChronoElapsed:'⏱ {0}',bgTimerRemaining:'⏳ {0} left',cancelSessionLab:'Cancel session',
+    cancelSessionLab:'Cancel session',
     nextPrayerLabel:'Next prayer',inTimeLabel:'in {0}',
     notifBubbleText:'Enable notifications so you never miss a session or a prayer.',notifBubbleAction:'Allow',
     notifEnabledToast:'Notifications enabled',notifDeniedToast:'Notifications denied',
@@ -2781,7 +2781,7 @@ const I18N={
     stopAlarm:'إيقاف المنبّه',remindIn5Min:'تذكير بعد 5 دقائق',reminderCap:'تذكير',fiveMinElapsed:'مرت 5 دقائق',
     sessionInProgress:'الحصة جارية',welcomeToast:'مرحبًا',
     bgMuscuBody:'💪 حصة تقوية عضلية جارية',bgChronoBody:'⏱ ساعة الإيقاف تعمل',bgTimerBody:'⏳ المؤقت يعمل',bgRunningBody:'🏃 الجري جارٍ',
-    bgChronoElapsed:'⏱ {0}',bgTimerRemaining:'⏳ متبقٍ {0}',cancelSessionLab:'إلغاء الحصة',
+    cancelSessionLab:'إلغاء الحصة',
     nextPrayerLabel:'الصلاة القادمة',inTimeLabel:'خلال {0}',
     notifBubbleText:'فعّل الإشعارات حتى لا تفوّت أي حصة أو صلاة.',notifBubbleAction:'السماح',
     notifEnabledToast:'تم تفعيل الإشعارات',notifDeniedToast:'تم رفض الإشعارات',
@@ -3875,23 +3875,17 @@ function notify(title,body){
   }
   sfx('notif');
 }
-// Le corps du message diffère selon le type d'activité (muscu/chrono/minuteur) et inclut le
-// temps écoulé (ou restant pour le minuteur), recalculé à chaque rafraîchissement — une
+// Le corps du message diffère selon le type d'activité (muscu/chrono/minuteur) — une
 // notification d'activité en cours ne doit jamais ressembler au rappel "séance du jour pas
 // faite" poussé par le serveur (tag 'ikorun-reminder' distinct, avec son/vibration,
 // contrairement à celle-ci qui reste silencieuse puisqu'elle ne fait qu'accompagner une
-// activité déjà lancée en local).
-function bgActivityLiveText(kind){
-  if(kind==='muscu' && _bgActivity) return fmtTime((Date.now()-_bgActivity.start)/1000);
-  if(kind==='chrono') return fmtChrono(chrono.elapsed+(chrono.running?Date.now()-chrono.start:0));
-  if(kind==='timer'){ const left=timer.running?Math.max(0,Math.round((timer.endAt-Date.now())/1000)):timer.left; return fmtMS(left); }
-  return '';
-}
+// activité déjà lancée en local). Pas de temps écoulé/restant ici : cette notification
+// n'est affichée qu'une fois au démarrage (voir showBgActivityNotif), donc un chiffre y
+// resterait figé pour toute la durée de l'activité — plus trompeur qu'utile.
 function bgActivityBody(kind){
-  const live=bgActivityLiveText(kind);
-  if(kind==='muscu') return t('bgMuscuBody')+(live?' · '+live:'');
-  if(kind==='chrono') return live?tp('bgChronoElapsed',live):t('bgChronoBody');
-  if(kind==='timer') return live?tp('bgTimerRemaining',live):t('bgTimerBody');
+  if(kind==='muscu') return t('bgMuscuBody');
+  if(kind==='chrono') return t('bgChronoBody');
+  if(kind==='timer') return t('bgTimerBody');
   if(kind==='running') return t('bgRunningBody');
   return '▶ '+t('sessionInProgress');
 }
@@ -3905,7 +3899,13 @@ function bgActivityActions(kind){
   if(kind==='timer') return [{action:'toggle',title:t('pauseLab')},{action:'reset',title:t('resetBtn2')}];
   return [];
 }
-let _bgNotifTick=null;
+// Une SEULE notification au démarrage, jamais réaffichée en boucle : Safari/iOS a un bug
+// connu de remplacement par tag pour les notifications déclenchées par un Service Worker —
+// au lieu de mettre à jour la notification existante, il en empile une nouvelle à chaque
+// appel rapproché (constaté en pratique : un rafraîchissement toutes les secondes a fait
+// exactement ça). Une mise à jour en temps réel façon "Live Activity" (comme Lifta) n'est de
+// toute façon PAS accessible à un site web/PWA : c'est une API native iOS (ActivityKit),
+// réservée aux vraies apps natives — aucune quantité de code JS ne peut y accéder ici.
 async function showBgActivityNotif(type,kind){
   if(!(P.notif!==false && 'Notification'in window && Notification.permission==='granted' && 'serviceWorker'in navigator)) return;
   try{
@@ -3919,19 +3919,10 @@ async function showBgActivityNotif(type,kind){
 async function startBgActivity(type,kind){
   _bgActivity={type,kind,start:Date.now(),paused:false};
   try{ if('wakeLock'in navigator){ _wakeLock=await navigator.wakeLock.request('screen'); } }catch(e){}
-  clearInterval(_bgNotifTick);
   await showBgActivityNotif(type,kind);
-  // Rafraîchi chaque seconde pour un effet aussi proche du temps réel que l'API Notification
-  // le permet — il n'existe pas de compteur qui "tourne" nativement dans une notification web,
-  // seule la re-génération du texte peut donner cette impression. Sans son ni vibration
-  // (renotify:false dans showBgActivityNotif) à chaque rafraîchissement. Limite qu'aucun
-  // intervalle ne peut lever : dès que l'onglet est réellement mis en arrière-plan (écran
-  // verrouillé, app quittée), le système (surtout iOS) suspend l'exécution JS qui pilote ce
-  // rafraîchissement — ça continue tant que l'app reste active quelque part, pas au-delà.
-  _bgNotifTick=setInterval(()=>showBgActivityNotif(type,kind),1000);
 }
 function stopBgActivity(){
-  _bgActivity=null; clearInterval(_bgNotifTick); _bgNotifTick=null;
+  _bgActivity=null;
   try{ if('serviceWorker'in navigator){ navigator.serviceWorker.ready.then(reg=>reg.getNotifications({tag:'ikorun-activity'})).then(ns=>ns.forEach(n=>n.close())); } }catch(e){}
   try{ if(_wakeLock){ _wakeLock.release(); _wakeLock=null; } }catch(e){}
 }
