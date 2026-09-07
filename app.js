@@ -1312,8 +1312,24 @@ const VVVCrypto = (function(){
    sur disque se fait en tâche de fond sans bloquer l'app. */
 const DB = {
   _cache:{},
+  // Passe à true si le chiffrement est impossible sur cet appareil : l'app tourne
+  // alors en mémoire seule plutôt que de refuser de démarrer (voir init()).
+  degraded:false,
   async init(){
-    await VVVCrypto.ready();
+    try{
+      await VVVCrypto.ready();
+    }catch(e){
+      // IndexedDB ou WebCrypto indisponible (mode privé strict, stockage de site
+      // bloqué, politique d'entreprise). Avant ce repli, le rejet remontait jusqu'à
+      // window.DB_READY — sans .catch() — donc reloadState() ne tournait jamais et
+      // l'app affichait un écran "Erreur au chargement" définitif, sans explication.
+      // On démarre désormais en mode dégradé : utilisable, mais rien n'est persisté.
+      console.error('[IKORUN] chiffrement local indisponible — démarrage en mémoire seule',e);
+      this.degraded=true;
+      this._cache={};
+      try{ setTimeout(()=>toast(t('storageBlockedToast')),1200); }catch(x){}
+      return;
+    }
     const keys=Object.keys(localStorage).filter(k=>k.startsWith('vvv_')&&k!=='vvv_owner_uid');
     await Promise.all(keys.map(async raw=>{
       const k=raw.slice(4);
@@ -1333,6 +1349,7 @@ const DB = {
     }));
   },
   _persist(k,v){
+    if(this.degraded) return; // mode mémoire seule : ne jamais écrire en clair par défaut
     VVVCrypto.encrypt(v).then(ct=>{ try{ localStorage.setItem('vvv_'+k, ct); }catch(e){} })
       .catch(e=>console.error('DB: échec chiffrement pour',k,e));
   },
@@ -1397,7 +1414,7 @@ function reloadState(){
 // Le déchiffrement (IndexedDB + WebCrypto) est asynchrone : tout le reste du
 // bootstrap (startApp) attend explicitement ce signal avant de lire/afficher
 // quoi que ce soit issu de DB.load().
-window.DB_READY = DB.init().then(reloadState);
+window.DB_READY = DB.init().then(reloadState).catch(e=>{ console.error('[IKORUN] DB_READY',e); try{ reloadState(); }catch(x){} });
 
 function saveAll(){
   DB.save('profile',P); DB.save('sessions',SESS); DB.save('muscu_sessions',MSESS);
@@ -1940,7 +1957,7 @@ const I18N={
     restTimesLab:'Temps de repos recommandés',supersetLab:'Superset',pomoFocus:'Focus',pomoBreak:'Pause',pomodorosDoneLab:'Pomodoros complétés : {0}',
     fillEmailPasswordToast:'Remplis email et mot de passe.',invalidEmailToast:'Adresse email invalide.',
     passwordTooShortToast:'Mot de passe trop court (8 caractères min).',passwordsMismatchToast:'Les mots de passe ne correspondent pas.',
-    wrongCredentialsToast:'Email ou mot de passe incorrect — et si tu viens de créer ton compte, valide d’abord l’email de confirmation.',emailRateLimitToast:'Trop de demandes d’email d’affilée. Attends quelques minutes avant de réessayer.',sessionExpiredToast:'Session expirée, reconnecte-toi. Tes données restent sur cet appareil.',emailAlreadyUsedToast:'Un compte existe déjà avec cet email.',
+    wrongCredentialsToast:'Email ou mot de passe incorrect — et si tu viens de créer ton compte, valide d’abord l’email de confirmation.',emailRateLimitToast:'Trop de demandes d’email d’affilée. Attends quelques minutes avant de réessayer.',sessionExpiredToast:'Session expirée, reconnecte-toi. Tes données restent sur cet appareil.',sessionLostDuringActivity:'Ton activité en cours continue et reste enregistrée sur cet appareil.',storageBlockedToast:'Ton navigateur bloque le stockage : l’app fonctionne, mais rien ne sera conservé en quittant.',emailAlreadyUsedToast:'Un compte existe déjà avec cet email.',
     authGenericErrorToast:'Une erreur est survenue. Réessaie.',checkEmailConfirmToast:'Compte créé ✓ Vérifie ta boîte mail pour confirmer ton adresse.',
     authTimeoutToast:'La connexion prend trop de temps. Vérifie ta connexion internet et réessaie.',
     resetLinkSentToast:'Lien envoyé ✓ Vérifie ta boîte mail.',loggingInToast:'Connexion…',creatingAccountToast:'Création du compte…',sendingResetToast:'Envoi du lien…',
@@ -2494,7 +2511,7 @@ const I18N={
     restTimesLab:'Recommended rest times',supersetLab:'Superset',pomoFocus:'Focus',pomoBreak:'Break',pomodorosDoneLab:'Pomodoros completed: {0}',
     fillEmailPasswordToast:'Fill in email and password.',invalidEmailToast:'Invalid email address.',
     passwordTooShortToast:'Password too short (8 characters min).',passwordsMismatchToast:'Passwords don\u2019t match.',
-    wrongCredentialsToast:'Wrong email or password — and if you just created your account, confirm your email first.',emailRateLimitToast:'Too many email requests in a row. Wait a few minutes before trying again.',sessionExpiredToast:'Session expired, please sign in again. Your data stays on this device.',emailAlreadyUsedToast:'An account already exists with this email.',
+    wrongCredentialsToast:'Wrong email or password — and if you just created your account, confirm your email first.',emailRateLimitToast:'Too many email requests in a row. Wait a few minutes before trying again.',sessionExpiredToast:'Session expired, please sign in again. Your data stays on this device.',sessionLostDuringActivity:'Your ongoing activity keeps running and stays saved on this device.',storageBlockedToast:'Your browser blocks storage: the app works, but nothing will be kept when you leave.',emailAlreadyUsedToast:'An account already exists with this email.',
     authGenericErrorToast:'Something went wrong. Try again.',checkEmailConfirmToast:'Account created ✓ Check your inbox to confirm your email.',
     authTimeoutToast:'This is taking too long. Check your internet connection and try again.',
     resetLinkSentToast:'Link sent ✓ Check your inbox.',loggingInToast:'Signing in…',creatingAccountToast:'Creating account…',sendingResetToast:'Sending link…',
@@ -3051,7 +3068,7 @@ const I18N={
     restTimesLab:'أوقات الراحة الموصى بها',supersetLab:'سوبرسِت',pomoFocus:'تركيز',pomoBreak:'استراحة',pomodorosDoneLab:'بومودورو مكتملة: {0}',
     fillEmailPasswordToast:'أدخل البريد الإلكتروني وكلمة المرور.',invalidEmailToast:'عنوان بريد إلكتروني غير صالح.',
     passwordTooShortToast:'كلمة المرور قصيرة جدًا (8 أحرف كحد أدنى).',passwordsMismatchToast:'كلمتا المرور غير متطابقتين.',
-    wrongCredentialsToast:'بريد إلكتروني أو كلمة مرور غير صحيحة — وإذا أنشأت حسابك للتو، فأكّد بريدك الإلكتروني أولًا.',emailRateLimitToast:'طلبات بريد كثيرة متتالية. انتظر بضع دقائق قبل إعادة المحاولة.',sessionExpiredToast:'انتهت الجلسة، سجّل الدخول من جديد. بياناتك تبقى على هذا الجهاز.',emailAlreadyUsedToast:'يوجد حساب بالفعل بهذا البريد الإلكتروني.',
+    wrongCredentialsToast:'بريد إلكتروني أو كلمة مرور غير صحيحة — وإذا أنشأت حسابك للتو، فأكّد بريدك الإلكتروني أولًا.',emailRateLimitToast:'طلبات بريد كثيرة متتالية. انتظر بضع دقائق قبل إعادة المحاولة.',sessionExpiredToast:'انتهت الجلسة، سجّل الدخول من جديد. بياناتك تبقى على هذا الجهاز.',sessionLostDuringActivity:'نشاطك الجاري يستمر ويبقى محفوظًا على هذا الجهاز.',storageBlockedToast:'متصفحك يحظر التخزين: التطبيق يعمل، لكن لن يُحفظ شيء عند الخروج.',emailAlreadyUsedToast:'يوجد حساب بالفعل بهذا البريد الإلكتروني.',
     authGenericErrorToast:'حدث خطأ ما. حاول مرة أخرى.',checkEmailConfirmToast:'تم إنشاء الحساب ✓ تحقق من بريدك لتأكيد عنوانك.',
     authTimeoutToast:'\u0627\u0644\u0627\u062A\u0635\u0627\u0644 \u064A\u0633\u062A\u063A\u0631\u0642 \u0648\u0642\u062A\u064B\u0627 \u0637\u0648\u064A\u0644\u0627\u064B. \u062A\u062D\u0642\u0642 \u0645\u0646 \u0627\u062A\u0635\u0627\u0644\u0643 \u0628\u0627\u0644\u0625\u0646\u062A\u0631\u0646\u062A \u0648\u0623\u0639\u062F \u0627\u0644\u0645\u062D\u0627\u0648\u0644\u0629.',
     resetLinkSentToast:'تم إرسال الرابط ✓ تحقق من بريدك.',loggingInToast:'جارٍ تسجيل الدخول…',creatingAccountToast:'جارٍ إنشاء الحساب…',sendingResetToast:'جارٍ إرسال الرابط…',
@@ -3949,6 +3966,7 @@ if('serviceWorker'in navigator){
 // actif et que le serveur a bien le dernier état "séance du jour faite ou non".
 document.addEventListener('visibilitychange',async()=>{
   if(document.visibilityState==='visible'){
+    checkDayRollover();
     ensurePush();
     syncDailyReminderState();
     if(_bgActivity && !_wakeLock){
@@ -3956,6 +3974,29 @@ document.addEventListener('visibilitychange',async()=>{
     }
   }
 });
+/* Une PWA installée n'est presque jamais "redémarrée" : sur iOS elle reste
+   résidente des jours. Or getDailyGoals() (bascule des objectifs du jour +
+   mise en banque de l'XP de la veille), checkMissedSessions() et
+   weeklyAdaptiveRegen() n'étaient appelés QUE dans initApp(). Après minuit,
+   l'app affichait donc encore les objectifs de la veille, ne détectait pas la
+   séance manquée, et surtout n'adaptait plus le plan — alors que c'est la
+   promesse centrale du produit. On rejoue cette séquence dès que la date change
+   entre deux passages au premier plan. */
+let _lastDayKey=null;
+function checkDayRollover(){
+  if(!P || !P.setupDone) return;
+  const tk=todayKey();
+  if(_lastDayKey===null){ _lastDayKey=tk; return; } // 1er appel : initApp vient de tout faire
+  if(_lastDayKey===tk) return;
+  _lastDayKey=tk;
+  try{ getDailyGoals(); }catch(e){ console.error('[IKORUN] rollover getDailyGoals',e); }
+  try{ refreshXP(); }catch(e){ console.error('[IKORUN] rollover refreshXP',e); }
+  try{ checkMissedSessions(); }catch(e){ console.error('[IKORUN] rollover checkMissedSessions',e); }
+  try{ weeklyAdaptiveRegen(); }catch(e){ console.error('[IKORUN] rollover weeklyAdaptiveRegen',e); }
+  // Re-rend l'écran actif pour que la carte du jour, la semaine et les objectifs
+  // reflètent la nouvelle date au lieu de rester figés sur la veille.
+  try{ const active=document.querySelector('.nb.on'); if(active) nav(active.dataset.s); }catch(e){}
+}
 function appIconDataURL(){ return "icon-192.png"; }
 function ripple(e,b){
   const r=document.createElement('span'); r.className='ripple';
@@ -4475,7 +4516,15 @@ async function startApp(){
         // PAS aux données locales, on renvoie simplement vers l'écran de connexion.
         // Se reconnecter avec le même compte les retrouve intactes.
         console.warn('[IKORUN] session perdue sans déconnexion volontaire — cache local conservé');
+        // Sans cette remise à zéro, cloudPush/syncDailyReminderState/subscribeToPush
+        // (qui ne testent que la présence de currentUserId) continuaient d'émettre des
+        // requêtes avec un jeton expiré : elles échouaient en 401, silencieusement,
+        // et l'utilisateur croyait ses données synchronisées.
+        window.currentUserId=null; window.currentUserEmail=null;
         try{ toast(t('sessionExpiredToast')); }catch(e){}
+        // Une séance en cours continuerait de tourner sous l'écran de connexion sans
+        // aucun signal : on prévient explicitement que rien n'est perdu en local.
+        try{ if(LIVE||_bgActivity) setTimeout(()=>toast(t('sessionLostDuringActivity')),2600); }catch(e){}
         try{ startLogin(); }catch(e){ location.reload(); }
       }
     }
@@ -4512,6 +4561,7 @@ function initApp(){
   applyNavLabels();
   P.vdot=computeVDOTfromRecords()||computeVDOT();
   getDailyGoals();
+  _lastDayKey=todayKey(); // repere pour la detection de changement de jour (checkDayRollover)
   refreshXP();
   nav('home');
   scheduleMotionSettle(1400);
@@ -7238,7 +7288,7 @@ function persoDetailHTML(){
   const p=CUSTOM.find(x=>x.id===curPerso); if(!p) return renderPersoList();
   const tk=todayKey();
   const following=P.followPerso===p.id;
-  let h='<div class="row" style="margin-bottom:14px"><button class="x" onclick="curPerso=null;renderSport()">‹</button><div class="man" style="font-weight:800;font-size:18px">'+p.name+'</div><button class="x" onclick="renamePerso(\''+p.id+'\')" aria-label="'+t('renameLab')+'">'+ICN('edit',16)+'</button></div>';
+  let h='<div class="row" style="margin-bottom:14px"><button class="x" onclick="curPerso=null;renderSport()">‹</button><div class="man" style="font-weight:800;font-size:18px">'+escHtml(p.name)+'</div><button class="x" onclick="renamePerso(\''+p.id+'\')" aria-label="'+t('renameLab')+'">'+ICN('edit',16)+'</button></div>';
   h+='<div class="chrome-box'+(following?' accent':'')+'" style="display:flex;align-items:center;gap:10px">'
     +'<div style="flex:1"><div class="cb-head" style="margin-bottom:2px">'+(following?'Plan suivi actuellement':'Suivre ce plan à la place du plan IKORUN')+'</div>'
     +'<div class="cb-body" style="font-size:12px;color:var(--muted)">'+(following?'Ton accueil et ton bilan utilisent ce plan. Le plan IKORUN continue de s\u2019ajuster en arrière-plan selon ce que tu fais ici.':'Ton accueil affichera les séances de ce plan au lieu du plan généré. Tu peux revenir au plan IKORUN quand tu veux.')+'</div></div>'
@@ -7250,7 +7300,7 @@ function persoDetailHTML(){
     sorted.forEach(s=>{
       const isToday=s.date===tk; const col='var('+(TYPE_COLORS[s.type]||'--e')+')';
       const detail=(s.intervals&&s.intervals.length)?(' · '+s.intervals.length+' × '+s.intervals[0].dist+' m'):(s.km?' · '+s.km+' km · '+s.pace+'/km':'');
-      h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'"><div class="row" onclick="openPersoSheet('+s.id+')" style="cursor:pointer"><div><div style="font-weight:700;font-size:14px">'+s.title+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+fmtDate(s.date)+detail+'</div></div><div class="badge" style="background:rgba(var(--e-rgb),.15);color:'+col+';font-size:11px">'+s.type+'</div></div></div>';
+      h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'"><div class="row" onclick="openPersoSheet('+s.id+')" style="cursor:pointer"><div><div style="font-weight:700;font-size:14px">'+escHtml(s.title)+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+fmtDate(s.date)+detail+'</div></div><div class="badge" style="background:rgba(var(--e-rgb),.15);color:'+col+';font-size:11px">'+escHtml(s.type)+'</div></div></div>';
     });
   }
   return h;
@@ -7376,7 +7426,9 @@ function openPersoSheet(sid){
   $('#sheetBody').innerHTML=h; openOv('ovSheet');
 }
 function markPersoDone(){
-  const p=CUSTOM.find(x=>x.id===curPerso); const s=p.sessions.find(x=>x.id===curPersoSess); if(!s)return;
+  const p=CUSTOM.find(x=>x.id===curPerso); if(!p) return;
+  const s=p.sessions.find(x=>x.id===curPersoSess); if(!s)return;
+  if(s.done) return; // idempotence — voir markRunDone
   if(s.date>todayKey()){ toast(t('guardFutureSession')); return; }
   s.done=true;
   const sessRef=Date.now()+Math.random();
@@ -7658,13 +7710,18 @@ function openRunSheet(id){
     h+='<div class="chrome-box"><div class="cb-head">'+t('whySessionLabel')+'</div><div class="cb-body">'+dt.why+'</div></div>';
   } else {
     h+=seriesTableHTML(liveSeries(s));
-    h+='<div class="chrome-box"><div class="cb-head">'+t('sessionBodyLabel')+'</div><div class="cb-body">'+s.desc+'</div></div>';
+    h+='<div class="chrome-box"><div class="cb-head">'+t('sessionBodyLabel')+'</div><div class="cb-body">'+escHtml(s.desc||'')+'</div></div>';
   }
   $('#sheetBody').innerHTML=h;
   openOv('ovSheet');
 }
 function markRunDone(){
   const s=PLAN.sessions.find(x=>x.id===curRunId); if(!s) return;
+  // Idempotence : sans ce garde, un double-tap sur « J'ai fait » (ou un appel
+  // depuis deux chemins avant le re-rendu) empilait une 2e entrée dans SESS et
+  // créditait l'XP deux fois. L'information existait déjà (s.done) mais n'était
+  // pas utilisée comme garde.
+  if(s.done) return;
   // Garde-fou anti-triche : jamais de séance future validée, quel que soit le
   // chemin d'appel (bouton masqué côté UI, mais ce garde est celui qui compte
   // vraiment — voir openRunSheet pour l'équivalent visuel).
@@ -7867,8 +7924,8 @@ function openProg(id){
   const totalSets=p.ex.reduce((a,e)=>a+(e.sets||0),0);
   const dur=Math.round(progDuration(p));
   const lvl=p.objective||t('lvlIntermediate');
-  let h='<div class="row" style="margin-bottom:6px"><div class="man" style="font-weight:800;font-size:22px;display:flex;align-items:center;gap:8px">'+(p.icon&&ICONS[p.icon]?ICN(p.icon,20,'var(--e)'):'')+p.name+'</div></div>';
-  h+='<div class="row" style="gap:8px;margin-bottom:14px"><span class="badge">'+lvl+'</span><span style="font-size:12px;color:var(--muted)">'+tp('exercisesCount',p.ex.length)+'</span></div>';
+  let h='<div class="row" style="margin-bottom:6px"><div class="man" style="font-weight:800;font-size:22px;display:flex;align-items:center;gap:8px">'+(p.icon&&ICONS[p.icon]?ICN(p.icon,20,'var(--e)'):'')+escHtml(p.name)+'</div></div>';
+  h+='<div class="row" style="gap:8px;margin-bottom:14px"><span class="badge">'+escHtml(lvl)+'</span><span style="font-size:12px;color:var(--muted)">'+tp('exercisesCount',p.ex.length)+'</span></div>';
   // Carte stats
   // Carte d'en-tête : séries, durée, et les silhouettes des muscles travaillés
   // dans la même barre — on sait ce que vaut la séance sans dérouler la fiche.
@@ -7881,7 +7938,7 @@ function openProg(id){
   p.ex.forEach((e,i)=>{
     h+='<div class="card" style="padding:13px;margin-bottom:10px;cursor:pointer" onclick="openExDetail(\''+p.id+'\','+i+')"><div class="row" style="align-items:flex-start"><div style="position:relative;margin-right:12px">'+exThumb(e.name,64)+
       '<div style="position:absolute;top:-6px;left:-6px;width:22px;height:22px;border-radius:7px;background:var(--e);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">'+(i+1)+'</div></div>'+
-      '<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15px;line-height:1.25">'+e.name+'</div>'+
+      '<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15px;line-height:1.25">'+escHtml(e.name)+'</div>'+
       '<div class="muscle-tags" style="margin-top:5px">'+(e.muscles||[]).slice(0,2).map(m=>'<span class="mtag">'+m+'</span>').join('')+'</div>'+
       '<div style="font-size:12px;color:var(--muted);margin-top:6px">'+tp('setsRepsLine',e.sets,e.reps)+'</div>'+
       '<div style="font-size:11px;color:var(--dim);margin-top:3px">~'+Math.round(e.sets*1.8)+' min</div></div>'+
@@ -8131,9 +8188,10 @@ function startExDemoAuto(g){
 }
 
 /* ---------- LIVE MUSCU SESSION ---------- */
-let LIVE=null,liveTimer=null,restTimer=null,liveOpenEx=0;
+let LIVE=null,liveTimer=null,restTimer=null,liveOpenEx=0,_finishingLive=false;
 function startLive(id,startIdx){
   const p=allProgs().find(x=>x.id===id); if(!p) return;
+  _finishingLive=false; // nouvelle séance : la garde de ré-entrée de finishLive repart à zéro
   if(_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; }
   closeOv('ovProg');
   // On clone le tableau d'exercices (pas les objets exercice eux-mêmes) : ajouter/retirer un exo
@@ -8198,7 +8256,7 @@ function renderLive(){
     h+='<div class="card ex-swipe-card" data-i="'+i+'" style="padding:14px'+(allDone?';border-color:rgba(51,211,153,.35)':'')+'">';
     // Entête exercice (tapable) : vignette, nom, chevron, "..." (options)
     h+='<div class="row" style="align-items:flex-start;cursor:pointer" onclick="toggleLiveEx('+i+')">'+exThumb(e.name,48)+
-      '<div style="flex:1;min-width:0;margin-left:10px"><div style="font-weight:700;font-size:15.5px;line-height:1.25">'+e.name+'</div>'+
+      '<div style="flex:1;min-width:0;margin-left:10px"><div style="font-weight:700;font-size:15.5px;line-height:1.25">'+escHtml(e.name)+'</div>'+
       '<div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+(allDone?t('exerciseDoneLab'):tp('setsDoneCount',st.sets.filter(Boolean).length,st.sets.length))+'</div></div>'+
       '<span id="exChev'+i+'" style="color:var(--muted);font-size:14px;padding:6px 4px;transition:transform .25s ease;transform:rotate('+(open?'180':'0')+'deg)">⌄</span>'+
       '<span onclick="event.stopPropagation();openLiveExOptions('+i+')" style="color:var(--muted);font-size:20px;padding:4px 4px 4px 8px;cursor:pointer;letter-spacing:1px">⋯</span></div>';
@@ -8424,7 +8482,7 @@ function openLiveExOptions(i){
   const ov=document.createElement('div'); ov.className='ov on'; ov.id='liveExOptOv'; ov.style.zIndex=topZ();
   const g=exGif(e.name);
   let h='<div class="ov-card" style="text-align:center">';
-  h+='<div class="card-t" style="justify-content:center;margin-bottom:14px">'+e.name+'</div>';
+  h+='<div class="card-t" style="justify-content:center;margin-bottom:14px">'+escHtml(e.name)+'</div>';
   if(g) h+='<img src="'+g[0]+'" style="width:100%;border-radius:14px;margin-bottom:14px;aspect-ratio:16/10;object-fit:cover">';
   h+='<button class="btn ghost" style="margin-bottom:8px" onclick="document.getElementById(\'liveExOptOv\').remove();changeRest('+i+')">'+t('changeRestLab')+'</button>';
   h+='<button class="btn ghost" style="margin-bottom:8px;color:var(--bad)" onclick="document.getElementById(\'liveExOptOv\').remove();confirmDeleteLiveEx('+i+')">'+t('removeExLab')+'</button>';
@@ -8474,10 +8532,11 @@ function pauseLive(){
   clearInterval(liveTimer);
   LIVE.savedElapsed=Date.now()-LIVE.start;
   DB.save('live_paused',LIVE); DB.remove('live_active');
-  closeOv('ovLive'); LIVE=null; toast(t('sessionSaved'));
+  closeOv('ovLive'); LIVE=null; _finishingLive=false; toast(t('sessionSaved'));
   stopBgActivity(); renderSport();
 }
 function resumeLive(){
+  _finishingLive=false;
   const saved=DB.load('live_paused'); if(!saved) return;
   LIVE=saved; // on garde saved.prog tel quel (avec les exos ajoutés/retirés pendant la séance),
   // on ne va PAS le remplacer par la routine d'origine sinon ces changements seraient perdus.
@@ -8532,10 +8591,16 @@ function doCancelLive(){
   const eo=$('#liveExOptOv'); if(eo) eo.remove();
   const de=$('#delExOv'); if(de) de.remove();
   clearInterval(liveTimer); clearInterval(restTimer); skipRest();
-  LIVE=null; DB.remove('live_active'); DB.remove('live_paused');
+  LIVE=null; _finishingLive=false; DB.remove('live_active'); DB.remove('live_paused');
   closeOv('ovLive'); stopBgActivity(); toast(t('sessionCancelled')); renderSport();
 }
 function finishLive(){
+  // Ré-entrée : LIVE n'est remis à null qu'au tap « Fermer » de l'écran de
+  // résultats. Entre-temps, un second appel (double-tap, ou bouton d'action de
+  // la notification pas encore fermée — stopBgActivity est asynchrone) aurait
+  // enregistré une 2e séance et crédité l'XP deux fois.
+  if(_finishingLive || !LIVE) return;
+  _finishingLive=true;
   clearInterval(liveTimer); skipRest();
   const dur=Math.round((Date.now()-LIVE.start)/1000);
   const cal=Math.round(LIVE.tonnage*0.05+dur/60*6);
@@ -8569,7 +8634,7 @@ function finishLive(){
   // muscles schema
   if(Object.keys(muscles).length){ h+='<div class="card-t" style="margin-top:12px">'+t('musclesWorkedLab')+'</div><div class="muscle-tags" style="margin-bottom:12px">'+Object.keys(muscles).map(m=>'<span class="mtag" style="background:var(--ed);color:var(--e);border-color:var(--e)">'+m+'</span>').join('')+'</div>'; }
   h+='<div class="badge" style="width:100%;justify-content:center;padding:14px;margin:6px 0 14px">'+t('xpEarnedLab')+'</div>';
-  h+='<button class="btn" onclick="closeOv(\'ovLive\');LIVE=null;renderSport()">'+t('closeLab')+'</button>';
+  h+='<button class="btn" onclick="closeOv(\'ovLive\');LIVE=null;_finishingLive=false;renderSport()">'+t('closeLab')+'</button>';
   $('#liveBody').innerHTML=h;
 }
 
@@ -8590,7 +8655,7 @@ function renderCreate(){
   h+='<div class="lab" style="margin:10px 0 8px">'+tp('exercisesCountLab',newProg.ex.length)+'</div>';
   if(!newProg.ex.length) h+='<div class="tip" style="margin-bottom:12px">'+t('addExFromLib')+'</div>';
   newProg.ex.forEach((e,i)=>{
-    h+='<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:8px"><span style="font-size:22px">'+e.anim+'</span><div><div style="font-weight:700;font-size:14px">'+e.name+'</div><div class="mono" style="font-size:12px;color:var(--e)">'+e.sets+'×'+e.reps+(e.rest?' · '+e.rest+'s':'')+'</div></div></div><button class="x" onclick="newProg.ex.splice('+i+',1);renderCreate()">'+ICN('trash',16)+'</button></div></div>';
+    h+='<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:8px"><span style="font-size:22px">'+e.anim+'</span><div><div style="font-weight:700;font-size:14px">'+escHtml(e.name)+'</div><div class="mono" style="font-size:12px;color:var(--e)">'+e.sets+'×'+e.reps+(e.rest?' · '+e.rest+'s':'')+'</div></div></div><button class="x" onclick="newProg.ex.splice('+i+',1);renderCreate()">'+ICN('trash',16)+'</button></div></div>';
   });
   h+='<button class="btn ghost" style="margin-bottom:12px" onclick="openLibFor(addToNewProg)">'+t('addFromLibBtn')+'</button>';
   h+='<button class="btn" onclick="saveNewProg()">'+t('saveProgramBtn')+'</button>';
@@ -10645,9 +10710,26 @@ function importData(){
         if(typeof P.bio!=='string') delete P.bio; else P.bio=P.bio.slice(0,160);
         DB.save('profile',P);
       }
-      if(Array.isArray(d.sessions)){SESS=d.sessions;DB.save('sessions',SESS);}
-      if(Array.isArray(d.muscu)){MSESS=d.muscu;DB.save('muscu_sessions',MSESS);}
-      if(d.xp && typeof d.xp==='object'){XP=d.xp;DB.save('xp',XP);}
+      // Les tableaux de séances étaient recopiés tels quels : un fichier fabriqué
+      // pouvait donc y glisser des champs texte porteurs de HTML (title, type,
+      // progName…) qui finissaient dans le DOM. On normalise chaque entrée :
+      // types imposés, longueurs bornées, nombres plausibles.
+      const cleanSess=arr=>arr.filter(x=>x&&typeof x==='object'&&!Array.isArray(x)).slice(0,5000).map(x=>{
+        const o={};
+        ['date','title','type','pace','progName','feel','pain'].forEach(k=>{ if(typeof x[k]==='string') o[k]=x[k].slice(0,120); });
+        ['km','duration','rpe','tonnage','sets','reps','calories','deniv','sessRef'].forEach(k=>{ const n=Number(x[k]); if(Number.isFinite(n)) o[k]=n; });
+        if(Array.isArray(x.muscles)) o.muscles=x.muscles.filter(m=>typeof m==='string').slice(0,40).map(m=>m.slice(0,40));
+        if(typeof x.provisional==='boolean') o.provisional=x.provisional;
+        return o;
+      });
+      if(Array.isArray(d.sessions)){SESS=cleanSess(d.sessions);DB.save('sessions',SESS);}
+      if(Array.isArray(d.muscu)){MSESS=cleanSess(d.muscu);DB.save('muscu_sessions',MSESS);}
+      if(d.xp && typeof d.xp==='object' && !Array.isArray(d.xp)){
+        const nx={};
+        ['total','level','pastGoalXP'].forEach(k=>{ const n=Number(d.xp[k]); if(Number.isFinite(n)&&n>=0) nx[k]=n; });
+        if(typeof d.xp.name==='string') nx.name=d.xp.name.slice(0,40);
+        XP=Object.assign({total:0,level:1,name:'Recrue',pastGoalXP:0},nx); DB.save('xp',XP);
+      }
       toast(t('dataImported')); applyTheme(); renderProfile(); }catch(err){ toast(t('invalidFile')); } };
     r.readAsText(f); };
   inp.click();
@@ -10662,10 +10744,10 @@ function openRecords(){
     const sorted=[...RECORDS].sort((a,b)=>(a.meters||0)-(b.meters||0));
     sorted.forEach((r,i)=>{
       const v=r.meters?vdotFromRace(r.meters,parseTime(r.time)).toFixed(1):'—';
-      h+='<div class="card" style="padding:13px"><div class="row"><div><div style="font-weight:700">'+r.dist+' · <span class="mono" style="color:var(--e)">'+r.time+'</span></div><div style="font-size:11px;color:var(--muted);margin-top:3px">'+(r.date?fmtDate(r.date):'')+(r.place?' · '+r.place:'')+(r.meters?' · VDOT '+v:'')+'</div></div><button class="x" onclick="delRecord('+i+')">'+ICN('trash',16)+'</button></div>'+(r.feel||r.hrAvg?'<div style="font-size:11px;color:var(--dim);margin-top:6px">'+(r.feel?r.feel:'')+(r.hrAvg?' · '+t('avgHR')+' '+r.hrAvg:'')+(r.hrMax?' / '+t('maxHRshort')+' '+r.hrMax:'')+'</div>':'')+'</div>';
+      h+='<div class="card" style="padding:13px"><div class="row"><div><div style="font-weight:700">'+escHtml(r.dist)+' · <span class="mono" style="color:var(--e)">'+escHtml(r.time)+'</span></div><div style="font-size:11px;color:var(--muted);margin-top:3px">'+(r.date?fmtDate(r.date):'')+(r.place?' · '+escHtml(r.place):'')+(r.meters?' · VDOT '+v:'')+'</div></div><button class="x" onclick="delRecord('+i+')">'+ICN('trash',16)+'</button></div>'+(r.feel||r.hrAvg?'<div style="font-size:11px;color:var(--dim);margin-top:6px">'+(r.feel?escHtml(r.feel):'')+(r.hrAvg?' · '+t('avgHR')+' '+r.hrAvg:'')+(r.hrMax?' / '+t('maxHRshort')+' '+r.hrMax:'')+'</div>':'')+'</div>';
     });
     const best=bestRecord();
-    if(best) h+='<div class="card" style="border-color:var(--or);text-align:center"><div class="lab" style="color:var(--or)">'+t('bestPerf')+'</div><div class="man" style="font-weight:800;font-size:18px;margin-top:4px">'+best.dist+' — '+best.time+'</div><div style="font-size:12px;color:var(--muted)">VDOT '+vdotFromRace(best.meters,parseTime(best.time)).toFixed(1)+'</div></div>';
+    if(best) h+='<div class="card" style="border-color:var(--or);text-align:center"><div class="lab" style="color:var(--or)">'+t('bestPerf')+'</div><div class="man" style="font-weight:800;font-size:18px;margin-top:4px">'+escHtml(best.dist)+' — '+escHtml(best.time)+'</div><div style="font-size:12px;color:var(--muted)">VDOT '+vdotFromRace(best.meters,parseTime(best.time)).toFixed(1)+'</div></div>';
   }
   $('#profileEditBody').innerHTML=h; $('#profileEditFoot').innerHTML=''; $('#ovProfile').querySelector('h2').textContent=t('perfHistoryTitle'); openOv('ovProfile');
 }
@@ -10800,6 +10882,7 @@ function syncOnline(silent){
   PREFS.lastOnline=Date.now();
   PREFS.lastSync=Date.now();
   // Recalcule/rafraîchit les données dépendantes de la date (prières, calendrier, J-X…)
+  checkDayRollover(); // couvre le cas ou l'app reste affichee au passage de minuit
   try{ if($('#s-home')&&$('#s-home').classList.contains('on')) renderHome(); }catch(e){}
   try{ if($('#s-outils')&&$('#s-outils').classList.contains('on')&&outilsTab==='priere') renderPriere(); }catch(e){}
   DB.save('prefs',PREFS);

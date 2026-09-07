@@ -7,7 +7,7 @@
 // cache. Changer le nom du cache supprime les anciennes entrées à l'activation, ce
 // qui garantit que le vrai manifest.json est bien récupéré — condition nécessaire
 // pour que le navigateur propose l'installation de l'app.
-const C = 'ikorun-v37';
+const C = 'ikorun-v38';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
@@ -33,10 +33,16 @@ self.addEventListener('fetch', e => {
   e.respondWith(
     fetch(e.request, { cache: 'no-store' })
       .then(res => {
-        try {
-          const copy = res.clone();
-          caches.open(C).then(c => c.put(e.request, copy));
-        } catch (x) {}
+        // fetch() RÉSOUT sur un 404/500/502 (il ne rejette que sur erreur réseau).
+        // Sans ce test, une page d'erreur transitoire du CDN était mise en cache
+        // puis resservie hors-ligne : l'utilisateur restait bloqué dessus jusqu'à
+        // un rechargement en ligne. On ne met donc en cache que les vraies réponses.
+        if (res && res.ok) {
+          try {
+            const copy = res.clone();
+            caches.open(C).then(c => c.put(e.request, copy));
+          } catch (x) {}
+        }
         return res;
       })
       .catch(() => caches.open(C).then(c => c.match(e.request)))
