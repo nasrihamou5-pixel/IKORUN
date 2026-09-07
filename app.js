@@ -110,7 +110,7 @@ async function cloudPush(key, value){
   if(!window.supabaseClient || !window.currentUserId) return;
   try{
     let size=0;
-    try{ size=JSON.stringify(value).length; }catch(e){}
+    try{ size=JSON.stringify(value).length; }catch(e){ console.error("cloudPush: valeur non sérialisable pour la clé",key,e); return; }
     if(size>CLOUD_KEY_MAX_BYTES){
       console.error('cloudPush: valeur trop volumineuse pour la clé "'+key+'" ('+size+' octets) — synchronisation annulée');
       if(typeof toast==='function') toast(t('guardStorageTooBig'));
@@ -339,7 +339,7 @@ async function setPushFlag(field,enabled){
     if(!sub){ if(enabled) await subscribeToPush(); return; }
     const patch={updated_at:new Date().toISOString()}; patch[field]=enabled;
     await window.supabaseClient.from('push_subscriptions').update(patch).eq('user_id',window.currentUserId).eq('endpoint',sub.endpoint);
-  }catch(e){}
+  }catch(e){ console.error("[IKORUN] setPushFlag",e); }
 }
 function ensurePush(){
   if(!P || (P.notif===false && P.prayerNotif===false)) return;
@@ -1362,10 +1362,19 @@ const DB = {
       this._cache[k]=(val===undefined)?null:val;
     }));
   },
+  _quotaWarned:false,
   _persist(k,v){
     if(this.degraded) return; // mode mémoire seule : ne jamais écrire en clair par défaut
-    VVVCrypto.encrypt(v).then(ct=>{ try{ localStorage.setItem('vvv_'+k, ct); }catch(e){} })
-      .catch(e=>console.error('DB: échec chiffrement pour',k,e));
+    VVVCrypto.encrypt(v).then(ct=>{
+      try{ localStorage.setItem('vvv_'+k, ct); }
+      catch(e){
+        // Quota localStorage dépassé (photos + long historique) : l'écriture
+        // échouait en silence, l'utilisateur croyait ses données enregistrées
+        // alors qu'elles ne vivaient plus qu'en mémoire jusqu'à la fermeture.
+        console.error('DB: écriture locale impossible pour',k,e);
+        if(!DB._quotaWarned){ DB._quotaWarned=true; try{ toast(t('storageFullToast')); }catch(x){} }
+      }
+    }).catch(e=>console.error('DB: échec chiffrement pour',k,e));
   },
   load(k){ return (k in this._cache) ? this._cache[k] : null; },
   save(k,v){ this._cache[k]=v; this._persist(k,v); cloudPush(k,v); },
@@ -1971,7 +1980,7 @@ const I18N={
     restTimesLab:'Temps de repos recommandés',supersetLab:'Superset',pomoFocus:'Focus',pomoBreak:'Pause',pomodorosDoneLab:'Pomodoros complétés : {0}',
     fillEmailPasswordToast:'Remplis email et mot de passe.',invalidEmailToast:'Adresse email invalide.',
     passwordTooShortToast:'Mot de passe trop court (8 caractères min).',passwordsMismatchToast:'Les mots de passe ne correspondent pas.',
-    wrongCredentialsToast:'Email ou mot de passe incorrect — et si tu viens de créer ton compte, valide d’abord l’email de confirmation.',emailRateLimitToast:'Trop de demandes d’email d’affilée. Attends quelques minutes avant de réessayer.',sessionExpiredToast:'Session expirée, reconnecte-toi. Tes données restent sur cet appareil.',sessionLostDuringActivity:'Ton activité en cours continue et reste enregistrée sur cet appareil.',storageBlockedToast:'Ton navigateur bloque le stockage : l’app fonctionne, mais rien ne sera conservé en quittant.',emailAlreadyUsedToast:'Un compte existe déjà avec cet email.',
+    wrongCredentialsToast:'Email ou mot de passe incorrect — et si tu viens de créer ton compte, valide d’abord l’email de confirmation.',emailRateLimitToast:'Trop de demandes d’email d’affilée. Attends quelques minutes avant de réessayer.',sessionExpiredToast:'Session expirée, reconnecte-toi. Tes données restent sur cet appareil.',sessionLostDuringActivity:'Ton activité en cours continue et reste enregistrée sur cet appareil.',storageBlockedToast:'Ton navigateur bloque le stockage : l’app fonctionne, mais rien ne sera conservé en quittant.',storageFullToast:'Mémoire de l’appareil pleine : tes dernières données n’ont pas pu être enregistrées. Exporte tes données depuis Profil > Données.',swInactiveTip:'Le composant hors-ligne de l’app n’est pas actif sur cet appareil : les notifications ne peuvent pas fonctionner. Recharge la page, et vérifie que le stockage de site n’est pas bloqué.',emailAlreadyUsedToast:'Un compte existe déjà avec cet email.',
     authGenericErrorToast:'Une erreur est survenue. Réessaie.',checkEmailConfirmToast:'Compte créé ✓ Vérifie ta boîte mail pour confirmer ton adresse.',
     authTimeoutToast:'La connexion prend trop de temps. Vérifie ta connexion internet et réessaie.',
     resetLinkSentToast:'Lien envoyé ✓ Vérifie ta boîte mail.',loggingInToast:'Connexion…',creatingAccountToast:'Création du compte…',sendingResetToast:'Envoi du lien…',
@@ -2525,7 +2534,7 @@ const I18N={
     restTimesLab:'Recommended rest times',supersetLab:'Superset',pomoFocus:'Focus',pomoBreak:'Break',pomodorosDoneLab:'Pomodoros completed: {0}',
     fillEmailPasswordToast:'Fill in email and password.',invalidEmailToast:'Invalid email address.',
     passwordTooShortToast:'Password too short (8 characters min).',passwordsMismatchToast:'Passwords don\u2019t match.',
-    wrongCredentialsToast:'Wrong email or password — and if you just created your account, confirm your email first.',emailRateLimitToast:'Too many email requests in a row. Wait a few minutes before trying again.',sessionExpiredToast:'Session expired, please sign in again. Your data stays on this device.',sessionLostDuringActivity:'Your ongoing activity keeps running and stays saved on this device.',storageBlockedToast:'Your browser blocks storage: the app works, but nothing will be kept when you leave.',emailAlreadyUsedToast:'An account already exists with this email.',
+    wrongCredentialsToast:'Wrong email or password — and if you just created your account, confirm your email first.',emailRateLimitToast:'Too many email requests in a row. Wait a few minutes before trying again.',sessionExpiredToast:'Session expired, please sign in again. Your data stays on this device.',sessionLostDuringActivity:'Your ongoing activity keeps running and stays saved on this device.',storageBlockedToast:'Your browser blocks storage: the app works, but nothing will be kept when you leave.',storageFullToast:'Device storage is full: your latest data could not be saved. Export your data from Profile > Data.',swInactiveTip:'The app’s offline component is not active on this device: notifications cannot work. Reload the page and check that site storage is not blocked.',emailAlreadyUsedToast:'An account already exists with this email.',
     authGenericErrorToast:'Something went wrong. Try again.',checkEmailConfirmToast:'Account created ✓ Check your inbox to confirm your email.',
     authTimeoutToast:'This is taking too long. Check your internet connection and try again.',
     resetLinkSentToast:'Link sent ✓ Check your inbox.',loggingInToast:'Signing in…',creatingAccountToast:'Creating account…',sendingResetToast:'Sending link…',
@@ -3082,7 +3091,7 @@ const I18N={
     restTimesLab:'أوقات الراحة الموصى بها',supersetLab:'سوبرسِت',pomoFocus:'تركيز',pomoBreak:'استراحة',pomodorosDoneLab:'بومودورو مكتملة: {0}',
     fillEmailPasswordToast:'أدخل البريد الإلكتروني وكلمة المرور.',invalidEmailToast:'عنوان بريد إلكتروني غير صالح.',
     passwordTooShortToast:'كلمة المرور قصيرة جدًا (8 أحرف كحد أدنى).',passwordsMismatchToast:'كلمتا المرور غير متطابقتين.',
-    wrongCredentialsToast:'بريد إلكتروني أو كلمة مرور غير صحيحة — وإذا أنشأت حسابك للتو، فأكّد بريدك الإلكتروني أولًا.',emailRateLimitToast:'طلبات بريد كثيرة متتالية. انتظر بضع دقائق قبل إعادة المحاولة.',sessionExpiredToast:'انتهت الجلسة، سجّل الدخول من جديد. بياناتك تبقى على هذا الجهاز.',sessionLostDuringActivity:'نشاطك الجاري يستمر ويبقى محفوظًا على هذا الجهاز.',storageBlockedToast:'متصفحك يحظر التخزين: التطبيق يعمل، لكن لن يُحفظ شيء عند الخروج.',emailAlreadyUsedToast:'يوجد حساب بالفعل بهذا البريد الإلكتروني.',
+    wrongCredentialsToast:'بريد إلكتروني أو كلمة مرور غير صحيحة — وإذا أنشأت حسابك للتو، فأكّد بريدك الإلكتروني أولًا.',emailRateLimitToast:'طلبات بريد كثيرة متتالية. انتظر بضع دقائق قبل إعادة المحاولة.',sessionExpiredToast:'انتهت الجلسة، سجّل الدخول من جديد. بياناتك تبقى على هذا الجهاز.',sessionLostDuringActivity:'نشاطك الجاري يستمر ويبقى محفوظًا على هذا الجهاز.',storageBlockedToast:'متصفحك يحظر التخزين: التطبيق يعمل، لكن لن يُحفظ شيء عند الخروج.',storageFullToast:'ذاكرة الجهاز ممتلئة: تعذّر حفظ أحدث بياناتك. صدّر بياناتك من الملف الشخصي > البيانات.',swInactiveTip:'المكوّن دون اتصال غير مفعّل على هذا الجهاز: لا يمكن للإشعارات أن تعمل. أعد تحميل الصفحة وتأكد أن تخزين المواقع غير محظور.',emailAlreadyUsedToast:'يوجد حساب بالفعل بهذا البريد الإلكتروني.',
     authGenericErrorToast:'حدث خطأ ما. حاول مرة أخرى.',checkEmailConfirmToast:'تم إنشاء الحساب ✓ تحقق من بريدك لتأكيد عنوانك.',
     authTimeoutToast:'\u0627\u0644\u0627\u062A\u0635\u0627\u0644 \u064A\u0633\u062A\u063A\u0631\u0642 \u0648\u0642\u062A\u064B\u0627 \u0637\u0648\u064A\u0644\u0627\u064B. \u062A\u062D\u0642\u0642 \u0645\u0646 \u0627\u062A\u0635\u0627\u0644\u0643 \u0628\u0627\u0644\u0625\u0646\u062A\u0631\u0646\u062A \u0648\u0623\u0639\u062F \u0627\u0644\u0645\u062D\u0627\u0648\u0644\u0629.',
     resetLinkSentToast:'تم إرسال الرابط ✓ تحقق من بريدك.',loggingInToast:'جارٍ تسجيل الدخول…',creatingAccountToast:'جارٍ إنشاء الحساب…',sendingResetToast:'جارٍ إرسال الرابط…',
@@ -3951,7 +3960,7 @@ async function showBgActivityNotif(type,kind){
       body:bgActivityBody(kind), icon:appIconDataURL(), badge:appIconDataURL(),
       tag:'ikorun-activity', renotify:false, silent:true, actions:bgActivityActions(kind)
     });
-  }catch(e){}
+  }catch(e){ console.error("[IKORUN] showBgActivityNotif",e); }
 }
 async function startBgActivity(type,kind){
   _bgActivity={type,kind,start:Date.now(),paused:false};
@@ -10406,6 +10415,8 @@ function legalTermsHTML(){
     'L’Éditeur s’efforce d’assurer un accès continu à l’Application, sans garantir une disponibilité ininterrompue (maintenance, mise à jour, cas de force majeure). L’Application fonctionne partiellement hors-ligne mais nécessite une connexion pour la synchronisation cloud, la connexion et les fonctionnalités sociales.')
   +legalP('8. Limitation de responsabilité',
     'Dans les limites permises par la loi, l’Éditeur ne pourra être tenu responsable des dommages indirects résultant de l’utilisation ou de l’impossibilité d’utiliser l’Application, ni de l’exactitude parfaite des calculs, statistiques ou plans générés, fournis « en l’état ».')
+  +legalP('8 bis. Fonctionnalités payantes',
+    'À ce jour, l’Application est intégralement gratuite et ne comporte aucun paiement, aucun abonnement ni aucune publicité. Si des fonctionnalités payantes étaient introduites, elles seraient annoncées clairement avant toute souscription et les règles suivantes s’appliqueraient. Le prix affiché est en euros toutes taxes comprises. Un abonnement est souscrit pour la période choisie et se renouvelle automatiquement à son terme, sauf résiliation avant la fin de la période en cours ; la résiliation prend effet à l’échéance et l’accès reste ouvert jusque-là. Le paiement est traité par un prestataire externe (par exemple Stripe, ou l’App Store d’Apple en cas de distribution par ce canal) : l’Éditeur n’a jamais accès à ton numéro de carte, seul le prestataire le traite, conformément à sa propre politique de confidentialité. Conformément à l’article L221-18 du code de la consommation, tu disposes d’un délai de rétractation de quatorze jours à compter de la souscription ; toutefois, en demandant l’accès immédiat à une fonctionnalité payante, tu demandes expressément l’exécution du contrat avant la fin de ce délai et renonces à ton droit de rétractation pour la partie déjà exécutée, ce qui te sera rappelé au moment du paiement. En cas de défaut de paiement, l’accès aux fonctionnalités payantes est suspendu, mais tes données et ton compte sont conservés et restent exportables. Aucune fonctionnalité déjà utilisée gratuitement ne deviendra payante de façon rétroactive sans préavis d’au moins trente jours.')
   +legalP('9. Résiliation',
     'Tu peux cesser d’utiliser l’Application et supprimer ton compte à tout moment. L’Éditeur peut suspendre ou résilier l’accès d’un utilisateur en cas de violation des présentes CGU.')
   +legalP('10. Modification des CGU',
@@ -10413,30 +10424,36 @@ function legalTermsHTML(){
   +legalP('11. Droit applicable et litiges',
     'Les présentes CGU sont soumises au droit français. En cas de difficulté, commence par contacter l’Éditeur à l’adresse indiquée ci-dessous : la plupart des situations se règlent ainsi. À défaut d’accord, tu peux recourir gratuitement à un médiateur de la consommation, ou utiliser la plateforme européenne de règlement en ligne des litiges (ec.europa.eu/consumers/odr). Si aucune solution amiable n’aboutit, le litige relève des tribunaux français compétents ; en qualité de consommateur, tu peux saisir la juridiction de ton lieu de résidence.')
   +legalP('12. Contact',
-    'Pour toute question relative aux présentes CGU : ikorunn@gmail.com.');
+    'Pour toute question relative aux présentes CGU : ikorunn@gmail.com.')
+  +legalP('13. Mentions légales',
+    'Éditeur de l’Application : [NOM ET PRÉNOM OU RAISON SOCIALE À COMPLÉTER], [STATUT JURIDIQUE — par exemple : particulier, auto-entrepreneur, SAS], [ADRESSE À COMPLÉTER][, immatriculé sous le numéro SIREN À COMPLÉTER SI APPLICABLE]. Directeur de la publication : [NOM À COMPLÉTER]. Contact : ikorunn@gmail.com. '
+   +'Hébergement : l’Application est hébergée par Cloudflare, Inc. (101 Townsend St, San Francisco, CA 94107, États-Unis) et ses données par Supabase, Inc. sur des serveurs situés dans l’Union européenne (Irlande). '
+   +'Ces mentions sont exigées par l’article 6 de la loi pour la confiance dans l’économie numérique. Tant que l’Application reste entièrement gratuite et non professionnelle, l’identification par une adresse de contact peut suffire ; en revanche, dès la première fonctionnalité payante ou toute activité commerciale, l’identité complète de l’éditeur devient obligatoire et les champs ci-dessus doivent impérativement être renseignés.');
   return legalWrapHTML(b);
 }
 function legalPrivacyHTML(){
   const b=legalP('1. Responsable du traitement',
     'Le responsable du traitement des données à caractère personnel collectées via IKORUN est l’éditeur de l’application, joignable à ikorunn@gmail.com.')
   +legalP('2. Données collectées',
-    'Selon ton mode de connexion et ton usage de l’Application, nous traitons : les données de compte (email, mot de passe chiffré ou identifiant Google) ; les données de profil (prénom, date de naissance, sexe, taille, poids, niveau, objectifs, photo si tu en ajoutes une) ; les données d’entraînement et de ressenti que tu saisis (séances, performances, records, historique, mais aussi difficulté ressentie, fatigue, sommeil, douleurs éventuelles) ; les indicateurs calculés à partir de celles-ci (XP, niveau, VDOT, kilomètres et séances cumulés, série de jours consécutifs) ; les données sociales optionnelles (pseudo, liste d’amis, appartenance à un club) si tu utilises ces fonctionnalités ; enfin les données techniques inhérentes à tout service en ligne, conservées par notre hébergeur (adresse IP, journaux de connexion) ainsi qu’un compteur anti-abus limitant le nombre d’actions sensibles par heure. Certaines de ces informations touchent à ta santé (poids, douleurs, fatigue) : tu les saisis librement et rien ne t’oblige à les renseigner. IKORUN ne collecte pas ta localisation GPS et n’accède à aucun capteur de ton appareil. Le mode « invité » crée lui aussi un compte technique sur nos serveurs, avec un pseudo attribué automatiquement.')
+    'Selon ton mode de connexion et ton usage de l’Application, nous traitons : les données de compte (email, mot de passe chiffré ou identifiant Google) ; les données de profil (prénom, date de naissance, sexe, taille, poids, niveau, objectifs, photo si tu en ajoutes une) ; les données d’entraînement et de ressenti que tu saisis (séances, performances, records, historique, mais aussi difficulté ressentie, fatigue, sommeil, douleurs éventuelles) ; les indicateurs calculés à partir de celles-ci (XP, niveau, VDOT, kilomètres et séances cumulés, série de jours consécutifs) ; les données sociales optionnelles (pseudo, liste d’amis, appartenance à un club) si tu utilises ces fonctionnalités ; enfin les données techniques inhérentes à tout service en ligne, conservées par notre hébergeur (adresse IP, journaux de connexion) ainsi qu’un compteur anti-abus limitant le nombre d’actions sensibles par heure. Certaines de ces informations touchent à ta santé (poids, douleurs, fatigue) : tu les saisis librement et rien ne t’oblige à les renseigner. IKORUN ne collecte pas ta localisation GPS et n’accède à aucun capteur de ton appareil. Le mode « invité » crée lui aussi un compte technique sur nos serveurs, avec un pseudo attribué automatiquement. Si tu actives les notifications, nous conservons également un identifiant technique d’abonnement fourni par ton navigateur (propre à cet appareil), ta langue d’affichage, ainsi que le titre de ta séance du jour et son statut fait/pas fait — ces deux dernières informations étant les seules données d’entraînement à sortir du chiffrement local, uniquement pour permettre l’envoi du rappel. Enfin, si tu actives les rappels de prière, nous conservons ce choix : il révèle une pratique religieuse, c’est-à-dire une donnée sensible au sens de l’article 9 du RGPD, traitée sur la seule base de ton consentement explicite. Tu peux le retirer à tout moment en désactivant ces rappels dans Profil > Notifications, ce qui efface aussitôt cette information.')
   +legalP('3. Finalités',
     'Ces données sont utilisées pour fournir le service (génération de plans, suivi, statistiques), synchroniser tes données entre tes appareils, permettre les fonctionnalités sociales optionnelles que tu actives, et protéger le service contre les abus. Elles ne sont ni vendues ni louées, et ne servent à aucune publicité.')
   +legalP('4. Base légale',
     'Le traitement repose sur l’exécution du contrat qui te lie à l’Éditeur (fourniture du service demandé) et, pour les fonctionnalités optionnelles (photo, réseau social), sur ton consentement.')
   +legalP('5. Données visibles par d’autres utilisateurs',
-    'Certaines fonctionnalités font volontairement sortir des données de ton espace privé — c’est leur raison d’être, et elles restent facultatives. Ton profil public (pseudo, photo, niveau, XP, VDOT, kilomètres et séances cumulés, série de jours) est visible par les autres utilisateurs connectés qui te recherchent par ton pseudo ou t’ajoutent en ami. Si tu crées ou rejoins un club, ton pseudo, ta photo, ton niveau et ton XP apparaissent dans le classement de ce club : toute personne détenant le code à 6 caractères du club peut le rejoindre et voir ces informations. En revanche, le détail de tes séances, tes ressentis, tes douleurs et tes mesures corporelles ne sont JAMAIS partagés, ni avec tes amis, ni avec les membres de ton club. Tu peux quitter un club ou retirer un ami à tout moment, ce qui te retire aussitôt du classement correspondant. Seule exception, technique et non sociale : si tu actives les rappels de notification, le TITRE de la séance du jour et son statut fait/pas fait (jamais le RPE, la douleur, les allures ni le détail complet) sortent du stockage chiffré de ton appareil pour permettre au serveur de te notifier même l’Application fermée ; désactive les rappels dans Profil > Notifications pour arrêter cet envoi.')
+    'Certaines fonctionnalités font volontairement sortir des données de ton espace privé — c’est leur raison d’être, et elles restent facultatives. Ton profil public (pseudo, photo, niveau, XP, VDOT, kilomètres et séances cumulés, série de jours) est visible par tes amis acceptés et par les membres de ton club. Les autres utilisateurs ne peuvent pas parcourir la liste des profils : ils doivent connaître ton pseudo exact pour te trouver, et cette recherche ne leur renvoie alors que ton pseudo et ton niveau — jamais tes statistiques ni ta photo. Si tu crées ou rejoins un club, ton pseudo, ta photo, ton niveau et ton XP apparaissent dans le classement de ce club : toute personne détenant le code à 6 caractères du club peut le rejoindre et voir ces informations. En revanche, le détail de tes séances, tes ressentis, tes douleurs et tes mesures corporelles ne sont JAMAIS partagés, ni avec tes amis, ni avec les membres de ton club. Tu peux quitter un club ou retirer un ami à tout moment, ce qui te retire aussitôt du classement correspondant. Seule exception, technique et non sociale : si tu actives les rappels de notification, le TITRE de la séance du jour et son statut fait/pas fait (jamais le RPE, la douleur, les allures ni le détail complet) sortent du stockage chiffré de ton appareil pour permettre au serveur de te notifier même l’Application fermée ; désactive les rappels dans Profil > Notifications pour arrêter cet envoi.')
   +legalP('6. Hébergement et destinataires',
-    'Tes données sont hébergées chez Supabase, sur des serveurs situés dans l’Union européenne (Irlande). Y ont accès : l’Éditeur ; Supabase en tant qu’hébergeur ; les autres utilisateurs, uniquement dans les limites décrites à l’article précédent. Si tu choisis la connexion Google, celle-ci est gérée par Google LLC selon sa propre politique de confidentialité, ce qui implique un transfert vers les États-Unis encadré par le cadre de protection des données UE–États-Unis. Par ailleurs, pour afficher les polices de caractères, charger une bibliothèque technique et afficher les images d’exercices, ton navigateur contacte trois services externes : Google Fonts, jsDelivr et GitHub. Ces services reçoivent de ce fait ton adresse IP, sans qu’aucune donnée d’entraînement ne leur soit transmise. Tu peux les bloquer avec une extension de navigateur : l’Application reste utilisable, avec un affichage dégradé.')
+    'Tes données sont hébergées chez Supabase, sur des serveurs situés dans l’Union européenne (Irlande). Y ont accès : l’Éditeur ; Supabase en tant qu’hébergeur ; les autres utilisateurs, uniquement dans les limites décrites à l’article précédent. Si tu choisis la connexion Google, celle-ci est gérée par Google LLC selon sa propre politique de confidentialité, ce qui implique un transfert vers les États-Unis encadré par le cadre de protection des données UE–États-Unis. Par ailleurs, pour afficher les polices de caractères, charger une bibliothèque technique et afficher les images d’exercices, ton navigateur contacte trois services externes : Google Fonts, jsDelivr et GitHub. Ces services reçoivent de ce fait ton adresse IP, sans qu’aucune donnée d’entraînement ne leur soit transmise. Tu peux les bloquer avec une extension de navigateur : l’Application reste utilisable, avec un affichage dégradé. Si tu actives les notifications, l’envoi passe obligatoirement par le service de notification de ton système : Apple Push Notification Service (Apple Inc., États-Unis) sur iPhone et iPad, Firebase Cloud Messaging (Google LLC, États-Unis) sur Android et Chrome. Ces services reçoivent l’identifiant d’abonnement de ton appareil et le contenu de la notification — pour un rappel de séance, cela inclut le titre de la séance concernée. Désactiver les notifications dans Profil > Notifications met fin à ces transferts.')
   +legalP('7. Durée de conservation et suppression',
-    'Tes données sont conservées tant que ton compte est actif. Tu peux exporter une copie complète au format JSON depuis Profil > Données & confidentialité, et supprimer définitivement ton compte depuis Profil > Compte > Zone de danger. La suppression efface ton compte, ton profil public, tes données d’entraînement, tes liens d’amitié, ton appartenance à un club et les clubs dont tu es propriétaire ; elle est immédiate et irréversible. Attention à ne pas confondre avec « Réinitialiser », dans Données & confidentialité, qui n’efface que cet appareil et laisse ton compte intact. Les sauvegardes techniques de l’hébergeur peuvent conserver une copie résiduelle quelques jours avant d’être écrasées.')
+    'Tes données sont conservées tant que ton compte est actif. Un compte resté sans aucune connexion pendant trois ans est considéré comme inactif : il est supprimé, avec toutes les données associées, après un email de relance resté sans réponse pendant un mois (pour un compte invité, sans email connu, la suppression intervient directement au terme des trois ans). Tu peux exporter une copie complète au format JSON depuis Profil > Données & confidentialité, et supprimer définitivement ton compte depuis Profil > Compte > Zone de danger. La suppression efface ton compte, ton profil public, tes données d’entraînement, tes liens d’amitié, ton appartenance à un club et les clubs dont tu es propriétaire ; elle est immédiate et irréversible. Attention à ne pas confondre avec « Réinitialiser », dans Données & confidentialité, qui n’efface que cet appareil et laisse ton compte intact. Les sauvegardes techniques de l’hébergeur peuvent conserver une copie résiduelle quelques jours avant d’être écrasées.')
   +legalP('8. Tes droits',
     'Conformément au RGPD, tu disposes d’un droit d’accès, de rectification, d’effacement, de portabilité (export JSON disponible dans l’Application), de limitation du traitement et d’opposition sur tes données. Tu peux également retirer à tout moment ton consentement aux fonctionnalités optionnelles (photo de profil, amis, club) — le retrait ne remet pas en cause ce qui a été fait avant. Tu peux enfin définir des directives sur le sort de tes données après ton décès. Pour exercer ces droits, utilise les outils intégrés à l’Application ou contacte ikorunn@gmail.com. Tu peux aussi introduire une réclamation auprès de la CNIL (www.cnil.fr).')
   +legalP('9. Décisions automatisées',
     'Tes plans d’entraînement sont générés et ajustés automatiquement par un moteur de règles qui fonctionne intégralement sur ton appareil, à partir des informations que tu renseignes. Aucune intelligence artificielle ni service tiers n’intervient dans ce calcul. Ces plans sont des suggestions sportives : ils ne produisent aucun effet juridique, et tu peux les modifier ou les ignorer à tout moment.')
   +legalP('10. Stockage local et cookies',
-    'L’Application utilise le stockage local de ton navigateur (localStorage) pour fonctionner hors-ligne et mémoriser tes préférences, IndexedDB pour conserver la clé de chiffrement propre à ton appareil, et le cache d’un service worker pour l’affichage hors-ligne. Ces éléments restent sur ton appareil. Aucun cookie publicitaire, aucun traceur d’audience et aucun outil de mesure tiers ne sont utilisés.')
+    'L’Application utilise le stockage local de ton navigateur (localStorage) pour fonctionner hors-ligne et mémoriser tes préférences, IndexedDB pour conserver la clé de chiffrement propre à ton appareil, et le cache d’un service worker pour l’affichage hors-ligne. Ces éléments restent sur ton appareil. Si tu actives les notifications, ton navigateur crée en plus un abonnement push propre à cet appareil, dont l’identifiant est enregistré sur nos serveurs jusqu’à ce que tu désactives les rappels ou supprimes ton compte. Aucun cookie publicitaire, aucun traceur d’audience et aucun outil de mesure tiers ne sont utilisés.')
+  +legalP('10 bis. Notifications',
+    'Les notifications sont facultatives et désactivées tant que tu n’as pas explicitement accepté la demande de ton navigateur. Deux types existent : les rappels d’entraînement, envoyés au maximum deux fois par jour (à 12h et 16h) uniquement si la séance prévue n’est pas encore faite, et les rappels de prière, envoyés aux cinq horaires quotidiens si tu les as activés. Chaque type dispose de son propre interrupteur dans Profil > Notifications, et tu peux aussi les révoquer entièrement depuis les réglages de ton téléphone. Aucune notification commerciale ou promotionnelle n’est envoyée.')
   +legalP('11. Sécurité',
     'Sur ton appareil, tes données d’entraînement sont chiffrées (AES-GCM 256 bits) avant d’être stockées dans le navigateur ; la clé est générée localement, non exportable, et n’est envoyée nulle part. Les échanges avec le serveur passent par HTTPS. En revanche, sois conscient(e) que la copie sauvegardée sur nos serveurs n’est pas chiffrée de bout en bout : elle est techniquement lisible par l’hébergeur et par l’Éditeur, et protégée par les contrôles d’accès de la base de données ainsi que par le chiffrement disque de l’hébergeur. Aucun système n’est infaillible ; en cas de faille de sécurité avérée, tu en serais informé(e) conformément à la réglementation.')
   +legalP('12. Mineurs',
@@ -10589,8 +10606,23 @@ function requestNotifPermCTA(){
     }).catch(()=>toast(t('notifUnsupportedToast')));
   }catch(e){ toast(t('notifUnsupportedToast')); }
 }
+/* Les notifications reposent entièrement sur le Service Worker (les rappels
+   serveur passent par son évènement push, l'activité en cours par
+   reg.showNotification). S'il n'est pas actif, tout échoue en silence : cette
+   sonde le signale au lieu de laisser croire que les réglages fonctionnent. */
+let _swActive=null;
+function probeServiceWorker(){
+  if(!('serviceWorker'in navigator)){ _swActive=false; return; }
+  navigator.serviceWorker.getRegistration()
+    .then(r=>{ const ok=!!(r&&(r.active||r.installing||r.waiting)); if(ok!==_swActive){ _swActive=ok; if($('#pfSectionBody')) renderProfile(); } })
+    .catch(()=>{ _swActive=false; });
+}
 function pfNotifHTML(){
   let h='';
+  probeServiceWorker();
+  if(_swActive===false){
+    h+='<div class="tip" style="margin-bottom:16px;border-color:rgba(242,184,75,.45)">'+t('swInactiveTip')+'</div>';
+  }
   if('Notification'in window && Notification.permission==='default'){
     // Toujours visible ici même si la bulle d'accueil a été retirée : Profil >
     // Notifications est l'endroit explicite où on vient chercher ce réglage.

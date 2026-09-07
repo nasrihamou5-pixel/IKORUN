@@ -1,0 +1,41 @@
+#!/bin/sh
+# Garde-fou minimal : refuse un commit qui casserait le chargement de l'app.
+# Deux des trois failles critiques de l'audit du 07/09/2026 auraient ete
+# attrapees ici (une variable supprimee sans ses usages -> ReferenceError en
+# production pendant une heure).
+fail=0
+
+for f in app.js sw.js; do
+  [ -f "$f" ] || continue
+  if command -v node >/dev/null 2>&1; then
+    node --check "$f" || { echo "ERREUR de syntaxe dans $f"; fail=1; }
+  fi
+done
+
+# Coherence i18n : les trois langues doivent avoir exactement les memes cles.
+if command -v node >/dev/null 2>&1 && [ -f app.js ]; then
+  node -e '
+    const src=require("fs").readFileSync("app.js","utf8");
+    const m=src.match(/const I18N *= *\{[\s\S]*?\n\};/);
+    if(!m){ console.log("i18n: bloc introuvable, verification ignoree"); process.exit(0); }
+    let I18N; try{ I18N=eval("("+m[0].replace(/^const I18N *= */,"")+")"); }catch(e){ console.log("i18n: non evaluable, ignore"); process.exit(0); }
+    const fr=Object.keys(I18N.fr||{});
+    const manqEn=fr.filter(k=>!(k in (I18N.en||{})));
+    const manqAr=fr.filter(k=>!(k in (I18N.ar||{})));
+    if(manqEn.length||manqAr.length){
+      console.log("ERREUR i18n - manquantes en EN:",manqEn.join(", ")||"(aucune"+")");
+      console.log("ERREUR i18n - manquantes en AR:",manqAr.join(", ")||"(aucune"+")");
+      process.exit(1);
+    }
+    console.log("i18n OK ("+fr.length+" cles x 3 langues)");
+  ' || fail=1
+fi
+
+# Rappel : la version doit etre incrementee, sinon les utilisateurs gardent
+# l'ancien fichier en cache.
+if git diff --cached --name-only | grep -q '^app\.js$'; then
+  git diff --cached --name-only | grep -q '^index\.html$' || echo "ATTENTION : app.js modifie sans bump de app.js?v=N dans index.html"
+fi
+
+[ "$fail" -eq 0 ] || { echo ""; echo "Commit refuse. Corrige les erreurs ci-dessus."; exit 1; }
+exit 0
