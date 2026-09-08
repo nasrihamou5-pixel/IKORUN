@@ -4456,9 +4456,15 @@ function customConfirm(msg,onYes,opts){
   opts=opts||{};
   const old=$('#genConfirmOv'); if(old) old.remove();
   const ov=document.createElement('div'); ov.className='ov on'; ov.id='genConfirmOv'; ov.style.zIndex=topZ();
+  // msg et opts.title sont injectés en innerHTML. La quasi-totalité des appels
+  // passe un t()/tp() de confiance, mais au moins un interpole une donnée
+  // utilisateur (nom de plan, cf. maybeResumeLive) : sans échappement, un nom de
+  // plan « Push <img onerror=…> » exécutait du code (XSS, audit 2026-09-08). On
+  // échappe systématiquement ici — les traductions ne contiennent aucune balise,
+  // l'échappement est donc sans effet visible sur les messages légitimes.
   ov.innerHTML='<div class="ov-card" style="text-align:center">'+
-    (opts.title?'<div class="card-t" style="justify-content:center;margin-bottom:10px">'+opts.title+'</div>':'')+
-    '<div style="font-size:13px;color:var(--muted);margin-bottom:18px;white-space:pre-line">'+msg+'</div>'+
+    (opts.title?'<div class="card-t" style="justify-content:center;margin-bottom:10px">'+escHtml(opts.title)+'</div>':'')+
+    '<div style="font-size:13px;color:var(--muted);margin-bottom:18px;white-space:pre-line">'+escHtml(msg)+'</div>'+
     '<div class="row" style="gap:10px">'+
       '<button class="btn ghost" style="flex:1" id="genConfirmNo">'+(opts.noLabel||t('cancel'))+'</button>'+
       '<button class="btn" style="flex:1'+(opts.danger?';background:var(--bad)':'')+'" id="genConfirmYes">'+(opts.yesLabel||t('validate'))+'</button>'+
@@ -8056,20 +8062,20 @@ function seriesTableHTML(sr){
   if(!sr) return '';
   if(sr.segments){
     const rows=sr.segments.map(sg=>'<div class="row" style="font-size:13px;padding:4px 0"><span style="color:var(--muted)">'+sg.dist+' m</span><span style="font-weight:700;color:var(--e)">'+fmtSplit(sg.splitSec)+'</span></div>').join('');
-    return '<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:6px">'+ICN('run',15,'var(--e)')+t('seriesPyramidTitle')+'</div>'+rows+'<div style="font-size:11.5px;color:var(--muted);margin-top:8px">'+t('recoveryColon')+' '+sr.recoveryLabel+'</div></div>';
+    return '<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:6px">'+ICN('run',15,'var(--e)')+t('seriesPyramidTitle')+'</div>'+rows+'<div style="font-size:11.5px;color:var(--muted);margin-top:8px">'+t('recoveryColon')+' '+escHtml(sr.recoveryLabel)+'</div></div>';
   }
   if(sr.reps && sr.dist){
     return '<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:8px">'+ICN('run',15,'var(--e)')+sr.reps+' × '+sr.dist+' m</div>'
       +'<div class="row" style="font-size:13px;padding:3px 0"><span style="color:var(--muted)">'+t('targetSplitLabel')+'</span><span style="font-weight:700;color:var(--e)">'+fmtSplit(splitSecFromPace(sr.paceSecPerKm,sr.dist))+'</span></div>'
       +'<div class="row" style="font-size:13px;padding:3px 0"><span style="color:var(--muted)">'+t('equivalentPaceLabel')+'</span><span>'+spkToStr(sr.paceSecPerKm)+'/km</span></div>'
-      +'<div class="row" style="font-size:13px;padding:3px 0"><span style="color:var(--muted)">'+t('recoveryLabel')+'</span><span>'+sr.recoveryLabel+'</span></div>'
-      +(sr.note?'<div style="font-size:11.5px;color:var(--muted);margin-top:6px">'+sr.note+'</div>':'')
+      +'<div class="row" style="font-size:13px;padding:3px 0"><span style="color:var(--muted)">'+t('recoveryLabel')+'</span><span>'+escHtml(sr.recoveryLabel)+'</span></div>'
+      +(sr.note?'<div style="font-size:11.5px;color:var(--muted);margin-top:6px">'+escHtml(sr.note)+'</div>':'')
       +'</div>';
   }
   if(sr.reps){
     return '<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:6px">'+ICN('run',15,'var(--e)')+sr.reps+' '+t('repetitionsWord')+'</div>'
-      +(sr.note?'<div style="font-size:13px;color:var(--muted)">'+sr.note+'</div>':'')
-      +'<div class="row" style="font-size:13px;padding:3px 0;margin-top:4px"><span style="color:var(--muted)">'+t('recoveryLabel')+'</span><span>'+sr.recoveryLabel+'</span></div></div>';
+      +(sr.note?'<div style="font-size:13px;color:var(--muted)">'+escHtml(sr.note)+'</div>':'')
+      +'<div class="row" style="font-size:13px;padding:3px 0;margin-top:4px"><span style="color:var(--muted)">'+t('recoveryLabel')+'</span><span>'+escHtml(sr.recoveryLabel)+'</span></div></div>';
   }
   return '';
 }
@@ -9135,7 +9141,7 @@ function renderLib(){
   if(libView==='grid'){
     h+='<div class="exg-grid">';
     list.forEach(e=>{
-      const nm=e.name.replace(/"/g,'&quot;'); const g=exGif(e.name); const lvCol=e.level==='Débutant'?'--ok':e.level==='Avancé'?'--bad':'--warn';
+      const nm=e.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;'); const g=exGif(e.name); const lvCol=e.level==='Débutant'?'--ok':e.level==='Avancé'?'--bad':'--warn';
       h+='<div class="exg-card" onclick=\'openFiche("'+nm+'")\'>'+
         '<div class="exg-img" '+(g?'style="background-image:url(\''+g[0]+'\')"':'')+'>'+(g?'':'<span style="display:inline-flex">'+exGlyph(e,22)+'</span>')+
         (libBrowseMode?'':'<span class="exg-add" onclick=\'event.stopPropagation();pickEx("'+nm+'")\'>＋</span>')+
@@ -9145,7 +9151,7 @@ function renderLib(){
   } else {
   list.forEach(e=>{
     const lvCol=e.level==='Débutant'?'--ok':e.level==='Avancé'?'--bad':'--warn';
-    h+='<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:10px;flex:1;cursor:pointer" onclick=\'openFiche("'+e.name.replace(/"/g,'&quot;')+'")\'>'+exThumb(e.name,48)+'<div><div style="font-weight:700;font-size:14px">'+trExName(e.name)+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+trEquip(e.equip)+' · <span style="color:var('+lvCol+')">'+trLevel(e.level)+'</span></div><div class="muscle-tags">'+(e.primary||[]).map(m=>'<span class="mtag">'+trMuscle(m)+'</span>').join('')+'</div></div></div>'+(libBrowseMode?'<button class="x" onclick=\'openFiche("'+e.name.replace(/"/g,'&quot;')+'")\'>›</button>':'<button class="x" style="color:var(--e)" onclick=\'pickEx("'+e.name.replace(/"/g,'&quot;')+'")\'>＋</button>')+'</div></div>';
+    h+='<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:10px;flex:1;cursor:pointer" onclick=\'openFiche("'+e.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'")\'>'+exThumb(e.name,48)+'<div><div style="font-weight:700;font-size:14px">'+trExName(e.name)+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+trEquip(e.equip)+' · <span style="color:var('+lvCol+')">'+trLevel(e.level)+'</span></div><div class="muscle-tags">'+(e.primary||[]).map(m=>'<span class="mtag">'+trMuscle(m)+'</span>').join('')+'</div></div></div>'+(libBrowseMode?'<button class="x" onclick=\'openFiche("'+e.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'")\'>›</button>':'<button class="x" style="color:var(--e)" onclick=\'pickEx("'+e.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'")\'>＋</button>')+'</div></div>';
   });
   }
   $('#libBody').innerHTML=h;
@@ -9177,7 +9183,7 @@ function openFiche(name){
   h+='<div class="card-t" style="margin-top:14px">'+ICN('check',15,'var(--e)')+t('coachTipsLabel')+'</div>'+f.tips.map(tt=>'<div class="tip" style="margin-bottom:6px">'+tt+'</div>').join('');
   h+='<div class="card-t" style="margin-top:14px">'+ICN('shield',15,'var(--e)')+t('safetyLabel')+'</div>'+f.safety.map(s=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(51,211,153,.3);background:rgba(51,211,153,.08)">'+s+'</div>').join('');
   if(f.variants&&f.variants.length){ h+='<div class="card-t" style="margin-top:14px">'+ICN('refresh',15,'var(--e)')+t('variantsLabel')+'</div><div class="pills">'+f.variants.map(v=>'<div class="pill" onclick=\'openFiche("'+v.replace(/"/g,'&quot;')+'")\'>'+trExName(v)+'</div>').join('')+'</div>'; }
-  if(libCallback) h+='<button class="btn" style="margin-top:18px" onclick=\'pickEx("'+f.name.replace(/"/g,'&quot;')+'")\'>＋ '+t('addToProgram')+'</button>';
+  if(libCallback) h+='<button class="btn" style="margin-top:18px" onclick=\'pickEx("'+f.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'")\'>＋ '+t('addToProgram')+'</button>';
   $('#libBody').innerHTML=h;
 }
 let _exDemoTimer=null;
