@@ -2171,6 +2171,7 @@ const I18N={
     continueAsGuestLink:'Continuer en tant qu\'invité',guestConnectingToast:'Connexion en tant qu\'invité…',guestDisabledToast:'Le mode invité n\'est pas encore activé. Réessaie plus tard ou crée un compte.',
     guestModeTitle:'Mode invité',guestModeLabel:'Mode invité',guestModeDesc:'Tes données sont liées à cet appareil. Si tu te déconnectes ou changes de téléphone, tu risques de les perdre. Ajoute un email pour les protéger.',
     guestSaveAccountBtn:'Sauvegarder mon compte',guestUpgradeSentToast:'Vérifie ta boîte mail pour confirmer. Tu pourras ensuite te connecter avec cet email (utilise « mot de passe oublié » pour en choisir un).',guestUpgradeEmailUsedToast:'Cet email est déjà utilisé par un autre compte.',
+    guestUpgradeMaybeSentToast:'La réponse n\'est pas arrivée, mais la demande a peut-être quand même réussi. Vérifie ta boîte mail (et les spams) avant de réessayer.',
     tourSkip:'Passer',tourStartBtn:'Commencer',tourNextBtn:'Suivant',tourFinalBtn:'Créer mon plan',replayTourBtn:'Revoir le tutoriel',
     tour_welcome_t:'Bienvenue {0} 👋',tour_welcome_d:'IKORUN n’est pas un GPS ni un podomètre : c’est un carnet d’entraînement intelligent qui génère ton plan et l’ajuste selon ce que tu lui dis. 8 étapes, une minute.',
     tour_home_t:'Ton accueil',tour_home_d:'La carte du jour montre la séance prévue, avec le pourquoi. Une fois faite, touche « Je l’ai faite » — ou « Pas faite » si ce n’est pas le cas, ce n’est jamais grave.',
@@ -2748,6 +2749,7 @@ const I18N={
     continueAsGuestLink:'Continue as guest',guestConnectingToast:'Signing in as guest…',guestDisabledToast:'Guest mode isn\'t enabled yet. Try again later or create an account.',
     guestModeTitle:'Guest mode',guestModeLabel:'Guest mode',guestModeDesc:'Your data is tied to this device. If you sign out or switch phones, you could lose it. Add an email to protect it.',
     guestSaveAccountBtn:'Save my account',guestUpgradeSentToast:'Check your inbox to confirm. You can then sign in with this email anytime (use "forgot password" to set one).',guestUpgradeEmailUsedToast:'This email is already used by another account.',
+    guestUpgradeMaybeSentToast:'The reply never arrived, but the request may have gone through anyway. Check your inbox (and spam) before retrying.',
     tourSkip:'Skip',tourStartBtn:'Let\'s go',tourNextBtn:'Next',tourFinalBtn:'Create my plan',replayTourBtn:'Replay the tutorial',
     tour_welcome_t:'Welcome {0} 👋',tour_welcome_d:'IKORUN isn’t a GPS or a pedometer: it’s a smart training log that generates your plan and adjusts it based on what you tell it. 8 steps, one minute.',
     tour_home_t:'Your home screen',tour_home_d:'The day card shows your planned session, with the why behind it. Once done, tap "I did it" — or "Not done" if you didn’t, that’s never a problem.',
@@ -3328,6 +3330,7 @@ const I18N={
     continueAsGuestLink:'المتابعة كضيف',guestConnectingToast:'جارٍ الدخول كضيف…',guestDisabledToast:'وضع الضيف غير مفعّل بعد. حاول لاحقًا أو أنشئ حسابًا.',
     guestModeTitle:'وضع الضيف',guestModeLabel:'وضع الضيف',guestModeDesc:'بياناتك مرتبطة بهذا الجهاز. إذا سجّلت الخروج أو غيّرت الهاتف، قد تفقدها. أضف بريدًا إلكترونيًا لحمايتها.',
     guestSaveAccountBtn:'حفظ حسابي',guestUpgradeSentToast:'تحقق من بريدك الإلكتروني للتأكيد. بعدها يمكنك تسجيل الدخول بهذا البريد في أي وقت (استخدم «نسيت كلمة المرور» لاختيار كلمة مرور).',guestUpgradeEmailUsedToast:'هذا البريد الإلكتروني مستخدم بالفعل من حساب آخر.',
+    guestUpgradeMaybeSentToast:'لم يصل الرد، لكن الطلب ربما نجح رغم ذلك. تحقق من بريدك الإلكتروني (ومجلد الرسائل غير المرغوب فيها) قبل إعادة المحاولة.',
     tourSkip:'تخطي',tourStartBtn:'لنبدأ',tourNextBtn:'التالي',tourFinalBtn:'أنشئ خطتي',replayTourBtn:'إعادة مشاهدة الجولة التعريفية',
     tour_welcome_t:'مرحبًا {0} 👋',tour_welcome_d:'IKORUN ليس جهاز GPS ولا عدّاد خطى: إنه سجل تدريب ذكي يُنشئ خطتك ويعدّلها حسب ما تخبره به. 8 خطوات، دقيقة واحدة.',
     tour_home_t:'شاشتك الرئيسية',tour_home_d:'تعرض بطاقة اليوم حصتك المخطط لها، مع سبب اختيارها. بعد إنجازها، اضغط «أنجزتها» — أو «لم أنجزها» إن لم تفعل، لا مشكلة أبدًا.',
@@ -11052,10 +11055,18 @@ async function convertGuestAccount(){
     }));
     if(error){
       console.error('updateUser(email) error',error);
+      // NOTE : contrairement au login/signup classiques, cette requete a un effet
+      // de bord serveur (email de confirmation reellement envoye) qui peut aboutir
+      // MEME quand la reponse HTTP n'est jamais revenue au client (reseau mobile
+      // instable). Un test en conditions reelles a confirme ce cas : l'app a
+      // affiche l'erreur generique alors que Supabase avait deja envoye le mail
+      // 1,3s plus tot. Pour ce fallback precis (ni quota, ni email deja pris, ni
+      // email invalide -- donc probablement un accroc reseau), on dit d'abord de
+      // verifier la boite mail plutot que de laisser croire a un echec total.
       setSt(isAuthRateLimit(error)?t('emailRateLimitToast')
         :/already|exists|registered/i.test(error.message||'')?t('guestUpgradeEmailUsedToast')
         :/invalid/i.test(error.message||'')?t('emailRefusedToast')
-        :t('authGenericErrorToast'),'bad');
+        :t('guestUpgradeMaybeSentToast'),'bad');
     } else {
       // Le mot de passe est actif immédiatement ; seule l'adresse attend la
       // confirmation. On la mémorise pour afficher l'écran « à confirmer ».
@@ -11065,7 +11076,9 @@ async function convertGuestAccount(){
     }
   }catch(e){
     console.error('updateUser(email) exception',e);
-    setSt(e&&e.message==='auth_timeout'?t('authTimeoutToast'):t('authGenericErrorToast'),'bad');
+    // Meme remarque que ci-dessus : withAuthTimeout ne coupe QUE l'attente cote
+    // client, la requete deja partie peut aboutir sur le serveur apres coup.
+    setSt(t('guestUpgradeMaybeSentToast'),'bad');
   }
   _guestAuthing=false;
 }
