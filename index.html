@@ -115,13 +115,19 @@
   --float-lg:0 26px 60px -18px rgba(0,0,0,.7),0 8px 20px -6px rgba(0,0,0,.45),0 1px 0 rgba(255,255,255,.07) inset;
   /* ===== LIQUID GLASS — surfaces translucides & givrées ===== */
   --s1-rgb:18,22,29; --s2-rgb:26,32,40; --s3-rgb:35,43,55;
-  --glass-blur:26px; --glass-sat:1.9;
+  --glass-blur:26px; --glass-sat:1.5;
   /* Opacité relevée (.46→.82 / .5→.85) : calculée pour garder un ratio ≥4.5:1
      même dans le pire cas réel de l'app (halo d'accent jaune à son opacité
      maximale déclarée, .30, derrière la carte) — le verre reste "givré" mais
      n'est plus assez transparent pour qu'une couleur vive derrière fasse
-     chuter le contraste du texte --dim/--muted au-dessus. */
-  --glass-bg:rgba(var(--s1-rgb),.82); --glass-bg-2:rgba(var(--s2-rgb),.85);
+     chuter le contraste du texte --dim/--muted au-dessus.
+     18/09 (2) : redescendu a .68/.72 (demande explicite "plus transparent,
+     comme l'accueil") -- volontairement PAS revenu a .46 (l'opacite d'origine
+     qui avait cause le probleme de contraste a l'epoque) : .68 reste un cran
+     au-dessus, a re-verifier si un theme d'accent tres vif + le halo qu'on
+     vient d'ajouter sur les autres ecrans posent souci. Saturate aussi baisse
+     (1.9->1.5) : moins "chrome epais", aligne sur .hv7-day/.hv7-score. */
+  --glass-bg:rgba(var(--s1-rgb),.68); --glass-bg-2:rgba(var(--s2-rgb),.72);
   --glass-border:rgba(255,255,255,.14); --glass-border-soft:rgba(255,255,255,.08);
   --glass-shine:linear-gradient(155deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,.04) 22%,rgba(255,255,255,0) 45%);
   --glass-sheen:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.22) 48%,transparent 66%);
@@ -140,7 +146,7 @@ html[data-mode="light"]{
   /* --dim était trop clair (#9AA3B2, ~2.5:1 sur blanc) : assombri pour repasser
      au-dessus de 4.5:1. Opacité du verre relevée (.55→.88 / .6→.90) pour la
      même raison que côté sombre : moins sensible à ce qui défile derrière. */
-  --glass-bg:rgba(255,255,255,.88); --glass-bg-2:rgba(237,240,245,.9);
+  --glass-bg:rgba(255,255,255,.74); --glass-bg-2:rgba(237,240,245,.78);
   --glass-border:rgba(255,255,255,.6); --glass-border-soft:rgba(20,25,35,.06);
   --glass-shine:linear-gradient(155deg,rgba(255,255,255,.7) 0%,rgba(255,255,255,.15) 25%,rgba(255,255,255,0) 48%);
   --glass-shadow:0 16px 40px -16px rgba(30,40,60,.22),0 2px 8px -2px rgba(30,40,60,.1),0 1px 0 rgba(255,255,255,.8) inset;
@@ -1104,7 +1110,7 @@ html[data-mode="light"]{
 .pill.on{
   background:var(--chrome-spec),linear-gradient(155deg,rgba(var(--e-rgb),.34),rgba(var(--e-rgb),.12)) !important;
   border:1px solid rgba(var(--e-rgb),.5) !important;color:var(--e2);
-  -webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);
+  -webkit-backdrop-filter:blur(20px) saturate(1.4);backdrop-filter:blur(20px) saturate(1.4);
 }
 
 /* NAV — finition chromée (verre + métal poli), même famille que les pills */
@@ -1132,7 +1138,7 @@ html[data-mode="light"]{
   box-shadow:0 0 0 1px rgba(var(--e-rgb),.18) inset;transition:left .38s var(--ease-spring),width .38s var(--ease-spring),background .3s ease,box-shadow .3s ease,border-color .3s ease,backdrop-filter .3s ease;
   overflow:hidden;border:1px solid rgba(var(--e-rgb),.12);will-change:left;}
 #nav-pill::after{content:'';position:absolute;inset:0;background:var(--chrome-sheen);opacity:0;pointer-events:none;}
-#nav.nav-dragging #nav-pill{background:rgba(var(--e-rgb),.16);-webkit-backdrop-filter:blur(16px) saturate(1.6);backdrop-filter:blur(16px) saturate(1.6);
+#nav.nav-dragging #nav-pill{background:rgba(var(--e-rgb),.16);-webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4);
   border:1px solid rgba(var(--e-rgb),.35);box-shadow:0 0 0 1px rgba(var(--e-rgb),.2) inset,0 0 22px rgba(var(--e-rgb),.45);}
 #nav.nav-dragging #nav-pill::after{opacity:1;animation:glassSheenSweep 1.1s ease-in-out infinite;}
 /* ============================================================
