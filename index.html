@@ -312,6 +312,11 @@ html.easy-mode *{ -webkit-backdrop-filter:none!important; backdrop-filter:none!i
 html.easy-mode .stag{ opacity:1!important; animation:none!important; }
 html.easy-mode .icb svg,html.easy-mode .lr-icon svg,html.easy-mode .qa-pill svg,html.easy-mode .favtile svg,html.easy-mode .perfcard .pcl svg{ animation:none!important; }
 html.easy-mode .tip-tile::before,html.easy-mode .tip-glow,html.easy-mode .hero-glow,html.easy-mode .bd-ring,html.easy-mode .bd-spark,html.easy-mode .bd-unlock-badge::after{ animation:none!important; opacity:0!important; }
+/* Reflets "verre" du 18/09 (.card, .hv7-day, .hv7-score) : coupes ici pour rester
+   coherent avec "supprime le flou liquid glass" -- le blur lui-meme est deja
+   coupe par la regle backdrop-filter:none ci-dessus, mais ces reflets ne sont
+   pas un backdrop-filter donc pas couverts par elle. */
+html.easy-mode .card::before,html.easy-mode .hv7-day::after,html.easy-mode .hv7-score::before{ display:none!important; }
 html.easy-mode .card,html.easy-mode .grp-card,html.easy-mode .favtile,html.easy-mode .sbox,html.easy-mode .inp,html.easy-mode .pill{
   background:var(--s1)!important; box-shadow:none!important; border:2px solid var(--hair)!important;
 }
@@ -775,6 +780,19 @@ body[data-scr="home"] .topbar{display:none;}
   padding:13px 14px;margin-bottom:8px;box-shadow:var(--glass-shadow);position:relative;
   isolation:isolate;transition:transform .18s var(--ease-spring),box-shadow .25s ease,background .25s ease,border-color .25s ease,color .25s ease;}
 .card:active{transform:scale(.985);}
+/* Reflet spéculaire (18/09) : spot lumineux fixe en haut-gauche, même principe que
+   .hv7-day/.hv7-score mais applique ici a la classe .card generique -> les 170
+   cartes de l'app en heritent d'un coup. --glass-shine (deja existant) est un
+   degrade LINEAIRE diffus ; ceci ajoute un point chaud plus localise, ce qui
+   donne l'impression de verre bombe plutot qu'un simple vernis plat. Desactive
+   en mode simplifie via la regle html.easy-mode plus bas (meme logique que le
+   blur, deja coupe pour ce mode). */
+.card::before{content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;z-index:-1;
+  /* z-index:-1 + .card{isolation:isolate} (deja present) suffit a garder ce reflet
+     derriere le contenu normal, sans avoir a forcer position:relative sur les
+     170 usages de .card (risque de deplacer l'ancrage d'un enfant qui compterait
+     deja sur position:absolute par rapport a .card lui-meme). */
+  background:radial-gradient(circle 140px at 18% 12%, rgba(255,255,255,.10), transparent 70%);}
 .card-t{font-family:'Unbounded';font-weight:700;font-size:13.5px;margin-bottom:9px;display:flex;align-items:center;gap:9px;letter-spacing:-.1px;}
 .icb{width:26px;height:26px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
 .lab{font-family:'Unbounded';font-weight:700;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;color:var(--dim);}
@@ -1070,8 +1088,13 @@ html[data-mode="light"]{
   z-index:9998;pointer-events:none;max-width:430px;margin:0 auto;
   background:linear-gradient(to bottom, transparent 0%, var(--bg) 78%);opacity:.92;}
 #nav-pill{position:absolute;top:7px;height:44px;width:18%;border-radius:18px;background:var(--ed);
-  box-shadow:0 0 0 1px rgba(var(--e-rgb),.18) inset;transition:left .38s var(--ease-spring),width .38s var(--ease-spring),background .3s ease,box-shadow .3s ease,border-color .3s ease;
-  overflow:hidden;border:1px solid transparent;will-change:left;}
+  /* Verre permanent (pas seulement pendant le glisser) : la version .nav-dragging
+     ci-dessous reste plus forte (blur 16px, lueur) pour marquer l'escalade au
+     toucher. html.easy-mode * coupe deja tout backdrop-filter globalement, pas
+     besoin d'exclusion dediee ici. */
+  -webkit-backdrop-filter:blur(10px) saturate(1.4);backdrop-filter:blur(10px) saturate(1.4);
+  box-shadow:0 0 0 1px rgba(var(--e-rgb),.18) inset;transition:left .38s var(--ease-spring),width .38s var(--ease-spring),background .3s ease,box-shadow .3s ease,border-color .3s ease,backdrop-filter .3s ease;
+  overflow:hidden;border:1px solid rgba(var(--e-rgb),.12);will-change:left;}
 #nav-pill::after{content:'';position:absolute;inset:0;background:var(--chrome-sheen);opacity:0;pointer-events:none;}
 #nav.nav-dragging #nav-pill{background:rgba(var(--e-rgb),.16);-webkit-backdrop-filter:blur(16px) saturate(1.6);backdrop-filter:blur(16px) saturate(1.6);
   border:1px solid rgba(var(--e-rgb),.35);box-shadow:0 0 0 1px rgba(var(--e-rgb),.2) inset,0 0 22px rgba(var(--e-rgb),.45);}
