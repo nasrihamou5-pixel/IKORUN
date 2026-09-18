@@ -5,3 +5,41 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), camera=(), microphone=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+
+# ---------------------------------------------------------------------------
+# MISE EN CACHE
+#
+# index.html et manifest.json gardent le defaut de Cloudflare Pages
+# (max-age=0, must-revalidate) : c'est index.html qui porte le numero de version
+# de app.js, il doit donc toujours etre frais.
+#
+# /!\ REGLE A RESPECTER A CHAQUE DEPLOIEMENT : app.js est desormais servi comme
+# immuable pendant un an. Le navigateur ne le redemandera JAMAIS pour une meme
+# URL. Il faut donc imperativement incrementer le ?v=NN dans index.html
+# (<script src="app.js?v=61">) a chaque modification de app.js, sinon tes
+# utilisateurs resteront bloques sur l'ancienne version.
+# ---------------------------------------------------------------------------
+
+/app.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.png
+  Cache-Control: public, max-age=2592000
+
+/*.webp
+  Cache-Control: public, max-age=2592000
+
+/*.jpg
+  Cache-Control: public, max-age=2592000
+
+/*.svg
+  Cache-Control: public, max-age=2592000
+
+/*.ico
+  Cache-Control: public, max-age=2592000
+
+# Le service worker doit rester revalide a chaque chargement, sinon une mise a
+# jour de la strategie de cache ne peut plus jamais atteindre les appareils.
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
