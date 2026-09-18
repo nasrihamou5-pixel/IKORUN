@@ -7751,7 +7751,7 @@ function renderSport(){
   $('#tbSub').textContent = sportView==='calendar' ? t('calendarSub') : t('sub_sport');
   if(sportView==='calendar'){ $('#s-sport').innerHTML=renderCalendarView(); return; }
   let h='<div class="row" style="gap:8px;margin:6px 0 16px">'+
-    '<div class="pills" style="flex:1;margin:0"><div class="pill '+(sportTab==='run'?'on':'')+'" onclick="sportTab=\'run\';curPerso=null;renderSport()">Running</div><div class="pill '+(sportTab==='muscu'?'on':'')+'" onclick="sportTab=\'muscu\';renderSport()">Musculation</div></div>'+
+    '<div class="pills" style="flex:1;margin:0"><div class="pill '+(sportTab==='run'?'on':'')+'" onclick="sportTab=\'run\';curPerso=null;renderSport()">'+t('running')+'</div><div class="pill '+(sportTab==='muscu'?'on':'')+'" onclick="sportTab=\'muscu\';renderSport()">'+t('muscu')+'</div></div>'+
     '<div class="tb-gear" style="flex-shrink:0" onclick="sportView=\'calendar\';renderSport()">'+ICN('calendar',17)+'</div></div>';
   if(P.easyMode){
     h += sportTab==='run' ? renderRunningSimple() : renderMuscu();
