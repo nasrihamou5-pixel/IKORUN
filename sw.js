@@ -1,13 +1,28 @@
 // Service worker IKORUN — fichier statique (remplace l'ancienne version enregistrée
 // via blob URL, qui empêchait le navigateur de détecter correctement les mises à jour).
-// Stratégie : network-first (toujours essayer le réseau en premier, no-store pour éviter
-// le cache HTTP du navigateur), avec repli sur le cache uniquement hors-ligne.
+// Stratégie EN DEUX TEMPS :
+//  · Ressources versionnées ou immuables (app.js?v=N, images, polices) → cache-first.
+//  · Tout le reste, à commencer par index.html → network-first, repli cache hors-ligne.
+// Avant, TOUT passait en network-first avec {cache:'no-store'} : app.js (1 Mo, ~307 Ko
+// en brotli) était intégralement retéléchargé à CHAQUE ouverture de l'app, jamais servi
+// depuis le cache. Mesuré à ~1 s sur une bonne connexion, bien pire en 3G. Or son URL
+// porte déjà un numéro de version (?v=61) : monter ce numéro suffit à invalider l'entrée,
+// le no-store ne protégeait donc de rien et coûtait un téléchargement complet par lancement.
 // v7 : purge forcée. Tant que manifest.json n'existait pas, l'hébergeur renvoyait
 // index.html (du HTML) à sa place, et ce SW a pu mettre cette mauvaise réponse en
 // cache. Changer le nom du cache supprime les anciennes entrées à l'activation, ce
 // qui garantit que le vrai manifest.json est bien récupéré — condition nécessaire
 // pour que le navigateur propose l'installation de l'app.
-const C = 'ikorun-v50';
+const C = 'ikorun-v51';
+
+// Une réponse est réutilisable telle quelle si son URL identifie déjà une version
+// précise : soit elle porte un paramètre ?v=..., soit c'est un binaire dont le nom
+// change quand le contenu change. manifest.json et index.html n'en font PAS partie
+// et restent en network-first, pour que toute mise à jour soit vue immédiatement.
+const IMMUABLE = /\.(png|jpe?g|webp|svg|gif|woff2?|ttf|ico|mp3|wav)$/i;
+function estVersionnee(url){
+  return url.searchParams.has('v') || IMMUABLE.test(url.pathname);
+}
 
 // Coquille de base mise en cache dès l'installation. Sans ça, le cache ne se
 // remplissait qu'au fil des requêtes réussies : à chaque changement de nom de
@@ -53,7 +68,27 @@ self.addEventListener('fetch', e => {
   // Avant ce correctif, le fetch() ci-dessous s'appliquait à TOUT, y compris
   // ces domaines externes — et se faisait bloquer par la CSP (connect-src),
   // cassant silencieusement le chargement des polices et du script Supabase.
-  if (new URL(e.request.url).origin !== location.origin) return;
+  const url = new URL(e.request.url);
+  if (url.origin !== location.origin) return;
+
+  // CACHE-FIRST pour les ressources versionnées : on sert immédiatement depuis le
+  // cache sans toucher au réseau. C'est ce qui rend les lancements suivants quasi
+  // instantanés, y compris sur une connexion lente ou instable.
+  if (estVersionnee(url)) {
+    e.respondWith(
+      caches.open(C).then(c =>
+        c.match(e.request).then(hit => {
+          if (hit) return hit;
+          return fetch(e.request).then(res => {
+            if (res && res.ok) { try { c.put(e.request, res.clone()); } catch (x) {} }
+            return res;
+          });
+        })
+      ).catch(() => fetch(e.request))
+    );
+    return;
+  }
+
   e.respondWith(
     fetch(e.request, { cache: 'no-store' })
       .then(res => {
