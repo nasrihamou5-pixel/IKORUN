@@ -1746,6 +1746,7 @@ const I18N={
     toolImcName:'IMC',toolImcSub:'Indice de masse corporelle',
     toolHydraName:'Hydratation',toolHydraSub:'Tes besoins en eau',
     toolBmrName:'Calories & Métabolisme',toolBmrSub:'Besoins quotidiens',
+    toolRMName:'Calcul 1RM',toolRMSub:'Estime ta charge max sur une répétition',toolTonnageName:'Tonnage',toolTonnageSub:'Volume total soulevé (poids × séries × reps)',toolCaloriesName:'Calories course',toolCaloriesSub:'Estimation des calories brûlées',toolProgName:'Progression de charge',toolProgSub:'Planifie ta montée en charge sur plusieurs semaines',toolPomodoroName:'Minuteur Pomodoro',toolPomodoroSub:'Cycles focus / pause pour tes séances',toolLoadName:'Ratio de charge (ACWR)',toolLoadSub:'Charge aiguë vs chronique, repère le risque de blessure',toolReposName:'Temps de repos',toolReposSub:'Durée de repos recommandée selon l’objectif',
     toolAgendaName:'Agenda',toolAgendaSub:'Tous vos événements',
     toolPriereName:'Prières',toolPriereSub:'Tous les horaires',
     // --- Profil ---
@@ -2326,6 +2327,7 @@ const I18N={
     toolImcName:'BMI',toolImcSub:'Body mass index',
     toolHydraName:'Hydration',toolHydraSub:'Your water needs',
     toolBmrName:'Calories & Metabolism',toolBmrSub:'Daily needs',
+    toolRMName:'1RM Calculator',toolRMSub:'Estimate your one-rep max',toolTonnageName:'Tonnage',toolTonnageSub:'Total volume lifted (weight × sets × reps)',toolCaloriesName:'Run Calories',toolCaloriesSub:'Estimated calories burned',toolProgName:'Load Progression',toolProgSub:'Plan your weight increase over several weeks',toolPomodoroName:'Pomodoro Timer',toolPomodoroSub:'Focus / break cycles for your workouts',toolLoadName:'Load Ratio (ACWR)',toolLoadSub:'Acute vs chronic load, spot injury risk',toolReposName:'Rest Times',toolReposSub:'Recommended rest duration by training goal',
     toolAgendaName:'Calendar',toolAgendaSub:'All your events',
     toolPriereName:'Prayers',toolPriereSub:'All the times',
     // --- Profile ---
@@ -2906,6 +2908,7 @@ const I18N={
     toolImcName:'كتلة الجسم',toolImcSub:'مؤشر كتلة الجسم',
     toolHydraName:'الترطيب',toolHydraSub:'احتياجاتك من الماء',
     toolBmrName:'السعرات والأيض',toolBmrSub:'الاحتياجات اليومية',
+    toolRMName:'حاسبة الحد الأقصى',toolRMSub:'قدّر أقصى حمل لتكرار واحد',toolTonnageName:'الحمولة الكلية',toolTonnageSub:'إجمالي الوزن المرفوع (الوزن × المجموعات × التكرارات)',toolCaloriesName:'سعرات الجري',toolCaloriesSub:'تقدير السعرات المحروقة',toolProgName:'تطور الحمل',toolProgSub:'خطط لزيادة الوزن على عدة أسابيع',toolPomodoroName:'مؤقت بومودورو',toolPomodoroSub:'دورات تركيز/راحة لتمارينك',toolLoadName:'نسبة الحمل (ACWR)',toolLoadSub:'الحمل الحاد مقابل المزمن، لتحديد خطر الإصابة',toolReposName:'أوقات الراحة',toolReposSub:'مدة الراحة الموصى بها حسب الهدف',
     toolAgendaName:'الأجندة',toolAgendaSub:'كل أحداثك',
     toolPriereName:'الصلوات',toolPriereSub:'كل الأوقات',
     // --- الملف الشخصي ---
@@ -10062,6 +10065,16 @@ function TOOLS_DEF(){ return {
   imc:{name:t('toolImcName'),sub:t('toolImcSub'),icon:ICN('scale'),fn:'renderIMC'},
   hydra:{name:t('toolHydraName'),sub:t('toolHydraSub'),icon:ICN('water'),fn:'renderHydraTool'},
   bmr:{name:t('toolBmrName'),sub:t('toolBmrSub'),icon:ICN('fire'),fn:'renderBMRtool'},
+  // 7 outils musculation deja codes et traduits en interne (labels de champs)
+  // mais jamais enregistres ici -> jamais accessibles depuis le menu. Meme
+  // logique "accessibles via recherche" que vdot/imc/hydra/bmr ci-dessus.
+  rm:{name:t('toolRMName'),sub:t('toolRMSub'),icon:ICN('dumbbell'),fn:'renderRMtool'},
+  tonnage:{name:t('toolTonnageName'),sub:t('toolTonnageSub'),icon:ICN('chart'),fn:'renderTonnageTool'},
+  calories:{name:t('toolCaloriesName'),sub:t('toolCaloriesSub'),icon:ICN('fire'),fn:'renderCaloriesTool'},
+  prog:{name:t('toolProgName'),sub:t('toolProgSub'),icon:ICN('bolt'),fn:'renderProgTool'},
+  pomodoro:{name:t('toolPomodoroName'),sub:t('toolPomodoroSub'),icon:ICN('timer'),fn:'renderPomodoro'},
+  load:{name:t('toolLoadName'),sub:t('toolLoadSub'),icon:ICN('target'),fn:'renderLoadTool'},
+  repos:{name:t('toolReposName'),sub:t('toolReposSub'),icon:ICN('pause'),fn:'renderReposTool'},
   agenda:{name:t('toolAgendaName'),sub:t('toolAgendaSub'),icon:ICN('calendar'),fn:'renderAgenda',hidden:true},
   priere:{name:t('toolPriereName'),sub:t('toolPriereSub'),icon:ICN('mosque'),fn:'renderPriere',hidden:true}
 }; }
