@@ -1697,6 +1697,7 @@ const I18N={
     quipTime:'On chasse le {0} ?',quipGoal:'On avance vers : {0} ?',quipDefault:'Prêt à dépasser tes limites aujourd\u2019hui ?',
     weekLoadTitle:'Charge hebdomadaire',levelXp:'Niveau {0} — {1} XP',xpBeforeLevel:'+{0} XP avant niveau {1}',
     sessionsCap:'Séances',tonnageKg:'Tonnage kg',formCap:'Forme',nextSession:'PROCHAINE SÉANCE',today:'Aujourd\u2019hui',
+    homeScoreLab:'Score de la semaine',homeQuipNoData:'Continue sur ta lancée.',homeQuipUp:'+{0}% vs semaine dernière. Rythme tenu.',homeQuipDown:'-{0}% vs semaine dernière.',homeQuipStable:'Charge stable vs semaine dernière.',
     restDay:'Jour de repos',noSessionToday:'Aucune séance planifiée aujourd\u2019hui',recordsPerso:'Records perso',
     iDidIt:'Je l\u2019ai faite',notDone:'Pas faite',nextLab:'Ensuite',dayPlusShort:'J+{0}',rpeShort:'RPE',kmWeekShort:'km sem.',sessionsLab:'séances',
     syncSlowToast:'Synchronisation lente — l\u2019app démarre, tes données arrivent',syncFailedLocalToast:'Synchronisation impossible — tu travailles sur tes données locales',syncCloudErrorToast:'Erreur de synchronisation avec le cloud',
@@ -1732,6 +1733,7 @@ const I18N={
     totalTime:'Temps total',remainingCap:'Restant',sessionsRemainingVal:'{0} séances',objectiveReached:'Objectif atteint',
     untilEndWeek:'d\u2019ici dimanche',sessionsDoneShort:'{0} séances',planOfWeek:'Plan de la semaine',
     streakDaysShort:'{0} jours de série',seePlan:'Voir le plan',
+    streakPRSuffix:' — record perso',
     // --- Outils ---
     searchTool:'Rechercher un outil...',favorites:'Favoris',mainTools:'Outils principaux',otherTools:'Autres outils',
     resultsCount:'{0} résultat(s)',editFavsTitle:'Modifier les favoris',tapStarHint:'Touche une étoile pour ajouter/retirer un outil de tes favoris.',
@@ -2275,6 +2277,7 @@ const I18N={
     quipTime:'Chasing that {0}?',quipGoal:'Working toward: {0}?',quipDefault:'Ready to push your limits today?',
     weekLoadTitle:'Weekly load',levelXp:'Level {0} — {1} XP',xpBeforeLevel:'+{0} XP before level {1}',
     sessionsCap:'Sessions',tonnageKg:'Volume kg',formCap:'Form',nextSession:'NEXT SESSION',today:'Today',
+    homeScoreLab:'Weekly score',homeQuipNoData:'Keep up the momentum.',homeQuipUp:'+{0}% vs last week. Pace kept up.',homeQuipDown:'-{0}% vs last week.',homeQuipStable:'Steady load vs last week.',
     restDay:'Rest day',noSessionToday:'No session planned today',recordsPerso:'Personal records',
     iDidIt:'I did it',notDone:'Not done',nextLab:'Next up',dayPlusShort:'D+{0}',rpeShort:'RPE',kmWeekShort:'km wk.',sessionsLab:'sessions',
     syncSlowToast:'Sync is slow — the app is starting, your data is on its way',syncFailedLocalToast:'Sync unavailable — working from your local data',syncCloudErrorToast:'Cloud sync error',
@@ -2310,6 +2313,7 @@ const I18N={
     totalTime:'Total time',remainingCap:'Remaining',sessionsRemainingVal:'{0} sessions',objectiveReached:'Goal reached',
     untilEndWeek:'by Sunday',sessionsDoneShort:'{0} sessions',planOfWeek:'Week plan',
     streakDaysShort:'{0}-day streak',seePlan:'View plan',
+    streakPRSuffix:' — new best',
     // --- Tools ---
     searchTool:'Search for a tool...',favorites:'Favorites',mainTools:'Main tools',otherTools:'Other tools',
     resultsCount:'{0} result(s)',editFavsTitle:'Edit favorites',tapStarHint:'Tap a star to add/remove a tool from your favorites.',
@@ -2853,6 +2857,7 @@ const I18N={
     quipTime:'نلاحق {0}؟',quipGoal:'نتقدم نحو: {0}؟',quipDefault:'مستعد لتجاوز حدودك اليوم؟',
     weekLoadTitle:'الحمل الأسبوعي',levelXp:'المستوى {0} — {1} نقطة خبرة',xpBeforeLevel:'+{0} نقطة قبل المستوى {1}',
     sessionsCap:'الحصص',tonnageKg:'الحمولة كغ',formCap:'اللياقة',nextSession:'الحصة القادمة',today:'اليوم',
+    homeScoreLab:'نتيجة الأسبوع',homeQuipNoData:'واصل على نفس الوتيرة.',homeQuipUp:'+{0}٪ مقارنة بالأسبوع الماضي. حافظت على الوتيرة.',homeQuipDown:'-{0}٪ مقارنة بالأسبوع الماضي.',homeQuipStable:'حمل تدريبي ثابت مقارنة بالأسبوع الماضي.',
     restDay:'يوم راحة',noSessionToday:'لا توجد حصة مخططة اليوم',recordsPerso:'الأرقام الشخصية',
     iDidIt:'أنجزتها',notDone:'لم أنجزها',nextLab:'التالي',dayPlusShort:'+{0} ي',rpeShort:'RPE',kmWeekShort:'كم/أسبوع',sessionsLab:'حصص',
     syncSlowToast:'المزامنة بطيئة — التطبيق يبدأ وبياناتك في الطريق',syncFailedLocalToast:'تعذّرت المزامنة — أنت تعمل على بياناتك المحلية',syncCloudErrorToast:'خطأ في المزامنة مع السحابة',
@@ -2888,6 +2893,7 @@ const I18N={
     totalTime:'الوقت الإجمالي',remainingCap:'المتبقي',sessionsRemainingVal:'{0} حصص',objectiveReached:'تم بلوغ الهدف',
     untilEndWeek:'حتى الأحد',sessionsDoneShort:'{0} حصص',planOfWeek:'خطة الأسبوع',
     streakDaysShort:'سلسلة {0} أيام',seePlan:'عرض الخطة',
+    streakPRSuffix:' — رقم قياسي جديد',
     // --- الأدوات ---
     searchTool:'ابحث عن أداة...',favorites:'المفضلة',mainTools:'الأدوات الرئيسية',otherTools:'أدوات أخرى',
     resultsCount:'{0} نتيجة',editFavsTitle:'تعديل المفضلة',tapStarHint:'اضغط على النجمة لإضافة/إزالة أداة من مفضلتك.',
@@ -7273,18 +7279,22 @@ function fmtHM(mins){ mins=Math.round(mins||0); const h=Math.floor(mins/60), m=m
 // Variation de charge hebdo vs la semaine passée, pour le quip sous le gros chiffre
 function homeLoadQuip(kmW){
   const prev=lastWeekKm();
-  if(!prev) return 'Continue sur ta lancée.';
+  if(!prev) return t('homeQuipNoData');
   const delta=Math.round((kmW-prev)/prev*100);
-  if(delta>0) return ''+delta+'% vs semaine dernière. Rythme tenu.';
-  if(delta<0) return ''+Math.abs(delta)+'% vs semaine dernière.';
-  return 'Charge stable vs semaine dernière.';
+  if(delta>0) return tp('homeQuipUp',delta);
+  if(delta<0) return tp('homeQuipDown',Math.abs(delta));
+  return t('homeQuipStable');
 }
 // Bandeau streak (série de jours consécutifs) — n'apparaît que si une série est en cours
 function homeStreakBadge(){
   const s=streakDays();
   if(s<2) return '';
   const isPR=s>=bestStreak();
-  return '<div class="streak">'+ICN('fire',13,'#ffb35c')+' <b>'+s+'</b> jours de suite'+(isPR?' — record perso':'')+'</div>';
+  // streakDaysShort ('{0} jours de série' etc.) existait deja pour le quip de
+  // l'accueil ; reutilise ici plutot que de dupliquer un texte "jours de suite"
+  // qui, lui, etait reste non traduit (FR en dur, jamais vu en EN/AR car ce
+  // badge n'apparaissait qu'en mode simplifie).
+  return '<div class="streak">'+ICN('fire',13,'#ffb35c')+' '+tp('streakDaysShort',s)+(isPR?t('streakPRSuffix'):'')+'</div>';
 }
 // Ligne des 3 records perso les plus emblématiques (3000m / 5000m / 10km)
 function homePBRow(){
@@ -7456,6 +7466,20 @@ function renderHome(){
     if(streak>=2) sub+=' · '+tp('streakDaysShort',streak);
   }
   html+='<div class="hv7-greet"><h1>'+t('greet')+' '+escHtml(first||t('you'))+'</h1><p>'+sub+'</p></div>';
+
+  // SCORE DE LA SEMAINE — anneau + quip + serie, inspire de l'ecran d'accueil
+  // de KORE (version anterieure de l'app) : meme idee (un chiffre fort, en
+  // anneau, avec une phrase de contexte et le streak juste en dessous), mais
+  // dans l'identite IKORUN (couleur d'accent choisie par l'utilisateur, pas
+  // un orange fige) plutot qu'une reprise a l'identique. `form`/`kmW` sont
+  // deja calcules plus haut ; homeLoadQuip() et homeStreakBadge() existaient
+  // deja mais n'etaient utilises qu'en mode simplifie.
+  html+='<div class="hv7-score">'+
+    '<div class="hv7-score-ring">'+ringSVG(64,form,7,'var(--e)')+'<div class="val">'+form+'%</div></div>'+
+    '<div class="hv7-score-txt"><div class="hv7-score-lab">'+t('homeScoreLab')+'</div>'+
+    '<div class="hv7-score-quip">'+escHtml(homeLoadQuip(kmW))+'</div>'+
+    homeStreakBadge()+
+    '</div></div>';
 
   // CARTE DU JOUR — pièce maîtresse : type, titre, pourquoi, cibles, et le bilan en un geste.
   {
