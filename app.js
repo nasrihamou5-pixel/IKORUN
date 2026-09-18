@@ -8452,6 +8452,13 @@ function muscuCardHTML(p,opts){
   '</div>';
 }
 function renderMuscu(){
+  // Meme filet de securite que renderOutils() pour TOOLS : au boot, P.lang n'est
+  // pas encore charge au moment ou "let PROGS=PROGS_DEF()" s'evalue (script
+  // execute avant que le profil soit lu depuis le stockage), donc PROGS restait
+  // fige sur le francais tant que setLang() n'etait jamais rappele explicitement
+  // (seul point de rebuild avant ce correctif). Reconstruire a chaque affichage
+  // de cet ecran, comme TOOLS, regle le probleme sans toucher au reste du boot.
+  PROGS=PROGS_DEF();
   let h='';
   if(DB.load('live_paused')){ const sv=DB.load('live_paused'); h+='<div class="card" style="border-color:var(--warn);background:rgba(255,180,84,.08)"><div class="row"><div><div style="font-weight:700">'+t('sessionPausedLab')+'</div><div style="font-size:12px;color:var(--muted)">'+escHtml(sv.prog.name)+'</div></div><button class="btn sm" style="width:auto;padding:8px 14px" onclick="resumeLive()">'+t('resumeBtn')+'</button></div></div>'; }
   h+='<div class="row" style="gap:10px;margin-bottom:16px"><button class="btn" onclick="openCreate()">＋ '+t('createBtn')+'</button><button class="btn ghost" onclick="openLibBrowse()">'+t('libraryLab')+'</button></div>';
