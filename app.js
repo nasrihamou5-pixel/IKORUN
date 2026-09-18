@@ -4924,6 +4924,19 @@ function boot(){
   if(P.notif!==false) ensureNotifPerm();
   positionNavPill(document.querySelector('.nb.on')||document.querySelector('.nb'));
   window.addEventListener('resize',()=>positionNavPill(document.querySelector('.nb.on')));
+  // La pastille de nav se figeait parfois hors d'alignement (signale en mode
+  // simplifie) : positionNavPill() mesure une fois au demarrage, avant que la
+  // police 'Unbounded' (chargee de façon asynchrone) ait fini de s'appliquer
+  // aux libellés -- un reflow silencieux survenait ensuite, jamais suivi par
+  // la pastille. Un ResizeObserver sur chaque bouton se redéclenche tout seul
+  // des que sa taille reelle change, quelle qu'en soit la cause (police,
+  // rotation, zoom navigateur, media query...), sans dependre d'un delai
+  // devine comme le setTimeout de toggleEasyMode() ci-dessous (conserve en
+  // filet de secours, mais ne devrait plus etre le seul rempart).
+  if('ResizeObserver' in window){
+    const navPillRO=new ResizeObserver(()=>positionNavPill(document.querySelector('.nb.on')));
+    $$('.nb').forEach(b=>navPillRO.observe(b));
+  }
   if(!P.setupDone){ startOnboarding(); return; }  // création profil  // création profil
   initApp();                                      // app
 }
