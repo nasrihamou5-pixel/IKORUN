@@ -741,7 +741,24 @@ html[data-mode="light"] .ch-bar{background:rgba(20,30,55,.1);}
 
 /* SCROLL ZONE */
 #scroll{height:100vh;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(140px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch;}
-.scr{display:none;padding:0 14px 20px;animation:pageIn .4s var(--ease-out);position:relative;}
+.scr{display:none;padding:0 14px 20px;animation:pageIn .4s var(--ease-out);position:relative;isolation:isolate;}
+/* Bulles de fond (18/09) : Home a ses propres halos animes injectes en JS
+   (.hv7-bg/.hv7-lb1-3, voir renderHome) -- c'est CA que le verre des cartes
+   revelait et qui manquait ailleurs : sans rien de colore derriere, le
+   backdrop-filter des cartes n'a rien a flouter/saturer, donc l'effet
+   verre y est presque invisible meme si la regle CSS est bien appliquee
+   partout. Version statique (pas de derive animee, CSS pur donc jamais
+   efface par un innerHTML de rendu) pour les 4 autres ecrans -- #s-home
+   explicitement exclu pour ne pas superposer les deux systemes.
+   z-index:-1 + isolation:isolate (ajoute sur .scr juste au-dessus) au lieu de
+   forcer position:relative sur les enfants directs : meme lecon que .card
+   plus haut dans ce fichier, un enfant pourrait deja compter sur un
+   positionnement absolu relatif a .scr lui-meme. */
+.scr:not(#s-home)::before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(circle 150px at 0% 0%, rgba(var(--e-rgb),.35), transparent 70%),
+    radial-gradient(circle 130px at 100% 10%, rgba(var(--e2-rgb),.28), transparent 70%),
+    radial-gradient(circle 120px at 5% 42%, rgba(var(--e-rgb),.14), transparent 70%);}
 .scr.on{display:block;}
 @keyframes pageIn{from{opacity:0;transform:translateY(10px) scale(.99);}to{opacity:1;transform:translateY(0) scale(1);}}
 
