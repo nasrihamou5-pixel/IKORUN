@@ -844,9 +844,15 @@ let friendsSelected=null;
 let friendsCache={friends:[],pending:[],sent:[]};
 let _friendsLoadSeq=0; // évite qu'une réponse réseau en retard (ouverture rapide/répétée) écrase un état plus récent
 let _friendsLoading=false;
-let clubCache={loaded:false,club:null,members:[]};
+/* Multi-clubs (18/09/2026) : clubCache.list recense TOUS les clubs de
+   l'utilisateur (id/nom/code, leger) ; clubCache.club/members detaillent
+   uniquement le club actuellement affiche (clubCache.activeId), charge a la
+   demande pour ne pas payer le cout des membres de chaque club a chaque
+   ouverture de l'onglet. */
+let clubCache={loaded:false,list:[],activeId:null,club:null,members:[]};
 let _clubLoading=false;
-let clubShowCreate=false;
+let clubShowCreate=false;   // dans le panneau rejoindre/creer : bascule entre le formulaire "rejoindre par code" et "creer"
+let clubShowJoinPanel=false; // affiche ce panneau meme quand on a deja au moins un club (bouton "+")
 let clubPlanEditing=false;
 let clubPlanTmp=null;
 function openClub(){
@@ -1084,48 +1090,71 @@ function renderFriendProfileHTML(){
   h+='<div style="margin-top:12px">'+friendBadgesHTML(f)+'</div>';
   return h;
 }
-/* ---------- CLUBS ---------- */
+/* ---------- CLUBS (multi, jusqu'a 5 par utilisateur) ---------- */
 async function loadClubData(){
   _clubLoading=true;
   if(!window.supabaseClient || !window.currentUserId){ _clubLoading=false; clubCache.loaded=true; renderClubTab(); return; }
   try{
-    const uid=window.currentUserId;
-    // On résout "mon club" par appartenance réelle (club_members), pas par propriété :
-    // un utilisateur qui a recréé un club peut rester "owner" d'un ancien club orphelin
-    // (0 membre) via la policy RLS owner_id=auth.uid(), ce qui rendrait un simple
-    // "select * from clubs" ambigu (plusieurs lignes "à moi" pour un seul club actif).
-    const { data:myId, error:e0 } = await window.supabaseClient.rpc('ikorun_my_club_id');
+    // Liste legere de TOUS les clubs de l'utilisateur (id/nom/code), via
+    // club_members (appartenance reelle) et non owner_id : un utilisateur qui a
+    // recree un club peut rester "owner" d'un ancien club orphelin (0 membre).
+    const { data:ids, error:e0 } = await window.supabaseClient.rpc('ikorun_my_club_ids');
     if(e0) throw e0;
-    let club=null;
-    if(myId){
-      const { data:clubRow, error:e1 } = await window.supabaseClient.from('clubs').select('*').eq('id',myId).maybeSingle();
+    let list=[];
+    if(ids && ids.length){
+      const { data:rows, error:e1 } = await window.supabaseClient.from('clubs').select('id,name,code,owner_id').in('id',ids);
       if(e1) throw e1;
-      club=clubRow||null;
+      list=rows||[];
     }
-    let members=[];
-    if(club){
-      const { data:mrows, error:e2 } = await window.supabaseClient.from('club_members').select('user_id').eq('club_id',club.id);
-      if(e2) throw e2;
-      const ids=(mrows||[]).map(r=>r.user_id);
-      if(ids.length){
-        // photo_url n'est PAS chargée ici : chaque photo pèse jusqu'à 300 Ko en
-        // base64, donc un club de 200 membres représentait jusqu'à 60 Mo par
-        // ouverture de l'onglet, sur mobile. Le classement affiche l'initiale ;
-        // la photo reste visible sur la fiche individuelle d'un membre.
-        const { data:profs, error:e3 } = await window.supabaseClient.from('public_profiles').select('user_id,username,xp,level').in('user_id',ids);
-        if(e3) throw e3;
-        members=(profs||[]).map(p=>({...p,id:p.user_id,isOwner:p.user_id===club.owner_id,isMe:p.user_id===uid}));
-      }
-    }
-    clubCache={loaded:true,club,members};
-    _clubLoading=false;
-    renderClubTab();
+    // Conserve le club actif precedent s'il existe toujours, sinon prend le premier.
+    let activeId=(clubCache.activeId && list.some(c=>c.id===clubCache.activeId))?clubCache.activeId:(list[0]?list[0].id:null);
+    clubCache={loaded:true,list,activeId,club:null,members:[]};
+    if(activeId){ await loadClubDetail(activeId); }
+    else { _clubLoading=false; renderClubTab(); }
   }catch(e){
     console.error('loadClubData error',e);
     _clubLoading=false;
     const box=$('#friendsBody');
     if(box) box.innerHTML='<div class="card"><div class="empty"><div class="em-ic">'+ICN('warning',36,'currentColor')+'</div><div style="font-size:13px">'+t('friendsLoadError')+'</div><button class="btn ghost sm" style="margin-top:10px;width:auto" onclick="loadClubData()">'+t('retryBtn')+'</button></div></div>';
   }
+}
+// Charge le detail (membres, plan partage) d'UN club precis, sans retoucher clubCache.list.
+async function loadClubDetail(clubId){
+  _clubLoading=true;
+  try{
+    const uid=window.currentUserId;
+    const { data:club, error:e1 } = await window.supabaseClient.from('clubs').select('*').eq('id',clubId).maybeSingle();
+    if(e1) throw e1;
+    let members=[];
+    if(club){
+      const { data:mrows, error:e2 } = await window.supabaseClient.from('club_members').select('user_id').eq('club_id',club.id);
+      if(e2) throw e2;
+      const memberIds=(mrows||[]).map(r=>r.user_id);
+      if(memberIds.length){
+        // photo_url n'est PAS chargée ici : chaque photo pèse jusqu'à 300 Ko en
+        // base64, donc un club de 200 membres représentait jusqu'à 60 Mo par
+        // ouverture de l'onglet, sur mobile. Le classement affiche l'initiale ;
+        // la photo reste visible sur la fiche individuelle d'un membre.
+        const { data:profs, error:e3 } = await window.supabaseClient.from('public_profiles').select('user_id,username,xp,level').in('user_id',memberIds);
+        if(e3) throw e3;
+        members=(profs||[]).map(p=>({...p,id:p.user_id,isOwner:p.user_id===club.owner_id,isMe:p.user_id===uid}));
+      }
+    }
+    clubCache.activeId=clubId; clubCache.club=club||null; clubCache.members=members;
+    _clubLoading=false;
+    renderClubTab();
+  }catch(e){
+    console.error('loadClubDetail error',e);
+    _clubLoading=false;
+    const box=$('#friendsBody');
+    if(box) box.innerHTML='<div class="card"><div class="empty"><div class="em-ic">'+ICN('warning',36,'currentColor')+'</div><div style="font-size:13px">'+t('friendsLoadError')+'</div><button class="btn ghost sm" style="margin-top:10px;width:auto" onclick="loadClubDetail(\''+clubId+'\')">'+t('retryBtn')+'</button></div></div>';
+  }
+}
+function switchActiveClub(id){
+  if(id===clubCache.activeId || _clubLoading) return;
+  clubShowJoinPanel=false;
+  _clubLoading=true; renderClubTab(); // affiche l'etat "chargement" pendant le fetch du nouveau club
+  loadClubDetail(id);
 }
 function renderClubTab(){
   if(!$('#friendsBody')) return; // même raison que renderFriends : écran refermé pendant le chargement
@@ -1139,9 +1168,19 @@ function renderClubTab(){
     $('#friendsBody').innerHTML=h; return;
   }
   if(_clubLoading){ $('#friendsBody').innerHTML=h+'<div class="card"><div class="empty"><div class="em-ic">'+ICN('stopwatch',36,'currentColor')+'</div><div style="font-size:13px">'+t('loadingLab')+'</div></div></div>'; return; }
-  const c=clubCache.club;
-  if(!c){
-    h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('flag',36,'currentColor')+'</div><div style="font-weight:700;margin-bottom:4px;color:var(--snow)">'+t('noClubYet')+'</div><div style="font-size:13px">'+t('noClubYetDesc')+'</div></div></div>';
+  const hasClubs=clubCache.list.length>0;
+  // Le selecteur n'apparait que s'il y a au moins un club : avec un seul, il
+  // reste utile pour rejoindre/creer sans repasser par l'etat "aucun club".
+  if(hasClubs){
+    h+='<div class="pills" style="flex-wrap:wrap;margin-bottom:10px">'+clubCache.list.map(cl=>
+      '<div class="pill '+(cl.id===clubCache.activeId&&!clubShowJoinPanel?'on':'')+'" onclick="switchActiveClub(\''+cl.id+'\')">'+escHtml(cl.name)+'</div>'
+    ).join('')+
+    '<div class="pill '+(clubShowJoinPanel?'on':'')+'" onclick="clubShowJoinPanel=!clubShowJoinPanel;renderClubTab()" title="'+t('clubAddAnotherBtn')+'">+</div>'+
+    '</div>';
+  }
+  const showJoinPanel=!hasClubs || clubShowJoinPanel;
+  if(showJoinPanel){
+    if(!hasClubs) h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('flag',36,'currentColor')+'</div><div style="font-weight:700;margin-bottom:4px;color:var(--snow)">'+t('noClubYet')+'</div><div style="font-size:13px">'+t('noClubYetDesc')+'</div></div></div>';
     h+='<div class="sec-lab">'+t('joinClubCta')+'</div>';
     h+='<div class="card" style="padding:14px"><div class="fr-search" style="margin-bottom:10px">'+ICN('flag',16)+'<input id="clubCodeInput" placeholder="'+t('clubCodePlaceholder')+'" maxlength="6" autocapitalize="characters" autocorrect="off" spellcheck="false" style="text-transform:uppercase;letter-spacing:2px;font-weight:700"></div><button class="btn sm" style="width:auto" onclick="submitJoinClub()">'+t('joinBtn')+'</button></div>';
     h+='<div class="sec-lab">'+t('createClubCta')+'</div>';
@@ -1150,10 +1189,13 @@ function renderClubTab(){
     } else {
       h+='<div class="card" style="padding:14px"><div class="fr-search" style="margin-bottom:10px">'+ICN('flag',16)+'<input id="clubNameInput" placeholder="'+t('clubNamePlaceholder')+'" maxlength="40"></div><button class="btn sm" style="width:auto" onclick="submitCreateClub()">'+t('createBtn')+'</button></div>';
     }
+    if(hasClubs) h+='<button class="btn ghost sm" style="width:auto;margin-top:8px" onclick="clubShowJoinPanel=false;clubShowCreate=false;renderClubTab()">'+t('backLab')+'</button>';
     $('#friendsBody').innerHTML=h;
     const cIn=$('#clubCodeInput'); if(cIn) cIn.focus();
     return;
   }
+  const c=clubCache.club;
+  if(!c){ $('#friendsBody').innerHTML=h; return; } // detail pas encore charge (course rare entre switch et fetch)
   if(clubPlanEditing){ h+=renderClubPlanSetupHTML(); $('#friendsBody').innerHTML=h; return; }
   const sorted=[...clubCache.members].sort((a,b)=>(b.xp||0)-(a.xp||0));
   h+='<div class="card" style="padding:16px;text-align:center"><div style="font-weight:800;font-size:18px;color:var(--snow)">'+escHtml(c.name)+'</div>'+
@@ -1174,7 +1216,9 @@ function renderClubTab(){
       '<div class="fr-info"><div class="fr-name">'+escHtml(m.username||'?')+(m.isOwner?' '+ICN('flag',13,'var(--accent)'):'')+(m.isMe?t('youParen'):'')+'</div><div class="fr-meta"><span class="fr-lvl-chip">'+t('lvlDot')+' '+(m.level||1)+'</span><span class="fr-km-txt">'+(m.xp||0)+' XP</span></div></div>'+
     '</div>';
   }).join('')+'</div>';
-  h+='<button class="btn ghost sm" style="width:auto;margin-top:16px" onclick="leaveClubConfirm()">'+t('leaveClubBtn')+'</button>';
+  // Le proprietaire ne peut pas quitter son propre club (ikorun_leave_club le
+  // refuse cote serveur) : autant ne pas afficher un bouton qui echouerait a coup sur.
+  if(c.owner_id!==window.currentUserId) h+='<button class="btn ghost sm" style="width:auto;margin-top:16px" onclick="leaveClubConfirm(\''+c.id+'\')">'+t('leaveClubBtn')+'</button>';
   $('#friendsBody').innerHTML=h;
 }
 function copyClubCode(){
@@ -1335,33 +1379,48 @@ async function submitJoinClub(){
 }
 async function doJoinClub(code){
   try{
-    const { error } = await window.supabaseClient.rpc('ikorun_join_club',{p_code:code});
+    const { data, error } = await window.supabaseClient.rpc('ikorun_join_club',{p_code:code});
     if(error){
       if(String(error.message).includes('club_not_found')) toast(t('clubNotFoundToast'));
       else if(String(error.message).includes('club_full')) toast(t('clubFullToast'));
+      else if(String(error.message).includes('max_clubs_reached')) toast(t('clubMaxReachedToast'));
       else if(String(error.message).includes('rate_limited')) toast(t('tooManyAttemptsToast'));
       else toast(t('genericErrorRetry'));
       return;
     }
-    toast(t('clubJoinedToast')); clubShowCreate=false; loadClubData();
+    toast(t('clubJoinedToast')); clubShowCreate=false; clubShowJoinPanel=false;
+    // Le club qu'on vient de rejoindre devient celui affiche.
+    if(data && data[0]) clubCache.activeId=data[0].id;
+    loadClubData();
   }catch(e){ toast(t('genericErrorRetry')); }
 }
 async function submitCreateClub(){
   const el=$('#clubNameInput'); const name=(el?el.value:'').trim();
   if(!name){ toast(t('clubNamePlaceholder')); return; }
   try{
-    const { error } = await window.supabaseClient.rpc('ikorun_create_club',{p_name:name});
+    const { data, error } = await window.supabaseClient.rpc('ikorun_create_club',{p_name:name});
     if(error){
-      if(String(error.message).includes('rate_limited')) toast(t('tooManyAttemptsToast'));
+      if(String(error.message).includes('max_clubs_reached')) toast(t('clubMaxReachedToast'));
+      else if(String(error.message).includes('rate_limited')) toast(t('tooManyAttemptsToast'));
       else toast(t('genericErrorRetry'));
       return;
     }
-    toast(t('clubCreatedToast')); clubShowCreate=false; loadClubData();
+    toast(t('clubCreatedToast')); clubShowCreate=false; clubShowJoinPanel=false;
+    if(data && data[0]) clubCache.activeId=data[0].id;
+    loadClubData();
   }catch(e){ toast(t('genericErrorRetry')); }
 }
-function leaveClubConfirm(){
+function leaveClubConfirm(clubId){
   customConfirm(t('confirmLeaveClub'),async ()=>{
-    try{ await window.supabaseClient.rpc('ikorun_leave_club'); toast(t('clubLeftToast')); loadClubData(); }
+    try{
+      const { error } = await window.supabaseClient.rpc('ikorun_leave_club',{p_club_id:clubId});
+      if(error){ toast(t('genericErrorRetry')); return; }
+      toast(t('clubLeftToast'));
+      // Le club quitte ne doit plus etre le club actif : loadClubData retombera
+      // sur un autre club de la liste (ou l'ecran "aucun club") de lui-meme.
+      if(clubCache.activeId===clubId) clubCache.activeId=null;
+      loadClubData();
+    }
     catch(e){ toast(t('genericErrorRetry')); }
   });
 }
@@ -1718,7 +1777,7 @@ const I18N={
     tomorrow:'Demain',noUpcomingSession:'Aucune séance planifiée prochainement.',addSession:'Ajouter une séance',
     showRestPlan:'Afficher le reste du plan · {0} semaines',calendarTitle:'Calendrier',calendarSub:'Planifie ta progression',
     friendsTitle:'Amis & Classement',tabFriendsList:'Amis',tabRank:'Classement',
-    clubTitle:'Mon club',tabClub:'Mon club',myClubLab:'Mon club',
+    clubTitle:'Mes clubs',tabClub:'Mes clubs',myClubLab:'Mes clubs',clubAddAnotherBtn:'Rejoindre ou créer un autre club',clubMaxReachedToast:'Tu as atteint la limite de 5 clubs.',
     noClubYet:'Pas encore de club',noClubYetDesc:'Rejoins le club de ton équipe avec un code, ou crée le tien pour rassembler tes coéquipiers.',
     joinClubCta:'Rejoindre un club',createClubCta:'Créer un club',clubCodePlaceholder:'Code à 6 caractères',clubNamePlaceholder:'Nom du club',
     joinBtn:'Rejoindre',clubMembersCount:'{0} membre(s)',copyCodeBtn:'Copier le code',shareCodeHint:'Partage ce code à tes coéquipiers pour qu’ils te rejoignent.',
@@ -2296,7 +2355,7 @@ const I18N={
     tomorrow:'Tomorrow',noUpcomingSession:'No upcoming session planned.',addSession:'Add a session',
     showRestPlan:'Show the rest of the plan · {0} weeks',calendarTitle:'Calendar',calendarSub:'Plan your progress',
     friendsTitle:'Friends & Leaderboard',tabFriendsList:'Friends',tabRank:'Leaderboard',
-    clubTitle:'My club',tabClub:'My club',myClubLab:'My club',
+    clubTitle:'My clubs',tabClub:'My clubs',myClubLab:'My clubs',clubAddAnotherBtn:'Join or create another club',clubMaxReachedToast:'You\'ve reached the 5-club limit.',
     noClubYet:'No club yet',noClubYetDesc:'Join your team’s club with a code, or create your own to bring your teammates together.',
     joinClubCta:'Join a club',createClubCta:'Create a club',clubCodePlaceholder:'6-character code',clubNamePlaceholder:'Club name',
     joinBtn:'Join',clubMembersCount:'{0} member(s)',copyCodeBtn:'Copy code',shareCodeHint:'Share this code with your teammates so they can join you.',
@@ -2874,7 +2933,7 @@ const I18N={
     tomorrow:'غدًا',noUpcomingSession:'لا توجد حصة مخططة قريبًا.',addSession:'إضافة حصة',
     showRestPlan:'عرض بقية الخطة · {0} أسابيع',calendarTitle:'التقويم',calendarSub:'خطط لتقدمك',
     friendsTitle:'الأصدقاء والترتيب',tabFriendsList:'الأصدقاء',tabRank:'الترتيب',
-    clubTitle:'ناديّ',tabClub:'ناديّ',myClubLab:'ناديّ',
+    clubTitle:'أنديتي',tabClub:'أنديتي',myClubLab:'أنديتي',clubAddAnotherBtn:'الانضمام إلى نادٍ آخر أو إنشاؤه',clubMaxReachedToast:'لقد وصلت إلى الحد الأقصى وهو 5 أندية.',
     noClubYet:'لا نادي بعد',noClubYetDesc:'انضم إلى نادي فريقك باستخدام رمز، أو أنشئ ناديك الخاص لتجميع زملائك.',
     joinClubCta:'الانضمام إلى نادٍ',createClubCta:'إنشاء نادٍ',clubCodePlaceholder:'رمز من 6 أحرف',clubNamePlaceholder:'اسم النادي',
     joinBtn:'انضمام',clubMembersCount:'{0} عضو',copyCodeBtn:'نسخ الرمز',shareCodeHint:'شارك هذا الرمز مع زملائك لينضموا إليك.',
@@ -5688,7 +5747,6 @@ function showInstallGuide(platform){
   $('#ovProgTitle').textContent=t('installAppBtn'); $('#progBody').innerHTML=h; $('#ovProg').style.zIndex=topZ(); openOv('ovProg');
 }
 // Conservé pour compatibilité avec d'éventuels appels existants.
-function showIosInstallGuide(){ showInstallGuide('ios'); }
 // Le login se peint avant que beforeinstallprompt n'ait pu se déclencher (async) :
 // on réévalue le bouton une fois l'événement reçu, sans attendre une re-navigation.
 function refreshInstallUI(){
@@ -5738,7 +5796,6 @@ function toggleEasyMode(){
   setTimeout(()=>positionNavPill(document.querySelector('.nb.on')),60);
   toast(P.easyMode?t('easyModeOn'):t('easyModeOff'));
 }
-function setMode(m){ P.mode=(m==='light')?'light':'dark'; saveAll(); applyTheme(); if($('#s-profil')&&$('#s-profil').classList.contains('on'))renderProfile(); refreshPfSheet(); }
 // suit le thème du téléphone en mode auto
 
 
@@ -9898,19 +9955,6 @@ function cardIcon(name,color){ color=color||'var(--e)'; return '<span class="icb
 /* ---------- BADGE CRESTS (SVG sur-mesure, remplace les emojis) ----------
    Inspiré des rangs Rocket League : un écusson qui gagne des ailes et des
    ornements (étoile, laurier, gemme, couronne) au fil des paliers. */
-function _bdStar(cx,cy,r,fill){
-  let pts=[];
-  for(let i=0;i<10;i++){ const a=-Math.PI/2+i*Math.PI/5, rad=i%2===0?r:r*0.42;
-    pts.push((cx+Math.cos(a)*rad).toFixed(1)+','+(cy+Math.sin(a)*rad).toFixed(1)); }
-  return '<polygon points="'+pts.join(' ')+'" fill="'+fill+'"/>';
-}
-function _bdLaurel(side){
-  let out='<g transform="scale('+side+',1)">';
-  for(let i=0;i<3;i++){ const y=38+i*6, x=16+i*2;
-    out+='<ellipse cx="'+x+'" cy="'+y+'" rx="4" ry="2.2" fill="rgba(255,255,255,.7)" transform="rotate(-25 '+x+' '+y+')"/>'; }
-  return out+'</g>';
-}
-function _bdShield(){ return '<path d="M32 6 L52 13 L52 30 Q52 46 32 58 Q12 46 12 30 L12 13 Z" fill="rgba(255,255,255,.10)" stroke="rgba(255,255,255,.9)" stroke-width="2"/>'; }
 /* Aile-plume unique : part du centre bas, s'évase vers l'extérieur-haut.
    idx=position de la plume dans l'aile (0=intérieure), total=nb de plumes. */
 function _bdPlume(mirror,idx,total,op){
