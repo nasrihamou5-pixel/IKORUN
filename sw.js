@@ -13,7 +13,7 @@
 // cache. Changer le nom du cache supprime les anciennes entrées à l'activation, ce
 // qui garantit que le vrai manifest.json est bien récupéré — condition nécessaire
 // pour que le navigateur propose l'installation de l'app.
-const C = 'ikorun-v59';
+const C = 'ikorun-v60';
 
 // Une réponse est réutilisable telle quelle si son URL identifie déjà une version
 // précise : soit elle porte un paramètre ?v=..., soit c'est un binaire dont le nom

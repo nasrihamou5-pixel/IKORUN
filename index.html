@@ -780,19 +780,6 @@ body[data-scr="home"] .topbar{display:none;}
   padding:13px 14px;margin-bottom:8px;box-shadow:var(--glass-shadow);position:relative;
   isolation:isolate;transition:transform .18s var(--ease-spring),box-shadow .25s ease,background .25s ease,border-color .25s ease,color .25s ease;}
 .card:active{transform:scale(.985);}
-/* Reflet spéculaire (18/09) : spot lumineux fixe en haut-gauche, même principe que
-   .hv7-day/.hv7-score mais applique ici a la classe .card generique -> les 170
-   cartes de l'app en heritent d'un coup. --glass-shine (deja existant) est un
-   degrade LINEAIRE diffus ; ceci ajoute un point chaud plus localise, ce qui
-   donne l'impression de verre bombe plutot qu'un simple vernis plat. Desactive
-   en mode simplifie via la regle html.easy-mode plus bas (meme logique que le
-   blur, deja coupe pour ce mode). */
-.card::before{content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;z-index:-1;
-  /* z-index:-1 + .card{isolation:isolate} (deja present) suffit a garder ce reflet
-     derriere le contenu normal, sans avoir a forcer position:relative sur les
-     170 usages de .card (risque de deplacer l'ancrage d'un enfant qui compterait
-     deja sur position:absolute par rapport a .card lui-meme). */
-  background:radial-gradient(circle 140px at 18% 12%, rgba(255,255,255,.10), transparent 70%);}
 .card-t{font-family:'Unbounded';font-weight:700;font-size:13.5px;margin-bottom:9px;display:flex;align-items:center;gap:9px;letter-spacing:-.1px;}
 .icb{width:26px;height:26px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
 .lab{font-family:'Unbounded';font-weight:700;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;color:var(--dim);}
@@ -974,9 +961,18 @@ body[data-scr="home"] .topbar{display:none;}
   border-radius:var(--r-sm);padding:14px;box-shadow:var(--sh-e);
   width:100%;cursor:pointer;position:relative;overflow:hidden;transition:transform .16s var(--ease-spring),box-shadow .2s var(--ease),filter .15s,background .25s ease,border-color .25s ease,color .25s ease;}
 .btn::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.16),transparent 55%);pointer-events:none;}
+/* Meme reflet "verre" que .card/.hv7-day, en ::after ici car ::before est deja
+   pris par le sheen lineaire existant. Fond du bouton reste plein (pas de
+   backdrop-filter, pas de translucidite) : un CTA doit rester lisible/tapable
+   quel que soit ce qu'il y a derriere -- seules les surfaces d'info (cartes)
+   deviennent transparentes, demande explicite de garder les boutons opaques. */
+.btn::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle 90px at 20% 15%, rgba(255,255,255,.18), transparent 70%);}
+html.easy-mode .btn::after{display:none!important;}
 .btn:active{transform:scale(.972);box-shadow:0 3px 10px -4px rgba(var(--e-rgb),.4);filter:brightness(.96);}
 .btn.ghost{background:var(--s2);color:var(--snow);border:1px solid var(--hair2);box-shadow:var(--sh-sm);}
 .btn.ghost::before{display:none;}
+.btn.ghost::after{background:radial-gradient(circle 90px at 20% 15%, rgba(255,255,255,.08), transparent 70%);}
 .btn.ghost:active{background:var(--s3);box-shadow:none;}
 .btn.sm{padding:10px;font-size:13px;border-radius:var(--r-xs);}
 .row .btn{width:auto;white-space:nowrap;flex:1 1 0;}
@@ -987,6 +983,12 @@ body[data-scr="home"] .topbar{display:none;}
 
 /* PILLS */
 .pills{display:flex;gap:7px;flex-wrap:wrap;}
+/* Le reflet "verre" de .pill n'a pas besoin d'etre ajoute : la regle .pill
+   plus bas dans ce fichier (section CHROME GLASS, deja existante) fixe deja
+   background/border en !important avec un vrai backdrop-filter (blur 20px,
+   saturate) ET un reflet radial (--chrome-spec) plus large et plus marque
+   que celui ajoute sur .card/.btn. Verifie avant d'empiler une regle
+   redondante par-dessus, contrairement au premier essai sur cette classe. */
 .pill{padding:9px 15px;border-radius:var(--r-pill);background:var(--s2);border:1px solid var(--hair);
   font-family:'Unbounded';font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap;
   transition:transform .12s var(--ease-spring),background .15s,border-color .15s,color .15s;}
@@ -1026,9 +1028,16 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 input.inp[type="date"],input.inp[type="time"]{min-width:0;max-width:100%;padding-right:8px;}
 
 /* ============================================================
-   SURFACES SOBRES — cartes, champs, feuilles : plates, un bord fin,
-   une ombre discrète. Le "glass" givré ne reste que sur les pills
-   et la nav (voir CARBON GLASS plus bas).
+   SURFACES — cartes/tuiles : fond plat + reflet verre par-dessus (voir
+   .card::before ci-dessous). Mise a jour le 18/09 : le commentaire disait
+   avant "le glass givre ne reste que sur les pills et la nav" -- demande
+   explicite depuis de l'etendre partout, cartes/boutons/selecteurs inclus.
+   .ov-card (feuilles modales) est VOLONTAIREMENT exclu de ce groupe : son
+   ::before est deja pris par la poignee de glissement (petite barre grise
+   en haut de chaque feuille), pas un element decoratif -- les combiner
+   silencieusement les faisait deja entrer en conflit avant meme mes
+   changements du jour (celui defini plus bas dans le fichier gagnait,
+   la ligne de degrade glass n'avait jamais d'effet reel sur .ov-card).
    ============================================================ */
 .sbox,.favtile,.bt,.ds-day,.qa-pill,.ov-card,.tb-gear,.gbtn.dark,.perfcard,.perfdel,.x{
   background:var(--s1);
@@ -1040,8 +1049,15 @@ input.inp[type="date"],input.inp[type="time"]{min-width:0;max-width:100%;padding
   background:var(--s2);
   border:1px solid var(--hair);
 }
-.card::before,.ov-card::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-  background:linear-gradient(180deg,rgba(255,255,255,.03),transparent 40%);}
+.card::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
+  /* z-index:-1 + .card{isolation:isolate} (deja present sur .card) suffit a
+     garder ce reflet derriere le contenu normal. Degrade radial (point chaud
+     localise, meme langage que .hv7-day/.hv7-score) superpose au degrade
+     lineaire diffus deja existant (sheen du haut) -- les deux coexistent au
+     lieu de s'ecraser, contrairement a l'ancienne regle qui melangeait
+     .card et .ov-card sur la meme ligne. */
+  background:radial-gradient(circle 140px at 18% 12%, rgba(255,255,255,.10), transparent 70%),
+             linear-gradient(180deg,rgba(255,255,255,.03),transparent 40%);}
 
 /* ============================================================
    CHROME GLASS — réservé aux sélecteurs de menu (pills) et à la
