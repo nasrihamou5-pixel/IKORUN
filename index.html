@@ -1011,7 +1011,10 @@ body[data-scr="home"] .topbar{display:none;}
 .pkfield.set{color:var(--snow);font-weight:600;}
 .pkfield::after{content:'⌄';color:var(--muted);font-size:18px;}
 .perfrow{display:flex;gap:10px;margin-bottom:10px;align-items:stretch;animation:slideUp .3s ease;}
-.perfcard{flex:1;background:var(--s1);border:1px solid var(--hair);border-radius:16px;padding:12px 14px;cursor:pointer;transition:border-color .15s;}
+.perfcard{position:relative;isolation:isolate;overflow:hidden;flex:1;background:var(--s1);border:1px solid var(--hair);border-radius:16px;padding:12px 14px;cursor:pointer;transition:border-color .15s;}
+.perfcard::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:-1;
+  background:radial-gradient(circle 110px at 18% 12%, rgba(255,255,255,.09), transparent 70%);}
+html.easy-mode .perfcard::before{display:none!important;}
 .perfcard:active{border-color:var(--e);}
 .perfcard .pcl{font-size:11px;color:var(--muted);margin-bottom:4px;display:flex;align-items:center;gap:5px;}
 .perfcard .pcv{font-family:'JetBrains Mono';font-weight:700;font-size:18px;color:var(--snow);}
@@ -1707,8 +1710,11 @@ html[dir="rtl"] .nb span{direction:rtl;}
 hr.hl{border:none;border-top:1px solid var(--hair);margin:14px 0;}
 .badge{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--r-pill);
   background:var(--ed);color:var(--e2);font-weight:800;font-size:11.5px;letter-spacing:.2px;border:1px solid rgba(var(--e-rgb),.22);}
-.favtile{background:var(--s1);border:1px solid var(--hair);border-radius:var(--r-sm);padding:14px 6px;
+.favtile{position:relative;isolation:isolate;overflow:hidden;background:var(--s1);border:1px solid var(--hair);border-radius:var(--r-sm);padding:14px 6px;
   box-shadow:var(--float-sm);text-align:center;cursor:pointer;transition:transform .15s var(--ease-spring),border-color .15s,box-shadow .15s ease,background .25s ease,color .25s ease;}
+.favtile::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:-1;
+  background:radial-gradient(circle 90px at 22% 15%, rgba(255,255,255,.09), transparent 70%);}
+html.easy-mode .favtile::before{display:none!important;}
 .favtile:active{transform:scale(.95);border-color:var(--e);}
 .favlab{font-size:10.5px;font-weight:600;margin-top:7px;line-height:1.2;color:var(--snow);}
 .searchbox{position:relative;}
