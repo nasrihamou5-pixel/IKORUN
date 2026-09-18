@@ -1746,6 +1746,7 @@ const I18N={
     toolImcName:'IMC',toolImcSub:'Indice de masse corporelle',
     toolHydraName:'Hydratation',toolHydraSub:'Tes besoins en eau',
     toolBmrName:'Calories & Métabolisme',toolBmrSub:'Besoins quotidiens',
+    progA_name:'Poitrine & Triceps',progB_name:'Dos & Biceps',progC_name:'Épaules & Jambes',progD_name:'Jambes Fessiers',progE_name:'Jambes Ischio & Mollets',progF_name:'Dos Épaules & Bras',
     toolRMName:'Calcul 1RM',toolRMSub:'Estime ta charge max sur une répétition',toolTonnageName:'Tonnage',toolTonnageSub:'Volume total soulevé (poids × séries × reps)',toolCaloriesName:'Calories course',toolCaloriesSub:'Estimation des calories brûlées',toolProgName:'Progression de charge',toolProgSub:'Planifie ta montée en charge sur plusieurs semaines',toolPomodoroName:'Minuteur Pomodoro',toolPomodoroSub:'Cycles focus / pause pour tes séances',toolLoadName:'Ratio de charge (ACWR)',toolLoadSub:'Charge aiguë vs chronique, repère le risque de blessure',toolReposName:'Temps de repos',toolReposSub:'Durée de repos recommandée selon l’objectif',
     toolAgendaName:'Agenda',toolAgendaSub:'Tous vos événements',
     toolPriereName:'Prières',toolPriereSub:'Tous les horaires',
@@ -2327,6 +2328,7 @@ const I18N={
     toolImcName:'BMI',toolImcSub:'Body mass index',
     toolHydraName:'Hydration',toolHydraSub:'Your water needs',
     toolBmrName:'Calories & Metabolism',toolBmrSub:'Daily needs',
+    progA_name:'Chest & Triceps',progB_name:'Back & Biceps',progC_name:'Shoulders & Legs',progD_name:'Glutes & Legs',progE_name:'Hamstrings & Calves',progF_name:'Back, Shoulders & Arms',
     toolRMName:'1RM Calculator',toolRMSub:'Estimate your one-rep max',toolTonnageName:'Tonnage',toolTonnageSub:'Total volume lifted (weight × sets × reps)',toolCaloriesName:'Run Calories',toolCaloriesSub:'Estimated calories burned',toolProgName:'Load Progression',toolProgSub:'Plan your weight increase over several weeks',toolPomodoroName:'Pomodoro Timer',toolPomodoroSub:'Focus / break cycles for your workouts',toolLoadName:'Load Ratio (ACWR)',toolLoadSub:'Acute vs chronic load, spot injury risk',toolReposName:'Rest Times',toolReposSub:'Recommended rest duration by training goal',
     toolAgendaName:'Calendar',toolAgendaSub:'All your events',
     toolPriereName:'Prayers',toolPriereSub:'All the times',
@@ -2908,6 +2910,7 @@ const I18N={
     toolImcName:'كتلة الجسم',toolImcSub:'مؤشر كتلة الجسم',
     toolHydraName:'الترطيب',toolHydraSub:'احتياجاتك من الماء',
     toolBmrName:'السعرات والأيض',toolBmrSub:'الاحتياجات اليومية',
+    progA_name:'الصدر والترايسبس',progB_name:'الظهر والبايسبس',progC_name:'الأكتاف والأرجل',progD_name:'الأرداف والأرجل',progE_name:'أوتار الركبة وبطة الساق',progF_name:'الظهر والأكتاف والذراعين',
     toolRMName:'حاسبة الحد الأقصى',toolRMSub:'قدّر أقصى حمل لتكرار واحد',toolTonnageName:'الحمولة الكلية',toolTonnageSub:'إجمالي الوزن المرفوع (الوزن × المجموعات × التكرارات)',toolCaloriesName:'سعرات الجري',toolCaloriesSub:'تقدير السعرات المحروقة',toolProgName:'تطور الحمل',toolProgSub:'خطط لزيادة الوزن على عدة أسابيع',toolPomodoroName:'مؤقت بومودورو',toolPomodoroSub:'دورات تركيز/راحة لتمارينك',toolLoadName:'نسبة الحمل (ACWR)',toolLoadSub:'الحمل الحاد مقابل المزمن، لتحديد خطر الإصابة',toolReposName:'أوقات الراحة',toolReposSub:'مدة الراحة الموصى بها حسب الهدف',
     toolAgendaName:'الأجندة',toolAgendaSub:'كل أحداثك',
     toolPriereName:'الصلوات',toolPriereSub:'كل الأوقات',
@@ -3437,7 +3440,7 @@ function setLang(l){
   if(P.prayerNotif!==false) subscribeToPush(); // resynchronise la langue de l'abonnement push côté serveur
   document.documentElement.lang=l;
   document.documentElement.dir=(l==='ar')?'rtl':'ltr';
-  TOOLS=TOOLS_DEF(); BADGE_TIERS=BADGE_TIERS_DEF(); TIERS=TIERS_DEF(); MEDAL_CATS=MEDAL_CATS_DEF(); ACHIEVEMENTS=ACHIEVEMENTS_DEF(); RANKS=RANKS_DEF();
+  TOOLS=TOOLS_DEF(); BADGE_TIERS=BADGE_TIERS_DEF(); TIERS=TIERS_DEF(); MEDAL_CATS=MEDAL_CATS_DEF(); ACHIEVEMENTS=ACHIEVEMENTS_DEF(); RANKS=RANKS_DEF(); PROGS=PROGS_DEF();
   // Pas de refreshXP() ici : XP.name / XP.rank sont écrits par refreshXP mais jamais
   // relus (ni affichés, ni envoyés au serveur) — les pastilles de rang appellent
   // rankFor(XP.level) au moment du rendu, donc RANKS=RANKS_DEF() suffit à traduire.
@@ -6284,14 +6287,20 @@ function findEx(name){ return LIB.find(e=>e.name===name) || (function(){ const d
 function ex(name,sets,reps){ const e=findEx(name)||{name,muscles:[],anim:'',tip:''}; return {name:e.name,sets,reps,muscles:e.muscles,anim:e.anim,tip:e.tip||''}; }
 
 /* ---------- 6 DEFAULT PROGRAMS ---------- */
-const PROGS=[
- {id:'A',name:'Poitrine & Triceps',color:'--e',ex:[ex('Decline Bench Press',4,'12'),ex('Bench Press',4,'12'),ex('Dumbbell Incline Bench Press',4,'12'),ex('Lever Seated Fly',3,'8'),ex('Skull Crusher',4,'12'),ex('Elbow Dips',3,'6-8'),ex('Triceps Pushdown',4,'12')]},
- {id:'B',name:'Dos & Biceps',color:'--e',ex:[ex('Lever Lying T-bar Row',3,'10-12'),ex('Straight Back Seated Row',3,'6-10'),ex('Bar Lateral Pulldown',3,'8-10'),ex('EZ-bar 21s',4,'21'),ex('Hammer Curl',4,'6-12'),ex('Biceps Curl',4,'12'),ex('Lever Preacher Curl',3,'4-10')]},
- {id:'C',name:'Épaules & Jambes',color:'--e',ex:[ex('Seated Shoulder Press',4,'8'),ex('Lever Seated Shoulder Press',3,'10-12'),ex('Lateral Raise',4,'12'),ex('Front Raise',4,'12'),ex('Cable Face Pull',4,'12-15'),ex('Lever Leg Extension',4,'8-12'),ex('Lever Lying Leg Curl',4,'6-12'),ex('Sled 45° Leg Wide Press',4,'8-12'),ex('Lever Seated Calf Raise',4,'12')]},
- {id:'D',name:'Jambes Fessiers',color:'--e',ex:[ex('Lever Seated Hip Abduction',3,'12-15'),ex('Sled 45° Leg Press',3,'10-12'),ex('Lever Seated Hip Adduction',3,'12-15'),ex('Hip Thrust',3,'10-12'),ex('45° One Leg Hyperextension',3,'12'),ex('Smith Squat',3,'10-12'),ex('Lever Hip Thrust',3,'12')]},
- {id:'E',name:'Jambes Ischio & Mollets',color:'--e',ex:[ex('Lever Hip Thrust',3,'12'),ex('Lever Leg Extension',3,'12-15'),ex('Lever Seated Leg Extension',3,'12'),ex('Dumbbell Split Squat',3,'10'),ex('Lever Kneeling Leg Curl',3,'10-12'),ex('Nordic Hamstring Curl',3,'6-8'),ex('Lever Seated One Leg Calf Raise',3,'15')]},
- {id:'F',name:'Dos Épaules & Bras',color:'--e',ex:[ex('Bar Lateral Pulldown',4,'8-10'),ex('Straight Back Seated Row',4,'6-10'),ex('Lever Lying T-bar Row',3,'10-12'),ex('Seated Shoulder Press',4,'8'),ex('Lever Seated Shoulder Press',3,'10'),ex('Cable Face Pull',3,'12'),ex('Hammer Curl',3,'6-12')]}
-];
+/* PROGS_DEF() (18/09) : les 6 programmes par defaut avaient leur nom fige en
+   francais (const PROGS=[...]), jamais retraduits -- contrairement a
+   TOOLS/RANKS/BADGE_TIERS qui suivent deja le pattern _DEF() reconstruit par
+   setLang(). Trouve lors d'un passage visuel : "Poitrine & Triceps" restait
+   affiche meme en anglais/arabe. Meme pattern applique ici. */
+function PROGS_DEF(){ return [
+ {id:'A',name:t('progA_name'),color:'--e',ex:[ex('Decline Bench Press',4,'12'),ex('Bench Press',4,'12'),ex('Dumbbell Incline Bench Press',4,'12'),ex('Lever Seated Fly',3,'8'),ex('Skull Crusher',4,'12'),ex('Elbow Dips',3,'6-8'),ex('Triceps Pushdown',4,'12')]},
+ {id:'B',name:t('progB_name'),color:'--e',ex:[ex('Lever Lying T-bar Row',3,'10-12'),ex('Straight Back Seated Row',3,'6-10'),ex('Bar Lateral Pulldown',3,'8-10'),ex('EZ-bar 21s',4,'21'),ex('Hammer Curl',4,'6-12'),ex('Biceps Curl',4,'12'),ex('Lever Preacher Curl',3,'4-10')]},
+ {id:'C',name:t('progC_name'),color:'--e',ex:[ex('Seated Shoulder Press',4,'8'),ex('Lever Seated Shoulder Press',3,'10-12'),ex('Lateral Raise',4,'12'),ex('Front Raise',4,'12'),ex('Cable Face Pull',4,'12-15'),ex('Lever Leg Extension',4,'8-12'),ex('Lever Lying Leg Curl',4,'6-12'),ex('Sled 45° Leg Wide Press',4,'8-12'),ex('Lever Seated Calf Raise',4,'12')]},
+ {id:'D',name:t('progD_name'),color:'--e',ex:[ex('Lever Seated Hip Abduction',3,'12-15'),ex('Sled 45° Leg Press',3,'10-12'),ex('Lever Seated Hip Adduction',3,'12-15'),ex('Hip Thrust',3,'10-12'),ex('45° One Leg Hyperextension',3,'12'),ex('Smith Squat',3,'10-12'),ex('Lever Hip Thrust',3,'12')]},
+ {id:'E',name:t('progE_name'),color:'--e',ex:[ex('Lever Hip Thrust',3,'12'),ex('Lever Leg Extension',3,'12-15'),ex('Lever Seated Leg Extension',3,'12'),ex('Dumbbell Split Squat',3,'10'),ex('Lever Kneeling Leg Curl',3,'10-12'),ex('Nordic Hamstring Curl',3,'6-8'),ex('Lever Seated One Leg Calf Raise',3,'15')]},
+ {id:'F',name:t('progF_name'),color:'--e',ex:[ex('Bar Lateral Pulldown',4,'8-10'),ex('Straight Back Seated Row',4,'6-10'),ex('Lever Lying T-bar Row',3,'10-12'),ex('Seated Shoulder Press',4,'8'),ex('Lever Seated Shoulder Press',3,'10'),ex('Cable Face Pull',3,'12'),ex('Hammer Curl',3,'6-12')]}
+]; }
+let PROGS=PROGS_DEF();
 function allProgs(){ return [...PROGS,...CUSTOM]; }
 
 /* ---------- RUN PLAN GENERATOR ---------- */
