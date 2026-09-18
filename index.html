@@ -457,10 +457,23 @@ html[data-mode="light"] .hv7-people,html[data-mode="light"] .hv7-icon-btn{backgr
 .hv7-day{position:relative;border-radius:26px;padding:18px;margin-bottom:18px;cursor:pointer;overflow:hidden;
   background:linear-gradient(155deg, rgba(var(--e-rgb),.17), rgba(var(--e2-rgb),.07));border:1px solid rgba(var(--e-rgb),.24);
   box-shadow:0 20px 44px -22px rgba(var(--e-rgb),.55),0 3px 14px -6px rgba(0,0,0,.45),0 1px 0 rgba(255,255,255,.08) inset;
-  transition:transform .18s var(--ease-spring);}
+  transition:transform .18s var(--ease-spring);
+  /* Verre depoli, inspire de KORE : les halos de .hv7-bg (derriere, animes) se voient au
+     travers en flou sature, au lieu de rester caches derriere un fond opaque -- c'est ce
+     qui donne l'impression de "superposition" plutot qu'un simple degrade plat. Scope a 2
+     cartes seulement (celle-ci + .hv7-score), pas toutes les cartes de l'app : un
+     backdrop-filter sur une liste qui defile coute cher sur de l'Android d'entree de
+     gamme (deja releve a l'audit du 18/09) -- ici une seule instance par ecran. */
+  backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);}
 .hv7-day:active{transform:scale(.985);}
 .hv7-day::before{content:'';position:absolute;width:230px;height:230px;border-radius:50%;pointer-events:none;
   background:radial-gradient(circle, rgba(var(--e-rgb),.30), transparent 70%);top:-130px;inset-inline-end:-80px;}
+.hv7-day::after{content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  /* Reflet spéculaire fixe (haut-gauche) : version statique du reflet qui, chez KORE, suit
+     le doigt via --glass-mx/--glass-my mis a jour en JS. Le suivi tactile est un vrai plus
+     mais une fonctionnalite a part entiere (gestion des evenements pointer sur chaque carte) ;
+     la version fixe donne deja l'effet "verre vivant" sans ce risque supplementaire. */
+  background:radial-gradient(circle 180px at 22% 18%, rgba(255,255,255,.14), transparent 72%);}
 .hv7-day>*{position:relative;}
 .hv7-day-top{display:flex;justify-content:space-between;align-items:center;gap:8px;}
 .hv7-day-chip{font-family:'JetBrains Mono';font-size:9px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;
@@ -1814,9 +1827,18 @@ html[data-mode="light"]{
   border-radius:999px;padding:5px 11px;font-size:11px;font-weight:700;color:#ffb35c;margin:8px 0 4px;}
 .streak b{font-weight:800;}
 
-/* Carte "score de la semaine" de l'accueil — anneau + quip + serie. */
-.hv7-score{display:flex;align-items:center;gap:16px;background:var(--s2);border:1px solid var(--hair);
-  border-radius:22px;padding:16px 18px;margin-bottom:16px;}
+/* Carte "score de la semaine" de l'accueil — anneau + quip + serie.
+   Meme traitement verre que .hv7-day (cf. son commentaire) : fond translucide
+   + flou sature plutot qu'un fond plein, pour laisser passer les halos animes
+   de .hv7-bg en arriere-plan. */
+.hv7-score{position:relative;overflow:hidden;display:flex;align-items:center;gap:16px;
+  background:rgba(var(--e-rgb),.09);border:1px solid rgba(var(--e-rgb),.22);
+  border-radius:22px;padding:16px 18px;margin-bottom:16px;
+  box-shadow:0 1px 0 rgba(255,255,255,.08) inset;
+  backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);}
+.hv7-score::before{content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:radial-gradient(circle 160px at 78% 12%, rgba(255,255,255,.13), transparent 72%);}
+.hv7-score>*{position:relative;}
 .hv7-score-ring{position:relative;width:64px;height:64px;flex:none;}
 .hv7-score-ring .val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   font-family:'Unbounded';font-weight:700;font-size:15px;color:var(--snow);}
