@@ -10110,7 +10110,16 @@ function TOOLS_DEF(){ return {
 // TOOLS est recalculé à chaque affichage pour suivre la langue active (voir renderOutils/outilsHome)
 let TOOLS=TOOLS_DEF();
 const MAIN_TOOLS=['aio','sante','chrono'];
-const OTHER_TOOLS=['convert','notes'];
+/* 18/09 : seuls 5 outils sur 18 etaient navigables sans passer par la
+   recherche (3 MAIN_TOOLS + 2 OTHER_TOOLS) -- les 11 autres (dont les 7
+   outils muscu cables plus tot dans la journee) n'existaient que si on savait
+   deja leur nom exact a taper. 'agenda' en particulier n'avait ABSOLUMENT
+   aucun autre point d'entree nulle part dans le code (contrairement a
+   'priere', qui garde sa carte dediee sur l'accueil via openPrayerFromHome()
+   -- access deja meilleur qu'une tuile de grille, laisse tel quel). Grille
+   complete desormais : tout outil non cache reste a une recherche pres, mais
+   plus BESOIN de chercher pour le decouvrir. */
+const OTHER_TOOLS=['convert','notes','vdot','imc','hydra','bmr','rm','tonnage','calories','prog','pomodoro','load','repos','agenda'];
 function toolFav(){ return PREFS.favTools||['aio','sante','chrono','convert']; }
 function toggleFav(k){ let f=toolFav(); f=f.includes(k)?f.filter(x=>x!==k):[...f,k]; PREFS.favTools=f; saveAll(); renderOutils(); }
 let toolSearch='';
@@ -10162,7 +10171,13 @@ function outilsHome(){
   return h;
 }
 // Labels courts pour les tuiles, par clé d'outil (indépendant de la langue affichée dans le nom complet)
-function favShort(k){ const m={aio:{fr:'Perf. Lab',en:'Perf. Lab',ar:'مختبر'},sante:{fr:'Santé',en:'Health',ar:'الصحة'},chrono:{fr:'Chrono',en:'Timer',ar:'ساعة'},convert:{fr:'Convert.',en:'Convert.',ar:'تحويل'},vdot:{fr:'VDOT',en:'VDOT',ar:'VDOT'},bmr:{fr:'Calories',en:'Calories',ar:'سعرات'},hydra:{fr:'Eau',en:'Water',ar:'ماء'}};
+function favShort(k){ const m={aio:{fr:'Perf. Lab',en:'Perf. Lab',ar:'مختبر'},sante:{fr:'Santé',en:'Health',ar:'الصحة'},chrono:{fr:'Chrono',en:'Timer',ar:'ساعة'},convert:{fr:'Convert.',en:'Convert.',ar:'تحويل'},vdot:{fr:'VDOT',en:'VDOT',ar:'VDOT'},bmr:{fr:'Calories',en:'Calories',ar:'سعرات'},hydra:{fr:'Eau',en:'Water',ar:'ماء'},
+    // 18/09 : noms complets trop longs pour une tuile de grille (ex. "Ratio de
+    // charge (ACWR)"). 'calories' (course) distingue volontairement de bmr
+    // (deja "Calories" tout court) pour ne pas afficher 2 tuiles identiques.
+    rm:{fr:'1RM',en:'1RM',ar:'1RM'},tonnage:{fr:'Tonnage',en:'Tonnage',ar:'الحمولة'},
+    calories:{fr:'Calo. course',en:'Run calo.',ar:'سعرات الجري'},prog:{fr:'Progression',en:'Progress',ar:'التطور'},
+    pomodoro:{fr:'Pomodoro',en:'Pomodoro',ar:'بومودورو'},load:{fr:'ACWR',en:'ACWR',ar:'ACWR'},repos:{fr:'Repos',en:'Rest',ar:'الراحة'}};
   return (m[k]&&m[k][curLang()])||(TOOLS[k]?TOOLS[k].name:k); }
 function editFavs(){
   let h='<div class="tip" style="margin-bottom:14px">'+t('tapStarHint')+'</div>';
