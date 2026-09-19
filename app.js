@@ -1759,7 +1759,7 @@ const I18N={
     statistics:'Statistiques',theme:'Thème',appColor:'Couleur de l\u2019app',simplifiedMode:'Mode simplifié',
     simplifiedModeDesc:'4 onglets, écrans allégés, textes plus grands — l\u2019essentiel seulement',
     support:'Support',helpCenter:'Centre d\u2019aide',footerTag:'IKORUN — Elite Athletic Intelligence · v2.1',
-    yourSpace:'Ton espace',settings:'Réglages',badgesLabel:'Badges',toolsCalc:'Outils & calculateurs',editMyProfile:'Modifier mon profil',
+    yourSpace:'Ton espace',settings:'Réglages',badgesLabel:'Badges',homePBLabel:'Tes records',toolsCalc:'Outils & calculateurs',editMyProfile:'Modifier mon profil',
     // --- Stats ---
     tabBilan:'Bilan',tabRun:'Course',tabMuscu:'Muscu',tabTrophies:'Trophées',
     perWeek:'Semaine',perMonth:'Mois',per3Month:'3 Mois',perYear:'Année',
@@ -2341,7 +2341,7 @@ const I18N={
     statistics:'Statistics',theme:'Theme',appColor:'App color',simplifiedMode:'Simplified mode',
     simplifiedModeDesc:'4 tabs, lighter screens, bigger text — the essentials only',
     support:'Support',helpCenter:'Help center',footerTag:'IKORUN — Elite Athletic Intelligence · v2.1',
-    yourSpace:'Your space',settings:'Settings',badgesLabel:'Badges',toolsCalc:'Tools & calculators',editMyProfile:'Edit my profile',
+    yourSpace:'Your space',settings:'Settings',badgesLabel:'Badges',homePBLabel:'Your PBs',toolsCalc:'Tools & calculators',editMyProfile:'Edit my profile',
     // --- Stats ---
     tabBilan:'Overview',tabRun:'Running',tabMuscu:'Strength',tabTrophies:'Trophies',
     perWeek:'Week',perMonth:'Month',per3Month:'3 Months',perYear:'Year',
@@ -2923,7 +2923,7 @@ const I18N={
     statistics:'الإحصائيات',theme:'المظهر',appColor:'لون التطبيق',simplifiedMode:'الوضع المبسّط',
     simplifiedModeDesc:'4 تبويبات، شاشات أخف، نص أكبر — الأساسيات فقط',
     support:'الدعم',helpCenter:'مركز المساعدة',footerTag:'IKORUN — Elite Athletic Intelligence · v2.1',
-    yourSpace:'مساحتك',settings:'الإعدادات',badgesLabel:'الأوسمة',toolsCalc:'الأدوات والحاسبات',editMyProfile:'تعديل ملفي الشخصي',
+    yourSpace:'مساحتك',settings:'الإعدادات',badgesLabel:'الأوسمة',homePBLabel:'أرقامك القياسية',toolsCalc:'الأدوات والحاسبات',editMyProfile:'تعديل ملفي الشخصي',
     // --- الإحصائيات ---
     tabBilan:'الحصيلة',tabRun:'الجري',tabMuscu:'كمال الأجسام',tabTrophies:'الأوسمة',
     perWeek:'أسبوع',perMonth:'شهر',per3Month:'3 أشهر',perYear:'سنة',
@@ -3867,9 +3867,6 @@ function BADGE_TIERS_DEF(){ return [
 ]; }
 // Recalculé à chaque changement de langue (setLang) pour suivre curLang() — voir TOOLS_DEF pour le même principe.
 let BADGE_TIERS=BADGE_TIERS_DEF();
-function badgeStats(){
-  return { xp: XP.total||0, km: totalKm(), days: daysSinceJoin() };
-}
 /* Ancienneté du compte, en jours pleins depuis la fin de l'onboarding.
    P.joinedAt est posé une seule fois (finishOnboarding) ; pour les comptes
    déjà existants avant cet ajout, reloadState() le reconstitue à partir
@@ -7210,16 +7207,6 @@ function weeklyTonnageTrend8(){
   return values;
 }
 function runCountWeek(){ return sessThisWeek().length; }
-function sessInPeriod(period){
-  const now=new Date(); now.setHours(0,0,0,0);
-  let start=new Date(now);
-  if(period==='today'){ /* start = now */ }
-  else if(period==='week'){ start.setDate(now.getDate()-now.getDay()+(now.getDay()===0?-6:1)); }
-  else if(period==='month'){ start=new Date(now.getFullYear(),now.getMonth(),1); }
-  else if(period==='year'){ start=new Date(now.getFullYear(),0,1); }
-  const end=new Date(now); end.setDate(end.getDate()+1);
-  return [...SESS,...MSESS].filter(s=>{ const d=new Date(s.date+'T00:00:00'); return d>=start && d<end; });
-}
 function muscuCountWeek(){ const ws=weekStart(); return MSESS.filter(s=>new Date(s.date)>=ws).length; }
 function totalSessions(){ return SESS.length+MSESS.length; }
 function streakDays(){
@@ -7560,6 +7547,15 @@ function renderHome(){
     '<div class="hv7-ktile"><div class="hv7-ktile-val">'+sessW+'/'+sessTarget+'</div><div class="hv7-ktile-lab">'+t('sessionsLab')+'</div></div>'+
     '<div class="hv7-ktile"><div class="hv7-ktile-val">'+(vdot||'—')+'</div><div class="hv7-ktile-lab">VDOT</div></div>'+
   '</div>';
+
+  // BADGES + RECORDS PERSO — homeBadgesRow()/homePBRow() existaient deja (comme
+  // homeGoalCard/homeLoadQuip/homeStreakBadge) mais n'etaient jamais appeles nulle
+  // part : trouve lors du balayage de code mort du 19/09. homeGoalCard() est deja
+  // cable dans renderHomeSimple ; ces deux-la manquaient ici, dans l'accueil complet.
+  html+='<div class="hv7-sec-lab">'+t('badgesLabel')+'</div>'+homeBadgesRow();
+  if((P.pb3k||P.t3k)||(P.pb5k||P.t5k)||(P.pb10k||P.t10k)){
+    html+='<div class="hv7-sec-lab" style="margin-top:14px">'+t('homePBLabel')+'</div>'+homePBRow();
+  }
 
   // ENSUITE — les prochaines séances du plan
   {
