@@ -1758,7 +1758,7 @@ const I18N={
     notConnected:'Non connecté',notifLabel:'Notifications',preferences:'Préférences',historyRecords:'Historique & records',
     statistics:'Statistiques',theme:'Thème',appColor:'Couleur de l\u2019app',simplifiedMode:'Mode simplifié',
     simplifiedModeDesc:'4 onglets, écrans allégés, textes plus grands — l\u2019essentiel seulement',
-    support:'Support',helpCenter:'Centre d\u2019aide',footerTag:'IKORUN — Elite Athletic Intelligence · v2.1',
+    support:'Support',helpCenter:'Centre d\u2019aide',footerTag:'IKORUN — Elite Athletic Intelligence · v3.02.123',
     yourSpace:'Ton espace',settings:'Réglages',badgesLabel:'Badges',homePBLabel:'Tes records',toolsCalc:'Outils & calculateurs',editMyProfile:'Modifier mon profil',
     // --- Stats ---
     tabBilan:'Bilan',tabRun:'Course',tabMuscu:'Muscu',tabTrophies:'Trophées',
@@ -2340,7 +2340,7 @@ const I18N={
     notConnected:'Not signed in',notifLabel:'Notifications',preferences:'Preferences',historyRecords:'History & records',
     statistics:'Statistics',theme:'Theme',appColor:'App color',simplifiedMode:'Simplified mode',
     simplifiedModeDesc:'4 tabs, lighter screens, bigger text — the essentials only',
-    support:'Support',helpCenter:'Help center',footerTag:'IKORUN — Elite Athletic Intelligence · v2.1',
+    support:'Support',helpCenter:'Help center',footerTag:'IKORUN — Elite Athletic Intelligence · v3.02.123',
     yourSpace:'Your space',settings:'Settings',badgesLabel:'Badges',homePBLabel:'Your PBs',toolsCalc:'Tools & calculators',editMyProfile:'Edit my profile',
     // --- Stats ---
     tabBilan:'Overview',tabRun:'Running',tabMuscu:'Strength',tabTrophies:'Trophies',
@@ -2922,7 +2922,7 @@ const I18N={
     notConnected:'غير متصل',notifLabel:'الإشعارات',preferences:'التفضيلات',historyRecords:'السجل والأرقام',
     statistics:'الإحصائيات',theme:'المظهر',appColor:'لون التطبيق',simplifiedMode:'الوضع المبسّط',
     simplifiedModeDesc:'4 تبويبات، شاشات أخف، نص أكبر — الأساسيات فقط',
-    support:'الدعم',helpCenter:'مركز المساعدة',footerTag:'IKORUN — Elite Athletic Intelligence · v2.1',
+    support:'الدعم',helpCenter:'مركز المساعدة',footerTag:'IKORUN — Elite Athletic Intelligence · v3.02.123',
     yourSpace:'مساحتك',settings:'الإعدادات',badgesLabel:'الأوسمة',homePBLabel:'أرقامك القياسية',toolsCalc:'الأدوات والحاسبات',editMyProfile:'تعديل ملفي الشخصي',
     // --- الإحصائيات ---
     tabBilan:'الحصيلة',tabRun:'الجري',tabMuscu:'كمال الأجسام',tabTrophies:'الأوسمة',
@@ -7341,26 +7341,6 @@ function homeGoalCard(){
     '<div class="goal-bar"><div style="width:'+pct+'%"></div></div>'+
   '</div>';
 }
-// Ligne "Progression" — badges de médailles (séances / régularité / distance)
-function homeBadgesRow(){
-  const icons={sessions:'medal',streak:'fire',distance:'chart'};
-  let bestCat=null, bestPct=-1, bestTier=-1;
-  const cells=MEDAL_CATS.map(c=>{
-    const v=Math.floor(c.val());
-    let tierIdx=-1; c.thr.forEach((th,i)=>{ if(v>=th)tierIdx=i; });
-    const next=tierIdx<c.thr.length-1?c.thr[tierIdx+1]:null;
-    const prevT=tierIdx>=0?c.thr[tierIdx]:0;
-    const pct=next?Math.min(100,Math.round(((v-prevT)/(next-prevT))*100)):100;
-    if(next && pct>bestPct){ bestPct=pct; bestCat=c; bestTier=tierIdx; }
-    const locked=tierIdx<0;
-    return '<div class="badge-mini'+(locked?' locked':'')+'" onclick="nav(\'stats\')">'+ICN(icons[c.key]||'medal',18)+'</div>';
-  });
-  const label=bestCat?(TIERS[bestTier+1]?TIERS[bestTier+1][0]:bestCat.name)+' · '+bestPct+'%':t('continueUnlockBadges');
-  return '<div class="card stag" style="padding:16px;animation-delay:.12s" onclick="nav(\'stats\')">'+
-    '<div class="badge-mini-row">'+cells.join('')+
-      '<div class="badge-progress-txt"><div class="t">'+label+'</div><div class="b"><div style="width:'+Math.max(0,bestPct)+'%"></div></div></div>'+
-    '</div></div>';
-}
 
 /* ---------- RENDER HOME ---------- */
 /* ---------- RENDER HOME (Accueil V7) ---------- */
@@ -7548,11 +7528,11 @@ function renderHome(){
     '<div class="hv7-ktile"><div class="hv7-ktile-val">'+(vdot||'—')+'</div><div class="hv7-ktile-lab">VDOT</div></div>'+
   '</div>';
 
-  // BADGES + RECORDS PERSO — homeBadgesRow()/homePBRow() existaient deja (comme
-  // homeGoalCard/homeLoadQuip/homeStreakBadge) mais n'etaient jamais appeles nulle
-  // part : trouve lors du balayage de code mort du 19/09. homeGoalCard() est deja
-  // cable dans renderHomeSimple ; ces deux-la manquaient ici, dans l'accueil complet.
-  html+='<div class="hv7-sec-lab">'+t('badgesLabel')+'</div>'+homeBadgesRow();
+  // RECORDS PERSO — homePBRow() existait deja (comme homeGoalCard/homeLoadQuip/
+  // homeStreakBadge) mais n'etait jamais appele nulle part : trouve lors du balayage
+  // de code mort du 19/09. La ligne badges (homeBadgesRow) a ete retiree le 20/09 a
+  // la demande explicite de l'utilisateur — les badges restent consultables depuis
+  // Profil (openBadges()), juste plus dupliques sur l'accueil.
   if((P.pb3k||P.t3k)||(P.pb5k||P.t5k)||(P.pb10k||P.t10k)){
     html+='<div class="hv7-sec-lab" style="margin-top:14px">'+t('homePBLabel')+'</div>'+homePBRow();
   }
