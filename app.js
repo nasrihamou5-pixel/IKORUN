@@ -1758,7 +1758,7 @@ const I18N={
     notConnected:'Non connecté',notifLabel:'Notifications',preferences:'Préférences',historyRecords:'Historique & records',
     statistics:'Statistiques',theme:'Thème',appColor:'Couleur de l\u2019app',simplifiedMode:'Mode simplifié',
     simplifiedModeDesc:'4 onglets, écrans allégés, textes plus grands — l\u2019essentiel seulement',
-    support:'Support',helpCenter:'Centre d\u2019aide',footerTag:'IKORUN — Elite Athletic Intelligence · v2.0',
+    support:'Support',helpCenter:'Centre d\u2019aide',footerTag:'IKORUN — Elite Athletic Intelligence · v2.1',
     yourSpace:'Ton espace',settings:'Réglages',badgesLabel:'Badges',toolsCalc:'Outils & calculateurs',editMyProfile:'Modifier mon profil',
     // --- Stats ---
     tabBilan:'Bilan',tabRun:'Course',tabMuscu:'Muscu',tabTrophies:'Trophées',
@@ -2340,7 +2340,7 @@ const I18N={
     notConnected:'Not signed in',notifLabel:'Notifications',preferences:'Preferences',historyRecords:'History & records',
     statistics:'Statistics',theme:'Theme',appColor:'App color',simplifiedMode:'Simplified mode',
     simplifiedModeDesc:'4 tabs, lighter screens, bigger text — the essentials only',
-    support:'Support',helpCenter:'Help center',footerTag:'IKORUN — Elite Athletic Intelligence · v2.0',
+    support:'Support',helpCenter:'Help center',footerTag:'IKORUN — Elite Athletic Intelligence · v2.1',
     yourSpace:'Your space',settings:'Settings',badgesLabel:'Badges',toolsCalc:'Tools & calculators',editMyProfile:'Edit my profile',
     // --- Stats ---
     tabBilan:'Overview',tabRun:'Running',tabMuscu:'Strength',tabTrophies:'Trophies',
@@ -2922,7 +2922,7 @@ const I18N={
     notConnected:'غير متصل',notifLabel:'الإشعارات',preferences:'التفضيلات',historyRecords:'السجل والأرقام',
     statistics:'الإحصائيات',theme:'المظهر',appColor:'لون التطبيق',simplifiedMode:'الوضع المبسّط',
     simplifiedModeDesc:'4 تبويبات، شاشات أخف، نص أكبر — الأساسيات فقط',
-    support:'الدعم',helpCenter:'مركز المساعدة',footerTag:'IKORUN — Elite Athletic Intelligence · v2.0',
+    support:'الدعم',helpCenter:'مركز المساعدة',footerTag:'IKORUN — Elite Athletic Intelligence · v2.1',
     yourSpace:'مساحتك',settings:'الإعدادات',badgesLabel:'الأوسمة',toolsCalc:'الأدوات والحاسبات',editMyProfile:'تعديل ملفي الشخصي',
     // --- الإحصائيات ---
     tabBilan:'الحصيلة',tabRun:'الجري',tabMuscu:'كمال الأجسام',tabTrophies:'الأوسمة',
