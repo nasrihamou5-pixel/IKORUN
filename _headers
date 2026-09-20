@@ -43,17 +43,3 @@
 # jour de la strategie de cache ne peut plus jamais atteindre les appareils.
 /sw.js
   Cache-Control: public, max-age=0, must-revalidate
-
-# APK telecharge directement (bouton "Telecharger l'app Android", 20/09) : pas
-# de cache long, ce fichier n'a pas de numero de version dans son URL comme
-# app.js, donc pas d'immutable ici sinon une mise a jour de l'apk resterait
-# invisible pour les navigateurs qui l'ont deja recupere une fois.
-/downloads/*
-  Cache-Control: no-cache, must-revalidate
-
-# Digital Asset Links : verification requise par Android/Chrome pour que la
-# TWA (app Android generee via PWABuilder/Bubblewrap) s'ouvre en plein ecran,
-# sans barre d'adresse de navigateur.
-/.well-known/assetlinks.json
-  Content-Type: application/json
-  Cache-Control: public, max-age=3600

@@ -2192,7 +2192,6 @@ const I18N={
     orDividerLabel:'ou',continueWithGoogleBtn:'Continuer avec Google',
     loginLegalText:'En continuant, tu acceptes nos <span class="legal-link" onclick="openProfileSection(\'terms\')">conditions d’utilisation</span> et notre <span class="legal-link" onclick="openProfileSection(\'privacy\')">politique de confidentialité</span>.<br>Tes données sont synchronisées de façon sécurisée via ton compte.',
     installAppBtn:'Installer l’application',installAcceptedToast:'Application installée !',installFallbackToast:'Utilise le menu de ton navigateur (ou l’icône d’installation dans la barre d’adresse) pour installer l’app.',
-    downloadApkBtn:'Télécharger l’app Android (.apk)',downloadApkToast:'Téléchargement lancé — ouvre le fichier une fois reçu pour l’installer.',
     iosInstallStep1:'1. Appuie sur l’icône Partager '+'⬆️'+' en bas de Safari.',
     iosInstallStep2:'2. Fais défiler puis appuie sur « Sur l’écran d’accueil ».',
     androidInstallStep1:'1. Appuie sur les trois petits points en haut à droite de Chrome.',
@@ -2775,7 +2774,6 @@ const I18N={
     orDividerLabel:'or',continueWithGoogleBtn:'Continue with Google',
     loginLegalText:'By continuing, you accept our <span class="legal-link" onclick="openProfileSection(\'terms\')">terms of use</span> and our <span class="legal-link" onclick="openProfileSection(\'privacy\')">privacy policy</span>.<br>Your data is synced securely via your account.',
     installAppBtn:'Install the app',installAcceptedToast:'App installed!',installFallbackToast:'Use your browser menu (or the install icon in the address bar) to install the app.',
-    downloadApkBtn:'Download the Android app (.apk)',downloadApkToast:'Download started — open the file once received to install it.',
     iosInstallStep1:'1. Tap the Share icon '+'⬆️'+' at the bottom of Safari.',
     iosInstallStep2:'2. Scroll down and tap "Add to Home Screen".',
     androidInstallStep1:'1. Tap the three dots at the top right of Chrome.',
@@ -3361,7 +3359,6 @@ const I18N={
     orDividerLabel:'أو',continueWithGoogleBtn:'المتابعة عبر Google',
     loginLegalText:'بالمتابعة، فإنك توافق على <span class="legal-link" onclick="openProfileSection(\'terms\')">شروط الاستخدام</span> و<span class="legal-link" onclick="openProfileSection(\'privacy\')">سياسة الخصوصية</span> الخاصة بنا.<br>بياناتك مُزامَنة بأمان عبر حسابك.',
     installAppBtn:'تثبيت التطبيق',installAcceptedToast:'تم تثبيت التطبيق!',installFallbackToast:'استخدم قائمة متصفحك (أو أيقونة التثبيت في شريط العنوان) لتثبيت التطبيق.',
-    downloadApkBtn:'تنزيل تطبيق أندرويد (.apk)',downloadApkToast:'بدأ التنزيل — افتح الملف بعد استلامه لتثبيته.',
     iosInstallStep1:'1. اضغط على أيقونة المشاركة '+'⬆️'+' أسفل Safari.',
     iosInstallStep2:'2. مرّر لأسفل ثم اضغط على «إضافة إلى الشاشة الرئيسية».',
     androidInstallStep1:'1. اضغط على النقاط الثلاث أعلى يمين Chrome.',
@@ -5782,16 +5779,6 @@ function loginInstallButtonHTML(){
   if(!canOfferInstall()) return '';
   return '<button class="btn ghost sm" style="width:100%;margin-top:12px" onclick="installApp()">'+ICN('download',16)+' '+t('installAppBtn')+'</button>';
 }
-// Téléchargement direct du .apk (pas l'installation PWA) : demande explicite du
-// 20/09, distincte de installApp() ci-dessus. Un vrai fichier, pas une invite
-// d'installation — l'utilisateur le récupère puis l'installe lui-même (avec
-// l'autorisation Android "sources inconnues" si l'app ne vient pas du Play Store).
-function downloadApk(){
-  const a=document.createElement('a'); a.href='downloads/IKORUN.apk'; a.download='IKORUN.apk';
-  document.body.appendChild(a); a.click(); a.remove();
-  toast(t('downloadApkToast'));
-}
-
 /* ---------- THEME ---------- */
 function effectiveMode(){ return P.mode==='light' ? 'light' : 'dark'; }
 function applyTheme(){
@@ -10899,7 +10886,6 @@ function renderProfile(){
   h+='<div class="grp-card stag" style="animation-delay:.19s">'+
     '<div class="grp-row" onclick="openFeedback()"><div class="lr-icon">'+ICN('comment',20,'currentColor')+'</div><div class="lr-title">'+t('sendFeedbackLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     (isStandalone()?'':'<div class="grp-row" onclick="installApp()"><div class="lr-icon">'+ICN('download',20,'currentColor')+'</div><div class="lr-title">'+t('installAppBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>')+
-    '<div class="grp-row" onclick="downloadApk()"><div class="lr-icon">'+ICN('download',20,'currentColor')+'</div><div class="lr-title">'+t('downloadApkBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="startAppTour()"><div class="lr-icon">'+ICN('flag',20,'currentColor')+'</div><div class="lr-title">'+t('replayTourBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileSection(\'terms\')"><div class="lr-icon">'+ICN('clipboard',20,'currentColor')+'</div><div class="lr-title">'+t('termsOfUseLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileSection(\'privacy\')"><div class="lr-icon">'+ICN('shield',20,'currentColor')+'</div><div class="lr-title">'+t('privacyPolicyLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
@@ -10934,7 +10920,6 @@ function renderProfileSimple(){
     '<div class="grp-row" onclick="openProfileSection(\'account\')"><div class="lr-icon">'+ICN('lock',20,'currentColor')+'</div><div class="lr-title">'+t('account')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openFeedback()"><div class="lr-icon">'+ICN('comment',20,'currentColor')+'</div><div class="lr-title">'+t('sendFeedbackLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     (isStandalone()?'':'<div class="grp-row" onclick="installApp()"><div class="lr-icon">'+ICN('download',20,'currentColor')+'</div><div class="lr-title">'+t('installAppBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>')+
-    '<div class="grp-row" onclick="downloadApk()"><div class="lr-icon">'+ICN('download',20,'currentColor')+'</div><div class="lr-title">'+t('downloadApkBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileSection(\'terms\')"><div class="lr-icon">'+ICN('clipboard',20,'currentColor')+'</div><div class="lr-title">'+t('termsOfUseLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileSection(\'privacy\')"><div class="lr-icon">'+ICN('shield',20,'currentColor')+'</div><div class="lr-title">'+t('privacyPolicyLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
