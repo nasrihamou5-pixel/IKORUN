@@ -4161,6 +4161,23 @@ function levelUpAnimation(level){
 /* ---------- UTIL ---------- */
 const $=s=>document.querySelector(s);
 const $$=s=>document.querySelectorAll(s);
+// Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
+// de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
+// .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
+// un outil, revenir en arrière, changer de vue) était instantané, ce qui cassait la
+// fluidité perçue entre les deux niveaux de navigation. Ne JAMAIS appeler ceci
+// depuis une boucle rapide (chrono, minuteur) : l'animation rejouerait à chaque
+// frame, l'effet inverse de ce qui est recherché — ces écrans mettent déjà à jour
+// leurs nœuds directement (ex. #chDisp.textContent) sans repasser par ici.
+function swapIn(id,html){
+  const el=typeof id==='string'?document.getElementById(id):id;
+  if(!el) return;
+  el.innerHTML=html;
+  if(P&&P.easyMode) return; // cf html.easy-mode .stag : mode simplifié sans animation
+  el.classList.remove('pagein');
+  void el.offsetWidth; // force le reflow pour redémarrer l'animation CSS
+  el.classList.add('pagein');
+}
 function todayKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function dateKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function daysBetween(a,b){ return Math.round((b-a)/86400000); }
@@ -4722,6 +4739,25 @@ function nav(s){
   const scr=$('#s-'+s);
   const btn=document.querySelector('.nb[data-s="'+s+'"]');
   if(!scr||!btn){ console.error('[IKORUN] nav() : ecran inconnu',s); if(s!=='home') return nav('home'); return; }
+  // Un appui sur l'onglet DEJA actif doit ramener a la racine de cet onglet
+  // (comme sur la plupart des apps) : avant ce correctif, ca ne faisait que
+  // rejouer l'etat interne en cours (outil ouvert, calendrier, recherche...),
+  // ce qui donnait l'impression que le bouton "ne ramenait pas a la bonne
+  // page". Trouve lors du retour du 20/09.
+  const curScr=document.body.dataset.scr;
+  // Sport pose 'calendrier' (pas 'sport') comme dataset.scr pendant la vue
+  // calendrier (cf renderSport()) — sans ce cas, retaper l'onglet Sport pendant
+  // qu'on regarde le calendrier n'etait pas reconnu comme un "re-appui".
+  if(curScr===s || (s==='sport' && curScr==='calendrier')){
+    if(s==='outils'){ outilsTab='home'; outilsFrom='home'; toolSearch=''; }
+    if(s==='sport'){ sportView='list'; }
+    if(s==='stats'){ statsTab='bilan'; }
+  }
+  // Une navigation entre onglets ne doit jamais laisser une fenetre modale
+  // ouverte au-dessus du nouvel ecran. Exception : ovLive (seance en cours),
+  // qui doit rester accessible quel que soit l'onglet affiche derriere — sa
+  // fermeture est volontaire uniquement, via confirmCloseLive().
+  $$('.ov.on').forEach(ov=>{ if(ov.id!=='ovLive') ov.classList.remove('on'); });
   $$('.scr').forEach(el=>el.classList.remove('on'));
   scr.classList.add('on');
   $$('.nb').forEach(b=>b.classList.remove('on'));
@@ -7739,7 +7775,7 @@ function renderSport(){
   document.body.dataset.scr = sportView==='calendar' ? 'calendrier' : 'sport';
   $('#tbTitle').textContent = sportView==='calendar' ? t('calendarTitle') : t('sport');
   $('#tbSub').textContent = sportView==='calendar' ? t('calendarSub') : t('sub_sport');
-  if(sportView==='calendar'){ $('#s-sport').innerHTML=renderCalendarView(); return; }
+  if(sportView==='calendar'){ swapIn('s-sport',renderCalendarView()); return; }
   let h='<div class="row" style="gap:8px;margin:6px 0 16px">'+
     '<div class="pills" style="flex:1;margin:0"><div class="pill '+(sportTab==='run'?'on':'')+'" onclick="sportTab=\'run\';curPerso=null;renderSport()">'+t('running')+'</div><div class="pill '+(sportTab==='muscu'?'on':'')+'" onclick="sportTab=\'muscu\';renderSport()">'+t('muscu')+'</div></div>'+
     '<div class="tb-gear" style="flex-shrink:0" onclick="sportView=\'calendar\';renderSport()">'+ICN('calendar',17)+'</div></div>';
@@ -7749,7 +7785,7 @@ function renderSport(){
   }
   if(sportTab==='run' && runSub==='perso' && curPerso){ h+=persoDetailHTML(); }
   else h+= sportTab==='run'?renderRunning():renderMuscu();
-  $('#s-sport').innerHTML=h;
+  swapIn('s-sport',h);
 }
 /* ---------- SPORT — MODE SIMPLIFIÉ ----------
    Plan IKORUN uniquement (pas de sous-onglet "Plan personnel" à choisir en
@@ -8472,8 +8508,11 @@ function exThumb(name,size){
   const g=exGif(name), e=findEx(name);
   const box='width:'+size+'px;height:'+size+'px;';
   if(!g) return '<div class="ex-thumb" style="'+box+'">'+exGlyph(e,Math.round(size*0.55))+'</div>';
+  // opacity:0 + fade au onload : sans ça, la photo (chargée depuis GitHub, donc
+  // jamais instantanée) apparaissait d'un coup par-dessus l'icône de repli, un
+  // petit "pop" visible à chaque nouvel exercice affiché dans la liste.
   return '<div class="ex-thumb" style="'+box+'">'+exGlyph(e,Math.round(size*0.55))+
-    '<img src="'+g[0]+'" alt="" loading="lazy" onerror="this.remove()">'+
+    '<img src="'+g[0]+'" alt="" loading="lazy" style="opacity:0;transition:opacity .3s ease" onload="this.style.opacity=1" onerror="this.remove()">'+
   '</div>';
 }
 function progDuration(p){ return p.ex.reduce((a,e)=>a+e.sets*1.8,0); } // estimation min
@@ -10128,11 +10167,11 @@ function pushRecent(k){ let r=recentTools().filter(x=>x!==k); r.unshift(k); PREF
 function renderOutils(){
   TOOLS=TOOLS_DEF();
   let h='';
-  if(outilsTab==='home'){ h=outilsHome(); $('#s-outils').innerHTML=h; bindToolSearch(); return; }
+  if(outilsTab==='home'){ h=outilsHome(); swapIn('s-outils',h); bindToolSearch(); return; }
   if(outilsTab==='_timer'){ renderOutilsTimer(); return; }
   const tl=TOOLS[outilsTab]; if(!tl){ outilsTab='home'; return renderOutils(); }
   h='<div class="row" style="margin-bottom:14px"><button class="x" onclick="outilsBack()">‹</button><div class="man" style="font-weight:800;font-size:'+(tl.name.length>18?'15px':'17px')+';flex:1;text-align:center;margin:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+tl.name+'</div><button class="x" onclick="toggleFav(\''+outilsTab+'\')" aria-label="'+t('favoriteLab')+'" style="color:'+(toolFav().includes(outilsTab)?'var(--or)':'var(--dim)')+'">'+ICN('star',17)+'</button></div><div id="outBody"></div>';
-  $('#s-outils').innerHTML=h;
+  swapIn('s-outils',h);
   window[tl.fn] && window[tl.fn]();
 }
 let outilsFrom='home';
@@ -10197,7 +10236,7 @@ function editFavs(){
 function toolRow(k,tl){ const fav=toolFav().includes(k);
   return '<div class="list-row"><div class="lr-icon" style="cursor:pointer" onclick="openTool(\''+k+'\')">'+tl.icon+'</div><div class="lr-txt" style="cursor:pointer" onclick="openTool(\''+k+'\')"><div class="lr-title">'+tl.name+'</div>'+(tl.sub?'<div class="lr-sub">'+tl.sub+'</div>':'')+'</div><span onclick="event.stopPropagation();toggleFav(\''+k+'\')" title="'+t('favoriteLab')+'" style="color:'+(fav?'var(--or)':'var(--dim)')+';cursor:pointer;padding:4px;display:flex">'+ICN('star',17)+'</span></div>'; }
 function openQuickTimer(){ outilsFrom='home'; outilsTab='_timer'; renderOutilsTimer(); }
-function renderOutilsTimer(){ $('#s-outils').innerHTML='<div class="row" style="margin-bottom:14px"><button class="x" onclick="outilsTab=\'home\';renderOutils()">‹</button><div class="man" style="font-weight:800;font-size:17px;flex:1;text-align:center">'+t('quickTimer')+'</div><div style="width:34px"></div></div><div id="outBody"></div>'; renderTimer(); }
+function renderOutilsTimer(){ swapIn('s-outils','<div class="row" style="margin-bottom:14px"><button class="x" onclick="outilsTab=\'home\';renderOutils()">‹</button><div class="man" style="font-weight:800;font-size:17px;flex:1;text-align:center">'+t('quickTimer')+'</div><div style="width:34px"></div></div><div id="outBody"></div>'); renderTimer(); }
 
 /* ============ TABLEAU DE BORD SANTÉ ============ */
 function renderSanteTool(){
@@ -10925,7 +10964,7 @@ function renderProfile(){
     '<div class="grp-row" onclick="openProfileSection(\'data\')"><div class="lr-icon">'+ICN('lock',20,'currentColor')+'</div><div class="lr-title">'+t('dataPrivacy')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
   h+='<div style="text-align:center;color:var(--dim);font-size:12px;margin:20px 0">'+t('footerTag')+'</div>';
-  $('#s-profil').innerHTML=h;
+  swapIn('s-profil',h);
 }
 function renderProfileSimple(){
   const rk=rankFor(XP.level||1);
