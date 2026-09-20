@@ -1,8 +1,0 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "dev.pages.ikorun.twa",
-        "sha256_cert_fingerprints": ["4A:4C:E1:C8:54:A7:DA:A0:90:DC:6E:10:87:03:C4:7E:F5:00:C9:E4:6A:85:FA:AF:57:2D:AE:22:4E:BF:2A:40"]
-      }
-    }]
