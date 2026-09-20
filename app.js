@@ -495,14 +495,19 @@ function renderLoginMain(){
     h+='<div class="li-forgot" onclick="switchLoginMode(\'forgot\')">'+t('forgotPasswordLink')+'</div>';
     h+='<div class="uname-status" id="li_status"></div>';
     h+='<button class="btn li-submit" style="margin-bottom:11px" onclick="submitEmailLogin()" id="li_submit"><span>'+t('loginBtnLabel')+'</span>'+ICN('arrowRight',18)+'</button>';
+    h+='<div class="login-or">'+t('orDividerLabel')+'</div>';
+    h+=googleBtnHtml();
+    // Le bouton invité était jusqu'ici un simple lien texte en tout dernier —
+    // le moins visible de l'écran alors que c'est un vrai chemin d'entrée à
+    // part entière (essayer l'app sans engagement). Mis au même niveau visuel
+    // que Google : même gabarit de bouton, juste en dessous. Demande explicite
+    // de l'utilisateur du 20/09.
+    h+='<button type="button" class="li-guest-btn" onclick="continueAsGuest()"><span class="li-ic">'+ICN('user',17)+'</span>'+t('continueAsGuestLink')+'</button>';
     // Sans ce lien, un compte créé mais jamais confirmé est définitivement bloqué :
     // « mot de passe oublié » n'y change rien, et Supabase renvoie le même message
     // d'erreur que pour un mot de passe faux (voir submitEmailLogin).
     h+='<div class="login-guest subtle" onclick="resendConfirmation()">'+t('resendConfirmLink')+'</div>';
-    h+='<div class="login-or">'+t('orDividerLabel')+'</div>';
-    h+=googleBtnHtml();
     h+='<div class="login-guest" onclick="switchLoginMode(\'signup\')">'+t('noAccountLink')+'</div>';
-    h+='<div class="login-guest subtle" onclick="continueAsGuest()">'+t('continueAsGuestLink')+'</div>';
   } else if(loginMode==='signup'){
     // Deux champs au lieu de trois : le champ « confirmer le mot de passe » est
     // remplacé par un bouton afficher/masquer, qui règle le même problème (la
@@ -10017,6 +10022,7 @@ const ICONS={
   arrowRight:'<path d="M5 12h14M13 6l6 6-6 6"/>',
   eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>',
   eyeOff:'<path d="M3 3l18 18"/><path d="M10.6 5.2A10.6 10.6 0 0 1 12 5c6.4 0 10 7 10 7a17.7 17.7 0 0 1-3.5 4.5M6.7 6.7C4 8.5 2 12 2 12s3.6 7 10 7c1.4 0 2.7-.3 3.8-.8"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/>',
   pause:'<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
   play:'<path d="M7 4l14 8-14 8V4z"/>',
   stop:'<rect x="6" y="6" width="12" height="12" rx="2"/>',
