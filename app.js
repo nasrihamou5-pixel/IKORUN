@@ -461,6 +461,21 @@ function googleBtnHtml(){
   }
   return '<button class="gbtn" onclick="signInWithGoogle()"><span class="gicon">'+GOOGLE_ICON_SVG+'</span>'+t('continueWithGoogleBtn')+'</button>';
 }
+// Construit un champ icône + label + saisie pour l'écran de connexion (voir
+// .li-field dans index.html). opts.eye ajoute un bouton œil intégré pour
+// afficher/masquer un mot de passe (togglePwVisible ci-dessous le reconnaît
+// via la classe li-eye et bascule une icône plutôt qu'un texte).
+function liField(id,icon,label,opts){
+  opts=opts||{};
+  const type=opts.type||'text';
+  const kd=opts.onkeydown?' onkeydown="'+opts.onkeydown+'"':'';
+  const eyeBtn=opts.eye?'<button type="button" class="li-eye" id="'+id+'_eye" onclick="togglePwVisible(\''+id+'\',this)" aria-label="'+t('showPasswordLink')+'">'+ICN('eye',18)+'</button>':'';
+  return '<div class="li-field"><span class="li-ic">'+ICN(icon,18)+'</span>'+
+    '<div class="li-field-body"><label>'+label+'</label>'+
+    '<input class="li-inp" id="'+id+'" type="'+type+'" inputmode="'+(type==='email'?'email':'text')+'" autocomplete="'+(opts.autocomplete||'')+'" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="'+(opts.placeholder||'')+'"'+kd+'></div>'+
+    eyeBtn+
+  '</div>';
+}
 function renderLoginMain(){
   const el=$('#loginMain'); if(!el) return;
   const legal=$('#loginLegal'); if(legal) legal.innerHTML=t('loginLegalText');
@@ -475,11 +490,11 @@ function renderLoginMain(){
     // projet ; seul « mot de passe oublié » dépend vraiment du quota.
     h+='<h1 class="login-h1">'+t('loginWelcomeTitle')+'</h1>';
     h+='<p class="login-sub">'+t('loginSubConnect')+'</p>';
-    h+='<div class="field"><label>'+t('emailLabel')+'</label><input class="inp" id="li_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="'+t('emailPlaceholder')+'"></div>';
-    h+='<div class="field"><label>'+t('passwordLabel')+'</label><input class="inp" id="li_password" type="password" autocomplete="current-password" placeholder="" onkeydown="if(event.key===\'Enter\')submitEmailLogin()"></div>';
+    h+=liField('li_email','mail',t('emailLabel'),{type:'email',autocomplete:'email',placeholder:t('emailPlaceholder')});
+    h+=liField('li_password','lock',t('passwordLabel'),{type:'password',autocomplete:'current-password',eye:true,onkeydown:"if(event.key==='Enter')submitEmailLogin()"});
+    h+='<div class="li-forgot" onclick="switchLoginMode(\'forgot\')">'+t('forgotPasswordLink')+'</div>';
     h+='<div class="uname-status" id="li_status"></div>';
-    h+='<button class="btn" style="margin-bottom:11px" onclick="submitEmailLogin()" id="li_submit">'+t('loginBtnLabel')+'</button>';
-    h+='<div class="login-guest subtle" onclick="switchLoginMode(\'forgot\')">'+t('forgotPasswordLink')+'</div>';
+    h+='<button class="btn li-submit" style="margin-bottom:11px" onclick="submitEmailLogin()" id="li_submit"><span>'+t('loginBtnLabel')+'</span>'+ICN('arrowRight',18)+'</button>';
     // Sans ce lien, un compte créé mais jamais confirmé est définitivement bloqué :
     // « mot de passe oublié » n'y change rien, et Supabase renvoie le même message
     // d'erreur que pour un mot de passe faux (voir submitEmailLogin).
@@ -494,11 +509,10 @@ function renderLoginMain(){
     // faute de frappe) sans imposer une seconde saisie à l'aveugle.
     h+='<h1 class="login-h1">'+t('signupTitle')+'</h1>';
     h+='<p class="login-sub">'+t('signupInstantSub')+'</p>';
-    h+='<div class="field"><label>'+t('emailLabel')+'</label><input class="inp" id="li_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="'+t('emailPlaceholder')+'"></div>';
-    h+='<div class="field"><label>'+t('passwordLabel')+'</label><input class="inp" id="li_password" type="password" autocomplete="new-password" placeholder="" onkeydown="if(event.key===\'Enter\')submitEmailSignup()">'+
-       '<div class="login-guest subtle" style="margin-top:7px;text-align:left" id="li_pwToggle" onclick="togglePwVisible(\'li_password\',this)">'+t('showPasswordLink')+'</div></div>';
+    h+=liField('li_email','mail',t('emailLabel'),{type:'email',autocomplete:'email',placeholder:t('emailPlaceholder')});
+    h+=liField('li_password','lock',t('passwordLabel'),{type:'password',autocomplete:'new-password',eye:true,onkeydown:"if(event.key==='Enter')submitEmailSignup()"});
     h+='<div class="uname-status" id="li_status"></div>';
-    h+='<button class="btn" style="margin-bottom:11px" onclick="submitEmailSignup()" id="li_submit">'+t('signupBtnLabel')+'</button>';
+    h+='<button class="btn li-submit" style="margin-bottom:11px" onclick="submitEmailSignup()" id="li_submit"><span>'+t('signupBtnLabel')+'</span>'+ICN('arrowRight',18)+'</button>';
     h+='<div class="login-or">'+t('orDividerLabel')+'</div>';
     h+=googleBtnHtml();
     h+='<div class="login-guest" onclick="switchLoginMode(\'login\')">'+t('haveAccountLink')+'</div>';
@@ -506,9 +520,9 @@ function renderLoginMain(){
   } else {
     h+='<h1 class="login-h1">'+t('forgotTitle')+'</h1>';
     h+='<p class="login-sub">'+t('forgotSub')+'</p>';
-    h+='<div class="field"><label>'+t('emailLabel')+'</label><input class="inp" id="li_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="'+t('emailPlaceholder')+'" onkeydown="if(event.key===\'Enter\')submitForgotPassword()"></div>';
+    h+=liField('li_email','mail',t('emailLabel'),{type:'email',autocomplete:'email',placeholder:t('emailPlaceholder'),onkeydown:"if(event.key==='Enter')submitForgotPassword()"});
     h+='<div class="uname-status" id="li_status"></div>';
-    h+='<button class="btn" style="margin-bottom:11px" onclick="submitForgotPassword()" id="li_submit">'+t('sendResetLinkBtn')+'</button>';
+    h+='<button class="btn li-submit" style="margin-bottom:11px" onclick="submitForgotPassword()" id="li_submit"><span>'+t('sendResetLinkBtn')+'</span>'+ICN('arrowRight',18)+'</button>';
     h+='<div class="login-guest" onclick="switchLoginMode(\'login\')">'+t('backToLoginLink')+'</div>';
   }
   el.innerHTML=h;
@@ -517,7 +531,12 @@ function togglePwVisible(inputId,el){
   const i=$('#'+inputId); if(!i) return;
   const show=i.type==='password';
   i.type=show?'text':'password';
-  if(el) el.textContent=show?t('hidePasswordLink'):t('showPasswordLink');
+  if(!el) return;
+  // Bouton œil intégré au champ (écran de connexion, cf. liField) : bascule
+  // l'icône. Ailleurs (ex. Profil > Compte > rattacher un compte), c'est
+  // encore un lien texte classique : comportement d'origine conservé.
+  if(el.classList.contains('li-eye')){ el.innerHTML=ICN(show?'eyeOff':'eye',18); el.setAttribute('aria-label',t(show?'hidePasswordLink':'showPasswordLink')); }
+  else el.textContent=show?t('hidePasswordLink'):t('showPasswordLink');
 }
 function setLoginStatus(msg,kind){
   const s=$('#li_status'); if(!s) return;
@@ -9994,6 +10013,10 @@ const ICONS={
   pin:'<path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/>',
   heart:'<path d="M12 21s-7.5-5-10-9.5C.5 7.5 3 3.5 7 3.5c2 0 4 1.2 5 3 1-1.8 3-3 5-3 4 0 6.5 4 5 8-2.5 4.5-10 9.5-10 9.5z"/>',
   lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  arrowRight:'<path d="M5 12h14M13 6l6 6-6 6"/>',
+  eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>',
+  eyeOff:'<path d="M3 3l18 18"/><path d="M10.6 5.2A10.6 10.6 0 0 1 12 5c6.4 0 10 7 10 7a17.7 17.7 0 0 1-3.5 4.5M6.7 6.7C4 8.5 2 12 2 12s3.6 7 10 7c1.4 0 2.7-.3 3.8-.8"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
   pause:'<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
   play:'<path d="M7 4l14 8-14 8V4z"/>',
   stop:'<rect x="6" y="6" width="12" height="12" rx="2"/>',

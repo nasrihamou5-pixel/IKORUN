@@ -1376,6 +1376,28 @@ html[data-mode="light"]{
 .login-guest.subtle{color:rgba(244,246,249,.55);font-weight:600;font-size:12.5px;padding-top:2px;}
 .login-legal{color:rgba(244,246,249,.72);font-size:10.5px;text-align:center;line-height:1.6;margin-top:18px;padding-top:0;position:relative;z-index:1;}
 .legal-link{color:var(--e2);text-decoration:underline;cursor:pointer;}
+/* Champs avec icône + label flottant + (pour le mot de passe) œil de bascule
+   intégré au champ — remplace les <label> nus au-dessus de l'input et le lien
+   texte "Afficher le mot de passe" séparé, sur inspiration d'une maquette
+   fournie par l'utilisateur le 20/09, adaptée à l'identité IKORUN (accent
+   dynamique de l'app plutôt que doré, pas de fond photo). */
+.li-field{position:relative;z-index:1;display:flex;align-items:center;gap:12px;
+  background:var(--s2);border:1px solid var(--hair);border-radius:var(--r-xs);
+  padding:9px 14px;margin-bottom:12px;transition:border-color .15s ease,box-shadow .15s ease;}
+.li-field:focus-within{border-color:rgba(var(--e-rgb),.55);box-shadow:0 0 0 3px rgba(var(--e-rgb),.16);}
+.li-field .li-ic{flex:0 0 auto;color:var(--muted);display:flex;}
+.li-field-body{flex:1;min-width:0;}
+.li-field-body label{display:block;font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.2px;margin-bottom:1px;}
+.li-inp{background:transparent;border:none;padding:0;width:100%;font-size:14.5px;
+  font-family:inherit;color:var(--snow);}
+.li-inp:focus{outline:none;}
+.li-inp::placeholder{color:var(--dim);}
+.li-eye{flex:0 0 auto;background:none;border:none;color:var(--muted);cursor:pointer;
+  padding:4px;display:flex;transition:transform .15s var(--ease-spring);}
+.li-eye:active{transform:scale(.88);}
+.li-forgot{text-align:end;font-size:12px;color:var(--e2);font-weight:700;cursor:pointer;
+  margin:-2px 0 16px;position:relative;z-index:1;}
+.li-submit{width:100%;display:flex;align-items:center;justify-content:center;gap:9px;}
 /* Écran de connexion en thème clair — avant ce correctif, #login restait
    toujours sombre ("liquid glass" sur fond quasi noir) même pour un visiteur
    dont le thème clair est déjà connu via le miroir ik_theme_prefs posé en
@@ -2323,7 +2345,7 @@ html[data-mode="light"]{
     console.error('[IKORUN] Le script Supabase (jsdelivr) n\'a pas pu charger, réessaie de recharger la page.', e);
   }
 </script>
-<script src="app.js?v=81"></script>
+<script src="app.js?v=82"></script>
 <!-- Suite de fumée : chargée uniquement avec ?selftest=1 (voir tests/smoke.js).
      Second script classique de la page, donc il partage l'environnement lexical
      d'app.js et peut tester l'app réelle (P, SESS, RANKS...) sans imitation.
