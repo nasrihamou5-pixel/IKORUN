@@ -1639,6 +1639,21 @@ function ensureLocalCacheOwnership(uid){
 /* ---------- STATE ---------- */
 let P, SESS, MSESS, CUSTOM, PLAN, GOALS, AGENDA, XP, RECORDS, PREFS, WEIGHTLOG, TRACKER, SESSLOG, MUSCU_PR;
 
+// Retire les doublons stricts (même distance + même temps + même date) — trouvé
+// lors de l'audit du 20/09 : un seul chrono saisi à l'étape "Tes performances"
+// de l'onboarding se retrouvait deux fois dans RECORDS. La cause exacte de la
+// double écriture n'a pas pu être isolée avec certitude, donc en plus du fix
+// dans finishOnboarding() ci-dessous, ce filet de sécurité nettoie aussi les
+// comptes déjà affectés et toute autre source future de doublon.
+function dedupeRecords(arr){
+  const seen=new Set(), out=[];
+  (arr||[]).forEach(r=>{
+    const key=[r.dist,r.meters,r.time,r.date,r.place||'',r.feel||''].join('|');
+    if(seen.has(key)) return;
+    seen.add(key); out.push(r);
+  });
+  return out;
+}
 function reloadState(){
   P = DB.load('profile') || { setupDone:false };
   SESS = DB.load('sessions') || [];
@@ -1648,7 +1663,7 @@ function reloadState(){
   GOALS = DB.load('daily_goals') || {};
   AGENDA = DB.load('agenda') || [];
   XP = DB.load('xp') || { total:0, level:1, name:'Recrue', pastGoalXP:0 };
-  RECORDS = DB.load('records') || [];
+  RECORDS = dedupeRecords(DB.load('records') || []);
   PREFS = DB.load('prefs') || {};
   WEIGHTLOG = DB.load('weightlog') || [];
   TRACKER = DB.load('tracker') || null;
@@ -1688,7 +1703,7 @@ const I18N={
     running:'Course',muscu:'Musculation',coachIA:'Plan IKORUN',myPlan:'Plan personnel',
     perfHistory:'Historique des performances',editInfos:'Modifier mes informations',
     objective:'Objectif',appearance:'Apparence',accentColor:'Couleur d\u2019accent',language:'Langue',
-    notifsApp:'Notifications & app',trainReminders:'Rappels d\u2019entraînement',sounds:'Sons & vibrations',units:'Unités métriques (km)',
+    notifsApp:'Notifications & app',trainReminders:'Rappels d\u2019entraînement',sounds:'Sons & vibrations',
     dataPrivacy:'Données & confidentialité',exportData:'Exporter mes données (JSON)',importData:'Importer des données',resetApp:'Réinitialiser l\u2019application',
     photo:'Photo',bio:'Biographie',addPhoto:'Ajouter une photo',changePhoto:'Changer',removePhoto:'Supprimer',
     height:'Taille',weight:'Poids',age:'Âge',level:'Niveau',logout:'Déconnexion',
@@ -2270,7 +2285,7 @@ const I18N={
     running:'Running',muscu:'Strength',coachIA:'AI Coach',myPlan:'Custom plan',
     perfHistory:'Performance history',editInfos:'Edit my information',
     objective:'Goal',appearance:'Appearance',accentColor:'Accent color',language:'Language',
-    notifsApp:'Notifications & app',trainReminders:'Training reminders',sounds:'Sounds & vibration',units:'Metric units (km)',
+    notifsApp:'Notifications & app',trainReminders:'Training reminders',sounds:'Sounds & vibration',
     dataPrivacy:'Data & privacy',exportData:'Export my data (JSON)',importData:'Import data',resetApp:'Reset the app',
     photo:'Photo',bio:'Biography',addPhoto:'Add a photo',changePhoto:'Change',removePhoto:'Remove',
     height:'Height',weight:'Weight',age:'Age',level:'Level',logout:'Log out',
@@ -2852,7 +2867,7 @@ const I18N={
     running:'الجري',muscu:'كمال الأجسام',coachIA:'مدرب ذكي',myPlan:'خطة شخصية',
     perfHistory:'سجل الإنجازات',editInfos:'تعديل معلوماتي',
     objective:'الهدف',appearance:'المظهر',accentColor:'لون التمييز',language:'اللغة',
-    notifsApp:'الإشعارات والتطبيق',trainReminders:'تذكيرات التدريب',sounds:'الأصوات والاهتزاز',units:'وحدات مترية (كم)',
+    notifsApp:'الإشعارات والتطبيق',trainReminders:'تذكيرات التدريب',sounds:'الأصوات والاهتزاز',
     dataPrivacy:'البيانات والخصوصية',exportData:'تصدير بياناتي (JSON)',importData:'استيراد البيانات',resetApp:'إعادة ضبط التطبيق',
     photo:'الصورة',bio:'نبذة',addPhoto:'إضافة صورة',changePhoto:'تغيير',removePhoto:'حذف',
     height:'الطول',weight:'الوزن',age:'العمر',level:'المستوى',logout:'تسجيل الخروج',
@@ -5690,7 +5705,7 @@ function finishOnboarding(){
   // au moment de la génération du plan (openPlanSetup), pour rester à jour.
   // Enregistre les performances saisies
   const valid=OB_PERFS.filter(p=>p.meters&&p.timeS!=null);
-  RECORDS=valid.map(p=>({dist:p.dist,meters:p.meters,time:fmtTime(p.timeS),date:todayKey()}));
+  RECORDS=dedupeRecords(valid.map(p=>({dist:p.dist,meters:p.meters,time:fmtTime(p.timeS),date:todayKey()})));
   const find=m=>{ const r=valid.find(x=>x.meters===m); return r?fmtTime(r.timeS):''; };
   const level=$('#ob_level').querySelector('.pill.on').dataset.v;
   // Langue, thème clair/sombre et couleur ont déjà été appliqués en direct
@@ -10098,7 +10113,15 @@ const MAIN_TOOLS=['aio','sante','chrono'];
    plus BESOIN de chercher pour le decouvrir. */
 const OTHER_TOOLS=['convert','notes','vdot','imc','hydra','bmr','rm','tonnage','calories','prog','pomodoro','load','repos','agenda'];
 function toolFav(){ return PREFS.favTools||['aio','sante','chrono','convert']; }
-function toggleFav(k){ let f=toolFav(); f=f.includes(k)?f.filter(x=>x!==k):[...f,k]; PREFS.favTools=f; saveAll(); renderOutils(); }
+function toggleFav(k){
+  let f=toolFav(); f=f.includes(k)?f.filter(x=>x!==k):[...f,k]; PREFS.favTools=f; saveAll(); renderOutils();
+  // La sauvegarde était bien immediate, mais si ce toggle vient de l'etoile dans
+  // l'overlay "Modifier les favoris" (editFavs()), renderOutils() ne redessine
+  // que la page Outils EN DESSOUS, invisible tant que l'overlay reste ouvert —
+  // ses propres etoiles restaient donc figees jusqu'a fermeture/reouverture.
+  // Trouve lors de l'audit du 20/09.
+  if($('#ovSettings') && $('#ovSettings').classList.contains('on')) editFavs();
+}
 let toolSearch='';
 function recentTools(){ return PREFS.recentTools||[]; }
 function pushRecent(k){ let r=recentTools().filter(x=>x!==k); r.unshift(k); PREFS.recentTools=r.slice(0,4); saveAll(); }
@@ -10114,7 +10137,17 @@ function renderOutils(){
 }
 let outilsFrom='home';
 function outilsBack(){ outilsTab=outilsFrom||'home'; outilsFrom='home'; renderOutils(); }
-function openTool(k){ pushRecent(k); outilsFrom=outilsTab; outilsTab=k; renderOutils(); $('#scroll').scrollTop=0; }
+function openTool(k){
+  pushRecent(k); outilsFrom=outilsTab; outilsTab=k;
+  // L'outil IMC gardait pour toujours ses valeurs par défaut (175cm/62kg) : `imc`
+  // est initialisé une seule fois au chargement du script, avant que le profil
+  // asynchrone (P.height/P.weight) n'ait eu le temps de charger. On resynchronise
+  // donc depuis le profil à chaque ENTREE fraîche dans l'outil — jamais dans
+  // renderIMC() elle-même, qui est aussi appelée par les boutons +/-, sinon ils
+  // seraient annulés à chaque clic. Trouvé lors de l'audit du 20/09.
+  if(k==='imc' && P){ if(P.height) imc.h=P.height; if(P.weight) imc.w=P.weight; }
+  renderOutils(); $('#scroll').scrollTop=0;
+}
 function bindToolSearch(){ const si=$('#toolSearchInp'); if(si){ si.oninput=()=>{ toolSearch=si.value; $('#s-outils').innerHTML=outilsHome(); bindToolSearch(); const el=$('#toolSearchInp'); el.focus(); el.setSelectionRange(toolSearch.length,toolSearch.length); }; } }
 // VDOT badge réutilisable
 function vdotBadge(){ const v=getUserVDOT()||'—'; return '<div onclick="openTool(\'vdot\')" style="width:54px;height:54px;border-radius:50%;border:2px solid var(--e);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:var(--ed)"><div class="mono" style="font-weight:800;font-size:15px;color:var(--e);line-height:1">'+v+'</div><div style="font-size:7px;color:var(--muted);letter-spacing:.5px">VDOT</div></div>'; }
@@ -11339,8 +11372,7 @@ function pfNotifHTML(){
               .map(x=>'<div class="pill" onclick="previewSfx(\''+x[0]+'\')">'+t(x[1])+'</div>').join('')+
           '</div>'+
         '</div>'
-      : '')+
-    '<div class="row"><span style="font-size:14px">'+t('units')+'</span><div class="toggle on"></div></div>';
+      : '');
   return h;
 }
 /* ---------- COMMENTAIRE / AVIS ----------
