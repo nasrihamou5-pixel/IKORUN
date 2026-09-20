@@ -1773,7 +1773,7 @@ const I18N={
     notConnected:'Non connecté',notifLabel:'Notifications',preferences:'Préférences',historyRecords:'Historique & records',
     statistics:'Statistiques',theme:'Thème',appColor:'Couleur de l\u2019app',simplifiedMode:'Mode simplifié',
     simplifiedModeDesc:'4 onglets, écrans allégés, textes plus grands — l\u2019essentiel seulement',
-    support:'Support',helpCenter:'Centre d\u2019aide',footerTag:'IKORUN — Elite Athletic Intelligence · v3.02.123',
+    support:'Support',helpCenter:'Centre d\u2019aide',footerTag:'IKORUN — Elite Athletic Intelligence',
     yourSpace:'Ton espace',settings:'Réglages',badgesLabel:'Badges',homePBLabel:'Tes records',toolsCalc:'Outils & calculateurs',editMyProfile:'Modifier mon profil',
     // --- Stats ---
     tabBilan:'Bilan',tabRun:'Course',tabMuscu:'Muscu',tabTrophies:'Trophées',
@@ -2355,7 +2355,7 @@ const I18N={
     notConnected:'Not signed in',notifLabel:'Notifications',preferences:'Preferences',historyRecords:'History & records',
     statistics:'Statistics',theme:'Theme',appColor:'App color',simplifiedMode:'Simplified mode',
     simplifiedModeDesc:'4 tabs, lighter screens, bigger text — the essentials only',
-    support:'Support',helpCenter:'Help center',footerTag:'IKORUN — Elite Athletic Intelligence · v3.02.123',
+    support:'Support',helpCenter:'Help center',footerTag:'IKORUN — Elite Athletic Intelligence',
     yourSpace:'Your space',settings:'Settings',badgesLabel:'Badges',homePBLabel:'Your PBs',toolsCalc:'Tools & calculators',editMyProfile:'Edit my profile',
     // --- Stats ---
     tabBilan:'Overview',tabRun:'Running',tabMuscu:'Strength',tabTrophies:'Trophies',
@@ -2937,7 +2937,7 @@ const I18N={
     notConnected:'غير متصل',notifLabel:'الإشعارات',preferences:'التفضيلات',historyRecords:'السجل والأرقام',
     statistics:'الإحصائيات',theme:'المظهر',appColor:'لون التطبيق',simplifiedMode:'الوضع المبسّط',
     simplifiedModeDesc:'4 تبويبات، شاشات أخف، نص أكبر — الأساسيات فقط',
-    support:'الدعم',helpCenter:'مركز المساعدة',footerTag:'IKORUN — Elite Athletic Intelligence · v3.02.123',
+    support:'الدعم',helpCenter:'مركز المساعدة',footerTag:'IKORUN — Elite Athletic Intelligence',
     yourSpace:'مساحتك',settings:'الإعدادات',badgesLabel:'الأوسمة',homePBLabel:'أرقامك القياسية',toolsCalc:'الأدوات والحاسبات',editMyProfile:'تعديل ملفي الشخصي',
     // --- الإحصائيات ---
     tabBilan:'الحصيلة',tabRun:'الجري',tabMuscu:'كمال الأجسام',tabTrophies:'الأوسمة',
@@ -4161,6 +4161,20 @@ function levelUpAnimation(level){
 /* ---------- UTIL ---------- */
 const $=s=>document.querySelector(s);
 const $$=s=>document.querySelectorAll(s);
+// Numéro de version affiché en bas de Profil. Avant ce correctif, "v3.02.123"
+// était une chaîne écrite en dur dans les 3 blocs de langue : je devais penser
+// à la modifier à la main à CHAQUE déploiement, en plus du ?v=NN de app.js
+// (obligatoire, lui, pour la mise en cache) — deux compteurs séparés à tenir
+// synchronisés à la main, ça a fini par diverger. Ici, le numéro de build est
+// lu directement depuis l'URL du <script> (index.html porte déjà ?v=NN, unique
+// source de vérité) : il ne peut plus jamais désynchroniser, un seul numéro à
+// incrémenter par déploiement au lieu de deux. Trouvé le 20/09.
+function appBuildNumber(){
+  const tag=document.querySelector('script[src*="app.js?v="]');
+  const m=tag && tag.src.match(/[?&]v=(\d+)/);
+  return m ? m[1] : '?';
+}
+function appVersionTag(){ return t('footerTag')+' · v3.02.'+appBuildNumber(); }
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -10963,7 +10977,7 @@ function renderProfile(){
     '<div class="grp-row" onclick="openProfileSection(\'privacy\')"><div class="lr-icon">'+ICN('shield',20,'currentColor')+'</div><div class="lr-title">'+t('privacyPolicyLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileSection(\'data\')"><div class="lr-icon">'+ICN('lock',20,'currentColor')+'</div><div class="lr-title">'+t('dataPrivacy')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
-  h+='<div style="text-align:center;color:var(--dim);font-size:12px;margin:20px 0">'+t('footerTag')+'</div>';
+  h+='<div style="text-align:center;color:var(--dim);font-size:12px;margin:20px 0">'+appVersionTag()+'</div>';
   swapIn('s-profil',h);
 }
 function renderProfileSimple(){
