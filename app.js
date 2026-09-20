@@ -11034,9 +11034,11 @@ function pfSectionHTML(key){
 /* ---------- CGU & CONFIDENTIALITÉ ----------
    Contenu juridique volontairement gardé en français uniquement (langue de
    référence), quelle que soit la langue de l'app : un texte légal traduit
-   à la volée risquerait de perdre en précision. À adapter/faire relire par
-   un professionnel avant publication — remplace les [crochets] par tes
-   vraies coordonnées (nom/société, email de contact). */
+   à la volée risquerait de perdre en précision. Mentions légales (art. 13)
+   remplies le 20/09 avant diffusion élargie — éditeur particulier, adresse
+   volontairement omise (facultatif pour un particulier non-professionnel).
+   Reste à faire évoluer si l'app devient payante/commerciale un jour (cf.
+   texte de l'art. 13 lui-même) — pas une relecture juridique professionnelle. */
 const LEGAL_LAST_UPDATE='6 septembre 2026';
 function legalP(title,body){ return '<div style="font-weight:800;font-size:13.5px;margin:16px 0 6px;color:var(--snow)">'+title+'</div><div style="font-size:12.5px;color:var(--muted);line-height:1.65">'+body+'</div>'; }
 function legalWrapHTML(bodyHtml){
@@ -11064,7 +11066,7 @@ function legalTermsHTML(){
   +legalP('8. Limitation de responsabilité',
     'Dans les limites permises par la loi, l’Éditeur ne pourra être tenu responsable des dommages indirects résultant de l’utilisation ou de l’impossibilité d’utiliser l’Application, ni de l’exactitude parfaite des calculs, statistiques ou plans générés, fournis « en l’état ».')
   +legalP('8 bis. Fonctionnalités payantes',
-    'À ce jour, l’Application est intégralement gratuite et ne comporte aucun paiement, aucun abonnement ni aucune publicité. Si des fonctionnalités payantes étaient introduites, elles seraient annoncées clairement avant toute souscription et les règles suivantes s’appliqueraient. Le prix affiché est en euros toutes taxes comprises. Un abonnement est souscrit pour la période choisie et se renouvelle automatiquement à son terme, sauf résiliation avant la fin de la période en cours ; la résiliation prend effet à l’échéance et l’accès reste ouvert jusque-là. Le paiement est traité par un prestataire externe (par exemple Stripe, ou l’App Store d’Apple en cas de distribution par ce canal) : l’Éditeur n’a jamais accès à ton numéro de carte, seul le prestataire le traite, conformément à sa propre politique de confidentialité. Conformément à l’article L221-18 du code de la consommation, tu disposes d’un délai de rétractation de quatorze jours à compter de la souscription ; toutefois, en demandant l’accès immédiat à une fonctionnalité payante, tu demandes expressément l’exécution du contrat avant la fin de ce délai et renonces à ton droit de rétractation pour la partie déjà exécutée, ce qui te sera rappelé au moment du paiement. En cas de défaut de paiement, l’accès aux fonctionnalités payantes est suspendu, mais tes données et ton compte sont conservés et restent exportables. Aucune fonctionnalité déjà utilisée gratuitement ne deviendra payante de façon rétroactive sans préavis d’au moins trente jours.')
+    'À ce jour, l’Application est intégralement gratuite et ne comporte aucun paiement, aucun abonnement ni aucune publicité. Si des fonctionnalités payantes étaient introduites, elles seraient annoncées clairement avant toute souscription et les règles suivantes s’appliqueraient. Le prix affiché est en euros toutes taxes comprises. Un abonnement est souscrit pour la période choisie et se renouvelle automatiquement à son terme, sauf résiliation avant la fin de la période en cours ; la résiliation prend effet à l’échéance et l’accès reste ouvert jusque-là. Le paiement serait traité par un prestataire externe (par exemple Stripe) : l’Éditeur n’aurait jamais accès à ton numéro de carte, seul le prestataire le traiterait, conformément à sa propre politique de confidentialité. IKORUN reste distribuée exclusivement comme application web (PWA) et ne sera jamais publiée sur l’App Store ni sur le Play Store. Conformément à l’article L221-18 du code de la consommation, tu disposes d’un délai de rétractation de quatorze jours à compter de la souscription ; toutefois, en demandant l’accès immédiat à une fonctionnalité payante, tu demandes expressément l’exécution du contrat avant la fin de ce délai et renonces à ton droit de rétractation pour la partie déjà exécutée, ce qui te sera rappelé au moment du paiement. En cas de défaut de paiement, l’accès aux fonctionnalités payantes est suspendu, mais tes données et ton compte sont conservés et restent exportables. Aucune fonctionnalité déjà utilisée gratuitement ne deviendra payante de façon rétroactive sans préavis d’au moins trente jours.')
   +legalP('9. Résiliation',
     'Tu peux cesser d’utiliser l’Application et supprimer ton compte à tout moment. L’Éditeur peut suspendre ou résilier l’accès d’un utilisateur en cas de violation des présentes CGU.')
   +legalP('10. Modification des CGU',
@@ -11074,9 +11076,9 @@ function legalTermsHTML(){
   +legalP('12. Contact',
     'Pour toute question relative aux présentes CGU : ikorunn@gmail.com.')
   +legalP('13. Mentions légales',
-    'Éditeur de l’Application : [NOM ET PRÉNOM OU RAISON SOCIALE À COMPLÉTER], [STATUT JURIDIQUE — par exemple : particulier, auto-entrepreneur, SAS], [ADRESSE À COMPLÉTER][, immatriculé sous le numéro SIREN À COMPLÉTER SI APPLICABLE]. Directeur de la publication : [NOM À COMPLÉTER]. Contact : ikorunn@gmail.com. '
+    'Éditeur de l’Application : Hamou, particulier. Directeur de la publication : Hamou. Contact : ikorunn@gmail.com. '
    +'Hébergement : l’Application est hébergée par Cloudflare, Inc. (101 Townsend St, San Francisco, CA 94107, États-Unis) et ses données par Supabase, Inc. sur des serveurs situés dans l’Union européenne (Irlande). '
-   +'Ces mentions sont exigées par l’article 6 de la loi pour la confiance dans l’économie numérique. Tant que l’Application reste entièrement gratuite et non professionnelle, l’identification par une adresse de contact peut suffire ; en revanche, dès la première fonctionnalité payante ou toute activité commerciale, l’identité complète de l’éditeur devient obligatoire et les champs ci-dessus doivent impérativement être renseignés.');
+   +'Ces mentions sont exigées par l’article 6 de la loi pour la confiance dans l’économie numérique. L’Application reste à ce jour entièrement gratuite et non professionnelle : l’identification ci-dessus (nom et adresse de contact) satisfait cette obligation à ce stade. Dès la première fonctionnalité payante ou toute activité commerciale, une adresse postale complète et, le cas échéant, un numéro SIREN devront être ajoutés.');
   return legalWrapHTML(b);
 }
 function legalPrivacyHTML(){
