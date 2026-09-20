@@ -1376,6 +1376,36 @@ html[data-mode="light"]{
 .login-guest.subtle{color:rgba(244,246,249,.55);font-weight:600;font-size:12.5px;padding-top:2px;}
 .login-legal{color:rgba(244,246,249,.72);font-size:10.5px;text-align:center;line-height:1.6;margin-top:18px;padding-top:0;position:relative;z-index:1;}
 .legal-link{color:var(--e2);text-decoration:underline;cursor:pointer;}
+/* Écran de connexion en thème clair — avant ce correctif, #login restait
+   toujours sombre ("liquid glass" sur fond quasi noir) même pour un visiteur
+   dont le thème clair est déjà connu via le miroir ik_theme_prefs posé en
+   haut de <head> (cf. anti-flash de thème) : le seul écran de toute l'app à
+   ignorer le thème choisi. Les halos colorés (teintés par l'accent, déjà
+   dynamiques via --e-rgb) et l'effet verre sont conservés, seuls le fond et
+   le texte basculent pour rester lisibles sur clair. */
+html[data-mode="light"] #login{background:var(--bg);}
+html[data-mode="light"] #login::before{
+  background:
+    radial-gradient(420px 380px at 18% 8%, rgba(var(--e-rgb),.24), transparent 60%),
+    radial-gradient(380px 340px at 88% 20%, rgba(111,255,220,.16), transparent 60%),
+    radial-gradient(520px 460px at 50% 108%, rgba(181,125,255,.18), transparent 62%),
+    var(--bg);
+}
+html[data-mode="light"] .login-card{
+  background:rgba(255,255,255,.8);border:1px solid rgba(20,25,35,.08);
+  box-shadow:0 30px 80px -20px rgba(30,40,60,.18),0 2px 0 rgba(255,255,255,.85) inset,0 -1px 0 rgba(20,25,35,.05) inset,0 0 60px -20px rgba(var(--e-rgb),.25);
+}
+html[data-mode="light"] .login-top,html[data-mode="light"] .login-h1,html[data-mode="light"] .login-sub,
+html[data-mode="light"] .login-tag,html[data-mode="light"] .login-legal,html[data-mode="light"] .login-or{text-shadow:none;}
+html[data-mode="light"] .login-h1{color:var(--snow);}
+html[data-mode="light"] .login-sub{color:rgba(16,20,27,.72);}
+html[data-mode="light"] .login-tag{color:rgba(16,20,27,.6);}
+html[data-mode="light"] .login-or{color:rgba(16,20,27,.55);}
+html[data-mode="light"] .login-or::before,html[data-mode="light"] .login-or::after{background:rgba(20,25,35,.12);}
+html[data-mode="light"] .login-guest.subtle{color:rgba(16,20,27,.55);}
+html[data-mode="light"] .login-legal{color:rgba(16,20,27,.6);}
+html[data-mode="light"] .gbtn{box-shadow:0 14px 30px -10px rgba(30,40,60,.28),0 1px 0 rgba(255,255,255,.9) inset;border:1px solid rgba(20,25,35,.15);}
+html[data-mode="light"] .gbtn.dark{background:rgba(20,25,35,.05);color:var(--snow);border:1px solid rgba(20,25,35,.14);}
 #ob{position:fixed;inset:0;z-index:11000;background:var(--bg);display:none;flex-direction:column;
   max-width:430px;margin:0 auto;padding:max(20px,env(safe-area-inset-top)) 20px max(20px,env(safe-area-inset-bottom));}
 #ob.on{display:flex;}
@@ -2293,7 +2323,7 @@ html[data-mode="light"]{
     console.error('[IKORUN] Le script Supabase (jsdelivr) n\'a pas pu charger, réessaie de recharger la page.', e);
   }
 </script>
-<script src="app.js?v=80"></script>
+<script src="app.js?v=81"></script>
 <!-- Suite de fumée : chargée uniquement avec ?selftest=1 (voir tests/smoke.js).
      Second script classique de la page, donc il partage l'environnement lexical
      d'app.js et peut tester l'app réelle (P, SESS, RANKS...) sans imitation.
