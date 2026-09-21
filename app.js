@@ -5433,6 +5433,14 @@ function positionTourOn(el){
   const card=$('#tourCard');
   const z=uiZoomFactor();
   const W=innerWidth/z, H=innerHeight/z;
+  // La nav du bas reste volontairement visible ET cliquable AU-DESSUS du voile
+  // du tour (repère constant, cf startAppTour()) — mais H ne l'excluait pas,
+  // donc "il y a assez de place en dessous" pouvait être vrai en théorie tout
+  // en plaçant la carte (et ses boutons Suivant/Passer) derrière la nav,
+  // physiquement inatteignable. Repéré avec une cible haute (plan déjà généré,
+  // peu d'espace sous elle) : tuto bloqué, ni Suivant ni Passer cliquables.
+  const navH=($('#nav')&&$('#nav').offsetHeight)||0;
+  const Hcard=H-navH;
   if(!el){
     resetTourVeil();
     if(card) card.classList.add('centered');
@@ -5455,11 +5463,11 @@ function positionTourOn(el){
   }
   if(card){
     const cardH=card.offsetHeight||190;
-    const spaceBelow=H-r.bottom, spaceAbove=r.top;
+    const spaceBelow=Hcard-r.bottom, spaceAbove=r.top;
     let top;
     if(spaceBelow>=cardH+34) top=r.bottom+pad+18;
     else if(spaceAbove>=cardH+34) top=r.top-pad-18-cardH;
-    else top=Math.max(14,Math.min(H-cardH-14,(H-cardH)/2));
+    else top=Math.max(14,Math.min(Hcard-cardH-14,(Hcard-cardH)/2));
     card.style.top=top+'px';
   }
 }
