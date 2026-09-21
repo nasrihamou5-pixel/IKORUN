@@ -2,6 +2,7 @@
   "name": "IKORUN — Elite Athletic Intelligence",
   "short_name": "IKORUN",
   "description": "Ton coaching personnel, calculé scientifiquement, 100% hors-ligne.",
+  "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

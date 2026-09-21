@@ -61,11 +61,11 @@
   -->
 <meta http-equiv="Content-Security-Policy" content="
   default-src 'self';
-  script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://accounts.google.com;
+  script-src 'self' 'unsafe-inline' https://accounts.google.com;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com;
   font-src https://fonts.gstatic.com;
   img-src 'self' data: https://raw.githubusercontent.com https://lh3.googleusercontent.com;
-  connect-src 'self' https://bsrbzuhvqtjkkmpmxyzw.supabase.co wss://bsrbzuhvqtjkkmpmxyzw.supabase.co https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://accounts.google.com;
+  connect-src 'self' https://bsrbzuhvqtjkkmpmxyzw.supabase.co wss://bsrbzuhvqtjkkmpmxyzw.supabase.co https://fonts.googleapis.com https://fonts.gstatic.com https://accounts.google.com;
   frame-src https://accounts.google.com;
   manifest-src 'self' blob:;
   worker-src 'self' blob:;
@@ -74,7 +74,7 @@
   form-action 'self';
 ">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="IKORUN">
@@ -142,7 +142,7 @@ html[data-mode="light"]{
   --dim:#5F6675; --muted:#5C6473; --snow:#10141B;
   --ok:#11A56B; --warn:#D98914; --bad:#E0394A;
   --bg-rgb:242,244,248;
-  --s1-rgb:255,255,255; --s2-rgb:237,240,245; --s3-rgb:224,229,237;
+  --s1-rgb:255,255,255; --s2-rgb:237,240,245; --s3:#E0E5ED; --s3-rgb:224,229,237;
   /* --dim était trop clair (#9AA3B2, ~2.5:1 sur blanc) : assombri pour repasser
      au-dessus de 4.5:1. Opacité du verre relevée (.55→.88 / .6→.90) pour la
      même raison que côté sombre : moins sensible à ce qui défile derrière. */
@@ -173,7 +173,7 @@ html[data-accent="green"]{
 }
 html[data-mode="light"][data-accent="green"]{
   --marineL:#DCEBD0; --hair:#CFE3C2; --hair2:#B9D8A5;
-  --bg:#F3F7EF; --s1:#FFFFFF; --s2:#E9F1E3; --bg-rgb:243,247,239; --s1-rgb:255,255,255; --s2-rgb:233,241,227; --s3-rgb:216,229,206;
+  --bg:#F3F7EF; --s1:#FFFFFF; --s2:#E9F1E3; --bg-rgb:243,247,239; --s1-rgb:255,255,255; --s2-rgb:233,241,227; --s3:#D8E5CE; --s3-rgb:216,229,206;
   /* vert clair/pâle du dark mode illisible sur fond clair → vert forêt assombri */
   --e:#3F7A26; --e2:#2E5C1B; --e-rgb:63,122,38; --e2-rgb:46,92,27;
   --grad-btn:linear-gradient(180deg,#4F9530,#3F7A26 55%,#2E5C1B);
@@ -187,7 +187,7 @@ html[data-accent="brown"]{
 }
 html[data-mode="light"][data-accent="brown"]{
   --marineL:#F0DFC9; --hair:#E9D2B8; --hair2:#DEC09B;
-  --bg:#FAF4EC; --s1:#FFFFFF; --s2:#F1E4D3; --bg-rgb:250,244,236; --s1-rgb:255,255,255; --s2-rgb:241,228,211; --s3-rgb:230,210,183;
+  --bg:#FAF4EC; --s1:#FFFFFF; --s2:#F1E4D3; --bg-rgb:250,244,236; --s1-rgb:255,255,255; --s2-rgb:241,228,211; --s3:#E6D2B7; --s3-rgb:230,210,183;
   /* marron/beige clair du dark mode illisible sur fond crème → café assombri */
   --e:#8C5726; --e2:#6E3F17; --e-rgb:140,87,38; --e2-rgb:110,63,23;
   --grad-btn:linear-gradient(180deg,#A66B32,#8C5726 55%,#6E3F17);
@@ -201,7 +201,7 @@ html[data-accent="red"]{
 }
 html[data-mode="light"][data-accent="red"]{
   --marineL:#F8DAD1; --hair:#F0C7BA; --hair2:#E4AFA0;
-  --bg:#FCF1EC; --s1:#FFFFFF; --s2:#F6E0D8; --bg-rgb:252,241,236; --s1-rgb:255,255,255; --s2-rgb:246,224,216; --s3-rgb:235,197,180;
+  --bg:#FCF1EC; --s1:#FFFFFF; --s2:#F6E0D8; --bg-rgb:252,241,236; --s1-rgb:255,255,255; --s2-rgb:246,224,216; --s3:#EBC5B4; --s3-rgb:235,197,180;
   /* rouge vif du dark mode trop pâle sur fond clair → rouge brique assombri */
   --e:#C23A24; --e2:#9C2C19; --e-rgb:194,58,36; --e2-rgb:156,44,25;
   --grad-btn:linear-gradient(180deg,#D8462C,#C23A24 55%,#9C2C19);
@@ -215,7 +215,7 @@ html[data-accent="yellow"]{
 }
 html[data-mode="light"][data-accent="yellow"]{
   --marineL:#FBF0C8; --hair:#F0E2AC; --hair2:#E4D189;
-  --bg:#FAF6E8; --s1:#FFFFFF; --s2:#F3EBCC; --bg-rgb:250,246,232; --s1-rgb:255,255,255; --s2-rgb:243,235,204; --s3-rgb:235,220,171;
+  --bg:#FAF6E8; --s1:#FFFFFF; --s2:#F3EBCC; --bg-rgb:250,246,232; --s1-rgb:255,255,255; --s2-rgb:243,235,204; --s3:#EBDCAB; --s3-rgb:235,220,171;
   /* jaune vif du dark mode quasi invisible sur fond clair → miel/moutarde assombri */
   --e:#8C6209; --e2:#6B4A06; --e-rgb:140,98,9; --e2-rgb:107,74,6;
   --grad-btn:linear-gradient(180deg,#A97A0C,#8C6209 55%,#6B4A06);
@@ -245,7 +245,7 @@ html[data-accent="carbon"]{
 }
 html[data-mode="light"][data-accent="carbon"]{
   --marineL:#DDE1E6; --hair:#D2D6DB; --hair2:#BFC4CB;
-  --bg:#EEF0F2; --s1:#FFFFFF; --s2:#E4E7EB; --bg-rgb:238,240,242; --s1-rgb:255,255,255; --s2-rgb:228,231,235; --s3-rgb:210,215,221;
+  --bg:#EEF0F2; --s1:#FFFFFF; --s2:#E4E7EB; --bg-rgb:238,240,242; --s1-rgb:255,255,255; --s2-rgb:228,231,235; --s3:#D2D7DD; --s3-rgb:210,215,221;
   /* chrome/argent quasi blanc du dark mode invisible sur fond clair → acier brossé foncé, lisible */
   --e:#43474E; --e2:#22252A; --e-rgb:67,71,78; --e2-rgb:34,37,42;
   --sh-e:0 8px 22px -6px rgba(67,71,78,.3),0 2px 6px -2px rgba(67,71,78,.2);
@@ -2343,13 +2343,17 @@ html[data-mode="light"]{
 <div id="toast"></div>
 <canvas id="confetti"></canvas>
 
-<!-- Version figée (2.110.8, plus de @2 flottant) + SRI (integrity=sha256-...) : le
-     navigateur vérifie l'empreinte cryptographique du fichier avant de l'exécuter.
-     Si jsDelivr sert un jour un fichier différent (compromission, erreur) sous cette
-     URL, le hash ne correspondra plus et le script sera bloqué au lieu de s'exécuter.
-     Si tu montes de version un jour, il faudra régénérer le hash sur jsdelivr.com
-     (Files > sélectionner le fichier > Show & Configure all links > activer SRI). -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js" integrity="sha384-M65KxMm/JqBppck6onbmAgPVMBHrmPCf1L17Q+71EcvI9/VVI8j5cqoxQf6lj6h2" crossorigin="anonymous"></script>
+<!-- Auto-hébergé (vendor/supabase.js, build 2.110.8, bit-identique au fichier jsdelivr
+     — vérifié par hash avant intégration) au lieu de charger depuis jsdelivr.net :
+     la description de l'app promet "100% hors-ligne", mais un script tiers chargé
+     depuis un CDN n'est jamais mis en cache par le service worker (sw.js ne gère
+     que les requêtes same-origin, voir son commentaire), donc hors-ligne — ou sur
+     un réseau qui bloque jsdelivr, ce qui arrive — le script ne chargeait jamais
+     et window.supabaseClient restait indéfini sans que personne ne le voie. En
+     same-origin, le SW le met en cache comme app.js et l'app redémarre offline.
+     Pour mettre à jour la version : retélécharger le fichier UMD correspondant
+     depuis jsdelivr et l'écraser dans vendor/supabase.js. -->
+<script src="vendor/supabase.js?v=1"></script>
 <script>
   try{
     window.supabaseClient = supabase.createClient(
@@ -2358,10 +2362,21 @@ html[data-mode="light"]{
       { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
     );
   }catch(e){
-    console.error('[IKORUN] Le script Supabase (jsdelivr) n\'a pas pu charger, réessaie de recharger la page.', e);
+    console.error('[IKORUN] Le script Supabase n\'a pas pu s\'initialiser.', e);
+  }
+  // Le try/catch ci-dessus n'attrapait que l'échec de createClient() — si le
+  // <script> lui-même ne chargeait pas (comme ici auparavant, quand jsdelivr était
+  // bloqué), aucune erreur n'était levée ici : window.supabaseClient restait
+  // simplement indéfini et chaque fonction qui le vérifie ("if(!window.supabaseClient)
+  // return") s'arrêtait en silence. L'app avait l'air figée sans le moindre message.
+  if(!window.supabaseClient){
+    document.addEventListener('DOMContentLoaded',()=>{
+      const b=document.body;
+      if(b) b.insertAdjacentHTML('afterbegin','<div style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#E0394A;color:#fff;padding:12px 16px;font:600 13px/1.4 system-ui,sans-serif;text-align:center">Connexion au serveur impossible. Vérifie ta connexion et recharge la page.</div>');
+    });
   }
 </script>
-<script src="app.js?v=83"></script>
+<script src="app.js?v=84"></script>
 <!-- Suite de fumée : chargée uniquement avec ?selftest=1 (voir tests/smoke.js).
      Second script classique de la page, donc il partage l'environnement lexical
      d'app.js et peut tester l'app réelle (P, SESS, RANKS...) sans imitation.

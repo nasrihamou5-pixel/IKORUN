@@ -3,17 +3,23 @@
 // Stratégie EN DEUX TEMPS :
 //  · Ressources versionnées ou immuables (app.js?v=N, images, polices) → cache-first.
 //  · Tout le reste, à commencer par index.html → network-first, repli cache hors-ligne.
-// Avant, TOUT passait en network-first avec {cache:'no-store'} : app.js (1 Mo, ~307 Ko
-// en brotli) était intégralement retéléchargé à CHAQUE ouverture de l'app, jamais servi
-// depuis le cache. Mesuré à ~1 s sur une bonne connexion, bien pire en 3G. Or son URL
-// porte déjà un numéro de version (?v=61) : monter ce numéro suffit à invalider l'entrée,
-// le no-store ne protégeait donc de rien et coûtait un téléchargement complet par lancement.
+// Avant, TOUT passait en network-first avec {cache:'no-store'} : app.js était
+// intégralement retéléchargé à CHAQUE ouverture de l'app, jamais servi depuis
+// le cache. Mesuré à ~1 s sur une bonne connexion, bien pire en 3G. Or son URL
+// porte déjà un numéro de version (?v=N) : monter ce numéro suffit à invalider
+// l'entrée, le no-store ne protégeait donc de rien et coûtait un téléchargement
+// complet par lancement.
+// 21/09 : app.js était monté à 3,9 Mo (21 images de badges/rangs encodées en
+// base64 directement dans le JS, jamais faites pour ça — parsé/compilé à
+// chaque démarrage à froid, y compris sur iPhone). Extraites vers badges/*.png,
+// qui profitent nativement du cache-first ci-dessous (repris par IMMUABLE) sans
+// alourdir le script. app.js est repassé à ~1 Mo.
 // v7 : purge forcée. Tant que manifest.json n'existait pas, l'hébergeur renvoyait
 // index.html (du HTML) à sa place, et ce SW a pu mettre cette mauvaise réponse en
 // cache. Changer le nom du cache supprime les anciennes entrées à l'activation, ce
 // qui garantit que le vrai manifest.json est bien récupéré — condition nécessaire
 // pour que le navigateur propose l'installation de l'app.
-const C = 'ikorun-v74';
+const C = 'ikorun-v75';
 
 // Une réponse est réutilisable telle quelle si son URL identifie déjà une version
 // précise : soit elle porte un paramètre ?v=..., soit c'est un binaire dont le nom
@@ -38,7 +44,8 @@ const SHELL = [
   'icon-512.png',
   'apple-touch-icon.png',
   'favicon-32.png',
-  'favicon-16.png'
+  'favicon-16.png',
+  'vendor/supabase.js?v=1'
 ];
 
 self.addEventListener('install', e => {
