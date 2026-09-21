@@ -5467,7 +5467,16 @@ function positionTourOn(el){
     let top;
     if(spaceBelow>=cardH+34) top=r.bottom+pad+18;
     else if(spaceAbove>=cardH+34) top=r.top-pad-18-cardH;
-    else top=Math.max(14,Math.min(Hcard-cardH-14,(Hcard-cardH)/2));
+    else{
+      // Ni en dessous ni au-dessus la carte ne tient en entier (grande cible,
+      // ex. l'étape Sport avec un plan déjà généré) : centrer dans tout l'écran
+      // sans tenir compte d'où est la cible faisait recouvrir la carte par-dessus
+      // elle sur une bonne moitié de sa hauteur. On colle plutôt la carte contre
+      // le bord du côté qui a le plus de place, ce qui réduit le recouvrement au
+      // strict minimum inévitable au lieu de l'ignorer complètement.
+      top = spaceBelow>=spaceAbove ? Math.min(Hcard-cardH-14,r.bottom+pad+18) : Math.max(14,r.top-pad-18-cardH);
+    }
+    top=Math.max(14,Math.min(Hcard-cardH-14,top));
     card.style.top=top+'px';
   }
 }
