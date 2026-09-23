@@ -760,16 +760,29 @@ function deleteAccountCompletely(){
         if(window.supabaseClient && window.currentUserId){
           const { data:{ session } } = await window.supabaseClient.auth.getSession();
           if(session){
-            // Suppression complète côté serveur : lignes user_data/public_profiles
-            // ET le compte Supabase Auth lui-même (impossible à faire depuis le
-            // client, nécessite la service_role key -> passe par une Edge Function).
-            await fetch('https://bsrbzuhvqtjkkmpmxyzw.supabase.co/functions/v1/delete-account', {
+            // Suppression complète côté serveur : toutes les données liées au
+            // compte (séances, profil public, adhésions club, amitiés, abonnement
+            // push, rappels) ET le compte Supabase Auth lui-même — impossible
+            // depuis le client, nécessite la service_role -> Edge Function.
+            // L'échec était auparavant seulement loggé : on effaçait le local et
+            // on déconnectait quand même, donc la personne croyait son compte
+            // supprimé alors que tout restait côté serveur. On s'arrête net.
+            const res=await fetch('https://bsrbzuhvqtjkkmpmxyzw.supabase.co/functions/v1/delete-account', {
               method:'POST',
               headers:{ 'Authorization':'Bearer '+session.access_token }
-            }).catch(e=>console.error('delete-account fn error', e));
+            });
+            if(!res.ok){
+              console.error('delete-account fn error', res.status, await res.text().catch(()=>''));
+              toast(t('deleteAccountFailed'));
+              return; // ni purge locale, ni déconnexion : le compte existe toujours
+            }
           }
         }
-      }catch(e){ console.error('delete account data error', e); }
+      }catch(e){
+        console.error('delete account data error', e);
+        toast(t('deleteAccountFailed'));
+        return;
+      }
       _intentionalSignOut=true; // suppression de compte : l'effacement local est justement le but
       Object.keys(localStorage).filter(k=>k.startsWith('vvv_')).forEach(k=>localStorage.removeItem(k));
       await ikorunLogoutCookie();
@@ -1172,9 +1185,10 @@ async function loadClubDetail(clubId){
     if(e1) throw e1;
     let members=[];
     if(club){
-      const { data:mrows, error:e2 } = await window.supabaseClient.from('club_members').select('user_id').eq('club_id',club.id);
+      const { data:mrows, error:e2 } = await window.supabaseClient.from('club_members').select('user_id,role').eq('club_id',club.id);
       if(e2) throw e2;
       const memberIds=(mrows||[]).map(r=>r.user_id);
+      const roleById={}; (mrows||[]).forEach(r=>{ roleById[r.user_id]=r.role; });
       if(memberIds.length){
         // photo_url n'est PAS chargée ici : chaque photo pèse jusqu'à 300 Ko en
         // base64, donc un club de 200 membres représentait jusqu'à 60 Mo par
@@ -1182,7 +1196,7 @@ async function loadClubDetail(clubId){
         // la photo reste visible sur la fiche individuelle d'un membre.
         const { data:profs, error:e3 } = await window.supabaseClient.from('public_profiles').select('user_id,username,xp,level').in('user_id',memberIds);
         if(e3) throw e3;
-        members=(profs||[]).map(p=>({...p,id:p.user_id,isOwner:p.user_id===club.owner_id,isMe:p.user_id===uid}));
+        members=(profs||[]).map(p=>({...p,id:p.user_id,isOwner:p.user_id===club.owner_id,isMe:p.user_id===uid,isAdmin:roleById[p.user_id]==='admin'||p.user_id===club.owner_id}));
       }
     }
     clubCache.activeId=clubId; clubCache.club=club||null; clubCache.members=members;
@@ -1254,11 +1268,20 @@ function renderClubTab(){
   '</div>';
   h+=clubPlanHTML(c);
   h+='<div class="sec-lab">'+t('clubXpRanking')+'</div>';
+  // Les admins (propriétaire inclus) peuvent nommer ou retirer d'autres admins.
+  // Le propriétaire n'est jamais rétrogradable — côté serveur aussi
+  // (ikorun_set_club_role lève 'cannot_demote_owner').
+  const iAmClubAdmin = c.owner_id===window.currentUserId || clubCache.members.some(m=>m.isMe && m.isAdmin);
   h+='<div class="card" style="padding:2px 6px">'+sorted.map((m,i)=>{
     const av=m.photo_url?'<div class="fr-avatar" style="background-image:url(\''+safePhotoUrl(m.photo_url)+'\')"></div>':'<div class="fr-avatar">'+(m.username?escHtml(m.username[0].toUpperCase()):'?')+'</div>';
+    const roleChip=m.isAdmin?'<span class="club-admin-chip">'+(m.isOwner?t('clubOwnerChip'):t('clubAdminChip'))+'</span>':'';
+    const roleBtn=(iAmClubAdmin && !m.isOwner && !m.isMe)
+      ? '<span class="club-role-btn" onclick="event.stopPropagation();toggleClubAdmin(\''+m.id+'\','+(m.isAdmin?'false':'true')+')">'+(m.isAdmin?t('clubDemoteBtn'):t('clubPromoteBtn'))+'</span>'
+      : '';
     return '<div class="fr-row'+(m.isMe?' me':'')+'" style="border-bottom:'+(i<sorted.length-1?'1px solid var(--hair)':'none')+(m.isMe?'':';cursor:pointer')+'"'+(m.isMe?'':' onclick="openFriendProfile(\''+m.id+'\')"')+'>'+
       '<div class="fr-rank-num" style="width:22px">#'+(i+1)+'</div>'+av+
-      '<div class="fr-info"><div class="fr-name">'+escHtml(m.username||'?')+(m.isOwner?' '+ICN('flag',13,'var(--accent)'):'')+(m.isMe?t('youParen'):'')+'</div><div class="fr-meta"><span class="fr-lvl-chip">'+t('lvlDot')+' '+(m.level||1)+'</span><span class="fr-km-txt">'+(m.xp||0)+' XP</span></div></div>'+
+      '<div class="fr-info"><div class="fr-name">'+escHtml(m.username||'?')+(m.isOwner?' '+ICN('flag',13,'var(--accent)'):'')+(m.isMe?t('youParen'):'')+roleChip+'</div><div class="fr-meta"><span class="fr-lvl-chip">'+t('lvlDot')+' '+(m.level||1)+'</span><span class="fr-km-txt">'+(m.xp||0)+' XP</span></div></div>'+
+      roleBtn+
     '</div>';
   }).join('')+'</div>';
   // Le proprietaire ne peut pas quitter son propre club (ikorun_leave_club le
@@ -1269,6 +1292,28 @@ function renderClubTab(){
 function copyClubCode(){
   const code=clubCache.club&&clubCache.club.code; if(!code) return;
   try{ navigator.clipboard.writeText(code); toast(t('codeCopiedToast')); }catch(e){ toast(code); }
+}
+/* Nomme (ou retire) un admin du club. Plusieurs admins sont possibles : c'est ce
+   qui permet à un club de survivre à la suppression du compte de son créateur —
+   ikorun_purge_user_data transfère alors le club au plus ancien autre admin, et
+   ne le supprime que s'il n'en existe aucun. */
+async function toggleClubAdmin(userId, makeAdmin){
+  const c=clubCache.club; if(!c || !window.supabaseClient) return;
+  const m=clubCache.members.find(x=>x.id===userId);
+  const who=(m&&m.username)||'?';
+  customConfirm(tp(makeAdmin?'clubPromoteConfirm':'clubDemoteConfirm',who),async ()=>{
+    try{
+      const { error } = await window.supabaseClient.rpc('ikorun_set_club_role',{
+        p_club_id:c.id, p_user_id:userId, p_role:makeAdmin?'admin':'member'
+      });
+      if(error) throw error;
+      toast(t(makeAdmin?'clubPromotedToast':'clubDemotedToast'));
+      await loadClubDetail(c.id);
+    }catch(e){
+      console.error('toggleClubAdmin',e);
+      toast(/rate_limited/.test(e&&e.message||'')?t('clubRoleRateLimited'):t('genericErrorRetry'));
+    }
+  });
 }
 /* ---------- PLAN PARTAGÉ DU CLUB ----------
    Le créateur du club choisit soit son plan IKORUN généré, soit l'un de ses
@@ -1855,6 +1900,11 @@ const I18N={
     noClubYet:'Pas encore de club',noClubYetDesc:'Rejoins le club de ton équipe avec un code, ou crée le tien pour rassembler tes coéquipiers.',
     joinClubCta:'Rejoindre un club',createClubCta:'Créer un club',clubCodePlaceholder:'Code à 6 caractères',clubNamePlaceholder:'Nom du club',
     joinBtn:'Rejoindre',clubMembersCount:'{0} membre(s)',copyCodeBtn:'Copier le code',shareCodeHint:'Partage ce code à tes coéquipiers pour qu’ils te rejoignent.',
+    clubAdminChip:'Admin',clubOwnerChip:'Créateur',clubPromoteBtn:'Nommer admin',clubDemoteBtn:'Retirer admin',
+    clubPromoteConfirm:'Nommer {0} admin du club ? Il pourra modifier le plan partagé et gérer les autres admins.',
+    clubDemoteConfirm:'Retirer les droits d’admin à {0} ?',
+    clubPromotedToast:'Admin nommé',clubDemotedToast:'Admin retiré',
+    clubRoleRateLimited:'Trop de changements de rôle d’un coup — réessaie dans un moment.',
     clubXpRanking:'Classement du club (XP)',leaveClubBtn:'Quitter le club',confirmLeaveClub:'Quitter ce club ? Tu pourras en rejoindre un autre à tout moment.',
     clubFullToast:'Ce club est complet (200 membres maximum).',clubJoinConsent:'En rejoignant ce club, ton pseudo, ton niveau et ton XP apparaîtront dans son classement, visibles par tous ses membres. Tes séances, tes ressentis, ta fatigue et tes douleurs restent privés et ne sont partagés avec personne. Tu peux quitter le club à tout moment.',clubJoinConfirmBtn:'Rejoindre',clubCreatedToast:'Club créé !',clubJoinedToast:'Bienvenue dans le club !',clubLeftToast:'Tu as quitté le club',clubNotFoundToast:'Aucun club avec ce code',
     tooManyAttemptsToast:'Trop de tentatives, réessaie dans un instant',codeCopiedToast:'Code copié',
@@ -2013,7 +2063,7 @@ const I18N={
     confirmLogout:'Se déconnecter ? Tes données restent sauvegardées sur ton compte.',
     confirmSwitchGoogle:'Tu vas être déconnecté(e) pour te reconnecter avec un autre compte Google. Tes données actuelles restent sauvegardées.',
     confirmDeleteAllData:'Cette action va supprimer TOUTES tes données (séances, records, XP, profil...) de façon définitive, sur le cloud et sur cet appareil. Continuer ?',
-    confirmFinalIrreversible:'Dernière confirmation : es-tu vraiment sûr(e) ? Cette action est irréversible.',
+    confirmFinalIrreversible:'Dernière confirmation : es-tu vraiment sûr(e) ? Cette action est irréversible.',deleteAccountFailed:'La suppression a échoué côté serveur — ton compte existe toujours. Vérifie ta connexion et réessaie.',
     genericErrorRetry:'Erreur, réessaie',
     confirmRemoveFriend:'Retirer cet ami ?',
     connectFirst:'Connecte-toi d\u2019abord',copiedClipboard:'Copié dans le presse-papier',
@@ -2437,6 +2487,11 @@ const I18N={
     noClubYet:'No club yet',noClubYetDesc:'Join your team’s club with a code, or create your own to bring your teammates together.',
     joinClubCta:'Join a club',createClubCta:'Create a club',clubCodePlaceholder:'6-character code',clubNamePlaceholder:'Club name',
     joinBtn:'Join',clubMembersCount:'{0} member(s)',copyCodeBtn:'Copy code',shareCodeHint:'Share this code with your teammates so they can join you.',
+    clubAdminChip:'Admin',clubOwnerChip:'Creator',clubPromoteBtn:'Make admin',clubDemoteBtn:'Remove admin',
+    clubPromoteConfirm:'Make {0} a club admin? They will be able to change the shared plan and manage other admins.',
+    clubDemoteConfirm:'Remove admin rights from {0}?',
+    clubPromotedToast:'Admin added',clubDemotedToast:'Admin removed',
+    clubRoleRateLimited:'Too many role changes at once — try again in a moment.',
     clubXpRanking:'Club leaderboard (XP)',leaveClubBtn:'Leave club',confirmLeaveClub:'Leave this club? You can join another one anytime.',
     clubFullToast:'This club is full (200 members maximum).',clubJoinConsent:'By joining this club, your username, level and XP will appear in its leaderboard, visible to all its members. Your sessions, how you felt, your fatigue and your pain stay private and are shared with no one. You can leave the club at any time.',clubJoinConfirmBtn:'Join',clubCreatedToast:'Club created!',clubJoinedToast:'Welcome to the club!',clubLeftToast:'You left the club',clubNotFoundToast:'No club found with this code',
     tooManyAttemptsToast:'Too many attempts, try again shortly',codeCopiedToast:'Code copied',
@@ -2595,7 +2650,7 @@ const I18N={
     confirmLogout:'Log out? Your data stays saved on your account.',
     confirmSwitchGoogle:'You\u2019ll be logged out so you can sign in with another Google account. Your current data stays saved.',
     confirmDeleteAllData:'This will permanently delete ALL your data (sessions, records, XP, profile...) from the cloud and this device. Continue?',
-    confirmFinalIrreversible:'Final confirmation: are you really sure? This action is irreversible.',
+    confirmFinalIrreversible:'Final confirmation: are you really sure? This action is irreversible.',deleteAccountFailed:'Deletion failed on the server — your account still exists. Check your connection and try again.',
     genericErrorRetry:'Error, try again',
     confirmRemoveFriend:'Remove this friend?',
     connectFirst:'Sign in first',copiedClipboard:'Copied to clipboard',
@@ -3019,6 +3074,11 @@ const I18N={
     noClubYet:'لا نادي بعد',noClubYetDesc:'انضم إلى نادي فريقك باستخدام رمز، أو أنشئ ناديك الخاص لتجميع زملائك.',
     joinClubCta:'الانضمام إلى نادٍ',createClubCta:'إنشاء نادٍ',clubCodePlaceholder:'رمز من 6 أحرف',clubNamePlaceholder:'اسم النادي',
     joinBtn:'انضمام',clubMembersCount:'{0} عضو',copyCodeBtn:'نسخ الرمز',shareCodeHint:'شارك هذا الرمز مع زملائك لينضموا إليك.',
+    clubAdminChip:'مشرف',clubOwnerChip:'المنشئ',clubPromoteBtn:'تعيين مشرفًا',clubDemoteBtn:'إزالة الإشراف',
+    clubPromoteConfirm:'تعيين {0} مشرفًا على النادي؟ سيتمكن من تعديل الخطة المشتركة وإدارة المشرفين الآخرين.',
+    clubDemoteConfirm:'إزالة صلاحيات الإشراف من {0}؟',
+    clubPromotedToast:'تمت إضافة مشرف',clubDemotedToast:'تمت إزالة المشرف',
+    clubRoleRateLimited:'تغييرات كثيرة للأدوار دفعة واحدة — أعد المحاولة بعد قليل.',
     clubXpRanking:'ترتيب النادي (نقاط الخبرة)',leaveClubBtn:'مغادرة النادي',confirmLeaveClub:'مغادرة هذا النادي؟ يمكنك الانضمام إلى نادٍ آخر في أي وقت.',
     clubFullToast:'هذا النادي ممتلئ (200 عضو كحد أقصى).',clubJoinConsent:'بالانضمام إلى هذا النادي، سيظهر اسمك المستعار ومستواك ونقاط الخبرة في ترتيبه، ويراها جميع أعضائه. أما حصصك وإحساسك وتعبك وآلامك فتبقى خاصة ولا تُشارك مع أحد. يمكنك مغادرة النادي في أي وقت.',clubJoinConfirmBtn:'انضمام',clubCreatedToast:'تم إنشاء النادي!',clubJoinedToast:'مرحبًا بك في النادي!',clubLeftToast:'لقد غادرت النادي',clubNotFoundToast:'لا يوجد نادٍ بهذا الرمز',
     tooManyAttemptsToast:'محاولات كثيرة جدًا، أعد المحاولة بعد قليل',codeCopiedToast:'تم نسخ الرمز',
@@ -3177,7 +3237,7 @@ const I18N={
     confirmLogout:'تسجيل الخروج؟ بياناتك تبقى محفوظة في حسابك.',
     confirmSwitchGoogle:'سيتم تسجيل خروجك لتسجيل الدخول بحساب Google آخر. بياناتك الحالية تبقى محفوظة.',
     confirmDeleteAllData:'سيؤدي هذا إلى حذف جميع بياناتك (الحصص، الأرقام القياسية، XP، الملف الشخصي...) نهائيًا من السحابة ومن هذا الجهاز. متابعة؟',
-    confirmFinalIrreversible:'تأكيد أخير: هل أنت متأكد حقًا؟ هذا الإجراء لا رجعة فيه.',
+    confirmFinalIrreversible:'تأكيد أخير: هل أنت متأكد حقًا؟ هذا الإجراء لا رجعة فيه.',deleteAccountFailed:'فشل الحذف على الخادم — حسابك ما زال موجودًا. تحقق من اتصالك وحاول مرة أخرى.',
     genericErrorRetry:'خطأ، أعد المحاولة',
     confirmRemoveFriend:'إزالة هذا الصديق؟',
     connectFirst:'سجّل الدخول أولاً',copiedClipboard:'تم النسخ',

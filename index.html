@@ -2044,6 +2044,14 @@ html[data-mode="light"]{
 .fr-name{font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .fr-meta{display:flex;align-items:center;gap:6px;margin-top:3px;}
 .fr-lvl-chip{font-size:10px;font-weight:800;color:var(--e2);background:var(--ed);border-radius:6px;padding:2px 6px;letter-spacing:.2px;}
+/* Rôles de club : un club peut avoir plusieurs admins, ce qui lui permet de
+   survivre à la suppression du compte de son créateur (transfert au plus ancien
+   autre admin plutôt que suppression du club). */
+.club-admin-chip{font-size:9.5px;font-weight:800;color:var(--ok);background:rgba(51,211,153,.14);
+  border-radius:5px;padding:1.5px 5px;margin-left:6px;letter-spacing:.3px;vertical-align:middle;white-space:nowrap;}
+.club-role-btn{flex-shrink:0;font-size:10.5px;font-weight:700;color:var(--e2);background:var(--s3);
+  border:1px solid var(--hair);border-radius:99px;padding:5px 10px;margin-left:8px;cursor:pointer;white-space:nowrap;}
+.club-role-btn:active{transform:scale(.94);}
 .fr-km-txt{font-size:11.5px;color:var(--muted);font-weight:600;}
 .fr-del{color:var(--dim);cursor:pointer;padding:6px;flex-shrink:0;}
 .fr-del:active{color:var(--bad);}
@@ -2383,7 +2391,7 @@ html[data-mode="light"]{
     });
   }
 </script>
-<script src="app.js?v=86"></script>
+<script src="app.js?v=87"></script>
 <!-- Suite de fumée : chargée uniquement avec ?selftest=1 (voir tests/smoke.js).
      Second script classique de la page, donc il partage l'environnement lexical
      d'app.js et peut tester l'app réelle (P, SESS, RANKS...) sans imitation.
