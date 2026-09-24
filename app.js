@@ -947,6 +947,13 @@ async function loadFriendsData(){
       const { data:profs, error:e2 } = await window.supabaseClient.from('public_profiles').select('user_id,username,xp,level,km_week,sessions_week,vdot,total_sessions,streak_days,total_km,total_tonnage,photo_url').in('user_id',[...ids]);
       if(e2) throw e2;
       (profs||[]).forEach(p=>profiles[p.user_id]=p);
+      // Une demande EN ATTENTE ne donne pas accès au profil de l'autre (RLS,
+      // audit 08/09) : sans ce complément, elle s'affichait sous le nom « ? ».
+      // La RPC ne renvoie que le pseudo, jamais la photo ni les stats.
+      if([...ids].some(id=>!profiles[id])){
+        const { data:names } = await window.supabaseClient.rpc('ikorun_friend_request_names');
+        (names||[]).forEach(n=>{ if(!profiles[n.user_id]) profiles[n.user_id]={username:n.username,xp:0,level:1,km_week:0,sessions_week:0,total_tonnage:0}; });
+      }
     }
     if(seq!==_friendsLoadSeq) return; // une ouverture plus récente a déjà pris le relais
     friendsCache={friends:[],pending:[],sent:[]};
@@ -1478,6 +1485,10 @@ async function doJoinClub(code){
       else toast(t('genericErrorRetry'));
       return;
     }
+    // Depuis l'audit du 24/09, un code inexistant ne lève plus d'erreur côté
+    // serveur : l'exception annulait l'incrément du compteur anti-abus, donc les
+    // mauvais codes n'étaient jamais comptés. « Zéro ligne » = club introuvable.
+    if(!data || !data.length){ toast(t('clubNotFoundToast')); return; }
     toast(t('clubJoinedToast')); clubShowCreate=false; clubShowJoinPanel=false;
     // Le club qu'on vient de rejoindre devient celui affiche.
     if(data && data[0]) clubCache.activeId=data[0].id;
@@ -9687,8 +9698,8 @@ function bodyInfoCard(){
   return '<div class="card" style="margin-bottom:14px">'+
     '<div class="card-t">'+t('completeProfileTitle')+'</div>'+
     '<div style="font-size:13px;color:var(--muted);margin-bottom:12px">'+t('completeProfileDesc')+'</div>'+
-    '<div class="field" style="margin-bottom:10px"><label>'+t('height')+'</label><div class="inp pkfield" onclick="pickBodyHeight()">'+(P.height?P.height+' cm':t('chooseHeight'))+'</div></div>'+
-    '<div class="field" style="margin-bottom:0"><label>'+t('weight')+'</label><div class="inp pkfield" onclick="pickBodyWeight()">'+(P.weight?P.weight+' kg':t('chooseWeight'))+'</div></div>'+
+    '<div class="field" style="margin-bottom:10px"><label>'+t('height')+'</label><div class="inp pkfield" onclick="pickBodyHeight()">'+(P.height?escHtml(P.height)+' cm':t('chooseHeight'))+'</div></div>'+
+    '<div class="field" style="margin-bottom:0"><label>'+t('weight')+'</label><div class="inp pkfield" onclick="pickBodyWeight()">'+(P.weight?escHtml(P.weight)+' kg':t('chooseWeight'))+'</div></div>'+
   '</div>';
 }
 function pickBodyHeight(){ pickInt(t('heightCmTitle'),120,220,P.height||170,'cm',v=>{ P.height=v; saveAll(); renderStats(); toast(t('heightSaved')); }); }
@@ -11095,7 +11106,7 @@ function renderProfile(){
   h+='</div>';
   // ===== APERÇU RAPIDE — carte unique, une ligne par info (au lieu d'une grille + bannière séparées) =====
   h+='<div class="grp-card stag" style="animation-delay:.04s">'+
-    '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('scale',20,'currentColor')+'</div><div class="lr-title">'+t('heightWeight')+'</div><div class="lr-val">'+(P.height||'—')+' cm · '+(P.weight||'—')+' kg</div></div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('scale',20,'currentColor')+'</div><div class="lr-title">'+t('heightWeight')+'</div><div class="lr-val">'+escHtml(P.height||'—')+' cm · '+escHtml(P.weight||'—')+' kg</div></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('calendar',20,'currentColor')+'</div><div class="lr-title">'+t('age')+'</div><div class="lr-val">'+age()+' '+(curLang()==='en'?'yo':curLang()==='ar'?'سنة':'ans')+'</div></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('chart',20,'currentColor')+'</div><div class="lr-title">VDOT</div><div class="lr-val">'+(getUserVDOT()||'—')+'</div></div>'+
     '<div class="grp-row" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\';renderSport()"><div class="lr-icon">'+ICN('target',20,'currentColor')+'</div><div class="lr-title">'+t('objective')+'</div><div class="lr-val">'+escHtml(trRace(P.objRace)||P.goal||t('noObjective'))+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
@@ -11710,6 +11721,31 @@ function applyCrop(){
 }
 function removePhoto(){ delete P.photo; saveAll(); renderProfile(); toast(t('photoRemoved')); }
 function editBio(){ customPrompt(t('bioPromptLabel'),P.bio||'',v=>{ P.bio=v.slice(0,160); saveAll(); renderProfile(); },{maxLength:160}); }
+/* Un fichier importé peut avoir été fabriqué puis envoyé à l'utilisateur
+   (« voici ma sauvegarde »). L'ancien code recopiait le profil tel quel en ne
+   nettoyant que name/bio/photo : height, weight, goal… repartaient bruts dans
+   du innerHTML (audit 24/09). On ne garde désormais que les champs connus,
+   chacun avec son type, et les textes sans caractère capable d'ouvrir une
+   balise ou de sortir d'un attribut. pendingEmail/pendingNoPw (état interne
+   d'un changement d'e-mail en cours) ne sont jamais importés. */
+function stripHtmlChars(s){ return String(s).replace(/[<>"`\\]/g,''); }
+function cleanImportedProfile(src){
+  const o={};
+  ['height','weight','hrMax','hrRest','kmWeek','kmWeekMin','kmWeekMax','soundVol','vdot','joinedAt'].forEach(k=>{
+    if(src[k]==null || src[k]==='') return;
+    const n=Number(src[k]); if(Number.isFinite(n)) o[k]=n;
+  });
+  ['easyMode','notif','prayerNotif','sounds','notifPromptDismissed','setupDone'].forEach(k=>{
+    if(typeof src[k]==='boolean') o[k]=src[k];
+  });
+  const STR={name:40,username:20,bio:160,city:60,goal:80,compDate:10,bday:10,objRace:40,objTime:12,
+    t5k:12,t3k:12,t10k:12,t1500:12,pb5k:12,pb3k:12,pb10k:12,pb1500:12,lang:2,mode:10,theme:20,
+    sex:10,objGoal:40,objProfile:40,followPerso:40};
+  Object.keys(STR).forEach(k=>{ if(typeof src[k]==='string') o[k]=stripHtmlChars(src[k]).slice(0,STR[k]); });
+  if(Array.isArray(src.days)) o.days=src.days.filter(x=>Number.isInteger(x)&&x>=0&&x<=6).slice(0,7);
+  if(typeof src.photo==='string' && safePhotoUrl(src.photo)) o.photo=src.photo;
+  return o;
+}
 function importData(){
   const inp=document.createElement('input'); inp.type='file'; inp.accept='.json';
   inp.onchange=e=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader();
@@ -11718,10 +11754,7 @@ function importData(){
       // puis envoyé à l'utilisateur) : on ne recopie jamais tel quel un champ qui
       // finira dans du HTML. La photo est revalidée, le reste doit être du bon type.
       if(d.profile && typeof d.profile==='object' && !Array.isArray(d.profile)){
-        P=d.profile;
-        if(P.photo && !safePhotoUrl(P.photo)) delete P.photo;
-        if(typeof P.name!=='string') delete P.name;
-        if(typeof P.bio!=='string') delete P.bio; else P.bio=P.bio.slice(0,160);
+        P=cleanImportedProfile(d.profile);
         DB.save('profile',P);
       }
       // Les tableaux de séances étaient recopiés tels quels : un fichier fabriqué
@@ -11730,7 +11763,7 @@ function importData(){
       // types imposés, longueurs bornées, nombres plausibles.
       const cleanSess=arr=>arr.filter(x=>x&&typeof x==='object'&&!Array.isArray(x)).slice(0,5000).map(x=>{
         const o={};
-        ['date','title','type','pace','progName','feel','pain'].forEach(k=>{ if(typeof x[k]==='string') o[k]=x[k].slice(0,120); });
+        ['date','title','type','pace','progName','feel','pain'].forEach(k=>{ if(typeof x[k]==='string') o[k]=stripHtmlChars(x[k]).slice(0,120); });
         ['km','duration','rpe','tonnage','sets','reps','calories','deniv','sessRef'].forEach(k=>{ const n=Number(x[k]); if(Number.isFinite(n)) o[k]=n; });
         if(Array.isArray(x.muscles)) o.muscles=x.muscles.filter(m=>typeof m==='string').slice(0,40).map(m=>m.slice(0,40));
         if(typeof x.provisional==='boolean') o.provisional=x.provisional;
@@ -11741,7 +11774,7 @@ function importData(){
       if(d.xp && typeof d.xp==='object' && !Array.isArray(d.xp)){
         const nx={};
         ['total','level','pastGoalXP'].forEach(k=>{ const n=Number(d.xp[k]); if(Number.isFinite(n)&&n>=0) nx[k]=n; });
-        if(typeof d.xp.name==='string') nx.name=d.xp.name.slice(0,40);
+        if(typeof d.xp.name==='string') nx.name=stripHtmlChars(d.xp.name).slice(0,40);
         XP=Object.assign({total:0,level:1,name:'Recrue',pastGoalXP:0},nx); DB.save('xp',XP);
       }
       toast(t('dataImported')); applyTheme(); renderProfile(); }catch(err){ toast(t('invalidFile')); } };
