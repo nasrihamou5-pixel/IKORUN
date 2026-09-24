@@ -1848,7 +1848,7 @@ const I18N={
     planIkorunTitle:'Plan IKORUN — moteur scientifique',
     planIkorunDescLong:'Génère un plan périodisé sur-mesure (méthode norvégienne + VDOT/Daniels) basé sur ton VDOT ({0}), ton objectif, tes préférences et ta date de course. Le plan se réajuste automatiquement si tu rates une séance.',vdotToBeCalculated:'à calculer',
     planIkorunDescSimple:'Crée ton plan d’entraînement, adapté à ton niveau et à ta course. Il s’ajuste tout seul si tu rates une séance.',
-    configureGenerate:'Configurer & générer',weekN:'Semaine {0}',deloadTag:' · allégée',missedTag:'Manquée',restTag:'Repos',
+    configureGenerate:'Configurer & générer',weekN:'Semaine {0}',acwrUnder:'Sous-charge',acwrOptimal:'Optimal',acwrHigh:'Élevé',acwrRisk:'Risque blessure',acwrRatioLab:'Ratio Aigu/Chronique (ACWR)',acwrAcuteLab:'Charge aiguë (7j)',acwrChronicLab:'Charge chronique (28j)',acwrTip:'Zone optimale : 0,8–1,3. Au-dessus de 1,5, le risque de blessure augmente fortement.',restMaxStrength:'Force max (1-5 reps)',restHypertrophy:'Hypertrophie (6-12)',restEndurance:'Endurance (15+)',restPower:'Puissance / explosif',restSupersetVal:'0 s entre, 90 s après',restTip:'Plus la charge est lourde, plus le repos doit être long pour récupérer le système nerveux.',deloadTag:' · allégée',missedTag:'Manquée',restTag:'Repos',
     newPersoPlan:'Nouveau plan personnel',createCustomPlan:'Crée ton plan sur-mesure',
     createCustomPlanDesc:'Ajoute tes propres séances, choisis les dates, types et allures. Tout se synchronise avec ton accueil et tes stats.',
     sessionsCount:'{0} séances · {1} terminées',followedTag:'Suivi',duplicate:'Dupliquer',share:'Partager',
@@ -2016,7 +2016,7 @@ const I18N={
     restTitle:'Repos',secLab:'sec',add30sLab:'+30s',skipLab:'Passer',cancelSessionTitle:'Annuler la séance ?',
     progressLostText:'Ta progression sur cette séance sera perdue.',continueLab2:'Continuer',yesCancelLab:'Oui, annuler',sessionCancelled:'Séance annulée',
     sessionDoneTitle:'Séance terminée !',tonnageParenKg:'Tonnage (kg)',repsLab:'Répétitions',caloriesLab:'Calories',recordsBrokenLab:'Records battus',
-    tonnageVsLastLab:'de tonnage vs ta dernière séance {0}.',newRecordsLab:'Nouveaux records',musclesWorkedLab:'Muscles travaillés',xpEarnedLab:'+50 XP gagnés !',
+    tonnageVsLastLab:'de tonnage vs ta dernière séance {0}.',newRecordsLab:'Nouveaux records',musclesWorkedLab:'Muscles travaillés',xpEarnedLab:'+{0} XP gagnés !',
     programNameLab:'Nom du programme',programNamePh:'Mon programme',descriptionLab:'Description',descriptionPh:'Objectif, split, fréquence...',
     objectiveLab2:'Objectif',iconLab:'Icône',colorLab:'Couleur',exercisesCountLab:'Exercices ({0})',addExFromLib:'Ajoute des exercices depuis la bibliothèque.',
     addFromLibBtn:'Ajouter depuis la bibliothèque',saveProgramBtn:'Enregistrer le programme',giveNameLab:'Donne un nom',addExercisesLab:'Ajoute des exercices',programCreated:'Programme créé',
@@ -2101,7 +2101,7 @@ const I18N={
     resumeSessionConfirm:'Une séance « {0} » était en cours ({1} min). Reprendre ?',sessionColonName:'Séance : {0}',
     accentBlue:'Bleu',accentRed:'Rouge',accentGreen:'Vert militaire',accentBrown:'Marron boisé',accentYellow:'Jaune',accentCarbon:'Fibre de carbone',
     colorApplied:'Couleur appliquée',easyModeOn:'Mode simplifié activé',easyModeOff:'Mode simplifié désactivé',
-    profileIncompleteAddTime:'Profil incomplet : ajoute un chrono dans tes records',chooseCompDate:'Choisis une date de compétition',raceDateTooSoon:'Choisis une date de course à au moins 7 jours — une date passée ou trop proche ne laisse pas assez de temps pour préparer un plan.',
+    profileIncompleteAddTime:'Profil incomplet : ajoute un chrono dans tes records',chooseCompDate:'Choisis une date de compétition',raceDateTooSoon:'Choisis une date de course à au moins 7 jours — une date passée ou trop proche ne laisse pas assez de temps pour préparer un plan.',planStartsOn:'Ton plan démarre le {0} : il couvre les 28 semaines avant la course.',raceDateInvalid:'Date de course invalide : choisis-la à au moins 7 jours.',bdayInvalid:'Date de naissance invalide.',sessionKmRequired:'Indique la distance de la séance (en km).',paceFormatInvalid:'Allure invalide : écris-la au format min:ss (ex. 5:30).',addSessionBtn:'Ajouter la séance',psTitleLab:'Titre',psTitlePh:'Footing du matin',typeVMA:'VMA',typeFractionne:'Fractionné',typeTest:'Test',persoFollowingDesc:'Ton accueil et ton bilan utilisent ce plan. Le plan IKORUN continue de s’ajuster en arrière-plan selon ce que tu fais ici.',persoFollowDesc:'Ton accueil affichera les séances de ce plan au lieu du plan généré. Tu peux revenir au plan IKORUN quand tu veux.',persoStopBtn:'Arrêter',persoFollowBtn:'Suivre',persoNoSession:'Aucune séance. Ajoute ta première !',typeLab:'Type',psHowLab:'Comment veux-tu saisir cette séance ?',psModeSimple:'Simple (km + allure)',psModeReps:'Par répétition (temps de chaque)',psPaceLab:'Allure /km',psRepDistLab:'Distance par répétition',psAddRepBtn:'Ajouter une répétition',psDescLab:'Description (optionnel)',psDescPh:'Détails de la séance...',psNewSessionTitle:'Nouvelle séance',psRepShort:'Rép.',chooseAtLeastOneDay:'Choisis au moins un jour',profileValuesInvalid:'Valeur hors limites : taille 100-250 cm, poids 25-250 kg, FC max 120-230, FC repos 30-120 (sous la FC max), km/sem 0-250.',
     planGenerated:'Plan « {0} » généré : {1} sem, {2} séances',raceGeneric:'course',
     followingPersoPlan:'Tu suis maintenant ce plan perso',backToIkorunPlan:'Retour au plan IKORUN',
     namePromptLabel:'Nom :',copySuffix:'(copie)',confirmDeletePlan:'Supprimer ce plan ?',
@@ -2435,7 +2435,7 @@ const I18N={
     planIkorunTitle:'IKORUN Plan — scientific engine',
     planIkorunDescLong:'Generates a custom periodized plan (Norwegian method + VDOT/Daniels) based on your VDOT ({0}), goal, preferences and race date. The plan auto-adjusts if you miss a session.',vdotToBeCalculated:'to be calculated',
     planIkorunDescSimple:'Creates your training plan, matched to your level and your race. It adjusts itself if you miss a session.',
-    configureGenerate:'Configure & generate',weekN:'Week {0}',deloadTag:' · deload',missedTag:'Missed',restTag:'Rest',
+    configureGenerate:'Configure & generate',weekN:'Week {0}',acwrUnder:'Under-load',acwrOptimal:'Optimal',acwrHigh:'High',acwrRisk:'Injury risk',acwrRatioLab:'Acute/Chronic ratio (ACWR)',acwrAcuteLab:'Acute load (7d)',acwrChronicLab:'Chronic load (28d)',acwrTip:'Optimal zone: 0.8–1.3. Above 1.5, injury risk rises sharply.',restMaxStrength:'Max strength (1-5 reps)',restHypertrophy:'Hypertrophy (6-12)',restEndurance:'Endurance (15+)',restPower:'Power / explosive',restSupersetVal:'0 s between, 90 s after',restTip:'The heavier the load, the longer the rest needed to recover the nervous system.',deloadTag:' · deload',missedTag:'Missed',restTag:'Rest',
     newPersoPlan:'New custom plan',createCustomPlan:'Build your custom plan',
     createCustomPlanDesc:'Add your own sessions, pick dates, types and paces. Everything syncs with your home and stats.',
     sessionsCount:'{0} sessions · {1} done',followedTag:'Following',duplicate:'Duplicate',share:'Share',
@@ -2603,7 +2603,7 @@ const I18N={
     restTitle:'Rest',secLab:'sec',add30sLab:'+30s',skipLab:'Skip',cancelSessionTitle:'Cancel this session?',
     progressLostText:'Your progress on this session will be lost.',continueLab2:'Continue',yesCancelLab:'Yes, cancel',sessionCancelled:'Session cancelled',
     sessionDoneTitle:'Session complete!',tonnageParenKg:'Volume (kg)',repsLab:'Reps',caloriesLab:'Calories',recordsBrokenLab:'Records broken',
-    tonnageVsLastLab:'tonnage vs your last {0} session.',newRecordsLab:'New records',musclesWorkedLab:'Muscles worked',xpEarnedLab:'+50 XP earned!',
+    tonnageVsLastLab:'tonnage vs your last {0} session.',newRecordsLab:'New records',musclesWorkedLab:'Muscles worked',xpEarnedLab:'+{0} XP earned!',
     programNameLab:'Program name',programNamePh:'My program',descriptionLab:'Description',descriptionPh:'Goal, split, frequency...',
     objectiveLab2:'Goal',iconLab:'Icon',colorLab:'Color',exercisesCountLab:'Exercises ({0})',addExFromLib:'Add exercises from the library.',
     addFromLibBtn:'Add from library',saveProgramBtn:'Save program',giveNameLab:'Give it a name',addExercisesLab:'Add exercises',programCreated:'Program created',
@@ -2688,7 +2688,7 @@ const I18N={
     resumeSessionConfirm:'A "{0}" session was in progress ({1} min). Resume?',sessionColonName:'Session: {0}',
     accentBlue:'Blue',accentRed:'Red',accentGreen:'Military green',accentBrown:'Woodland brown',accentYellow:'Yellow',accentCarbon:'Carbon fiber',
     colorApplied:'Color applied',easyModeOn:'Simplified mode enabled',easyModeOff:'Simplified mode disabled',
-    profileIncompleteAddTime:'Incomplete profile: add a time in your records',chooseCompDate:'Choose a race date',raceDateTooSoon:'Choose a race date at least 7 days away — a past or too-close date doesn’t leave enough time to build a plan.',
+    profileIncompleteAddTime:'Incomplete profile: add a time in your records',chooseCompDate:'Choose a race date',raceDateTooSoon:'Choose a race date at least 7 days away — a past or too-close date doesn’t leave enough time to build a plan.',planStartsOn:'Your plan starts on {0}: it covers the 28 weeks before the race.',raceDateInvalid:'Invalid race date: pick one at least 7 days away.',bdayInvalid:'Invalid date of birth.',sessionKmRequired:'Enter the session distance (km).',paceFormatInvalid:'Invalid pace: use the min:ss format (e.g. 5:30).',addSessionBtn:'Add session',psTitleLab:'Title',psTitlePh:'Morning run',typeVMA:'VO₂max',typeFractionne:'Intervals',typeTest:'Test',persoFollowingDesc:'Your home screen and review use this plan. The IKORUN plan keeps adjusting in the background based on what you do here.',persoFollowDesc:'Your home screen will show this plan\'s sessions instead of the generated plan. You can switch back to the IKORUN plan anytime.',persoStopBtn:'Stop',persoFollowBtn:'Follow',persoNoSession:'No session yet. Add your first one!',typeLab:'Type',psHowLab:'How do you want to enter this session?',psModeSimple:'Simple (km + pace)',psModeReps:'By repetition (time of each)',psPaceLab:'Pace /km',psRepDistLab:'Distance per repetition',psAddRepBtn:'Add a repetition',psDescLab:'Description (optional)',psDescPh:'Session details...',psNewSessionTitle:'New session',psRepShort:'Rep.',chooseAtLeastOneDay:'Choose at least one day',profileValuesInvalid:'Value out of range: height 100-250 cm, weight 25-250 kg, max HR 120-230, resting HR 30-120 (below max HR), km/week 0-250.',
     planGenerated:'"{0}" plan generated: {1} wk, {2} sessions',raceGeneric:'race',
     followingPersoPlan:'You\u2019re now following this custom plan',backToIkorunPlan:'Back to IKORUN plan',
     namePromptLabel:'Name:',copySuffix:'(copy)',confirmDeletePlan:'Delete this plan?',
@@ -3022,7 +3022,7 @@ const I18N={
     planIkorunTitle:'خطة IKORUN — محرك علمي',
     planIkorunDescLong:'يولّد خطة مرحلية مخصصة (الطريقة النرويجية + VDOT/Daniels) بناءً على VDOT الخاص بك ({0})، هدفك، تفضيلاتك وتاريخ سباقك. تتعدل الخطة تلقائيًا إذا فاتتك حصة.',vdotToBeCalculated:'قيد الحساب',
     planIkorunDescSimple:'\u064A\u0646\u0634\u0626 \u062E\u0637\u0629 \u062A\u062F\u0631\u064A\u0628\u0643 \u062D\u0633\u0628 \u0645\u0633\u062A\u0648\u0627\u0643 \u0648\u0633\u0628\u0627\u0642\u0643. \u062A\u062A\u0639\u062F\u0644 \u0627\u0644\u062E\u0637\u0629 \u062A\u0644\u0642\u0627\u0626\u064A\u064B\u0627 \u0625\u0630\u0627 \u0641\u0627\u062A\u062A\u0643 \u062D\u0635\u0629.',
-    configureGenerate:'إعداد وتوليد',weekN:'الأسبوع {0}',deloadTag:' · مخففة',missedTag:'فائتة',restTag:'راحة',
+    configureGenerate:'إعداد وتوليد',weekN:'الأسبوع {0}',acwrUnder:'حمل ناقص',acwrOptimal:'مثالي',acwrHigh:'مرتفع',acwrRisk:'خطر إصابة',acwrRatioLab:'نسبة الحمل الحاد/المزمن (ACWR)',acwrAcuteLab:'الحمل الحاد (7 أيام)',acwrChronicLab:'الحمل المزمن (28 يومًا)',acwrTip:'المنطقة المثالية: 0.8–1.3. فوق 1.5 يرتفع خطر الإصابة بشدة.',restMaxStrength:'القوة القصوى (1-5 تكرارات)',restHypertrophy:'تضخيم العضلات (6-12)',restEndurance:'التحمّل (15+)',restPower:'القوة / الانفجارية',restSupersetVal:'0 ث بين التمرينين، 90 ث بعدهما',restTip:'كلما كان الحمل أثقل، يجب أن تكون الراحة أطول لاستعادة الجهاز العصبي.',deloadTag:' · مخففة',missedTag:'فائتة',restTag:'راحة',
     newPersoPlan:'خطة شخصية جديدة',createCustomPlan:'أنشئ خطتك المخصصة',
     createCustomPlanDesc:'أضف حصصك الخاصة، اختر التواريخ والأنواع والوتيرة. كل شيء يتزامن مع صفحتك الرئيسية وإحصائياتك.',
     sessionsCount:'{0} حصص · {1} منجزة',followedTag:'متابَعة',duplicate:'نسخ',share:'مشاركة',
@@ -3190,7 +3190,7 @@ const I18N={
     restTitle:'راحة',secLab:'ثا',add30sLab:'+30 ثا',skipLab:'تخطي',cancelSessionTitle:'إلغاء الحصة؟',
     progressLostText:'سيُفقد تقدمك في هذه الحصة.',continueLab2:'متابعة',yesCancelLab:'نعم، إلغاء',sessionCancelled:'تم إلغاء الحصة',
     sessionDoneTitle:'انتهت الحصة!',tonnageParenKg:'الحمولة (كغ)',repsLab:'التكرارات',caloriesLab:'السعرات',recordsBrokenLab:'أرقام محطّمة',
-    tonnageVsLastLab:'حمولة مقارنة بآخر حصة {0}.',newRecordsLab:'أرقام جديدة',musclesWorkedLab:'العضلات المستهدفة',xpEarnedLab:'+50 XP مكتسبة!',
+    tonnageVsLastLab:'حمولة مقارنة بآخر حصة {0}.',newRecordsLab:'أرقام جديدة',musclesWorkedLab:'العضلات المستهدفة',xpEarnedLab:'+{0} XP مكتسبة!',
     programNameLab:'اسم البرنامج',programNamePh:'برنامجي',descriptionLab:'الوصف',descriptionPh:'الهدف، التقسيم، التكرار...',
     objectiveLab2:'الهدف',iconLab:'الأيقونة',colorLab:'اللون',exercisesCountLab:'التمارين ({0})',addExFromLib:'أضف تمارين من المكتبة.',
     addFromLibBtn:'إضافة من المكتبة',saveProgramBtn:'حفظ البرنامج',giveNameLab:'أعطه اسمًا',addExercisesLab:'أضف تمارين',programCreated:'تم إنشاء البرنامج',
@@ -3275,7 +3275,7 @@ const I18N={
     resumeSessionConfirm:'كانت حصة « {0} » جارية ({1} د). المتابعة؟',sessionColonName:'حصة: {0}',
     accentBlue:'أزرق',accentRed:'أحمر',accentGreen:'أخضر عسكري',accentBrown:'بني خشبي',accentYellow:'أصفر',accentCarbon:'ألياف الكربون',
     colorApplied:'تم تطبيق اللون',easyModeOn:'تم تفعيل الوضع المبسّط',easyModeOff:'تم إلغاء الوضع المبسّط',
-    profileIncompleteAddTime:'الملف غير مكتمل: أضف زمنًا في أرقامك القياسية',chooseCompDate:'اختر تاريخ المنافسة',raceDateTooSoon:'اختر تاريخ سباق بعد 7 أيام على الأقل — تاريخ ماضٍ أو قريب جدًا لا يترك وقتًا كافيًا لبناء خطة.',
+    profileIncompleteAddTime:'الملف غير مكتمل: أضف زمنًا في أرقامك القياسية',chooseCompDate:'اختر تاريخ المنافسة',raceDateTooSoon:'اختر تاريخ سباق بعد 7 أيام على الأقل — تاريخ ماضٍ أو قريب جدًا لا يترك وقتًا كافيًا لبناء خطة.',planStartsOn:'تبدأ خطتك يوم {0}: تغطي الأسابيع الـ28 التي تسبق السباق.',raceDateInvalid:'تاريخ سباق غير صالح: اختره بعد 7 أيام على الأقل.',bdayInvalid:'تاريخ ميلاد غير صالح.',sessionKmRequired:'أدخل مسافة الحصة (كم).',paceFormatInvalid:'وتيرة غير صالحة: اكتبها بصيغة د:ث (مثال 5:30).',addSessionBtn:'إضافة الحصة',psTitleLab:'العنوان',psTitlePh:'جري الصباح',typeVMA:'VO₂max',typeFractionne:'تمارين متقطعة',typeTest:'اختبار',persoFollowingDesc:'تستخدم الشاشة الرئيسية والحصيلة هذه الخطة. تواصل خطة IKORUN التكيّف في الخلفية حسب ما تفعله هنا.',persoFollowDesc:'ستعرض شاشتك الرئيسية حصص هذه الخطة بدل الخطة المُولَّدة. يمكنك العودة إلى خطة IKORUN متى شئت.',persoStopBtn:'إيقاف',persoFollowBtn:'متابعة',persoNoSession:'لا توجد حصص بعد. أضف حصتك الأولى!',typeLab:'النوع',psHowLab:'كيف تريد إدخال هذه الحصة؟',psModeSimple:'بسيط (كم + وتيرة)',psModeReps:'حسب التكرار (زمن كل تكرار)',psPaceLab:'الوتيرة /كم',psRepDistLab:'مسافة كل تكرار',psAddRepBtn:'إضافة تكرار',psDescLab:'الوصف (اختياري)',psDescPh:'تفاصيل الحصة...',psNewSessionTitle:'حصة جديدة',psRepShort:'تكرار',chooseAtLeastOneDay:'اختر يومًا واحدًا على الأقل',profileValuesInvalid:'قيمة خارج الحدود: الطول 100-250 سم، الوزن 25-250 كغ، النبض الأقصى 120-230، نبض الراحة 30-120 (أقل من الأقصى)، كم/أسبوع 0-250.',
     planGenerated:'تم إنشاء خطة « {0} »: {1} أسبوع، {2} حصة',raceGeneric:'سباق',
     followingPersoPlan:'أنت الآن تتبع هذه الخطة الشخصية',backToIkorunPlan:'العودة إلى خطة IKORUN',
     namePromptLabel:'الاسم:',copySuffix:'(نسخة)',confirmDeletePlan:'حذف هذه الخطة؟',
@@ -3578,7 +3578,11 @@ function localeCode(){ return curLang()==='en'?'en-US':(curLang()==='ar'?'ar-DZ'
 const LANGS=[['fr','FR','Français'],['en','EN','English'],['ar','AR','العربية']];
 function setLang(l){
   P.lang=l; saveAll();
-  if(P.prayerNotif!==false) subscribeToPush(); // resynchronise la langue de l'abonnement push côté serveur
+  // Resynchronise la langue de l'abonnement push côté serveur — via ensurePush, qui ne
+  // fait rien sans permission déjà accordée : appeler subscribeToPush() directement
+  // déclenchait la demande de permission du navigateur dès le choix de la langue à
+  // l'onboarding, sans contexte (un refus bloque ensuite les notifs pour de bon).
+  ensurePush();
   document.documentElement.lang=l;
   document.documentElement.dir=(l==='ar')?'rtl':'ltr';
   TOOLS=TOOLS_DEF(); BADGE_TIERS=BADGE_TIERS_DEF(); TIERS=TIERS_DEF(); MEDAL_CATS=MEDAL_CATS_DEF(); ACHIEVEMENTS=ACHIEVEMENTS_DEF(); RANKS=RANKS_DEF(); PROGS=PROGS_DEF();
@@ -4116,7 +4120,7 @@ function showBadgeUnlockAnim(b){
   ov.innerHTML='<div class="bd-flash"></div>'+
     '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded;margin-bottom:6px">'+t('newBadgeUnlocked')+'</div>'+
     '<div class="bd-unlock-stage '+b.cls+'"><div class="bd-rays"></div><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div><div class="bd-ring r4"></div>'+
-    '<div class="bd-unlock-badge">'+bdGlyph(b.key)+sparks+'</div></div>'+
+    '<div class="bd-unlock-badge">'+bdGlyph(b.key).replace('loading="lazy"','loading="eager"')+sparks+'</div></div>'+
     '<div class="man" style="font-weight:800;font-size:30px;margin-top:18px;letter-spacing:.5px">'+b.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+b.desc+'</div>'+
     '<div style="color:var(--dim);font-size:12px;margin-top:18px">'+t('tapToContinue')+'</div>';
@@ -4134,7 +4138,7 @@ function replayBadgeAnim(key){
     sparks+='<span class="bd-spark" style="--tx:'+(Math.cos(a)*d)+'px;--ty:'+(Math.sin(a)*d)+'px;animation-delay:'+(Math.random()*1.4)+'s"></span>'; }
   ov.innerHTML='<div class="bd-flash"></div>'+
     '<div class="bd-unlock-stage '+b.cls+'"><div class="bd-rays"></div><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div>'+
-    '<div class="bd-unlock-badge">'+bdGlyph(b.key)+sparks+'</div></div>'+
+    '<div class="bd-unlock-badge">'+bdGlyph(b.key).replace('loading="lazy"','loading="eager"')+sparks+'</div></div>'+
     '<div class="man" style="font-weight:800;font-size:26px;margin-top:18px">'+b.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+b.desc+'</div>'+
     '<button type="button" class="btn sm" style="width:auto;margin-top:20px;padding:11px 26px" data-details>'+t('seeDetails')+'</button>'+
@@ -4163,7 +4167,7 @@ function previewBadgeAnim(key){
   ov.innerHTML='<div class="bd-flash"></div>'+
     '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded;margin-bottom:6px">'+t('previewLocked')+'</div>'+
     '<div class="bd-unlock-stage '+b.cls+'"><div class="bd-rays"></div><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div>'+
-    '<div class="bd-unlock-badge">'+bdGlyph(b.key)+sparks+'<div class="bd-lock-chip big">'+ICN('lock',16)+'</div></div></div>'+
+    '<div class="bd-unlock-badge">'+bdGlyph(b.key).replace('loading="lazy"','loading="eager"')+sparks+'<div class="bd-lock-chip big">'+ICN('lock',16)+'</div></div></div>'+
     '<div class="man" style="font-weight:800;font-size:26px;margin-top:18px">'+b.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+b.desc+'</div>'+
     condHtml+
@@ -5860,7 +5864,12 @@ function pickPerfDist(i){
 }
 function pickPerfTime(i){
   const m=OB_PERFS[i].meters||5000; const longRace=m>=15000;
-  pickTime(tp('timeForLab',OB_PERFS[i].dist||''),OB_PERFS[i].timeS!=null?OB_PERFS[i].timeS:(m>=10000?2700:m>=5000?1200:300),v=>{ OB_PERFS[i].timeS=v; renderPerfRows(); },longRace);
+  // Valeur de départ de la roue = temps d'un coureur loisir (VDOT 35) sur cette
+  // distance. Avant : 45:00 pour TOUT ce qui dépassait 10 km, semi et marathon
+  // compris (plus rapide que le record du monde) — valider sans tourner la roue
+  // donnait un VDOT de 114 et des allures d'élite (audit 24/09).
+  const defS=m>=800 ? Math.round(predictTime(35,m)/5)*5 : Math.round(m*0.3);
+  pickTime(tp('timeForLab',OB_PERFS[i].dist||''),OB_PERFS[i].timeS!=null?OB_PERFS[i].timeS:defS,v=>{ OB_PERFS[i].timeS=v; renderPerfRows(); },longRace);
 }
 function obShow(n){
   obStep=n;
@@ -5889,13 +5898,27 @@ $('#obNext').onclick=()=>{
 function obValidate(n){
   if(n===2){
     if(!$('#ob_name').value.trim()||!$('#ob_bday').value||!$('#ob_sex').value){ toast(t('fillRequiredFields')); return false; }
+    // Aucune borne sur le champ : une date future ou un âge absurde faussaient
+    // FC max, zones et BMR sans aucun message.
+    { const b=new Date($('#ob_bday').value+'T00:00:00'), age=(Date.now()-b)/31557600000;
+      if(!(age>=6 && age<=100)){ toast(t('bdayInvalid')); return false; } }
     if(!$('#ob_username').value.trim()){ toast(t('chooseUsernameLab')); return false; }
     if(!obUsernameOk){ toast(t('usernameUnavailable')); return false; }
   }
   if(n===3){ if(!$('#ob_level').querySelector('.pill.on')){ toast(t('chooseLevelLab')); return false; } }
   if(n===4){ if(!obMode){ toast(t('chooseModeLab')); return false; } }
-  if(n===5){ if(!$('#ob_goal').value.trim()||!$('#ob_compdate').value){ toast(t('goalDateRequired')); return false; } }
-  if(n===6){ const valid=OB_PERFS.filter(p=>p.meters&&p.timeS); if(!valid.length){ toast(t('addAtLeastOnePerf')); return false; } }
+  if(n===5){
+    if(!$('#ob_goal').value.trim()||!$('#ob_compdate').value){ toast(t('goalDateRequired')); return false; }
+    // L'attribut min du champ ne bloque que le calendrier natif : une date tapée
+    // au clavier passait (course déjà passée acceptée).
+    if($('#ob_compdate').value<minRaceDate()){ toast(t('raceDateInvalid')); return false; }
+  }
+  if(n===6){
+    const valid=OB_PERFS.filter(p=>p.meters&&p.timeS); if(!valid.length){ toast(t('addAtLeastOnePerf')); return false; }
+    // Même garde-fou que l'ajout d'un record depuis le Profil (un chrono
+    // impossible faussait tout le plan dès la création du compte).
+    for(const p of valid){ const g=recordGuard(p.meters,p.timeS); if(!g.ok){ toast(g.msg); return false; } }
+  }
   return true;
 }
 /* Volume hebdo initial déduit du niveau déclaré (l'utilisateur n'a plus à
@@ -6614,6 +6637,10 @@ function trSessType(ty){
   if(!ty||ty==='—') return ty;
   if(ty==='Muscu') return t('typeMuscu');
   if(ty==='Autre') return t('typeAutre');
+  // Types propres au plan personnel (addPersoSession), absents de SESS_TYPE_TO_KEY.
+  if(ty==='VMA') return t('typeVMA');
+  if(ty==='Fractionné') return t('typeFractionne');
+  if(ty==='Test') return t('typeTest');
   const key=SESS_TYPE_TO_KEY[ty];
   if(key) return t('sessLabel_'+key);
   return ty;
@@ -6985,13 +7012,29 @@ function generatePlan(){
   const vdot=getUserVDOT();
   if(!vdot){ toast(t('profileIncompleteAddTime')); return; }
   if(!P.compDate){ toast(t('chooseCompDate')); return; }
-  const days=(P.days&&P.days.length)?[...P.days].sort((a,b)=>a-b):[1,3,5,6];
+  // Jours triés dans l'ordre CALENDAIRE (lundi → dimanche) et non par numéro
+  // JS (dimanche=0 passait en tête, et « le dernier jour » d'une semaine n'était
+  // pas forcément le plus tardif).
+  const days=((P.days&&P.days.length)?[...P.days]:[1,3,5,6]).sort((a,b)=>((a+6)%7)-((b+6)%7));
   const today=new Date(); today.setHours(0,0,0,0);
-  const comp=new Date(P.compDate); comp.setHours(0,0,0,0);
+  const comp=new Date(P.compDate+'T00:00:00'); comp.setHours(0,0,0,0);
   // Une date de course passée ou trop proche (< 7 j) donnait un plan de 2 semaines
   // sans avertir personne (Math.max(2,...) masquait le daysBetween négatif ou minuscule).
   if(daysBetween(today,comp)<7){ toast(t('raceDateTooSoon')); return; }
-  let weeks=Math.max(2,Math.min(28,Math.ceil(daysBetween(today,comp)/7)));
+  // Semaines CALENDAIRES (lundi → dimanche), la dernière étant celle de la course.
+  // Avant (audit 24/09), les semaines partaient d'aujourd'hui et la course tombait
+  // sur « le dernier jour d'entraînement de la dernière semaine » : pour une course
+  // un jeudi avec lun/mer/ven/sam, le Jour J était placé le samedi PRÉCÉDENT, suivi
+  // de séances jusqu'à la veille de la vraie course ; et une semaine affichée
+  // (lun → dim) mélangeait deux semaines du générateur (2 séances dures identiques,
+  // pas de sortie longue, volume au-dessus du max choisi).
+  const mondayOf=d=>{ const m=new Date(d); m.setDate(d.getDate()-((d.getDay()+6)%7)); return m; };
+  const raceMonday=mondayOf(comp);
+  let startMonday=mondayOf(today);
+  let weeks=Math.floor(daysBetween(startMonday,raceMonday)/7)+1;
+  if(weeks>28){ weeks=28; startMonday=new Date(raceMonday); startMonday.setDate(raceMonday.getDate()-27*7); }
+  weeks=Math.max(2,weeks);
+  const raceKey=dateKey(comp);
   const phaseByWeek=phaseDistribution(weeks);
   // seed unique à chaque génération
   const seed=(Date.now()^Math.floor(Math.random()*1e9))>>>0;
@@ -7010,6 +7053,17 @@ function generatePlan(){
   const liked=(PREFS.likedTypes&&PREFS.likedTypes.length)?PREFS.likedTypes:null;
   const sessions=[]; let id=1;
   const goal=P.objGoal||'Record personnel';
+  const pushSession=(d,w,ph,type,wkKm,isDeload,extra)=>{
+    const built=buildSessionV2(type,Object.assign({vdot,pace,wkKm,nDays:days.length,phase:ph,rng,pick,isDeload,goal,w,weeks},extra||{}));
+    const durMin=built.durMin!=null?built.durMin:(built.pace==='—'?0:Math.round(built.km*parseTime(built.pace)/60));
+    sessions.push({ id:id++, week:w, phase:ph.name, phaseKey:ph.key, color:ph.color,
+      date:dateKey(d), type:built.label, baseType:type, title:built.title,
+      km:built.km, duration:durMin, pace:built.pace, rpe:built.rpe, series:built.series||null,
+      desc:built.detail.objectif, detail:built.detail, genParams:built.genParams||null, deload:isDeload, done:false });
+  };
+  const HARD=['VMAc','VMAl','VO2','INTERVAL','DBLSEUIL','SEUIL','SPE','SPE_COURT','TEMPO_SPE','TEMPO','PROGRESSIF','FARTLEK','COTES','LONG','LONG_COURT'];
+  const isEasyT=t=>t==='EF'||t==='RECUP', isLongT=t=>t==='LONG'||t==='LONG_COURT';
+  let lastWkKm=kmMin;
   for(let w=1;w<=weeks;w++){
     const ph=phaseByWeek[w];
     const prog=(w-1)/(weeks-1||1);
@@ -7019,23 +7073,45 @@ function generatePlan(){
     const isDeload=(w%4===0)&&ph.key!=='TAPER'&&w<weeks-2;
     if(isDeload) wkKm=Math.round(wkKm*0.75);
     wkKm=Math.max(kmMin*0.7,Math.min(kmMax,wkKm));
+    lastWkKm=wkKm;
     // composition de la semaine selon la phase
     const qualityCount=days.length>=5?(ph.key==='AERO'?2:ph.key==='PG'?1:3):(days.length>=4?2:1);
     const weekPlan=composeWeek(ph,days.length,qualityCount,isDeload,pick,rng,liked,w===weeks);
     const assigned=assignWeek(days,weekPlan);
+    const slots=[];
     days.forEach((dow,di)=>{
-      const d=new Date(today);
-      d.setDate(today.getDate() + (w-1)*7 + ((dow - today.getDay()+7)%7));
+      const d=new Date(startMonday);
+      d.setDate(startMonday.getDate() + (w-1)*7 + ((dow+6)%7));
+      if(d<today) return;                 // jours déjà passés de la semaine en cours
+      if(dateKey(d)>=raceKey) return;     // rien le jour de la course ni après
       let type=assigned[di]||'EF';
-      if(w===weeks && di===days.length-1) type='COURSE';
-      const built=buildSessionV2(type,{vdot,pace,wkKm,nDays:days.length,phase:ph,rng,pick,isDeload,goal,w,weeks});
-      const durMin=built.durMin!=null?built.durMin:(built.pace==='—'?0:Math.round(built.km*parseTime(built.pace)/60));
-      sessions.push({ id:id++, week:w, phase:ph.name, phaseKey:ph.key, color:ph.color,
-        date:dateKey(d), type:built.label, baseType:type, title:built.title,
-        km:built.km, duration:durMin, pace:built.pace, rpe:built.rpe, series:built.series||null,
-        desc:built.detail.objectif, detail:built.detail, genParams:built.genParams||null, deload:isDeload, done:false });
+      // Veille de course : jamais de séance dure ni de sortie longue.
+      if(daysBetween(d,comp)===1 && HARD.includes(type)) type='RECUP';
+      slots.push({d,type});
     });
+    // Budget kilométrique de la semaine : les séances de qualité ont une structure
+    // fixe (échauffement + bloc + retour au calme) et les footings s'ajoutaient
+    // par-dessus, si bien que le « km/sem maxi » choisi était dépassé (jusqu'à
+    // +27 % à 6 jours/semaine, audit 24/09). On construit donc d'abord la qualité,
+    // puis la sortie longue plafonnée au reste, puis les footings avec ce qui reste
+    // (4 km minimum chacun). La sortie longue passe en premier : c'est la séance
+    // clé d'une préparation semi/marathon, elle ne doit pas être rognée au profit
+    // des séances de qualité.
+    const first=sessions.length;
+    const easySlots=slots.filter(s=>isEasyT(s.type));
+    slots.filter(s=>isLongT(s.type)).forEach(s=>pushSession(s.d,w,ph,s.type,wkKm,isDeload));
+    slots.filter(s=>!isEasyT(s.type)&&!isLongT(s.type)).forEach(s=>pushSession(s.d,w,ph,s.type,wkKm,isDeload));
+    let used=sessions.slice(first).reduce((a,s)=>a+(s.km||0),0);
+    if(easySlots.length){
+      const weights=easySlots.reduce((a,s)=>a+(s.type==='RECUP'?0.7:1),0);
+      const defaultEasy=Math.max(5,Math.round(wkKm/days.length*0.95));
+      const easyKm=Math.max(4,Math.min(defaultEasy,Math.floor((wkKm-used)/weights)));
+      easySlots.forEach(s=>pushSession(s.d,w,ph,s.type,wkKm,isDeload,{easyKm}));
+    }
   }
+  // Le Jour J est posé EXACTEMENT à la date de la course choisie, même si ce
+  // n'est pas un des jours d'entraînement habituels.
+  pushSession(comp,weeks,phaseByWeek[weeks],'COURSE',lastWkKm,false);
   // Les jours d'entraînement sont générés dans l'ordre de leur numéro de jour de semaine
   // (ex: lundi avant vendredi), pas dans l'ordre chronologique réel à partir d'aujourd'hui
   // — sans ce tri, la 1re semaine affichait ses séances dans le désordre (ex: lun. 7 sept.
@@ -7044,6 +7120,10 @@ function generatePlan(){
   PLAN={ created:todayKey(), vdot, weeks, seed, sessions, goal, race:P.objRace||'5 km' };
   DB.save('run_plan',PLAN);
   toast(''+tp('planGenerated',(trRace(P.objRace)||t('raceGeneric')),weeks,sessions.length));
+  // Course à plus de 28 semaines : le plan commence plus tard qu'aujourd'hui, il
+  // faut le dire, sinon l'écran Sport paraît vide sans explication.
+  if(sessions[0] && daysBetween(today,new Date(sessions[0].date+'T00:00:00'))>7)
+    setTimeout(()=>toast(tp('planStartsOn',fmtDate(sessions[0].date))),2600);
   burst(); renderSport();
 }
 function raceMeters(){ const m={'5 km':5000,'10 km':10000,'Semi-marathon':21097,'Marathon':42195,'Trail':21097,'Cross':8000,'Ultra':50000}; return m[P.objRace]||5000; }
@@ -7062,13 +7142,26 @@ function longRunCapKm(){
 /* ---------- CONFIGURATION DU PLAN (collecte des inputs avancés) ---------- */
 const LIKED_TYPES=['VMA courte','VMA longue','Intervalles','Tempo','Seuil','Endurance fondamentale','Sortie longue','Double seuil','Fartlek','Côtes','Travail VO₂max','Travail à l\u2019allure spécifique','Récupération active'];
 let setupTmp={};
+// Déduit la distance visée du texte libre de l'objectif (onboarding), à défaut
+// d'un choix explicite — l'ordre compte : « semi-marathon » contient « marathon ».
+function inferRaceFromGoal(){
+  const g=String(P.goal||'').toLowerCase();
+  if(/semi|half|21[.,]?1?\s*k|نصف/.test(g)) return 'Semi-marathon';
+  if(/marathon|ماراثون|42\s*k/.test(g)) return 'Marathon';
+  if(/ultra/.test(g)) return 'Ultra';
+  if(/trail/.test(g)) return 'Trail';
+  if(/cross/.test(g)) return 'Cross';
+  if(/\b10\s*(k|km)\b|10000/.test(g)) return '10 km';
+  if(/\b5\s*(k|km)\b|5000/.test(g)) return '5 km';
+  return null;
+}
 function openPlanSetup(){
   // Le CTA menait à un formulaire complet (course, date, profil, jours, km/sem,
   // 12 types de séances) pour finir sur un toast "profil incomplet" une fois
   // "Générer mon plan" cliqué. L'info doit arriver AVANT le formulaire, pas après.
   if(!getUserVDOT()){ toast(t('profileIncompleteAddTime')); openRecords(); return; }
   setupTmp={
-    objRace:P.objRace||'5 km', compDate:P.compDate||'', objProfile:P.objProfile||'Plate',
+    objRace:P.objRace||inferRaceFromGoal()||'5 km', compDate:P.compDate||'', objProfile:P.objProfile||'Plate',
     objGoal:P.objGoal||'Record personnel', objTime:P.objTime||'',
     days:[...(P.days||[1,3,5,6])], kmWeekMin:P.kmWeekMin||P.kmWeek||35, kmWeekMax:P.kmWeekMax||Math.round((P.kmWeek||35)*1.6),
     likedTypes:[...((PREFS.likedTypes)||[])]
@@ -7107,8 +7200,8 @@ function toggleSetupDay(d){ const i=setupTmp.days.indexOf(d); if(i>=0)setupTmp.d
 function toggleLiked(t){ const i=setupTmp.likedTypes.indexOf(t); if(i>=0)setupTmp.likedTypes.splice(i,1); else setupTmp.likedTypes.push(t); renderPlanSetup(); }
 function confirmPlanSetup(){
   const s=setupTmp;
-  if(!s.compDate){ toast('Choisis une date de course'); return; }
-  if(!s.days.length){ toast('Choisis au moins un jour'); return; }
+  if(!s.compDate){ toast(t('chooseCompDate')); return; }
+  if(!s.days.length){ toast(t('chooseAtLeastOneDay')); return; }
   Object.assign(P,{objRace:s.objRace,compDate:s.compDate,objProfile:s.objProfile,objGoal:s.objGoal,objTime:s.objTime,days:s.days.sort((a,b)=>a-b),kmWeekMin:s.kmWeekMin,kmWeekMax:s.kmWeekMax});
   PREFS.likedTypes=s.likedTypes;
   saveAll(); closeOv('ovProg'); generatePlan();
@@ -7166,7 +7259,8 @@ function assignWeek(days,weekPlan){
 function buildSessionV2(type,o){
   const{vdot,pace,wkKm,nDays,phase,rng,pick,isDeload,goal,w,weeks}=o;
   const S=spkToStr;
-  const easyKm=Math.max(5,Math.round(wkKm/nDays*0.95));
+  // o.easyKm : budget imposé par generatePlan pour ne pas dépasser le km/sem maxi.
+  const easyKm=o.easyKm!=null?o.easyKm:Math.max(5,Math.round(wkKm/nDays*0.95));
   const vary=(a,b)=>a+Math.round(rng()*(b-a)); // variabilité contrôlée
   let km,p,rpe,title,label,d={},durMin=null,series=null,genParams=null;
   const WU_MIN=17.5, CD_MIN=12.5;
@@ -7185,7 +7279,9 @@ function buildSessionV2(type,o){
       break;
     case 'LONG': case 'LONG_COURT':
       km=type==='LONG_COURT'?Math.round(wkKm*0.22):Math.round(wkKm*(phase.key==='SPE'?0.34:0.30));
-      km=Math.max(8,Math.min(longRunCapKm(),km)); p=S(pace.EF*0.99); rpe=4; label=t('sessLabel_LONG'); title=t('sessTitle_LONG')+(phase.key==='SPE'?t('progressiveSuffix'):'');
+      km=Math.max(8,Math.min(longRunCapKm(),km));
+      if(o.longKmCap!=null) km=Math.max(8,Math.min(km,o.longKmCap)); // budget de la semaine
+      p=S(pace.EF*0.99); rpe=4; label=t('sessLabel_LONG'); title=t('sessTitle_LONG')+(phase.key==='SPE'?t('progressiveSuffix'):'');
       d={objectif:t('bs_long_objectif'),warmup:t('bs_long_warmup'),body:phase.key==='SPE'||phase.key==='PIC'?tp('bs_long_body_progressive',km,S(pace.EF),S(pace.MAR)):tp('bs_long_body_steady',km,S(pace.EF*0.99)),paces:tp('bs_long_paces',S(pace.EF),S(pace.MAR)),recovery:t('bs_long_recovery'),cooldown:CD,tips:[t('bs_long_tip1'),t('bs_long_tip2')],mistakes:[t('bs_long_mistake1')],why:t('bs_long_why')};
       break;
     case 'TEMPO': {
@@ -8072,10 +8168,10 @@ function persoDetailHTML(){
   let h='<div class="row" style="margin-bottom:14px"><button class="x" onclick="curPerso=null;renderSport()">‹</button><div class="man" style="font-weight:800;font-size:18px">'+escHtml(p.name)+'</div><button class="x" onclick="renamePerso(\''+p.id+'\')" aria-label="'+t('renameLab')+'">'+ICN('edit',16)+'</button></div>';
   h+='<div class="chrome-box'+(following?' accent':'')+'" style="display:flex;align-items:center;gap:10px">'
     +'<div style="flex:1"><div class="cb-head" style="margin-bottom:2px">'+(following?'Plan suivi actuellement':'Suivre ce plan à la place du plan IKORUN')+'</div>'
-    +'<div class="cb-body" style="font-size:12px;color:var(--muted)">'+(following?'Ton accueil et ton bilan utilisent ce plan. Le plan IKORUN continue de s\u2019ajuster en arrière-plan selon ce que tu fais ici.':'Ton accueil affichera les séances de ce plan au lieu du plan généré. Tu peux revenir au plan IKORUN quand tu veux.')+'</div></div>'
-    +'<button class="btn ghost sm" style="width:auto;white-space:nowrap" onclick="toggleFollowPerso(\''+p.id+'\')">'+(following?'Arrêter':'Suivre')+'</button></div>';
-  h+='<button class="btn" style="margin-bottom:14px" onclick="addPersoSession()">＋ Ajouter une séance</button>';
-  if(!p.sessions.length) h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('run',36,'currentColor')+'</div><div style="font-size:13px">Aucune séance. Ajoute ta première !</div></div></div>';
+    +'<div class="cb-body" style="font-size:12px;color:var(--muted)">'+(following?t('persoFollowingDesc'):t('persoFollowDesc'))+'</div></div>'
+    +'<button class="btn ghost sm" style="width:auto;white-space:nowrap" onclick="toggleFollowPerso(\''+p.id+'\')">'+(following?t('persoStopBtn'):t('persoFollowBtn'))+'</button></div>';
+  h+='<button class="btn" style="margin-bottom:14px" onclick="addPersoSession()">＋ '+t('addSessionBtn')+'</button>';
+  if(!p.sessions.length) h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('run',36,'currentColor')+'</div><div style="font-size:13px">'+t('persoNoSession')+'</div></div></div>';
   else {
     const sorted=[...p.sessions].sort((a,b)=>new Date(a.date)-new Date(b.date));
     sorted.forEach(s=>{
@@ -8102,22 +8198,22 @@ let psIntervals=[{dist:400,timeS:null}];
 function addPersoSession(){
   psType='EF'; psMode='simple'; psIntervals=[{dist:400,timeS:null}];
   const types=['EF','Récup','Tempo','Seuil','VMA','Fractionné','Test','Long','Course'];
-  let h='<div class="field"><label>Titre</label><input class="inp" id="ps_title" placeholder="Footing du matin"></div>';
-  h+='<div class="field"><label>Type</label><div class="pills" id="ps_types">'+types.map(t=>'<div class="pill '+(t==='EF'?'on':'')+'" onclick="psTypeChanged(\''+t+'\')">'+t+'</div>').join('')+'</div></div>';
-  h+='<div class="field"><label>Date</label><input class="inp" id="ps_date" type="date" value="'+todayKey()+'"></div>';
-  h+='<div class="field"><label>Comment veux-tu saisir cette séance ?</label><div class="pills" id="ps_modes">'+
-       '<div class="pill on" onclick="psModeChanged(\'simple\')">Simple (km + allure)</div>'+
-       '<div class="pill" onclick="psModeChanged(\'intervals\')">Par répétition (temps de chaque)</div>'+
+  let h='<div class="field"><label>'+t('psTitleLab')+'</label><input class="inp" id="ps_title" placeholder="'+escHtml(t('psTitlePh'))+'"></div>';
+  h+='<div class="field"><label>'+t('typeLab')+'</label><div class="pills" id="ps_types">'+types.map(ty=>'<div class="pill '+(ty==='EF'?'on':'')+'" onclick="psTypeChanged(\''+ty+'\')">'+trSessType(ty)+'</div>').join('')+'</div></div>';
+  h+='<div class="field"><label>'+t('dateField')+'</label><input class="inp" id="ps_date" type="date" value="'+todayKey()+'"></div>';
+  h+='<div class="field"><label>'+t('psHowLab')+'</label><div class="pills" id="ps_modes">'+
+       '<div class="pill on" onclick="psModeChanged(\'simple\')">'+t('psModeSimple')+'</div>'+
+       '<div class="pill" onclick="psModeChanged(\'intervals\')">'+t('psModeReps')+'</div>'+
      '</div></div>';
-  h+='<div id="ps_simple" class="row" style="gap:10px"><div class="field" style="flex:1"><label>'+t('distanceKmLab')+'</label><input class="inp" id="ps_km" type="number" placeholder="8"></div><div class="field" style="flex:1"><label>Allure /km</label><input class="inp" id="ps_pace" placeholder="4:30"></div></div>';
+  h+='<div id="ps_simple" class="row" style="gap:10px"><div class="field" style="flex:1"><label>'+t('distanceKmLab')+'</label><input class="inp" id="ps_km" type="number" placeholder="8"></div><div class="field" style="flex:1"><label>'+t('psPaceLab')+'</label><input class="inp" id="ps_pace" placeholder="4:30"></div></div>';
   h+='<div id="ps_intervals" style="display:none">'+
-       '<div class="field"><label>Distance par répétition</label><div class="inp pkfield set" id="ps_int_dist" onclick="pickPsIntervalDist()">400 m</div></div>'+
+       '<div class="field"><label>'+t('psRepDistLab')+'</label><div class="inp pkfield set" id="ps_int_dist" onclick="pickPsIntervalDist()">400 m</div></div>'+
        '<div id="ps_int_rows"></div>'+
-       '<button class="btn ghost sm" style="margin:2px 0 14px" onclick="addPsIntervalRow()">＋ Ajouter une répétition</button>'+
+       '<button class="btn ghost sm" style="margin:2px 0 14px" onclick="addPsIntervalRow()">＋ '+t('psAddRepBtn')+'</button>'+
      '</div>';
-  h+='<div class="field"><label>Description (optionnel)</label><textarea class="inp" id="ps_desc" rows="3" placeholder="Détails de la séance..."></textarea></div>';
-  h+='<button class="btn" onclick="savePersoSession()">Ajouter la séance</button>';
-  $('#progBody').innerHTML=h; $('#ovProgTitle').textContent='Nouvelle séance'; openOv('ovProg');
+  h+='<div class="field"><label>'+t('psDescLab')+'</label><textarea class="inp" id="ps_desc" rows="3" placeholder="'+t('psDescPh')+'"></textarea></div>';
+  h+='<button class="btn" onclick="savePersoSession()">'+t('addSessionBtn')+'</button>';
+  $('#progBody').innerHTML=h; $('#ovProgTitle').textContent=t('psNewSessionTitle'); openOv('ovProg');
   renderPsIntervalRows();
 }
 function psTypeChanged(t){
@@ -8147,8 +8243,8 @@ function renderPsIntervalRows(){
   let h='';
   psIntervals.forEach((r,i)=>{
     h+='<div class="perfrow">'+
-      '<div class="perfcard" style="flex:0 0 64px;cursor:default"><div class="pcl">Rép.</div><div class="pcv">'+(i+1)+'</div></div>'+
-      '<div class="perfcard" onclick="pickPsIntervalTime('+i+')"><div class="pcl">Temps</div><div class="pcv '+(r.timeS!=null?'':'empty')+'">'+(r.timeS!=null?fmtTime(r.timeS):'Choisir')+'</div></div>'+
+      '<div class="perfcard" style="flex:0 0 64px;cursor:default"><div class="pcl">'+t('psRepShort')+'</div><div class="pcv">'+(i+1)+'</div></div>'+
+      '<div class="perfcard" onclick="pickPsIntervalTime('+i+')"><div class="pcl">'+t('timeField')+'</div><div class="pcv '+(r.timeS!=null?'':'empty')+'">'+(r.timeS!=null?fmtTime(r.timeS):t('chooseLab'))+'</div></div>'+
       (psIntervals.length>1?'<div class="perfdel" onclick="delPsIntervalRow('+i+')">'+ICN('trash',16)+'</div>':'')+
     '</div>';
   });
@@ -8176,10 +8272,21 @@ function savePersoSession(){
     intervals=valid.map(r=>({dist:r.dist,timeS:r.timeS}));
   } else {
     km=+$('#ps_km').value||0; pace=$('#ps_pace').value.trim()||'—';
+    // Une séance vide (0 km) était acceptée et polluait le plan (audit 24/09).
+    if(!(km>0)){ toast(t('sessionKmRequired')); return; }
+    if(pace!=='—' && !/^\d{1,2}:[0-5]\d$/.test(pace)){ toast(t('paceFormatInvalid')); return; }
     durMin=(km&&pace!=='—')?Math.round(km*parseTime(pace)/60):0;
   }
   const psDate=$('#ps_date').value;
-  const guard=sessionGuard(km,durMin,psDate);
+  if(!psDate){ toast(t('fillRequiredFields')); return; }
+  // On PROGRAMME une séance : une date future est normale. Le garde-fou « pas de
+  // date future » (anti-triche) s'applique quand on la VALIDE (markPersoDone) —
+  // l'appliquer ici rendait impossible tout plan personnel tourné vers l'avenir.
+  // Seule la distance reste bornée : l'allure saisie ici est une CIBLE (souvent
+  // celle des fractions, ex. 4:40 en VMA pour un VDOT 35), pas une moyenne
+  // réalisée — le contrôle d'allure de sessionGuard la refusait. Il s'applique
+  // au bilan, quand la séance est réellement validée.
+  const guard=sessionGuard(km,0,null);
   if(!guard.ok){ toast(guard.msg); return; }
   p.sessions.push({id:Date.now(),title,type:psType,date:psDate,km,pace,duration:durMin,rpe:5,desc:$('#ps_desc').value.trim(),done:false,intervals});
   saveAll(); closeOv('ovProg'); renderSport(); toast(t('sessionAdded'));
@@ -8266,6 +8373,16 @@ function syncDebriefFromReps(){
   debriefData.duration=Math.round(totSec/60);
   debriefData.pace=fmtSplit(Math.round(totSec/totKm));
 }
+/* L'allure moyenne restait celle PRÉVUE par le plan même quand l'athlète corrigeait
+   durée et distance (88 min pour 10,5 km enregistrés à 7:17/km au lieu de 8:23) :
+   l'analyse et les stats travaillaient donc sur une allure fausse (audit 24/09).
+   Elle suit maintenant durée/distance, tant que l'athlète ne l'a pas tapée lui-même. */
+function debriefAutoPace(){
+  const d=debriefData; if(!d || d._paceManual) return;
+  const dur=+d.duration, km=+d.distance; if(!(dur>0 && km>0)) return;
+  d.pace=fmtSplit(Math.round(dur*60/km));
+  const el=document.getElementById('db_pace'); if(el) el.value=d.pace;
+}
 function renderDebrief(){
   const d=debriefData;
   const scale=(key,label,icons)=>'<div class="field"><label>'+label+'</label><div class="pills">'+icons.map((ic,i)=>'<div class="pill '+(d[key]===i+1?'on':'')+'" onclick="debriefData.'+key+'='+(i+1)+';renderDebrief()">'+ic+'</div>').join('')+'</div></div>';
@@ -8284,8 +8401,8 @@ function renderDebrief(){
     });
     h+='<div style="font-size:11px;color:var(--muted);margin-top:2px">'+t('repLegendLine')+'</div></div>';
   }
-  h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>'+t('durationMinLabel')+'</label><input class="inp" type="number" max="1440" value="'+(d.duration||'')+'" oninput="debriefData.duration=Math.min(1440,+this.value||0)"></div><div class="field" style="flex:1"><label>'+t('distanceKmLabel')+'</label><input class="inp" type="number" value="'+(d.distance||'')+'" oninput="debriefData.distance=+this.value"></div></div>';
-  h+='<div class="field"><label>'+t('avgPaceKmLabel')+'</label><input class="inp" value="'+escHtml(d.pace||'')+'" oninput="debriefData.pace=this.value" placeholder="4:30"></div>';
+  h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>'+t('durationMinLabel')+'</label><input class="inp" type="number" max="1440" value="'+(d.duration||'')+'" oninput="debriefData.duration=Math.min(1440,+this.value||0);debriefAutoPace()"></div><div class="field" style="flex:1"><label>'+t('distanceKmLabel')+'</label><input class="inp" type="number" value="'+(d.distance||'')+'" oninput="debriefData.distance=+this.value;debriefAutoPace()"></div></div>';
+  h+='<div class="field"><label>'+t('avgPaceKmLabel')+'</label><input class="inp" id="db_pace" value="'+escHtml(d.pace||'')+'" oninput="debriefData.pace=this.value;debriefData._paceManual=true" placeholder="4:30"></div>';
   h+='<div class="field"><label>'+t('rpeFeltLabel')+' '+d.rpe+'/10</label><input type="range" min="1" max="10" value="'+d.rpe+'" style="width:100%" oninput="debriefData.rpe=+this.value;renderDebrief()"></div>';
   h+='<div class="field"><label>'+t('painLabel')+'</label><div class="pills">'+['Aucune','Légères','Gênantes','Importantes'].map(p=>'<div class="pill '+(d.pain===p?'on':'')+'" onclick="debriefData.pain=\''+p+'\';renderDebrief()">'+trPain(p)+'</div>').join('')+'</div></div>';
   // Séance à répétitions : le respect de l'allure est déjà saisi ligne par ligne
@@ -8325,6 +8442,7 @@ function submitDebrief(){
     if(!guard.ok){ toast(guard.msg); return; }
     const repsLog=debriefReps.length?debriefReps.map(r=>({n:r.n,dist:r.dist,target:r.target,timeS:r.timeS,respected:r.respected})):null;
     const entry={...debriefData,date:debriefCtx.date,title:debriefCtx.title,type:debriefCtx.type,plannedRpe:debriefCtx.plannedRpe,repsLog,ts:Date.now()};
+    delete entry._paceManual; // marqueur d'interface, pas une donnée de séance
     SESSLOG.push(entry); DB.save('sesslog',SESSLOG);
     // Historique réel (stats, XP, charge, semaine...) : on remplace l'entrée provisoire
     // (valeurs du plan) par les valeurs REELLES saisies dans le bilan. On ne pousse
@@ -8380,6 +8498,10 @@ function coachAnalyze(e){
   // Ajustements prochaines séances
   if(e.pain==='Importantes'||e.fatigue>=5){ adjust.push(t('coach_adj_rest')); }
   else if(e.rpe>=9 && e.fatigue>=4){ adjust.push(t('coach_adj_lighten48h')); }
+  // Séance ressentie bien plus dure que prévu, ou douleurs gênantes : conclure
+  // « ton plan est bien calibré » juste après la critique « bien plus dure que
+  // prévue » était contradictoire (audit 24/09).
+  else if((e.plannedRpe && e.rpe-e.plannedRpe>=3) || e.pain==='Gênantes'){ adjust.push(t('coach_adj_lighten48h')); }
   else if(e.feel>=4 && e.rpe<=6){ adjust.push(t('coach_adj_increaseVolume')); }
   else adjust.push(t('coach_adj_continue'));
   // Motivation
@@ -9053,7 +9175,10 @@ function renderLive(){
       '<span onclick="event.stopPropagation();openLiveExOptions('+i+')" style="color:var(--muted);font-size:20px;padding:4px 4px 4px 8px;cursor:pointer;letter-spacing:1px">⋯</span></div>';
     // Contenu repliable : notes, repos, tableau des séries
     h+='<div id="exBody'+i+'" style="max-height:'+(open?'1400px':'0')+'px;opacity:'+(open?'1':'0')+';overflow:hidden;transition:max-height .32s ease,opacity .22s ease,margin-top .32s ease;margin-top:'+(open?'12':'0')+'px">';
-    h+='<div class="live-rest" onclick="changeRest('+i+')">'+ICN('stopwatch',15)+'<span>'+tp('restTimerLab',e.rest?fmtRest(e.rest):t('disabledLab'))+'</span></div>';
+    // Affichait « Désactivé » quand l'exercice n'avait pas de repos défini, alors que
+    // toggleSet() lance bien 90 s dans ce cas (et changeRest ne propose que 15-300 s) :
+    // l'étiquette montre désormais la durée réellement appliquée (audit 24/09).
+    h+='<div class="live-rest" onclick="changeRest('+i+')">'+ICN('stopwatch',15)+'<span>'+tp('restTimerLab',fmtRest(e.rest||90))+'</span></div>';
     h+='<div style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:8px;text-align:center">'+
       '<div>'+t('setCol')+'</div><div>'+t('prevCol')+'</div><div>'+t('kgCol')+'</div><div>'+t('repsCol')+'</div><div></div></div>';
     st.log.forEach((s,j)=>{
@@ -9403,7 +9528,11 @@ function finishLive(){
   clearInterval(liveTimer); skipRest();
   const dur=Math.round((Date.now()-LIVE.start)/1000);
   const cal=Math.round(LIVE.tonnage*0.05+dur/60*6);
-  const totalReps=LIVE.state.reduce((a,st,i)=>a+st.sets.filter(Boolean).length*st.reps,0);
+  // Répétitions RÉELLEMENT saisies sur les séries validées (avant : séries × reps
+  // prévues, alors que le tonnage, lui, utilisait déjà les valeurs saisies — 10 puis
+  // 12 reps affichaient « 24 » ; audit 24/09).
+  const totalReps=LIVE.state.reduce((a,st)=>a+(st.log||[]).reduce((b,lg,j)=>b+(st.sets[j]?(+lg.reps||0):0),0),0);
+  const xpBefore=(XP&&XP.total)||0;
   // PR : compare au meilleur tonnage par exercice (records charge)
   const prs=[];
   LIVE.state.forEach((st,i)=>{ if(st.sets.some(Boolean)){ const name=LIVE.prog.ex[i].name;
@@ -9423,6 +9552,9 @@ function finishLive(){
   }});
   DB.remove('live_active');
   saveAll(); refreshXP({animate:true}); burst(); sfx('finish'); stopBgActivity();
+  // XP réellement gagnée (le plafond quotidien peut en retirer une partie) au lieu
+  // d'un « +50 XP » écrit en dur dans la traduction.
+  const xpGain=Math.max(0,Math.round(((XP&&XP.total)||0)-xpBefore));
   let h='<div class="popin" style="text-align:center;padding:6px 0"><div style="display:flex;justify-content:center">'+ICN('medal',50,'var(--or)')+'</div><div class="man" style="font-weight:800;font-size:22px;margin:8px 0">'+t('sessionDoneTitle')+'</div></div>';
   h+='<div class="sgrid" style="margin-bottom:12px"><div class="sbox"><div class="v">'+Math.round(LIVE.tonnage)+'</div><div class="l">'+t('tonnageParenKg')+'</div></div><div class="sbox"><div class="v">'+fmtTime(dur)+'</div><div class="l">'+t('durationLab')+'</div></div><div class="sbox"><div class="v">'+LIVE.setsDone+'</div><div class="l">'+t('setsLab')+'</div></div><div class="sbox"><div class="v">'+totalReps+'</div><div class="l">'+t('repsLab')+'</div></div><div class="sbox"><div class="v">'+cal+'</div><div class="l">'+t('caloriesLab')+'</div></div><div class="sbox"><div class="v" style="color:var(--or)">'+prs.length+'</div><div class="l">'+t('recordsBrokenLab')+'</div></div></div>';
   // progression
@@ -9432,7 +9564,7 @@ function finishLive(){
   if(prs.length) h+='<div class="card-t">'+t('newRecordsLab')+'</div>'+prs.map(p=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(242,184,75,.4);background:rgba(242,184,75,.1)">'+p+'</div>').join('');
   // muscles schema
   if(Object.keys(muscles).length){ h+='<div class="card-t" style="margin-top:12px">'+t('musclesWorkedLab')+'</div><div class="muscle-tags" style="margin-bottom:12px">'+Object.keys(muscles).map(m=>'<span class="mtag" style="background:var(--ed);color:var(--e);border-color:var(--e)">'+m+'</span>').join('')+'</div>'; }
-  h+='<div class="badge" style="width:100%;justify-content:center;padding:14px;margin:6px 0 14px">'+t('xpEarnedLab')+'</div>';
+  h+='<div class="badge" style="width:100%;justify-content:center;padding:14px;margin:6px 0 14px">'+tp('xpEarnedLab',xpGain)+'</div>';
   h+='<button class="btn" onclick="closeOv(\'ovLive\');LIVE=null;_finishingLive=false;renderSport()">'+t('closeLab')+'</button>';
   $('#liveBody').innerHTML=h;
 }
@@ -10034,7 +10166,7 @@ function showAchUnlockAnim(a){
   ov.innerHTML='<div class="bd-flash"></div>'+
     '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded;margin-bottom:6px">'+t('newTrophyUnlocked')+'</div>'+
     '<div class="bd-unlock-stage '+(a.cls||'bd-athlete')+'"><div class="bd-rays"></div><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div><div class="bd-ring r4"></div>'+
-    '<div class="bd-unlock-badge">'+achImg(a)+sparks+'</div></div>'+
+    '<div class="bd-unlock-badge">'+achImg(a).replace('loading="lazy"','loading="eager"')+sparks+'</div></div>'+
     '<div class="man" style="font-weight:800;font-size:30px;margin-top:18px;letter-spacing:.5px">'+a.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+a.desc+'</div>'+
     '<div style="color:var(--dim);font-size:12px;margin-top:18px">'+t('tapToContinue')+'</div>';
@@ -10053,7 +10185,7 @@ function replayAchAnim(key){
   const dt=achDates()[key];
   ov.innerHTML='<div class="bd-flash"></div>'+
     '<div class="bd-unlock-stage '+(a.cls||'bd-athlete')+'"><div class="bd-rays"></div><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div>'+
-    '<div class="bd-unlock-badge">'+achImg(a)+sparks+'</div></div>'+
+    '<div class="bd-unlock-badge">'+achImg(a).replace('loading="lazy"','loading="eager"')+sparks+'</div></div>'+
     '<div class="man" style="font-weight:800;font-size:26px;margin-top:18px">'+a.name+'</div>'+
     '<div style="color:var(--muted);font-size:13px;margin-top:6px;max-width:280px">'+a.desc+'</div>'+
     (dt?'<div style="color:var(--dim);font-size:11.5px;margin-top:8px">'+tp('obtainedOn',fmtDate(dt))+'</div>':'')+
@@ -10074,7 +10206,7 @@ function previewAchAnim(key){
   ov.innerHTML='<div class="bd-flash"></div>'+
     '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded;margin-bottom:6px">'+t('previewLocked')+'</div>'+
     '<div class="bd-unlock-stage '+(a.cls||'bd-athlete')+'"><div class="bd-rays"></div><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div>'+
-    '<div class="bd-unlock-badge">'+achImg(a)+sparks+'<div class="bd-lock-chip big">'+ICN('lock',16)+'</div></div></div>'+
+    '<div class="bd-unlock-badge">'+achImg(a).replace('loading="lazy"','loading="eager"')+sparks+'<div class="bd-lock-chip big">'+ICN('lock',16)+'</div></div></div>'+
     '<div class="man" style="font-weight:800;font-size:26px;margin-top:18px">'+a.name+'</div>'+
     '<div class="bd-preview-cond" style="text-align:center;color:var(--muted);font-size:13px;margin-top:8px;max-width:280px">'+a.desc+'</div>'+
     (a.manual?'<button type="button" class="btn sm" style="width:auto;margin-top:20px;padding:11px 26px" data-mark>'+t('markAsObtained')+'</button>':'')+
@@ -10574,7 +10706,7 @@ function renderVDOTtool(){
 }
 let rmW=80,rmR=5;
 function renderRMtool(){
-  const rm=Math.round(rmW*(1+rmR/30)); // Epley
+  const rm=rmR<=1?rmW:Math.round(rmW*(1+rmR/30)); // Epley (1 rép. = la charge elle-même, pas +3 %)
   let h='<div class="card"><div class="field"><label>'+t('liftedLoadKgLab')+'</label><div class="stepper"><button onclick="rmW=Math.max(0,rmW-2.5);renderRMtool()">−</button><span class="val">'+rmW+'</span><button onclick="rmW+=2.5;renderRMtool()">+</button></div></div>';
   h+='<div class="field"><label>'+t('repsLab')+'</label><div class="stepper"><button onclick="rmR=Math.max(1,rmR-1);renderRMtool()">−</button><span class="val">'+rmR+'</span><button onclick="rmR++;renderRMtool()">+</button></div></div></div>';
   h+='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var(--e)">'+rm+' kg</div><div class="lab">'+t('estimated1RMLab')+'</div></div>';
@@ -10596,10 +10728,10 @@ function renderLoadTool(){
   for(let i=0;i<28;i++){ const d=new Date(end);d.setDate(end.getDate()-i); const l=load[dateKey(d)]||0; chronic+=l; if(i<7)acute+=l; }
   acute/=7; chronic/=28;
   const ratio=chronic>0?(acute/chronic):0;
-  let status,col; if(ratio===0){status=t('noDataLab');col='--dim';} else if(ratio<0.8){status='Sous-charge';col='--platine';} else if(ratio<=1.3){status='Optimal';col='--ok';} else if(ratio<=1.5){status='Élevé';col='--warn';} else {status='Risque blessure';col='--bad';}
-  let h='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var('+col+')">'+ratio.toFixed(2)+'</div><div class="lab">Ratio Aigu/Chronique (ACWR)</div><div class="badge" style="margin-top:10px;background:var(--ed);color:var('+col+')">'+status+'</div></div>';
-  h+='<div class="sgrid"><div class="sbox"><div class="v">'+Math.round(acute)+'</div><div class="l">Charge aiguë (7j)</div></div><div class="sbox"><div class="v">'+Math.round(chronic)+'</div><div class="l">Charge chronique (28j)</div></div></div>';
-  h+='<div class="tip" style="margin-top:12px">Zone optimale : 0,8–1,3. Au-dessus de 1,5, le risque de blessure augmente fortement.</div>';
+  let status,col; if(ratio===0){status=t('noDataLab');col='--dim';} else if(ratio<0.8){status=t('acwrUnder');col='--platine';} else if(ratio<=1.3){status=t('acwrOptimal');col='--ok';} else if(ratio<=1.5){status=t('acwrHigh');col='--warn';} else {status=t('acwrRisk');col='--bad';}
+  let h='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var('+col+')">'+ratio.toFixed(2)+'</div><div class="lab">'+t('acwrRatioLab')+'</div><div class="badge" style="margin-top:10px;background:var(--ed);color:var('+col+')">'+status+'</div></div>';
+  h+='<div class="sgrid"><div class="sbox"><div class="v">'+Math.round(acute)+'</div><div class="l">'+t('acwrAcuteLab')+'</div></div><div class="sbox"><div class="v">'+Math.round(chronic)+'</div><div class="l">'+t('acwrChronicLab')+'</div></div></div>';
+  h+='<div class="tip" style="margin-top:12px">'+t('acwrTip')+'</div>';
   $('#outBody').innerHTML=h;
 }
 let calKm=10,calMin=50;
@@ -10703,13 +10835,13 @@ let pgW=60,pgInc=2.5,pgWk=8;
 function renderProgTool(){
   let h='<div class="card"><div class="field"><label>'+t('currentLoadKgLab')+'</label><div class="stepper"><button onclick="pgW=Math.max(0,pgW-2.5);renderProgTool()">−</button><span class="val">'+pgW+'</span><button onclick="pgW+=2.5;renderProgTool()">+</button></div></div><div class="field"><label>'+t('weeklyProgressKgLab')+'</label><div class="pills">'+[1.25,2.5,5].map(x=>'<div class="pill '+(pgInc===x?'on':'')+'" onclick="pgInc='+x+';renderProgTool()">+'+x+'</div>').join('')+'</div></div><div class="field"><label>'+t('weeksLab')+'</label><div class="stepper"><button onclick="pgWk=Math.max(1,pgWk-1);renderProgTool()">−</button><span class="val">'+pgWk+'</span><button onclick="pgWk++;renderProgTool()">+</button></div></div></div>';
   h+='<div class="card"><div class="card-t">'+t('projectionLab')+'</div>';
-  for(let i=1;i<=pgWk;i++){ h+='<div class="zrow"><span class="zname">Semaine '+i+'</span><span class="zval mono">'+(pgW+pgInc*i)+' kg</span></div>'; }
+  for(let i=1;i<=pgWk;i++){ h+='<div class="zrow"><span class="zname">'+tp('weekN',i)+'</span><span class="zval mono">'+(pgW+pgInc*i)+' kg</span></div>'; }
   h+='</div>';
   $('#outBody').innerHTML=h;
 }
 function renderReposTool(){
-  const data=[['Force max (1-5 reps)','3-5 min'],['Hypertrophie (6-12)','60-90 s'],['Endurance (15+)','30-45 s'],['Puissance / explosif','2-3 min'],['Superset','0 s entre, 90 s après']];
-  let h='<div class="card"><div class="card-t">'+ICN('timer',15,'var(--e)')+t('restTimesLab')+'</div>'+data.map(d=>'<div class="zrow"><span class="zname">'+d[0]+'</span><span class="zval mono">'+d[1]+'</span></div>').join('')+'</div><div class="tip">Plus la charge est lourde, plus le repos doit être long pour récupérer le système nerveux.</div>';
+  const data=[[t('restMaxStrength'),'3-5 min'],[t('restHypertrophy'),'60-90 s'],[t('restEndurance'),'30-45 s'],[t('restPower'),'2-3 min'],['Superset',t('restSupersetVal')]];
+  let h='<div class="card"><div class="card-t">'+ICN('timer',15,'var(--e)')+t('restTimesLab')+'</div>'+data.map(d=>'<div class="zrow"><span class="zname">'+d[0]+'</span><span class="zval mono">'+d[1]+'</span></div>').join('')+'</div><div class="tip">'+t('restTip')+'</div>';
   $('#outBody').innerHTML=h;
 }
 let pomoState={phase:'work',left:25*60,running:false,iv:null,count:0};
@@ -10719,7 +10851,7 @@ function renderPomodoro(){
   const col=pomoState.phase==='work'?'var(--bad)':'var(--ok)';
   const lab=pomoState.phase==='work'?t('pomoFocus'):t('pomoBreak');
   let h='<div class="card" style="text-align:center"><div class="badge" style="background:var(--ed);color:'+col+'">'+lab+'</div><div class="ring-wrap" style="width:180px;height:180px;margin:14px auto"><span id="pmRing">'+ringSVG(180,pct,12,col)+'</span><div class="ring-c"><div class="big mono" id="pmNum" style="font-size:36px">'+fmtMS(pomoState.left)+'</div></div></div>';
-  h+='<div class="row" style="gap:10px"><button class="btn" onclick="pomoToggle()">'+(pomoState.running?'Pause':'▶ Start')+'</button><button class="btn ghost" onclick="pomoReset()">↺</button></div>';
+  h+='<div class="row" style="gap:10px"><button class="btn" onclick="pomoToggle()">'+(pomoState.running?t('pauseShort'):'▶ '+t('playLab'))+'</button><button class="btn ghost" onclick="pomoReset()">↺</button></div>';
   h+='<div style="margin-top:12px;font-size:12px;color:var(--muted)">'+tp('pomodorosDoneLab',pomoState.count)+'</div></div>';
   $('#outBody').innerHTML=h;
 }
@@ -11016,26 +11148,28 @@ function renderPriere(){
   $('#outBody').innerHTML=h;
 }
 function prayerTimes(){
-  const lat=36.75,lon=5.07,tz=1; // Algeria UTC+1
+  // Béjaïa, méthode Fajr 18° / Isha 17°, fuseau Algérie fixe UTC+1.
+  // AUDIT 24/09 : q (longitude moyenne du Soleil) et l'ascension droite n'étaient
+  // jamais ramenés à [0,360[ / [0,24[ : dès fin mars, l'équation du temps dérivait
+  // d'un ou plusieurs jours entiers et TOUTES les heures sortaient négatives
+  // (« Fajr -19:03 · dans -44 min »). Même formule côté serveur
+  // (send-prayer-notifs), où aucune notification de prière ne partait plus.
+  const lat=36.75,lon=5.07,tz=1;
   const now=new Date();
-  const N=Math.floor((now-new Date(now.getFullYear(),0,0))/86400000);
-  const rad=Math.PI/180;
-  // sun declination & equation of time
-  const g=(357.529+0.98560028*N)*rad;
-  const q=280.459+0.98564736*N;
-  const L=(q+1.915*Math.sin(g)+0.020*Math.sin(2*g))*rad;
-  const decl=Math.asin(0.39779*Math.sin(L));
-  const eqt=(q/15)-(Math.atan2(Math.cos(23.44*rad)*Math.sin(L),Math.cos(L))/rad)/15;
-  const Dhuhr=12+tz-lon/15-eqt;
+  const rad=Math.PI/180, fixA=a=>((a%360)+360)%360, fixH=h=>((h%24)+24)%24;
+  const D=(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate(),12)-Date.UTC(2000,0,1,12))/86400000; // jours depuis J2000
+  const g=fixA(357.529+0.98560028*D)*rad;
+  const q=fixA(280.459+0.98564736*D);
+  const L=fixA(q+1.915*Math.sin(g)+0.020*Math.sin(2*g))*rad;
+  const e=(23.439-0.00000036*D)*rad;
+  const decl=Math.asin(Math.sin(e)*Math.sin(L));
+  const RA=fixH(Math.atan2(Math.cos(e)*Math.sin(L),Math.cos(L))/rad/15);
+  let eqt=q/15-RA; if(eqt>12) eqt-=24; if(eqt<-12) eqt+=24;
+  const Dhuhr=fixH(12+tz-lon/15-eqt);
   function hourAngle(angle){ const c=(Math.sin(-angle*rad)-Math.sin(lat*rad)*Math.sin(decl))/(Math.cos(lat*rad)*Math.cos(decl)); return Math.acos(Math.max(-1,Math.min(1,c)))/rad/15; }
-  function asrAngle(){ const c=(Math.sin(Math.atan(1/(1+Math.tan(Math.abs(lat-decl/rad)*rad))))-Math.sin(lat*rad)*Math.sin(decl))/(Math.cos(lat*rad)*Math.cos(decl)); return Math.acos(Math.max(-1,Math.min(1,c)))/rad/15; }
-  const fajr=Dhuhr-hourAngle(18);
-  const sunrise=Dhuhr-hourAngle(0.833);
-  const asr=Dhuhr+asrAngle();
-  const maghrib=Dhuhr+hourAngle(0.833);
-  const isha=Dhuhr+hourAngle(17);
-  const f=t=>{ t=(t+24)%24; let hh=Math.floor(t),mm=Math.round((t-hh)*60); if(mm===60){hh++;mm=0;} return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0'); };
-  return {Fajr:f(fajr),Sunrise:f(sunrise),Dhuhr:f(Dhuhr+1/60),Asr:f(asr),Maghrib:f(maghrib),Isha:f(isha)};
+  function asrAngle(){ const c=(Math.sin(Math.atan(1/(1+Math.tan(Math.abs(lat*rad-decl)))))-Math.sin(lat*rad)*Math.sin(decl))/(Math.cos(lat*rad)*Math.cos(decl)); return Math.acos(Math.max(-1,Math.min(1,c)))/rad/15; }
+  const f=t=>{ t=fixH(t); let hh=Math.floor(t),mm=Math.round((t-hh)*60); if(mm===60){hh=(hh+1)%24;mm=0;} return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0'); };
+  return {Fajr:f(Dhuhr-hourAngle(18)),Sunrise:f(Dhuhr-hourAngle(0.833)),Dhuhr:f(Dhuhr+1/60),Asr:f(Dhuhr+asrAngle()),Maghrib:f(Dhuhr+hourAngle(0.833)),Isha:f(Dhuhr+hourAngle(17))};
 }
 // Prochaine prière à venir (bascule sur le Fajr du lendemain une fois Isha passée) —
 // utilisé pour la mise en avant sur l'accueil (homePrayerCardHTML).
@@ -11490,7 +11624,7 @@ function pfThemeSwitchHTML(){
 function pfAppearanceHTML(){
   const mode=P.mode||'dark';
   const isLight=mode==='light';
-  let s='<div class="lab" style="margin-bottom:10px">Thème</div>';
+  let s='<div class="lab" style="margin-bottom:10px">'+t('theme')+'</div>';
   s+='<div class="row" style="justify-content:space-between;align-items:center">'+
      '<span style="font-size:14px;color:var(--muted);display:inline-flex;align-items:center;gap:5px">'+(isLight?ICN('sun',15)+'Clair':ICN('moon',15)+'Sombre')+'</span>'+
      pfThemeSwitchHTML().replace('theme-switch sm','theme-switch')+
@@ -11729,6 +11863,19 @@ function editBio(){ customPrompt(t('bioPromptLabel'),P.bio||'',v=>{ P.bio=v.slic
    balise ou de sortir d'un attribut. pendingEmail/pendingNoPw (état interne
    d'un changement d'e-mail en cours) ne sont jamais importés. */
 function stripHtmlChars(s){ return String(s).replace(/[<>"`\\]/g,''); }
+// Copie profonde bornée d'une rubrique importée : nombres finis, booléens et null
+// gardés tels quels, textes sans caractère HTML (<>"`\) et tronqués, tableaux
+// ≤ 5000 éléments, objets ≤ 300 clés, profondeur ≤ 8. Rien d'exécutable ne peut
+// traverser, quel que soit l'écran qui affiche ensuite ces données.
+function cleanImportedDeep(v,depth){
+  depth=depth||0; if(depth>8) return null;
+  if(v===null||typeof v==='boolean') return v;
+  if(typeof v==='number') return Number.isFinite(v)?v:null;
+  if(typeof v==='string') return stripHtmlChars(v).slice(0,4000);
+  if(Array.isArray(v)) return v.slice(0,5000).map(x=>cleanImportedDeep(x,depth+1));
+  if(typeof v==='object'){ const o={}; Object.keys(v).slice(0,300).forEach(k=>{ if(k==='__proto__'||k==='constructor'||k==='prototype') return; o[stripHtmlChars(k).slice(0,80)]=cleanImportedDeep(v[k],depth+1); }); return o; }
+  return null;
+}
 function cleanImportedProfile(src){
   const o={};
   ['height','weight','hrMax','hrRest','kmWeek','kmWeekMin','kmWeekMax','soundVol','vdot','joinedAt'].forEach(k=>{
@@ -11777,6 +11924,19 @@ function importData(){
         if(typeof d.xp.name==='string') nx.name=stripHtmlChars(d.xp.name).slice(0,40);
         XP=Object.assign({total:0,level:1,name:'Recrue',pastGoalXP:0},nx); DB.save('xp',XP);
       }
+      // Rubriques exportées mais jusque-là ignorées à l'import (plans, objectifs,
+      // agenda) ou jamais exportées (records, bilans, poids, tracker, préférences).
+      if(Array.isArray(d.custom)){ CUSTOM=cleanImportedDeep(d.custom); }
+      if(d.plan && typeof d.plan==='object' && !Array.isArray(d.plan) && Array.isArray(d.plan.sessions)){ PLAN=cleanImportedDeep(d.plan); }
+      if(d.goals && typeof d.goals==='object'){ GOALS=cleanImportedDeep(d.goals); }
+      if(d.agenda && typeof d.agenda==='object'){ AGENDA=cleanImportedDeep(d.agenda); }
+      if(Array.isArray(d.records)){ RECORDS=cleanImportedDeep(d.records).filter(r=>r&&typeof r==='object'&&!Array.isArray(r)); }
+      if(Array.isArray(d.sesslog)){ SESSLOG=cleanImportedDeep(d.sesslog); }
+      if(Array.isArray(d.weightlog)){ WEIGHTLOG=cleanImportedDeep(d.weightlog); }
+      if(d.tracker && typeof d.tracker==='object'){ TRACKER=cleanImportedDeep(d.tracker); }
+      if(d.prefs && typeof d.prefs==='object' && !Array.isArray(d.prefs)){ PREFS=cleanImportedDeep(d.prefs); }
+      P.vdot=computeVDOTfromRecords()||computeVDOT();
+      saveAll(); refreshXP();
       toast(t('dataImported')); applyTheme(); renderProfile(); }catch(err){ toast(t('invalidFile')); } };
     r.readAsText(f); };
   inp.click();
@@ -11829,7 +11989,7 @@ function saveRecord(){
   P.vdot=computeVDOTfromRecords();
   saveAll(); refreshXP({animate:true}); openRecords(); toast(recTmp.competition?t('perfAddedComp'):t('perfAdded')); burst();
 }
-function delRecord(i){ const sorted=[...RECORDS].sort((a,b)=>(a.meters||0)-(b.meters||0)); const r=sorted[i]; RECORDS=RECORDS.filter(x=>x!==r); P.vdot=computeVDOTfromRecords(); saveAll(); openRecords(); }
+function delRecord(i){ const sorted=[...RECORDS].sort((a,b)=>(a.meters||0)-(b.meters||0)); const r=sorted[i]; RECORDS=RECORDS.filter(x=>x!==r); P.vdot=computeVDOTfromRecords()||computeVDOT(); saveAll(); openRecords(); }
 function computeVDOTfromRecords(){
   let best=computeVDOT();
   RECORDS.forEach(r=>{ if(r.meters&&r.time){ const v=vdotFromRace(r.meters,parseTime(r.time)); if(v>best)best=v; }});
@@ -11852,6 +12012,14 @@ function openProfileEdit(){
 }
 let peUsernameOk=true;
 async function saveProfileEdit(){
+  // Bornes réalistes (audit 24/09) : 5000 kg, -5 cm, FC max 999 ou une FC de repos
+  // au-dessus de la FC max étaient enregistrés tels quels et faussaient IMC,
+  // calories, métabolisme, zones cardiaques et volume du plan.
+  { const num=id=>{ const v=$('#'+id).value.trim(); return v===''?null:+v; };
+    const h=num('pe_h'), w=num('pe_w'), hm=num('pe_hrmax'), hr=num('pe_hrrest'), km=num('pe_km');
+    const bad=(v,a,b)=>v!=null && !(v>=a && v<=b);
+    if(bad(h,100,250)||bad(w,25,250)||bad(hm,120,230)||bad(hr,30,120)||bad(km,0,250)||(hm!=null&&hr!=null&&hr>=hm)){ toast(t('profileValuesInvalid')); return; }
+    const bd=$('#pe_bday').value; if(bd){ const age=(Date.now()-new Date(bd+'T00:00:00'))/31557600000; if(!(age>=6&&age<=100)){ toast(t('bdayInvalid')); return; } } }
   const newUsername=$('#pe_username').value.trim();
   if(newUsername && newUsername!==P.username){
     if(!usernameFormatOk(newUsername)){ toast(t('usernameInvalid')); return; }
@@ -11866,13 +12034,20 @@ async function saveProfileEdit(){
   P.kmWeek=+$('#pe_km').value||P.kmWeek; P.goal=$('#pe_goal').value.trim(); P.compDate=$('#pe_comp').value;
   P.t5k=$('#pe_5k').value.trim(); P.t3k=$('#pe_3k').value.trim(); P.t1500=$('#pe_1500').value.trim(); P.t10k=$('#pe_10k').value.trim();
   P.pb5k=P.t5k; P.pb3k=P.t3k; P.pb1500=P.t1500; P.pb10k=P.t10k;
-  P.vdot=computeVDOT();
+  // Records d'abord, comme au démarrage (initApp) : computeVDOT() seul ne lit que
+  // les chronos du formulaire et remettait la VDOT à 0 pour qui avait saisi ses
+  // performances à l'onboarding (qui les range dans RECORDS).
+  P.vdot=computeVDOTfromRecords()||computeVDOT();
   saveAll(); closeOv('ovProfile'); renderProfile(); toast(t('profileUpdated'));
 }
 
 /* ---------- SETTINGS ---------- */
 function exportData(){
-  const data={profile:P,sessions:SESS,muscu:MSESS,custom:CUSTOM,plan:PLAN,goals:GOALS,agenda:AGENDA,xp:XP};
+  // Sauvegarde COMPLÈTE : avant l'audit du 24/09, records (qui font la VDOT),
+  // bilans de séance, suivi du poids, tracker et préférences n'étaient pas
+  // exportés — restaurer une sauvegarde les perdait.
+  const data={exportVersion:2,profile:P,sessions:SESS,muscu:MSESS,custom:CUSTOM,plan:PLAN,goals:GOALS,agenda:AGENDA,xp:XP,
+    records:RECORDS,sesslog:SESSLOG,weightlog:WEIGHTLOG,tracker:TRACKER,prefs:PREFS};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='ikorun-export.json'; a.click();
   toast(t('exportGenerated'));

@@ -240,6 +240,63 @@
   }
 
   /* ======================= 7. INTÉGRITÉ DES DONNÉES ====================== */
+  /* ======================= 9. AUDIT DU 24/09 ============================
+     Chaque test encode un bug réel trouvé en forçant l'app ce jour-là. */
+  function testAudit2409(){
+    var c='9. Audit 24/09';
+    // Les heures de prière sortaient toutes négatives (« Fajr -19:03 ») dès fin
+    // mars : angles jamais ramenés à [0,360[. Même bug côté serveur, où plus
+    // aucune notification de prière ne partait.
+    essaie(c,'heures de prière valides et dans l\'ordre',function(){
+      var p=prayerTimes(), ordre=['Fajr','Sunrise','Dhuhr','Asr','Maghrib','Isha'], prev=-1;
+      for(var i=0;i<ordre.length;i++){
+        var v=p[ordre[i]]; if(!/^\d\d:\d\d$/.test(v)) return false;
+        var m=+v.slice(0,2)*60+ +v.slice(3); if(m<=prev) return false; prev=m;
+      }
+      return 'Fajr '+p.Fajr+' · Isha '+p.Isha;
+    });
+    // Un fichier de sauvegarde fabriqué pouvait injecter du HTML via le profil
+    // (taille, poids, objectif…) ou les rubriques jusque-là non importées.
+    essaie(c,'l\'import neutralise le HTML et ne garde que les champs connus',function(){
+      var d=cleanImportedDeep({a:'<img src=x onerror=1>',b:['<b>ok</b>',3],c:{d:'"x'}});
+      if(JSON.stringify(d).indexOf('<')>=0 || d.c.d.indexOf('"')>=0) return false;
+      var p=cleanImportedProfile({height:'<img>',weight:'72',pendingEmail:'a@b.c',inconnu:1,name:'A<b>'});
+      if('height' in p || 'pendingEmail' in p || 'inconnu' in p || p.weight!==72 || p.name!=='Ab') return false;
+      return true;
+    });
+    essaie(c,'la course visée est déduite de l\'objectif',function(){
+      var ancien=P.goal;
+      try{ P.goal='Semi de Béjaïa sous 2h'; return inferRaceFromGoal()==='Semi-marathon'; }
+      finally{ P.goal=ancien; }
+    });
+    // Le Jour J tombait sur « le dernier jour d'entraînement de la dernière
+    // semaine » (un samedi pour une course un jeudi), suivi d'autres séances.
+    essaie(c,'le Jour J est posé exactement à la date de la course',function(){
+      photographie();
+      var saved={compDate:P.compDate,days:P.days,objRace:P.objRace,kmWeekMin:P.kmWeekMin,kmWeekMax:P.kmWeekMax};
+      var vraiToast=window.toast, vraiBurst=window.burst, vraiRender=window.renderSport;
+      try{
+        window.toast=function(){}; window.burst=function(){}; window.renderSport=function(){};
+        // Profil vide (compte neuf, pas encore de chrono) : sans VDOT, generatePlan
+        // refuse à juste titre — on prête un record le temps du test (restaure()
+        // remet RECORDS en place ensuite).
+        if(!getUserVDOT()) RECORDS=[{dist:'5000 m',meters:5000,time:'25:00',date:todayKey()}];
+        var d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+60); while(d.getDay()!==4) d.setDate(d.getDate()+1);
+        var cible=dateKey(d);
+        P.compDate=cible; P.days=[1,3,5,6]; P.objRace='Semi-marathon'; P.kmWeekMin=35; P.kmWeekMax=56;
+        generatePlan();
+        var course=PLAN.sessions.filter(function(s){ return s.baseType==='COURSE'; });
+        var apres=PLAN.sessions.filter(function(s){ return s.date>cible; });
+        if(course.length!==1 || course[0].date!==cible || apres.length) return false;
+        return 'course le '+cible+', aucune séance après';
+      } finally {
+        window.toast=vraiToast; window.burst=vraiBurst; window.renderSport=vraiRender;
+        P.compDate=saved.compDate; P.days=saved.days; P.objRace=saved.objRace; P.kmWeekMin=saved.kmWeekMin; P.kmWeekMax=saved.kmWeekMax;
+        restaure();
+      }
+    });
+  }
+
   function testIntegrite(){
     var c='7. Données';
     // Bug réel : double validation = deux entrées dans SESS et XP crédité deux
@@ -313,11 +370,17 @@
       }
       // L'analyseur doit tourner un peu avant la première mesure, sinon il rend
       // des zéros et on croit à tort que le son ne sort pas (piège rencontré).
+      // Le test mesure le moteur audio, pas le réglage de l'utilisateur : avec
+      // « Sons » désactivé dans le Profil, sfx() se tait et le test échouait à tort
+      // (faux positif constaté le 24/09). On force le son le temps de la mesure.
+      var sonsAvant=P && P.sounds;
+      if(P) P.sounds=true;
       setTimeout(function(){
         var noms=['start','goal','medal'];
         var i=0, niveaux={};
         (function suivant(){
           if(i>=noms.length){
+            if(P) P.sounds=sonsAvant;
             _master.disconnect(an);
             var tous=noms.every(function(n){ return niveaux[n]>0.005; });
             chk(c,'chaque effet produit réellement du signal', tous, JSON.stringify(niveaux));
@@ -371,6 +434,7 @@
     testXss();
     testMinuteurs();
     testIntegrite();
+    testAudit2409();
     Promise.resolve(testI18nUsage())
       .then(function(){ return testSon(); })
       .catch(function(e){ ko('0. Suite','exécution', e && e.message); })
