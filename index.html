@@ -867,7 +867,7 @@ body[data-scr="home"] .topbar{display:none;}
 @keyframes slideUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
 /* Une fois qu'un écran a été affiché une première fois, ses animations d'entrée
    ne rejouent plus quand on y revient (on marque l'écran via data-seen). */
-.scr[data-seen] .stag,.scr[data-seen] .rank-card{opacity:1 !important;animation:none !important;transform:none !important;}
+.scr[data-seen] .stag:not(.ik-in),.scr[data-seen] .rank-card:not(.ik-in){opacity:1 !important;animation:none !important;transform:none !important;}
 /* Navigation interne (ouvrir un outil, revenir en arrière, changer de vue) —
    posé par swapIn() dans app.js. Réutilise pageIn pour que ça se sente comme
    la même famille de mouvement que l'ouverture d'un onglet principal. */
@@ -2236,11 +2236,159 @@ html[data-mode] .seg-ctrl.sub .seg-btn.on{background:var(--s3);color:var(--snow)
    Une sur deux part à contretemps : le mouvement reste net mais devient une vague. */
 :nth-child(even)>.icb svg,:nth-child(even)>.lr-icon svg,.qa-pill:nth-child(even) svg,.favtile:nth-child(even) svg,.perfcard:nth-child(even) .pcl svg{animation-delay:-1.1s;}
 
+/* ===================================================================
+   IKORUN MOTION (25/09) — un seul langage de mouvement pour toute l'app,
+   tiré du logo : deux lames en diagonale lancées à pleine vitesse. Les
+   choses arrivent vite et se posent en douceur (--ease-stride), le motif
+   signature est un trait de lumière incliné comme les lames (-19°).
+   Pilotage : ikPlay()/ikEnterScreen() dans app.js posent les classes
+   .ik-in (cascade), .ik-play (graphiques) et .ik-from-l/r (sens d'arrivée).
+   =================================================================== */
+:root{--ease-stride:cubic-bezier(.16,1,.3,1);--ik-step:48ms;}
+@property --ik-sweep{syntax:'<percentage>';inherits:false;initial-value:100%;}
+
+/* --- Ouverture d'un onglet : l'écran arrive du côté de l'onglet touché --- */
+.scr.ik-from-r{animation:ikScrR .5s var(--ease-stride) both;}
+.scr.ik-from-l{animation:ikScrL .5s var(--ease-stride) both;}
+@keyframes ikScrR{from{opacity:0;transform:translateX(38px);}to{opacity:1;transform:none;}}
+@keyframes ikScrL{from{opacity:0;transform:translateX(-38px);}to{opacity:1;transform:none;}}
+.ik-title-r{animation:ikTitleR .45s var(--ease-stride) both;}
+.ik-title-l{animation:ikTitleL .45s var(--ease-stride) both;}
+@keyframes ikTitleR{from{opacity:0;transform:translateX(16px);filter:blur(3px);}to{opacity:1;transform:none;filter:none;}}
+@keyframes ikTitleL{from{opacity:0;transform:translateX(-16px);filter:blur(3px);}to{opacity:1;transform:none;filter:none;}}
+
+/* --- Cascade : les blocs entrent l'un après l'autre --- */
+.ik-in{animation:ikRise .64s var(--ease-stride) both;animation-delay:calc(var(--i,0) * var(--ik-step) + 50ms);}
+@keyframes ikRise{from{opacity:0;transform:translateY(24px) scale(.97);}to{opacity:1;transform:none;}}
+/* la cascade remplace l'ancienne entrée .stag (sinon les deux s'additionnent) */
+.scr[data-seen] .stag.ik-in{opacity:1;}
+
+/* --- Trait de vitesse qui balaie la carte principale à l'ouverture --- */
+.ik-streak{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none;z-index:3;}
+.ik-streak i{position:absolute;top:-40%;bottom:-40%;left:0;width:34%;
+  background:linear-gradient(90deg,transparent,rgba(var(--e2-rgb),.16) 55%,rgba(255,255,255,.34) 70%,transparent);
+  transform:translateX(-130%) skewX(-19deg);animation:ikStreak 1s .28s var(--ease-stride) both;mix-blend-mode:screen;}
+html[data-mode="light"] .ik-streak i{mix-blend-mode:normal;background:linear-gradient(90deg,transparent,rgba(var(--e-rgb),.08) 55%,rgba(var(--e-rgb),.16) 70%,transparent);}
+@keyframes ikStreak{to{transform:translateX(380%) skewX(-19deg);}}
+
+/* --- Graphiques qui se dessinent (.ik-play posé ~2,5 s sur le conteneur) --- */
+.ik-play .kbar,.ik-play .hv7-hw-bar b{transform-origin:50% 100%;animation:ikGrow .75s var(--ease-stride) both;animation-delay:calc(.12s + var(--bi,0) * 55ms);}
+@keyframes ikGrow{from{transform:scaleY(0);opacity:.2;}to{transform:none;opacity:1;}}
+.ik-play :is(.pbar,.kgoal-bar,.goal-bar)>div{transform-origin:0 50%;animation:ikFill 1s .22s var(--ease-stride) both;}
+[dir="rtl"] .ik-play :is(.pbar,.kgoal-bar,.goal-bar)>div{transform-origin:100% 50%;}
+@keyframes ikFill{from{transform:scaleX(0);}to{transform:none;}}
+.ik-play .sp-rail i{transform-origin:0 50%;animation:ikFill .5s var(--ease-stride) both;animation-delay:calc(.18s + var(--bi,0) * 90ms);}
+[dir="rtl"] .ik-play .sp-rail i{transform-origin:100% 50%;}
+.ik-play .lc-line{stroke-dasharray:1;animation:ikDraw 1.15s .15s var(--ease-stride) both;}
+@keyframes ikDraw{from{stroke-dashoffset:1;}to{stroke-dashoffset:0;}}
+.ik-play .lc-area{animation:ikFade .9s .55s ease both;}
+@keyframes ikFade{from{opacity:0;}to{opacity:1;}}
+.ik-play .lc-dot{transform-box:fill-box;transform-origin:center;animation:ikPop .5s var(--ease-spring) both;animation-delay:calc(.2s + var(--bi,0) * 110ms);}
+@keyframes ikPop{0%{opacity:0;transform:scale(.3);}70%{opacity:1;transform:scale(1.18);}100%{opacity:1;transform:none;}}
+svg.ik-sweep{-webkit-mask:conic-gradient(from 90deg,#000 var(--ik-sweep),transparent 0);mask:conic-gradient(from 90deg,#000 var(--ik-sweep),transparent 0);animation:ikSweep 1.05s .15s var(--ease-stride) both;}
+@keyframes ikSweep{from{--ik-sweep:0%;}to{--ik-sweep:100%;}}
+.ik-play .bd-cell{animation:ikPop .55s var(--ease-spring) both;animation-delay:calc(.05s + var(--bi,0) * 40ms);}
+.ik-play .bd-cell .bd-icon:not(.locked){animation:ikBadgeGlow 1.2s ease both;animation-delay:calc(.3s + var(--bi,0) * 40ms);}
+@keyframes ikBadgeGlow{0%{filter:brightness(1);}35%{filter:brightness(1.45) drop-shadow(0 0 10px rgba(var(--e-rgb),.6));}100%{filter:none;}}
+
+/* --- Onglets / filtres : l'élément choisi rebondit --- */
+.seg-btn.on,.fr-tab.on,.pill.on{animation:ikTabPop .4s var(--ease-spring);}
+@keyframes ikTabPop{0%{transform:scale(.9);}60%{transform:scale(1.05);}100%{transform:none;}}
+.card,.favtile,.sbox,.ktile,.hv7-ktile{transition:background .25s ease,border-color .25s ease,color .25s ease,transform .22s var(--ease-spring);}
+
+/* --- Chronomètre : couloir de piste avec un « coureur » lumineux --- */
+.ch-lane{position:relative;height:3px;margin:16px auto 0;max-width:260px;border-radius:3px;background:rgba(var(--e-rgb),.14);overflow:hidden;}
+.ch-lane i{position:absolute;top:0;bottom:0;left:0;width:34%;border-radius:3px;background:linear-gradient(90deg,transparent,rgba(var(--e-rgb),.9),#fff);
+  transform:translateX(-100%);animation:ikLane 1.25s linear infinite;animation-play-state:paused;opacity:0;transition:opacity .3s;}
+.ch-face.run .ch-lane i{animation-play-state:running;opacity:1;}
+[dir="rtl"] .ch-lane i{animation-direction:reverse;}
+@keyframes ikLane{from{transform:translateX(-100%);}to{transform:translateX(300%);}}
+.ch-face.run #chDisp{text-shadow:0 0 22px rgba(var(--e-rgb),.45);}
+.ch-face.run .ch-main{animation:ikPing 1.5s ease-out infinite;}
+.ch-face:not(.run) .ch-main{animation:ikBreathe 2.4s ease-in-out infinite;}
+@keyframes ikPing{0%{box-shadow:0 0 0 0 rgba(255,180,84,.55);}100%{box-shadow:0 0 0 22px rgba(255,180,84,0);}}
+@keyframes ikBreathe{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(51,211,153,.35);}50%{transform:scale(1.05);box-shadow:0 0 0 12px rgba(51,211,153,0);}}
+.zrow.ik-new{animation:ikLapIn .55s var(--ease-stride) both;}
+@keyframes ikLapIn{from{opacity:0;transform:translateX(-18px);box-shadow:inset 0 0 0 100px rgba(var(--e-rgb),.18);}to{opacity:1;transform:none;box-shadow:inset 0 0 0 100px rgba(var(--e-rgb),0);}}
+
+/* --- Minuteur / repos : les dernières secondes battent comme un cœur --- */
+.ik-bump{animation:ikBump .42s var(--ease-spring);}
+@keyframes ikBump{0%{transform:scale(1);}35%{transform:scale(1.22);}100%{transform:none;}}
+.ring-wrap.ik-urgent{animation:ikUrgent 1s ease-in-out infinite;}
+@keyframes ikUrgent{0%,100%{filter:drop-shadow(0 0 0 rgba(255,92,108,0));}50%{filter:drop-shadow(0 0 14px rgba(255,92,108,.55));}}
+
+/* --- Séance muscu : série validée, exercice terminé --- */
+.setcheck{position:relative;}
+.set-swipe-row.ik-done{animation:ikRowFlash 1s ease both;}
+@keyframes ikRowFlash{from{box-shadow:inset 0 0 0 100px rgba(51,211,153,.24);}to{box-shadow:inset 0 0 0 100px rgba(51,211,153,0);}}
+.ik-done .setcheck.on{animation:ikCheckPop .55s var(--ease-spring);}
+@keyframes ikCheckPop{0%{transform:scale(.5) rotate(-25deg);}60%{transform:scale(1.25) rotate(6deg);}100%{transform:none;}}
+.ik-done .setcheck.on::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:2px solid var(--ok);animation:ikRing .65s ease-out both;pointer-events:none;}
+@keyframes ikRing{from{transform:scale(.6);opacity:1;}to{transform:scale(2.2);opacity:0;}}
+.ik-done .setcheck.on::before{content:'';position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px;border-radius:50%;pointer-events:none;
+  box-shadow:0 -19px 0 var(--ok),13px -13px 0 var(--e2),19px 0 0 var(--ok),13px 13px 0 var(--e2),0 19px 0 var(--ok),-13px 13px 0 var(--e2),-19px 0 0 var(--ok),-13px -13px 0 var(--e2);
+  animation:ikSpark .6s ease-out both;}
+@keyframes ikSpark{from{transform:scale(.3);opacity:1;}to{transform:scale(1.5);opacity:0;}}
+.ex-swipe-card.ik-ex-done{animation:ikExDone 1.2s ease both;}
+@keyframes ikExDone{0%{box-shadow:0 0 0 0 rgba(51,211,153,.6);}40%{box-shadow:0 0 0 6px rgba(51,211,153,.25);}100%{box-shadow:0 0 0 14px rgba(51,211,153,0);}}
+
+/* --- Intro : le logo IKORUN se compose (1re ouverture ; version courte ensuite) --- */
+#ikIntro{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;overflow:hidden;
+  background:radial-gradient(70% 50% at 50% 46%,rgba(var(--e-rgb),.18),transparent 70%),var(--bg);
+  --k:1;--iki-w1:#FFFFFF;--iki-w2:#B9C4D6;transition:opacity .5s ease;-webkit-tap-highlight-color:transparent;}
+html[data-mode="light"] #ikIntro{--iki-w1:#3A4458;--iki-w2:#10141B;}
+#ikIntro.mini{--k:.4;}
+#ikIntro.out{opacity:0;pointer-events:none;}
+.iki-stage{position:relative;display:flex;flex-direction:column;align-items:center;transition:transform .5s var(--ease-stride);}
+#ikIntro.out .iki-stage{transform:scale(.93) translateY(-12px);}
+.iki-trail{position:absolute;left:50%;top:50%;width:110vmax;height:110vmax;margin:-55vmax 0 0 -55vmax;transform:rotate(-19deg);pointer-events:none;}
+.iki-trail i{position:absolute;left:0;top:50%;height:2px;width:55%;border-radius:2px;
+  background:linear-gradient(90deg,transparent,rgba(var(--e-rgb),.9) 70%,#fff);box-shadow:0 0 18px rgba(var(--e-rgb),.8);
+  transform:translateX(-100%);animation:ikiTrail calc(var(--k)*820ms) calc(var(--k)*30ms) cubic-bezier(.35,.1,.3,1) both;}
+.iki-trail i+i{top:calc(50% + 26px);height:1px;width:34%;opacity:.6;animation-delay:calc(var(--k)*140ms);}
+#ikIntro.mini .iki-trail{display:none;}
+@keyframes ikiTrail{from{transform:translateX(-100%);}to{transform:translateX(200%);}}
+.iki-mark{width:148px;height:auto;overflow:visible;animation:ikiImpact calc(var(--k)*560ms) calc(var(--k)*1080ms) ease-out both;}
+@keyframes ikiImpact{0%{transform:scale(1);filter:brightness(1);}30%{transform:scale(1.07);filter:brightness(1.7) drop-shadow(0 0 16px rgba(var(--e-rgb),.9));}100%{transform:none;filter:drop-shadow(0 8px 26px rgba(var(--e-rgb),.35));}}
+.iki-mark polygon{transform-box:fill-box;transform-origin:center;stroke-linejoin:round;stroke-width:12;}
+.iki-b2{animation:ikiBladeB calc(var(--k)*720ms) calc(var(--k)*260ms) var(--ease-stride) both;}
+.iki-b1{animation:ikiBladeW calc(var(--k)*720ms) calc(var(--k)*430ms) var(--ease-stride) both;}
+.iki-g2{animation:ikiGhostB calc(var(--k)*720ms) calc(var(--k)*300ms) var(--ease-stride) both;}
+.iki-g1{animation:ikiGhostW calc(var(--k)*720ms) calc(var(--k)*470ms) var(--ease-stride) both;}
+@keyframes ikiBladeB{0%{opacity:0;transform:translate(-260px,90px) skewX(22deg) scaleX(1.3);}45%{opacity:1;}80%{transform:translate(8px,-3px) skewX(-3deg);}100%{opacity:1;transform:none;}}
+@keyframes ikiBladeW{0%{opacity:0;transform:translate(260px,-90px) skewX(22deg) scaleX(1.3);}45%{opacity:1;}80%{transform:translate(-8px,3px) skewX(-3deg);}100%{opacity:1;transform:none;}}
+@keyframes ikiGhostB{0%{opacity:0;transform:translate(-300px,104px) scaleX(1.5);}40%{opacity:.45;}100%{opacity:0;transform:translate(-26px,9px);}}
+@keyframes ikiGhostW{0%{opacity:0;transform:translate(300px,-104px) scaleX(1.5);}40%{opacity:.45;}100%{opacity:0;transform:translate(26px,-9px);}}
+.iki-ring{position:absolute;left:50%;top:58px;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;border:2px solid rgba(var(--e-rgb),.85);
+  opacity:0;animation:ikiRing calc(var(--k)*800ms) calc(var(--k)*1100ms) ease-out both;pointer-events:none;}
+@keyframes ikiRing{0%{opacity:0;transform:scale(.3);}8%{opacity:.9;}100%{opacity:0;transform:scale(2.6);}}
+.iki-word{display:flex;margin-top:22px;font-family:'Unbounded',system-ui,sans-serif;font-weight:800;font-size:30px;line-height:1;color:#fff;
+  letter-spacing:.14em;animation:ikiSpace calc(var(--k)*900ms) calc(var(--k)*1180ms) var(--ease-stride) both;}
+html[data-mode="light"] .iki-word{color:#10141B;}
+.iki-word span{display:block;animation:ikiLetter calc(var(--k)*560ms) var(--ease-stride) both;}
+.iki-word span.r{color:var(--e);}
+.iki-word span:nth-child(1){animation-delay:calc(var(--k)*1180ms);}
+.iki-word span:nth-child(2){animation-delay:calc(var(--k)*1250ms);}
+.iki-word span:nth-child(3){animation-delay:calc(var(--k)*1320ms);}
+.iki-word span:nth-child(4){animation-delay:calc(var(--k)*1420ms);animation-name:ikiLetterRun;}
+.iki-word span:nth-child(5){animation-delay:calc(var(--k)*1490ms);animation-name:ikiLetterRun;}
+.iki-word span:nth-child(6){animation-delay:calc(var(--k)*1560ms);animation-name:ikiLetterRun;}
+@keyframes ikiLetter{from{opacity:0;transform:translateY(18px);filter:blur(6px);}to{opacity:1;transform:none;filter:none;}}
+@keyframes ikiLetterRun{from{opacity:0;transform:translateX(34px) skewX(-18deg);filter:blur(6px);}to{opacity:1;transform:none;filter:none;}}
+@keyframes ikiSpace{from{letter-spacing:.5em;}to{letter-spacing:.14em;}}
+.iki-line{width:150px;height:2px;margin-top:16px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--e),transparent);
+  animation:ikFill calc(var(--k)*560ms) calc(var(--k)*1900ms) var(--ease-stride) both;transform-origin:50% 50%;}
+.iki-tag{margin-top:12px;font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--muted);animation:ikiLetter .6s 2.05s var(--ease-stride) both;}
+#ikIntro.mini .iki-tag{display:none;}
+@media (prefers-reduced-motion: reduce){
+  #ikIntro *,#ikIntro{animation:none!important;}
+}
+
 /* « Réduire les animations » (réglage du téléphone) : seules 3 animations de
    fond le respectaient, une vingtaine d'autres tournaient en boucle. Les
    animations se terminent désormais instantanément dans leur état final. */
 @media (prefers-reduced-motion: reduce){
-  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important;}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important;}
 }
 </style>
 </head>
@@ -2286,6 +2434,47 @@ html[data-mode] .seg-ctrl.sub .seg-btn.on{background:var(--s3);color:var(--snow)
     }
     if(!hasSession) document.getElementById('appSkeleton').classList.add('skl-login');
   }catch(e){}
+})();
+</script>
+<script>
+/* INTRO IKORUN — le logo se compose sous les yeux : un trait de vitesse traverse
+   l'écran, les deux lames arrivent en diagonale et s'emboîtent, puis les lettres
+   IKO / RUN se posent. Version complète à la toute première ouverture, version
+   courte (~1 s) ensuite, à la place de l'ancien logo qui pulsait. Un appui sur
+   l'écran la passe. window.ikIntro('full') la rejoue (Profil → Apparence).
+   Le squelette de chargement continue de vivre dessous : l'intro masque le
+   temps de démarrage au lieu de l'allonger. */
+(function(){
+  var W='160,240 218,160 432,86 376,168', B='92,350 205,258 415,183 296,292';
+  function blade(cls,pts,g){ return '<polygon class="'+cls+'" points="'+pts+'" fill="url(#'+g+')" stroke="url(#'+g+')"/>'; }
+  function ikIntro(mode){
+    var old=document.getElementById('ikIntro'); if(old) old.remove();
+    var reduce=false; try{ reduce=matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
+    var el=document.createElement('div'); el.id='ikIntro'; el.className=mode; el.setAttribute('aria-hidden','true');
+    el.innerHTML='<div class="iki-trail"><i></i><i></i></div><div class="iki-stage">'+
+      '<svg class="iki-mark" viewBox="80 76 364 284"><defs>'+
+      '<linearGradient id="ikiW" x1="0" y1="1" x2="1" y2="0"><stop offset="0" style="stop-color:var(--iki-w2)"/><stop offset="1" style="stop-color:var(--iki-w1)"/></linearGradient>'+
+      '<linearGradient id="ikiB" x1="0" y1="1" x2="1" y2="0"><stop offset="0" style="stop-color:var(--e)"/><stop offset="1" style="stop-color:var(--e2)"/></linearGradient></defs>'+
+      blade('iki-g2',B,'ikiB')+blade('iki-g1',W,'ikiW')+blade('iki-b2',B,'ikiB')+blade('iki-b1',W,'ikiW')+'</svg>'+
+      '<div class="iki-ring"></div>'+
+      '<div class="iki-word"><span>I</span><span>K</span><span>O</span><span class="r">R</span><span class="r">U</span><span class="r">N</span></div>'+
+      '<div class="iki-line"></div><div class="iki-tag">Elite Athletic Intelligence</div></div>';
+    document.body.appendChild(el);
+    var done=false;
+    function end(fast){
+      if(done) return; done=true; clearTimeout(timer);
+      if(fast) el.style.transition='opacity .25s ease';
+      el.classList.add('out');
+      try{ window.dispatchEvent(new Event('ik-intro-end')); }catch(e){} // app.js rejoue l'entrée de l'écran révélé
+      setTimeout(function(){ el.remove(); }, fast?280:540);
+    }
+    var timer=setTimeout(function(){ end(false); }, reduce?650:(mode==='full'?3000:1000));
+    el.addEventListener('pointerdown',function(){ end(true); });
+  }
+  window.ikIntro=ikIntro;
+  var sp=document.querySelector('#appSkeleton .skl-splash'); if(sp) sp.remove();
+  var seen=false; try{ seen=localStorage.getItem('ik_intro_v1')==='1'; localStorage.setItem('ik_intro_v1','1'); }catch(e){}
+  ikIntro(seen?'mini':'full');
 })();
 </script>
 
@@ -2468,7 +2657,7 @@ html[data-mode] .seg-ctrl.sub .seg-btn.on{background:var(--s3);color:var(--snow)
     });
   }
 </script>
-<script src="app.js?v=91"></script>
+<script src="app.js?v=92"></script>
 <!-- Suite de fumée : chargée uniquement avec ?selftest=1 (voir tests/smoke.js).
      Second script classique de la page, donc il partage l'environnement lexical
      d'app.js et peut tester l'app réelle (P, SESS, RANKS...) sans imitation.

@@ -1833,7 +1833,7 @@ const I18N={
     googleStandaloneTitle:'Google et l\u2019app install\u00e9e',googleUseGuestBtn:'Continuer en tant qu\u2019invit\u00e9',googleOpenSafariBtn:'Ouvrir dans Safari',googleStandaloneHint:'Indisponible depuis l\u2019app install\u00e9e',
     declineBtn:'Refuser',saveLabel:'Enregistrer',renameLab:'Renommer',favoriteLab:'Favori',
     langLab:'Langue',obModeTitle:'Ton affichage',obModeIntro:'Deux façons de voir IKORUN — change d\u2019avis à tout moment dans Profil.',obModeFullT:'Complet',obModeFullD:'Toutes les stats, tous les détails de chaque séance, l\u2019anatomie musculaire, les graphiques. Pour creuser.',obModeSimpleT:'Simplifié',obModeSimpleD:'Une carte, l\u2019essentiel : la séance du jour et un bouton. Rien d\u2019autre à l\u2019écran. Pour aller droit au but.',obModeSuggestion:'Suggestion selon ton âge : {0}. Choisis librement.',chooseModeLab:'Choisis un affichage pour continuer',
-    trackingLab:'Suivi',appearanceLab:'Apparence',
+    trackingLab:'Suivi',appearanceLab:'Apparence',animationsLab:'Animations',introReplayBtn:'Revoir l\u2019animation d\u2019ouverture',
     sendFeedbackLab:'Envoyer un commentaire',feedbackNoAddressToast:'Adresse de contact pas encore configurée — réessaie après la prochaine mise à jour.',feedbackTitle:'Ton avis',feedbackIntro:'Une idée, un bug, un truc qui te gêne dans l\u2019app ? Écris-le ici, ça part directement dans ta boîte mail.',feedbackPh:'Écris ton commentaire...',feedbackEmptyToast:'Écris quelque chose avant d\u2019envoyer',feedbackSentToast:'Ton appli mail s\u2019est ouverte, il ne reste qu\u2019à envoyer',feedbackSignature:'Compte : {0} · Langue : {1}',
     sendBtn:'Envoyer',
     playLab:'Démarrer',
@@ -2420,7 +2420,7 @@ const I18N={
     googleStandaloneTitle:'Google and the installed app',googleUseGuestBtn:'Continue as guest',googleOpenSafariBtn:'Open in Safari',googleStandaloneHint:'Unavailable from the installed app',
     declineBtn:'Decline',saveLabel:'Save',renameLab:'Rename',favoriteLab:'Favourite',
     langLab:'Language',obModeTitle:'Your display',obModeIntro:'Two ways to see IKORUN \u2014 change your mind anytime in Profile.',obModeFullT:'Full',obModeFullD:'All the stats, every session detail, muscle anatomy, charts. For digging in.',obModeSimpleT:'Simplified',obModeSimpleD:'One card, the essentials: today\u2019s session and a button. Nothing else on screen. For going straight to it.',obModeSuggestion:'Suggestion based on your age: {0}. Choose freely.',chooseModeLab:'Choose a display to continue',
-    trackingLab:'Tracking',appearanceLab:'Appearance',
+    trackingLab:'Tracking',appearanceLab:'Appearance',animationsLab:'Animations',introReplayBtn:'Replay the opening animation',
     sendFeedbackLab:'Send feedback',feedbackNoAddressToast:'Contact address not set up yet — try again after the next update.',feedbackTitle:'Your feedback',feedbackIntro:'An idea, a bug, something bothering you in the app? Write it here, it goes straight to your mail app.',feedbackPh:'Write your feedback...',feedbackEmptyToast:'Write something before sending',feedbackSentToast:'Your mail app just opened, all that\u2019s left is to hit send',feedbackSignature:'Account: {0} · Language: {1}',
     sendBtn:'Send',
     playLab:'Start',
@@ -3007,7 +3007,7 @@ const I18N={
     googleStandaloneTitle:'Google والتطبيق المثبّت',googleUseGuestBtn:'المتابعة كضيف',googleOpenSafariBtn:'الفتح في Safari',googleStandaloneHint:'غير متاح من التطبيق المثبّت',
     declineBtn:'رفض',saveLabel:'حفظ',renameLab:'إعادة تسمية',favoriteLab:'مفضّل',
     langLab:'اللغة',obModeTitle:'طريقة العرض',obModeIntro:'طريقتان لرؤية IKORUN — غيّر رأيك في أي وقت من الملف الشخصي.',obModeFullT:'كامل',obModeFullD:'كل الإحصائيات، تفاصيل كل حصة، تشريح العضلات، الرسوم البيانية. للتعمّق.',obModeSimpleT:'مبسّط',obModeSimpleD:'بطاقة واحدة، الأساسيات: حصة اليوم وزر واحد. لا شيء آخر على الشاشة. للذهاب مباشرة إلى الهدف.',obModeSuggestion:'اقتراح حسب عمرك: {0}. اختر بحرية.',chooseModeLab:'اختر طريقة عرض للمتابعة',
-    trackingLab:'المتابعة',appearanceLab:'المظهر',
+    trackingLab:'المتابعة',appearanceLab:'المظهر',animationsLab:'الرسوم المتحركة',introReplayBtn:'إعادة عرض الرسوم الافتتاحية',
     sendFeedbackLab:'إرسال تعليق',feedbackNoAddressToast:'لم يتم إعداد عنوان التواصل بعد — أعد المحاولة بعد التحديث القادم.',feedbackTitle:'رأيك',feedbackIntro:'فكرة، خلل، أو شيء يزعجك في التطبيق؟ اكتبه هنا، سيُفتح مباشرة في تطبيق بريدك.',feedbackPh:'اكتب تعليقك...',feedbackEmptyToast:'اكتب شيئًا قبل الإرسال',feedbackSentToast:'فُتح تطبيق البريد لديك، لم يبقَ سوى الضغط على إرسال',feedbackSignature:'الحساب: {0} · اللغة: {1}',
     sendBtn:'إرسال',
     playLab:'ابدأ',
@@ -4207,6 +4207,7 @@ function renderBadgeGallery(){
   });
   h+='</div>';
   $('#badgesBody').innerHTML=h;
+  ikPlay($('#badgesBody'),{cascade:false,force:true});
 }
 function openBadgeDetail(key){
   const b=BADGE_TIERS.find(x=>x.key===key); if(!b) return;
@@ -4319,14 +4320,162 @@ function appVersionTag(){ return t('footerTag')+' · v3.02.'+appBuildNumber(); }
 // depuis une boucle rapide (chrono, minuteur) : l'animation rejouerait à chaque
 // frame, l'effet inverse de ce qui est recherché — ces écrans mettent déjà à jour
 // leurs nœuds directement (ex. #chDisp.textContent) sans repasser par ici.
+/* ---------- IKORUN MOTION (25/09) ----------
+   Un seul langage de mouvement pour toute l'app, tiré du logo (deux lames en
+   diagonale lancées à pleine vitesse) : les choses arrivent vite et se posent
+   en douceur. Le CSS est dans index.html (bloc « IKORUN MOTION »).
+   - ikEnterScreen(s) : ouverture d'un onglet. L'écran arrive du côté de l'onglet
+     touché, le titre suit, un trait de lumière balaie la carte principale, les
+     animations d'ambiance (icônes, halos) repartent pour quelques secondes.
+   - ikPlay(root)     : les blocs entrent en cascade, les grands chiffres comptent
+     depuis zéro, anneaux / barres / courbes / donuts / jauges se dessinent.
+   Rien ne bouge en mode simplifié ni quand le téléphone demande de réduire les
+   animations. */
+const IK_TABS=['home','sport','stats','outils','profil'];
+const IK_GROUPS=[['.kbars-row','.kbar'],['.hv7-hero-week','.hv7-hw-bar b'],['.sp-rail','i'],['.bd-grid','.bd-cell'],['svg','.lc-dot']];
+let _ikPrevTab='home';
+function ikMotionOff(){
+  if(typeof P!=='undefined' && P && P.easyMode) return true;
+  try{ return matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; }
+}
+function ikFlow(c){ if(/^(SCRIPT|STYLE|TEMPLATE)$/.test(c.tagName)) return false; const cs=getComputedStyle(c); return cs.display!=='none' && cs.position!=='absolute' && cs.position!=='fixed'; }
+// Racine de la cascade : on traverse les enveloppes qui ne contiennent qu'un ou deux blocs.
+function ikContentRoot(el){
+  let r=el;
+  for(let g=0; g<5; g++){
+    const kids=[...r.children].filter(ikFlow);
+    if(kids.length>2) break;
+    const big=kids.reduce((b,c)=>(!b||c.children.length>b.children.length)?c:b,null);
+    if(!big||big.children.length<2) break;
+    r=big;
+  }
+  return r;
+}
+function ikCascade(root,skip){
+  const kids=[...root.children].filter(c=>ikFlow(c) && !(skip && c.matches(skip))).slice(0,14);
+  kids.forEach(c=>c.classList.remove('ik-in'));
+  void root.offsetWidth;
+  kids.forEach((c,i)=>{
+    c.style.setProperty('--i',Math.min(i,11));
+    c.classList.add('ik-in');
+    let tm=0;
+    // La classe est retirée dès la fin : sinon l'état final de l'animation masquerait
+    // les effets d'appui (:active { transform }) des cartes.
+    const onEnd=e=>{ if(e.target===c && e.animationName==='ikRise') done(); };
+    const done=()=>{ clearTimeout(tm); c.classList.remove('ik-in'); c.style.removeProperty('--i'); c.removeEventListener('animationend',onEnd); };
+    c.addEventListener('animationend',onEnd);
+    tm=setTimeout(done,1400+i*60);
+  });
+}
+// Grands chiffres (≥15 px, gras) qui comptent depuis zéro : 16,5 · 3/4 · 75% · 70.
+// Laissés tels quels : allures et durées (7:17, 2h 40), années, textes à plusieurs nombres.
+function ikCountUp(root){
+  const list=[];
+  root.querySelectorAll('div,span,b,strong,h1,h2,h3').forEach(el=>{
+    if(list.length>=24 || el.closest('#chDisp,#tmNum,#liveTime,#restNum')) return;
+    const tn=[...el.childNodes].find(x=>x.nodeType===3 && x.nodeValue.trim()); if(!tn) return;
+    const m=tn.nodeValue.match(/^(\s*[−-]?)(\d+)(?:([.,])(\d+))?([\s\S]*)$/); if(!m) return;
+    const rest=m[5];
+    if(/^\s*[:h]\s*\d/.test(rest)) return;
+    if(/\d/.test(rest) && !/^\s*\/\s*\d+\s*$/.test(rest)) return;
+    const val=parseFloat(m[2]+(m[4]?'.'+m[4]:''));
+    if(!(val>0) || (!m[4] && val>=1900 && val<=2100)) return;
+    const cs=getComputedStyle(el); if(parseFloat(cs.fontSize)<15 || (parseInt(cs.fontWeight)||400)<600 || !el.offsetParent) return;
+    list.push({tn,orig:tn.nodeValue,pre:m[1],val,dec:m[4]?m[4].length:0,sep:m[3]||'.',rest});
+  });
+  if(!list.length) return;
+  const fmt=(o,v)=>{ let x=o.dec?v.toFixed(o.dec):String(Math.round(v)); if(o.sep===',') x=x.replace('.',','); return o.pre+x+o.rest; };
+  list.forEach(o=>{ o.tn.nodeValue=fmt(o,0); });
+  const t0=performance.now(), D=950;
+  (function frame(now){
+    const p=Math.min(1,Math.max(0,(now-t0)/D)), e=1-Math.pow(2,-10*p);
+    list.forEach(o=>{ o.tn.nodeValue= p>=1 ? o.orig : fmt(o,o.val*e); });
+    if(p<1) requestAnimationFrame(frame);
+  })(t0);
+  // Filet : si les images sont suspendues (onglet en arrière-plan), on remet les vraies valeurs.
+  setTimeout(()=>list.forEach(o=>{ o.tn.nodeValue=o.orig; }),D+400);
+}
+// Anneaux (ringSVG) qui se remplissent, donuts (donutSVG) qui se dessinent en tournant.
+function ikDrawRings(root){
+  root.querySelectorAll('circle[stroke-dasharray]').forEach(c=>{
+    const da=(c.getAttribute('stroke-dasharray')||'').trim();
+    if(/[\s,]/.test(da)){
+      const svg=c.ownerSVGElement;
+      if(svg && !svg.classList.contains('ik-sweep')){ svg.classList.add('ik-sweep'); setTimeout(()=>svg.classList.remove('ik-sweep'),1500); }
+      return;
+    }
+    const full=parseFloat(da), target=c.getAttribute('stroke-dashoffset'); if(!(full>0) || target===null) return;
+    c.style.transition='none'; c.style.strokeDashoffset=full; void c.getBoundingClientRect();
+    c.style.transition='stroke-dashoffset 1.15s cubic-bezier(.16,1,.3,1) .12s'; c.style.strokeDashoffset=target;
+  });
+}
+// Trait de lumière incliné (l'angle des lames du logo) qui traverse une carte.
+function ikStreak(host){
+  if(!host || ikMotionOff()) return;
+  if(getComputedStyle(host).position==='static') host.style.position='relative';
+  const sp=document.createElement('span'); sp.className='ik-streak'; sp.setAttribute('aria-hidden','true'); sp.innerHTML='<i></i>';
+  host.appendChild(sp); setTimeout(()=>sp.remove(),1500);
+}
+function ikBump(el){ if(!el || ikMotionOff()) return; el.classList.remove('ik-bump'); void el.offsetWidth; el.classList.add('ik-bump'); }
+function ikPlay(root,opts){
+  if(!root || ikMotionOff()) return;
+  opts=opts||{};
+  const now=performance.now();
+  if(!opts.force && root._ikT && now-root._ikT<700) return; // déjà joué à l'instant (rendu + navigation)
+  root._ikT=now;
+  if(opts.cascade!==false) ikCascade(ikContentRoot(root),opts.skip);
+  IK_GROUPS.forEach(([g,c])=>root.querySelectorAll(g).forEach(box=>box.querySelectorAll(c).forEach((el,i)=>el.style.setProperty('--bi',Math.min(i,24)))));
+  root.classList.remove('ik-play'); void root.offsetWidth; root.classList.add('ik-play');
+  clearTimeout(root._ikPlayT); root._ikPlayT=setTimeout(()=>root.classList.remove('ik-play'),2600);
+  ikDrawRings(root); ikCountUp(root);
+}
+function ikEnterScreen(s){
+  const scr=document.getElementById('s-'+s); if(!scr) return;
+  const from=_ikPrevTab; _ikPrevTab=s;
+  scr.setAttribute('data-seen','1'); // la cascade remplace l'ancienne entrée .stag
+  const tb=document.querySelector('.topbar > div:first-child');
+  // Toujours retirer le sens de la visite précédente : resté posé, il rejouerait le
+  // glissement à chaque réaffichage, même en mode simplifié.
+  scr.classList.remove('ik-from-r','ik-from-l');
+  if(tb) tb.classList.remove('ik-title-r','ik-title-l');
+  if(ikMotionOff()) return;
+  let dir=null;
+  if(from!==s){ dir=IK_TABS.indexOf(s)>IK_TABS.indexOf(from)?'r':'l'; if(document.documentElement.dir==='rtl') dir=dir==='r'?'l':'r'; }
+  scr.classList.remove('pagein');
+  void scr.offsetWidth;
+  if(dir){ scr.classList.add('ik-from-'+dir); if(tb) tb.classList.add('ik-title-'+dir); }
+  scheduleMotionSettle(6000);
+  if(s!=='stats') ikPlay(scr); // Stats : la cascade part quand le vrai contenu remplace le squelette
+  ikStreak(scr.querySelector('.hv7-day,.sp-plan,.pf-hero,.card'));
+}
+function ikOpenOv(ov){
+  if(!ov || ikMotionOff()) return;
+  scheduleMotionSettle(6000);
+  const card=ov.querySelector('.ov-card'); if(!card) return;
+  requestAnimationFrame(()=>ikPlay(card,{skip:'.ov-head'}));
+}
+// Fin de l'intro (index.html) : on rejoue l'entrée de l'écran qu'elle cachait.
+window.addEventListener('ik-intro-end',()=>{
+  if(ikMotionOff()) return;
+  scheduleMotionSettle(5000); // les halos/icônes s'étaient déjà figés derrière l'intro
+  const login=document.getElementById('login');
+  if(login && login.classList.contains('on')){ ikPlay(login.querySelector('.login-card')||login,{force:true}); return; }
+  const s=document.body.dataset.scr, scr=s&&document.getElementById('s-'+s);
+  if(scr && scr.classList.contains('on')) ikPlay(scr,{force:true});
+});
+// Signature d'un rendu (chiffres ignorés) : une simple mise à jour des données ne
+// relance pas la cascade, un changement de vue (outil, onglet interne) oui.
+function ikSig(html){ return String(html).slice(0,600).replace(/\d+([.,]\d+)?/g,'#'); }
 function swapIn(id,html){
   const el=typeof id==='string'?document.getElementById(id):id;
   if(!el) return;
+  const sig=ikSig(html), changed=el._ikSig!==sig; el._ikSig=sig;
   el.innerHTML=html;
   if(P&&P.easyMode) return; // cf html.easy-mode .stag : mode simplifié sans animation
   el.classList.remove('pagein');
   void el.offsetWidth; // force le reflow pour redémarrer l'animation CSS
   el.classList.add('pagein');
+  if(changed) ikPlay(el);
 }
 function todayKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function dateKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -4714,7 +4863,7 @@ let _ovZTop=12000;
 // démarrage (20000) : sans borne, une session très longue finissait par distribuer
 // des z-index qui recouvraient même les messages système.
 function topZ(){ _ovZTop=Math.min(_ovZTop+1,18000); return _ovZTop; }
-function openOv(id){ const el=$('#'+id); el.style.zIndex=topZ(); el.classList.add('on'); }
+function openOv(id){ const el=$('#'+id); el.style.zIndex=topZ(); el.classList.add('on'); ikOpenOv(el); }
 function closeOv(id){ const el=$('#'+id); el.classList.remove('on'); el.style.zIndex=''; if(id==='ovProg') _pfSheet=null; if(id==='ovLib'&&typeof _exDemoTimer!=='undefined'){ clearInterval(_exDemoTimer); } if((id==='ovProg'||id==='ovLive')&&typeof _exDemo2!=='undefined'&&_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; }
   // Garde-fou : openLibFor() ferme ovCreate pour ouvrir la bibliothèque par-dessus (voir plus
   // bas). Sans ce bloc, annuler depuis la bibliothèque ou depuis "Configurer" (X, pas
@@ -4947,6 +5096,7 @@ function nav(s){
   if(s==='outils') renderOutils();
   if(s==='profil') renderProfile();
   markScreenSeen('s-'+s);
+  ikEnterScreen(s);
 }
 /* Marque un écran comme "déjà vu" une fois ses animations d'entrée jouées,
    pour qu'elles ne se répètent plus à chaque retour sur l'onglet. */
@@ -7534,12 +7684,12 @@ function lineChartSVG(values,width,height,color){
   const pts=values.map((v,i)=>[i*stepX, pad+(1-(v-min)/range)*(height-2*pad)]);
   const path=pts.map((p,i)=>(i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
   const area=path+' L'+pts[pts.length-1][0].toFixed(1)+','+height+' L0,'+height+' Z';
-  const dots=pts.map(p=>'<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3.5" fill="'+color+'" stroke="var(--s1)" stroke-width="2"/>').join('');
+  const dots=pts.map(p=>'<circle class="lc-dot" cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3.5" fill="'+color+'" stroke="var(--s1)" stroke-width="2"/>').join('');
   const gid='lg'+Math.floor(Math.random()*1e6);
   return '<svg viewBox="0 0 '+width+' '+height+'" width="100%" height="'+height+'" preserveAspectRatio="none" style="overflow:visible;display:block">'+
     '<defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+color+'" stop-opacity=".32"/><stop offset="100%" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'+
-    '<path d="'+area+'" fill="url(#'+gid+')" stroke="none"/>'+
-    '<path d="'+path+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+
+    '<path class="lc-area" d="'+area+'" fill="url(#'+gid+')" stroke="none"/>'+
+    '<path class="lc-line" pathLength="1" d="'+path+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+
     dots+'</svg>';
 }
 /* Barres pixel (pas %) pour éviter les pièges de hauteur en % dans un flex column. */
@@ -9212,8 +9362,8 @@ function renderLive(){
   // Stats : Durée / Volume / Séries
   h+='<div class="card" style="padding:14px 6px;margin-bottom:16px"><div style="display:flex;text-align:center">'+
     '<div style="flex:1;border-right:1px solid var(--hair)"><div class="lab" style="margin:0 0 4px">'+t('durationLab')+'</div><div class="mono" id="liveTime" style="font-weight:800;font-size:16px;color:var(--e)">'+dur+'</div></div>'+
-    '<div style="flex:1;border-right:1px solid var(--hair)"><div class="lab" style="margin:0 0 4px">'+t('volumeLab')+'</div><div style="font-weight:800;font-size:16px">'+Math.round(LIVE.tonnage)+' kg</div></div>'+
-    '<div style="flex:1"><div class="lab" style="margin:0 0 4px">'+t('setsLab')+'</div><div style="font-weight:800;font-size:16px">'+LIVE.setsDone+'/'+totalSets+'</div></div>'+
+    '<div style="flex:1;border-right:1px solid var(--hair)"><div class="lab" style="margin:0 0 4px">'+t('volumeLab')+'</div><div id="liveVol" style="font-weight:800;font-size:16px">'+Math.round(LIVE.tonnage)+' kg</div></div>'+
+    '<div style="flex:1"><div class="lab" style="margin:0 0 4px">'+t('setsLab')+'</div><div id="liveSets" style="font-weight:800;font-size:16px">'+LIVE.setsDone+'/'+totalSets+'</div></div>'+
     '</div></div>';
   // Une carte par exercice, repliée sur le nom par défaut — on tape dessus pour dérouler les séries.
   // Un seul exercice ouvert à la fois (accordéon), et tout est animé en douceur (transition CSS).
@@ -9526,9 +9676,22 @@ function toggleSet(exIdx,setIdx){
   const s=st.log[setIdx]||{kg:st.weight,reps:st.reps};
   st.sets[setIdx]=!st.sets[setIdx]; st.log[setIdx].done=st.sets[setIdx];
   const vol=(s.kg||0)*(s.reps||0);
-  if(st.sets[setIdx]){ LIVE.setsDone++; LIVE.tonnage+=vol; openRest(st.log[setIdx].rest||LIVE.prog.ex[exIdx].rest||90); sfx('tick'); toast(t('xpGain')); }
+  if(st.sets[setIdx]){
+    LIVE.setsDone++; LIVE.tonnage+=vol;
+    const restS=st.log[setIdx].rest||LIVE.prog.ex[exIdx].rest||90, live=LIVE;
+    setTimeout(()=>{ if(LIVE===live && st.sets[setIdx]) openRest(restS); }, ikMotionOff()?0:420);
+    sfx('tick'); toast(t('xpGain'));
+  }
   else { LIVE.setsDone--; LIVE.tonnage-=vol; }
-  persistLive(); renderLive();
+  persistLive(); renderLive(); ikSetFx(exIdx,setIdx,st.sets[setIdx],st.sets.every(Boolean));
+}
+// Série validée : la ligne s'illumine, la coche éclate ; exercice terminé : la carte rayonne.
+function ikSetFx(i,j,on,exDone){
+  if(ikMotionOff()) return;
+  ['#liveSets','#liveVol'].forEach(q=>ikBump(document.querySelector(q)));
+  if(!on) return;
+  const row=document.querySelector('#liveBody .set-swipe-row[data-i="'+i+'"][data-j="'+j+'"]'); if(row) row.classList.add('ik-done');
+  if(exDone){ const card=document.querySelector('#liveBody .ex-swipe-card[data-i="'+i+'"]'); if(card){ card.classList.add('ik-ex-done'); ikStreak(card); } }
 }
 function openRest(secs){
   // Deux chemins ouvrent ce minuteur : la validation d'une série et le bouton ⏱
@@ -9547,7 +9710,8 @@ function openRest(secs){
   function tick(){
     sec=Math.max(0,Math.round((endAt+extra*1000-Date.now())/1000));
     const rr=$('#restRing'); if(rr)rr.innerHTML=ringSVG(170,sec/(total+extra)*100,12,'var(--e)');
-    const rn=$('#restNum'); if(rn)rn.textContent=sec;
+    const rn=$('#restNum'); if(rn){ if(rn.textContent!==String(sec) && sec>0 && sec<=5) ikBump(rn); rn.textContent=sec; }
+    if(rr&&rr.parentElement) rr.parentElement.classList.toggle('ik-urgent',sec>0&&sec<=5);
     if(sec<=0){ sfx('tick'); skipRest(); return; }
   }
   tick();
@@ -9874,7 +10038,7 @@ function renderStats(){
     if(tabAtRequest==='medals') h+=statsMedals();
     const swap=()=>{
       if(statsTab!==tabAtRequest) return; // l'utilisateur a changé d'onglet entre-temps, un renderStats() plus récent a déjà pris le relais
-      const el=$('#s-stats'); el.innerHTML=h; el.classList.add('skl-content-in');
+      const el=$('#s-stats'); el.innerHTML=h; el.classList.add('skl-content-in'); ikPlay(el,{force:true,skip:'.seg-ctrl'});
     };
     // 3) Délai minimum anti-flash : si le calcul a été quasi instantané (peu
     //    d'historique), on évite un aller-retour squelette→contenu trop bref
@@ -11074,18 +11238,18 @@ function renderIMC(){
 let chrono={running:false,start:0,elapsed:0,laps:[],raf:null};
 function renderChrono(){
   const total=chrono.elapsed+(chrono.running?Date.now()-chrono.start:0);
-  let h='<div class="card" style="text-align:center;padding:28px 16px;background:radial-gradient(circle at 50% 30%,rgba(var(--e-rgb),.12),var(--s1))"><div class="mono" id="chDisp" style="font-size:54px;font-weight:700;letter-spacing:-2px;'+(chrono.running?'color:var(--e)':'')+'">'+fmtChrono(total)+'</div>';
+  let h='<div class="card ch-face'+(chrono.running?' run':'')+'" style="text-align:center;padding:28px 16px;background:radial-gradient(circle at 50% 30%,rgba(var(--e-rgb),.12),var(--s1))"><div class="mono" id="chDisp" style="font-size:54px;font-weight:700;letter-spacing:-2px;'+(chrono.running?'color:var(--e)':'')+'">'+fmtChrono(total)+'</div><div class="ch-lane" aria-hidden="true"><i></i></div>';
   // Boutons
   h+='<div class="row" style="gap:14px;margin-top:24px;justify-content:center">';
   if(!chrono.running && total===0){
-    h+='<div style="width:62px"></div><button class="btn" style="width:84px;height:84px;border-radius:50%;font-size:30px;flex:none;background:var(--ok)" onclick="chronoToggle()" aria-label="'+t('playLab')+'">'+ICN('play',28,'#fff')+'</button><div style="width:62px"></div>';
+    h+='<div style="width:62px"></div><button class="btn ch-main" style="width:84px;height:84px;border-radius:50%;font-size:30px;flex:none;background:var(--ok)" onclick="chronoToggle()" aria-label="'+t('playLab')+'">'+ICN('play',28,'#fff')+'</button><div style="width:62px"></div>';
   } else if(chrono.running){
     h+='<button class="chbtn" onclick="chronoLap()">'+t('lapBtn')+'</button>';
-    h+='<button class="btn" style="width:84px;height:84px;border-radius:50%;flex:none;background:var(--warn)" onclick="chronoToggle()" aria-label="'+t('pauseLab')+'">'+ICN('pause',30,'#fff')+'</button>';
+    h+='<button class="btn ch-main" style="width:84px;height:84px;border-radius:50%;flex:none;background:var(--warn)" onclick="chronoToggle()" aria-label="'+t('pauseLab')+'">'+ICN('pause',30,'#fff')+'</button>';
     h+='<button class="chbtn" style="border-color:var(--bad);color:var(--bad)" onclick="chronoStop()">'+t('stopBtn')+'</button>';
   } else {
     h+='<button class="chbtn" style="border-color:var(--bad);color:var(--bad)" onclick="chronoReset()">'+t('resetBtn2')+'</button>';
-    h+='<button class="btn" style="width:84px;height:84px;border-radius:50%;font-size:30px;flex:none;background:var(--ok)" onclick="chronoToggle()" aria-label="'+t('playLab')+'">'+ICN('play',28,'#fff')+'</button>';
+    h+='<button class="btn ch-main" style="width:84px;height:84px;border-radius:50%;font-size:30px;flex:none;background:var(--ok)" onclick="chronoToggle()" aria-label="'+t('playLab')+'">'+ICN('play',28,'#fff')+'</button>';
     h+='<button class="chbtn" onclick="chronoLap()">'+t('lapBtn')+'</button>';
   }
   h+='</div></div>';
@@ -11095,10 +11259,11 @@ function renderChrono(){
     h+='<div class="sgrid" style="margin-bottom:12px"><div class="sbox"><div class="v" style="font-size:15px;color:var(--ok)">'+fmtChrono(best)+'</div><div class="l">'+t('bestLap')+'</div></div><div class="sbox"><div class="v" style="font-size:15px;color:var(--bad)">'+fmtChrono(worst)+'</div><div class="l">'+t('slowestLap')+'</div></div><div class="sbox"><div class="v" style="font-size:15px">'+fmtChrono(avg)+'</div><div class="l">'+t('avgLap')+'</div></div><div class="sbox"><div class="v">'+chrono.laps.length+'</div><div class="l">'+t('lapsLab')+'</div></div></div>';
     h+='<div class="card"><div class="row" style="margin-bottom:8px"><div class="card-t" style="margin:0">'+t('lapsLab')+'</div><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="exportLaps()">'+t('exportBtn')+'</span></div>';
     [...chrono.laps].reverse().forEach((l,ri)=>{ const i=chrono.laps.length-1-ri; const isBest=l===best&&chrono.laps.length>1, isWorst=l===worst&&chrono.laps.length>1;
-      h+='<div class="zrow"><span class="zname">'+t('lapBtn')+' '+(i+1)+(isBest?' <span style="color:var(--ok);font-size:11px">'+t('fastTag')+'</span>':isWorst?' <span style="color:var(--bad);font-size:11px">'+t('slowTag')+'</span>':'')+'</span><span class="zval mono" style="'+(isBest?'color:var(--ok)':isWorst?'color:var(--bad)':'')+'">'+fmtChrono(l)+'</span></div>'; });
+      h+='<div class="zrow'+(ri===0&&_ikNewLap?' ik-new':'')+'"><span class="zname">'+t('lapBtn')+' '+(i+1)+(isBest?' <span style="color:var(--ok);font-size:11px">'+t('fastTag')+'</span>':isWorst?' <span style="color:var(--bad);font-size:11px">'+t('slowTag')+'</span>':'')+'</span><span class="zval mono" style="'+(isBest?'color:var(--ok)':isWorst?'color:var(--bad)':'')+'">'+fmtChrono(l)+'</span></div>'; });
     h+='</div>';
   }
   $('#outBody').innerHTML=h;
+  _ikNewLap=false;
 }
 /* Même précaution que pour le minuteur : les boutons « Pause » / « Arrêter » de la
    notification d'activité peuvent être tapés alors que l'app est sur un tout autre
@@ -11118,7 +11283,8 @@ function chronoToggle(){
   renderChronoIfVisible();
 }
 function chronoTick(){ if(!chrono.running)return; const d=$('#chDisp'); if(d)d.textContent=fmtChrono(chrono.elapsed+Date.now()-chrono.start); chrono.raf=requestAnimationFrame(chronoTick); }
-function chronoLap(){ const total=chrono.elapsed+(chrono.running?Date.now()-chrono.start:0); if(total<=0)return; const prev=chrono.laps.reduce((a,b)=>a+b,0); chrono.laps.push(total-prev); renderChrono(); }
+let _ikNewLap=false; // le tour qui vient d'être pris glisse dans la liste
+function chronoLap(){ const total=chrono.elapsed+(chrono.running?Date.now()-chrono.start:0); if(total<=0)return; const prev=chrono.laps.reduce((a,b)=>a+b,0); chrono.laps.push(total-prev); _ikNewLap=true; renderChrono(); }
 
 /* ---------- MINUTEUR ---------- */
 let timer={total:300,left:300,running:false,iv:null,m:5,s:0};
@@ -11162,7 +11328,8 @@ function timerToggle(){
     const pct=timer.left/timer.total*100;
     const col=pct>50?'var(--e)':pct>20?'var(--warn)':'var(--bad)';
     const r=$('#tmRing'),n=$('#tmNum');
-    if(r)r.innerHTML=ringSVG(180,pct,12,col); if(n)n.textContent=fmtMS(timer.left);
+    if(r)r.innerHTML=ringSVG(180,pct,12,col); if(n){ const txt=fmtMS(timer.left); if(n.textContent!==txt && timer.left>0 && timer.left<=10) ikBump(n); n.textContent=txt; }
+    if(r&&r.parentElement) r.parentElement.classList.toggle('ik-urgent',timer.left>0&&timer.left<=10);
     if(timer.left<=0){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; burst(); stopBgActivity(); startAlarm(t('timerDoneTitle'),t('timeUpMsg')); renderTimerIfVisible(); }
   },250);
 }
@@ -11689,6 +11856,8 @@ function pfAppearanceHTML(){
      '<span style="font-size:14px;color:var(--muted);display:inline-flex;align-items:center;gap:5px">'+(isLight?ICN('sun',15)+'Clair':ICN('moon',15)+'Sombre')+'</span>'+
      pfThemeSwitchHTML().replace('theme-switch sm','theme-switch')+
    '</div>';
+  s+='<div class="lab" style="margin:22px 0 10px">'+t('animationsLab')+'</div>'+
+     '<button class="btn ghost" onclick="closeOv(\'ovProg\');setTimeout(()=>{ if(window.ikIntro) ikIntro(\'full\'); },260)">'+t('introReplayBtn')+'</button>';
   return s;
 }
 /* Bascule le thème avec une petite animation (glissement + pulse + halo qui explose) */
