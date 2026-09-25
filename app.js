@@ -4207,7 +4207,7 @@ function renderBadgeGallery(){
   });
   h+='</div>';
   $('#badgesBody').innerHTML=h;
-  ikPlay($('#badgesBody'),{cascade:false,force:true});
+  if(ikFirst($('#badgesBody'),'filtre:'+badgeFilter)) ikPlay($('#badgesBody'),{cascade:false,force:true});
 }
 function openBadgeDetail(key){
   const b=BADGE_TIERS.find(x=>x.key===key); if(!b) return;
@@ -4330,10 +4330,18 @@ function appVersionTag(){ return t('footerTag')+' · v3.02.'+appBuildNumber(); }
    - ikPlay(root)     : les blocs entrent en cascade, les grands chiffres comptent
      depuis zéro, anneaux / barres / courbes / donuts / jauges se dessinent.
    Rien ne bouge en mode simplifié ni quand le téléphone demande de réduire les
-   animations. */
+   animations.
+   Retour de Hamou (25/09) : « animé juste à l'ouverture, et rien qu'à la première ».
+   Chaque écran, vue interne (outil, onglet de Stats, filtre…) ou fenêtre n'est donc
+   animé que la PREMIÈRE fois qu'on l'ouvre depuis le lancement de l'app (ikFirst) ;
+   ensuite il s'affiche directement, sans aucun mouvement. Plus rien ne tourne en
+   boucle. Restent les réponses à un geste (série validée, tour de chrono…). */
 const IK_TABS=['home','sport','stats','outils','profil'];
 const IK_GROUPS=[['.kbars-row','.kbar'],['.hv7-hero-week','.hv7-hw-bar b'],['.sp-rail','i'],['.bd-grid','.bd-cell'],['svg','.lc-dot']];
 let _ikPrevTab='home';
+const _ikSeenTabs=new Set();
+// Vrai la première fois que `key` est vu sur `el` depuis le lancement de l'app.
+function ikFirst(el,key){ const seen=el._ikSeen||(el._ikSeen=new Set()); if(seen.has(key)) return false; seen.add(key); return true; }
 function ikMotionOff(){
   if(typeof P!=='undefined' && P && P.easyMode) return true;
   try{ return matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; }
@@ -4438,44 +4446,42 @@ function ikEnterScreen(s){
   // glissement à chaque réaffichage, même en mode simplifié.
   scr.classList.remove('ik-from-r','ik-from-l');
   if(tb) tb.classList.remove('ik-title-r','ik-title-l');
-  if(ikMotionOff()) return;
+  const first=!_ikSeenTabs.has(s); _ikSeenTabs.add(s);
+  if(!first || ikMotionOff()) return; // déjà ouvert : affichage direct
   let dir=null;
   if(from!==s){ dir=IK_TABS.indexOf(s)>IK_TABS.indexOf(from)?'r':'l'; if(document.documentElement.dir==='rtl') dir=dir==='r'?'l':'r'; }
   scr.classList.remove('pagein');
   void scr.offsetWidth;
   if(dir){ scr.classList.add('ik-from-'+dir); if(tb) tb.classList.add('ik-title-'+dir); }
-  scheduleMotionSettle(6000);
   if(s!=='stats') ikPlay(scr); // Stats : la cascade part quand le vrai contenu remplace le squelette
   ikStreak(scr.querySelector('.hv7-day,.sp-plan,.pf-hero,.card'));
 }
 function ikOpenOv(ov){
   if(!ov || ikMotionOff()) return;
-  scheduleMotionSettle(6000);
   const card=ov.querySelector('.ov-card'); if(!card) return;
-  requestAnimationFrame(()=>ikPlay(card,{skip:'.ov-head'}));
+  requestAnimationFrame(()=>{ if(ikFirst(ov,ikSig(card.innerHTML))) ikPlay(card,{skip:'.ov-head'}); });
 }
 // Fin de l'intro (index.html) : on rejoue l'entrée de l'écran qu'elle cachait.
 window.addEventListener('ik-intro-end',()=>{
   if(ikMotionOff()) return;
-  scheduleMotionSettle(5000); // les halos/icônes s'étaient déjà figés derrière l'intro
   const login=document.getElementById('login');
   if(login && login.classList.contains('on')){ ikPlay(login.querySelector('.login-card')||login,{force:true}); return; }
   const s=document.body.dataset.scr, scr=s&&document.getElementById('s-'+s);
   if(scr && scr.classList.contains('on')) ikPlay(scr,{force:true});
 });
-// Signature d'un rendu (chiffres ignorés) : une simple mise à jour des données ne
-// relance pas la cascade, un changement de vue (outil, onglet interne) oui.
+// Signature d'une vue (début du rendu, chiffres ignorés) : sert de clé à ikFirst —
+// une mise à jour des données garde la même, un autre outil / onglet en a une autre.
 function ikSig(html){ return String(html).slice(0,600).replace(/\d+([.,]\d+)?/g,'#'); }
 function swapIn(id,html){
   const el=typeof id==='string'?document.getElementById(id):id;
   if(!el) return;
-  const sig=ikSig(html), changed=el._ikSig!==sig; el._ikSig=sig;
   el.innerHTML=html;
   if(P&&P.easyMode) return; // cf html.easy-mode .stag : mode simplifié sans animation
+  if(!ikFirst(el,ikSig(html))) return; // vue déjà vue : affichage direct
   el.classList.remove('pagein');
   void el.offsetWidth; // force le reflow pour redémarrer l'animation CSS
   el.classList.add('pagein');
-  if(changed) ikPlay(el);
+  ikPlay(el);
 }
 function todayKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function dateKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -10038,7 +10044,7 @@ function renderStats(){
     if(tabAtRequest==='medals') h+=statsMedals();
     const swap=()=>{
       if(statsTab!==tabAtRequest) return; // l'utilisateur a changé d'onglet entre-temps, un renderStats() plus récent a déjà pris le relais
-      const el=$('#s-stats'); el.innerHTML=h; el.classList.add('skl-content-in'); ikPlay(el,{force:true,skip:'.seg-ctrl'});
+      const el=$('#s-stats'); el.innerHTML=h; el.classList.add('skl-content-in'); if(ikFirst(el,ikSig(h))) ikPlay(el,{force:true,skip:'.seg-ctrl'});
     };
     // 3) Délai minimum anti-flash : si le calcul a été quasi instantané (peu
     //    d'historique), on évite un aller-retour squelette→contenu trop bref
@@ -11238,18 +11244,18 @@ function renderIMC(){
 let chrono={running:false,start:0,elapsed:0,laps:[],raf:null};
 function renderChrono(){
   const total=chrono.elapsed+(chrono.running?Date.now()-chrono.start:0);
-  let h='<div class="card ch-face'+(chrono.running?' run':'')+'" style="text-align:center;padding:28px 16px;background:radial-gradient(circle at 50% 30%,rgba(var(--e-rgb),.12),var(--s1))"><div class="mono" id="chDisp" style="font-size:54px;font-weight:700;letter-spacing:-2px;'+(chrono.running?'color:var(--e)':'')+'">'+fmtChrono(total)+'</div><div class="ch-lane" aria-hidden="true"><i></i></div>';
+  let h='<div class="card ch-face'+(chrono.running?' run':'')+'" style="text-align:center;padding:28px 16px;background:radial-gradient(circle at 50% 30%,rgba(var(--e-rgb),.12),var(--s1))"><div class="mono" id="chDisp" style="font-size:54px;font-weight:700;letter-spacing:-2px;'+(chrono.running?'color:var(--e)':'')+'">'+fmtChrono(total)+'</div>';
   // Boutons
   h+='<div class="row" style="gap:14px;margin-top:24px;justify-content:center">';
   if(!chrono.running && total===0){
-    h+='<div style="width:62px"></div><button class="btn ch-main" style="width:84px;height:84px;border-radius:50%;font-size:30px;flex:none;background:var(--ok)" onclick="chronoToggle()" aria-label="'+t('playLab')+'">'+ICN('play',28,'#fff')+'</button><div style="width:62px"></div>';
+    h+='<div style="width:62px"></div><button class="btn" style="width:84px;height:84px;border-radius:50%;font-size:30px;flex:none;background:var(--ok)" onclick="chronoToggle()" aria-label="'+t('playLab')+'">'+ICN('play',28,'#fff')+'</button><div style="width:62px"></div>';
   } else if(chrono.running){
     h+='<button class="chbtn" onclick="chronoLap()">'+t('lapBtn')+'</button>';
-    h+='<button class="btn ch-main" style="width:84px;height:84px;border-radius:50%;flex:none;background:var(--warn)" onclick="chronoToggle()" aria-label="'+t('pauseLab')+'">'+ICN('pause',30,'#fff')+'</button>';
+    h+='<button class="btn" style="width:84px;height:84px;border-radius:50%;flex:none;background:var(--warn)" onclick="chronoToggle()" aria-label="'+t('pauseLab')+'">'+ICN('pause',30,'#fff')+'</button>';
     h+='<button class="chbtn" style="border-color:var(--bad);color:var(--bad)" onclick="chronoStop()">'+t('stopBtn')+'</button>';
   } else {
     h+='<button class="chbtn" style="border-color:var(--bad);color:var(--bad)" onclick="chronoReset()">'+t('resetBtn2')+'</button>';
-    h+='<button class="btn ch-main" style="width:84px;height:84px;border-radius:50%;font-size:30px;flex:none;background:var(--ok)" onclick="chronoToggle()" aria-label="'+t('playLab')+'">'+ICN('play',28,'#fff')+'</button>';
+    h+='<button class="btn" style="width:84px;height:84px;border-radius:50%;font-size:30px;flex:none;background:var(--ok)" onclick="chronoToggle()" aria-label="'+t('playLab')+'">'+ICN('play',28,'#fff')+'</button>';
     h+='<button class="chbtn" onclick="chronoLap()">'+t('lapBtn')+'</button>';
   }
   h+='</div></div>';

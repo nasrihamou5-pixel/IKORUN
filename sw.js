@@ -19,7 +19,9 @@
 // cache. Changer le nom du cache supprime les anciennes entrées à l'activation, ce
 // qui garantit que le vrai manifest.json est bien récupéré — condition nécessaire
 // pour que le navigateur propose l'installation de l'app.
-const C = 'ikorun-v81';
+const C = 'ikorun-v82';
+// Délai max d'attente du réseau pour index.html avant d'afficher la copie en cache.
+const RESEAU_MAX = 700;
 
 // Une réponse est réutilisable telle quelle si son URL identifie déjà une version
 // précise : soit elle porte un paramètre ?v=..., soit c'est un binaire dont le nom
@@ -96,23 +98,38 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  e.respondWith(
-    fetch(e.request, { cache: 'no-store' })
-      .then(res => {
-        // fetch() RÉSOUT sur un 404/500/502 (il ne rejette que sur erreur réseau).
-        // Sans ce test, une page d'erreur transitoire du CDN était mise en cache
-        // puis resservie hors-ligne : l'utilisateur restait bloqué dessus jusqu'à
-        // un rechargement en ligne. On ne met donc en cache que les vraies réponses.
-        if (res && res.ok) {
-          try {
-            const copy = res.clone();
-            caches.open(C).then(c => c.put(e.request, copy));
-          } catch (x) {}
-        }
-        return res;
-      })
-      .catch(() => caches.open(C).then(c => c.match(e.request)))
-  );
+  // 25/09 : network-first AVEC DÉLAI. Avant, chaque lancement attendait la réponse
+  // du réseau pour index.html avant d'afficher quoi que ce soit (écran vide, intro
+  // retardée — remonté par Hamou : « le logo met un peu de temps avant de se
+  // mettre »). Désormais, si le réseau n'a pas répondu en RESEAU_MAX ms et qu'une
+  // copie existe en cache, on l'affiche tout de suite ; le téléchargement continue
+  // en arrière-plan et met le cache à jour pour le lancement suivant. Sur une
+  // connexion normale (réponse < RESEAU_MAX), rien ne change : la version fraîche.
+  const reseau = fetch(e.request, { cache: 'no-store' })
+    .then(res => {
+      // fetch() RÉSOUT sur un 404/500/502 (il ne rejette que sur erreur réseau).
+      // Sans ce test, une page d'erreur transitoire du CDN était mise en cache
+      // puis resservie hors-ligne : l'utilisateur restait bloqué dessus jusqu'à
+      // un rechargement en ligne. On ne met donc en cache que les vraies réponses.
+      if (res && res.ok) {
+        try {
+          const copy = res.clone();
+          return caches.open(C).then(c => c.put(e.request, copy)).catch(() => {}).then(() => res);
+        } catch (x) {}
+      }
+      return res;
+    });
+  const enCache = () => caches.open(C).then(c => c.match(e.request)).catch(() => undefined);
+  e.respondWith(new Promise(resolve => {
+    let fini = false;
+    const servir = r => { if (!fini && r) { fini = true; resolve(r); } };
+    const minuterie = setTimeout(() => { enCache().then(servir); }, RESEAU_MAX);
+    reseau
+      .then(res => { clearTimeout(minuterie); servir(res); })
+      .catch(() => { clearTimeout(minuterie); enCache().then(hit => { servir(hit); if (!fini) { fini = true; resolve(Response.error()); } }); });
+  }));
+  // garde le service worker en vie jusqu'à la fin du téléchargement (mise en cache)
+  e.waitUntil(reseau.catch(() => {}));
 });
 
 // Notifications push envoyées par les Edge Functions Supabase send-prayer-notifs
