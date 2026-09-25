@@ -27,6 +27,11 @@
 /vendor/supabase.js
   Cache-Control: public, max-age=31536000, immutable
 
+# Initialisation Supabase (sortie d'index.html le 25/09) : même règle que app.js,
+# monter le ?v= dans index.html (et sw.js SHELL) à chaque modification.
+/vendor/sb-init.js
+  Cache-Control: public, max-age=31536000, immutable
+
 /*.png
   Cache-Control: public, max-age=2592000
 

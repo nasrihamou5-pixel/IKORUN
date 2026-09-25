@@ -2,7 +2,8 @@
 // via blob URL, qui empêchait le navigateur de détecter correctement les mises à jour).
 // Stratégie EN DEUX TEMPS :
 //  · Ressources versionnées ou immuables (app.js?v=N, images, polices) → cache-first.
-//  · Tout le reste, à commencer par index.html → network-first, repli cache hors-ligne.
+//  · Tout le reste, à commencer par index.html → cache d'abord + mise à jour en fond
+//    (depuis le 25/09, voir plus bas ; avant : network-first).
 // Avant, TOUT passait en network-first avec {cache:'no-store'} : app.js était
 // intégralement retéléchargé à CHAQUE ouverture de l'app, jamais servi depuis
 // le cache. Mesuré à ~1 s sur une bonne connexion, bien pire en 3G. Or son URL
@@ -19,14 +20,12 @@
 // cache. Changer le nom du cache supprime les anciennes entrées à l'activation, ce
 // qui garantit que le vrai manifest.json est bien récupéré — condition nécessaire
 // pour que le navigateur propose l'installation de l'app.
-const C = 'ikorun-v82';
-// Délai max d'attente du réseau pour index.html avant d'afficher la copie en cache.
-const RESEAU_MAX = 700;
+const C = 'ikorun-v83';
 
 // Une réponse est réutilisable telle quelle si son URL identifie déjà une version
 // précise : soit elle porte un paramètre ?v=..., soit c'est un binaire dont le nom
-// change quand le contenu change. manifest.json et index.html n'en font PAS partie
-// et restent en network-first, pour que toute mise à jour soit vue immédiatement.
+// change quand le contenu change. manifest.json et index.html n'en font PAS partie et
+// ont leur propre stratégie (cache d'abord + mise à jour en fond + message 'ik-maj').
 const IMMUABLE = /\.(png|jpe?g|webp|svg|gif|woff2?|ttf|ico|mp3|wav)$/i;
 function estVersionnee(url){
   return url.searchParams.has('v') || IMMUABLE.test(url.pathname);
@@ -47,7 +46,8 @@ const SHELL = [
   'apple-touch-icon.png',
   'favicon-32.png',
   'favicon-16.png',
-  'vendor/supabase.js?v=1'
+  'vendor/supabase.js?v=1',
+  'vendor/sb-init.js?v=1'
 ];
 
 self.addEventListener('install', e => {
@@ -98,39 +98,42 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // 25/09 : network-first AVEC DÉLAI. Avant, chaque lancement attendait la réponse
-  // du réseau pour index.html avant d'afficher quoi que ce soit (écran vide, intro
-  // retardée — remonté par Hamou : « le logo met un peu de temps avant de se
-  // mettre »). Désormais, si le réseau n'a pas répondu en RESEAU_MAX ms et qu'une
-  // copie existe en cache, on l'affiche tout de suite ; le téléchargement continue
-  // en arrière-plan et met le cache à jour pour le lancement suivant. Sur une
-  // connexion normale (réponse < RESEAU_MAX), rien ne change : la version fraîche.
-  const reseau = fetch(e.request, { cache: 'no-store' })
-    .then(res => {
-      // fetch() RÉSOUT sur un 404/500/502 (il ne rejette que sur erreur réseau).
-      // Sans ce test, une page d'erreur transitoire du CDN était mise en cache
-      // puis resservie hors-ligne : l'utilisateur restait bloqué dessus jusqu'à
-      // un rechargement en ligne. On ne met donc en cache que les vraies réponses.
-      if (res && res.ok) {
-        try {
-          const copy = res.clone();
-          return caches.open(C).then(c => c.put(e.request, copy)).catch(() => {}).then(() => res);
-        } catch (x) {}
-      }
-      return res;
-    });
-  const enCache = () => caches.open(C).then(c => c.match(e.request)).catch(() => undefined);
-  e.respondWith(new Promise(resolve => {
-    let fini = false;
-    const servir = r => { if (!fini && r) { fini = true; resolve(r); } };
-    const minuterie = setTimeout(() => { enCache().then(servir); }, RESEAU_MAX);
-    reseau
-      .then(res => { clearTimeout(minuterie); servir(res); })
-      .catch(() => { clearTimeout(minuterie); enCache().then(hit => { servir(hit); if (!fini) { fini = true; resolve(Response.error()); } }); });
-  }));
-  // garde le service worker en vie jusqu'à la fin du téléchargement (mise en cache)
-  e.waitUntil(reseau.catch(() => {}));
+  // PAGE (index.html, manifest.json…) — 25/09 : CACHE D'ABORD, MISE À JOUR EN FOND.
+  // Avant, chaque lancement attendait la réponse du réseau pour index.html (mesuré
+  // à ~0,5 s, jusqu'à 0,7 s avec le délai max) : écran noir avant l'intro, remonté
+  // par Hamou. Désormais la copie enregistrée s'affiche immédiatement ; le réseau
+  // est interrogé en parallèle, met le cache à jour et, si la page a changé (nouvelle
+  // version déployée), prévient la page (message 'ik-maj') qui propose de recharger.
+  // Première visite (rien en cache) : on attend le réseau, comme avant. Hors-ligne :
+  // la copie en cache, comme avant.
+  const maj = fetch(e.request, { cache: 'no-store' }).then(res => {
+    // fetch() RÉSOUT sur un 404/500/502 (il ne rejette que sur erreur réseau) : une
+    // page d'erreur transitoire du CDN ne doit jamais remplacer la bonne copie.
+    if (!res || !res.ok) return res;
+    const pourCache = res.clone(), pourComparer = res.clone();
+    return caches.open(C).then(c => c.match(e.request).then(ancien => {
+      const change = (ancien && e.request.mode === 'navigate')
+        ? Promise.all([ancien.text(), pourComparer.text()]).then(([x, y]) => x !== y).catch(() => false)
+        : Promise.resolve(false);
+      return c.put(e.request, pourCache).then(() => change).then(ch => { if (ch) prevenirMaj(e); });
+    })).catch(() => {}).then(() => res);
+  });
+  e.respondWith(
+    caches.open(C).then(c => c.match(e.request)).catch(() => undefined)
+      .then(hit => hit || maj.then(res => res || Response.error(), () => Response.error()))
+  );
+  // garde le service worker en vie jusqu'à la fin de la mise à jour du cache
+  e.waitUntil(maj.catch(() => {}));
 });
+// Prévient la page qui vient de s'ouvrir (ou, à défaut, toutes les fenêtres) qu'une
+// nouvelle version vient d'être téléchargée.
+function prevenirMaj(e) {
+  const id = e.resultingClientId || e.clientId;
+  const cibles = id
+    ? self.clients.get(id).then(cl => cl ? [cl] : self.clients.matchAll({ type: 'window' }))
+    : self.clients.matchAll({ type: 'window' });
+  return cibles.then(list => list.forEach(cl => cl.postMessage({ type: 'ik-maj' }))).catch(() => {});
+}
 
 // Notifications push envoyées par les Edge Functions Supabase send-prayer-notifs
 // et send-daily-reminders (voir app.js, subscribeToPush) : les seules à passer par

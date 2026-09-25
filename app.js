@@ -1833,7 +1833,7 @@ const I18N={
     googleStandaloneTitle:'Google et l\u2019app install\u00e9e',googleUseGuestBtn:'Continuer en tant qu\u2019invit\u00e9',googleOpenSafariBtn:'Ouvrir dans Safari',googleStandaloneHint:'Indisponible depuis l\u2019app install\u00e9e',
     declineBtn:'Refuser',saveLabel:'Enregistrer',renameLab:'Renommer',favoriteLab:'Favori',
     langLab:'Langue',obModeTitle:'Ton affichage',obModeIntro:'Deux façons de voir IKORUN — change d\u2019avis à tout moment dans Profil.',obModeFullT:'Complet',obModeFullD:'Toutes les stats, tous les détails de chaque séance, l\u2019anatomie musculaire, les graphiques. Pour creuser.',obModeSimpleT:'Simplifié',obModeSimpleD:'Une carte, l\u2019essentiel : la séance du jour et un bouton. Rien d\u2019autre à l\u2019écran. Pour aller droit au but.',obModeSuggestion:'Suggestion selon ton âge : {0}. Choisis librement.',chooseModeLab:'Choisis un affichage pour continuer',
-    trackingLab:'Suivi',appearanceLab:'Apparence',animationsLab:'Animations',introReplayBtn:'Revoir l\u2019animation d\u2019ouverture',
+    trackingLab:'Suivi',appearanceLab:'Apparence',animationsLab:'Animations',updateReadyLab:'Nouvelle version d\u2019IKORUN prête',updateNowBtn:'Mettre à jour',introReplayBtn:'Revoir l\u2019animation d\u2019ouverture',
     sendFeedbackLab:'Envoyer un commentaire',feedbackNoAddressToast:'Adresse de contact pas encore configurée — réessaie après la prochaine mise à jour.',feedbackTitle:'Ton avis',feedbackIntro:'Une idée, un bug, un truc qui te gêne dans l\u2019app ? Écris-le ici, ça part directement dans ta boîte mail.',feedbackPh:'Écris ton commentaire...',feedbackEmptyToast:'Écris quelque chose avant d\u2019envoyer',feedbackSentToast:'Ton appli mail s\u2019est ouverte, il ne reste qu\u2019à envoyer',feedbackSignature:'Compte : {0} · Langue : {1}',
     sendBtn:'Envoyer',
     playLab:'Démarrer',
@@ -2420,7 +2420,7 @@ const I18N={
     googleStandaloneTitle:'Google and the installed app',googleUseGuestBtn:'Continue as guest',googleOpenSafariBtn:'Open in Safari',googleStandaloneHint:'Unavailable from the installed app',
     declineBtn:'Decline',saveLabel:'Save',renameLab:'Rename',favoriteLab:'Favourite',
     langLab:'Language',obModeTitle:'Your display',obModeIntro:'Two ways to see IKORUN \u2014 change your mind anytime in Profile.',obModeFullT:'Full',obModeFullD:'All the stats, every session detail, muscle anatomy, charts. For digging in.',obModeSimpleT:'Simplified',obModeSimpleD:'One card, the essentials: today\u2019s session and a button. Nothing else on screen. For going straight to it.',obModeSuggestion:'Suggestion based on your age: {0}. Choose freely.',chooseModeLab:'Choose a display to continue',
-    trackingLab:'Tracking',appearanceLab:'Appearance',animationsLab:'Animations',introReplayBtn:'Replay the opening animation',
+    trackingLab:'Tracking',appearanceLab:'Appearance',animationsLab:'Animations',updateReadyLab:'New IKORUN version ready',updateNowBtn:'Update',introReplayBtn:'Replay the opening animation',
     sendFeedbackLab:'Send feedback',feedbackNoAddressToast:'Contact address not set up yet — try again after the next update.',feedbackTitle:'Your feedback',feedbackIntro:'An idea, a bug, something bothering you in the app? Write it here, it goes straight to your mail app.',feedbackPh:'Write your feedback...',feedbackEmptyToast:'Write something before sending',feedbackSentToast:'Your mail app just opened, all that\u2019s left is to hit send',feedbackSignature:'Account: {0} · Language: {1}',
     sendBtn:'Send',
     playLab:'Start',
@@ -3007,7 +3007,7 @@ const I18N={
     googleStandaloneTitle:'Google والتطبيق المثبّت',googleUseGuestBtn:'المتابعة كضيف',googleOpenSafariBtn:'الفتح في Safari',googleStandaloneHint:'غير متاح من التطبيق المثبّت',
     declineBtn:'رفض',saveLabel:'حفظ',renameLab:'إعادة تسمية',favoriteLab:'مفضّل',
     langLab:'اللغة',obModeTitle:'طريقة العرض',obModeIntro:'طريقتان لرؤية IKORUN — غيّر رأيك في أي وقت من الملف الشخصي.',obModeFullT:'كامل',obModeFullD:'كل الإحصائيات، تفاصيل كل حصة، تشريح العضلات، الرسوم البيانية. للتعمّق.',obModeSimpleT:'مبسّط',obModeSimpleD:'بطاقة واحدة، الأساسيات: حصة اليوم وزر واحد. لا شيء آخر على الشاشة. للذهاب مباشرة إلى الهدف.',obModeSuggestion:'اقتراح حسب عمرك: {0}. اختر بحرية.',chooseModeLab:'اختر طريقة عرض للمتابعة',
-    trackingLab:'المتابعة',appearanceLab:'المظهر',animationsLab:'الرسوم المتحركة',introReplayBtn:'إعادة عرض الرسوم الافتتاحية',
+    trackingLab:'المتابعة',appearanceLab:'المظهر',animationsLab:'الرسوم المتحركة',updateReadyLab:'نسخة جديدة من IKORUN جاهزة',updateNowBtn:'تحديث',introReplayBtn:'إعادة عرض الرسوم الافتتاحية',
     sendFeedbackLab:'إرسال تعليق',feedbackNoAddressToast:'لم يتم إعداد عنوان التواصل بعد — أعد المحاولة بعد التحديث القادم.',feedbackTitle:'رأيك',feedbackIntro:'فكرة، خلل، أو شيء يزعجك في التطبيق؟ اكتبه هنا، سيُفتح مباشرة في تطبيق بريدك.',feedbackPh:'اكتب تعليقك...',feedbackEmptyToast:'اكتب شيئًا قبل الإرسال',feedbackSentToast:'فُتح تطبيق البريد لديك، لم يبقَ سوى الضغط على إرسال',feedbackSignature:'الحساب: {0} · اللغة: {1}',
     sendBtn:'إرسال',
     playLab:'ابدأ',
@@ -4778,6 +4778,22 @@ if('serviceWorker'in navigator){
     else if(kind==='timer'){ if(d.action==='toggle') timerToggle(); else if(d.action==='reset') resetTimer(); }
   });
 }
+// Nouvelle version téléchargée en arrière-plan (sw.js → message 'ik-maj', capté dès le
+// <head> d'index.html). Depuis le 25/09 la page s'ouvre sur la copie enregistrée — plus
+// d'écran noir à attendre le réseau — donc une mise à jour fraîchement déployée est
+// proposée ici d'un geste (sinon elle s'applique d'elle-même au lancement suivant).
+function ikShowUpdate(){
+  if(document.getElementById('ikMaj')) return;
+  const b=document.createElement('div'); b.id='ikMaj'; b.setAttribute('role','status');
+  b.innerHTML='<span>'+t('updateReadyLab')+'</span><button type="button" class="ik-maj-go">'+t('updateNowBtn')+'</button><button type="button" class="ik-maj-x" aria-label="'+t('closeLab')+'">×</button>';
+  b.querySelector('.ik-maj-go').onclick=()=>location.reload();
+  b.querySelector('.ik-maj-x').onclick=()=>b.remove();
+  document.body.appendChild(b);
+}
+// Attendre le profil (langue) avant d'afficher le bandeau.
+function ikQueueUpdate(){ Promise.resolve(window.DB_READY).catch(()=>{}).then(()=>setTimeout(ikShowUpdate,0)); }
+window.addEventListener('ik-maj',ikQueueUpdate);
+if(window.__ikMaj) ikQueueUpdate();
 // Réacquiert le wake lock au retour de veille si une activité tourne, et
 // s'assure que l'abonnement push (prière + rappel de séance) est toujours
 // actif et que le serveur a bien le dernier état "séance du jour faite ou non".

@@ -38,6 +38,13 @@
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('sw.js').catch(()=>{});
     });
+    // sw.js affiche la page enregistrée tout de suite et télécharge la nouvelle en
+    // arrière-plan ; s'il y en a une, il envoie 'ik-maj'. Écouté dès maintenant (le
+    // message peut arriver avant app.js) ; app.js affiche alors le bandeau.
+    navigator.serviceWorker.addEventListener('message', ev => {
+      if(ev.data && ev.data.type === 'ik-maj'){ window.__ikMaj = true; try{ window.dispatchEvent(new Event('ik-maj')); }catch(e){} }
+    });
+    try{ navigator.serviceWorker.startMessages(); }catch(e){}
   }
 </script>
 <meta charset="UTF-8">
@@ -2317,6 +2324,17 @@ svg.ik-sweep{-webkit-mask:conic-gradient(from 90deg,#000 var(--ik-sweep),transpa
 .bd-icon:not(.locked)::before{animation:none;}
 .ik-play .bd-icon:not(.locked)::before{animation:bdSweep 1s ease-in-out both;animation-delay:calc(.35s + var(--sw,0) * .12s);}
 
+/* --- Bandeau « nouvelle version prête » (voir ikShowUpdate dans app.js) --- */
+#ikMaj{position:fixed;left:50%;top:max(10px,env(safe-area-inset-top));transform:translateX(-50%);z-index:20000;
+  display:flex;align-items:center;gap:8px;max-width:calc(100vw - 24px);padding:6px 6px 6px 14px;border-radius:999px;
+  background:var(--s1);border:1px solid var(--hair2);box-shadow:0 12px 30px -10px rgba(0,0,0,.6);
+  font-size:12.5px;font-weight:600;color:var(--snow);animation:ikMajIn .45s var(--ease-stride) both;}
+#ikMaj span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+#ikMaj button{flex:none;border:0;border-radius:999px;font:inherit;cursor:pointer;}
+#ikMaj .ik-maj-go{padding:8px 13px;font-weight:700;color:#fff;background:linear-gradient(180deg,rgba(0,0,0,.1),rgba(0,0,0,.3)) var(--e);}
+#ikMaj .ik-maj-x{width:32px;height:32px;background:transparent;color:var(--muted);font-size:18px;line-height:1;}
+@keyframes ikMajIn{from{opacity:0;transform:translate(-50%,-14px);}to{opacity:1;transform:translateX(-50%);}}
+
 /* --- Minuteur / repos : les dernières secondes battent comme un cœur --- */
 .ik-bump{animation:ikBump .42s var(--ease-spring);}
 @keyframes ikBump{0%{transform:scale(1);}35%{transform:scale(1.22);}100%{transform:none;}}
@@ -2638,39 +2656,25 @@ html[data-mode="light"] .iki-word{color:#10141B;}
      same-origin, le SW le met en cache comme app.js et l'app redémarre offline.
      Pour mettre à jour la version : retélécharger le fichier UMD correspondant
      depuis jsdelivr et l'écraser dans vendor/supabase.js. -->
-<script src="vendor/supabase.js?v=1"></script>
-<script>
-  try{
-    window.supabaseClient = supabase.createClient(
-      'https://bsrbzuhvqtjkkmpmxyzw.supabase.co',
-      'sb_publishable_d1eInkDkCJG-Fx4S8UqNgw_Bm6uQuKw',
-      { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
-    );
-  }catch(e){
-    console.error('[IKORUN] Le script Supabase n\'a pas pu s\'initialiser.', e);
-  }
-  // Le try/catch ci-dessus n'attrapait que l'échec de createClient() — si le
-  // <script> lui-même ne chargeait pas (comme ici auparavant, quand jsdelivr était
-  // bloqué), aucune erreur n'était levée ici : window.supabaseClient restait
-  // simplement indéfini et chaque fonction qui le vérifie ("if(!window.supabaseClient)
-  // return") s'arrêtait en silence. L'app avait l'air figée sans le moindre message.
-  if(!window.supabaseClient){
-    document.addEventListener('DOMContentLoaded',()=>{
-      const b=document.body;
-      if(b) b.insertAdjacentHTML('afterbegin','<div style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#E0394A;color:#fff;padding:12px 16px;font:600 13px/1.4 system-ui,sans-serif;text-align:center">Connexion au serveur impossible. Vérifie ta connexion et recharge la page.</div>');
-    });
-  }
-</script>
-<script src="app.js?v=93"></script>
+<!-- defer (25/09) : les trois scripts s'exécutent dans cet ordre APRÈS la lecture de la
+     page, donc après le premier affichage de l'intro. Avant, ~1,3 Mo de JavaScript
+     était lu et exécuté pendant que l'écran restait noir. -->
+<script src="vendor/supabase.js?v=1" defer></script>
+<script src="vendor/sb-init.js?v=1" defer></script>
+<script src="app.js?v=94" defer></script>
 <!-- Suite de fumée : chargée uniquement avec ?selftest=1 (voir tests/smoke.js).
      Second script classique de la page, donc il partage l'environnement lexical
      d'app.js et peut tester l'app réelle (P, SESS, RANKS...) sans imitation.
      La suite ne persiste RIEN : elle photographie l'état, teste, restaure. -->
 <script>
+  // app.js étant en defer, on attend DOMContentLoaded (qui suit les scripts defer)
+  // pour que la suite passe bien APRÈS app.js.
   if (location.search.indexOf('selftest=1') > -1) {
-    var _st = document.createElement('script');
-    _st.src = 'tests/smoke.js?v=2';
-    document.body.appendChild(_st);
+    document.addEventListener('DOMContentLoaded', function(){
+      var _st = document.createElement('script');
+      _st.src = 'tests/smoke.js?v=2';
+      document.body.appendChild(_st);
+    });
   }
 </script>
 </body>
