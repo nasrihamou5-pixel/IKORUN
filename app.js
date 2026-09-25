@@ -1144,7 +1144,7 @@ function renderFriendProfileHTML(){
     '<div style="font-size:12.5px;color:var(--muted);margin-top:2px">'+(f.xp||0)+' XP</div>'+
   '</div>';
   h+='<div class="stat-quatro" style="margin-top:12px">'+
-    '<div class="card stat-card"><div class="stat-ic">'+ICN('lung',14)+'</div><div class="stat-v">'+(f.vdot||'—')+'</div><div class="stat-l">VDOT</div></div>'+
+    '<div class="card stat-card"><div class="stat-ic">'+ICN('lung',14)+'</div><div class="stat-v">'+(f.vdot?fmt1(f.vdot):'—')+'</div><div class="stat-l">VDOT</div></div>'+
     '<div class="card stat-card"><div class="stat-ic">'+ICN('run',14)+'</div><div class="stat-v">'+(f.km_week||0)+'</div><div class="stat-l">'+t('kmPerWeek')+'</div></div>'+
     '<div class="card stat-card"><div class="stat-ic">'+ICN('fire',14)+'</div><div class="stat-v">'+(f.streak_days||0)+'</div><div class="stat-l">'+t('daysStreak')+'</div></div>'+
   '</div>';
@@ -1898,7 +1898,7 @@ const I18N={
     totalTime:'Temps total',overPeriod:'sur la période',goalReached:'Objectif atteint !',ofTarget:'{0}% de la cible',
     kmPerSession:'KM / SÉANCE',sessionTypesLabel:'TYPES DE SÉANCE',bestDayLab:'MEILLEUR JOUR',bestWeekLab:'MEILLEURE SEMAINE',bestMonthLab:'MEILLEUR MOIS',
     detailByType:'Détail par type',last13Weeks:'13 dernières semaines',lessLabel:'Moins',moreLabel:'Plus',vsPrevShort:'vs préc.',
-    typeMuscu:'Muscu',typeAutre:'Autre',insightsTitle:'Insights',
+    typeMuscu:'Muscu',typeAutre:'Autre',insightsTitle:'Analyses',
     quickTimer:'Minuteur',lvlShort:'NIV.',
     vdotReal:'VDOT réel',sessionsRun:'Séances run',kmTotal:'km totaux',paceZones:'Zones d\u2019allure',
     predictions:'Prédictions',formFatigue:'Forme / Fatigue',personalRecords:'Records personnels',
@@ -4670,8 +4670,23 @@ function ripple(e,b){
 }
 document.addEventListener('click',e=>{ const b=e.target.closest('.btn'); if(b) ripple(e,b); });
 
+/* ---------- ACCESSIBILITÉ DES ÉLÉMENTS CLIQUABLES (audit 25/09) ---------- */
+(function(){
+  const NATIVE=/^(BUTTON|A|INPUT|SELECT|TEXTAREA|LABEL|SUMMARY|OPTION)$/;
+  const tag=el=>{ if(NATIVE.test(el.tagName)||el.hasAttribute('role')) return; el.setAttribute('role','button'); if(!el.hasAttribute('tabindex')) el.setAttribute('tabindex','0'); };
+  const scan=node=>{ if(!node||node.nodeType!==1) return; if(node.hasAttribute('onclick')) tag(node); node.querySelectorAll('[onclick]').forEach(tag); };
+  try{ new MutationObserver(ms=>{ for(const m of ms) m.addedNodes.forEach(scan); }).observe(document.documentElement,{childList:true,subtree:true}); }catch(e){}
+  scan(document.body);
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Enter'&&e.key!==' ') return;
+    const el=e.target; if(!el||!el.hasAttribute||NATIVE.test(el.tagName)||!el.hasAttribute('onclick')) return;
+    e.preventDefault(); el.click();
+  });
+})();
+
 /* ---------- CONFETTI ---------- */
 function burst(){
+  if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const c=$('#confetti'), ctx=c.getContext('2d');
   c.width=innerWidth; c.height=innerHeight;
   const cols=['#3D7FFF','#F2B84B','#33D399','#FF5C6C','#9FD8FF','#A98CF0'];
@@ -7732,6 +7747,14 @@ function homeNextUpcoming(){
 }
 // Nombre de km à l'affichage — séparateur décimal de la langue active (20,7 en FR, 20.7 en EN).
 function hKm(v){ const n=Number(v); return isFinite(n)?n.toLocaleString(localeCode(),{maximumFractionDigits:1}):String(v); }
+// Une décimale fixe, au format de la langue (34,7 en français, 34.7 en anglais).
+// Libellé du meilleur créneau d'un graphique Stats (jour complet en vue semaine).
+function bestBarLabel(per,bars,i){
+  if(!bars.values.length||!(bars.values[i]>0)) return '—';
+  if(per==='week'){ try{ const d=new Date(2024,0,1+i).toLocaleDateString(localeCode(),{weekday:'long'}); return d.charAt(0).toUpperCase()+d.slice(1); }catch(e){} }
+  return bars.labels[i];
+}
+function fmt1(v){ const n=Number(v); return (v!==''&&v!=null&&isFinite(n))?n.toLocaleString(localeCode(),{minimumFractionDigits:1,maximumFractionDigits:1}):String(v); }
 // 7 barres de charge quotidienne de la semaine. Les jours déjà courus sont pleins ; les jours
 // à venir affichent en creux la charge PRÉVUE par le plan, pour que la semaine se lise en
 // entier et pas seulement dans sa partie écoulée. Le jour courant est mis en avant.
@@ -7900,7 +7923,7 @@ function renderHome(){
   html+='<div class="hv7-krow3" onclick="nav(\'stats\')">'+
     '<div class="hv7-ktile"><div class="hv7-ktile-val">'+hKm(kmW)+'</div><div class="hv7-ktile-lab">'+t('kmWeekShort')+'</div></div>'+
     '<div class="hv7-ktile"><div class="hv7-ktile-val">'+sessW+'/'+sessTarget+'</div><div class="hv7-ktile-lab">'+t('sessionsLab')+'</div></div>'+
-    '<div class="hv7-ktile"><div class="hv7-ktile-val">'+(vdot||'—')+'</div><div class="hv7-ktile-lab">VDOT</div></div>'+
+    '<div class="hv7-ktile"><div class="hv7-ktile-val">'+(vdot?fmt1(vdot):'—')+'</div><div class="hv7-ktile-lab">VDOT</div></div>'+
   '</div>';
 
   // RECORDS PERSO — homePBRow() existait deja (comme homeGoalCard/homeLoadQuip/
@@ -7955,7 +7978,7 @@ function renderHomeSimple(ps,sessW,sessTarget,vdot,form,first){
 
   h+='<div class="stat-quatro" style="grid-template-columns:repeat(3,1fr);margin-top:14px">'+
     '<div class="card stat-card" onclick="nav(\'sport\')"><div class="stat-ic">'+ICN('run',14)+'</div><div class="stat-v">'+sessW+'/'+sessTarget+'</div><div class="stat-l">'+t('sessionsCap')+'</div></div>'+
-    '<div class="card stat-card" onclick="nav(\'profil\')"><div class="stat-ic">'+ICN('lung',14)+'</div><div class="stat-v">'+(vdot||'—')+'</div><div class="stat-l">VDOT</div></div>'+
+    '<div class="card stat-card" onclick="nav(\'profil\')"><div class="stat-ic">'+ICN('lung',14)+'</div><div class="stat-v">'+(vdot?fmt1(vdot):'—')+'</div><div class="stat-l">VDOT</div></div>'+
     '<div class="card stat-card" onclick="nav(\'profil\')"><div class="stat-ic">'+ICN('heart',14)+'</div><div class="stat-v">'+form+'%</div><div class="stat-l">'+t('formCap')+'</div></div>'+
   '</div>';
 
@@ -8009,7 +8032,7 @@ function planHeroHTML(){
   h+='<div class="sp-rail">'+rail+'</div>';
   h+='<div class="sp-rail-lab"><b>'+phaseName(curSess.phaseKey)+'</b><span>'+tp('weekOf',curWeekNum,PLAN.weeks)+'</span></div>';
   h+='<div class="sp-metrics">'+
-    '<div><b>'+curVdot+(vdotDelta?' <span class="sp-delta '+(vdotDelta>0?'up':'down')+'">'+(vdotDelta>0?'+':'')+vdotDelta+'</span>':'')+'</b><span>VDOT</span></div>'+
+    '<div><b>'+(isFinite(+curVdot)&&curVdot!==''?fmt1(curVdot):curVdot)+(vdotDelta?' <span class="sp-delta '+(vdotDelta>0?'up':'down')+'">'+(vdotDelta>0?'+':'')+vdotDelta+'</span>':'')+'</b><span>VDOT</span></div>'+
     '<div><b>'+curKm+' km'+(kmDelta!==null?' <span class="sp-delta '+(kmDelta>=0?'up':'down')+'">'+(kmDelta>=0?'+':'')+kmDelta+'%</span>':'')+'</b><span>'+t('weeklyLoad')+'</span></div>'+
     '<div><b>'+doneW+'/'+realW.length+'</b><span>'+t('sessionsCap')+'</span></div>'+
     '</div>';
@@ -8886,7 +8909,7 @@ function openProg(id){
   // Liste d'exercices avec vignette + numéro
   p.ex.forEach((e,i)=>{
     h+='<div class="card" style="padding:13px;margin-bottom:10px;cursor:pointer" onclick="openExDetail(\''+p.id+'\','+i+')"><div class="row" style="align-items:flex-start"><div style="position:relative;margin-right:12px">'+exThumb(e.name,64)+
-      '<div style="position:absolute;top:-6px;left:-6px;width:22px;height:22px;border-radius:7px;background:var(--e);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">'+(i+1)+'</div></div>'+
+      '<div style="position:absolute;top:-6px;left:-6px;width:22px;height:22px;border-radius:7px;background:linear-gradient(180deg,rgba(0,0,0,.1),rgba(0,0,0,.3)) var(--e);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">'+(i+1)+'</div></div>'+
       '<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15px;line-height:1.25">'+escHtml(e.name)+'</div>'+
       '<div class="muscle-tags" style="margin-top:5px">'+(e.muscles||[]).slice(0,2).map(m=>'<span class="mtag">'+m+'</span>').join('')+'</div>'+
       '<div style="font-size:12px;color:var(--muted);margin-top:6px">'+tp('setsRepsLine',e.sets,e.reps)+'</div>'+
@@ -9801,7 +9824,7 @@ function renderStatsSimple(){
   h+='<div class="stat-quatro" style="margin-top:2px;flex-wrap:wrap">'+
     '<div class="card stat-card" style="flex:1 1 40%"><div class="stat-ic">'+ICN('road',16)+'</div><div class="stat-v">'+Math.round(km)+'</div><div class="stat-l">'+t('kmTotalLab')+'</div></div>'+
     '<div class="card stat-card" style="flex:1 1 40%"><div class="stat-ic">'+ICN('medal',16)+'</div><div class="stat-v">'+sess+'</div><div class="stat-l">'+t('sessionsCap')+'</div></div>'+
-    '<div class="card stat-card" style="flex:1 1 40%"><div class="stat-ic">'+ICN('lung',16)+'</div><div class="stat-v">'+(vdot||'—')+'</div><div class="stat-l">VDOT</div></div>'+
+    '<div class="card stat-card" style="flex:1 1 40%"><div class="stat-ic">'+ICN('lung',16)+'</div><div class="stat-v">'+(vdot?fmt1(vdot):'—')+'</div><div class="stat-l">VDOT</div></div>'+
     '<div class="card stat-card" style="flex:1 1 40%"><div class="stat-ic">'+ICN('fire',16)+'</div><div class="stat-v">'+streak+'</div><div class="stat-l">'+t('daysStreak')+'</div></div>'+
   '</div>';
 
@@ -9813,7 +9836,7 @@ function renderStatsSimple(){
   h+='<div class="sec-lab" style="margin-top:18px">'+t('thisWeek')+'</div>';
   h+='<div class="card">'+
     '<div class="row" style="justify-content:space-between;align-items:baseline;margin-bottom:10px">'+
-      '<span class="man" style="font-weight:800;font-size:17px">'+tp('kmThisWeekShort',kmW.toFixed(1))+'</span>'+
+      '<span class="man" style="font-weight:800;font-size:17px">'+tp('kmThisWeekShort',fmt1(kmW))+'</span>'+
       (deltaPct!==null?'<span style="font-size:12px;color:'+(deltaPct<0?'var(--bad)':'var(--ok)')+';font-weight:700">'+(deltaPct>0?'+':'')+deltaPct+'%</span>':'')+
     '</div>'+
     '<div class="kgoal-bar"><div style="width:'+pct+'%"></div></div>'+
@@ -9888,13 +9911,13 @@ function statsBilan(){
   let h=bodyInfoCard();
 
   // ONGLETS PÉRIODE — segmented control façon Kalo
-  h+='<div class="seg-ctrl">'+
+  h+='<div class="seg-ctrl sub">'+
     ['week','month','3m','year'].map(p=>'<div class="seg-btn'+(per===p?' on':'')+'" onclick="bilanPeriod=\''+p+'\';renderStats()">'+periodTabLabel(p)+'</div>').join('')+
   '</div>';
 
   // CARTE KILOMÉTRAGE — gros chiffre + delta + barres avec ligne de moyenne
   h+='<div class="kchart-card">'+
-    '<div class="kchart-top"><div><div class="kchart-lab">'+t('mileage')+'</div><div class="kchart-val">'+km.toFixed(1)+'<span>'+t('kmCumulated')+'</span></div></div>'+
+    '<div class="kchart-top"><div><div class="kchart-lab">'+t('mileage')+'</div><div class="kchart-val">'+fmt1(km)+'<span>'+t('kmCumulated')+'</span></div></div>'+
     (deltaPct!==null?'<div><div class="kchart-delta'+(deltaPct<0?' bad':'')+'">'+(deltaPct>0?'+':deltaPct<0?'&#8722;':'')+Math.abs(deltaPct)+'%</div><div class="kchart-delta-sub">'+t('vsPrevPeriod')+'</div></div>':'')+
     '</div>'+
     kBarsHTML(bars.labels,bars.values,per==='week'?((new Date().getDay()+6)%7):null)+
@@ -9902,7 +9925,7 @@ function statsBilan(){
 
   // CARTE TENDANCE — ligne sur les 8 dernières semaines, peu importe l'onglet actif
   h+='<div class="kchart-card">'+
-    '<div class="kchart-top"><div><div class="kchart-lab">'+t('volumeTrend')+'</div><div class="kchart-val">'+trend[trend.length-1].toFixed(1)+'<span>'+t('kmThisWeek')+'</span></div></div>'+
+    '<div class="kchart-top"><div><div class="kchart-lab">'+t('volumeTrend')+'</div><div class="kchart-val">'+fmt1(trend[trend.length-1])+'<span>'+t('kmThisWeek')+'</span></div></div>'+
     '<div><div class="kchart-delta">'+t('eightWeeksLab')+'</div></div></div>'+
     '<div style="margin-top:14px">'+lineChartSVG(trend,300,60,'var(--e2)')+'</div>'+
     '<div class="kline-labs"><span>'+t('weeksAgoLab')+'</span><span>'+t('thisWeek')+'</span></div>'+
@@ -9932,15 +9955,15 @@ function statsBilan(){
 
   h+='<div class="kinsights-head">'+t('insightsTitle')+'</div>';
   h+='<div class="krow3">'+
-    '<div class="ktile"><div class="ktile-lab">'+t('kmPerSession')+'</div><div class="ktile-val">'+avgKmSess.toFixed(1)+' km</div>'+
+    '<div class="ktile"><div class="ktile-lab">'+t('kmPerSession')+'</div><div class="ktile-val">'+fmt1(avgKmSess)+' km</div>'+
       (avgDelta!==null?'<div class="ktile-sub'+(avgDelta<0?' bad':'')+'">'+(avgDelta>0?'+':avgDelta<0?'&#8722;':'')+Math.abs(avgDelta)+'% '+t('vsPrevShort')+'</div>':'<div class="ktile-sub" style="color:var(--muted)">—</div>')+
     '</div>'+
     '<div class="ktile" style="text-align:center"><div class="ktile-lab">'+t('sessionTypesLabel')+'</div>'+
       '<div class="ktile-donut">'+donutSVG(typeSegs,50,9,'')+'</div>'+
     '</div>'+
     '<div class="ktile"><span class="ktile-star">'+ICN('star',16,'var(--or)')+'</span><div class="ktile-lab">'+bestLab+'</div>'+
-      '<div class="ktile-val">'+bars.labels[bestI]+'</div>'+
-      '<div class="ktile-sub">'+bars.values[bestI].toFixed(1)+' km</div>'+
+      '<div class="ktile-val">'+bestBarLabel(per,bars,bestI)+'</div>'+
+      '<div class="ktile-sub">'+fmt1(bars.values[bestI])+' km</div>'+
     '</div>'+
   '</div>';
   if(typeSegs[0].ty!=='—'){
@@ -9967,7 +9990,7 @@ function heatmap13(){
 }
 function statsRun(){
   const vdot=getUserVDOT();
-  let h='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+(vdot||'—')+'</div><div class="l">'+t('vdotReal')+'</div></div><div class="sbox"><div class="v">'+SESS.length+'</div><div class="l">'+t('sessionsRun')+'</div></div><div class="sbox"><div class="v">'+totalKm().toFixed(0)+'</div><div class="l">'+t('kmTotal')+'</div></div><div class="sbox"><div class="v">'+(SESS.reduce((a,s)=>a+(s.duration||0),0)/60).toFixed(1)+'h</div><div class="l">'+t('totalTime')+'</div></div></div>';
+  let h='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+(vdot?fmt1(vdot):'—')+'</div><div class="l">'+t('vdotReal')+'</div></div><div class="sbox"><div class="v">'+SESS.length+'</div><div class="l">'+t('sessionsRun')+'</div></div><div class="sbox"><div class="v">'+totalKm().toFixed(0)+'</div><div class="l">'+t('kmTotal')+'</div></div><div class="sbox"><div class="v">'+(SESS.reduce((a,s)=>a+(s.duration||0),0)/60).toFixed(1)+'h</div><div class="l">'+t('totalTime')+'</div></div></div>';
   // zones
   if(vdot){
     const zones=[['EF',.70,'--ok'],['Tempo',.83,'--warn'],['Seuil',.88,'--or'],['VMA',.97,'--bad'],['Sprint',1.05,'--maitre']];
@@ -10031,7 +10054,7 @@ function statsMuscu(){
   const cnt=periodSessM.length, prevCnt=prevSessM.length;
   const mins=periodSessM.reduce((a,s)=>a+(s.duration||0),0);
 
-  h+='<div class="seg-ctrl">'+
+  h+='<div class="seg-ctrl sub">'+
     ['week','month','3m','year'].map(p=>'<div class="seg-btn'+(per===p?' on':'')+'" onclick="muscuBilanPeriod=\''+p+'\';renderStats()">'+periodTabLabel(p)+'</div>').join('')+
   '</div>';
 
@@ -10074,7 +10097,7 @@ function statsMuscu(){
       '<div class="ktile-donut">'+donutSVG(progSegs,50,9,'')+'</div>'+
     '</div>'+
     '<div class="ktile"><span class="ktile-star">'+ICN('star',16,'var(--or)')+'</span><div class="ktile-lab">'+bestLab+'</div>'+
-      '<div class="ktile-val">'+bars.labels[bestI]+'</div>'+
+      '<div class="ktile-val">'+bestBarLabel(per,bars,bestI)+'</div>'+
       '<div class="ktile-sub">'+Math.round(bars.values[bestI])+' kg</div>'+
     '</div>'+
   '</div>';
@@ -10555,12 +10578,13 @@ function openTool(k){
 }
 function bindToolSearch(){ const si=$('#toolSearchInp'); if(si){ si.oninput=()=>{ toolSearch=si.value; $('#s-outils').innerHTML=outilsHome(); bindToolSearch(); const el=$('#toolSearchInp'); el.focus(); el.setSelectionRange(toolSearch.length,toolSearch.length); }; } }
 // VDOT badge réutilisable
-function vdotBadge(){ const v=getUserVDOT()||'—'; return '<div onclick="openTool(\'vdot\')" style="width:54px;height:54px;border-radius:50%;border:2px solid var(--e);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:var(--ed)"><div class="mono" style="font-weight:800;font-size:15px;color:var(--e);line-height:1">'+v+'</div><div style="font-size:7px;color:var(--muted);letter-spacing:.5px">VDOT</div></div>'; }
+function vdotBadge(){ const v=getUserVDOT()?fmt1(getUserVDOT()):'—'; return '<div onclick="openTool(\'vdot\')" style="width:48px;height:48px;flex-shrink:0;border-radius:50%;border:2px solid var(--e);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:var(--ed)"><div class="mono" style="font-weight:800;font-size:15px;color:var(--e2);line-height:1">'+v+'</div><div style="font-size:9px;color:var(--muted);letter-spacing:.3px;margin-top:1px">VDOT</div></div>'; }
 function outilsHome(){
-  let h='<div class="row" style="margin:2px 0 14px;justify-content:flex-end">'+vdotBadge()+'</div>';
+  // La pastille VDOT occupait seule une rangée vide : elle se range à côté de la recherche.
+  let h='';
   // Raccourcis rapides Chrono + Minuteur
   h+='<div style="display:flex;gap:10px;margin-bottom:16px"><div class="card" style="flex:1;padding:14px;margin:0;cursor:pointer;text-align:center" onclick="openTool(\'chrono\')"><div style="color:var(--e);display:flex;justify-content:center">'+ICN('stopwatch',26)+'</div><div style="font-weight:700;font-size:13px;margin-top:6px">'+t('toolChronoName')+'</div></div><div class="card" style="flex:1;padding:14px;margin:0;cursor:pointer;text-align:center" onclick="openQuickTimer()"><div style="color:var(--warn);display:flex;justify-content:center">'+ICN('timer',26)+'</div><div style="font-weight:700;font-size:13px;margin-top:6px">'+t('quickTimer')+'</div></div></div>';
-  h+='<div class="searchbox"><span class="searchic">'+ICN('search',18,'var(--muted)')+'</span><input class="inp" id="toolSearchInp" style="padding-left:42px" placeholder="'+t('searchTool')+'" value="'+escHtml(toolSearch||'')+'"></div>';
+  h+='<div style="display:flex;gap:10px;align-items:center"><div class="searchbox" style="flex:1;min-width:0"><span class="searchic">'+ICN('search',18,'var(--muted)')+'</span><input class="inp" id="toolSearchInp" style="padding-left:42px" placeholder="'+t('searchTool')+'" value="'+escHtml(toolSearch||'')+'"></div>'+vdotBadge()+'</div>';
   const q=toolSearch.toLowerCase().trim();
   if(q){
     const res=Object.entries(TOOLS).filter(([k,tl])=>tl.name.toLowerCase().includes(q));
@@ -10570,7 +10594,7 @@ function outilsHome(){
   }
   // FAVORIS
   const favs=toolFav().filter(k=>TOOLS[k]);
-  h+='<div class="row" style="margin:18px 0 10px"><span class="lab">'+t('favorites')+'</span><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="editFavs()">'+t('edit')+'</span></div>';
+  h+='<div class="row" style="margin:18px 0 10px"><span class="lab">'+t('favorites')+'</span><span class="see" style="font-size:12px;color:var(--e);cursor:pointer" onclick="editFavs()">'+t('edit')+'</span></div>';
   h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:22px">';
   favs.slice(0,8).forEach(k=>{ const tl=TOOLS[k]; h+='<div class="favtile" onclick="openTool(\''+k+'\')"><div style="color:var(--e);display:flex;justify-content:center">'+tl.icon+'</div><div class="favlab">'+favShort(k)+'</div></div>'; });
   h+='</div>';
@@ -10728,7 +10752,7 @@ function resetLab(){ LAB={dist:null,time:null,pace:null,speed:null,recent:[]}; r
 /* ----- Nouveaux outils ----- */
 function renderVDOTtool(){
   const vdot=getUserVDOT();
-  let h='<div class="card" style="text-align:center"><div class="man" style="font-size:48px;font-weight:800;color:var(--e)">'+(vdot||'—')+'</div><div class="lab">'+t('vdotToolTitle')+'</div></div>';
+  let h='<div class="card" style="text-align:center"><div class="man" style="font-size:48px;font-weight:800;color:var(--e)">'+(vdot?fmt1(vdot):'—')+'</div><div class="lab">'+t('vdotToolTitle')+'</div></div>';
   if(vdot){ const vo2=(vdot).toFixed(1);
     h+='<div class="card"><div class="card-t">'+t('physioEstimates')+'</div>'+
       '<div class="zrow"><span class="zname">'+t('vo2maxEst')+'</span><span class="zval mono">'+vo2+' ml/kg/min</span></div>'+
@@ -11042,7 +11066,7 @@ function renderIMC(){
   h+='<div class="field"><label>'+t('weightKgLab')+'</label><div class="stepper"><button onclick="imc.w--;renderIMC()">−</button><span class="val">'+imc.w+'</span><button onclick="imc.w++;renderIMC()">+</button></div></div></div>';
   const v=imc.w/Math.pow(imc.h/100,2);
   let cat,col; if(v<18.5){cat=t('imcUnderweight');col='--warn';} else if(v<25){cat=t('imcNormal');col='--ok';} else if(v<30){cat=t('imcOverweight');col='--warn';} else {cat=t('imcObese');col='--bad';}
-  h+='<div class="card" style="text-align:center"><div class="man" style="font-weight:800;font-size:42px;color:var('+col+')">'+v.toFixed(1)+'</div><div class="badge" style="background:var(--ed);color:var('+col+')">'+cat+'</div></div>';
+  h+='<div class="card" style="text-align:center"><div class="man" style="font-weight:800;font-size:42px;color:var('+col+')">'+fmt1(v)+'</div><div class="badge" style="background:var(--ed);color:var('+col+')">'+cat+'</div></div>';
   $('#outBody').innerHTML=h;
 }
 
@@ -11278,7 +11302,7 @@ function renderProfile(){
   h+='<div class="grp-card stag" style="animation-delay:.04s">'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('scale',20,'currentColor')+'</div><div class="lr-title">'+t('heightWeight')+'</div><div class="lr-val">'+escHtml(P.height||'—')+' cm · '+escHtml(P.weight||'—')+' kg</div></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('calendar',20,'currentColor')+'</div><div class="lr-title">'+t('age')+'</div><div class="lr-val">'+age()+' '+(curLang()==='en'?'yo':curLang()==='ar'?'سنة':'ans')+'</div></div>'+
-    '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('chart',20,'currentColor')+'</div><div class="lr-title">VDOT</div><div class="lr-val">'+(getUserVDOT()||'—')+'</div></div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('chart',20,'currentColor')+'</div><div class="lr-title">VDOT</div><div class="lr-val">'+(getUserVDOT()?fmt1(getUserVDOT()):'—')+'</div></div>'+
     '<div class="grp-row" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\';renderSport()"><div class="lr-icon">'+ICN('target',20,'currentColor')+'</div><div class="lr-title">'+t('objective')+'</div><div class="lr-val">'+escHtml(trRace(P.objRace)||P.goal||t('noObjective'))+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
   // ===== PROGRESSION — badges intégrés directement au profil =====
@@ -11293,7 +11317,7 @@ function renderProfile(){
     const nb=nextBadge();
     if(nb){
       const prog=badgeProgress(nb);
-      h+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--hair)"><div class="row" style="margin-bottom:6px"><span style="font-size:12px;color:var(--muted)">'+tp('nextBadgeLab',nb.name)+'</span><span class="mono" style="font-size:12px;color:var(--e)">'+prog.pct+'%</span></div><div class="pbar" style="height:6px"><div style="width:'+prog.pct+'%"></div></div></div>';
+      h+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--hair)"><div class="row" style="margin-bottom:6px"><span style="font-size:12px;color:var(--muted)">'+tp('nextBadgeLab',nb.name)+'</span><span class="mono" style="font-size:12px;color:var(--e)">'+prog.pct+'%</span></div><div class="pbar" style="height:6px"><div style="width:'+prog.pct+'%"></div></div><div style="font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.4">'+badgeHintText(prog)+'</div></div>';
     }
     h+='</div>';
   }
