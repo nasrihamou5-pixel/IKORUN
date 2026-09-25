@@ -2306,7 +2306,7 @@ const I18N={
     maxKmWeekLabel:'Km/sem maxi (pic)',minKmWeekLabel:'Km/sem mini',preferredSessionsLabel:'Séances préférées (le coach les privilégiera)',
     preparedRaceLabel:'Course préparée',raceDateLabel:'Date de la course',targetTimeOptionalLabel:'Chrono visé (optionnel)',
     trainingDaysLabel:'Jours d\u2019entraînement',yourNextRaceDefault:'Ta prochaine course',
-    guardFutureDate:'Impossible d\u2019enregistrer une séance à une date future.',
+    guardFutureDate:'Impossible d\u2019enregistrer une séance à une date future.',guardFutureRecord:'Impossible d\u2019enregistrer une performance à une date future.',guardRecordImpossible:'Ce temps impliquerait un VDOT de {0}, au-delà des meilleurs athlètes du monde. Vérifie ton temps.',recordBigJumpConfirm:'Grosse progression : ton niveau passerait de {0} à {1} de VDOT, et tes allures d\u2019entraînement accéléreraient d\u2019autant. C\u2019est bien une vraie performance récente ?',
     sessionNotYetLabel:'Cette séance n\u2019a pas encore eu lieu',guardFutureSession:'Impossible de valider une séance qui n\u2019a pas encore eu lieu',
     guardDistanceTooHigh:'Distance irréaliste par rapport à ton historique ({0} km max pour l\u2019instant).',
     guardPaceTooFast:'Cette allure est incompatible avec ton VDOT actuel ({0}). Vérifie ta saisie.',
@@ -2893,7 +2893,7 @@ const I18N={
     maxKmWeekLabel:'Max km/week (peak)',minKmWeekLabel:'Min km/week',preferredSessionsLabel:'Preferred sessions (the coach will favor these)',
     preparedRaceLabel:'Race you\u2019re preparing for',raceDateLabel:'Race date',targetTimeOptionalLabel:'Target time (optional)',
     trainingDaysLabel:'Training days',yourNextRaceDefault:'Your next race',
-    guardFutureDate:'You can\u2019t log a session with a future date.',
+    guardFutureDate:'You can\u2019t log a session with a future date.',guardFutureRecord:'You can\u2019t log a performance with a future date.',guardRecordImpossible:'This time would imply a VDOT of {0}, beyond the world\u2019s best athletes. Check your time.',recordBigJumpConfirm:'Big jump: your level would go from VDOT {0} to {1}, and your training paces would speed up accordingly. Is this a genuine recent performance?',
     sessionNotYetLabel:'This session hasn\u2019t happened yet',guardFutureSession:'You can\u2019t complete a session that hasn\u2019t happened yet',
     guardDistanceTooHigh:'Unrealistic distance compared to your history ({0} km max for now).',
     guardPaceTooFast:'This pace isn\u2019t consistent with your current VDOT ({0}). Check what you entered.',
@@ -3483,7 +3483,7 @@ const I18N={
     maxKmWeekLabel:'أقصى كم/أسبوع (الذروة)',minKmWeekLabel:'أدنى كم/أسبوع',preferredSessionsLabel:'الحصص المفضلة (سيفضلها المدرب)',
     preparedRaceLabel:'السباق الذي تستعد له',raceDateLabel:'تاريخ السباق',targetTimeOptionalLabel:'الزمن المستهدف (اختياري)',
     trainingDaysLabel:'أيام التدريب',yourNextRaceDefault:'سباقك القادم',
-    guardFutureDate:'لا يمكن تسجيل حصة بتاريخ مستقبلي.',
+    guardFutureDate:'لا يمكن تسجيل حصة بتاريخ مستقبلي.',guardFutureRecord:'لا يمكن تسجيل أداء بتاريخ مستقبلي.',guardRecordImpossible:'هذا الزمن يعني VDOT قدره {0}، أعلى من أفضل رياضيي العالم. تحقق من زمنك.',recordBigJumpConfirm:'تقدّم كبير: سينتقل مستواك من VDOT {0} إلى {1}، وستتسارع وتيرات تدريبك تبعًا لذلك. هل هذا أداء حقيقي حديث؟',
     sessionNotYetLabel:'هذه الحصة لم تحن بعد',guardFutureSession:'لا يمكن تسجيل إنجاز حصة لم تحن بعد',
     guardDistanceTooHigh:'مسافة غير واقعية مقارنة بتاريخك ({0} كم كحد أقصى حاليًا).',
     guardPaceTooFast:'هذه الوتيرة لا تتوافق مع VDOT الحالي ({0}). تحقق مما أدخلته.',
@@ -3809,13 +3809,19 @@ function sessionGuard(km,durationMin,dateStr){
 // VDOT qu'impliquerait ce chrono au meilleur VDOT déjà connu (+ marge),
 // plutôt qu'à une allure de séance d'entraînement.
 function recordGuard(meters,timeS,dateStr){
-  if(dateStr && dateStr>todayKey()) return {ok:false,msg:t('guardFutureDate')};
+  if(dateStr && dateStr>todayKey()) return {ok:false,msg:t('guardFutureRecord')};
   if(!(meters>0)||!(timeS>0)) return {ok:true};
   const implied=vdotFromRace(meters,timeS);
-  if(implied>VDOT_MAX+ANTICHEAT_VDOT_MARGIN) return {ok:false,msg:tp('guardRecordTooFast',Math.round(implied))};
+  // Physiquement impossible (au-delà des meilleurs mondiaux) : refus net.
+  if(implied>VDOT_MAX+ANTICHEAT_VDOT_MARGIN) return {ok:false,msg:tp('guardRecordImpossible',Math.round(implied))};
   const currentBest=clampVdot(P.vdot)||(RECORDS&&RECORDS.length?computeVDOTfromRecords():0);
+  // Grosse progression par rapport au niveau actuel : c'était un refus sec, qui
+  // bloquait un débutant progressant vite (ou ayant sous-estimé son chrono à
+  // l'inscription) sans lui dire quoi faire (audit 24/09). C'est désormais une
+  // confirmation (soft) : le serveur recalcule et plafonne VDOT et XP lui-même,
+  // ce garde-fou-ci ne protège que l'utilisateur d'une faute de frappe.
   if(currentBest && implied>currentBest+ANTICHEAT_VDOT_MARGIN){
-    return {ok:false,msg:tp('guardRecordTooFast',Math.round(implied))};
+    return {ok:false,soft:true,implied,current:currentBest,msg:tp('guardRecordTooFast',Math.round(implied))};
   }
   return {ok:true};
 }
@@ -4832,7 +4838,7 @@ function pickTime(title,initSec,cb,withHours){
 /* Picker Allure mm:ss /km → sec/km */
 function pickPace(title,initSpk,cb){
   initSpk=initSpk||270; const m=Math.floor(initSpk/60), s=Math.floor(initSpk%60);
-  openPicker({title:title||'Allure',cols:[{values:range(2,12),sel:Math.max(0,m-2)},{values:range(0,59),sel:s,fmt:v=>String(v).padStart(2,'0'),unit:'/km'}],seps:[':'],onOk:idx=>cb((idx[0]+2)*60+idx[1])});
+  openPicker({title:title||t('paceField'),cols:[{values:range(2,12),sel:Math.max(0,m-2)},{values:range(0,59),sel:s,fmt:v=>String(v).padStart(2,'0'),unit:'/km'}],seps:[':'],onOk:idx=>cb((idx[0]+2)*60+idx[1])});
 }
 /* Picker Distance (km entiers + décimales) → km */
 function pickDistance(title,initKm,cb){
@@ -7094,18 +7100,47 @@ function generatePlan(){
     // par-dessus, si bien que le « km/sem maxi » choisi était dépassé (jusqu'à
     // +27 % à 6 jours/semaine, audit 24/09). On construit donc d'abord la qualité,
     // puis la sortie longue plafonnée au reste, puis les footings avec ce qui reste
-    // (4 km minimum chacun). La sortie longue passe en premier : c'est la séance
-    // clé d'une préparation semi/marathon, elle ne doit pas être rognée au profit
-    // des séances de qualité.
-    const first=sessions.length;
+    // (4 km minimum chacun).
+    //  · Budget de la sortie longue RÉSERVÉ d'abord (séance clé d'une prépa
+    //    semi/marathon) ; une séance de qualité qui ne tient plus dans ce qui
+    //    reste devient un footing — à faible volume, 3 séances dures de 12-15 km
+    //    ne rentrent pas dans 25-56 km/semaine (dépassement jusqu'à +9 % à
+    //    6 j/sem avant ce garde-fou).
+    //  · La sortie longue fait au moins la plus longue séance de qualité (+1 km)
+    //    quand le budget le permet : elle était parfois plus courte qu'un tempo.
+    //    Le double seuil (deux séances dans la journée) n'entre pas dans ce calcul.
     const easySlots=slots.filter(s=>isEasyT(s.type));
-    slots.filter(s=>isLongT(s.type)).forEach(s=>pushSession(s.d,w,ph,s.type,wkKm,isDeload));
-    slots.filter(s=>!isEasyT(s.type)&&!isLongT(s.type)).forEach(s=>pushSession(s.d,w,ph,s.type,wkKm,isDeload));
-    let used=sessions.slice(first).reduce((a,s)=>a+(s.km||0),0);
+    const longSlots=slots.filter(s=>isLongT(s.type));
+    const longTarget=longSlots.length?Math.max(8,Math.min(longRunCapKm(),Math.round(wkKm*(longSlots[0].type==='LONG_COURT'?0.22:(ph.key==='SPE'?0.34:0.30))))):0;
+    //  · Plafond DUR = le km/sem maxi choisi (kmMax) ; wkKm n'est que la cible
+    //    progressive de la semaine, qui dose les footings. Utiliser wkKm comme
+    //    plafond supprimait toute séance de qualité dans les semaines à faible
+    //    volume (13 semaines sur 35 d'un plan 5 km à 15-25 km/sem).
+    //  · Au moins UNE séance de qualité est toujours gardée.
+    //  · Semi et au-delà : de quoi porter la sortie longue au-dessus de la plus
+    //    longue séance de qualité est réservé. Sur 5-10 km, la qualité prime.
+    //  · Un footing ne dépasse jamais la sortie longue de la semaine.
+    const longMustLead=raceMeters()>=15000;
+    let used=0, maxQ=0, keptQ=0;
+    slots.filter(s=>!isEasyT(s.type)&&!isLongT(s.type)).forEach(s=>{
+      pushSession(s.d,w,ph,s.type,wkKm,isDeload);
+      const km=sessions[sessions.length-1].km||0;
+      const needLong=!longSlots.length?0:(longMustLead&&s.type!=='DBLSEUIL')?Math.max(longTarget,Math.min(longRunCapKm(),Math.ceil(Math.max(maxQ,km))+1)):longTarget;
+      if(keptQ>=1 && used+km>kmMax-needLong-4*easySlots.length){ sessions.pop(); easySlots.push({d:s.d,type:'EF'}); return; }
+      used+=km; keptQ++; if(s.type!=='DBLSEUIL') maxQ=Math.max(maxQ,km);
+    });
+    let longKm=0;
+    longSlots.forEach(s=>{
+      const room=Math.floor(kmMax-used-4*easySlots.length);
+      const want=Math.max(longTarget,longMustLead?Math.ceil(maxQ)+1:0);
+      pushSession(s.d,w,ph,s.type,wkKm,isDeload,{longKm:Math.max(8,Math.min(longRunCapKm(),want,room))});
+      longKm=sessions[sessions.length-1].km||0; used+=longKm;
+    });
     if(easySlots.length){
       const weights=easySlots.reduce((a,s)=>a+(s.type==='RECUP'?0.7:1),0);
       const defaultEasy=Math.max(5,Math.round(wkKm/days.length*0.95));
-      const easyKm=Math.max(4,Math.min(defaultEasy,Math.floor((wkKm-used)/weights)));
+      let easyKm=Math.max(4,Math.min(defaultEasy,Math.floor((wkKm-used)/weights)));
+      if(longKm) easyKm=Math.max(4,Math.min(easyKm,longKm-1));
       easySlots.forEach(s=>pushSession(s.d,w,ph,s.type,wkKm,isDeload,{easyKm}));
     }
   }
@@ -7227,7 +7262,8 @@ function composeWeek(ph,nDays,qCount,isDeload,pick,rng,liked,isRaceWeek){
   // séances qualité
   let qn=Math.min(qCount,quality.length);
   const used=new Set();
-  for(let i=0;i<qn;i++){ let t=pick(quality); let g=0; while(used.has(t)&&g<8){t=pick(quality);g++;} used.add(t); week.push(t); }
+  const qPool=[...quality];
+  for(let i=0;i<qn && qPool.length;i++){ const t=qPool.splice(Math.floor(rng()*qPool.length),1)[0]; used.add(t); week.push(t); }
   // remplir le reste en endurance
   while(week.length<nDays) week.push(pick(easy));
   // mélange léger
@@ -7280,7 +7316,7 @@ function buildSessionV2(type,o){
     case 'LONG': case 'LONG_COURT':
       km=type==='LONG_COURT'?Math.round(wkKm*0.22):Math.round(wkKm*(phase.key==='SPE'?0.34:0.30));
       km=Math.max(8,Math.min(longRunCapKm(),km));
-      if(o.longKmCap!=null) km=Math.max(8,Math.min(km,o.longKmCap)); // budget de la semaine
+      if(o.longKm!=null) km=Math.max(8,Math.min(longRunCapKm(),o.longKm)); // fixée par le budget de la semaine (generatePlan)
       p=S(pace.EF*0.99); rpe=4; label=t('sessLabel_LONG'); title=t('sessTitle_LONG')+(phase.key==='SPE'?t('progressiveSuffix'):'');
       d={objectif:t('bs_long_objectif'),warmup:t('bs_long_warmup'),body:phase.key==='SPE'||phase.key==='PIC'?tp('bs_long_body_progressive',km,S(pace.EF),S(pace.MAR)):tp('bs_long_body_steady',km,S(pace.EF*0.99)),paces:tp('bs_long_paces',S(pace.EF),S(pace.MAR)),recovery:t('bs_long_recovery'),cooldown:CD,tips:[t('bs_long_tip1'),t('bs_long_tip2')],mistakes:[t('bs_long_mistake1')],why:t('bs_long_why')};
       break;
@@ -11982,14 +12018,36 @@ function recordForm(d){
 function saveRecord(){
   const rcDate=$('#rc_date').value;
   const guard=recordGuard(recTmp.meters,recTmp.timeS,rcDate);
-  if(!guard.ok){ toast(guard.msg); return; }
+  // Valeurs lues MAINTENANT : la confirmation ci-dessous est asynchrone.
+  const form={date:rcDate,place:$('#rc_place').value.trim(),feel:$('#rc_feel').value.trim()};
+  if(!guard.ok){
+    if(guard.soft){
+      customConfirm(tp('recordBigJumpConfirm',Math.round(guard.current*10)/10,Math.round(guard.implied*10)/10),()=>commitRecord(form));
+      return;
+    }
+    toast(guard.msg); return;
+  }
+  commitRecord(form);
+}
+function commitRecord(form){
+  const rcDate=form.date;
   const time=fmtTime(recTmp.timeS);
-  RECORDS.push({dist:recTmp.dist,meters:recTmp.meters,time,date:rcDate,place:$('#rc_place').value.trim(),feel:$('#rc_feel').value.trim(),competition:!!recTmp.competition});
+  RECORDS.push({dist:recTmp.dist,meters:recTmp.meters,time,date:rcDate,place:form.place,feel:form.feel,competition:!!recTmp.competition});
   if(recTmp.dist==='5000 m')P.pb5k=time; if(recTmp.dist==='3000 m')P.pb3k=time; if(recTmp.dist==='1500 m')P.pb1500=time; if(recTmp.dist==='10 km')P.pb10k=time;
   P.vdot=computeVDOTfromRecords();
   saveAll(); refreshXP({animate:true}); openRecords(); toast(recTmp.competition?t('perfAddedComp'):t('perfAdded')); burst();
 }
-function delRecord(i){ const sorted=[...RECORDS].sort((a,b)=>(a.meters||0)-(b.meters||0)); const r=sorted[i]; RECORDS=RECORDS.filter(x=>x!==r); P.vdot=computeVDOTfromRecords()||computeVDOT(); saveAll(); openRecords(); }
+// Ajouter un record de 1500/3000/5000 m ou 10 km écrit AUSSI P.pbXX (compatibilité
+// avec l'ancien profil), mais le supprimer ne le retirait pas : le record effacé
+// restait affiché sur l'accueil et compté dans l'XP (audit 24/09). On recalcule le
+// champ depuis les records restants, sinon depuis le chrono du profil (P.tXX).
+const PB_FIELDS={'1500 m':['pb1500','t1500'],'3000 m':['pb3k','t3k'],'5000 m':['pb5k','t5k'],'10 km':['pb10k','t10k']};
+function syncPbFromRecords(dist){
+  const f=PB_FIELDS[dist]; if(!f) return;
+  const best=RECORDS.filter(x=>x.dist===dist && x.time).sort((a,b)=>parseTime(a.time)-parseTime(b.time))[0];
+  P[f[0]]=best?best.time:(P[f[1]]||'');
+}
+function delRecord(i){ const sorted=[...RECORDS].sort((a,b)=>(a.meters||0)-(b.meters||0)); const r=sorted[i]; RECORDS=RECORDS.filter(x=>x!==r); if(r) syncPbFromRecords(r.dist); P.vdot=computeVDOTfromRecords()||computeVDOT(); saveAll(); openRecords(); }
 function computeVDOTfromRecords(){
   let best=computeVDOT();
   RECORDS.forEach(r=>{ if(r.meters&&r.time){ const v=vdotFromRace(r.meters,parseTime(r.time)); if(v>best)best=v; }});

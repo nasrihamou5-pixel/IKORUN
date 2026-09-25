@@ -1777,6 +1777,11 @@ html.motion-settled .login-hero{
 .pk-sep{z-index:1;font-family:'JetBrains Mono';font-weight:700;font-size:20px;color:var(--muted);
   display:flex;align-items:center;justify-content:center;flex:0 0 auto;width:8px;}
 .pk-unit{z-index:1;font-size:13px;color:var(--muted);display:flex;align-items:center;flex:0 0 auto;margin-left:2px;}
+/* Arabe (RTL) : une unité isolée comme « /km » s'affichait « km/ » (la barre
+   oblique, neutre, était rejetée à droite). Sens de lecture forcé et isolé sur
+   ces petites étiquettes d'unité — l'arabe qu'elles contiennent parfois reste
+   correct, ses lettres portant leur propre sens. Audit 24/09. */
+[dir=rtl] .pk-unit,[dir=rtl] .hv7-day-targets span,[dir=rtl] .pb-pace{direction:ltr;unicode-bidi:isolate;}
 .pk-pad{height:84px;}
 /* RTL (arabe) */
 html[dir="rtl"] body{direction:rtl;}
@@ -2391,7 +2396,7 @@ html[data-mode="light"]{
     });
   }
 </script>
-<script src="app.js?v=89"></script>
+<script src="app.js?v=90"></script>
 <!-- Suite de fumée : chargée uniquement avec ?selftest=1 (voir tests/smoke.js).
      Second script classique de la page, donc il partage l'environnement lexical
      d'app.js et peut tester l'app réelle (P, SESS, RANKS...) sans imitation.
