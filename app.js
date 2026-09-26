@@ -1833,7 +1833,7 @@ const I18N={
     googleStandaloneTitle:'Google et l\u2019app install\u00e9e',googleUseGuestBtn:'Continuer en tant qu\u2019invit\u00e9',googleOpenSafariBtn:'Ouvrir dans Safari',googleStandaloneHint:'Indisponible depuis l\u2019app install\u00e9e',
     declineBtn:'Refuser',saveLabel:'Enregistrer',renameLab:'Renommer',favoriteLab:'Favori',
     langLab:'Langue',obModeTitle:'Ton affichage',obModeIntro:'Deux façons de voir IKORUN — change d\u2019avis à tout moment dans Profil.',obModeFullT:'Complet',obModeFullD:'Toutes les stats, tous les détails de chaque séance, l\u2019anatomie musculaire, les graphiques. Pour creuser.',obModeSimpleT:'Simplifié',obModeSimpleD:'Une carte, l\u2019essentiel : la séance du jour et un bouton. Rien d\u2019autre à l\u2019écran. Pour aller droit au but.',obModeSuggestion:'Suggestion selon ton âge : {0}. Choisis librement.',chooseModeLab:'Choisis un affichage pour continuer',
-    trackingLab:'Suivi',appearanceLab:'Apparence',animationsLab:'Animations',updateReadyLab:'Nouvelle version d\u2019IKORUN prête',updateNowBtn:'Mettre à jour',raceCountdown:'J-{0}',raceDayLab:'Jour J',kmDonePlannedLab:'km faits / prévus',streakTileLab:'jours de série',streakTileLab1:'jour de série',plannedThisWeek:'prévus cette sem.',badgeStartLvl:'Dès le départ',trophiesInYear:'{0} en {1}',wkDone:'fait',wkPlanned:'prévu',wkMissed:'manqué',introReplayBtn:'Revoir l\u2019animation d\u2019ouverture',
+    trackingLab:'Suivi',appearanceLab:'Apparence',animationsLab:'Animations',updateReadyLab:'Nouvelle version d\u2019IKORUN prête',updateNowBtn:'Mettre à jour',plannedThisWeek:'prévus cette sem.',badgeStartLvl:'Dès le départ',trophiesInYear:'{0} en {1}',introReplayBtn:'Revoir l\u2019animation d\u2019ouverture',
     sendFeedbackLab:'Envoyer un commentaire',feedbackNoAddressToast:'Adresse de contact pas encore configurée — réessaie après la prochaine mise à jour.',feedbackTitle:'Ton avis',feedbackIntro:'Une idée, un bug, un truc qui te gêne dans l\u2019app ? Écris-le ici, ça part directement dans ta boîte mail.',feedbackPh:'Écris ton commentaire...',feedbackEmptyToast:'Écris quelque chose avant d\u2019envoyer',feedbackSentToast:'Ton appli mail s\u2019est ouverte, il ne reste qu\u2019à envoyer',feedbackSignature:'Compte : {0} · Langue : {1}',
     sendBtn:'Envoyer',
     playLab:'Démarrer',
@@ -2420,7 +2420,7 @@ const I18N={
     googleStandaloneTitle:'Google and the installed app',googleUseGuestBtn:'Continue as guest',googleOpenSafariBtn:'Open in Safari',googleStandaloneHint:'Unavailable from the installed app',
     declineBtn:'Decline',saveLabel:'Save',renameLab:'Rename',favoriteLab:'Favourite',
     langLab:'Language',obModeTitle:'Your display',obModeIntro:'Two ways to see IKORUN \u2014 change your mind anytime in Profile.',obModeFullT:'Full',obModeFullD:'All the stats, every session detail, muscle anatomy, charts. For digging in.',obModeSimpleT:'Simplified',obModeSimpleD:'One card, the essentials: today\u2019s session and a button. Nothing else on screen. For going straight to it.',obModeSuggestion:'Suggestion based on your age: {0}. Choose freely.',chooseModeLab:'Choose a display to continue',
-    trackingLab:'Tracking',appearanceLab:'Appearance',animationsLab:'Animations',updateReadyLab:'New IKORUN version ready',updateNowBtn:'Update',raceCountdown:'{0} days',raceDayLab:'Race day',kmDonePlannedLab:'km done / planned',streakTileLab:'day streak',streakTileLab1:'day streak',plannedThisWeek:'planned this wk',badgeStartLvl:'From the start',trophiesInYear:'{0} in {1}',wkDone:'done',wkPlanned:'planned',wkMissed:'missed',introReplayBtn:'Replay the opening animation',
+    trackingLab:'Tracking',appearanceLab:'Appearance',animationsLab:'Animations',updateReadyLab:'New IKORUN version ready',updateNowBtn:'Update',plannedThisWeek:'planned this wk',badgeStartLvl:'From the start',trophiesInYear:'{0} in {1}',introReplayBtn:'Replay the opening animation',
     sendFeedbackLab:'Send feedback',feedbackNoAddressToast:'Contact address not set up yet — try again after the next update.',feedbackTitle:'Your feedback',feedbackIntro:'An idea, a bug, something bothering you in the app? Write it here, it goes straight to your mail app.',feedbackPh:'Write your feedback...',feedbackEmptyToast:'Write something before sending',feedbackSentToast:'Your mail app just opened, all that\u2019s left is to hit send',feedbackSignature:'Account: {0} · Language: {1}',
     sendBtn:'Send',
     playLab:'Start',
@@ -3007,7 +3007,7 @@ const I18N={
     googleStandaloneTitle:'Google والتطبيق المثبّت',googleUseGuestBtn:'المتابعة كضيف',googleOpenSafariBtn:'الفتح في Safari',googleStandaloneHint:'غير متاح من التطبيق المثبّت',
     declineBtn:'رفض',saveLabel:'حفظ',renameLab:'إعادة تسمية',favoriteLab:'مفضّل',
     langLab:'اللغة',obModeTitle:'طريقة العرض',obModeIntro:'طريقتان لرؤية IKORUN — غيّر رأيك في أي وقت من الملف الشخصي.',obModeFullT:'كامل',obModeFullD:'كل الإحصائيات، تفاصيل كل حصة، تشريح العضلات، الرسوم البيانية. للتعمّق.',obModeSimpleT:'مبسّط',obModeSimpleD:'بطاقة واحدة، الأساسيات: حصة اليوم وزر واحد. لا شيء آخر على الشاشة. للذهاب مباشرة إلى الهدف.',obModeSuggestion:'اقتراح حسب عمرك: {0}. اختر بحرية.',chooseModeLab:'اختر طريقة عرض للمتابعة',
-    trackingLab:'المتابعة',appearanceLab:'المظهر',animationsLab:'الرسوم المتحركة',updateReadyLab:'نسخة جديدة من IKORUN جاهزة',updateNowBtn:'تحديث',raceCountdown:'{0} يوم',raceDayLab:'يوم السباق',kmDonePlannedLab:'كم منجز / مخطط',streakTileLab:'أيام متتالية',streakTileLab1:'يوم متتالٍ',plannedThisWeek:'مخطط هذا الأسبوع',badgeStartLvl:'منذ البداية',trophiesInYear:'{0} في {1}',wkDone:'منجز',wkPlanned:'مخطط',wkMissed:'فائت',introReplayBtn:'إعادة عرض الرسوم الافتتاحية',
+    trackingLab:'المتابعة',appearanceLab:'المظهر',animationsLab:'الرسوم المتحركة',updateReadyLab:'نسخة جديدة من IKORUN جاهزة',updateNowBtn:'تحديث',plannedThisWeek:'مخطط هذا الأسبوع',badgeStartLvl:'منذ البداية',trophiesInYear:'{0} في {1}',introReplayBtn:'إعادة عرض الرسوم الافتتاحية',
     sendFeedbackLab:'إرسال تعليق',feedbackNoAddressToast:'لم يتم إعداد عنوان التواصل بعد — أعد المحاولة بعد التحديث القادم.',feedbackTitle:'رأيك',feedbackIntro:'فكرة، خلل، أو شيء يزعجك في التطبيق؟ اكتبه هنا، سيُفتح مباشرة في تطبيق بريدك.',feedbackPh:'اكتب تعليقك...',feedbackEmptyToast:'اكتب شيئًا قبل الإرسال',feedbackSentToast:'فُتح تطبيق البريد لديك، لم يبقَ سوى الضغط على إرسال',feedbackSignature:'الحساب: {0} · اللغة: {1}',
     sendBtn:'إرسال',
     playLab:'ابدأ',
@@ -4337,7 +4337,7 @@ function appVersionTag(){ return t('footerTag')+' · v3.02.'+appBuildNumber(); }
    ensuite il s'affiche directement, sans aucun mouvement. Plus rien ne tourne en
    boucle. Restent les réponses à un geste (série validée, tour de chrono…). */
 const IK_TABS=['home','sport','stats','outils','profil'];
-const IK_GROUPS=[['.kbars-row','.kbar'],['.hw-days','.hw-bar b'],['.sp-rail','i'],['.bd-grid','.bd-cell'],['svg','.lc-dot']];
+const IK_GROUPS=[['.kbars-row','.kbar'],['.hv7-hero-week','.hv7-hw-bar b'],['.sp-rail','i'],['.bd-grid','.bd-cell'],['svg','.lc-dot']];
 let _ikPrevTab='home';
 const _ikSeenTabs=new Set();
 // Vrai la première fois que `key` est vu sur `el` depuis le lancement de l'app.
@@ -7937,86 +7937,30 @@ function fmt1(v){ const n=Number(v); return (v!==''&&v!=null&&isFinite(n))?n.toL
 // 7 barres de charge quotidienne de la semaine. Les jours déjà courus sont pleins ; les jours
 // à venir affichent en creux la charge PRÉVUE par le plan, pour que la semaine se lise en
 // entier et pas seulement dans sa partie écoulée. Le jour courant est mis en avant.
-// Type de séance d'une sortie enregistrée → type de base du plan (pour sa couleur de zone).
-function baseTypeOfRun(r){
-  if(r&&r.sessRef!=null&&PLAN&&PLAN.sessions){ const p=PLAN.sessions.find(x=>x.id===r.sessRef); if(p&&p.baseType) return p.baseType; }
-  const ty=String((r&&r.type)||'').toLowerCase();
-  if(/vma|interv|fraction|vo2|côte|cote/.test(ty)) return 'VMAc';
-  if(/seuil/.test(ty)) return 'SEUIL';
-  if(/tempo|fartlek|progress/.test(ty)) return 'TEMPO';
-  if(/long/.test(ty)) return 'LONG';
-  if(/r[ée]cup/.test(ty)) return 'RECUP';
-  return 'EF';
-}
-// Km prévus par le plan pour la semaine calendaire en cours (même total que Sport).
-function weekPlannedKm(){
-  if(!PLAN||!PLAN.sessions) return 0;
-  const ws=weekStart(), we=new Date(ws); we.setDate(ws.getDate()+7);
-  const a=dateKey(ws), b=dateKey(we);
-  return Math.round(PLAN.sessions.filter(x=>x.date>=a && x.date<b && x.km>0 && x.type!=='Repos').reduce((acc,x)=>acc+x.km,0));
-}
-// Semaine L→D (retour du 26/09) : hauteur = km, couleur = zone du type de séance,
-// trois états lisibles — fait (plein), prévu (contour), manqué (hachuré rouge) —
-// plus la muscu (petite barre neutre) et le repos (point).
 function homeWeekBarsHTML(){
-  const ws=weekStart(), dow=t('dowShort').split(','), tk=todayKey();
-  const planBy={};
-  if(PLAN&&PLAN.sessions) PLAN.sessions.forEach(p=>{ if(p.km>0 && p.type!=='Repos') planBy[p.date]=p; });
-  const days=[];
+  const ws=weekStart(), dowLabels=t('dowShort').split(','), tk=todayKey();
+  const EFFORT_TYPES=['Tempo','Seuil','VMA','Intervalle'];
+  const week=[];
   for(let i=0;i<7;i++){
     const d=new Date(ws); d.setDate(ws.getDate()+i); const k=dateKey(d);
-    const runs=SESS.filter(x=>x.date===k), gym=MSESS.some(x=>x.date===k), p=planBy[k];
-    const km=runs.reduce((a,x)=>a+(+x.km||0),0);
-    let state='rest', val=0, bt=null;
-    if(km>0){ state='done'; val=km; bt=baseTypeOfRun(runs.slice().sort((x,y)=>(+y.km||0)-(+x.km||0))[0]); }
-    else if(p && p.done){ state='done'; val=p.km; bt=p.baseType; }
-    else if(p){ state=(p.missed||k<tk)?'missed':'plan'; val=p.km; bt=p.baseType; }
-    else if(gym){ state='gym'; }
-    days.push({state,val,bt,today:k===tk});
+    const daySess=[...SESS,...MSESS].filter(s=>s.date===k);
+    let km=daySess.reduce((a,s)=>a+(s.km||0),0);
+    let effort=daySess.some(s=>EFFORT_TYPES.includes(s.type)), planned=false;
+    if(!km && PLAN && PLAN.sessions){
+      const p=PLAN.sessions.find(s=>s.date===k && s.km>0 && s.type!=='Repos' && !s.missed);
+      if(p){ km=p.km; effort=HARD_TYPES.includes(p.baseType); planned=true; }
+    }
+    week.push({k,km,effort,planned});
   }
-  const max=Math.max(1,...days.map(d=>d.val));
-  const bars=days.map((d,i)=>{
-    let bar;
-    if(d.state==='rest') bar='<i class="hw-rest"></i>';
-    else if(d.state==='gym') bar='<b class="hw-gym"></b>';
-    else bar='<b class="hw-'+d.state+'" style="height:'+Math.max(16,Math.round(d.val/max*100))+'%;--zc:'+(d.bt?baseTypeColor(d.bt):'var(--e)')+'"></b>';
-    return '<div class="hw-day'+(d.today?' today':'')+'"><div class="hw-bar">'+bar+'</div><span class="hw-dl">'+escHtml(dow[i]||'')+'</span><span class="hw-km">'+(d.val>0?hKm(d.val):'')+'</span></div>';
-  }).join('');
-  return '<div class="hw-week"><div class="hw-days">'+bars+'</div>'+
-    '<div class="hw-legend"><span><i class="lg-done"></i>'+t('wkDone')+'</span><span><i class="lg-plan"></i>'+t('wkPlanned')+'</span><span><i class="lg-miss"></i>'+t('wkMissed')+'</span></div></div>';
-}
-// Cibles de la carte du jour (km, allure en mono, RPE ou durée).
-function homeTargetsHTML(x){
-  const cells=[];
-  if(x.km) cells.push([hKm(x.km),'km']);
-  if(x.pace) cells.push([x.pace,'/km',1]);
-  if(x.rpe) cells.push([x.rpe+'/10',t('rpeShort')]);
-  else if(x.duration) cells.push([x.duration,'min']);
-  return cells.length?'<div class="hv7-day-targets">'+cells.map(c=>'<div><b'+(c[2]?' class="mono"':'')+'>'+escHtml(String(c[0]))+'</b><span>'+escHtml(String(c[1]))+'</span></div>').join('')+'</div>':'';
-}
-// COMPTE À REBOURS (retour du 26/09) : la course visée, l'info la plus motivante,
-// était cachée dans Sport. Elle ouvre maintenant l'accueil : J-26, course, date,
-// objectif, frise des phases du plan.
-function homeRaceHeroHTML(){
-  if(!P.compDate) return '';
-  const tk=todayKey(), comp=new Date(P.compDate+'T00:00:00'), today=new Date(tk+'T00:00:00');
-  const daysLeft=Math.round((comp-today)/86400000);
-  if(!(daysLeft>=0)) return '';
-  const race=trRace(P.objRace)||t('courseDefault');
-  let rail='', cap='';
-  if(PLAN&&PLAN.sessions&&PLAN.sessions.length){
-    const cur=PLAN.sessions.find(x=>x.date===tk)||PLAN.sessions.find(x=>x.date>=tk)||PLAN.sessions[PLAN.sessions.length-1];
-    const byPhase=[];
-    PLAN.sessions.forEach(x=>{ const l=byPhase[byPhase.length-1]; if(!l||l.key!==x.phaseKey) byPhase.push({key:x.phaseKey,weeks:new Set([x.week])}); else l.weeks.add(x.week); });
-    const ci=byPhase.findIndex(p=>p.weeks.has(cur.week));
-    rail='<div class="sp-rail">'+byPhase.map((p,i)=>'<i class="'+(i<ci?'past':(i===ci?'now':''))+'" style="flex:'+p.weeks.size+';color:'+phaseColor(p.key)+'"></i>').join('')+'</div>';
-    cap=tp('weekOf',cur.week,PLAN.weeks)+', '+phaseName(cur.phaseKey);
-  }
-  return '<div class="hv7-race" onclick="nav(\'sport\')">'+
-    '<div class="hv7-race-top"><div class="hv7-race-count">'+escHtml(daysLeft===0?t('raceDayLab'):tp('raceCountdown',daysLeft))+'</div>'+
-    '<div class="hv7-race-info"><b>'+escHtml(race)+'</b><span>'+escHtml(fmtDate(P.compDate))+(P.objTime?' · '+escHtml(P.objTime):'')+'</span></div></div>'+
-    rail+(cap?'<div class="hv7-race-cap">'+escHtml(cap)+'</div>':'')+
-  '</div>';
+  const maxDay=Math.max(1,...week.map(w=>w.km));
+  let bars='';
+  week.forEach((w,i)=>{
+    const isToday=w.k===tk;
+    const cls=isToday?'now':(w.planned?'plan':(w.effort?'effort':'done'));
+    const inner=w.km>0?'<b class="'+cls+'" style="height:'+Math.max(12,Math.round(w.km/maxDay*100))+'%"></b>':'';
+    bars+='<div class="hv7-hw-day'+(isToday?' today':'')+'"><div class="hv7-hw-bar">'+inner+'</div><span class="hv7-hw-lab">'+dowLabels[i]+'</span></div>';
+  });
+  return '<div class="hv7-hero-week">'+bars+'</div>';
 }
 // Les n prochaines vraies séances du plan (hors repos), strictement après aujourd'hui.
 function homeNextRows(n){
@@ -8086,8 +8030,10 @@ function renderHome(){
   } else {
     sub=P.objTime?tp('quipTime',escHtml(P.objTime)):(P.goal?tp('quipGoal',escHtml(P.goal)):t('quipDefault'));
   }
-  const raceHero=homeRaceHeroHTML();
-  if(raceHero){ const dRaw=new Date().toLocaleDateString(localeCode(),{weekday:'long',day:'numeric',month:'long'}); sub=escHtml(dRaw.charAt(0).toUpperCase()+dRaw.slice(1)); }
+  {
+    const streak=streakDays();
+    if(streak>=2) sub+=' · '+tp('streakDaysShort',streak);
+  }
   html+='<div class="hv7-greet"><h1>'+t('greet')+' '+escHtml(first||t('you'))+'</h1><p>'+sub+'</p></div>';
 
   // SCORE DE LA SEMAINE — anneau + quip + serie, inspire de l'ecran d'accueil
@@ -8097,9 +8043,7 @@ function renderHome(){
   // un orange fige) plutot qu'une reprise a l'identique. `form`/`kmW` sont
   // deja calcules plus haut ; homeLoadQuip() et homeStreakBadge() existaient
   // deja mais n'etaient utilises qu'en mode simplifie.
-  // COMPTE À REBOURS — l'objectif en tête (retour du 26/09) ; sans course datée, le score.
-  if(raceHero) html+=raceHero;
-  else html+='<div class="hv7-score">'+
+  html+='<div class="hv7-score">'+
     '<div class="hv7-score-ring">'+ringSVG(64,form,7,'var(--e)')+'<div class="val">'+form+'%</div></div>'+
     '<div class="hv7-score-txt"><div class="hv7-score-lab">'+t('homeScoreLab')+'</div>'+
     '<div class="hv7-score-quip">'+escHtml(homeLoadQuip(kmW))+'</div>'+
@@ -8115,12 +8059,17 @@ function renderHome(){
       const dt=isPerso?null:liveDetail(ps);
       const why=(dt&&dt.objectif)?dt.objectif:'';
       const open=isPerso?("curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')"):('openRunSheet('+ps.id+')');
-      html+='<div class="hv7-day" style="--zc:'+col+'" onclick="'+open+'"><i class="hv7-zone" aria-hidden="true"></i>'+
-        '<div class="hv7-day-top">'+(lab?'<span class="hv7-day-chip" style="color:'+col+'"><i class="zdot"></i>'+escHtml(lab)+'</span>':'<span></span>')+
+      html+='<div class="hv7-day" onclick="'+open+'">'+
+        '<div class="hv7-day-top">'+(lab?'<span class="hv7-day-chip" style="color:'+col+'">'+escHtml(lab)+'</span>':'<span></span>')+
           '<span class="hv7-day-when">'+t('today')+' · '+escHtml(wdShort)+'</span></div>'+
         '<div class="hv7-day-title">'+escHtml(isPerso?(ps.title||''):planSessTitle(ps))+'</div>'+
         (why?'<div class="hv7-day-why">'+escHtml(why)+'</div>':'');
-      html+=homeTargetsHTML(ps);
+      const cells=[];
+      if(ps.km) cells.push([hKm(ps.km),'km']);
+      if(ps.pace) cells.push([ps.pace,'/km']);
+      if(ps.rpe) cells.push([ps.rpe+'/10',t('rpeShort')]);
+      else if(ps.duration) cells.push([ps.duration,'min']);
+      if(cells.length) html+='<div class="hv7-day-targets">'+cells.map(c=>'<div><b>'+escHtml(String(c[0]))+'</b><span>'+escHtml(String(c[1]))+'</span></div>').join('')+'</div>';
       if(ps.done) html+='<div class="hv7-day-state ok">'+t('sessionCompleted')+'</div>';
       else if(ps.missed) html+='<div class="hv7-day-state ko">'+t('missedTag')+'</div>';
       else if(!isPerso) html+='<div class="hv7-day-acts" onclick="event.stopPropagation()">'+
@@ -8128,27 +8077,13 @@ function renderHome(){
           '<button class="hv7-act ghost" onclick="homeSessMissed('+ps.id+')">'+t('notDone')+'</button></div>';
       html+='</div>';
     } else if(ps || PLAN){
-      // Jour de repos (retour du 26/09) : plutôt qu'un bloc presque vide, la grande
-      // carte montre directement la prochaine séance, étiquetée « Jour de repos · Demain ».
       const nxt=homeNextUpcoming();
-      if(nxt){
-        const ns=nxt.session, ncol=baseTypeColor(ns.baseType), ndt=liveDetail(ns), nwhy=(ndt&&ndt.objectif)?ndt.objectif:'';
-        const when=nxt.label.charAt(0).toUpperCase()+nxt.label.slice(1);
-        html+='<div class="hv7-day" style="--zc:'+ncol+'" onclick="openRunSheet('+ns.id+')"><i class="hv7-zone" aria-hidden="true"></i>'+
-          '<div class="hv7-day-top"><span class="hv7-day-chip" style="color:var(--muted)">'+escHtml(t('restDay').toUpperCase())+'</span>'+
-            '<span class="hv7-day-when" style="color:'+ncol+'">'+escHtml(when)+'</span></div>'+
-          '<div class="hv7-day-title">'+escHtml(planSessTitle(ns))+'</div>'+
-          (nwhy?'<div class="hv7-day-why">'+escHtml(nwhy)+'</div>':'')+
-          homeTargetsHTML(ns)+
-        '</div>';
-      } else {
-        html+='<div class="hv7-day" onclick="nav(\'sport\')">'+
-          '<div class="hv7-day-top"><span class="hv7-day-chip" style="color:var(--dim)">'+escHtml(t('restTag').toUpperCase())+'</span>'+
-            '<span class="hv7-day-when">'+t('today')+' · '+escHtml(wdShort)+'</span></div>'+
-          '<div class="hv7-day-title">'+t('restDay')+'</div>'+
-          '<div class="hv7-day-why">'+t('noSessionToday')+'</div>'+
-        '</div>';
-      }
+      html+='<div class="hv7-day" onclick="nav(\'sport\')">'+
+        '<div class="hv7-day-top"><span class="hv7-day-chip" style="color:var(--dim)">'+escHtml(t('restTag').toUpperCase())+'</span>'+
+          '<span class="hv7-day-when">'+t('today')+' · '+escHtml(wdShort)+'</span></div>'+
+        '<div class="hv7-day-title">'+t('restDay')+'</div>'+
+        '<div class="hv7-day-why">'+(nxt?tp('nextSessionMeta',nxt.label):t('noSessionToday'))+'</div>'+
+      '</div>';
     } else {
       html+='<div class="hv7-day" onclick="nav(\'sport\');openPlanSetup()">'+
         '<div class="hv7-day-top"><span class="hv7-day-chip" style="color:var(--e2)">IKORUN</span>'+
@@ -8163,14 +8098,11 @@ function renderHome(){
   // SEMAINE COMPACTE — 7 barres de charge, jour courant repéré
   html+=homeWeekBarsHTML();
 
-  // 3 TUILES — km faits sur km prévus (le même « prévu » que Sport : avant, l'accueil
-  // disait « 10 km sem. » et Sport « 57 km charge hebdo » sans préciser fait/prévu),
-  // séances, série en cours. La VDOT n'est plus répétée ici (Sport, Stats, Profil).
-  const plannedW=weekPlannedKm(), streakN=streakDays();
+  // 3 TUILES — volume de la semaine, séances faites sur l'objectif, VDOT courant
   html+='<div class="hv7-krow3" onclick="nav(\'stats\')">'+
-    '<div class="hv7-ktile"><div class="hv7-ktile-val">'+hKm(kmW)+(plannedW?'<small> / '+hKm(plannedW)+'</small>':'')+'</div><div class="hv7-ktile-lab">'+(plannedW?t('kmDonePlannedLab'):t('kmWeekShort'))+'</div></div>'+
+    '<div class="hv7-ktile"><div class="hv7-ktile-val">'+hKm(kmW)+'</div><div class="hv7-ktile-lab">'+t('kmWeekShort')+'</div></div>'+
     '<div class="hv7-ktile"><div class="hv7-ktile-val">'+sessW+'/'+sessTarget+'</div><div class="hv7-ktile-lab">'+t('sessionsLab')+'</div></div>'+
-    '<div class="hv7-ktile"><div class="hv7-ktile-val">'+streakN+'</div><div class="hv7-ktile-lab">'+t(streakN===1?'streakTileLab1':'streakTileLab')+'</div></div>'+
+    '<div class="hv7-ktile"><div class="hv7-ktile-val">'+(vdot?fmt1(vdot):'—')+'</div><div class="hv7-ktile-lab">VDOT</div></div>'+
   '</div>';
 
   // RECORDS PERSO — homePBRow() existait deja (comme homeGoalCard/homeLoadQuip/
