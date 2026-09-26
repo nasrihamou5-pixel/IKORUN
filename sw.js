@@ -20,7 +20,7 @@
 // cache. Changer le nom du cache supprime les anciennes entrées à l'activation, ce
 // qui garantit que le vrai manifest.json est bien récupéré — condition nécessaire
 // pour que le navigateur propose l'installation de l'app.
-const C = 'ikorun-v84';
+const C = 'ikorun-v85';
 
 // Une réponse est réutilisable telle quelle si son URL identifie déjà une version
 // précise : soit elle porte un paramètre ?v=..., soit c'est un binaire dont le nom
@@ -47,7 +47,7 @@ const SHELL = [
   'favicon-32.png',
   'favicon-16.png',
   'vendor/supabase.js?v=1',
-  'vendor/sb-init.js?v=1'
+  'vendor/sb-init.js?v=2'
 ];
 
 self.addEventListener('install', e => {

@@ -1,7 +1,7 @@
 /* Initialisation du client Supabase — sortie du <script> en ligne d'index.html le
-   25/09 pour pouvoir charger supabase.js, ce fichier et app.js en `defer` : ils
-   s'exécutent dans cet ordre, APRÈS le premier affichage (intro du logo), au lieu
-   de retenir l'écran noir le temps de lire ~1,3 Mo de JavaScript. */
+   25/09 pour charger supabase.js, ce fichier et app.js APRÈS la première image (intro du
+   logo, voir le bas d'index.html), au lieu de retenir l'écran noir le temps de
+   lire ~1,3 Mo de JavaScript. */
 try{
   window.supabaseClient = supabase.createClient(
     'https://bsrbzuhvqtjkkmpmxyzw.supabase.co',
@@ -16,8 +16,10 @@ try{
 // reste simplement indéfini et chaque fonction qui le vérifie ("if(!window.supabaseClient)
 // return") s'arrêterait en silence. On affiche donc un message clair.
 if(!window.supabaseClient){
-  document.addEventListener('DOMContentLoaded',()=>{
+  // chargé après la première image : DOMContentLoaded est souvent déjà passé
+  const show=()=>{
     const b=document.body;
     if(b) b.insertAdjacentHTML('afterbegin','<div style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#E0394A;color:#fff;padding:12px 16px;font:600 13px/1.4 system-ui,sans-serif;text-align:center">Connexion au serveur impossible. Vérifie ta connexion et recharge la page.</div>');
-  });
+  };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',show); else show();
 }

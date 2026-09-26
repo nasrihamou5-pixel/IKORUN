@@ -90,6 +90,10 @@
 <title>IKORUN — Elite Athletic Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- téléchargés dès maintenant, exécutés après la première image (voir bas de page) -->
+<link rel="preload" as="script" href="vendor/supabase.js?v=1">
+<link rel="preload" as="script" href="vendor/sb-init.js?v=2">
+<link rel="preload" as="script" href="app.js?v=95">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
@@ -2372,24 +2376,30 @@ html[data-mode="light"] #ikIntro{--iki-w1:#3A4458;--iki-w2:#10141B;}
 .iki-trail i+i{top:calc(50% + 26px);height:1px;width:34%;opacity:.6;animation-delay:calc(var(--k)*110ms);}
 #ikIntro.mini .iki-trail{display:none;}
 @keyframes ikiTrail{from{transform:translateX(-100%);}to{transform:translateX(200%);}}
-.iki-mark{width:148px;height:auto;overflow:visible;animation:ikiImpact calc(var(--k)*560ms) calc(var(--k)*820ms) ease-out both;}
-@keyframes ikiImpact{0%{transform:scale(1);filter:brightness(1);}30%{transform:scale(1.07);filter:brightness(1.7) drop-shadow(0 0 16px rgba(var(--e-rgb),.9));}100%{transform:none;filter:drop-shadow(0 8px 26px rgba(var(--e-rgb),.35));}}
-.iki-mark polygon{transform-box:fill-box;transform-origin:center;stroke-linejoin:round;stroke-width:12;}
+/* Chaque lame est son propre <svg> animé en transform/opacity : Chrome l'anime hors du fil
+   principal, donc sans saccade pendant qu'app.js s'exécute en parallèle (26/09). */
+.iki-mark{position:relative;width:148px;height:115px;animation:ikiImpact calc(var(--k)*560ms) calc(var(--k)*820ms) ease-out both;}
+.iki-mark::before{content:'';position:absolute;inset:-34px;border-radius:50%;background:radial-gradient(circle,rgba(var(--e-rgb),.38),transparent 66%);
+  opacity:0;animation:ikiGlow calc(var(--k)*800ms) calc(var(--k)*780ms) ease-out both;}
+@keyframes ikiGlow{0%{opacity:0;}30%{opacity:1;}100%{opacity:.55;}}
+.iki-mark svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;will-change:transform,opacity;}
+@keyframes ikiImpact{0%{transform:scale(1);}30%{transform:scale(1.07);}100%{transform:none;}}
+.iki-mark polygon{stroke-linejoin:round;stroke-width:12;}
 .iki-b2{animation:ikiBladeB calc(var(--k)*720ms) 0ms var(--ease-stride) both;}
 .iki-b1{animation:ikiBladeW calc(var(--k)*720ms) calc(var(--k)*170ms) var(--ease-stride) both;}
 .iki-g2{animation:ikiGhostB calc(var(--k)*720ms) calc(var(--k)*40ms) var(--ease-stride) both;}
 .iki-g1{animation:ikiGhostW calc(var(--k)*720ms) calc(var(--k)*210ms) var(--ease-stride) both;}
-@keyframes ikiBladeB{0%{opacity:.55;transform:translate(-260px,90px) skewX(22deg) scaleX(1.3);}35%{opacity:1;}80%{transform:translate(8px,-3px) skewX(-3deg);}100%{opacity:1;transform:none;}}
-@keyframes ikiBladeW{0%{opacity:.55;transform:translate(260px,-90px) skewX(22deg) scaleX(1.3);}35%{opacity:1;}80%{transform:translate(-8px,3px) skewX(-3deg);}100%{opacity:1;transform:none;}}
-@keyframes ikiGhostB{0%{opacity:0;transform:translate(-300px,104px) scaleX(1.5);}40%{opacity:.45;}100%{opacity:0;transform:translate(-26px,9px);}}
-@keyframes ikiGhostW{0%{opacity:0;transform:translate(300px,-104px) scaleX(1.5);}40%{opacity:.45;}100%{opacity:0;transform:translate(26px,-9px);}}
+@keyframes ikiBladeB{0%{opacity:.55;transform:translate(-106px,37px) skewX(22deg) scaleX(1.3);}35%{opacity:1;}80%{transform:translate(3px,-1px) skewX(-3deg);}100%{opacity:1;transform:none;}}
+@keyframes ikiBladeW{0%{opacity:.55;transform:translate(106px,-37px) skewX(22deg) scaleX(1.3);}35%{opacity:1;}80%{transform:translate(-3px,1px) skewX(-3deg);}100%{opacity:1;transform:none;}}
+@keyframes ikiGhostB{0%{opacity:0;transform:translate(-122px,42px) scaleX(1.5);}40%{opacity:.45;}100%{opacity:0;transform:translate(-11px,4px);}}
+@keyframes ikiGhostW{0%{opacity:0;transform:translate(122px,-42px) scaleX(1.5);}40%{opacity:.45;}100%{opacity:0;transform:translate(11px,-4px);}}
 .iki-ring{position:absolute;left:50%;top:58px;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;border:2px solid rgba(var(--e-rgb),.85);
   opacity:0;animation:ikiRing calc(var(--k)*800ms) calc(var(--k)*840ms) ease-out both;pointer-events:none;}
 @keyframes ikiRing{0%{opacity:0;transform:scale(.3);}8%{opacity:.9;}100%{opacity:0;transform:scale(2.6);}}
 .iki-word{display:flex;margin-top:22px;font-family:'Unbounded',system-ui,sans-serif;font-weight:800;font-size:30px;line-height:1;color:#fff;
-  letter-spacing:.14em;animation:ikiSpace calc(var(--k)*900ms) calc(var(--k)*920ms) var(--ease-stride) both;}
+  letter-spacing:.14em;}
 html[data-mode="light"] .iki-word{color:#10141B;}
-.iki-word span{display:block;animation:ikiLetter calc(var(--k)*560ms) var(--ease-stride) both;}
+.iki-word span{display:block;will-change:transform,opacity;animation:ikiLetter calc(var(--k)*560ms) var(--ease-stride) both;}
 .iki-word span.r{color:var(--e);}
 .iki-word span:nth-child(1){animation-delay:calc(var(--k)*920ms);}
 .iki-word span:nth-child(2){animation-delay:calc(var(--k)*990ms);}
@@ -2397,9 +2407,8 @@ html[data-mode="light"] .iki-word{color:#10141B;}
 .iki-word span:nth-child(4){animation-delay:calc(var(--k)*1160ms);animation-name:ikiLetterRun;}
 .iki-word span:nth-child(5){animation-delay:calc(var(--k)*1230ms);animation-name:ikiLetterRun;}
 .iki-word span:nth-child(6){animation-delay:calc(var(--k)*1300ms);animation-name:ikiLetterRun;}
-@keyframes ikiLetter{from{opacity:0;transform:translateY(18px);filter:blur(6px);}to{opacity:1;transform:none;filter:none;}}
-@keyframes ikiLetterRun{from{opacity:0;transform:translateX(34px) skewX(-18deg);filter:blur(6px);}to{opacity:1;transform:none;filter:none;}}
-@keyframes ikiSpace{from{letter-spacing:.5em;}to{letter-spacing:.14em;}}
+@keyframes ikiLetter{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
+@keyframes ikiLetterRun{from{opacity:0;transform:translateX(34px) skewX(-18deg);}to{opacity:1;transform:none;}}
 .iki-line{width:150px;height:2px;margin-top:16px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--e),transparent);
   animation:ikFill calc(var(--k)*560ms) calc(var(--k)*1640ms) var(--ease-stride) both;transform-origin:50% 50%;}
 .iki-tag{margin-top:12px;font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--muted);animation:ikiLetter .6s 1.79s var(--ease-stride) both;}
@@ -2521,16 +2530,16 @@ html[data-mode="light"] :is(.hv7-day,.sp-plan,.hv7-score,.hv7-race,.hw-week,.hv7
    temps de démarrage au lieu de l'allonger. */
 (function(){
   var W='160,240 218,160 432,86 376,168', B='92,350 205,258 415,183 296,292';
-  function blade(cls,pts,g){ return '<polygon class="'+cls+'" points="'+pts+'" fill="url(#'+g+')" stroke="url(#'+g+')"/>'; }
+  function blade(cls,pts,g){ return '<svg class="'+cls+'" viewBox="80 76 364 284"><polygon points="'+pts+'" fill="url(#'+g+')" stroke="url(#'+g+')"/></svg>'; }
   function ikIntro(mode){
     var old=document.getElementById('ikIntro'); if(old) old.remove();
     var reduce=false; try{ reduce=matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
     var el=document.createElement('div'); el.id='ikIntro'; el.className=mode; el.setAttribute('aria-hidden','true');
     el.innerHTML='<div class="iki-trail"><i></i><i></i></div><div class="iki-stage">'+
-      '<svg class="iki-mark" viewBox="80 76 364 284"><defs>'+
+      '<svg width="0" height="0" style="position:absolute"><defs>'+
       '<linearGradient id="ikiW" x1="0" y1="1" x2="1" y2="0"><stop offset="0" style="stop-color:var(--iki-w2)"/><stop offset="1" style="stop-color:var(--iki-w1)"/></linearGradient>'+
-      '<linearGradient id="ikiB" x1="0" y1="1" x2="1" y2="0"><stop offset="0" style="stop-color:var(--e)"/><stop offset="1" style="stop-color:var(--e2)"/></linearGradient></defs>'+
-      blade('iki-g2',B,'ikiB')+blade('iki-g1',W,'ikiW')+blade('iki-b2',B,'ikiB')+blade('iki-b1',W,'ikiW')+'</svg>'+
+      '<linearGradient id="ikiB" x1="0" y1="1" x2="1" y2="0"><stop offset="0" style="stop-color:var(--e)"/><stop offset="1" style="stop-color:var(--e2)"/></linearGradient></defs></svg>'+
+      '<div class="iki-mark">'+blade('iki-g2',B,'ikiB')+blade('iki-g1',W,'ikiW')+blade('iki-b2',B,'ikiB')+blade('iki-b1',W,'ikiW')+'</div>'+
       '<div class="iki-ring"></div>'+
       '<div class="iki-word"><span>I</span><span>K</span><span>O</span><span class="r">R</span><span class="r">U</span><span class="r">N</span></div>'+
       '<div class="iki-line"></div><div class="iki-tag">Elite Athletic Intelligence</div></div>';
@@ -2750,26 +2759,31 @@ html[data-mode="light"] :is(.hv7-day,.sp-plan,.hv7-score,.hv7-race,.hw-week,.hv7
      same-origin, le SW le met en cache comme app.js et l'app redémarre offline.
      Pour mettre à jour la version : retélécharger le fichier UMD correspondant
      depuis jsdelivr et l'écraser dans vendor/supabase.js. -->
-<!-- defer (25/09) : les trois scripts s'exécutent dans cet ordre APRÈS la lecture de la
-     page, donc après le premier affichage de l'intro. Avant, ~1,3 Mo de JavaScript
-     était lu et exécuté pendant que l'écran restait noir. -->
-<script src="vendor/supabase.js?v=1" defer></script>
-<script src="vendor/sb-init.js?v=1" defer></script>
-<script src="app.js?v=95" defer></script>
-<!-- Suite de fumée : chargée uniquement avec ?selftest=1 (voir tests/smoke.js).
-     Second script classique de la page, donc il partage l'environnement lexical
-     d'app.js et peut tester l'app réelle (P, SESS, RANKS...) sans imitation.
-     La suite ne persiste RIEN : elle photographie l'état, teste, restaure. -->
+<!-- CHARGEMENT APRÈS LA PREMIÈRE IMAGE (26/09) — « écran noir avant l'intro ».
+     Même en defer, Chrome lit et exécute les scripts (~1,3 Mo) AVANT de dessiner la
+     première image : sur téléphone, 0,5 à 1,5 s d'écran noir, puis l'intro. Les
+     scripts sont désormais ajoutés juste après la première image (requestAnimationFrame
+     puis setTimeout) : l'intro est déjà à l'écran pendant qu'ils s'exécutent.
+     async=false garde l'ordre supabase → sb-init → app.js (→ smoke.js en autotest).
+     app.js démarre seul même si DOMContentLoaded est déjà passé (readyState).
+     La suite de fumée (?selftest=1) partage l'environnement lexical d'app.js et
+     ne persiste RIEN : elle photographie l'état, teste, restaure. -->
 <script>
-  // app.js étant en defer, on attend DOMContentLoaded (qui suit les scripts defer)
-  // pour que la suite passe bien APRÈS app.js.
-  if (location.search.indexOf('selftest=1') > -1) {
-    document.addEventListener('DOMContentLoaded', function(){
-      var _st = document.createElement('script');
-      _st.src = 'tests/smoke.js?v=2';
-      document.body.appendChild(_st);
+(function(){
+  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=2', 'app.js?v=95'];
+  if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=2');
+  var lance = false;
+  function charge(){
+    if (lance) return; lance = true;
+    SCRIPTS.forEach(function(src){
+      var el = document.createElement('script');
+      el.src = src; el.async = false;
+      document.body.appendChild(el);
     });
   }
+  requestAnimationFrame(function(){ setTimeout(charge, 0); });
+  setTimeout(charge, 1000); // filet : page ouverte en arrière-plan (aucune image produite)
+})();
 </script>
 </body>
 </html>
