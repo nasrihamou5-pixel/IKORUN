@@ -2408,6 +2408,100 @@ html[data-mode="light"] .iki-word{color:#10141B;}
   #ikIntro *,#ikIntro{animation:none!important;}
 }
 
+/* ===================================================================
+   RETOURS DU 26/09 (relecture transmise par Hamou)
+   =================================================================== */
+/* 1. Ce qui faisait « cassé » */
+/* titres d'écran et contenu sur la même gouttière de 20 px */
+.topbar{padding-left:max(20px,env(safe-area-inset-left));padding-right:max(20px,env(safe-area-inset-right));}
+.scr{padding-left:20px;padding-right:20px;}
+/* avatar du haut : cercle en dégradé + initiale ; une photo éventuelle se pose
+   par-dessus et disparaît si elle ne charge pas (plus de carré vide) */
+#tbAvatar{width:40px;height:40px;border-radius:50%;border:0;position:relative;
+  background:linear-gradient(145deg,var(--e2),var(--e)) !important;color:#fff !important;
+  font-family:'Unbounded';font-weight:800;font-size:14px;box-shadow:0 4px 14px -6px rgba(var(--e-rgb),.7);}
+#tbAvatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;}
+/* texte d’invite des sélecteurs (« Choisir ta taille ») : 4,4:1 → au-dessus de 4,5:1 */
+.pkfield{color:var(--muted);}
+.pkfield.set{color:var(--snow);}
+/* cadenas des badges/trophées verrouillés : petite pastille claire et nette */
+.bd-lock-chip{width:20px;height:20px;bottom:-2px;right:-2px;background:#FFFFFF;color:#1B2230;
+  border:1px solid rgba(12,15,20,.12);box-shadow:0 2px 6px rgba(0,0,0,.25);}
+.bd-icon:not(.big)>.bd-lock-chip svg{width:11px;height:11px;}
+/* le bas des écrans ne passe plus sous la barre d'onglets (safe-area comprise) */
+#scroll{padding-bottom:calc(150px + env(safe-area-inset-bottom));}
+#navFade{height:calc(96px + env(safe-area-inset-bottom));}
+
+/* 2. Un seul langage de contrôle : fini les pastilles chromées bombées.
+   Changer de vue = segmented control (.seg-ctrl, comme Stats) ; choisir dans un
+   formulaire = puce plate, sélection en accent plein comme les onglets actifs. */
+.pill{background:var(--s1) !important;border:1px solid var(--hair2) !important;color:var(--muted);box-shadow:none;
+  -webkit-backdrop-filter:none;backdrop-filter:none;font-weight:600;}
+.pill.on{background:linear-gradient(180deg,rgba(0,0,0,.1),rgba(0,0,0,.3)) var(--e) !important;border-color:transparent !important;
+  color:#fff;box-shadow:none;text-shadow:0 1px 1px rgba(0,0,0,.3);}
+html[data-mode="dark"][data-accent="yellow"] .pill.on{background:var(--e) !important;color:#2A2205;text-shadow:none;}
+html[data-mode="dark"][data-accent="carbon"] .pill.on{background:linear-gradient(180deg,#EEF1F4,#B9C0C8) !important;color:#0E0F11;text-shadow:none;}
+.pills.sub .pill{background:transparent !important;}
+.pills.sub .pill.on{background:var(--s3) !important;color:var(--snow);border-color:var(--hair2) !important;text-shadow:none;}
+.seg-row{display:flex;gap:8px;align-items:center;margin:6px 0 16px;}
+.seg-row .seg-ctrl{flex:1;margin:0;}
+.seg-row .tb-gear{width:44px;height:44px;border-radius:50%;flex-shrink:0;color:var(--snow);padding:0;font:inherit;}
+.hv7-day-targets b.mono{font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:-.5px;}
+
+/* 3. Typographie : Unbounded = titres et gros chiffres ; Inter = texte ;
+   JetBrains Mono = uniquement chronos, minuteries, allures et temps de course. */
+.sbox .v,.pstat .v,.chrome-sbox .v{font-family:'Unbounded';font-weight:700;letter-spacing:-.4px;font-variant-numeric:tabular-nums;}
+.sbox .v{font-size:18px;}
+.zval,.mus-last,.hv7-day-chip,.hv7-day-when,.hv7-hw-lab,.hv7-nx em,.sp-rail-lab span,.fr-rank-num,.goals-count,
+.stepper .val,.setcell,.week-spark-days span,.num{font-family:Inter,system-ui,sans-serif;font-variant-numeric:tabular-nums;}
+.zval.mono,.sbox .v.mono{font-family:'JetBrains Mono',monospace;letter-spacing:-.3px;}
+.hv7-day-chip,.hv7-day-when{letter-spacing:.4px;font-size:10.5px;}
+.mus-last{font-size:11px;letter-spacing:0;}
+
+/* 4. Accueil pensé autour de l'objectif */
+/* compte à rebours de la course, en tête */
+.hv7-race{position:relative;margin:0 0 16px;padding:16px 18px 14px;border-radius:24px;cursor:pointer;
+  background:radial-gradient(120% 90% at 100% 0%,rgba(var(--e-rgb),.22),transparent 60%),var(--s1);
+  border:1px solid var(--hair);box-shadow:var(--float-sm);transition:transform .2s var(--ease-spring);}
+.hv7-race:active{transform:scale(.985);}
+.hv7-race-top{display:flex;align-items:center;gap:14px;}
+.hv7-race-count{font-family:'Unbounded';font-weight:800;font-size:40px;letter-spacing:-1.5px;line-height:1;color:var(--snow);white-space:nowrap;font-variant-numeric:tabular-nums;}
+.hv7-race-info{min-width:0;display:flex;flex-direction:column;gap:3px;}
+.hv7-race-info b{font-size:15px;font-weight:700;color:var(--snow);}
+.hv7-race-info span{font-size:12.5px;color:var(--muted);}
+.hv7-race .sp-rail{margin-top:14px;}
+.hv7-race-cap{font-size:12px;color:var(--muted);margin-top:8px;}
+/* liseré couleur de zone (vert EF, orange tempo, rouge VMA…) sur la carte du jour */
+.hv7-zone{position:absolute;left:22px;right:22px;top:0;height:3px;border-radius:0 0 3px 3px;background:var(--zc);z-index:2;}
+.hv7-day-chip .zdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-inline-end:6px;vertical-align:1px;}
+/* la semaine : hauteur = km, trois états (fait / prévu / manqué) */
+.hw-week{margin:0 0 16px;padding:14px 12px 10px;border-radius:20px;background:var(--s1);border:1px solid var(--hair);}
+.hw-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;}
+.hw-day{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.hw-bar{height:56px;width:100%;display:flex;align-items:flex-end;justify-content:center;}
+.hw-bar b{display:block;width:62%;max-width:22px;border-radius:6px 6px 3px 3px;}
+.hw-bar .hw-done{background:var(--zc);}
+.hw-bar .hw-plan{background:transparent;box-shadow:inset 0 0 0 1.5px var(--zc);}
+.hw-bar .hw-missed{background:repeating-linear-gradient(135deg,rgba(255,92,108,.38) 0 3px,transparent 3px 6px);box-shadow:inset 0 0 0 1.5px var(--bad);}
+.hw-bar .hw-gym{height:28%;background:var(--muted);opacity:.55;}
+.hw-rest{display:block;width:5px;height:5px;border-radius:50%;background:var(--hair2);margin-bottom:3px;}
+.hw-dl{font-size:11px;font-weight:600;color:var(--muted);}
+.hw-day.today .hw-dl{color:var(--snow);font-weight:800;}
+.hw-day.today .hw-bar{background:linear-gradient(to top,rgba(var(--e-rgb),.10),transparent 75%);border-radius:8px;}
+.hw-km{font-size:10px;color:var(--dim);font-variant-numeric:tabular-nums;min-height:12px;line-height:12px;}
+.hw-legend{display:flex;justify-content:center;gap:14px;margin-top:10px;font-size:10.5px;color:var(--muted);}
+.hw-legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-inline-end:5px;vertical-align:-1px;}
+.hw-legend .lg-done{background:var(--muted);}
+.hw-legend .lg-plan{box-shadow:inset 0 0 0 1.5px var(--muted);}
+.hw-legend .lg-miss{background:repeating-linear-gradient(135deg,rgba(255,92,108,.5) 0 2px,transparent 2px 4px);box-shadow:inset 0 0 0 1.5px var(--bad);}
+.ik-play .hw-bar b{transform-origin:50% 100%;animation:ikGrow .75s var(--ease-stride) both;animation-delay:calc(.12s + var(--bi,0) * 55ms);}
+.hv7-ktile-val small{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:0;}
+
+/* 5. Mode clair : cartes blanches nettes au lieu du « bleu sur bleu » */
+html[data-mode="light"]{--glass-bg:#FFFFFF;}
+html[data-mode="light"] :is(.hv7-day,.sp-plan,.hv7-score,.hv7-race,.hw-week,.hv7-ktile){background:#FFFFFF;border-color:var(--hair);
+  box-shadow:0 12px 28px -20px rgba(20,32,56,.45),0 1px 2px rgba(20,32,56,.06);}
+
 /* « Réduire les animations » (réglage du téléphone) : seules 3 animations de
    fond le respectaient, une vingtaine d'autres tournaient en boucle. Les
    animations se terminent désormais instantanément dans leur état final. */
@@ -2661,7 +2755,7 @@ html[data-mode="light"] .iki-word{color:#10141B;}
      était lu et exécuté pendant que l'écran restait noir. -->
 <script src="vendor/supabase.js?v=1" defer></script>
 <script src="vendor/sb-init.js?v=1" defer></script>
-<script src="app.js?v=94" defer></script>
+<script src="app.js?v=95" defer></script>
 <!-- Suite de fumée : chargée uniquement avec ?selftest=1 (voir tests/smoke.js).
      Second script classique de la page, donc il partage l'environnement lexical
      d'app.js et peut tester l'app réelle (P, SESS, RANKS...) sans imitation.

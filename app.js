@@ -1833,7 +1833,7 @@ const I18N={
     googleStandaloneTitle:'Google et l\u2019app install\u00e9e',googleUseGuestBtn:'Continuer en tant qu\u2019invit\u00e9',googleOpenSafariBtn:'Ouvrir dans Safari',googleStandaloneHint:'Indisponible depuis l\u2019app install\u00e9e',
     declineBtn:'Refuser',saveLabel:'Enregistrer',renameLab:'Renommer',favoriteLab:'Favori',
     langLab:'Langue',obModeTitle:'Ton affichage',obModeIntro:'Deux façons de voir IKORUN — change d\u2019avis à tout moment dans Profil.',obModeFullT:'Complet',obModeFullD:'Toutes les stats, tous les détails de chaque séance, l\u2019anatomie musculaire, les graphiques. Pour creuser.',obModeSimpleT:'Simplifié',obModeSimpleD:'Une carte, l\u2019essentiel : la séance du jour et un bouton. Rien d\u2019autre à l\u2019écran. Pour aller droit au but.',obModeSuggestion:'Suggestion selon ton âge : {0}. Choisis librement.',chooseModeLab:'Choisis un affichage pour continuer',
-    trackingLab:'Suivi',appearanceLab:'Apparence',animationsLab:'Animations',updateReadyLab:'Nouvelle version d\u2019IKORUN prête',updateNowBtn:'Mettre à jour',introReplayBtn:'Revoir l\u2019animation d\u2019ouverture',
+    trackingLab:'Suivi',appearanceLab:'Apparence',animationsLab:'Animations',updateReadyLab:'Nouvelle version d\u2019IKORUN prête',updateNowBtn:'Mettre à jour',raceCountdown:'J-{0}',raceDayLab:'Jour J',kmDonePlannedLab:'km faits / prévus',streakTileLab:'jours de série',streakTileLab1:'jour de série',plannedThisWeek:'prévus cette sem.',badgeStartLvl:'Dès le départ',trophiesInYear:'{0} en {1}',wkDone:'fait',wkPlanned:'prévu',wkMissed:'manqué',introReplayBtn:'Revoir l\u2019animation d\u2019ouverture',
     sendFeedbackLab:'Envoyer un commentaire',feedbackNoAddressToast:'Adresse de contact pas encore configurée — réessaie après la prochaine mise à jour.',feedbackTitle:'Ton avis',feedbackIntro:'Une idée, un bug, un truc qui te gêne dans l\u2019app ? Écris-le ici, ça part directement dans ta boîte mail.',feedbackPh:'Écris ton commentaire...',feedbackEmptyToast:'Écris quelque chose avant d\u2019envoyer',feedbackSentToast:'Ton appli mail s\u2019est ouverte, il ne reste qu\u2019à envoyer',feedbackSignature:'Compte : {0} · Langue : {1}',
     sendBtn:'Envoyer',
     playLab:'Démarrer',
@@ -1902,7 +1902,7 @@ const I18N={
     quickTimer:'Minuteur',lvlShort:'NIV.',
     vdotReal:'VDOT réel',sessionsRun:'Séances run',kmTotal:'km totaux',paceZones:'Zones d\u2019allure',
     predictions:'Prédictions',formFatigue:'Forme / Fatigue',personalRecords:'Records personnels',
-    chronic:'Chronique',acute:'Aiguë',tonnageLab:'Tonnage',prPerSession:'PR (kg/séance)',totalSets:'Séries totales',
+    chronic:'Chronique',acute:'Aiguë',tonnageLab:'Tonnage',prPerSession:'Meilleure séance',totalSets:'Séries validées',
     startFirstMuscu:'Lance ta première séance de muscu !',lastSessions:'Dernières séances',
     tomorrow:'Demain',noUpcomingSession:'Aucune séance planifiée prochainement.',addSession:'Ajouter une séance',
     showRestPlan:'Afficher le reste du plan · {0} semaines',calendarTitle:'Calendrier',calendarSub:'Planifie ta progression',
@@ -2420,7 +2420,7 @@ const I18N={
     googleStandaloneTitle:'Google and the installed app',googleUseGuestBtn:'Continue as guest',googleOpenSafariBtn:'Open in Safari',googleStandaloneHint:'Unavailable from the installed app',
     declineBtn:'Decline',saveLabel:'Save',renameLab:'Rename',favoriteLab:'Favourite',
     langLab:'Language',obModeTitle:'Your display',obModeIntro:'Two ways to see IKORUN \u2014 change your mind anytime in Profile.',obModeFullT:'Full',obModeFullD:'All the stats, every session detail, muscle anatomy, charts. For digging in.',obModeSimpleT:'Simplified',obModeSimpleD:'One card, the essentials: today\u2019s session and a button. Nothing else on screen. For going straight to it.',obModeSuggestion:'Suggestion based on your age: {0}. Choose freely.',chooseModeLab:'Choose a display to continue',
-    trackingLab:'Tracking',appearanceLab:'Appearance',animationsLab:'Animations',updateReadyLab:'New IKORUN version ready',updateNowBtn:'Update',introReplayBtn:'Replay the opening animation',
+    trackingLab:'Tracking',appearanceLab:'Appearance',animationsLab:'Animations',updateReadyLab:'New IKORUN version ready',updateNowBtn:'Update',raceCountdown:'{0} days',raceDayLab:'Race day',kmDonePlannedLab:'km done / planned',streakTileLab:'day streak',streakTileLab1:'day streak',plannedThisWeek:'planned this wk',badgeStartLvl:'From the start',trophiesInYear:'{0} in {1}',wkDone:'done',wkPlanned:'planned',wkMissed:'missed',introReplayBtn:'Replay the opening animation',
     sendFeedbackLab:'Send feedback',feedbackNoAddressToast:'Contact address not set up yet — try again after the next update.',feedbackTitle:'Your feedback',feedbackIntro:'An idea, a bug, something bothering you in the app? Write it here, it goes straight to your mail app.',feedbackPh:'Write your feedback...',feedbackEmptyToast:'Write something before sending',feedbackSentToast:'Your mail app just opened, all that\u2019s left is to hit send',feedbackSignature:'Account: {0} · Language: {1}',
     sendBtn:'Send',
     playLab:'Start',
@@ -2489,7 +2489,7 @@ const I18N={
     quickTimer:'Timer',lvlShort:'LVL',
     vdotReal:'Actual VDOT',sessionsRun:'Run sessions',kmTotal:'Total km',paceZones:'Pace zones',
     predictions:'Predictions',formFatigue:'Form / Fatigue',personalRecords:'Personal records',
-    chronic:'Chronic',acute:'Acute',tonnageLab:'Volume',prPerSession:'PR (kg/session)',totalSets:'Total sets',
+    chronic:'Chronic',acute:'Acute',tonnageLab:'Volume',prPerSession:'Best session',totalSets:'Sets completed',
     startFirstMuscu:'Start your first strength session!',lastSessions:'Recent sessions',
     tomorrow:'Tomorrow',noUpcomingSession:'No upcoming session planned.',addSession:'Add a session',
     showRestPlan:'Show the rest of the plan · {0} weeks',calendarTitle:'Calendar',calendarSub:'Plan your progress',
@@ -3007,7 +3007,7 @@ const I18N={
     googleStandaloneTitle:'Google والتطبيق المثبّت',googleUseGuestBtn:'المتابعة كضيف',googleOpenSafariBtn:'الفتح في Safari',googleStandaloneHint:'غير متاح من التطبيق المثبّت',
     declineBtn:'رفض',saveLabel:'حفظ',renameLab:'إعادة تسمية',favoriteLab:'مفضّل',
     langLab:'اللغة',obModeTitle:'طريقة العرض',obModeIntro:'طريقتان لرؤية IKORUN — غيّر رأيك في أي وقت من الملف الشخصي.',obModeFullT:'كامل',obModeFullD:'كل الإحصائيات، تفاصيل كل حصة، تشريح العضلات، الرسوم البيانية. للتعمّق.',obModeSimpleT:'مبسّط',obModeSimpleD:'بطاقة واحدة، الأساسيات: حصة اليوم وزر واحد. لا شيء آخر على الشاشة. للذهاب مباشرة إلى الهدف.',obModeSuggestion:'اقتراح حسب عمرك: {0}. اختر بحرية.',chooseModeLab:'اختر طريقة عرض للمتابعة',
-    trackingLab:'المتابعة',appearanceLab:'المظهر',animationsLab:'الرسوم المتحركة',updateReadyLab:'نسخة جديدة من IKORUN جاهزة',updateNowBtn:'تحديث',introReplayBtn:'إعادة عرض الرسوم الافتتاحية',
+    trackingLab:'المتابعة',appearanceLab:'المظهر',animationsLab:'الرسوم المتحركة',updateReadyLab:'نسخة جديدة من IKORUN جاهزة',updateNowBtn:'تحديث',raceCountdown:'{0} يوم',raceDayLab:'يوم السباق',kmDonePlannedLab:'كم منجز / مخطط',streakTileLab:'أيام متتالية',streakTileLab1:'يوم متتالٍ',plannedThisWeek:'مخطط هذا الأسبوع',badgeStartLvl:'منذ البداية',trophiesInYear:'{0} في {1}',wkDone:'منجز',wkPlanned:'مخطط',wkMissed:'فائت',introReplayBtn:'إعادة عرض الرسوم الافتتاحية',
     sendFeedbackLab:'إرسال تعليق',feedbackNoAddressToast:'لم يتم إعداد عنوان التواصل بعد — أعد المحاولة بعد التحديث القادم.',feedbackTitle:'رأيك',feedbackIntro:'فكرة، خلل، أو شيء يزعجك في التطبيق؟ اكتبه هنا، سيُفتح مباشرة في تطبيق بريدك.',feedbackPh:'اكتب تعليقك...',feedbackEmptyToast:'اكتب شيئًا قبل الإرسال',feedbackSentToast:'فُتح تطبيق البريد لديك، لم يبقَ سوى الضغط على إرسال',feedbackSignature:'الحساب: {0} · اللغة: {1}',
     sendBtn:'إرسال',
     playLab:'ابدأ',
@@ -3076,7 +3076,7 @@ const I18N={
     quickTimer:'المؤقت',lvlShort:'مستوى',
     vdotReal:'VDOT الحقيقي',sessionsRun:'حصص الجري',kmTotal:'كم إجمالية',paceZones:'مناطق الوتيرة',
     predictions:'توقعات',formFatigue:'اللياقة / التعب',personalRecords:'الأرقام الشخصية',
-    chronic:'مزمن',acute:'حاد',tonnageLab:'الحمولة',prPerSession:'أفضل رقم (كغ/حصة)',totalSets:'إجمالي المجموعات',
+    chronic:'مزمن',acute:'حاد',tonnageLab:'الحمولة',prPerSession:'أفضل حصة',totalSets:'المجموعات المنجزة',
     startFirstMuscu:'ابدأ أول حصة كمال أجسام لك!',lastSessions:'آخر الحصص',
     tomorrow:'غدًا',noUpcomingSession:'لا توجد حصة مخططة قريبًا.',addSession:'إضافة حصة',
     showRestPlan:'عرض بقية الخطة · {0} أسابيع',calendarTitle:'التقويم',calendarSub:'خطط لتقدمك',
@@ -4168,7 +4168,7 @@ function previewBadgeAnim(key){
   const remain=prog.parts.filter(p=>p.have<p.need);
   let condHtml='';
   if(remain.length){
-    condHtml='<div class="bd-preview-cond">'+remain.map(p=>'<div class="row" style="justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px"><span>'+p.label+'</span><span class="mono">'+Math.min(p.have,p.need)+' / '+p.need+' '+p.unit+'</span></div>').join('')+'</div>';
+    condHtml='<div class="bd-preview-cond">'+remain.map(p=>'<div class="row" style="justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px"><span>'+p.label+'</span><span class="num">'+Math.min(p.have,p.need)+' / '+p.need+' '+p.unit+'</span></div>').join('')+'</div>';
   }
   ov.innerHTML='<div class="bd-flash"></div>'+
     '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded;margin-bottom:6px">'+t('previewLocked')+'</div>'+
@@ -4194,8 +4194,8 @@ function openBadges(){
 function renderBadgeGallery(){
   const unlocked=unlockedBadges(); const ukeys=new Set(unlocked.map(u=>u.key));
   const list=BADGE_TIERS.filter(b=> badgeFilter==='tous' ? true : (badgeFilter==='obtenus'? ukeys.has(b.key) : !ukeys.has(b.key)));
-  let h='<div class="pills" style="margin-bottom:14px">'+
-    [['tous',t('filterAll')],['obtenus',t('filterObtained')],['verrouilles',t('filterLocked')]].map(f=>'<div class="pill '+(badgeFilter===f[0]?'on':'')+'" onclick="badgeFilter=\''+f[0]+'\';renderBadgeGallery()">'+f[1]+'</div>').join('')+
+  let h='<div class="seg-ctrl sub">'+
+    [['tous',t('filterAll')],['obtenus',t('filterObtained')],['verrouilles',t('filterLocked')]].map(f=>'<div class="seg-btn'+(badgeFilter===f[0]?' on':'')+'" onclick="badgeFilter=\''+f[0]+'\';renderBadgeGallery()">'+f[1]+'</div>').join('')+
     '</div>';
   h+='<div style="font-size:12px;color:var(--muted);margin-bottom:10px">'+tp('badgesObtainedCount',unlocked.length,BADGE_TIERS.length)+'</div>';
   h+='<div class="bd-grid">';
@@ -4203,7 +4203,7 @@ function renderBadgeGallery(){
     const on=ukeys.has(b.key);
     h+='<div class="bd-cell" onclick="openBadgeQuick(\''+b.key+'\')">'+
       '<div class="bd-icon '+b.cls+(on?'':' locked')+'" style="--sw:'+(i%5)+'">'+bdGlyph(b.key)+(on?'':'<div class="bd-lock-chip">'+ICN('lock',14)+'</div>')+'</div>'+
-      '<div class="bd-name">'+b.name+'</div><div class="bd-lvl">'+(b.kmMin?b.kmMin+' km':'—')+'</div></div>';
+      '<div class="bd-name">'+b.name+'</div><div class="bd-lvl">'+(b.kmMin?b.kmMin+' km':t('badgeStartLvl'))+'</div></div>';
   });
   h+='</div>';
   $('#badgesBody').innerHTML=h;
@@ -4242,7 +4242,7 @@ function openBadgeDetail(key){
   prog.parts.forEach(p=>{
     const pc=Math.min(100,Math.round((p.need?p.have/p.need:1)*100));
     const done=p.have>=p.need;
-    h+='<div style="margin-bottom:12px"><div class="row" style="margin-bottom:5px"><span style="font-size:13px">'+(done?'':'')+p.label+'</span><span class="mono" style="font-size:12px;color:var(--muted)">'+Math.min(p.have,p.need)+' / '+p.need+' '+p.unit+'</span></div><div class="pbar bd-pbar" style="height:7px"><div style="width:'+pc+'%"></div></div></div>';
+    h+='<div style="margin-bottom:12px"><div class="row" style="margin-bottom:5px"><span style="font-size:13px">'+(done?'':'')+p.label+'</span><span class="num" style="font-size:12px;color:var(--muted)">'+Math.min(p.have,p.need)+' / '+p.need+' '+p.unit+'</span></div><div class="pbar bd-pbar" style="height:7px"><div style="width:'+pc+'%"></div></div></div>';
   });
   const R=40,C=+(2*Math.PI*R).toFixed(1),OFF=+(C*(1-prog.pct/100)).toFixed(1);
   h+='<div class="card-divider"></div>'+
@@ -4252,7 +4252,7 @@ function openBadgeDetail(key){
           '<circle cx="48" cy="48" r="'+R+'" fill="none" stroke="var(--s3)" stroke-width="8"/>'+
           '<circle cx="48" cy="48" r="'+R+'" fill="none" stroke="var(--glow)" stroke-width="8" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+OFF+'" style="transition:stroke-dashoffset .7s var(--ease)"/>'+
         '</svg>'+
-        '<div class="rc"><span class="mono" style="font-size:17px;font-weight:800">'+prog.pct+'%</span></div>'+
+        '<div class="rc"><span class="num" style="font-size:17px;font-weight:800">'+prog.pct+'%</span></div>'+
       '</div>'+
       '<div style="flex:1"><div class="lab">'+t('globalProgress')+'</div>'+
       '<div style="font-size:12px;color:var(--muted);margin-top:4px">'+badgeHintText(prog)+'</div></div>'+
@@ -4337,7 +4337,7 @@ function appVersionTag(){ return t('footerTag')+' · v3.02.'+appBuildNumber(); }
    ensuite il s'affiche directement, sans aucun mouvement. Plus rien ne tourne en
    boucle. Restent les réponses à un geste (série validée, tour de chrono…). */
 const IK_TABS=['home','sport','stats','outils','profil'];
-const IK_GROUPS=[['.kbars-row','.kbar'],['.hv7-hero-week','.hv7-hw-bar b'],['.sp-rail','i'],['.bd-grid','.bd-cell'],['svg','.lc-dot']];
+const IK_GROUPS=[['.kbars-row','.kbar'],['.hw-days','.hw-bar b'],['.sp-rail','i'],['.bd-grid','.bd-cell'],['svg','.lc-dot']];
 let _ikPrevTab='home';
 const _ikSeenTabs=new Set();
 // Vrai la première fois que `key` est vu sur `el` depuis le lancement de l'app.
@@ -5109,7 +5109,14 @@ function nav(s){
   document.body.dataset.scr=s;
   $('#tbTitle').textContent=t(s);
   $('#tbSub').textContent= s==='home'?greet():subs[s];
-  const av=$('#tbAvatar'); if(av){ const ph=safePhotoUrl(P.photo); if(ph){ av.style.background="url('"+ph+"') center/cover"; av.textContent=''; } else { av.style.background='var(--ed)'; av.style.color='var(--e)'; av.style.fontWeight='800'; av.textContent=P.name?P.name[0].toUpperCase():'?'; } }
+  const av=$('#tbAvatar'); if(av){
+    // Initiale toujours présente sur un cercle en dégradé (CSS #tbAvatar) ; la photo
+    // éventuelle se pose par-dessus et se retire si elle ne charge pas — avant, une
+    // photo cassée laissait un carré vide qui ressemblait à un bug (retour du 26/09).
+    const ph=safePhotoUrl(P.photo); av.removeAttribute('style'); av.setAttribute('aria-label',t('profil'));
+    av.textContent=((P.name||'').trim().charAt(0)||'?').toUpperCase();
+    if(ph){ const im=document.createElement('img'); im.alt=''; im.onerror=()=>im.remove(); im.src=ph; av.appendChild(im); }
+  }
   $('#scroll').scrollTop=0;
   const navElReset=document.getElementById('nav'); if(navElReset) navElReset.classList.remove('nav-hidden');
   if(s==='home') renderHome();
@@ -5545,7 +5552,7 @@ const TOUR_STEPS=[
   { key:'welcome' },
   { key:'home', page:'home', sel:()=>P.easyMode?'#s-home .ik-greet':'#s-home .hv7-greet' },
   { key:'loop', page:'home' },
-  { key:'sport', page:'sport', sel:['#tourPlanCta','#s-sport .sp-plan','#s-sport .pills'] },
+  { key:'sport', page:'sport', sel:['#tourPlanCta','#s-sport .sp-plan','#s-sport .seg-ctrl'] },
   { key:'adapt', page:'sport' },
   { key:'stats', page:'stats', sel:()=>P.easyMode?'#s-stats .stat-quatro':'#s-stats .seg-ctrl' },
   // L'onglet Outils est masqué en mode simplifié : on n'y emmène donc personne.
@@ -7930,30 +7937,86 @@ function fmt1(v){ const n=Number(v); return (v!==''&&v!=null&&isFinite(n))?n.toL
 // 7 barres de charge quotidienne de la semaine. Les jours déjà courus sont pleins ; les jours
 // à venir affichent en creux la charge PRÉVUE par le plan, pour que la semaine se lise en
 // entier et pas seulement dans sa partie écoulée. Le jour courant est mis en avant.
+// Type de séance d'une sortie enregistrée → type de base du plan (pour sa couleur de zone).
+function baseTypeOfRun(r){
+  if(r&&r.sessRef!=null&&PLAN&&PLAN.sessions){ const p=PLAN.sessions.find(x=>x.id===r.sessRef); if(p&&p.baseType) return p.baseType; }
+  const ty=String((r&&r.type)||'').toLowerCase();
+  if(/vma|interv|fraction|vo2|côte|cote/.test(ty)) return 'VMAc';
+  if(/seuil/.test(ty)) return 'SEUIL';
+  if(/tempo|fartlek|progress/.test(ty)) return 'TEMPO';
+  if(/long/.test(ty)) return 'LONG';
+  if(/r[ée]cup/.test(ty)) return 'RECUP';
+  return 'EF';
+}
+// Km prévus par le plan pour la semaine calendaire en cours (même total que Sport).
+function weekPlannedKm(){
+  if(!PLAN||!PLAN.sessions) return 0;
+  const ws=weekStart(), we=new Date(ws); we.setDate(ws.getDate()+7);
+  const a=dateKey(ws), b=dateKey(we);
+  return Math.round(PLAN.sessions.filter(x=>x.date>=a && x.date<b && x.km>0 && x.type!=='Repos').reduce((acc,x)=>acc+x.km,0));
+}
+// Semaine L→D (retour du 26/09) : hauteur = km, couleur = zone du type de séance,
+// trois états lisibles — fait (plein), prévu (contour), manqué (hachuré rouge) —
+// plus la muscu (petite barre neutre) et le repos (point).
 function homeWeekBarsHTML(){
-  const ws=weekStart(), dowLabels=t('dowShort').split(','), tk=todayKey();
-  const EFFORT_TYPES=['Tempo','Seuil','VMA','Intervalle'];
-  const week=[];
+  const ws=weekStart(), dow=t('dowShort').split(','), tk=todayKey();
+  const planBy={};
+  if(PLAN&&PLAN.sessions) PLAN.sessions.forEach(p=>{ if(p.km>0 && p.type!=='Repos') planBy[p.date]=p; });
+  const days=[];
   for(let i=0;i<7;i++){
     const d=new Date(ws); d.setDate(ws.getDate()+i); const k=dateKey(d);
-    const daySess=[...SESS,...MSESS].filter(s=>s.date===k);
-    let km=daySess.reduce((a,s)=>a+(s.km||0),0);
-    let effort=daySess.some(s=>EFFORT_TYPES.includes(s.type)), planned=false;
-    if(!km && PLAN && PLAN.sessions){
-      const p=PLAN.sessions.find(s=>s.date===k && s.km>0 && s.type!=='Repos' && !s.missed);
-      if(p){ km=p.km; effort=HARD_TYPES.includes(p.baseType); planned=true; }
-    }
-    week.push({k,km,effort,planned});
+    const runs=SESS.filter(x=>x.date===k), gym=MSESS.some(x=>x.date===k), p=planBy[k];
+    const km=runs.reduce((a,x)=>a+(+x.km||0),0);
+    let state='rest', val=0, bt=null;
+    if(km>0){ state='done'; val=km; bt=baseTypeOfRun(runs.slice().sort((x,y)=>(+y.km||0)-(+x.km||0))[0]); }
+    else if(p && p.done){ state='done'; val=p.km; bt=p.baseType; }
+    else if(p){ state=(p.missed||k<tk)?'missed':'plan'; val=p.km; bt=p.baseType; }
+    else if(gym){ state='gym'; }
+    days.push({state,val,bt,today:k===tk});
   }
-  const maxDay=Math.max(1,...week.map(w=>w.km));
-  let bars='';
-  week.forEach((w,i)=>{
-    const isToday=w.k===tk;
-    const cls=isToday?'now':(w.planned?'plan':(w.effort?'effort':'done'));
-    const inner=w.km>0?'<b class="'+cls+'" style="height:'+Math.max(12,Math.round(w.km/maxDay*100))+'%"></b>':'';
-    bars+='<div class="hv7-hw-day'+(isToday?' today':'')+'"><div class="hv7-hw-bar">'+inner+'</div><span class="hv7-hw-lab">'+dowLabels[i]+'</span></div>';
-  });
-  return '<div class="hv7-hero-week">'+bars+'</div>';
+  const max=Math.max(1,...days.map(d=>d.val));
+  const bars=days.map((d,i)=>{
+    let bar;
+    if(d.state==='rest') bar='<i class="hw-rest"></i>';
+    else if(d.state==='gym') bar='<b class="hw-gym"></b>';
+    else bar='<b class="hw-'+d.state+'" style="height:'+Math.max(16,Math.round(d.val/max*100))+'%;--zc:'+(d.bt?baseTypeColor(d.bt):'var(--e)')+'"></b>';
+    return '<div class="hw-day'+(d.today?' today':'')+'"><div class="hw-bar">'+bar+'</div><span class="hw-dl">'+escHtml(dow[i]||'')+'</span><span class="hw-km">'+(d.val>0?hKm(d.val):'')+'</span></div>';
+  }).join('');
+  return '<div class="hw-week"><div class="hw-days">'+bars+'</div>'+
+    '<div class="hw-legend"><span><i class="lg-done"></i>'+t('wkDone')+'</span><span><i class="lg-plan"></i>'+t('wkPlanned')+'</span><span><i class="lg-miss"></i>'+t('wkMissed')+'</span></div></div>';
+}
+// Cibles de la carte du jour (km, allure en mono, RPE ou durée).
+function homeTargetsHTML(x){
+  const cells=[];
+  if(x.km) cells.push([hKm(x.km),'km']);
+  if(x.pace) cells.push([x.pace,'/km',1]);
+  if(x.rpe) cells.push([x.rpe+'/10',t('rpeShort')]);
+  else if(x.duration) cells.push([x.duration,'min']);
+  return cells.length?'<div class="hv7-day-targets">'+cells.map(c=>'<div><b'+(c[2]?' class="mono"':'')+'>'+escHtml(String(c[0]))+'</b><span>'+escHtml(String(c[1]))+'</span></div>').join('')+'</div>':'';
+}
+// COMPTE À REBOURS (retour du 26/09) : la course visée, l'info la plus motivante,
+// était cachée dans Sport. Elle ouvre maintenant l'accueil : J-26, course, date,
+// objectif, frise des phases du plan.
+function homeRaceHeroHTML(){
+  if(!P.compDate) return '';
+  const tk=todayKey(), comp=new Date(P.compDate+'T00:00:00'), today=new Date(tk+'T00:00:00');
+  const daysLeft=Math.round((comp-today)/86400000);
+  if(!(daysLeft>=0)) return '';
+  const race=trRace(P.objRace)||t('courseDefault');
+  let rail='', cap='';
+  if(PLAN&&PLAN.sessions&&PLAN.sessions.length){
+    const cur=PLAN.sessions.find(x=>x.date===tk)||PLAN.sessions.find(x=>x.date>=tk)||PLAN.sessions[PLAN.sessions.length-1];
+    const byPhase=[];
+    PLAN.sessions.forEach(x=>{ const l=byPhase[byPhase.length-1]; if(!l||l.key!==x.phaseKey) byPhase.push({key:x.phaseKey,weeks:new Set([x.week])}); else l.weeks.add(x.week); });
+    const ci=byPhase.findIndex(p=>p.weeks.has(cur.week));
+    rail='<div class="sp-rail">'+byPhase.map((p,i)=>'<i class="'+(i<ci?'past':(i===ci?'now':''))+'" style="flex:'+p.weeks.size+';color:'+phaseColor(p.key)+'"></i>').join('')+'</div>';
+    cap=tp('weekOf',cur.week,PLAN.weeks)+', '+phaseName(cur.phaseKey);
+  }
+  return '<div class="hv7-race" onclick="nav(\'sport\')">'+
+    '<div class="hv7-race-top"><div class="hv7-race-count">'+escHtml(daysLeft===0?t('raceDayLab'):tp('raceCountdown',daysLeft))+'</div>'+
+    '<div class="hv7-race-info"><b>'+escHtml(race)+'</b><span>'+escHtml(fmtDate(P.compDate))+(P.objTime?' · '+escHtml(P.objTime):'')+'</span></div></div>'+
+    rail+(cap?'<div class="hv7-race-cap">'+escHtml(cap)+'</div>':'')+
+  '</div>';
 }
 // Les n prochaines vraies séances du plan (hors repos), strictement après aujourd'hui.
 function homeNextRows(n){
@@ -8023,10 +8086,8 @@ function renderHome(){
   } else {
     sub=P.objTime?tp('quipTime',escHtml(P.objTime)):(P.goal?tp('quipGoal',escHtml(P.goal)):t('quipDefault'));
   }
-  {
-    const streak=streakDays();
-    if(streak>=2) sub+=' · '+tp('streakDaysShort',streak);
-  }
+  const raceHero=homeRaceHeroHTML();
+  if(raceHero){ const dRaw=new Date().toLocaleDateString(localeCode(),{weekday:'long',day:'numeric',month:'long'}); sub=escHtml(dRaw.charAt(0).toUpperCase()+dRaw.slice(1)); }
   html+='<div class="hv7-greet"><h1>'+t('greet')+' '+escHtml(first||t('you'))+'</h1><p>'+sub+'</p></div>';
 
   // SCORE DE LA SEMAINE — anneau + quip + serie, inspire de l'ecran d'accueil
@@ -8036,7 +8097,9 @@ function renderHome(){
   // un orange fige) plutot qu'une reprise a l'identique. `form`/`kmW` sont
   // deja calcules plus haut ; homeLoadQuip() et homeStreakBadge() existaient
   // deja mais n'etaient utilises qu'en mode simplifie.
-  html+='<div class="hv7-score">'+
+  // COMPTE À REBOURS — l'objectif en tête (retour du 26/09) ; sans course datée, le score.
+  if(raceHero) html+=raceHero;
+  else html+='<div class="hv7-score">'+
     '<div class="hv7-score-ring">'+ringSVG(64,form,7,'var(--e)')+'<div class="val">'+form+'%</div></div>'+
     '<div class="hv7-score-txt"><div class="hv7-score-lab">'+t('homeScoreLab')+'</div>'+
     '<div class="hv7-score-quip">'+escHtml(homeLoadQuip(kmW))+'</div>'+
@@ -8052,17 +8115,12 @@ function renderHome(){
       const dt=isPerso?null:liveDetail(ps);
       const why=(dt&&dt.objectif)?dt.objectif:'';
       const open=isPerso?("curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')"):('openRunSheet('+ps.id+')');
-      html+='<div class="hv7-day" onclick="'+open+'">'+
-        '<div class="hv7-day-top">'+(lab?'<span class="hv7-day-chip" style="color:'+col+'">'+escHtml(lab)+'</span>':'<span></span>')+
+      html+='<div class="hv7-day" style="--zc:'+col+'" onclick="'+open+'"><i class="hv7-zone" aria-hidden="true"></i>'+
+        '<div class="hv7-day-top">'+(lab?'<span class="hv7-day-chip" style="color:'+col+'"><i class="zdot"></i>'+escHtml(lab)+'</span>':'<span></span>')+
           '<span class="hv7-day-when">'+t('today')+' · '+escHtml(wdShort)+'</span></div>'+
         '<div class="hv7-day-title">'+escHtml(isPerso?(ps.title||''):planSessTitle(ps))+'</div>'+
         (why?'<div class="hv7-day-why">'+escHtml(why)+'</div>':'');
-      const cells=[];
-      if(ps.km) cells.push([hKm(ps.km),'km']);
-      if(ps.pace) cells.push([ps.pace,'/km']);
-      if(ps.rpe) cells.push([ps.rpe+'/10',t('rpeShort')]);
-      else if(ps.duration) cells.push([ps.duration,'min']);
-      if(cells.length) html+='<div class="hv7-day-targets">'+cells.map(c=>'<div><b>'+escHtml(String(c[0]))+'</b><span>'+escHtml(String(c[1]))+'</span></div>').join('')+'</div>';
+      html+=homeTargetsHTML(ps);
       if(ps.done) html+='<div class="hv7-day-state ok">'+t('sessionCompleted')+'</div>';
       else if(ps.missed) html+='<div class="hv7-day-state ko">'+t('missedTag')+'</div>';
       else if(!isPerso) html+='<div class="hv7-day-acts" onclick="event.stopPropagation()">'+
@@ -8070,13 +8128,27 @@ function renderHome(){
           '<button class="hv7-act ghost" onclick="homeSessMissed('+ps.id+')">'+t('notDone')+'</button></div>';
       html+='</div>';
     } else if(ps || PLAN){
+      // Jour de repos (retour du 26/09) : plutôt qu'un bloc presque vide, la grande
+      // carte montre directement la prochaine séance, étiquetée « Jour de repos · Demain ».
       const nxt=homeNextUpcoming();
-      html+='<div class="hv7-day" onclick="nav(\'sport\')">'+
-        '<div class="hv7-day-top"><span class="hv7-day-chip" style="color:var(--dim)">'+escHtml(t('restTag').toUpperCase())+'</span>'+
-          '<span class="hv7-day-when">'+t('today')+' · '+escHtml(wdShort)+'</span></div>'+
-        '<div class="hv7-day-title">'+t('restDay')+'</div>'+
-        '<div class="hv7-day-why">'+(nxt?tp('nextSessionMeta',nxt.label):t('noSessionToday'))+'</div>'+
-      '</div>';
+      if(nxt){
+        const ns=nxt.session, ncol=baseTypeColor(ns.baseType), ndt=liveDetail(ns), nwhy=(ndt&&ndt.objectif)?ndt.objectif:'';
+        const when=nxt.label.charAt(0).toUpperCase()+nxt.label.slice(1);
+        html+='<div class="hv7-day" style="--zc:'+ncol+'" onclick="openRunSheet('+ns.id+')"><i class="hv7-zone" aria-hidden="true"></i>'+
+          '<div class="hv7-day-top"><span class="hv7-day-chip" style="color:var(--muted)">'+escHtml(t('restDay').toUpperCase())+'</span>'+
+            '<span class="hv7-day-when" style="color:'+ncol+'">'+escHtml(when)+'</span></div>'+
+          '<div class="hv7-day-title">'+escHtml(planSessTitle(ns))+'</div>'+
+          (nwhy?'<div class="hv7-day-why">'+escHtml(nwhy)+'</div>':'')+
+          homeTargetsHTML(ns)+
+        '</div>';
+      } else {
+        html+='<div class="hv7-day" onclick="nav(\'sport\')">'+
+          '<div class="hv7-day-top"><span class="hv7-day-chip" style="color:var(--dim)">'+escHtml(t('restTag').toUpperCase())+'</span>'+
+            '<span class="hv7-day-when">'+t('today')+' · '+escHtml(wdShort)+'</span></div>'+
+          '<div class="hv7-day-title">'+t('restDay')+'</div>'+
+          '<div class="hv7-day-why">'+t('noSessionToday')+'</div>'+
+        '</div>';
+      }
     } else {
       html+='<div class="hv7-day" onclick="nav(\'sport\');openPlanSetup()">'+
         '<div class="hv7-day-top"><span class="hv7-day-chip" style="color:var(--e2)">IKORUN</span>'+
@@ -8091,11 +8163,14 @@ function renderHome(){
   // SEMAINE COMPACTE — 7 barres de charge, jour courant repéré
   html+=homeWeekBarsHTML();
 
-  // 3 TUILES — volume de la semaine, séances faites sur l'objectif, VDOT courant
+  // 3 TUILES — km faits sur km prévus (le même « prévu » que Sport : avant, l'accueil
+  // disait « 10 km sem. » et Sport « 57 km charge hebdo » sans préciser fait/prévu),
+  // séances, série en cours. La VDOT n'est plus répétée ici (Sport, Stats, Profil).
+  const plannedW=weekPlannedKm(), streakN=streakDays();
   html+='<div class="hv7-krow3" onclick="nav(\'stats\')">'+
-    '<div class="hv7-ktile"><div class="hv7-ktile-val">'+hKm(kmW)+'</div><div class="hv7-ktile-lab">'+t('kmWeekShort')+'</div></div>'+
+    '<div class="hv7-ktile"><div class="hv7-ktile-val">'+hKm(kmW)+(plannedW?'<small> / '+hKm(plannedW)+'</small>':'')+'</div><div class="hv7-ktile-lab">'+(plannedW?t('kmDonePlannedLab'):t('kmWeekShort'))+'</div></div>'+
     '<div class="hv7-ktile"><div class="hv7-ktile-val">'+sessW+'/'+sessTarget+'</div><div class="hv7-ktile-lab">'+t('sessionsLab')+'</div></div>'+
-    '<div class="hv7-ktile"><div class="hv7-ktile-val">'+(vdot?fmt1(vdot):'—')+'</div><div class="hv7-ktile-lab">VDOT</div></div>'+
+    '<div class="hv7-ktile"><div class="hv7-ktile-val">'+streakN+'</div><div class="hv7-ktile-lab">'+t(streakN===1?'streakTileLab1':'streakTileLab')+'</div></div>'+
   '</div>';
 
   // RECORDS PERSO — homePBRow() existait deja (comme homeGoalCard/homeLoadQuip/
@@ -8205,7 +8280,7 @@ function planHeroHTML(){
   h+='<div class="sp-rail-lab"><b>'+phaseName(curSess.phaseKey)+'</b><span>'+tp('weekOf',curWeekNum,PLAN.weeks)+'</span></div>';
   h+='<div class="sp-metrics">'+
     '<div><b>'+(isFinite(+curVdot)&&curVdot!==''?fmt1(curVdot):curVdot)+(vdotDelta?' <span class="sp-delta '+(vdotDelta>0?'up':'down')+'">'+(vdotDelta>0?'+':'')+vdotDelta+'</span>':'')+'</b><span>VDOT</span></div>'+
-    '<div><b>'+curKm+' km'+(kmDelta!==null?' <span class="sp-delta '+(kmDelta>=0?'up':'down')+'">'+(kmDelta>=0?'+':'')+kmDelta+'%</span>':'')+'</b><span>'+t('weeklyLoad')+'</span></div>'+
+    '<div><b>'+curKm+' km'+(kmDelta!==null?' <span class="sp-delta '+(kmDelta>=0?'up':'down')+'">'+(kmDelta>=0?'+':'')+kmDelta+'%</span>':'')+'</b><span>'+t('plannedThisWeek')+'</span></div>'+
     '<div><b>'+doneW+'/'+realW.length+'</b><span>'+t('sessionsCap')+'</span></div>'+
     '</div>';
   h+='<div class="sp-acts"><button onclick="openFullPlan()">'+t('seePlan')+'</button>'+
@@ -8214,7 +8289,7 @@ function planHeroHTML(){
   return h;
 }
 function renderRunning(){
-  let h='<div class="pills sub" style="margin-bottom:14px"><div class="pill '+(runSub==='ia'?'on':'')+'" onclick="runSub=\'ia\';renderSport()">'+t('planIkorunPill')+'</div><div class="pill '+(runSub==='perso'?'on':'')+'" onclick="runSub=\'perso\';renderSport()">'+t('myPlanPill')+'</div></div>';
+  let h='<div class="seg-ctrl sub"><div class="seg-btn'+(runSub==='ia'?' on':'')+'" onclick="runSub=\'ia\';renderSport()">'+t('planIkorunPill')+'</div><div class="seg-btn'+(runSub==='perso'?' on':'')+'" onclick="runSub=\'perso\';renderSport()">'+t('myPlanPill')+'</div></div>';
   if(runSub==='ia'){
     if(!PLAN){
       h+='<div class="card" id="tourPlanCta"><div class="empty"><div class="em-ic">'+ICN('bolt',36,'currentColor')+'</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">'+t('planIkorunTitle')+'</div><div style="font-size:13px;margin-bottom:16px">'+tp('planIkorunDescLong',(getUserVDOT()||t('vdotToBeCalculated')))+'</div><button class="btn" onclick="openPlanSetup()">'+t('configureGenerate')+'</button></div></div>';
@@ -8296,9 +8371,9 @@ function renderSport(){
   $('#tbTitle').textContent = sportView==='calendar' ? t('calendarTitle') : t('sport');
   $('#tbSub').textContent = sportView==='calendar' ? t('calendarSub') : t('sub_sport');
   if(sportView==='calendar'){ swapIn('s-sport',renderCalendarView()); return; }
-  let h='<div class="row" style="gap:8px;margin:6px 0 16px">'+
-    '<div class="pills" style="flex:1;margin:0"><div class="pill '+(sportTab==='run'?'on':'')+'" onclick="sportTab=\'run\';curPerso=null;renderSport()">'+t('running')+'</div><div class="pill '+(sportTab==='muscu'?'on':'')+'" onclick="sportTab=\'muscu\';renderSport()">'+t('muscu')+'</div></div>'+
-    '<div class="tb-gear" style="flex-shrink:0" onclick="sportView=\'calendar\';renderSport()">'+ICN('calendar',17)+'</div></div>';
+  let h='<div class="seg-row">'+
+    '<div class="seg-ctrl"><div class="seg-btn'+(sportTab==='run'?' on':'')+'" onclick="sportTab=\'run\';curPerso=null;renderSport()">'+t('running')+'</div><div class="seg-btn'+(sportTab==='muscu'?' on':'')+'" onclick="sportTab=\'muscu\';renderSport()">'+t('muscu')+'</div></div>'+
+    '<button type="button" class="tb-gear" aria-label="'+t('calendarTitle')+'" onclick="sportView=\'calendar\';renderSport()">'+ICN('calendar',17)+'</button></div>';
   if(P.easyMode){
     h += sportTab==='run' ? renderRunningSimple() : renderMuscu();
     $('#s-sport').innerHTML=h; return;
@@ -9831,7 +9906,7 @@ function renderCreate(){
   h+='<div class="lab" style="margin:10px 0 8px">'+tp('exercisesCountLab',newProg.ex.length)+'</div>';
   if(!newProg.ex.length) h+='<div class="tip" style="margin-bottom:12px">'+t('addExFromLib')+'</div>';
   newProg.ex.forEach((e,i)=>{
-    h+='<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:8px"><span style="font-size:22px">'+e.anim+'</span><div><div style="font-weight:700;font-size:14px">'+escHtml(e.name)+'</div><div class="mono" style="font-size:12px;color:var(--e)">'+e.sets+'×'+e.reps+(e.rest?' · '+e.rest+'s':'')+'</div></div></div><button class="x" onclick="newProg.ex.splice('+i+',1);renderCreate()">'+ICN('trash',16)+'</button></div></div>';
+    h+='<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:8px"><span style="font-size:22px">'+e.anim+'</span><div><div style="font-weight:700;font-size:14px">'+escHtml(e.name)+'</div><div class="num" style="font-size:12px;color:var(--e)">'+e.sets+'×'+e.reps+(e.rest?' · '+e.rest+'s':'')+'</div></div></div><button class="x" onclick="newProg.ex.splice('+i+',1);renderCreate()">'+ICN('trash',16)+'</button></div></div>';
   });
   h+='<button class="btn ghost" style="margin-bottom:12px" onclick="openLibFor(addToNewProg)">'+t('addFromLibBtn')+'</button>';
   h+='<button class="btn" onclick="saveNewProg()">'+t('saveProgramBtn')+'</button>';
@@ -10154,7 +10229,7 @@ function statsBilan(){
   '</div>';
   if(typeSegs[0].ty!=='—'){
     h+='<div class="card"><div class="card-t">'+cardIcon('chart','var(--e)')+t('detailByType')+'</div>'+
-      typeSegs.sort((a,b)=>b.ct-a.ct).map(s=>'<div class="row" style="gap:8px;margin-bottom:6px"><span class="zdot" style="background:'+s.color+'"></span><span style="flex:1;font-size:12.5px;font-weight:600">'+trSessType(s.ty)+'</span><span class="mono" style="font-size:12px;color:var(--muted)">'+s.ct+' · '+Math.round(s.ct/periodSess.length*100)+'%</span></div>').join('')+
+      typeSegs.sort((a,b)=>b.ct-a.ct).map(s=>'<div class="row" style="gap:8px;margin-bottom:6px"><span class="zdot" style="background:'+s.color+'"></span><span style="flex:1;font-size:12.5px;font-weight:600">'+trSessType(s.ty)+'</span><span class="num" style="font-size:12px;color:var(--muted)">'+s.ct+' · '+Math.round(s.ct/periodSess.length*100)+'%</span></div>').join('')+
     '</div>';
   }
 
@@ -10181,7 +10256,7 @@ function statsRun(){
   if(vdot){
     const zones=[['EF',.70,'--ok'],['Tempo',.83,'--warn'],['Seuil',.88,'--or'],['VMA',.97,'--bad'],['Sprint',1.05,'--maitre']];
     h+='<div class="card"><div class="card-t">'+t('paceZones')+'</div>';
-    zones.forEach(z=>{ h+='<div class="zrow"><span class="zdot" style="background:var('+z[2]+')"></span><span class="zname">'+z[0]+'</span><span class="zval">'+spkToStr(paceFromPct(vdot,z[1]))+' /km</span></div>'; });
+    zones.forEach(z=>{ h+='<div class="zrow"><span class="zdot" style="background:var('+z[2]+')"></span><span class="zname">'+z[0]+'</span><span class="zval mono">'+spkToStr(paceFromPct(vdot,z[1]))+' /km</span></div>'; });
     h+='</div>';
     // predictions
     const dists=[['1500m',1500],['3000m',3000],['5000m',5000],['10km',10000],['Semi',21097],['Marathon',42195]];
@@ -10222,7 +10297,7 @@ function formChart(){
 let muscuBilanPeriod='week';
 function statsMuscu(){
   const pr=MSESS.reduce((a,s)=>Math.max(a,s.tonnage||0),0);
-  let h='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+MSESS.length+'</div><div class="l">'+t('sessionsCap')+'</div></div><div class="sbox"><div class="v">'+(totalTonnage()/1000).toFixed(1)+'t</div><div class="l">'+t('tonnageLab')+'</div></div><div class="sbox"><div class="v">'+Math.round(pr)+'</div><div class="l">'+t('prPerSession')+'</div></div><div class="sbox"><div class="v">'+MSESS.reduce((a,s)=>a+(s.sets||0),0)+'</div><div class="l">'+t('totalSets')+'</div></div></div>';
+  let h='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+MSESS.length+'</div><div class="l">'+t('sessionsCap')+'</div></div><div class="sbox"><div class="v">'+fmt1(totalTonnage()/1000)+' t</div><div class="l">'+t('tonnageLab')+'</div></div><div class="sbox"><div class="v">'+(pr?fmt1(pr/1000)+' t':'—')+'</div><div class="l">'+t('prPerSession')+'</div></div><div class="sbox"><div class="v">'+MSESS.reduce((a,s)=>a+(s.sets||0),0)+'</div><div class="l">'+t('totalSets')+'</div></div></div>';
   if(!MSESS.length){ h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('dumbbell',36,'currentColor')+'</div><div style="font-size:13px">'+t('startFirstMuscu')+'</div></div></div>'; return h; }
 
   // BILAN DE PROGRESSION — même structure que l'onglet Bilan course (chiffre
@@ -10289,12 +10364,12 @@ function statsMuscu(){
   '</div>';
   if(progSegs[0].ty!=='—'){
     h+='<div class="card"><div class="card-t">'+cardIcon('chart','var(--e)')+t('detailByProgram')+'</div>'+
-      progSegs.sort((a,b)=>b.ct-a.ct).map(s=>'<div class="row" style="gap:8px;margin-bottom:6px"><span class="zdot" style="background:'+s.color+'"></span><span style="flex:1;font-size:12.5px;font-weight:600">'+escHtml(s.ty)+'</span><span class="mono" style="font-size:12px;color:var(--muted)">'+s.ct+' · '+Math.round(s.ct/periodSessM.length*100)+'%</span></div>').join('')+
+      progSegs.sort((a,b)=>b.ct-a.ct).map(s=>'<div class="row" style="gap:8px;margin-bottom:6px"><span class="zdot" style="background:'+s.color+'"></span><span style="flex:1;font-size:12.5px;font-weight:600">'+escHtml(s.ty)+'</span><span class="num" style="font-size:12px;color:var(--muted)">'+s.ct+' · '+Math.round(s.ct/periodSessM.length*100)+'%</span></div>').join('')+
     '</div>';
   }
 
   h+=bodyHeatmapCard();
-  h+='<div class="card"><div class="card-t">'+t('lastSessions')+'</div>'+MSESS.slice(-6).reverse().map(s=>'<div class="zrow"><div><div class="zname">'+escHtml(s.progName||'')+'</div><div style="font-size:11px;color:var(--dim)">'+fmtDate(s.date)+'</div></div><span class="zval mono">'+Math.round(s.tonnage)+' kg</span></div>').join('')+'</div>';
+  h+='<div class="card"><div class="card-t">'+t('lastSessions')+'</div>'+MSESS.slice(-6).reverse().map(s=>'<div class="zrow"><div><div class="zname">'+escHtml(s.progName||'')+'</div><div style="font-size:11px;color:var(--dim)">'+fmtDate(s.date)+'</div></div><span class="zval">'+Math.round(s.tonnage)+' kg</span></div>').join('')+'</div>';
   return h;
 }
 /* ============ BADGES TROPHÉES (Accomplissement / Performance) ============
@@ -10475,12 +10550,15 @@ function achievementsGridHTML(){
   const cats=['Accomplissement','Performance'];
   const unlockedCount=ACHIEVEMENTS.filter(achievementUnlocked).length;
   const years=achYears();
-  let h='<div class="card"><div class="row" style="margin-bottom:6px"><span class="card-t" style="margin:0">'+ICN('medal',15,'var(--e)')+t('tabTrophies')+'</span><span style="font-size:12px;color:var(--muted)">'+unlockedCount+' / '+ACHIEVEMENTS.length+'</span></div>'
+  const _dates=achDates();
+  const yearCount=achYearFilter==='toutes'?0:ACHIEVEMENTS.filter(a=>achievementUnlocked(a)&&+String(_dates[a.key]||'').slice(0,4)===achYearFilter).length;
+  const counter=achYearFilter==='toutes'?(unlockedCount+' / '+ACHIEVEMENTS.length):tp('trophiesInYear',yearCount,achYearFilter);
+  let h='<div class="card"><div class="row" style="margin-bottom:6px"><span class="card-t" style="margin:0">'+ICN('medal',15,'var(--e)')+t('tabTrophies')+'</span><span style="font-size:12px;color:var(--muted)">'+counter+'</span></div>'
     +'<div style="font-size:11px;color:var(--dim);margin-bottom:8px">'+t('tapTrophyHint')+'</div>';
   if(years.length){
-    h+='<div class="pills" style="margin-bottom:10px">'
-      +'<div class="pill '+(achYearFilter==='toutes'?'on':'')+'" onclick="achYearFilter=\'toutes\';renderStats()">'+t('allYearsLab')+'</div>'
-      +years.map(y=>'<div class="pill '+(achYearFilter===y?'on':'')+'" onclick="achYearFilter='+y+';renderStats()">'+y+'</div>').join('')
+    h+='<div class="seg-ctrl sub">'
+      +'<div class="seg-btn'+(achYearFilter==='toutes'?' on':'')+'" onclick="achYearFilter=\'toutes\';renderStats()">'+t('allYearsLab')+'</div>'
+      +years.map(y=>'<div class="seg-btn'+(achYearFilter===y?' on':'')+'" onclick="achYearFilter='+y+';renderStats()">'+y+'</div>').join('')
       +'</div>';
   }
   const dates=achDates();
@@ -10488,7 +10566,7 @@ function achievementsGridHTML(){
     let items=ACHIEVEMENTS.filter(a=>a.cat===cat);
     if(achYearFilter!=='toutes') items=items.filter(a=>achievementUnlocked(a) && +String(dates[a.key]||'').slice(0,4)===achYearFilter);
     if(!items.length) return;
-    h+='<div style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.5px;margin:14px 0 8px">'+catLabel(cat).toUpperCase()+'</div><div class="bd-grid">';
+    h+='<div style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.5px;margin:14px 0 8px">'+catLabel(cat).toUpperCase()+(achYearFilter==='toutes'?' · '+ACHIEVEMENTS.filter(a=>a.cat===cat&&achievementUnlocked(a)).length+'/'+ACHIEVEMENTS.filter(a=>a.cat===cat).length:'')+'</div><div class="bd-grid">';
     items.forEach(a=>{
       const on=achievementUnlocked(a);
       h+='<div class="bd-cell" onclick="openAchQuick(\''+a.key+'\')">'
@@ -10763,14 +10841,12 @@ function openTool(k){
   renderOutils(); $('#scroll').scrollTop=0;
 }
 function bindToolSearch(){ const si=$('#toolSearchInp'); if(si){ si.oninput=()=>{ toolSearch=si.value; $('#s-outils').innerHTML=outilsHome(); bindToolSearch(); const el=$('#toolSearchInp'); el.focus(); el.setSelectionRange(toolSearch.length,toolSearch.length); }; } }
-// VDOT badge réutilisable
-function vdotBadge(){ const v=getUserVDOT()?fmt1(getUserVDOT()):'—'; return '<div onclick="openTool(\'vdot\')" style="width:48px;height:48px;flex-shrink:0;border-radius:50%;border:2px solid var(--e);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:var(--ed)"><div class="mono" style="font-weight:800;font-size:15px;color:var(--e2);line-height:1">'+v+'</div><div style="font-size:9px;color:var(--muted);letter-spacing:.3px;margin-top:1px">VDOT</div></div>'; }
 function outilsHome(){
-  // La pastille VDOT occupait seule une rangée vide : elle se range à côté de la recherche.
+  // La VDOT est affichée dans Sport, Stats et Profil : plus de pastille ici (retour du 26/09).
   let h='';
   // Raccourcis rapides Chrono + Minuteur
   h+='<div style="display:flex;gap:10px;margin-bottom:16px"><div class="card" style="flex:1;padding:14px;margin:0;cursor:pointer;text-align:center" onclick="openTool(\'chrono\')"><div style="color:var(--e);display:flex;justify-content:center">'+ICN('stopwatch',26)+'</div><div style="font-weight:700;font-size:13px;margin-top:6px">'+t('toolChronoName')+'</div></div><div class="card" style="flex:1;padding:14px;margin:0;cursor:pointer;text-align:center" onclick="openQuickTimer()"><div style="color:var(--warn);display:flex;justify-content:center">'+ICN('timer',26)+'</div><div style="font-weight:700;font-size:13px;margin-top:6px">'+t('quickTimer')+'</div></div></div>';
-  h+='<div style="display:flex;gap:10px;align-items:center"><div class="searchbox" style="flex:1;min-width:0"><span class="searchic">'+ICN('search',18,'var(--muted)')+'</span><input class="inp" id="toolSearchInp" style="padding-left:42px" placeholder="'+t('searchTool')+'" value="'+escHtml(toolSearch||'')+'"></div>'+vdotBadge()+'</div>';
+  h+='<div style="display:flex;gap:10px;align-items:center"><div class="searchbox" style="flex:1;min-width:0"><span class="searchic">'+ICN('search',18,'var(--muted)')+'</span><input class="inp" id="toolSearchInp" style="padding-left:42px" placeholder="'+t('searchTool')+'" value="'+escHtml(toolSearch||'')+'"></div></div>';
   const q=toolSearch.toLowerCase().trim();
   if(q){
     const res=Object.entries(TOOLS).filter(([k,tl])=>tl.name.toLowerCase().includes(q));
@@ -10829,7 +10905,7 @@ function renderSanteTool(){
   const last=WEIGHTLOG[WEIGHTLOG.length-1], prev=WEIGHTLOG[WEIGHTLOG.length-2];
   const trend=last&&prev?(last.w-prev.w):0;
   h+='<div class="card"><div class="row"><div class="card-t" style="margin:0">'+t('weightLab')+'</div><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="addWeight()">'+t('addBtn')+'</span></div>';
-  h+='<div class="row" style="align-items:flex-end;margin-top:8px"><div class="man" style="font-size:36px;font-weight:800">'+(last?last.w:w)+'<span style="font-size:16px;color:var(--muted)"> kg</span></div>'+(trend?'<span class="mono" style="margin-left:10px;color:'+(trend<0?'var(--ok)':'var(--warn)')+'">'+(trend>0?'▲ +':'▼ ')+trend.toFixed(1)+' kg</span>':'')+'</div>';
+  h+='<div class="row" style="align-items:flex-end;margin-top:8px"><div class="man" style="font-size:36px;font-weight:800">'+(last?last.w:w)+'<span style="font-size:16px;color:var(--muted)"> kg</span></div>'+(trend?'<span class="num" style="margin-left:10px;color:'+(trend<0?'var(--ok)':'var(--warn)')+'">'+(trend>0?'▲ +':'▼ ')+trend.toFixed(1)+' kg</span>':'')+'</div>';
   if(WEIGHTLOG.length>=2) h+='<div style="margin-top:12px">'+weightSparkline()+'</div>';
   h+='</div>';
   // IMC
@@ -10941,7 +11017,7 @@ function renderVDOTtool(){
   let h='<div class="card" style="text-align:center"><div class="man" style="font-size:48px;font-weight:800;color:var(--e)">'+(vdot?fmt1(vdot):'—')+'</div><div class="lab">'+t('vdotToolTitle')+'</div></div>';
   if(vdot){ const vo2=(vdot).toFixed(1);
     h+='<div class="card"><div class="card-t">'+t('physioEstimates')+'</div>'+
-      '<div class="zrow"><span class="zname">'+t('vo2maxEst')+'</span><span class="zval mono">'+vo2+' ml/kg/min</span></div>'+
+      '<div class="zrow"><span class="zname">'+t('vo2maxEst')+'</span><span class="zval">'+vo2+' ml/kg/min</span></div>'+
       '<div class="zrow"><span class="zname">'+t('thresholdPace')+'</span><span class="zval mono">'+spkToStr(paceFromPct(vdot,.88))+'/km</span></div>'+
       '<div class="zrow"><span class="zname">'+t('marathonPace')+'</span><span class="zval mono">'+spkToStr(paceFromPct(vdot,.80))+'/km</span></div>'+
       '<div class="zrow"><span class="zname">'+t('halfPace')+'</span><span class="zval mono">'+spkToStr(paceFromPct(vdot,.835))+'/km</span></div>'+
@@ -10956,7 +11032,7 @@ function renderRMtool(){
   let h='<div class="card"><div class="field"><label>'+t('liftedLoadKgLab')+'</label><div class="stepper"><button onclick="rmW=Math.max(0,rmW-2.5);renderRMtool()">−</button><span class="val">'+rmW+'</span><button onclick="rmW+=2.5;renderRMtool()">+</button></div></div>';
   h+='<div class="field"><label>'+t('repsLab')+'</label><div class="stepper"><button onclick="rmR=Math.max(1,rmR-1);renderRMtool()">−</button><span class="val">'+rmR+'</span><button onclick="rmR++;renderRMtool()">+</button></div></div></div>';
   h+='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var(--e)">'+rm+' kg</div><div class="lab">'+t('estimated1RMLab')+'</div></div>';
-  h+='<div class="card"><div class="card-t">'+t('percentOf1RMLab')+'</div>'+[[95,2],[90,4],[85,6],[80,8],[75,10],[70,12],[60,15]].map(x=>'<div class="zrow"><span class="zname">'+x[0]+'% · ~'+x[1]+' '+t('repsShort')+'</span><span class="zval mono">'+Math.round(rm*x[0]/100)+' kg</span></div>').join('')+'</div>';
+  h+='<div class="card"><div class="card-t">'+t('percentOf1RMLab')+'</div>'+[[95,2],[90,4],[85,6],[80,8],[75,10],[70,12],[60,15]].map(x=>'<div class="zrow"><span class="zname">'+x[0]+'% · ~'+x[1]+' '+t('repsShort')+'</span><span class="zval">'+Math.round(rm*x[0]/100)+' kg</span></div>').join('')+'</div>';
   $('#outBody').innerHTML=h;
 }
 let tonW=60,tonS=4,tonR=10;
@@ -10989,7 +11065,7 @@ function renderCaloriesTool(){
 }
 function renderHydraTool(){
   const w=P.weight||62; const daily=Math.round(w*35); const perH=Math.round(0.5*1000);
-  let h='<div class="card"><div class="card-t">'+t('waterNeedsTitle')+'</div><div class="zrow"><span class="zname">'+t('dailyRest')+'</span><span class="zval mono">'+(daily/1000).toFixed(1)+' L</span></div><div class="zrow"><span class="zname">'+t('perRunHour')+'</span><span class="zval mono">0,4–0,8 L</span></div><div class="zrow"><span class="zname">'+t('perHeatHour')+'</span><span class="zval mono">+0,3 L</span></div></div><div class="tip">'+t('hydraTip')+'</div>';
+  let h='<div class="card"><div class="card-t">'+t('waterNeedsTitle')+'</div><div class="zrow"><span class="zname">'+t('dailyRest')+'</span><span class="zval">'+(daily/1000).toFixed(1)+' L</span></div><div class="zrow"><span class="zname">'+t('perRunHour')+'</span><span class="zval">0,4–0,8 L</span></div><div class="zrow"><span class="zname">'+t('perHeatHour')+'</span><span class="zval">+0,3 L</span></div></div><div class="tip">'+t('hydraTip')+'</div>';
   $('#outBody').innerHTML=h;
 }
 let bmrSex=(P&&P.sex)||'Homme';
@@ -10997,7 +11073,7 @@ function renderBMRtool(){
   const w=P.weight||62,ht=P.height||175,a=age()||25;
   const bmr=Math.round(bmrSex==='Femme'?(10*w+6.25*ht-5*a-161):(10*w+6.25*ht-5*a+5));
   let h='<div class="card" style="text-align:center"><div class="man" style="font-size:40px;font-weight:800;color:var(--e)">'+bmr+'</div><div class="lab">'+t('basalMetabolism')+'</div></div>';
-  h+='<div class="card"><div class="card-t">'+t('needsByActivity')+'</div>'+[[t('actSedentary'),1.2],[t('actLight'),1.375],[t('actModerate'),1.55],[t('actIntense'),1.725],[t('actAthlete'),1.9]].map(x=>'<div class="zrow"><span class="zname">'+x[0]+'</span><span class="zval mono">'+Math.round(bmr*x[1])+' kcal</span></div>').join('')+'</div>';
+  h+='<div class="card"><div class="card-t">'+t('needsByActivity')+'</div>'+[[t('actSedentary'),1.2],[t('actLight'),1.375],[t('actModerate'),1.55],[t('actIntense'),1.725],[t('actAthlete'),1.9]].map(x=>'<div class="zrow"><span class="zname">'+x[0]+'</span><span class="zval">'+Math.round(bmr*x[1])+' kcal</span></div>').join('')+'</div>';
   $('#outBody').innerHTML=h;
 }
 /* ---------- CONVERTISSEUR — distance / allure / poids ----------
@@ -11081,7 +11157,7 @@ let pgW=60,pgInc=2.5,pgWk=8;
 function renderProgTool(){
   let h='<div class="card"><div class="field"><label>'+t('currentLoadKgLab')+'</label><div class="stepper"><button onclick="pgW=Math.max(0,pgW-2.5);renderProgTool()">−</button><span class="val">'+pgW+'</span><button onclick="pgW+=2.5;renderProgTool()">+</button></div></div><div class="field"><label>'+t('weeklyProgressKgLab')+'</label><div class="pills">'+[1.25,2.5,5].map(x=>'<div class="pill '+(pgInc===x?'on':'')+'" onclick="pgInc='+x+';renderProgTool()">+'+x+'</div>').join('')+'</div></div><div class="field"><label>'+t('weeksLab')+'</label><div class="stepper"><button onclick="pgWk=Math.max(1,pgWk-1);renderProgTool()">−</button><span class="val">'+pgWk+'</span><button onclick="pgWk++;renderProgTool()">+</button></div></div></div>';
   h+='<div class="card"><div class="card-t">'+t('projectionLab')+'</div>';
-  for(let i=1;i<=pgWk;i++){ h+='<div class="zrow"><span class="zname">'+tp('weekN',i)+'</span><span class="zval mono">'+(pgW+pgInc*i)+' kg</span></div>'; }
+  for(let i=1;i<=pgWk;i++){ h+='<div class="zrow"><span class="zname">'+tp('weekN',i)+'</span><span class="zval">'+(pgW+pgInc*i)+' kg</span></div>'; }
   h+='</div>';
   $('#outBody').innerHTML=h;
 }
@@ -11241,7 +11317,7 @@ function renderFC(){
   const zones=[[t('hrZ1'),.5,.6,'--dim'],[t('hrZ2'),.6,.7,'--e'],[t('hrZ3'),.7,.8,'--diamant'],[t('hrZ4'),.8,.9,'--or'],[t('hrZ5'),.9,1,'--bad']];
   h+='<div class="card"><div class="card-t">'+t('hrZonesLab')+'</div>';
   zones.forEach(z=>{ const lo=Math.round(fc.rest+(fc.max-fc.rest)*z[1]); const hi=Math.round(fc.rest+(fc.max-fc.rest)*z[2]);
-    h+='<div class="zrow"><span class="zdot" style="background:var('+z[3]+')"></span><span class="zname">'+z[0]+'</span><span class="zval mono">'+lo+'–'+hi+'</span></div>'; });
+    h+='<div class="zrow"><span class="zdot" style="background:var('+z[3]+')"></span><span class="zname">'+z[0]+'</span><span class="zval">'+lo+'–'+hi+'</span></div>'; });
   h+='</div>';
   $('#outBody').innerHTML=h;
 }
@@ -11278,7 +11354,7 @@ function renderChrono(){
   // Statistiques des tours
   if(chrono.laps.length){
     const best=Math.min(...chrono.laps), worst=Math.max(...chrono.laps), avg=chrono.laps.reduce((a,b)=>a+b,0)/chrono.laps.length;
-    h+='<div class="sgrid" style="margin-bottom:12px"><div class="sbox"><div class="v" style="font-size:15px;color:var(--ok)">'+fmtChrono(best)+'</div><div class="l">'+t('bestLap')+'</div></div><div class="sbox"><div class="v" style="font-size:15px;color:var(--bad)">'+fmtChrono(worst)+'</div><div class="l">'+t('slowestLap')+'</div></div><div class="sbox"><div class="v" style="font-size:15px">'+fmtChrono(avg)+'</div><div class="l">'+t('avgLap')+'</div></div><div class="sbox"><div class="v">'+chrono.laps.length+'</div><div class="l">'+t('lapsLab')+'</div></div></div>';
+    h+='<div class="sgrid" style="margin-bottom:12px"><div class="sbox"><div class="v mono" style="font-size:15px;color:var(--ok)">'+fmtChrono(best)+'</div><div class="l">'+t('bestLap')+'</div></div><div class="sbox"><div class="v mono" style="font-size:15px;color:var(--bad)">'+fmtChrono(worst)+'</div><div class="l">'+t('slowestLap')+'</div></div><div class="sbox"><div class="v mono" style="font-size:15px">'+fmtChrono(avg)+'</div><div class="l">'+t('avgLap')+'</div></div><div class="sbox"><div class="v">'+chrono.laps.length+'</div><div class="l">'+t('lapsLab')+'</div></div></div>';
     h+='<div class="card"><div class="row" style="margin-bottom:8px"><div class="card-t" style="margin:0">'+t('lapsLab')+'</div><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="exportLaps()">'+t('exportBtn')+'</span></div>';
     [...chrono.laps].reverse().forEach((l,ri)=>{ const i=chrono.laps.length-1-ri; const isBest=l===best&&chrono.laps.length>1, isWorst=l===worst&&chrono.laps.length>1;
       h+='<div class="zrow'+(ri===0&&_ikNewLap?' ik-new':'')+'"><span class="zname">'+t('lapBtn')+' '+(i+1)+(isBest?' <span style="color:var(--ok);font-size:11px">'+t('fastTag')+'</span>':isWorst?' <span style="color:var(--bad);font-size:11px">'+t('slowTag')+'</span>':'')+'</span><span class="zval mono" style="'+(isBest?'color:var(--ok)':isWorst?'color:var(--bad)':'')+'">'+fmtChrono(l)+'</span></div>'; });
@@ -11506,7 +11582,7 @@ function renderProfile(){
     const nb=nextBadge();
     if(nb){
       const prog=badgeProgress(nb);
-      h+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--hair)"><div class="row" style="margin-bottom:6px"><span style="font-size:12px;color:var(--muted)">'+tp('nextBadgeLab',nb.name)+'</span><span class="mono" style="font-size:12px;color:var(--e)">'+prog.pct+'%</span></div><div class="pbar" style="height:6px"><div style="width:'+prog.pct+'%"></div></div><div style="font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.4">'+badgeHintText(prog)+'</div></div>';
+      h+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--hair)"><div class="row" style="margin-bottom:6px"><span style="font-size:12px;color:var(--muted)">'+tp('nextBadgeLab',nb.name)+'</span><span class="num" style="font-size:12px;color:var(--e)">'+prog.pct+'%</span></div><div class="pbar" style="height:6px"><div style="width:'+prog.pct+'%"></div></div><div style="font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.4">'+badgeHintText(prog)+'</div></div>';
     }
     h+='</div>';
   }
@@ -11993,7 +12069,7 @@ function pfNotifHTML(){
     (P.sounds!==false
       ? '<div style="margin-bottom:14px">'+
           '<div class="row" style="margin-bottom:7px"><span style="font-size:13px;color:var(--muted)">'+t('soundVolumeLab')+'</span>'+
-            '<span class="mono" style="font-size:12px;color:var(--e)" id="sndVolVal">'+Math.round(soundVol()*100)+'%</span></div>'+
+            '<span class="num" style="font-size:12px;color:var(--e)" id="sndVolVal">'+Math.round(soundVol()*100)+'%</span></div>'+
           '<input type="range" min="0" max="100" step="5" value="'+Math.round(soundVol()*100)+'" style="width:100%" oninput="setSoundVol(this.value)">'+
           '<div class="pills" style="margin-top:10px;flex-wrap:wrap">'+
             [['start','sndTest1'],['tick','sndTest2'],['goal','sndTest3'],['medal','sndTest4'],['finish','sndTest5']]
