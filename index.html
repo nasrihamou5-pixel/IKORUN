@@ -93,7 +93,7 @@
 <!-- téléchargés dès maintenant, exécutés après la première image (voir bas de page) -->
 <link rel="preload" as="script" href="vendor/supabase.js?v=1">
 <link rel="preload" as="script" href="vendor/sb-init.js?v=2">
-<link rel="preload" as="script" href="app.js?v=95">
+<link rel="preload" as="script" href="app.js?v=96">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
@@ -2511,6 +2511,12 @@ html[data-mode="light"]{--glass-bg:#FFFFFF;}
 html[data-mode="light"] :is(.hv7-day,.sp-plan,.hv7-score,.hv7-race,.hw-week,.hv7-ktile){background:#FFFFFF;border-color:var(--hair);
   box-shadow:0 12px 28px -20px rgba(20,32,56,.45),0 1px 2px rgba(20,32,56,.06);}
 
+/* Profil : retour à la mise en page d'avant la v95, à la demande de Hamou (26/09) —
+   gouttière de 14 px (titre compris) et cartes en verre translucide en mode clair. */
+#s-profil{padding-left:14px;padding-right:14px;}
+body[data-scr="profil"] .topbar{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right));}
+html[data-mode="light"] #s-profil{--glass-bg:rgba(255,255,255,.74);}
+
 /* « Réduire les animations » (réglage du téléphone) : seules 3 animations de
    fond le respectaient, une vingtaine d'autres tournaient en boucle. Les
    animations se terminent désormais instantanément dans leur état final. */
@@ -2770,7 +2776,7 @@ html[data-mode="light"] :is(.hv7-day,.sp-plan,.hv7-score,.hv7-race,.hw-week,.hv7
      ne persiste RIEN : elle photographie l'état, teste, restaure. -->
 <script>
 (function(){
-  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=2', 'app.js?v=95'];
+  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=2', 'app.js?v=96'];
   if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=2');
   var lance = false;
   function charge(){

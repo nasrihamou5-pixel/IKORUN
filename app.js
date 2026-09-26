@@ -11582,7 +11582,7 @@ function renderProfile(){
     const nb=nextBadge();
     if(nb){
       const prog=badgeProgress(nb);
-      h+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--hair)"><div class="row" style="margin-bottom:6px"><span style="font-size:12px;color:var(--muted)">'+tp('nextBadgeLab',nb.name)+'</span><span class="num" style="font-size:12px;color:var(--e)">'+prog.pct+'%</span></div><div class="pbar" style="height:6px"><div style="width:'+prog.pct+'%"></div></div><div style="font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.4">'+badgeHintText(prog)+'</div></div>';
+      h+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--hair)"><div class="row" style="margin-bottom:6px"><span style="font-size:12px;color:var(--muted)">'+tp('nextBadgeLab',nb.name)+'</span><span class="mono" style="font-size:12px;color:var(--e)">'+prog.pct+'%</span></div><div class="pbar" style="height:6px"><div style="width:'+prog.pct+'%"></div></div><div style="font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.4">'+badgeHintText(prog)+'</div></div>';
     }
     h+='</div>';
   }
