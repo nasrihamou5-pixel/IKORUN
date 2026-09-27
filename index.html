@@ -29,11 +29,11 @@
   // cible de distribution pour l'instant — pas de TWA/Play Store en vue).
   // Un ancien SW buggé (Blob URL) avait causé un problème
   // de cache zombie sur iOS — d'où l'ancien kill-switch qui désinstallait
-  // systématiquement tout SW. Le nouveau sw.js est "network-first" par
-  // design (voir commentaires dans sw.js) : il ne sert jamais de version
-  // périmée tant que le réseau répond, donc ce risque ne se reproduit pas.
-  // Pour forcer une purge totale après un futur déploiement problématique,
-  // il suffit d'incrémenter CACHE_NAME dans sw.js.
+  // systématiquement tout SW. Depuis le 27/09, sw.js sert l'app depuis le
+  // téléphone (elle s'ouvre sans connexion) et télécharge la nouvelle version
+  // en arrière-plan, qui s'affiche au lancement suivant ou via le bandeau
+  // « mise à jour » : pas de version figée. Pour forcer une purge totale après
+  // un futur déploiement problématique, il suffit d'incrémenter C dans sw.js.
   if('serviceWorker' in navigator){
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('sw.js').catch(()=>{});
@@ -72,7 +72,7 @@
   style-src 'self' 'unsafe-inline' https://accounts.google.com;
   font-src 'self' https://fonts.gstatic.com;
   img-src 'self' data: https://raw.githubusercontent.com https://lh3.googleusercontent.com;
-  connect-src 'self' https://bsrbzuhvqtjkkmpmxyzw.supabase.co wss://bsrbzuhvqtjkkmpmxyzw.supabase.co https://accounts.google.com;
+  connect-src 'self' https://bsrbzuhvqtjkkmpmxyzw.supabase.co wss://bsrbzuhvqtjkkmpmxyzw.supabase.co https://raw.githubusercontent.com https://accounts.google.com;
   frame-src https://accounts.google.com;
   manifest-src 'self' blob:;
   worker-src 'self' blob:;
@@ -94,7 +94,7 @@
 <!-- téléchargés dès maintenant, exécutés après la première image (voir bas de page) -->
 <link rel="preload" as="script" href="vendor/supabase.js?v=1">
 <link rel="preload" as="script" href="vendor/sb-init.js?v=2">
-<link rel="preload" as="script" href="app.js?v=104">
+<link rel="preload" as="script" href="app.js?v=105">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
@@ -3259,8 +3259,8 @@ html.easy-mode #toast{background:var(--s1);border:2px solid var(--e);box-shadow:
      ne persiste RIEN : elle photographie l'état, teste, restaure. -->
 <script>
 (function(){
-  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=2', 'app.js?v=104'];
-  if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=3');
+  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=2', 'app.js?v=105'];
+  if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=4');
   var lance = false;
   function charge(){
     if (lance) return; lance = true;

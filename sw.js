@@ -1,131 +1,182 @@
-// Service worker IKORUN — fichier statique (remplace l'ancienne version enregistrée
-// via blob URL, qui empêchait le navigateur de détecter correctement les mises à jour).
-// Stratégie EN DEUX TEMPS :
-//  · Ressources versionnées ou immuables (app.js?v=N, images, polices) → cache-first.
-//  · Tout le reste, à commencer par index.html → cache d'abord + mise à jour en fond
-//    (depuis le 25/09, voir plus bas ; avant : network-first).
-// Avant, TOUT passait en network-first avec {cache:'no-store'} : app.js était
-// intégralement retéléchargé à CHAQUE ouverture de l'app, jamais servi depuis
-// le cache. Mesuré à ~1 s sur une bonne connexion, bien pire en 3G. Or son URL
-// porte déjà un numéro de version (?v=N) : monter ce numéro suffit à invalider
-// l'entrée, le no-store ne protégeait donc de rien et coûtait un téléchargement
-// complet par lancement.
-// 21/09 : app.js était monté à 3,9 Mo (21 images de badges/rangs encodées en
-// base64 directement dans le JS, jamais faites pour ça — parsé/compilé à
-// chaque démarrage à froid, y compris sur iPhone). Extraites vers badges/*.png,
-// qui profitent nativement du cache-first ci-dessous (repris par IMMUABLE) sans
-// alourdir le script. app.js est repassé à ~1 Mo.
-// v7 : purge forcée. Tant que manifest.json n'existait pas, l'hébergeur renvoyait
-// index.html (du HTML) à sa place, et ce SW a pu mettre cette mauvaise réponse en
-// cache. Changer le nom du cache supprime les anciennes entrées à l'activation, ce
-// qui garantit que le vrai manifest.json est bien récupéré — condition nécessaire
-// pour que le navigateur propose l'installation de l'app.
-const C = 'ikorun-v93';
+// Service worker IKORUN — fichier statique.
+// ============================================================================
+// HORS LIGNE COMPLET (27/09, v105 : « la PWA doit marcher sans connexion »).
+//
+// Trois caches, chacun avec son rôle :
+//   · C      (ikorun-vNN)       la coquille VERSIONNÉE : index.html, manifest,
+//                                scripts (app.js?v=N, vendor/*). Remplacé à chaque
+//                                nouvelle version (changer C purge l'ancien).
+//   · STATIC (ikorun-static-vN) images et polices. GARDÉ d'une version à l'autre :
+//                                avant, chaque mise à jour purgeait tout et les 21
+//                                badges étaient retéléchargés. /!\ Changer une image
+//                                sans changer son nom → monter STATIC.
+//   · EXT    (ikorun-ext-v1)    démos d'exercices (raw.githubusercontent.com) déjà
+//                                vues, gardées pour la salle sans réseau (250 max).
+//
+// Ce qui ne marchait pas hors ligne avant ce correctif :
+//   1. app.js n'était pas préchargé. Pire : index.html est mis à jour en fond, si
+//      bien que la copie en cache pouvait pointer vers un app.js?v=N+1 jamais
+//      téléchargé — au lancement suivant sans réseau, l'app ne démarrait plus.
+//      Désormais une page n'entre en cache qu'APRÈS les scripts qu'elle charge.
+//   2. La page était cherchée avec son adresse exacte : /?open=sport (notification),
+//      /?code=… (retour Google), /index.html… n'étaient jamais en cache. Toute
+//      navigation sert maintenant LA page de l'app (une seule, c'est une SPA).
+//   3. Badges et démos d'exercices vus pour la première fois hors ligne : cassés.
+//      Les badges sont préchargés ; les démos, gardées après leur 1re vue.
+//   4. Rien en cache du tout (tout premier lancement sans réseau) : écran d'erreur
+//      du navigateur. On affiche maintenant une page « hors ligne » propre.
+//
+// Rappels de l'historique (toujours valables) : cache d'abord + mise à jour en fond
+// pour la page (25/09 : plus d'écran noir à attendre le réseau, message 'ik-maj'
+// quand une nouvelle version est prête) ; cache-first pour tout ce qui est versionné
+// ou immuable (app.js n'est plus retéléchargé à chaque ouverture) ; chaque fichier
+// est ajouté séparément (un seul fichier manquant ne fait pas échouer l'installation).
+// ============================================================================
+const C = 'ikorun-v94';
+const STATIC = 'ikorun-static-v1';
+const EXT = 'ikorun-ext-v1';
+const EXT_MAX = 250;
+const INDEX = './';
 
-// Une réponse est réutilisable telle quelle si son URL identifie déjà une version
-// précise : soit elle porte un paramètre ?v=..., soit c'est un binaire dont le nom
-// change quand le contenu change. manifest.json et index.html n'en font PAS partie et
-// ont leur propre stratégie (cache d'abord + mise à jour en fond + message 'ik-maj').
 const IMMUABLE = /\.(png|jpe?g|webp|svg|gif|woff2?|ttf|ico|mp3|wav)$/i;
-function estVersionnee(url){
-  return url.searchParams.has('v') || IMMUABLE.test(url.pathname);
-}
 
-// Coquille de base mise en cache dès l'installation. Sans ça, le cache ne se
-// remplissait qu'au fil des requêtes réussies : à chaque changement de nom de
-// cache (donc à chaque mise à jour), l'activation supprimait tout et laissait
-// une fenêtre où l'app ouverte hors-ligne — ou sur un réseau qui décroche —
-// n'avait plus ses icônes. L'écran de connexion affichait alors le texte
-// alternatif de l'image à la place du logo. On ne précharge PAS app.js : son
-// URL porte un numéro de version, le réseau-d'abord s'en charge tout seul.
-const SHELL = [
-  './',
-  'manifest.json',
-  'icon-192.png',
-  'icon-512.png',
-  'apple-touch-icon.png',
-  'favicon-32.png',
-  'favicon-16.png',
-  'vendor/supabase.js?v=1',
-  'vendor/sb-init.js?v=2',
-  // polices hébergées (27/09) : celles du premier écran, pour un démarrage hors ligne sans Times
-  'fonts/unbounded-latin.woff2',
-  'fonts/inter-latin.woff2'
+// Coquille : la page et ses scripts (app.js est ajouté d'après la page elle-même,
+// voir cacherLaPage — pas de numéro de version à recopier ici à chaque livraison).
+const SHELL = [INDEX, 'manifest.json'];
+const STATIC_ASSETS = [
+  'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'favicon-32.png', 'favicon-16.png',
+  'fonts/unbounded-latin.woff2', 'fonts/unbounded-latin-ext.woff2',
+  'fonts/inter-latin.woff2', 'fonts/inter-latin-ext.woff2',
+  'fonts/jetbrains-mono-latin.woff2', 'fonts/jetbrains-mono-latin-ext.woff2',
+  'badges/ach_allure.png', 'badges/ach_cinqk.png', 'badges/ach_denivele.png', 'badges/ach_dixk.png',
+  'badges/ach_endurance.png', 'badges/ach_force.png', 'badges/ach_nouveaupb.png', 'badges/ach_objectif.png',
+  'badges/ach_podium.png', 'badges/ach_premiere.png', 'badges/ach_puissance.png', 'badges/ach_serie.png',
+  'badges/ach_vo2max.png', 'badges/rank_amateur.png', 'badges/rank_athlete.png', 'badges/rank_debutant.png',
+  'badges/rank_elite.png', 'badges/rank_expert.png', 'badges/rank_legende.png', 'badges/rank_maitre.png',
+  'badges/rank_sportif.png'
 ];
 
+// Scripts chargés par la page : 'vendor/supabase.js?v=1', 'app.js?v=104'… (le préchargement
+// <link rel=preload> et la liste SCRIPTS du bas d'index.html). tests/smoke.js n'en fait pas partie.
+const SCRIPTS_DE_LA_PAGE = /['"]((?:vendor\/)?[\w.-]+\.js\?v=\d+)['"]/g;
+
+// Une réponse issue d'une redirection (/index.html → /) ne peut pas resservir une
+// navigation telle quelle (Safari refuse) : on en fait une copie propre.
+function propre(res) {
+  if (!res.redirected) return Promise.resolve(res);
+  return res.blob().then(b => new Response(b, { status: res.status, statusText: res.statusText, headers: res.headers }));
+}
+
+// Met la page en cache SEULEMENT si ses scripts y sont aussi : sinon on garde l'ancienne
+// paire page + scripts, qui fonctionne. Retourne true si la page a été enregistrée.
+function cacherLaPage(cache, res) {
+  return res.clone().text().then(html => {
+    const urls = [...new Set([...html.matchAll(SCRIPTS_DE_LA_PAGE)].map(m => m[1]))];
+    return Promise.all(urls.map(u => cache.match(u).then(hit => hit || fetch(u, { cache: 'no-cache' }).then(r => {
+      if (!r || !r.ok) throw new Error('script indisponible : ' + u);
+      return cache.put(u, r);
+    })))).then(() => propre(res)).then(r => cache.put(INDEX, r)).then(() => true);
+  }).catch(() => false);
+}
+
+const PAGE_HORS_LIGNE = '<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0A0D12"><title>IKORUN — hors ligne</title><style>html,body{margin:0;height:100%;background:#07090D;color:#F4F6F9;font:16px/1.5 system-ui,-apple-system,sans-serif}main{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;box-sizing:border-box}h1{font-size:22px;margin:0 0 10px}p{color:#97A0B2;max-width:320px;margin:0 0 22px}button{font:600 15px system-ui,-apple-system,sans-serif;color:#fff;background:linear-gradient(180deg,#3775F2,#2152CC);border:0;border-radius:14px;padding:13px 26px}</style></head><body><main><h1>Pas de connexion</h1><p>IKORUN doit être ouverte une première fois avec Internet. Ensuite, elle fonctionne entièrement hors ligne.</p><button onclick="location.reload()">Réessayer</button></main></body></html>';
+
 self.addEventListener('install', e => {
-  // Chaque entrée est ajoutée separement : avec cache.addAll(), un seul fichier
-  // manquant ferait echouer TOUTE l'installation du service worker.
-  e.waitUntil(
-    caches.open(C)
-      .then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => {}))))
-      .catch(() => {})
-  );
+  e.waitUntil(Promise.all([
+    // Coquille : la page (réseau, sans cache HTTP) puis les scripts qu'elle charge.
+    caches.open(C).then(c =>
+      fetch(INDEX, { cache: 'no-store' }).then(res => res && res.ok ? cacherLaPage(c, res) : false).catch(() => false)
+        .then(() => Promise.all(SHELL.slice(1).map(u => c.add(u).catch(() => {}))))
+    ),
+    // Images et polices : seulement celles qui manquent (le cache est conservé entre versions).
+    caches.open(STATIC).then(s => Promise.all(STATIC_ASSETS.map(u => s.match(u).then(hit => hit || s.add(u)).catch(() => {}))))
+  ]).catch(() => {}).then(() =>
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then(list => list.forEach(cl => cl.postMessage({ type: 'ik-offline-ready' }))).catch(() => {})
+  ));
   self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
+  const garder = [C, STATIC, EXT];
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== C).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(k => !garder.includes(k)).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
 
+function cacheFirst(nomCache, req, opts) {
+  return caches.open(nomCache).then(c => c.match(req).then(hit => {
+    if (hit) return hit;
+    return fetch(opts && opts.url ? opts.url : req, opts && opts.init).then(res => {
+      if (res && res.ok) {
+        const copie = res.clone();
+        c.put(req, copie).then(() => opts && opts.max ? rogner(c, opts.max) : null).catch(() => {});
+      }
+      return res;
+    });
+  })).catch(() => fetch(req));
+}
+// Garde les N entrées les plus récentes (keys() rend l'ordre d'insertion).
+function rogner(cache, max) {
+  return cache.keys().then(keys => Promise.all(keys.slice(0, Math.max(0, keys.length - max)).map(k => cache.delete(k))));
+}
+
 self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
-  // IMPORTANT : on ne gère que les requêtes vers notre propre site.
-  // Les ressources externes (Google Fonts, CDN jsdelivr, etc.) sont laissées
-  // au navigateur, qui les charge normalement sans passer par ce service worker.
-  // Avant ce correctif, le fetch() ci-dessous s'appliquait à TOUT, y compris
-  // ces domaines externes — et se faisait bloquer par la CSP (connect-src),
-  // cassant silencieusement le chargement des polices et du script Supabase.
-  const url = new URL(e.request.url);
+  const req = e.request;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+
+  // Démos d'exercices (images de raw.githubusercontent.com) : gardées après la 1re vue.
+  // Requête CORS (le serveur répond Access-Control-Allow-Origin: *) : une réponse
+  // « opaque » pèserait ~7 Mo de quota chacune dans Chrome, une réponse CORS son vrai poids.
+  if (url.hostname === 'raw.githubusercontent.com' && req.destination === 'image') {
+    e.respondWith(cacheFirst(EXT, req, { url: req.url, init: { mode: 'cors', credentials: 'omit' }, max: EXT_MAX }));
+    return;
+  }
+  // Tout autre domaine externe (Supabase, Google…) : laissé au navigateur. Le fetch()
+  // d'un SW est soumis à SA CSP (connect-src) — c'est ce qui cassait tout avant.
   if (url.origin !== location.origin) return;
 
-  // CACHE-FIRST pour les ressources versionnées : on sert immédiatement depuis le
-  // cache sans toucher au réseau. C'est ce qui rend les lancements suivants quasi
-  // instantanés, y compris sur une connexion lente ou instable.
-  if (estVersionnee(url)) {
+  // PAGE — toute navigation sert LA page de l'app, quelle que soit l'adresse.
+  // Cache d'abord (démarrage instantané, hors ligne compris), mise à jour en fond.
+  if (req.mode === 'navigate') {
+    const maj = fetch(req, { cache: 'no-store' }).then(res => {
+      // fetch() RÉSOUT sur un 404/500 : une page d'erreur du CDN ne remplace jamais la bonne copie.
+      if (!res || !res.ok || !(res.headers.get('content-type') || '').includes('text/html')) return res;
+      // Deux copies : le corps d'une réponse ne se lit qu'une fois, et `res` part à la page.
+      const pourCache = res.clone(), pourComparer = res.clone();
+      return caches.open(C).then(c => c.match(INDEX).then(ancien => {
+        const avant = ancien ? ancien.text().catch(() => '') : Promise.resolve(null);
+        return Promise.all([avant, pourComparer.text()]).then(([x, y]) =>
+          cacherLaPage(c, pourCache).then(ok => { if (ok && x !== null && x !== y) prevenirMaj(e); })
+        );
+      })).catch(() => {}).then(() => res);
+    });
     e.respondWith(
-      caches.open(C).then(c =>
-        c.match(e.request).then(hit => {
-          if (hit) return hit;
-          return fetch(e.request).then(res => {
-            if (res && res.ok) { try { c.put(e.request, res.clone()); } catch (x) {} }
-            return res;
-          });
-        })
-      ).catch(() => fetch(e.request))
+      caches.open(C).then(c => c.match(INDEX)).catch(() => undefined)
+        .then(hit => hit || maj.then(res => (res && res.ok) ? propre(res) : (res || Response.error()))
+          .catch(() => new Response(PAGE_HORS_LIGNE, { headers: { 'Content-Type': 'text/html; charset=utf-8' } })))
     );
+    e.waitUntil(maj.catch(() => {}));
     return;
   }
 
-  // PAGE (index.html, manifest.json…) — 25/09 : CACHE D'ABORD, MISE À JOUR EN FOND.
-  // Avant, chaque lancement attendait la réponse du réseau pour index.html (mesuré
-  // à ~0,5 s, jusqu'à 0,7 s avec le délai max) : écran noir avant l'intro, remonté
-  // par Hamou. Désormais la copie enregistrée s'affiche immédiatement ; le réseau
-  // est interrogé en parallèle, met le cache à jour et, si la page a changé (nouvelle
-  // version déployée), prévient la page (message 'ik-maj') qui propose de recharger.
-  // Première visite (rien en cache) : on attend le réseau, comme avant. Hors-ligne :
-  // la copie en cache, comme avant.
-  const maj = fetch(e.request, { cache: 'no-store' }).then(res => {
-    // fetch() RÉSOUT sur un 404/500/502 (il ne rejette que sur erreur réseau) : une
-    // page d'erreur transitoire du CDN ne doit jamais remplacer la bonne copie.
-    if (!res || !res.ok) return res;
-    const pourCache = res.clone(), pourComparer = res.clone();
-    return caches.open(C).then(c => c.match(e.request).then(ancien => {
-      const change = (ancien && e.request.mode === 'navigate')
-        ? Promise.all([ancien.text(), pourComparer.text()]).then(([x, y]) => x !== y).catch(() => false)
-        : Promise.resolve(false);
-      return c.put(e.request, pourCache).then(() => change).then(ch => { if (ch) prevenirMaj(e); });
-    })).catch(() => {}).then(() => res);
+  // Images et polices : cache STATIC, gardé entre les versions.
+  if (IMMUABLE.test(url.pathname)) { e.respondWith(cacheFirst(STATIC, req)); return; }
+  // Scripts versionnés (?v=N) : cache de la version.
+  if (url.searchParams.has('v')) { e.respondWith(cacheFirst(C, req)); return; }
+
+  // Reste (manifest.json…) : cache d'abord, mise à jour en fond.
+  const maj = fetch(req, { cache: 'no-store' }).then(res => {
+    if (res && res.ok) { const copie = res.clone(); caches.open(C).then(c => c.put(req, copie)).catch(() => {}); }
+    return res;
   });
   e.respondWith(
-    caches.open(C).then(c => c.match(e.request)).catch(() => undefined)
-      .then(hit => hit || maj.then(res => res || Response.error(), () => Response.error()))
+    caches.open(C).then(c => c.match(req)).catch(() => undefined)
+      .then(hit => hit || maj.catch(() => Response.error()))
   );
-  // garde le service worker en vie jusqu'à la fin de la mise à jour du cache
   e.waitUntil(maj.catch(() => {}));
 });
 // Prévient la page qui vient de s'ouvrir (ou, à défaut, toutes les fenêtres) qu'une

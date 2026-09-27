@@ -358,6 +358,63 @@
     }
   }
 
+  /* ======================= 11. HORS LIGNE ================================ */
+  // Bugs réels du 27/09 : (1) une modification SUR PLACE (P.bio=…, SESS.push(…)) ne
+  // partait jamais au serveur — DB.save comparait l'objet… à lui-même ; (2) une
+  // modification sans réseau n'était jamais renvoyée ; (3) app.js n'était pas en
+  // cache, l'app ne s'ouvrait pas sans connexion.
+  function testHorsLigne(){
+    var c='11. Hors ligne';
+    var hAvant=localStorage.getItem(SYNC_HASH_KEY), fAvant=localStorage.getItem(DIRTY_KEY);
+    var memo=JSON.stringify(_hashes());
+    var uid=window.currentUserId, off=window._offlineBoot, pull=window._cloudPulling;
+    try{
+      essaie(c,'une modification sur place est détectée comme à envoyer',function(){
+        var o={a:1}; markSynced('__smoke',o);
+        if(differsFromSynced('__smoke',o)) return false;     // identique : rien à envoyer
+        o.a=2;                                               // même objet, modifié sur place
+        if(!differsFromSynced('__smoke',o)) return false;
+        markSynced('__smoke',o);
+        return !differsFromSynced('__smoke',{a:2}) && 'modifiée → à envoyer, identique → rien';
+      });
+      essaie(c,'sans réseau, la modification est mise en file (et y reste)',function(){
+        window.currentUserId='smoke-test'; window._offlineBoot=true; window._cloudPulling=false;
+        cloudPush('__smoke',{a:3});
+        return _dirtyGet().indexOf('__smoke')>=0 && 'en file jusqu\'au retour du réseau';
+      });
+      essaie(c,'sans compte connecté, rien n\'est mis en file',function(){
+        clearDirty('__smoke'); window.currentUserId=null;
+        cloudPush('__smoke',{a:4});
+        return _dirtyGet().indexOf('__smoke')<0 && 'une valeur par défaut n\'écrase pas le serveur';
+      });
+    } finally {
+      window.currentUserId=uid; window._offlineBoot=off; window._cloudPulling=pull;
+      _syncHash=JSON.parse(memo);
+      try{
+        if(hAvant===null) localStorage.removeItem(SYNC_HASH_KEY); else localStorage.setItem(SYNC_HASH_KEY,hAvant);
+        if(fAvant===null) localStorage.removeItem(DIRTY_KEY); else localStorage.setItem(DIRTY_KEY,fAvant);
+      }catch(e){}
+    }
+    // Ce que l'utilisateur peut vérifier sur iPhone : l'app est-elle prête sans réseau ?
+    if(!('serviceWorker' in navigator) || !window.caches){ ok(c,'l\'app est enregistrée sur le téléphone','service worker indisponible ici (navigation privée ?)'); return Promise.resolve(); }
+    var sc=document.querySelector('script[src*="app.js"]');
+    var appSrc=sc ? new URL(sc.getAttribute('src'), location.href).href : null;
+    var fin=Date.now()+15000;
+    return new Promise(function(resolve){
+      (function verifie(){
+        Promise.all([caches.match(appSrc||'app.js'), caches.match(new URL('./',location.href).href), caches.match(new URL('badges/rank_elite.png',location.href).href)])
+          .then(function(r){
+            if((r[0]&&r[1]&&r[2]) || Date.now()>fin){
+              chk(c,'l\'app s\'ouvre sans connexion (page, '+(appSrc?appSrc.split('/').pop():'app.js')+' et images en cache)', !!(r[0]&&r[1]&&r[2]),
+                  'page '+(r[1]?'oui':'NON')+' · script '+(r[0]?'oui':'NON')+' · images '+(r[2]?'oui':'NON'));
+              return resolve();
+            }
+            setTimeout(verifie,500);
+          }).catch(function(e){ ko(c,'l\'app s\'ouvre sans connexion',e&&e.message); resolve(); });
+      })();
+    });
+  }
+
   function testIntegrite(){
     var c='7. Données';
     // Bug réel : double validation = deux entrées dans SESS et XP crédité deux
@@ -498,6 +555,7 @@
     testAudit2409();
     testGardeFou();
     Promise.resolve(testI18nUsage())
+      .then(function(){ return testHorsLigne(); })
       .then(function(){ return testSon(); })
       .catch(function(e){ ko('0. Suite','exécution', e && e.message); })
       .then(function(){ debloquerEcritures(); window.__smokeState='terminé'; rapport(); });

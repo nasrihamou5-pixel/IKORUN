@@ -19,6 +19,8 @@ setTimeout(function(){
     var el = document.getElementById('appSkeleton');
     if(!el || el.classList.contains('out')) return; // tout s'est bien passé
     console.error('[IKORUN] Watchdog : démarrage bloqué, déblocage forcé.', window.__ikorunLastError);
+    // Réseau qui traîne mais session enregistrée : démarrage hors ligne (voir offlineBoot)
+    if(!window.__ikorunLastError && typeof window.__ikOfflineBoot === 'function' && window.__ikOfflineBoot()) return;
     if(typeof startLogin === 'function' && !window.__ikorunLastError){
       startLogin();
     } else {
@@ -67,6 +69,7 @@ function mergeStorageValue(key, localVal, cloudVal){
 
 async function cloudPullAll(uid){
   if(!window.supabaseClient) return;
+  if(!navigator.onLine) return; // hors ligne : on démarre sur les données locales, sans message d'erreur
   try{
     // Sécurité anti-course : force l'hydratation complète de la session en mémoire
     // avant la lecture. Sans ça, sur une connexion toute fraîche (1re fois sur un
@@ -87,7 +90,14 @@ async function cloudPullAll(uid){
     if(data.length===0){
       console.warn('[IKORUN][DIAG] cloudPullAll: 0 ligne renvoyée pour uid='+uid);
     }
+    const dirty=_dirtyGet();
     data.forEach(row => {
+      // Modifiée ici sans avoir pu partir (hors ligne) : la version locale est la plus
+      // récente. Avant (27/09), la version du serveur l'écrasait au lancement suivant —
+      // une séance du plan cochée hors ligne se décochait. Les listes (séances,
+      // records…) restent fusionnées ci-dessous, puis renvoyées par flushDirty().
+      if(!VVV_LOCAL_ONLY_KEYS.includes(row.key)) markSynced(row.key,row.value); // ce que le serveur a réellement
+      if(dirty.includes(row.key) && !VVV_ARRAY_KEYS.includes(row.key)) return;
       if(VVV_LOCAL_ONLY_KEYS.includes(row.key)){
         // Nettoyage définitif d'une éventuelle séance fantôme laissée avant ce correctif.
         window.supabaseClient.from('user_data').delete().eq('user_id', uid).eq('key', row.key).then(()=>{}).catch(()=>{});
@@ -105,26 +115,106 @@ async function cloudPullAll(uid){
 // d'abus) plutôt qu'une vraie donnée d'usage normal de l'app ; on ne la
 // synchronise pas dans le cloud (elle reste locale/chiffrée sur l'appareil).
 const CLOUD_KEY_MAX_BYTES=500*1024;
+/* ---------- FILE D'ATTENTE DE SYNCHRONISATION (27/09, hors ligne) ----------
+   Avant, une modification faite sans réseau n'était enregistrée QUE sur le
+   téléphone : l'envoi échouait en silence, rien ne le retentait, et au lancement
+   suivant la version du serveur écrasait la locale (profil, plan, XP…). Désormais
+   chaque clé modifiée est notée « à envoyer » (ik_sync_dirty : des noms de clés,
+   aucune donnée) et n'en sort qu'une fois l'envoi CONFIRMÉ par le serveur. La file
+   est vidée au retour du réseau, au lancement, au retour au premier plan et toutes
+   les 5 min (flushDirty). */
+const DIRTY_KEY='ik_sync_dirty';
+function _dirtyGet(){ try{ const a=JSON.parse(localStorage.getItem(DIRTY_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+function _dirtySet(a){ try{ if(a.length) localStorage.setItem(DIRTY_KEY,JSON.stringify(a)); else localStorage.removeItem(DIRTY_KEY); }catch(e){} }
+function markDirty(k){ const a=_dirtyGet(); if(!a.includes(k)){ a.push(k); _dirtySet(a); } }
+function clearDirty(k){ const a=_dirtyGet(), i=a.indexOf(k); if(i>=0){ a.splice(i,1); _dirtySet(a); } }
+function cloudReachable(){ return !!(window.supabaseClient && window.currentUserId && !window._offlineBoot && navigator.onLine); }
+/* EMPREINTE DE LA DERNIÈRE VERSION SYNCHRONISÉE (27/09).
+   DB.save comparait la valeur à celle du cache… qui EST le même objet quand l'app
+   modifie sur place (SESS.push(…), P.bio=…) : « rien n'a changé », rien ne partait
+   au serveur. Introduit le 21/09 (économie d'envois au lancement) : depuis, les
+   séances ajoutées et les profils modifiés restaient sur le téléphone. On compare
+   désormais à l'empreinte de ce que le serveur a réellement (posée au chargement
+   depuis le serveur et à chaque envoi réussi). Gardée entre les lancements
+   (ik_sync_hash, des empreintes seulement) : un démarrage hors ligne sait ainsi ce
+   qui a vraiment changé, et n'envoie que ça au retour du réseau. */
+const SYNC_HASH_KEY='ik_sync_hash';
+let _syncHash=null;
+function _hashes(){ if(!_syncHash){ try{ _syncHash=JSON.parse(localStorage.getItem(SYNC_HASH_KEY)||'{}')||{}; }catch(e){ _syncHash={}; } } return _syncHash; }
+function _fnv(str){ let h=0x811c9dc5; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,0x01000193); } return (h>>>0).toString(36)+':'+str.length; }
+function _storeHash(k,h){
+  const H=_hashes();
+  if(h==null) delete H[k]; else H[k]=h;
+  try{ localStorage.setItem(SYNC_HASH_KEY,JSON.stringify(H)); }catch(e){}
+}
+function markSynced(k,v){ let h=null; if(v!==null && v!==undefined){ try{ h=_fnv(JSON.stringify(v)); }catch(e){} } _storeHash(k,h); }
+function differsFromSynced(k,v){
+  const H=_hashes();
+  if(v===null||v===undefined) return (k in H);
+  try{ return H[k]!==_fnv(JSON.stringify(v)); }catch(e){ return true; }
+}
+const _pushGen={};
 async function cloudPush(key, value){
   if(VVV_LOCAL_ONLY_KEYS.includes(key)) return; // état de séance en cours : jamais envoyé au cloud
-  if(!window.supabaseClient || !window.currentUserId) return;
+  let ser='';
+  try{ ser=JSON.stringify(value); if(typeof ser!=='string') throw new Error('valeur indéfinie'); }catch(e){ console.error("cloudPush: valeur non sérialisable pour la clé",key,e); return; }
+  const size=ser.length;
+  if(size>CLOUD_KEY_MAX_BYTES){
+    console.error('cloudPush: valeur trop volumineuse pour la clé "'+key+'" ('+size+' octets) — synchronisation annulée');
+    clearDirty(key); // ne partira jamais : inutile de la retenter en boucle
+    if(typeof toast==='function') toast(t('guardStorageTooBig'));
+    return;
+  }
+  // Aucun compte associé (écran de connexion) : rien à mettre en file. Sinon une valeur
+  // par défaut (profil vide, langue choisie avant de se connecter) passerait, sur un
+  // nouvel appareil, pour une modification locale et écraserait le vrai profil du serveur.
+  if(!window.currentUserId || window._cloudPulling) return;
+  markDirty(key);
+  if(!cloudReachable()) return; // partira avec flushDirty() au retour du réseau
+  // Deux envois rapprochés de la même clé : seul le succès du DERNIER la retire de la file.
+  const gen=_pushGen[key]=(_pushGen[key]||0)+1;
+  // Empreinte de ce qui part MAINTENANT : si l'app modifie l'objet pendant l'envoi, la
+  // modification ne doit pas passer pour « déjà sur le serveur ».
+  const sentHash=(value===null||value===undefined)?null:_fnv(ser);
   try{
-    let size=0;
-    try{ size=JSON.stringify(value).length; }catch(e){ console.error("cloudPush: valeur non sérialisable pour la clé",key,e); return; }
-    if(size>CLOUD_KEY_MAX_BYTES){
-      console.error('cloudPush: valeur trop volumineuse pour la clé "'+key+'" ('+size+' octets) — synchronisation annulée');
-      if(typeof toast==='function') toast(t('guardStorageTooBig'));
-      return;
+    const { error } = value===null
+      ? await window.supabaseClient.from('user_data').delete().eq('user_id', window.currentUserId).eq('key', key)
+      : await window.supabaseClient.from('user_data').upsert(
+          { user_id: window.currentUserId, key, value, updated_at: new Date().toISOString() },
+          { onConflict: 'user_id,key' });
+    if(error) throw error;
+    if(_pushGen[key]===gen){ clearDirty(key); _storeHash(key,sentHash); }
+  }catch(e){ console.error('cloud push error', key, e); }
+}
+// Vide la file. Les listes (séances, records…) sont d'abord fusionnées avec celles du
+// serveur : un autre appareil a pu en ajouter pendant qu'on était hors ligne, et
+// l'envoi remplace la liste entière — sans cette fusion, ces ajouts seraient perdus.
+let _flushing=null;
+async function flushDirty(){
+  if(_flushing) return _flushing;
+  if(!cloudReachable()) return false;
+  const keys=_dirtyGet(); if(!keys.length) return true;
+  _flushing=(async()=>{
+    const lists=keys.filter(k=>VVV_ARRAY_KEYS.includes(k));
+    if(lists.length){
+      const { data, error } = await window.supabaseClient.from('user_data').select('key,value').eq('user_id', window.currentUserId).in('key', lists);
+      if(error){ console.error('flushDirty: lecture',error); return false; }
+      let merged=false;
+      (data||[]).forEach(row=>{
+        const local=DB.load(row.key), m=mergeStorageValue(row.key, local, row.value);
+        if(JSON.stringify(m)!==JSON.stringify(local)){ DB._cache[row.key]=m; DB._persist(row.key,m); merged=true; }
+      });
+      if(merged){
+        // Les variables de l'app (SESS, RECORDS…) doivent voir la liste fusionnée, sinon la
+        // prochaine sauvegarde renverrait l'ancienne et effacerait les ajouts de l'autre appareil.
+        reloadState();
+        try{ const r={home:renderHome,sport:renderSport,stats:renderStats,profil:renderProfile}[document.body.dataset.scr]; if(r) r(); }catch(e){}
+      }
     }
-    if(value===null){
-      await window.supabaseClient.from('user_data').delete().eq('user_id', window.currentUserId).eq('key', key);
-      return;
-    }
-    await window.supabaseClient.from('user_data').upsert(
-      { user_id: window.currentUserId, key, value, updated_at: new Date().toISOString() },
-      { onConflict: 'user_id,key' }
-    );
-  }catch(e){ console.error('cloud push error', e); }
+    for(const k of keys) await cloudPush(k, DB.load(k));
+    return _dirtyGet().length===0;
+  })();
+  try{ return await _flushing; } finally{ _flushing=null; }
 }
 
 /* ---------- SESSION ----------
@@ -1719,8 +1809,9 @@ const DB = {
     // Supabase par clé à CHAQUE ouverture de l'app (jusqu'à 14, sur le plan gratuit).
     // On ne pousse au cloud que si la valeur a réellement changé ; l'écriture locale
     // (cache + chiffrement) reste inconditionnelle, elle est quasi gratuite.
-    let changed=true;
-    try{ changed = JSON.stringify(this._cache[k]) !== JSON.stringify(v); }catch(e){}
+    // Comparée à ce que le serveur a (voir markSynced), pas au cache : le cache est le
+    // même objet que la variable de l'app, donc toujours « égal » après une modification sur place.
+    const changed=differsFromSynced(k,v);
     this._cache[k]=v; this._persist(k,v);
     if(changed) cloudPush(k,v);
   },
@@ -1743,6 +1834,8 @@ const DB = {
    avant la moindre lecture/écriture pour ce nouveau compte. */
 function wipeLocalCache(){
   Object.keys(localStorage).filter(k=>k.startsWith('vvv_')).forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+  try{ localStorage.removeItem(DIRTY_KEY); localStorage.removeItem(SYNC_HASH_KEY); }catch(e){} // file et empreintes appartiennent au compte qui part
+  _syncHash=null;
   DB._cache={};
 }
 function ensureLocalCacheOwnership(uid){
@@ -2106,7 +2199,7 @@ const I18N={
     resumeSessionConfirm:'Une séance « {0} » était en cours ({1} min). Reprendre ?',sessionColonName:'Séance : {0}',
     accentBlue:'Bleu',accentRed:'Rouge',accentGreen:'Vert militaire',accentBrown:'Marron boisé',accentYellow:'Jaune',accentCarbon:'Fibre de carbone',
     colorApplied:'Couleur appliquée',easyModeOn:'Mode simplifié activé',easyModeOff:'Mode simplifié désactivé',
-    profileIncompleteAddTime:'Profil incomplet : ajoute un chrono dans tes records',chooseCompDate:'Choisis une date de compétition',raceDateTooSoon:'Choisis une date de course à au moins 7 jours — une date passée ou trop proche ne laisse pas assez de temps pour préparer un plan.',planStartsOn:'Ton plan démarre le {0} : il couvre les 28 semaines avant la course.',planSafetyAdjustedToast:'Plan sécurisé : progression limitée à +10 % par semaine et récupération respectée.',planSafetyMigratedToast:'Ton plan a été ajusté : progression de charge plus sûre, sans séances dures enchaînées.',planSafetyHint:'Pour limiter le risque de blessure, IKORUN augmente ton volume de 10 % par semaine au maximum et allège une semaine sur quatre.',debriefTitle:'Bilan de séance',raceDateInvalid:'Date de course invalide : choisis-la à au moins 7 jours.',bdayInvalid:'Date de naissance invalide.',sessionKmRequired:'Indique la distance de la séance (en km).',paceFormatInvalid:'Allure invalide : écris-la au format min:ss (ex. 5:30).',addSessionBtn:'Ajouter la séance',psTitleLab:'Titre',psTitlePh:'Footing du matin',typeVMA:'VMA',typeFractionne:'Fractionné',typeTest:'Test',persoFollowingDesc:'Ton accueil et ton bilan utilisent ce plan. Le plan IKORUN continue de s’ajuster en arrière-plan selon ce que tu fais ici.',persoFollowDesc:'Ton accueil affichera les séances de ce plan au lieu du plan généré. Tu peux revenir au plan IKORUN quand tu veux.',persoStopBtn:'Arrêter',persoFollowBtn:'Suivre',persoNoSession:'Aucune séance. Ajoute ta première !',typeLab:'Type',psHowLab:'Comment veux-tu saisir cette séance ?',psModeSimple:'Simple (km + allure)',psModeReps:'Par répétition (temps de chaque)',psPaceLab:'Allure /km',psRepDistLab:'Distance par répétition',psAddRepBtn:'Ajouter une répétition',psDescLab:'Description (optionnel)',psDescPh:'Détails de la séance...',psNewSessionTitle:'Nouvelle séance',psRepShort:'Rép.',chooseAtLeastOneDay:'Choisis au moins un jour',profileValuesInvalid:'Valeur hors limites : taille 100-250 cm, poids 25-250 kg, FC max 120-230, FC repos 30-120 (sous la FC max), km/sem 0-250.',
+    profileIncompleteAddTime:'Profil incomplet : ajoute un chrono dans tes records',chooseCompDate:'Choisis une date de compétition',raceDateTooSoon:'Choisis une date de course à au moins 7 jours — une date passée ou trop proche ne laisse pas assez de temps pour préparer un plan.',planStartsOn:'Ton plan démarre le {0} : il couvre les 28 semaines avant la course.',planSafetyAdjustedToast:'Plan sécurisé : progression limitée à +10 % par semaine et récupération respectée.',planSafetyMigratedToast:'Ton plan a été ajusté : progression de charge plus sûre, sans séances dures enchaînées.',planSafetyHint:'Pour limiter le risque de blessure, IKORUN augmente ton volume de 10 % par semaine au maximum et allège une semaine sur quatre.',debriefTitle:'Bilan de séance',offlineStartToast:'Mode hors ligne : tout fonctionne, tes modifications partiront au retour d’Internet.',offlineReadyToast:'IKORUN est prête à fonctionner hors ligne',raceDateInvalid:'Date de course invalide : choisis-la à au moins 7 jours.',bdayInvalid:'Date de naissance invalide.',sessionKmRequired:'Indique la distance de la séance (en km).',paceFormatInvalid:'Allure invalide : écris-la au format min:ss (ex. 5:30).',addSessionBtn:'Ajouter la séance',psTitleLab:'Titre',psTitlePh:'Footing du matin',typeVMA:'VMA',typeFractionne:'Fractionné',typeTest:'Test',persoFollowingDesc:'Ton accueil et ton bilan utilisent ce plan. Le plan IKORUN continue de s’ajuster en arrière-plan selon ce que tu fais ici.',persoFollowDesc:'Ton accueil affichera les séances de ce plan au lieu du plan généré. Tu peux revenir au plan IKORUN quand tu veux.',persoStopBtn:'Arrêter',persoFollowBtn:'Suivre',persoNoSession:'Aucune séance. Ajoute ta première !',typeLab:'Type',psHowLab:'Comment veux-tu saisir cette séance ?',psModeSimple:'Simple (km + allure)',psModeReps:'Par répétition (temps de chaque)',psPaceLab:'Allure /km',psRepDistLab:'Distance par répétition',psAddRepBtn:'Ajouter une répétition',psDescLab:'Description (optionnel)',psDescPh:'Détails de la séance...',psNewSessionTitle:'Nouvelle séance',psRepShort:'Rép.',chooseAtLeastOneDay:'Choisis au moins un jour',profileValuesInvalid:'Valeur hors limites : taille 100-250 cm, poids 25-250 kg, FC max 120-230, FC repos 30-120 (sous la FC max), km/sem 0-250.',
     planGenerated:'Plan « {0} » généré : {1} sem, {2} séances',raceGeneric:'course',
     followingPersoPlan:'Tu suis maintenant ce plan perso',backToIkorunPlan:'Retour au plan IKORUN',
     namePromptLabel:'Nom :',copySuffix:'(copie)',confirmDeletePlan:'Supprimer ce plan ?',
@@ -2692,7 +2785,7 @@ const I18N={
     resumeSessionConfirm:'A "{0}" session was in progress ({1} min). Resume?',sessionColonName:'Session: {0}',
     accentBlue:'Blue',accentRed:'Red',accentGreen:'Military green',accentBrown:'Woodland brown',accentYellow:'Yellow',accentCarbon:'Carbon fiber',
     colorApplied:'Color applied',easyModeOn:'Simplified mode enabled',easyModeOff:'Simplified mode disabled',
-    profileIncompleteAddTime:'Incomplete profile: add a time in your records',chooseCompDate:'Choose a race date',raceDateTooSoon:'Choose a race date at least 7 days away — a past or too-close date doesn’t leave enough time to build a plan.',planStartsOn:'Your plan starts on {0}: it covers the 28 weeks before the race.',planSafetyAdjustedToast:'Plan secured: load increases capped at +10% per week, with proper recovery.',planSafetyMigratedToast:'Your plan was adjusted: safer load progression, no back-to-back hard sessions.',planSafetyHint:'To limit injury risk, IKORUN raises your volume by 10% per week at most and lightens one week in four.',debriefTitle:'Session review',raceDateInvalid:'Invalid race date: pick one at least 7 days away.',bdayInvalid:'Invalid date of birth.',sessionKmRequired:'Enter the session distance (km).',paceFormatInvalid:'Invalid pace: use the min:ss format (e.g. 5:30).',addSessionBtn:'Add session',psTitleLab:'Title',psTitlePh:'Morning run',typeVMA:'VO₂max',typeFractionne:'Intervals',typeTest:'Test',persoFollowingDesc:'Your home screen and review use this plan. The IKORUN plan keeps adjusting in the background based on what you do here.',persoFollowDesc:'Your home screen will show this plan\'s sessions instead of the generated plan. You can switch back to the IKORUN plan anytime.',persoStopBtn:'Stop',persoFollowBtn:'Follow',persoNoSession:'No session yet. Add your first one!',typeLab:'Type',psHowLab:'How do you want to enter this session?',psModeSimple:'Simple (km + pace)',psModeReps:'By repetition (time of each)',psPaceLab:'Pace /km',psRepDistLab:'Distance per repetition',psAddRepBtn:'Add a repetition',psDescLab:'Description (optional)',psDescPh:'Session details...',psNewSessionTitle:'New session',psRepShort:'Rep.',chooseAtLeastOneDay:'Choose at least one day',profileValuesInvalid:'Value out of range: height 100-250 cm, weight 25-250 kg, max HR 120-230, resting HR 30-120 (below max HR), km/week 0-250.',
+    profileIncompleteAddTime:'Incomplete profile: add a time in your records',chooseCompDate:'Choose a race date',raceDateTooSoon:'Choose a race date at least 7 days away — a past or too-close date doesn’t leave enough time to build a plan.',planStartsOn:'Your plan starts on {0}: it covers the 28 weeks before the race.',planSafetyAdjustedToast:'Plan secured: load increases capped at +10% per week, with proper recovery.',planSafetyMigratedToast:'Your plan was adjusted: safer load progression, no back-to-back hard sessions.',planSafetyHint:'To limit injury risk, IKORUN raises your volume by 10% per week at most and lightens one week in four.',debriefTitle:'Session review',offlineStartToast:'Offline mode: everything works, your changes will sync once you’re back online.',offlineReadyToast:'IKORUN is ready to work offline',raceDateInvalid:'Invalid race date: pick one at least 7 days away.',bdayInvalid:'Invalid date of birth.',sessionKmRequired:'Enter the session distance (km).',paceFormatInvalid:'Invalid pace: use the min:ss format (e.g. 5:30).',addSessionBtn:'Add session',psTitleLab:'Title',psTitlePh:'Morning run',typeVMA:'VO₂max',typeFractionne:'Intervals',typeTest:'Test',persoFollowingDesc:'Your home screen and review use this plan. The IKORUN plan keeps adjusting in the background based on what you do here.',persoFollowDesc:'Your home screen will show this plan\'s sessions instead of the generated plan. You can switch back to the IKORUN plan anytime.',persoStopBtn:'Stop',persoFollowBtn:'Follow',persoNoSession:'No session yet. Add your first one!',typeLab:'Type',psHowLab:'How do you want to enter this session?',psModeSimple:'Simple (km + pace)',psModeReps:'By repetition (time of each)',psPaceLab:'Pace /km',psRepDistLab:'Distance per repetition',psAddRepBtn:'Add a repetition',psDescLab:'Description (optional)',psDescPh:'Session details...',psNewSessionTitle:'New session',psRepShort:'Rep.',chooseAtLeastOneDay:'Choose at least one day',profileValuesInvalid:'Value out of range: height 100-250 cm, weight 25-250 kg, max HR 120-230, resting HR 30-120 (below max HR), km/week 0-250.',
     planGenerated:'"{0}" plan generated: {1} wk, {2} sessions',raceGeneric:'race',
     followingPersoPlan:'You\u2019re now following this custom plan',backToIkorunPlan:'Back to IKORUN plan',
     namePromptLabel:'Name:',copySuffix:'(copy)',confirmDeletePlan:'Delete this plan?',
@@ -3278,7 +3371,7 @@ const I18N={
     resumeSessionConfirm:'كانت حصة « {0} » جارية ({1} د). المتابعة؟',sessionColonName:'حصة: {0}',
     accentBlue:'أزرق',accentRed:'أحمر',accentGreen:'أخضر عسكري',accentBrown:'بني خشبي',accentYellow:'أصفر',accentCarbon:'ألياف الكربون',
     colorApplied:'تم تطبيق اللون',easyModeOn:'تم تفعيل الوضع المبسّط',easyModeOff:'تم إلغاء الوضع المبسّط',
-    profileIncompleteAddTime:'الملف غير مكتمل: أضف زمنًا في أرقامك القياسية',chooseCompDate:'اختر تاريخ المنافسة',raceDateTooSoon:'اختر تاريخ سباق بعد 7 أيام على الأقل — تاريخ ماضٍ أو قريب جدًا لا يترك وقتًا كافيًا لبناء خطة.',planStartsOn:'تبدأ خطتك يوم {0}: تغطي الأسابيع الـ28 التي تسبق السباق.',planSafetyAdjustedToast:'خطة آمنة: زيادة الحمل محدودة بـ 10% أسبوعيًا مع احترام الاستشفاء.',planSafetyMigratedToast:'تم تعديل خطتك: تدرّج أكثر أمانًا في الحمل، دون حصص صعبة متتالية.',planSafetyHint:'للحدّ من خطر الإصابة، يرفع IKORUN حجمك بـ 10% أسبوعيًا كحد أقصى ويخفّف أسبوعًا من كل أربعة.',debriefTitle:'حصيلة الحصة',raceDateInvalid:'تاريخ سباق غير صالح: اختره بعد 7 أيام على الأقل.',bdayInvalid:'تاريخ ميلاد غير صالح.',sessionKmRequired:'أدخل مسافة الحصة (كم).',paceFormatInvalid:'وتيرة غير صالحة: اكتبها بصيغة د:ث (مثال 5:30).',addSessionBtn:'إضافة الحصة',psTitleLab:'العنوان',psTitlePh:'جري الصباح',typeVMA:'VO₂max',typeFractionne:'تمارين متقطعة',typeTest:'اختبار',persoFollowingDesc:'تستخدم الشاشة الرئيسية والحصيلة هذه الخطة. تواصل خطة IKORUN التكيّف في الخلفية حسب ما تفعله هنا.',persoFollowDesc:'ستعرض شاشتك الرئيسية حصص هذه الخطة بدل الخطة المُولَّدة. يمكنك العودة إلى خطة IKORUN متى شئت.',persoStopBtn:'إيقاف',persoFollowBtn:'متابعة',persoNoSession:'لا توجد حصص بعد. أضف حصتك الأولى!',typeLab:'النوع',psHowLab:'كيف تريد إدخال هذه الحصة؟',psModeSimple:'بسيط (كم + وتيرة)',psModeReps:'حسب التكرار (زمن كل تكرار)',psPaceLab:'الوتيرة /كم',psRepDistLab:'مسافة كل تكرار',psAddRepBtn:'إضافة تكرار',psDescLab:'الوصف (اختياري)',psDescPh:'تفاصيل الحصة...',psNewSessionTitle:'حصة جديدة',psRepShort:'تكرار',chooseAtLeastOneDay:'اختر يومًا واحدًا على الأقل',profileValuesInvalid:'قيمة خارج الحدود: الطول 100-250 سم، الوزن 25-250 كغ، النبض الأقصى 120-230، نبض الراحة 30-120 (أقل من الأقصى)، كم/أسبوع 0-250.',
+    profileIncompleteAddTime:'الملف غير مكتمل: أضف زمنًا في أرقامك القياسية',chooseCompDate:'اختر تاريخ المنافسة',raceDateTooSoon:'اختر تاريخ سباق بعد 7 أيام على الأقل — تاريخ ماضٍ أو قريب جدًا لا يترك وقتًا كافيًا لبناء خطة.',planStartsOn:'تبدأ خطتك يوم {0}: تغطي الأسابيع الـ28 التي تسبق السباق.',planSafetyAdjustedToast:'خطة آمنة: زيادة الحمل محدودة بـ 10% أسبوعيًا مع احترام الاستشفاء.',planSafetyMigratedToast:'تم تعديل خطتك: تدرّج أكثر أمانًا في الحمل، دون حصص صعبة متتالية.',planSafetyHint:'للحدّ من خطر الإصابة، يرفع IKORUN حجمك بـ 10% أسبوعيًا كحد أقصى ويخفّف أسبوعًا من كل أربعة.',debriefTitle:'حصيلة الحصة',offlineStartToast:'وضع عدم الاتصال: كل شيء يعمل، وستُزامَن تعديلاتك عند عودة الإنترنت.',offlineReadyToast:'IKORUN جاهز للعمل دون اتصال',raceDateInvalid:'تاريخ سباق غير صالح: اختره بعد 7 أيام على الأقل.',bdayInvalid:'تاريخ ميلاد غير صالح.',sessionKmRequired:'أدخل مسافة الحصة (كم).',paceFormatInvalid:'وتيرة غير صالحة: اكتبها بصيغة د:ث (مثال 5:30).',addSessionBtn:'إضافة الحصة',psTitleLab:'العنوان',psTitlePh:'جري الصباح',typeVMA:'VO₂max',typeFractionne:'تمارين متقطعة',typeTest:'اختبار',persoFollowingDesc:'تستخدم الشاشة الرئيسية والحصيلة هذه الخطة. تواصل خطة IKORUN التكيّف في الخلفية حسب ما تفعله هنا.',persoFollowDesc:'ستعرض شاشتك الرئيسية حصص هذه الخطة بدل الخطة المُولَّدة. يمكنك العودة إلى خطة IKORUN متى شئت.',persoStopBtn:'إيقاف',persoFollowBtn:'متابعة',persoNoSession:'لا توجد حصص بعد. أضف حصتك الأولى!',typeLab:'النوع',psHowLab:'كيف تريد إدخال هذه الحصة؟',psModeSimple:'بسيط (كم + وتيرة)',psModeReps:'حسب التكرار (زمن كل تكرار)',psPaceLab:'الوتيرة /كم',psRepDistLab:'مسافة كل تكرار',psAddRepBtn:'إضافة تكرار',psDescLab:'الوصف (اختياري)',psDescPh:'تفاصيل الحصة...',psNewSessionTitle:'حصة جديدة',psRepShort:'تكرار',chooseAtLeastOneDay:'اختر يومًا واحدًا على الأقل',profileValuesInvalid:'قيمة خارج الحدود: الطول 100-250 سم، الوزن 25-250 كغ، النبض الأقصى 120-230، نبض الراحة 30-120 (أقل من الأقصى)، كم/أسبوع 0-250.',
     planGenerated:'تم إنشاء خطة « {0} »: {1} أسبوع، {2} حصة',raceGeneric:'سباق',
     followingPersoPlan:'أنت الآن تتبع هذه الخطة الشخصية',backToIkorunPlan:'العودة إلى خطة IKORUN',
     namePromptLabel:'الاسم:',copySuffix:'(نسخة)',confirmDeletePlan:'حذف هذه الخطة؟',
@@ -4884,6 +4977,10 @@ try{
 if('serviceWorker'in navigator){
   navigator.serviceWorker.addEventListener('message',e=>{
     const d0=e.data||{}; if(d0.type==='ik-open'){ ikOpenDeepLink(d0.open); return; }
+    if(d0.type==='ik-offline-ready'){
+      let deja=false; try{ deja=!!localStorage.getItem('ik_offline_ready'); localStorage.setItem('ik_offline_ready','1'); }catch(x){}
+      if(!deja) setTimeout(()=>toast(t('offlineReadyToast')),2500);
+    }
   });
   navigator.serviceWorker.addEventListener('message',e=>{
     const d=e.data||{}; if(d.type!=='bgActivityAction' || !_bgActivity) return;
@@ -4917,6 +5014,8 @@ document.addEventListener('visibilitychange',async()=>{
     checkDayRollover();
     ensurePush();
     syncDailyReminderState();
+    // retour au premier plan : reprise en ligne / envoi des modifications faites hors ligne
+    try{ if(window._offlineBoot) scheduleResume(); else flushDirty(); }catch(e){}
     if(_bgActivity && !_wakeLock){
     try{ if('wakeLock'in navigator) _wakeLock=await navigator.wakeLock.request('screen'); }catch(e){}
     }
@@ -5529,10 +5628,11 @@ async function startApp(){
     if(_startAppSettled) return;
     console.warn('[IKORUN] startApp trop long — déblocage forcé du skeleton');
     let hasSession=false;
-    try{ const { data:{ session } } = await window.supabaseClient.auth.getSession(); hasSession=!!session; }catch(e){}
+    // getSession peut lui-même rester suspendu sur un réseau qui ne répond pas
+    try{ const { data:{ session } } = await Promise.race([window.supabaseClient.auth.getSession(), new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000))]); hasSession=!!session; }catch(e){}
     if(_startAppSettled) return;
     if(hasSession){ hideAppSkeleton(); toast(t('syncSlowToast')); }
-    else startLogin();
+    else if(!(window.__ikOfflineBoot && window.__ikOfflineBoot())) startLogin();
   },10000);
   const _markSettled=()=>{ _startAppSettled=true; clearTimeout(_forceUnstick); };
 
@@ -5546,8 +5646,9 @@ async function startApp(){
     try{
       await window.DB_READY; // déchiffrement local — lancé en parallèle au chargement du script
       ensureLocalCacheOwnership(userId); // purge le cache d'un éventuel compte précédent avant toute lecture/écriture
-      await cloudPullAll(userId);
-      reloadState();
+      window._cloudPulling=true;
+      try{ await cloudPullAll(userId); reloadState(); }
+      finally{ window._cloudPulling=false; }
       // L'adresse est revenue sur la session : la confirmation a abouti, l'écran
       // « adresse à confirmer » (Profil > Compte) n'a plus lieu d'être.
       if(email && P.pendingEmail) P.pendingEmail=null;
@@ -5571,7 +5672,40 @@ async function startApp(){
       _markSettled();
     }
     try{ ensurePublicProfile().then(syncPublicProfile); }catch(e){}
+    setTimeout(()=>{ flushDirty(); },1500); // modifications faites hors ligne lors d'une session précédente
   }
+  /* ---- DÉMARRAGE HORS LIGNE (27/09) ----
+     Le jeton d'accès Supabase expire au bout d'une heure. Sans réseau, getSession()
+     ne peut pas le renouveler et rend une session vide : l'app ouvrait alors l'écran
+     de connexion, alors que toutes les données sont sur le téléphone. supabase-js
+     CONSERVE la session enregistrée quand l'échec vient du réseau (il ne l'efface que
+     si le serveur la refuse) : on démarre donc sur les données locales, et la
+     reconnexion se fait seule au retour d'Internet (resumeFromOffline). */
+  function storedAuthUser(){
+    try{
+      const k=Object.keys(localStorage).find(x=>/^sb-.+-auth-token$/.test(x)); if(!k) return null;
+      const v=JSON.parse(localStorage.getItem(k)||'null');
+      return (v && v.refresh_token && v.user && v.user.id) ? v.user : null;
+    }catch(e){ return null; }
+  }
+  function isNetworkAuthError(err){
+    return !navigator.onLine || !!(err && (err.name==='AuthRetryableFetchError' || err.status===0 || /fetch|network|load failed|timed? ?out/i.test(String(err.message||''))));
+  }
+  async function offlineBoot(u){
+    if(_loggedInOnce) return; _loggedInOnce=true; // finishLogin ne rejouera pas le démarrage
+    window._offlineBoot=true;
+    window.currentUserId=u.id; window.currentUserEmail=u.email||null; window.isGuestUser=isAnonSession(u);
+    try{ await window.DB_READY; ensureLocalCacheOwnership(u.id); reloadState(); }
+    catch(e){ console.error('[IKORUN] démarrage hors ligne — cache local',e); }
+    try{ endLogin(); boot(); }
+    catch(e){ console.error('[IKORUN] démarrage hors ligne — boot',e); hideAppSkeleton(); endLogin(); }
+    finally{ _markSettled(); }
+    setTimeout(()=>toast(t('offlineStartToast')),900);
+    scheduleResume();
+  }
+  // Pour les filets de sécurité (chiens de garde) : démarrer hors ligne plutôt que
+  // renvoyer vers la connexion quand une session existe mais que le réseau traîne.
+  window.__ikOfflineBoot=()=>{ const u=storedAuthUser(); if(!u) return false; offlineBoot(u); return true; };
   // is_anonymous est le champ officiel du SDK Supabase pour un compte invité ;
   // le fallback sur user_metadata.ikorun_guest couvre le cas où ce champ ne
   // serait pas exposé (cf continueAsGuest()).
@@ -5583,6 +5717,7 @@ async function startApp(){
   // n'écoute encore — et on le rate silencieusement (l'app reste bloquée sur
   // l'onboarding malgré une connexion réussie côté serveur).
   window.supabaseClient.auth.onAuthStateChange(async (event, session) => {
+    if(window._offlineBoot && session && (event==='TOKEN_REFRESHED' || event==='SIGNED_IN' || event==='INITIAL_SESSION')){ resumeFromOffline(); return; }
     if((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session){
       const wasFirstLogin = !_loggedInOnce;
       await finishLogin(session.user.id, session.user.email, isAnonSession(session.user));
@@ -5614,11 +5749,31 @@ async function startApp(){
   // getSession() ne dépend pas du cache local déchiffré : on le lance sans
   // attendre DB_READY, qui tourne déjà en tâche de fond depuis le chargement
   // du script (économise un aller-retour réseau + IndexedDB en série).
+  // Sans réseau, getSession() retente le renouvellement du jeton pendant ~30 s avant
+  // de répondre : on n'attend pas. Hors ligne (ou réseau muet au-delà de 2,5 s) avec
+  // une session enregistrée → démarrage immédiat sur les données locales ; la réponse
+  // tardive de getSession sert alors de reprise en ligne.
+  const _sessP=window.supabaseClient.auth.getSession();
+  const _uStored=storedAuthUser();
+  if(_uStored){
+    const _lent=await Promise.race([
+      _sessP.then(()=>false,()=>false),
+      new Promise(r=>setTimeout(()=>r(true), navigator.onLine?3000:0))
+    ]);
+    if(_lent){
+      _sessP.then(({ data })=>{ if(data && data.session && window._offlineBoot) resumeFromOffline(); }).catch(()=>{});
+      await offlineBoot(_uStored); return;
+    }
+  }
   try{
-    const { data:{ session } } = await window.supabaseClient.auth.getSession();
+    const { data:{ session }, error } = await _sessP;
     if(session && session.user){
       await finishLogin(session.user.id, session.user.email, isAnonSession(session.user));
     } else {
+      // Session enregistrée mais jeton impossible à renouveler faute de réseau :
+      // démarrage sur les données locales (voir offlineBoot).
+      const u=storedAuthUser();
+      if(u && isNetworkAuthError(error)){ await offlineBoot(u); return; }
       // Avec persistSession:true + autoRefreshToken:true, getSession() a déjà
       // restauré/renouvelé la session depuis le localStorage si elle existait.
       // Rien d'autre à tenter : direct au login.
@@ -5627,10 +5782,43 @@ async function startApp(){
       startLogin();
     }
   }catch(e){
+    const u=storedAuthUser();
+    if(u && isNetworkAuthError(e)){ await offlineBoot(u); return; }
     console.error('[IKORUN] startApp erreur — fallback login',e);
     _markSettled();
     startLogin();
   }
+}
+/* Reprise en ligne après un démarrage hors ligne : on attend que supabase-js ait pu
+   renouveler le jeton (il espace ses essais d'une minute après un échec), puis on
+   envoie la file de modifications. Pas de rechargement des données du serveur ici :
+   l'écran en cours n'est pas bousculé ; le lancement suivant fera le tour complet. */
+async function resumeFromOffline(){
+  if(!window._offlineBoot || !navigator.onLine || !window.supabaseClient) return false;
+  try{
+    const { data:{ session } } = await window.supabaseClient.auth.getSession();
+    if(!session || !session.user) return false;
+    if(session.user.id!==window.currentUserId){ location.reload(); return true; } // autre compte : on repart proprement
+    window._offlineBoot=false;
+    window.currentUserEmail=session.user.email||window.currentUserEmail;
+    const synced=await flushDirty();
+    try{ ensurePublicProfile().then(syncPublicProfile); }catch(e){}
+    try{ ensurePush(); syncDailyReminderState(); }catch(e){}
+    if(synced) toast(t('dataSynced'));
+    return true;
+  }catch(e){ return false; }
+}
+let _resumeTimer=null;
+function scheduleResume(){
+  if(!window._offlineBoot) return;
+  clearTimeout(_resumeTimer);
+  let n=0;
+  const essai=async()=>{
+    if(!window._offlineBoot) return;
+    if(navigator.onLine && await resumeFromOffline()) return;
+    if(++n<40) _resumeTimer=setTimeout(essai,20000);
+  };
+  essai();
 }
 
 function logout(){ signOutUser(); }
@@ -8445,7 +8633,7 @@ function renderHome(){
         '<div class="hv7-day-top"><span class="hv7-day-chip" style="color:var(--e2)">IKORUN</span>'+
           '<span class="hv7-day-when">'+escHtml(wdCap)+'</span></div>'+
         '<div class="hv7-day-title">'+t('planIkorunTitle')+'</div>'+
-        '<div class="hv7-day-why">'+tp('planIkorunDescLong',(vdot||t('vdotToBeCalculated')))+'</div>'+
+        '<div class="hv7-day-why">'+tp('planIkorunDescLong',(vdot?fmt1(vdot):t('vdotToBeCalculated')))+'</div>'+
         '<div class="hv7-day-acts"><button class="hv7-act main">'+t('configureGenerate')+'</button></div>'+
       '</div>';
     }
@@ -8577,7 +8765,7 @@ function renderRunning(){
   let h='<div class="seg-ctrl sub"><div class="seg-btn'+(runSub==='ia'?' on':'')+'" onclick="runSub=\'ia\';renderSport()">'+t('planIkorunPill')+'</div><div class="seg-btn'+(runSub==='perso'?' on':'')+'" onclick="runSub=\'perso\';renderSport()">'+t('myPlanPill')+'</div></div>';
   if(runSub==='ia'){
     if(!PLAN){
-      h+='<div class="card" id="tourPlanCta"><div class="empty"><div class="em-ic">'+ICN('bolt',36,'currentColor')+'</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">'+t('planIkorunTitle')+'</div><div style="font-size:13px;margin-bottom:16px">'+tp('planIkorunDescLong',(getUserVDOT()||t('vdotToBeCalculated')))+'</div><button class="btn" onclick="openPlanSetup()">'+t('configureGenerate')+'</button></div></div>';
+      h+='<div class="card" id="tourPlanCta"><div class="empty"><div class="em-ic">'+ICN('bolt',36,'currentColor')+'</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">'+t('planIkorunTitle')+'</div><div style="font-size:13px;margin-bottom:16px">'+tp('planIkorunDescLong',(getUserVDOT()?fmt1(getUserVDOT()):t('vdotToBeCalculated')))+'</div><button class="btn" onclick="openPlanSetup()">'+t('configureGenerate')+'</button></div></div>';
     } else {
       h+=planHeroHTML();
       // Seule la semaine en cours est listée ici ; le reste du plan s'ouvre en
@@ -12745,18 +12933,21 @@ function checkConnectivity(){
   const online=navigator.onLine;
   if(online){ syncOnline(true); }
   else {
-    const last=PREFS.lastOnline||Date.now();
+    const last=lastOnlineGet()||PREFS.lastOnline||Date.now();
     const days=Math.floor((Date.now()-last)/86400000);
     if(days>=3) setTimeout(()=>toast(''+tp('offlineSinceDays',days)),1500);
   }
   return online;
 }
+// Dernière connexion : propre à l'appareil, gardée hors de « prefs » (sinon la clé
+// repartait vers le serveur au lancement puis toutes les 5 min, pour une simple heure).
+function lastOnlineGet(){ try{ return +localStorage.getItem('ik_last_online')||0; }catch(e){ return 0; } }
 /* Synchronisation silencieuse quand Internet est disponible */
 function syncOnline(silent){
   if(!navigator.onLine) return;
   if(silent && Date.now()-_lastScrollTouch<1000){ setTimeout(()=>syncOnline(silent),1500); return; } // évite de re-render sous le doigt
-  PREFS.lastOnline=Date.now();
-  PREFS.lastSync=Date.now();
+  try{ localStorage.setItem('ik_last_online',String(Date.now())); }catch(e){}
+  if('lastOnline' in PREFS || 'lastSync' in PREFS){ delete PREFS.lastOnline; delete PREFS.lastSync; }
   // Recalcule/rafraîchit les données dépendantes de la date (prières, calendrier, J-X…)
   checkDayRollover(); // couvre le cas ou l'app reste affichee au passage de minuit
   try{ if($('#s-home')&&$('#s-home').classList.contains('on')) renderHome(); }catch(e){}
@@ -12765,10 +12956,10 @@ function syncOnline(silent){
   if(!silent) toast(''+t('dataSynced'));
   nudgeScroll();
 }
-window.addEventListener('online',()=>{ toast(''+t('connectionRestored')); syncOnline(false); });
+window.addEventListener('online',()=>{ toast(''+t('connectionRestored')); syncOnline(false); if(window._offlineBoot) scheduleResume(); else flushDirty().then(ok=>{ if(ok) toast(t('dataSynced')); }); });
 window.addEventListener('offline',()=>{ toast(''+t('offlineModeAvailable')); });
 // Sync silencieuse périodique tant que l'app est ouverte
-setInterval(()=>{ if(navigator.onLine) syncOnline(true); },5*60*1000);
+setInterval(()=>{ if(navigator.onLine){ syncOnline(true); flushDirty(); } },5*60*1000);
 
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',startApp); else startApp();
 setTimeout(hideAppSkeleton,7000); // filet de sécurité si le réseau/l'auth traîne
