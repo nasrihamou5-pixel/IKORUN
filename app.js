@@ -9088,7 +9088,7 @@ function openProg(id){
   // Liste d'exercices avec vignette + numéro
   p.ex.forEach((e,i)=>{
     h+='<div class="card" style="padding:13px;margin-bottom:10px;cursor:pointer" onclick="openExDetail(\''+p.id+'\','+i+')"><div class="row" style="align-items:flex-start"><div style="position:relative;margin-right:12px">'+exThumb(e.name,64)+
-      '<div style="position:absolute;top:-6px;left:-6px;width:22px;height:22px;border-radius:7px;background:linear-gradient(180deg,rgba(0,0,0,.1),rgba(0,0,0,.3)) var(--e);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">'+(i+1)+'</div></div>'+
+      '<div style="position:absolute;top:-6px;left:-6px;width:22px;height:22px;border-radius:50%;background:var(--fill-accent);color:var(--accent-ink);text-shadow:var(--accent-ink-shadow);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">'+(i+1)+'</div></div>'+
       '<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15px;line-height:1.25">'+escHtml(e.name)+'</div>'+
       '<div class="muscle-tags" style="margin-top:5px">'+(e.muscles||[]).slice(0,2).map(m=>'<span class="mtag">'+m+'</span>').join('')+'</div>'+
       '<div style="font-size:12px;color:var(--muted);margin-top:6px">'+tp('setsRepsLine',e.sets,e.reps)+'</div>'+
@@ -9386,7 +9386,7 @@ function renderLive(){
     '<button class="live-ic" onclick="pauseLive()" aria-label="'+t('pauseLab')+'" title="'+t('pauseLab')+'">'+ICN('pause',17)+'</button>'+
     '<div style="flex:1"></div>'+
     '<button class="live-ic" onclick="openRest(90)" aria-label="'+t('restTimerBtn')+'" title="'+t('restTimerBtn')+'">'+ICN('stopwatch',17)+'</button>'+
-    '<button class="btn sm" style="width:auto;padding:8px 18px;background:linear-gradient(135deg,var(--e),var(--e2))" onclick="finishLive()">'+t('liveFinishBtn')+'</button>'+
+    '<button class="btn sm" style="width:auto;padding:8px 18px" onclick="finishLive()">'+t('liveFinishBtn')+'</button>'+
     '</div>';
   // Stats : Durée / Volume / Séries
   h+='<div class="card" style="padding:14px 6px;margin-bottom:16px"><div style="display:flex;text-align:center">'+

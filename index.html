@@ -93,7 +93,7 @@
 <!-- téléchargés dès maintenant, exécutés après la première image (voir bas de page) -->
 <link rel="preload" as="script" href="vendor/supabase.js?v=1">
 <link rel="preload" as="script" href="vendor/sb-init.js?v=2">
-<link rel="preload" as="script" href="app.js?v=97">
+<link rel="preload" as="script" href="app.js?v=98">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
@@ -119,7 +119,7 @@
   --sh-lg:0 16px 40px -12px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.04) inset;
   --sh-e:0 8px 22px -6px rgba(var(--e-rgb),.45),0 2px 6px -2px rgba(var(--e-rgb),.3);
   --grad-card:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,0) 40%);
-  --grad-btn:linear-gradient(180deg,#4C8CFF,#2D6CEF 60%,#2660DB);
+  --grad-btn:linear-gradient(180deg,#4180FF,#2B66EC 55%,#2257D6);
   --sh-hero:0 24px 60px -16px rgba(0,0,0,.7),0 8px 24px -8px rgba(var(--e-rgb),.18),0 1px 0 rgba(255,255,255,.05) inset;
   --sh-deep:0 10px 28px -10px rgba(0,0,0,.65),0 2px 6px -2px rgba(0,0,0,.4),0 1px 0 rgba(255,255,255,.03) inset;
   --bg-rgb:7,9,13;
@@ -182,7 +182,7 @@ html[data-mode="light"][data-accent="blue"]{
 /* ===== COULEURS D'ACCENT — Bleu (défaut) / Vert militaire chromé / Marron boisé chromé / Jaune chromé / Fibre de carbone ===== */
 html[data-accent="green"]{
   --e:#7FB856; --e2:#A6D687; --e-rgb:127,184,86; --e2-rgb:166,214,135;
-  --grad-btn:linear-gradient(180deg,#9FCB73,#74AC4A 60%,#5E9339);
+  --grad-btn:linear-gradient(180deg,#57923A,#437A2C 55%,#36661F);
   --marineL:#24361F; --hair:#1E2A1B; --hair2:#2C3D27;
   --bg:#0A0D08; --s1:#141C10; --s2:#1D2818; --s3:#293620;
   --bg-rgb:10,13,8; --s1-rgb:20,28,16; --s2-rgb:29,40,24; --s3-rgb:41,54,32;
@@ -196,7 +196,7 @@ html[data-mode="light"][data-accent="green"]{
 }
 html[data-accent="brown"]{
   --e:#B9793E; --e2:#DDA873; --e-rgb:185,121,62; --e2-rgb:221,168,115;
-  --grad-btn:linear-gradient(180deg,#D6A66E,#B97A3F 60%,#98602E);
+  --grad-btn:linear-gradient(180deg,#B07434,#93602B 55%,#7A4E22);
   --marineL:#3A2A1C; --hair:#2C2019; --hair2:#3D2C21;
   --bg:#0D0A07; --s1:#1E150E; --s2:#281C13; --s3:#36271A;
   --bg-rgb:13,10,7; --s1-rgb:30,21,14; --s2-rgb:40,28,19; --s3-rgb:54,39,26;
@@ -210,7 +210,7 @@ html[data-mode="light"][data-accent="brown"]{
 }
 html[data-accent="red"]{
   --e:#FF5A45; --e2:#FF8A75; --e-rgb:255,90,69; --e2-rgb:255,138,117;
-  --grad-btn:linear-gradient(180deg,#FF8A75,#FF5A45 60%,#D93A26);
+  --grad-btn:linear-gradient(180deg,#E84A36,#CC3522 55%,#A82816);
   --marineL:#3A1712; --hair:#2A1310; --hair2:#3D1B16;
   --bg:#0D0605; --s1:#1E0F0B; --s2:#281511; --s3:#361D17;
   --bg-rgb:13,6,5; --s1-rgb:30,15,11; --s2-rgb:40,21,17; --s3-rgb:54,29,23;
@@ -522,7 +522,12 @@ html[data-mode="light"] .hv7-people,html[data-mode="light"] .hv7-icon-btn{backgr
 .hv7-act.main{color:#fff;background:var(--grad-btn);text-shadow:0 1px 2px rgba(0,0,0,.45);
   box-shadow:0 10px 22px -12px rgba(var(--e-rgb),.95);}
 html[data-mode="dark"][data-accent="yellow"] .hv7-act.main{color:#2A2205;text-shadow:none;}
-.hv7-act.ghost{color:var(--muted);background:transparent;border:1px solid var(--hair2);}
+/* Même matière que .btn.ghost : un bouton secondaire est la même surface partout
+   (--s2 + --hair2), qu'il soit dans une carte d'accueil, une feuille ou une
+   liste. Il était transparent ici, plein ailleurs, ce qui donnait deux boutons
+   secondaires d'aspect différent parfois côte à côte. */
+.hv7-act.ghost{color:var(--snow);background:var(--s2);border:1px solid var(--hair2);}
+.hv7-act.ghost:active{background:var(--s3);}
 .hv7-day-state{margin-top:15px;border-radius:99px;padding:11px;text-align:center;font-weight:800;font-size:12.5px;letter-spacing:.3px;}
 .hv7-day-state.ok{background:rgba(51,211,153,.16);color:var(--ok);}
 .hv7-day-state.ko{background:rgba(255,92,108,.14);color:var(--bad);}
@@ -1122,17 +1127,12 @@ html[data-mode="light"]{
   --chrome-sheen:linear-gradient(100deg,transparent 28%,rgba(255,255,255,.85) 46%,rgba(255,255,255,.1) 54%,transparent 70%);
   --chrome-spec:radial-gradient(120% 140% at 50% -30%,rgba(255,255,255,.8),transparent 60%);
 }
-.pill{
-  background:var(--chrome-spec),var(--chrome-base) !important;
-  -webkit-backdrop-filter:blur(20px) saturate(1.3);backdrop-filter:blur(20px) saturate(1.3);
-  border:1px solid var(--chrome-border) !important;color:var(--muted);
-  box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 -6px 10px -6px rgba(0,0,0,.4) inset;
-}
-.pill.on{
-  background:var(--chrome-spec),linear-gradient(155deg,rgba(var(--e-rgb),.34),rgba(var(--e-rgb),.12)) !important;
-  border:1px solid rgba(var(--e-rgb),.5) !important;color:var(--e2);
-  -webkit-backdrop-filter:blur(20px) saturate(1.4);backdrop-filter:blur(20px) saturate(1.4);
-}
+/* (Génération « pastille chromée bombée » retirée le 27/09. Elle était déjà
+   écrasée par le langage de contrôle plat plus bas — sauf son backdrop-filter :
+   chaque pastille SÉLECTIONNÉE gardait un blur(20px) invisible, masqué par le
+   dégradé d'accent opaque, mais bien calculé par le compositeur à chaque frame.
+   Elle laissait aussi trois définitions de .pill concurrentes en !important,
+   impossibles à modifier sans surprise.) */
 
 /* NAV — finition chromée (verre + métal poli), même famille que les pills */
 #nav{position:fixed;bottom:calc(10px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:calc(100% - 26px);max-width:404px;z-index:9999;
@@ -1223,7 +1223,7 @@ html[data-mode="light"]{
 #ovProfile #profileEditBody{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;margin:0 -4px;padding:0 4px;}
 #ovProfile .ov-foot-save{flex:0 0 auto;}
 #ovProfile .ov-foot-save:not(:empty){margin-top:12px;padding-top:12px;border-top:1px solid var(--hair);}
-.x{width:32px;height:32px;border-radius:var(--r-xs);background:var(--s2);border:1px solid var(--hair);
+.x{width:32px;height:32px;border-radius:var(--r-xs);background:var(--s2);border:1px solid var(--hair2);
   display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:16px;transition:transform .15s var(--ease-spring),background .15s;}
 .x:active{transform:scale(.9);background:var(--s3);}
 
@@ -2070,9 +2070,10 @@ html[data-mode="light"]{
    autre admin plutôt que suppression du club). */
 .club-admin-chip{font-size:9.5px;font-weight:800;color:var(--ok);background:rgba(51,211,153,.14);
   border-radius:5px;padding:1.5px 5px;margin-left:6px;letter-spacing:.3px;vertical-align:middle;white-space:nowrap;}
-.club-role-btn{flex-shrink:0;font-size:10.5px;font-weight:700;color:var(--e2);background:var(--s3);
-  border:1px solid var(--hair);border-radius:99px;padding:5px 10px;margin-left:8px;cursor:pointer;white-space:nowrap;}
-.club-role-btn:active{transform:scale(.94);}
+.club-role-btn{flex-shrink:0;font-size:10.5px;font-weight:700;color:var(--e2);background:var(--s2);
+  border:1px solid var(--hair2);border-radius:99px;padding:5px 10px;margin-left:8px;cursor:pointer;white-space:nowrap;
+  transition:transform .15s var(--ease-spring),background .15s ease;}
+.club-role-btn:active{transform:scale(.94);background:var(--s3);}
 .fr-km-txt{font-size:11.5px;color:var(--muted);font-weight:600;}
 .fr-del{color:var(--dim);cursor:pointer;padding:6px;flex-shrink:0;}
 .fr-del:active{color:var(--bad);}
@@ -2230,19 +2231,11 @@ body[data-scr="profil"] #tbAvatar{visibility:hidden;}
    de saisie gardent leur propre style de focus. */
 :focus-visible{outline:2px solid var(--e2);outline-offset:3px;}
 input:focus-visible,textarea:focus-visible,select:focus-visible{outline:none;}
-/* Texte blanc sur l'accent plein : le bleu --e seul ne donne que 3,7:1 avec du blanc
-   (minimum 4,5:1). Les onglets actifs, le jour du calendrier et les petites pastilles
-   prennent l'accent assombri en dégradé (≥4,5:1 sur toute la hauteur). Jaune et carbone
-   en sombre sont des accents clairs : texte foncé. */
-.fr-tab.on,.seg-btn.on,.cal-cell.today,.promo-cta,.fr-profile-lvl{background:linear-gradient(180deg,rgba(0,0,0,.1),rgba(0,0,0,.3)) var(--e);text-shadow:0 1px 1px rgba(0,0,0,.3);}
-html[data-mode="dark"][data-accent="yellow"] :is(.fr-tab.on,.seg-btn.on,.cal-cell.today,.promo-cta,.fr-profile-lvl){background:var(--e);color:#2A2205;text-shadow:none;}
-html[data-mode="dark"][data-accent="carbon"] :is(.fr-tab.on,.seg-btn.on,.cal-cell.today,.promo-cta,.fr-profile-lvl){background:linear-gradient(180deg,#EEF1F4,#B9C0C8);color:#0E0F11;text-shadow:none;}
 /* Stats : deux rangées d'onglets identiques empilées (rubrique puis période). La
    période devient un filtre secondaire, plus discret, pour que l'œil lise d'abord
    la rubrique. */
 .seg-ctrl.sub{background:transparent;box-shadow:none;padding:3px;margin-top:-2px;}
 .seg-ctrl.sub .seg-btn{padding:6px 0;font-size:11.5px;}
-html[data-mode] .seg-ctrl.sub .seg-btn.on{background:var(--s3);color:var(--snow);box-shadow:inset 0 0 0 1px var(--hair2);text-shadow:none;}
 /* « MEILLEUR JOUR » passait sous l'étoile posée dans le coin de la tuile */
 .ktile-star{right:auto;inset-inline-end:9px;}
 .ktile-star+.ktile-lab{padding-inline-end:18px;}
@@ -2421,9 +2414,6 @@ html[data-mode="light"] .iki-word{color:#10141B;}
    RETOURS DU 26/09 (relecture transmise par Hamou)
    =================================================================== */
 /* 1. Ce qui faisait « cassé » */
-/* titres d'écran et contenu sur la même gouttière de 20 px */
-.topbar{padding-left:max(20px,env(safe-area-inset-left));padding-right:max(20px,env(safe-area-inset-right));}
-.scr{padding-left:20px;padding-right:20px;}
 /* avatar du haut : cercle en dégradé + initiale ; une photo éventuelle se pose
    par-dessus et disparaît si elle ne charge pas (plus de carré vide) */
 #tbAvatar{width:40px;height:40px;border-radius:50%;border:0;position:relative;
@@ -2441,17 +2431,7 @@ html[data-mode="light"] .iki-word{color:#10141B;}
 #scroll{padding-bottom:calc(150px + env(safe-area-inset-bottom));}
 #navFade{height:calc(96px + env(safe-area-inset-bottom));}
 
-/* 2. Un seul langage de contrôle : fini les pastilles chromées bombées.
-   Changer de vue = segmented control (.seg-ctrl, comme Stats) ; choisir dans un
-   formulaire = puce plate, sélection en accent plein comme les onglets actifs. */
-.pill{background:var(--s1) !important;border:1px solid var(--hair2) !important;color:var(--muted);box-shadow:none;
-  -webkit-backdrop-filter:none;backdrop-filter:none;font-weight:600;}
-.pill.on{background:linear-gradient(180deg,rgba(0,0,0,.1),rgba(0,0,0,.3)) var(--e) !important;border-color:transparent !important;
-  color:#fff;box-shadow:none;text-shadow:0 1px 1px rgba(0,0,0,.3);}
-html[data-mode="dark"][data-accent="yellow"] .pill.on{background:var(--e) !important;color:#2A2205;text-shadow:none;}
-html[data-mode="dark"][data-accent="carbon"] .pill.on{background:linear-gradient(180deg,#EEF1F4,#B9C0C8) !important;color:#0E0F11;text-shadow:none;}
-.pills.sub .pill{background:transparent !important;}
-.pills.sub .pill.on{background:var(--s3) !important;color:var(--snow);border-color:var(--hair2) !important;text-shadow:none;}
+/* 2. Sélecteur de la page Sport : piste + bouton calendrier rond (voir le système unifié) */
 .seg-row{display:flex;gap:8px;align-items:center;margin:6px 0 16px;}
 .seg-row .seg-ctrl{flex:1;margin:0;}
 .seg-row .tb-gear{width:44px;height:44px;border-radius:50%;flex-shrink:0;color:var(--snow);padding:0;font:inherit;}
@@ -2465,16 +2445,94 @@ html[data-mode="dark"][data-accent="carbon"] .pill.on{background:linear-gradient
 .zval.mono,.sbox .v.mono{font-family:'JetBrains Mono',monospace;letter-spacing:-.3px;}
 .mus-last{font-size:11px;letter-spacing:0;}
 
-/* 5. Mode clair : cartes blanches nettes au lieu du « bleu sur bleu » */
-html[data-mode="light"]{--glass-bg:#FFFFFF;}
-html[data-mode="light"] .sp-plan{background:#FFFFFF;border-color:var(--hair);
-  box-shadow:0 12px 28px -20px rgba(20,32,56,.45),0 1px 2px rgba(20,32,56,.06);}
 
-/* Profil et Accueil : retour à la mise en page d'avant la v95, à la demande de Hamou
-   (26/09) — gouttière de 14 px (titre compris) et cartes en verre translucide en clair. */
-#s-profil,#s-home{padding-left:14px;padding-right:14px;}
-body[data-scr="profil"] .topbar{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right));}
-html[data-mode="light"] :is(#s-profil,#s-home){--glass-bg:rgba(255,255,255,.74);}
+/* ===================================================================
+   SYSTÈME VISUEL UNIFIÉ (27/09) — demande de Hamou : « rien ne va avec l'autre :
+   pas la même matière, pas le même contraste, pas le même fondu ».
+   Avant : 5 matières (verre, métal chromé, plat foncé, plat clair, teinte bleue),
+   4 dégradés d'accent, boutons en pilule ou en rectangle au hasard, boutons-icônes
+   carrés ou ronds, 7 arrondis de cartes. Désormais TROIS matières seulement :
+   • VERRE      : toute surface d'information (cartes, groupes, tuiles, graphiques,
+                  lignes de séance) = la matière des .card, fine arête claire.
+                  Variante « héros » (carte principale d'un écran) : même verre +
+                  halo d'accent en haut à droite + liseré d'accent.
+   • ACCENT     : toute action principale ET tout élément choisi (boutons, onglet
+                  actif, puce choisie, interrupteur, jour courant) = le même dégradé
+                  --grad-btn + le même reflet ; texte blanc ≥ 4,5:1.
+   • SECONDAIRE : boutons secondaires, boutons-icônes, puces non choisies = fond
+                  --s2 + filet --hair2. Les sélecteurs reposent sur une « piste »
+                  creusée de la même teinte.
+   Formes : action = rectangle arrondi (--r-sm) ; sélecteur/puce = pilule ;
+   bouton-icône = cercle. Arrondis : 22 héros, 18 cartes, 14 tuiles et lignes.
+   Gouttière unique de 14 px sur tous les écrans. Aucune taille ni position ne
+   change : seules les matières, couleurs, ombres et arrondis sont unifiés.
+   =================================================================== */
+:root{
+  --fill-accent:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 55%),var(--grad-btn);
+  --sh-accent-sm:0 4px 12px -4px rgba(var(--e-rgb),.55);
+  --accent-ink:#FFFFFF; --accent-ink-shadow:0 1px 2px rgba(0,0,0,.45);
+  --ring-soft:inset 0 0 0 1px var(--glass-border-soft);
+}
+html[data-mode="dark"][data-accent="yellow"]{--accent-ink:#2A2205;--accent-ink-shadow:0 1px 1px rgba(255,255,255,.35);}
+html[data-accent="carbon"]{--accent-ink-shadow:0 1px 3px rgba(0,0,0,.85),0 0 10px rgba(0,0,0,.55);}
+
+/* ACCENT — même dégradé et même reflet que .btn, partout où « c'est choisi / c'est l'action » */
+.hv7-act.main,.seg-btn.on,.fr-tab.on,.pill.on,.cal-cell.today,.promo-cta,.fr-profile-lvl,.pf-cam{
+  background:var(--fill-accent) !important;color:var(--accent-ink) !important;
+  text-shadow:var(--accent-ink-shadow);border-color:transparent !important;}
+.seg-btn.on,.fr-tab.on,.pill.on{box-shadow:var(--sh-accent-sm);}
+.toggle.on{background:var(--fill-accent);border-color:transparent;box-shadow:var(--sh-accent-sm);}
+
+/* SECONDAIRE — boutons à texte */
+.btn.ghost,.hv7-act.ghost,.sp-acts button:not(.lnk),.chbtn{background:var(--s2);border-color:var(--hair2);box-shadow:var(--sh-sm);}
+.hv7-act.ghost,.sp-acts button:not(.lnk){color:var(--snow);}
+/* SECONDAIRE — boutons-icônes : tous ronds, même fond, même filet */
+.x,.tb-gear,.ik-bell,.ik-people,.hv7-icon-btn,.hv7-people,.live-ic,.mini-ic{
+  background:var(--s2) !important;border-color:var(--hair2) !important;color:var(--muted);
+  box-shadow:var(--sh-sm);border-radius:50% !important;}
+/* formes : une action est un rectangle arrondi, pas une pilule */
+.hv7-act,.sp-acts button:not(.lnk){border-radius:var(--r-sm);}
+
+/* PISTE des sélecteurs (onglets, périodes, Amis) : la même pour tous */
+.seg-ctrl,.fr-tabs{background:var(--s2);border-color:var(--hair);box-shadow:inset 0 1px 3px rgba(0,0,0,.28);}
+html[data-mode="light"] :is(.seg-ctrl,.fr-tabs){box-shadow:inset 0 1px 2px rgba(20,30,50,.08);}
+.seg-btn:not(.on),.fr-tab:not(.on){color:var(--muted);}
+.seg-ctrl.sub{background:transparent;box-shadow:none;}
+/* filtre secondaire choisi (Plan IKORUN / perso, période de Stats, sous-catégories) : même
+   famille que l'accent, en plus calme — la hiérarchie passe par l'intensité (plein → teinte),
+   jamais par un changement de matière (un gris neutre sous un accent plein = deux langages). */
+html[data-mode] .seg-ctrl.sub .seg-btn.on,html[data-mode] .pills.sub .pill.on{
+  background:var(--ed) !important;color:var(--e2) !important;box-shadow:inset 0 0 0 1px rgba(var(--e-rgb),.45);text-shadow:none;border-color:transparent !important;}
+
+/* PUCES de choix (formulaires, filtres) : fini le métal chromé */
+.pill{background:var(--s2);border-color:var(--hair2);color:var(--muted);box-shadow:none;
+  -webkit-backdrop-filter:none;backdrop-filter:none;}
+.pills.sub .pill:not(.on){background:transparent;}
+.chrome-chip{background:var(--s2);border-color:var(--hair2);-webkit-backdrop-filter:none;backdrop-filter:none;}
+
+/* VERRE — grandes surfaces (flou d'arrière-plan comme .card) */
+html[data-mode] :is(.card,.grp-card,.kchart-card,.chrome-box){border-radius:var(--r-md);}
+html[data-mode] :is(.grp-card,.kchart-card,.chrome-box){
+  background:var(--glass-bg);background-image:var(--glass-shine),var(--grad-card);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
+  border-color:transparent;box-shadow:var(--glass-shadow),var(--ring-soft);}
+.card{box-shadow:var(--glass-shadow),var(--ring-soft);}
+.chrome-box::before{display:none;}
+/* VERRE — petites tuiles et lignes (même matière, sans flou : plus léger à faire défiler) */
+html[data-mode] :is(.ktile,.sbox,.chrome-sbox,.favtile,.hv7-ktile,.sess:not(.today)){
+  background:var(--glass-bg);background-image:var(--glass-shine),var(--grad-card);
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+  border-color:transparent;box-shadow:var(--float-sm),var(--ring-soft);border-radius:var(--r-sm);}
+.favtile::before{display:none;}
+/* VERRE HÉROS — la carte principale d'un écran : même verre + halo et liseré d'accent */
+html[data-mode] :is(.hv7-day,.sp-plan,.hv7-score){border-radius:var(--r-lg);
+  background:radial-gradient(120% 90% at 100% 0%,rgba(var(--e-rgb),.18),transparent 62%),var(--glass-shine),var(--glass-bg);
+  border-color:rgba(var(--e-rgb),.24);box-shadow:var(--glass-shadow);}
+
+/* BARRE DU BAS : même verre (le métal chromé est réservé à l'accent « carbone ») */
+#nav{background:var(--glass-shine),rgba(var(--s1-rgb),.86);border-color:var(--glass-border);}
+#nav::before{display:none;}
+html[data-mode="light"] #nav{background:var(--glass-shine),rgba(255,255,255,.92);}
 
 /* « Réduire les animations » (réglage du téléphone) : seules 3 animations de
    fond le respectaient, une vingtaine d'autres tournaient en boucle. Les
@@ -2735,7 +2793,7 @@ html[data-mode="light"] :is(#s-profil,#s-home){--glass-bg:rgba(255,255,255,.74);
      ne persiste RIEN : elle photographie l'état, teste, restaure. -->
 <script>
 (function(){
-  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=2', 'app.js?v=97'];
+  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=2', 'app.js?v=98'];
   if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=2');
   var lance = false;
   function charge(){
