@@ -19,6 +19,8 @@ setTimeout(function(){
     var el = document.getElementById('appSkeleton');
     if(!el || el.classList.contains('out')) return; // tout s'est bien passé
     console.error('[IKORUN] Watchdog : démarrage bloqué, déblocage forcé.', window.__ikorunLastError);
+    // Réseau qui traîne mais session enregistrée : démarrage hors ligne (voir offlineBoot)
+    if(!window.__ikorunLastError && typeof window.__ikOfflineBoot === 'function' && window.__ikOfflineBoot()) return;
     if(typeof startLogin === 'function' && !window.__ikorunLastError){
       startLogin();
     } else {
@@ -67,6 +69,7 @@ function mergeStorageValue(key, localVal, cloudVal){
 
 async function cloudPullAll(uid){
   if(!window.supabaseClient) return;
+  if(!navigator.onLine) return; // hors ligne : on démarre sur les données locales, sans message d'erreur
   try{
     // Sécurité anti-course : force l'hydratation complète de la session en mémoire
     // avant la lecture. Sans ça, sur une connexion toute fraîche (1re fois sur un
@@ -87,7 +90,14 @@ async function cloudPullAll(uid){
     if(data.length===0){
       console.warn('[IKORUN][DIAG] cloudPullAll: 0 ligne renvoyée pour uid='+uid);
     }
+    const dirty=_dirtyGet();
     data.forEach(row => {
+      // Modifiée ici sans avoir pu partir (hors ligne) : la version locale est la plus
+      // récente. Avant (27/09), la version du serveur l'écrasait au lancement suivant —
+      // une séance du plan cochée hors ligne se décochait. Les listes (séances,
+      // records…) restent fusionnées ci-dessous, puis renvoyées par flushDirty().
+      if(!VVV_LOCAL_ONLY_KEYS.includes(row.key)) markSynced(row.key,row.value); // ce que le serveur a réellement
+      if(dirty.includes(row.key) && !VVV_ARRAY_KEYS.includes(row.key)) return;
       if(VVV_LOCAL_ONLY_KEYS.includes(row.key)){
         // Nettoyage définitif d'une éventuelle séance fantôme laissée avant ce correctif.
         window.supabaseClient.from('user_data').delete().eq('user_id', uid).eq('key', row.key).then(()=>{}).catch(()=>{});
@@ -105,26 +115,106 @@ async function cloudPullAll(uid){
 // d'abus) plutôt qu'une vraie donnée d'usage normal de l'app ; on ne la
 // synchronise pas dans le cloud (elle reste locale/chiffrée sur l'appareil).
 const CLOUD_KEY_MAX_BYTES=500*1024;
+/* ---------- FILE D'ATTENTE DE SYNCHRONISATION (27/09, hors ligne) ----------
+   Avant, une modification faite sans réseau n'était enregistrée QUE sur le
+   téléphone : l'envoi échouait en silence, rien ne le retentait, et au lancement
+   suivant la version du serveur écrasait la locale (profil, plan, XP…). Désormais
+   chaque clé modifiée est notée « à envoyer » (ik_sync_dirty : des noms de clés,
+   aucune donnée) et n'en sort qu'une fois l'envoi CONFIRMÉ par le serveur. La file
+   est vidée au retour du réseau, au lancement, au retour au premier plan et toutes
+   les 5 min (flushDirty). */
+const DIRTY_KEY='ik_sync_dirty';
+function _dirtyGet(){ try{ const a=JSON.parse(localStorage.getItem(DIRTY_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+function _dirtySet(a){ try{ if(a.length) localStorage.setItem(DIRTY_KEY,JSON.stringify(a)); else localStorage.removeItem(DIRTY_KEY); }catch(e){} }
+function markDirty(k){ const a=_dirtyGet(); if(!a.includes(k)){ a.push(k); _dirtySet(a); } }
+function clearDirty(k){ const a=_dirtyGet(), i=a.indexOf(k); if(i>=0){ a.splice(i,1); _dirtySet(a); } }
+function cloudReachable(){ return !!(window.supabaseClient && window.currentUserId && !window._offlineBoot && navigator.onLine); }
+/* EMPREINTE DE LA DERNIÈRE VERSION SYNCHRONISÉE (27/09).
+   DB.save comparait la valeur à celle du cache… qui EST le même objet quand l'app
+   modifie sur place (SESS.push(…), P.bio=…) : « rien n'a changé », rien ne partait
+   au serveur. Introduit le 21/09 (économie d'envois au lancement) : depuis, les
+   séances ajoutées et les profils modifiés restaient sur le téléphone. On compare
+   désormais à l'empreinte de ce que le serveur a réellement (posée au chargement
+   depuis le serveur et à chaque envoi réussi). Gardée entre les lancements
+   (ik_sync_hash, des empreintes seulement) : un démarrage hors ligne sait ainsi ce
+   qui a vraiment changé, et n'envoie que ça au retour du réseau. */
+const SYNC_HASH_KEY='ik_sync_hash';
+let _syncHash=null;
+function _hashes(){ if(!_syncHash){ try{ _syncHash=JSON.parse(localStorage.getItem(SYNC_HASH_KEY)||'{}')||{}; }catch(e){ _syncHash={}; } } return _syncHash; }
+function _fnv(str){ let h=0x811c9dc5; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,0x01000193); } return (h>>>0).toString(36)+':'+str.length; }
+function _storeHash(k,h){
+  const H=_hashes();
+  if(h==null) delete H[k]; else H[k]=h;
+  try{ localStorage.setItem(SYNC_HASH_KEY,JSON.stringify(H)); }catch(e){}
+}
+function markSynced(k,v){ let h=null; if(v!==null && v!==undefined){ try{ h=_fnv(JSON.stringify(v)); }catch(e){} } _storeHash(k,h); }
+function differsFromSynced(k,v){
+  const H=_hashes();
+  if(v===null||v===undefined) return (k in H);
+  try{ return H[k]!==_fnv(JSON.stringify(v)); }catch(e){ return true; }
+}
+const _pushGen={};
 async function cloudPush(key, value){
   if(VVV_LOCAL_ONLY_KEYS.includes(key)) return; // état de séance en cours : jamais envoyé au cloud
-  if(!window.supabaseClient || !window.currentUserId) return;
+  let ser='';
+  try{ ser=JSON.stringify(value); if(typeof ser!=='string') throw new Error('valeur indéfinie'); }catch(e){ console.error("cloudPush: valeur non sérialisable pour la clé",key,e); return; }
+  const size=ser.length;
+  if(size>CLOUD_KEY_MAX_BYTES){
+    console.error('cloudPush: valeur trop volumineuse pour la clé "'+key+'" ('+size+' octets) — synchronisation annulée');
+    clearDirty(key); // ne partira jamais : inutile de la retenter en boucle
+    if(typeof toast==='function') toast(t('guardStorageTooBig'));
+    return;
+  }
+  // Aucun compte associé (écran de connexion) : rien à mettre en file. Sinon une valeur
+  // par défaut (profil vide, langue choisie avant de se connecter) passerait, sur un
+  // nouvel appareil, pour une modification locale et écraserait le vrai profil du serveur.
+  if(!window.currentUserId || window._cloudPulling) return;
+  markDirty(key);
+  if(!cloudReachable()) return; // partira avec flushDirty() au retour du réseau
+  // Deux envois rapprochés de la même clé : seul le succès du DERNIER la retire de la file.
+  const gen=_pushGen[key]=(_pushGen[key]||0)+1;
+  // Empreinte de ce qui part MAINTENANT : si l'app modifie l'objet pendant l'envoi, la
+  // modification ne doit pas passer pour « déjà sur le serveur ».
+  const sentHash=(value===null||value===undefined)?null:_fnv(ser);
   try{
-    let size=0;
-    try{ size=JSON.stringify(value).length; }catch(e){ console.error("cloudPush: valeur non sérialisable pour la clé",key,e); return; }
-    if(size>CLOUD_KEY_MAX_BYTES){
-      console.error('cloudPush: valeur trop volumineuse pour la clé "'+key+'" ('+size+' octets) — synchronisation annulée');
-      if(typeof toast==='function') toast(t('guardStorageTooBig'));
-      return;
+    const { error } = value===null
+      ? await window.supabaseClient.from('user_data').delete().eq('user_id', window.currentUserId).eq('key', key)
+      : await window.supabaseClient.from('user_data').upsert(
+          { user_id: window.currentUserId, key, value, updated_at: new Date().toISOString() },
+          { onConflict: 'user_id,key' });
+    if(error) throw error;
+    if(_pushGen[key]===gen){ clearDirty(key); _storeHash(key,sentHash); }
+  }catch(e){ console.error('cloud push error', key, e); }
+}
+// Vide la file. Les listes (séances, records…) sont d'abord fusionnées avec celles du
+// serveur : un autre appareil a pu en ajouter pendant qu'on était hors ligne, et
+// l'envoi remplace la liste entière — sans cette fusion, ces ajouts seraient perdus.
+let _flushing=null;
+async function flushDirty(){
+  if(_flushing) return _flushing;
+  if(!cloudReachable()) return false;
+  const keys=_dirtyGet(); if(!keys.length) return true;
+  _flushing=(async()=>{
+    const lists=keys.filter(k=>VVV_ARRAY_KEYS.includes(k));
+    if(lists.length){
+      const { data, error } = await window.supabaseClient.from('user_data').select('key,value').eq('user_id', window.currentUserId).in('key', lists);
+      if(error){ console.error('flushDirty: lecture',error); return false; }
+      let merged=false;
+      (data||[]).forEach(row=>{
+        const local=DB.load(row.key), m=mergeStorageValue(row.key, local, row.value);
+        if(JSON.stringify(m)!==JSON.stringify(local)){ DB._cache[row.key]=m; DB._persist(row.key,m); merged=true; }
+      });
+      if(merged){
+        // Les variables de l'app (SESS, RECORDS…) doivent voir la liste fusionnée, sinon la
+        // prochaine sauvegarde renverrait l'ancienne et effacerait les ajouts de l'autre appareil.
+        reloadState();
+        try{ const r={home:renderHome,sport:renderSport,stats:renderStats,profil:renderProfile}[document.body.dataset.scr]; if(r) r(); }catch(e){}
+      }
     }
-    if(value===null){
-      await window.supabaseClient.from('user_data').delete().eq('user_id', window.currentUserId).eq('key', key);
-      return;
-    }
-    await window.supabaseClient.from('user_data').upsert(
-      { user_id: window.currentUserId, key, value, updated_at: new Date().toISOString() },
-      { onConflict: 'user_id,key' }
-    );
-  }catch(e){ console.error('cloud push error', e); }
+    for(const k of keys) await cloudPush(k, DB.load(k));
+    return _dirtyGet().length===0;
+  })();
+  try{ return await _flushing; } finally{ _flushing=null; }
 }
 
 /* ---------- SESSION ----------
@@ -351,7 +441,7 @@ async function subscribeToPush(){
       const j=sub.toJSON();
       await window.supabaseClient.from('push_subscriptions').upsert({
         user_id:window.currentUserId, endpoint:j.endpoint, p256dh:j.keys.p256dh, auth:j.keys.auth,
-        prayer_enabled:P.prayerNotif!==false, reminder_enabled:P.notif!==false, lang:curLang(), updated_at:new Date().toISOString()
+        prayer_enabled:P.prayerNotif!==false, reminder_enabled:P.notif!==false, social_enabled:P.socialNotif===true, lang:curLang(), updated_at:new Date().toISOString()
       },{onConflict:'user_id,endpoint'});
       return true;
     }catch(e){ console.error('[IKORUN] subscribeToPush a échoué',e); return false; }
@@ -371,7 +461,7 @@ async function setPushFlag(field,enabled){
   }catch(e){ console.error("[IKORUN] setPushFlag",e); }
 }
 function ensurePush(){
-  if(!P || (P.notif===false && P.prayerNotif===false)) return;
+  if(!P || (P.notif===false && P.prayerNotif===false && P.socialNotif!==true)) return;
   if(!('Notification'in window) || Notification.permission!=='granted') return;
   subscribeToPush();
 }
@@ -944,7 +1034,9 @@ async function loadFriendsData(){
     const ids=new Set(); (rows||[]).forEach(r=>{ ids.add(r.user_id); ids.add(r.friend_id); }); ids.delete(uid);
     let profiles={};
     if(ids.size){
-      const { data:profs, error:e2 } = await window.supabaseClient.from('public_profiles').select('user_id,username,xp,level,km_week,sessions_week,vdot,total_sessions,streak_days,total_km,total_tonnage,photo_url').in('user_id',[...ids]);
+      // Ma propre ligne vient avec celles des amis : le classement compare ainsi des XP
+      // calculées au même endroit, de la même façon (voir renderFriends).
+      const { data:profs, error:e2 } = await window.supabaseClient.from('public_profiles').select('user_id,username,xp,level,km_week,sessions_week,vdot,total_sessions,streak_days,total_km,total_tonnage,photo_url').in('user_id',[...ids,uid]);
       if(e2) throw e2;
       (profs||[]).forEach(p=>profiles[p.user_id]=p);
       // Une demande EN ATTENTE ne donne pas accès au profil de l'autre (RLS,
@@ -956,7 +1048,7 @@ async function loadFriendsData(){
       }
     }
     if(seq!==_friendsLoadSeq) return; // une ouverture plus récente a déjà pris le relais
-    friendsCache={friends:[],pending:[],sent:[]};
+    friendsCache={friends:[],pending:[],sent:[],me:profiles[uid]||null};
     (rows||[]).forEach(r=>{
       const otherId = r.user_id===uid ? r.friend_id : r.user_id;
       const prof = profiles[otherId] || {username:'?',xp:0,level:1,km_week:0,sessions_week:0,total_tonnage:0};
@@ -1026,7 +1118,10 @@ function renderFriends(){
   }
 
   if(friendsTab==='rank'){
-    const me={username:(P.name||t('youDefaultName'))+t('youParen'),xp:(XP&&XP.total)||0,level:(XP&&XP.level)||1,photo_url:P.photo};
+    // XP du serveur pour moi aussi, comme pour mes amis. Avant, ma ligne prenait l'XP
+    // locale (autre formule) face à l'XP serveur des autres : j'étais sous-classé.
+    const srv=friendsCache.me;
+    const me={username:(P.name||t('youDefaultName'))+t('youParen'),xp:(srv&&srv.xp!=null)?srv.xp:((XP&&XP.total)||0),level:(srv&&srv.level)||(XP&&XP.level)||1,photo_url:P.photo};
     const all=[...friendsCache.friends,me].sort((a,b)=>b.xp-a.xp);
     h+='<div class="sec-lab">'+t('xpRanking')+'</div>';
     if(all.length===1) h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('medal',36,'currentColor')+'</div><div style="font-size:13px">'+t('addFriendsUnlock')+'</div></div></div>';
@@ -1714,8 +1809,9 @@ const DB = {
     // Supabase par clé à CHAQUE ouverture de l'app (jusqu'à 14, sur le plan gratuit).
     // On ne pousse au cloud que si la valeur a réellement changé ; l'écriture locale
     // (cache + chiffrement) reste inconditionnelle, elle est quasi gratuite.
-    let changed=true;
-    try{ changed = JSON.stringify(this._cache[k]) !== JSON.stringify(v); }catch(e){}
+    // Comparée à ce que le serveur a (voir markSynced), pas au cache : le cache est le
+    // même objet que la variable de l'app, donc toujours « égal » après une modification sur place.
+    const changed=differsFromSynced(k,v);
     this._cache[k]=v; this._persist(k,v);
     if(changed) cloudPush(k,v);
   },
@@ -1738,6 +1834,8 @@ const DB = {
    avant la moindre lecture/écriture pour ce nouveau compte. */
 function wipeLocalCache(){
   Object.keys(localStorage).filter(k=>k.startsWith('vvv_')).forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+  try{ localStorage.removeItem(DIRTY_KEY); localStorage.removeItem(SYNC_HASH_KEY); }catch(e){} // file et empreintes appartiennent au compte qui part
+  _syncHash=null;
   DB._cache={};
 }
 function ensureLocalCacheOwnership(uid){
@@ -1828,7 +1926,7 @@ const I18N={
     iDidIt:'Je l\u2019ai faite',notDone:'Pas faite',nextLab:'Ensuite',dayPlusShort:'J+{0}',rpeShort:'RPE',kmWeekShort:'km sem.',sessionsLab:'séances',
     syncSlowToast:'Synchronisation lente — l\u2019app démarre, tes données arrivent',syncFailedLocalToast:'Synchronisation impossible — tu travailles sur tes données locales',syncCloudErrorToast:'Erreur de synchronisation avec le cloud',
     doneTag:'Faite',
-    setsCount:'{0} séries',daysAgoShort:'il y a {0} j',neverDoneLab:'Jamais faite',
+    setsCount:{one:'{0} série',other:'{0} séries'},daysAgoShort:'il y a {0} j',neverDoneLab:'Jamais faite',
     pauseLab:'Mettre en pause',restTimerBtn:'Minuteur de repos',
     googleStandaloneTitle:'Google et l\u2019app install\u00e9e',googleUseGuestBtn:'Continuer en tant qu\u2019invit\u00e9',googleOpenSafariBtn:'Ouvrir dans Safari',googleStandaloneHint:'Indisponible depuis l\u2019app install\u00e9e',
     declineBtn:'Refuser',saveLabel:'Enregistrer',renameLab:'Renommer',favoriteLab:'Favori',
@@ -1851,18 +1949,18 @@ const I18N={
     configureGenerate:'Configurer & générer',weekN:'Semaine {0}',acwrUnder:'Sous-charge',acwrOptimal:'Optimal',acwrHigh:'Élevé',acwrRisk:'Risque blessure',acwrRatioLab:'Ratio Aigu/Chronique (ACWR)',acwrAcuteLab:'Charge aiguë (7j)',acwrChronicLab:'Charge chronique (28j)',acwrTip:'Zone optimale : 0,8–1,3. Au-dessus de 1,5, le risque de blessure augmente fortement.',restMaxStrength:'Force max (1-5 reps)',restHypertrophy:'Hypertrophie (6-12)',restEndurance:'Endurance (15+)',restPower:'Puissance / explosif',restSupersetVal:'0 s entre, 90 s après',restTip:'Plus la charge est lourde, plus le repos doit être long pour récupérer le système nerveux.',deloadTag:' · allégée',missedTag:'Manquée',restTag:'Repos',
     newPersoPlan:'Nouveau plan personnel',createCustomPlan:'Crée ton plan sur-mesure',
     createCustomPlanDesc:'Ajoute tes propres séances, choisis les dates, types et allures. Tout se synchronise avec ton accueil et tes stats.',
-    sessionsCount:'{0} séances · {1} terminées',followedTag:'Suivi',duplicate:'Dupliquer',share:'Partager',
+    sessionsCount:{one:'{0} séance · {1} terminée',other:'{0} séances · {1} terminées'},followedTag:'Suivi',duplicate:'Dupliquer',share:'Partager',
     planNamePrompt:'Nom du plan :',myPersoPlanDefault:'Mon plan perso',
     you:'toi',dowShort:'L,M,M,J,V,S,D',greet:'Salut',
     weekPhaseLabel:'Semaine {0} · {1}',thresholdPaceShort:'Allure seuil',vsLastWeekShort:'vs sem. dernière',
     nextSessionMeta:'Prochaine séance · {0}',newWeekTag:'Nouvelle semaine',thisWeekCap:'Cette semaine',
     totalTime:'Temps total',remainingCap:'Restant',sessionsRemainingVal:'{0} séances',objectiveReached:'Objectif atteint',
     untilEndWeek:'d\u2019ici dimanche',sessionsDoneShort:'{0} séances',planOfWeek:'Plan de la semaine',
-    streakDaysShort:'{0} jours de série',seePlan:'Voir le plan',
+    streakDaysShort:{one:'{0} jour de série',other:'{0} jours de série'},seePlan:'Voir le plan',
     streakPRSuffix:' — record perso',
     // --- Outils ---
     searchTool:'Rechercher un outil...',favorites:'Favoris',mainTools:'Outils principaux',otherTools:'Autres outils',
-    resultsCount:'{0} résultat(s)',editFavsTitle:'Modifier les favoris',tapStarHint:'Touche une étoile pour ajouter/retirer un outil de tes favoris.',
+    resultsCount:{one:'{0} résultat',other:'{0} résultats'},editFavsTitle:'Modifier les favoris',tapStarHint:'Touche une étoile pour ajouter/retirer un outil de tes favoris.',
     toolAioName:'Performance Lab',toolAioSub:'Distance · Temps · Allure · Vitesse',
     toolSanteName:'Tableau de bord Santé',toolSanteSub:'Poids, IMC, sommeil, nutrition...',
     toolChronoName:'Chronomètre',toolChronoSub:'Tours, splits & statistiques',
@@ -1910,7 +2008,7 @@ const I18N={
     clubTitle:'Mes clubs',tabClub:'Mes clubs',myClubLab:'Mes clubs',clubAddAnotherBtn:'Rejoindre ou créer un autre club',clubMaxReachedToast:'Tu as atteint la limite de 5 clubs.',
     noClubYet:'Pas encore de club',noClubYetDesc:'Rejoins le club de ton équipe avec un code, ou crée le tien pour rassembler tes coéquipiers.',
     joinClubCta:'Rejoindre un club',createClubCta:'Créer un club',clubCodePlaceholder:'Code à 6 caractères',clubNamePlaceholder:'Nom du club',
-    joinBtn:'Rejoindre',clubMembersCount:'{0} membre(s)',copyCodeBtn:'Copier le code',shareCodeHint:'Partage ce code à tes coéquipiers pour qu’ils te rejoignent.',
+    joinBtn:'Rejoindre',clubMembersCount:{one:'{0} membre',other:'{0} membres'},copyCodeBtn:'Copier le code',shareCodeHint:'Partage ce code à tes coéquipiers pour qu’ils te rejoignent.',
     clubAdminChip:'Admin',clubOwnerChip:'Créateur',clubPromoteBtn:'Nommer admin',clubDemoteBtn:'Retirer admin',
     clubPromoteConfirm:'Nommer {0} admin du club ? Il pourra modifier le plan partagé et gérer les autres admins.',
     clubDemoteConfirm:'Retirer les droits d’admin à {0} ?',
@@ -1923,7 +2021,7 @@ const I18N={
     clubPlanConfigureBtn:'Configurer le plan du club',clubPlanEditBtn:'Modifier le plan du club',clubPlanNoUpcoming:'Aucune séance à venir dans ce plan.',
     clubPlanSourceLabel:'Quel plan partager ?',clubPlanSourceGenerated:'Mon plan IKORUN',clubPlanSourceCustom:'Un de mes plans persos',
     clubPlanNoGeneratedYet:'Tu n’as pas encore de plan IKORUN généré. Va dans Sport pour en créer un, puis reviens ici.',clubPlanNoCustomYet:'Tu n’as pas encore de plan perso. Crée-en un dans Sport > Plan personnel.',
-    clubPlanSessionsCount:'{0} séances programmées',clubMeetupLabel:'Regroupement',clubMeetupModeSlot:'Heure & lieu',clubMeetupModeText:'Description libre',
+    clubPlanSessionsCount:{one:'{0} séance programmée',other:'{0} séances programmées'},clubMeetupLabel:'Regroupement',clubMeetupModeSlot:'Heure & lieu',clubMeetupModeText:'Description libre',
     clubMeetupTimeLabel:'Heure',clubMeetupPlaceLabel:'Lieu',clubMeetupPlacePh:'ex : Parc de la Tête d’Or, entrée nord',
     clubMeetupTextLabel:'Description',clubMeetupTextPh:'ex : On se retrouve devant la mairie, chacun vient quand il peut...',
     clubPlanPublishBtn:'Publier',clubPlanRemoveBtn:'Retirer le plan du club',clubPlanPublishedToast:'Plan du club publié !',clubPlanRemovedToast:'Plan du club retiré',
@@ -2083,7 +2181,7 @@ const I18N={
     alarmDefaultTitle:'Alarme',timeUpMsg:'Le temps est écoulé !',timeUpTitle:'Temps écoulé !',
     rkNovice:'Novice',rkAthlete:'Athlète',rkCompetitor:'Compétiteur',rkElite:'Élite',rkChampion:'Champion',rkLegend:'Légende',rkImmortal:'Immortel',rkIkorunElite:'IKORUN Elite',
     bpXpTotal:'XP total',bpTotalDistance:'Distance cumulée',bpAccountAge:'Ancienneté du compte',
-    badgeTierReached:'Palier atteint',badgeAlmostThere:'Continue, tu y es presque.',badgeRemainDay:'Encore {0} jour avant de débloquer ce badge.',badgeRemainDays:'Encore {0} jours avant de débloquer ce badge.',badgeRemainUnit:'Encore {0} {1} avant de débloquer ce badge.',
+    badgeTierReached:'Palier atteint',badgeAlmostThere:'Continue, tu y es presque.',badgeRemainDays:{one:'Encore {0} jour avant de débloquer ce badge.',other:'Encore {0} jours avant de débloquer ce badge.'},badgeRemainUnit:'Encore {0} {1} avant de débloquer ce badge.',
     syncedToast:'Synchronisé',langChangedToast:'Langue mise à jour',timerSetLabel:'Régler (min : sec)',pauseShort:'Pause',timerDoneTitle:'Minuteur terminé',badgeUnlockedShare:'Badge débloqué sur IKORUN',
     stopAlarm:'Arrêter l\u2019alarme',remindIn5Min:'Rappel dans 5 min',reminderCap:'Rappel',fiveMinElapsed:'5 minutes écoulées',
     sessionInProgress:'Séance en cours',welcomeToast:'Bienvenue',
@@ -2094,20 +2192,20 @@ const I18N={
     notifEnabledToast:'Notifications activées',notifDeniedToast:'Notifications refusées',
     notifBlockedTip:'Notifications bloquées — active-les dans les réglages de ton téléphone pour cette app.',
     notifUnsupportedToast:'Notifications non disponibles sur cet appareil',
-    prayerNotifLabel:'Rappels de prière',
+    prayerNotifLabel:'Rappels de prière',socialNotifLabel:'Records de mes amis',socialNotifDesc:'Une notification quand un ami ou un membre de ton club améliore son VDOT. Tes propres progrès de VDOT leur sont annoncés de la même façon — jamais tes chronos ni tes séances.',socialNotifOnToast:'Tu seras prévenu des records de tes amis',
     customizedTag:'Personnalisée',customizeSessionBtn:'Personnaliser cette séance',customizeMoveLabel:'Déplacer à un autre jour',
     customizeVolumeLabel:'Ajuster le volume',customizeSkipBtn:'Passer cette séance en repos',customizeResetBtn:'Réinitialiser',
     customizeMovedToast:'Séance déplacée',customizeSkippedToast:'Séance passée en repos',customizeResetToast:'Séance réinitialisée',
     resumeSessionConfirm:'Une séance « {0} » était en cours ({1} min). Reprendre ?',sessionColonName:'Séance : {0}',
     accentBlue:'Bleu',accentRed:'Rouge',accentGreen:'Vert militaire',accentBrown:'Marron boisé',accentYellow:'Jaune',accentCarbon:'Fibre de carbone',
     colorApplied:'Couleur appliquée',easyModeOn:'Mode simplifié activé',easyModeOff:'Mode simplifié désactivé',
-    profileIncompleteAddTime:'Profil incomplet : ajoute un chrono dans tes records',chooseCompDate:'Choisis une date de compétition',raceDateTooSoon:'Choisis une date de course à au moins 7 jours — une date passée ou trop proche ne laisse pas assez de temps pour préparer un plan.',planStartsOn:'Ton plan démarre le {0} : il couvre les 28 semaines avant la course.',raceDateInvalid:'Date de course invalide : choisis-la à au moins 7 jours.',bdayInvalid:'Date de naissance invalide.',sessionKmRequired:'Indique la distance de la séance (en km).',paceFormatInvalid:'Allure invalide : écris-la au format min:ss (ex. 5:30).',addSessionBtn:'Ajouter la séance',psTitleLab:'Titre',psTitlePh:'Footing du matin',typeVMA:'VMA',typeFractionne:'Fractionné',typeTest:'Test',persoFollowingDesc:'Ton accueil et ton bilan utilisent ce plan. Le plan IKORUN continue de s’ajuster en arrière-plan selon ce que tu fais ici.',persoFollowDesc:'Ton accueil affichera les séances de ce plan au lieu du plan généré. Tu peux revenir au plan IKORUN quand tu veux.',persoStopBtn:'Arrêter',persoFollowBtn:'Suivre',persoNoSession:'Aucune séance. Ajoute ta première !',typeLab:'Type',psHowLab:'Comment veux-tu saisir cette séance ?',psModeSimple:'Simple (km + allure)',psModeReps:'Par répétition (temps de chaque)',psPaceLab:'Allure /km',psRepDistLab:'Distance par répétition',psAddRepBtn:'Ajouter une répétition',psDescLab:'Description (optionnel)',psDescPh:'Détails de la séance...',psNewSessionTitle:'Nouvelle séance',psRepShort:'Rép.',chooseAtLeastOneDay:'Choisis au moins un jour',profileValuesInvalid:'Valeur hors limites : taille 100-250 cm, poids 25-250 kg, FC max 120-230, FC repos 30-120 (sous la FC max), km/sem 0-250.',
+    profileIncompleteAddTime:'Profil incomplet : ajoute un chrono dans tes records',chooseCompDate:'Choisis une date de compétition',raceDateTooSoon:'Choisis une date de course à au moins 7 jours — une date passée ou trop proche ne laisse pas assez de temps pour préparer un plan.',planStartsOn:'Ton plan démarre le {0} : il couvre les 28 semaines avant la course.',planSafetyAdjustedToast:'Plan sécurisé : progression limitée à +10 % par semaine et récupération respectée.',planSafetyMigratedToast:'Ton plan a été ajusté : progression de charge plus sûre, sans séances dures enchaînées.',planSafetyHint:'Pour limiter le risque de blessure, IKORUN augmente ton volume de 10 % par semaine au maximum et allège une semaine sur quatre.',debriefTitle:'Bilan de séance',offlineStartToast:'Mode hors ligne : tout fonctionne, tes modifications partiront au retour d’Internet.',offlineReadyToast:'IKORUN est prête à fonctionner hors ligne',raceDateInvalid:'Date de course invalide : choisis-la à au moins 7 jours.',bdayInvalid:'Date de naissance invalide.',sessionKmRequired:'Indique la distance de la séance (en km).',paceFormatInvalid:'Allure invalide : écris-la au format min:ss (ex. 5:30).',addSessionBtn:'Ajouter la séance',psTitleLab:'Titre',psTitlePh:'Footing du matin',typeVMA:'VMA',typeFractionne:'Fractionné',typeTest:'Test',persoFollowingDesc:'Ton accueil et ton bilan utilisent ce plan. Le plan IKORUN continue de s’ajuster en arrière-plan selon ce que tu fais ici.',persoFollowDesc:'Ton accueil affichera les séances de ce plan au lieu du plan généré. Tu peux revenir au plan IKORUN quand tu veux.',persoStopBtn:'Arrêter',persoFollowBtn:'Suivre',persoNoSession:'Aucune séance. Ajoute ta première !',typeLab:'Type',psHowLab:'Comment veux-tu saisir cette séance ?',psModeSimple:'Simple (km + allure)',psModeReps:'Par répétition (temps de chaque)',psPaceLab:'Allure /km',psRepDistLab:'Distance par répétition',psAddRepBtn:'Ajouter une répétition',psDescLab:'Description (optionnel)',psDescPh:'Détails de la séance...',psNewSessionTitle:'Nouvelle séance',psRepShort:'Rép.',chooseAtLeastOneDay:'Choisis au moins un jour',profileValuesInvalid:'Valeur hors limites : taille 100-250 cm, poids 25-250 kg, FC max 120-230, FC repos 30-120 (sous la FC max), km/sem 0-250.',
     planGenerated:'Plan « {0} » généré : {1} sem, {2} séances',raceGeneric:'course',
     followingPersoPlan:'Tu suis maintenant ce plan perso',backToIkorunPlan:'Retour au plan IKORUN',
     namePromptLabel:'Nom :',copySuffix:'(copie)',confirmDeletePlan:'Supprimer ce plan ?',
     addAtLeastOneRepTime:'Ajoute au moins un temps de répétition',sessionAdded:'Séance ajoutée',
     myPlanColon:'Mon plan : {0}',shareNotSupported:'Partage non supporté',confirmDeleteProgram:'Supprimer ce programme ?',
-    routineTitle:'Routine',exercisesCount:'{0} exercices',exercisesCap:'Exercices',setsCap:'Séries',estDurationCap:'Durée est.',
+    routineTitle:'Routine',exercisesCount:{one:'{0} exercice',other:'{0} exercices'},exercisesCap:'Exercices',setsCap:'Séries',estDurationCap:'Durée est.',
     setsRepsLine:'{0} séries · {1} reps',addExercise:'Ajouter un exercice',startWorkout:'Commencer l\u2019entraînement',
     defaultProgramsNotEditable:'Les programmes par défaut ne sont pas modifiables',
     heightCmTitle:'Taille (cm)',weightKgTitle:'Poids (kg)',heightSaved:'Taille enregistrée',weightSaved:'Poids enregistré',
@@ -2121,7 +2219,6 @@ const I18N={
     connectionRestored:'Connexion rétablie · synchronisation…',offlineModeAvailable:'Mode hors ligne — tout reste accessible',
     dataImported:'Données importées',invalidFile:'Fichier invalide',
     searchExercisePlaceholder:'Rechercher un exercice...',muscleLabel:'Muscle',equipmentLabel:'Matériel',levelLabel:'Niveau',
-    exercisesWordPlural:'exercices',exerciseWordSingular:'exercice',
     movementDemoCap:'DÉMONSTRATION DU MOUVEMENT',movementDemo:'Démonstration du mouvement',
     musclesWorked:'Muscles sollicités',primaryLabel:'Principaux',secondaryLabel:'Secondaires',
     stepByStepExecution:'Exécution étape par étape',breathingLabel:'Respiration',commonMistakesLabel:'Erreurs fréquentes',
@@ -2415,7 +2512,7 @@ const I18N={
     iDidIt:'I did it',notDone:'Not done',nextLab:'Next up',dayPlusShort:'D+{0}',rpeShort:'RPE',kmWeekShort:'km wk.',sessionsLab:'sessions',
     syncSlowToast:'Sync is slow — the app is starting, your data is on its way',syncFailedLocalToast:'Sync unavailable — working from your local data',syncCloudErrorToast:'Cloud sync error',
     doneTag:'Done',
-    setsCount:'{0} sets',daysAgoShort:'{0}d ago',neverDoneLab:'Never done',
+    setsCount:{one:'{0} set',other:'{0} sets'},daysAgoShort:'{0}d ago',neverDoneLab:'Never done',
     pauseLab:'Pause',restTimerBtn:'Rest timer',
     googleStandaloneTitle:'Google and the installed app',googleUseGuestBtn:'Continue as guest',googleOpenSafariBtn:'Open in Safari',googleStandaloneHint:'Unavailable from the installed app',
     declineBtn:'Decline',saveLabel:'Save',renameLab:'Rename',favoriteLab:'Favourite',
@@ -2438,7 +2535,7 @@ const I18N={
     configureGenerate:'Configure & generate',weekN:'Week {0}',acwrUnder:'Under-load',acwrOptimal:'Optimal',acwrHigh:'High',acwrRisk:'Injury risk',acwrRatioLab:'Acute/Chronic ratio (ACWR)',acwrAcuteLab:'Acute load (7d)',acwrChronicLab:'Chronic load (28d)',acwrTip:'Optimal zone: 0.8–1.3. Above 1.5, injury risk rises sharply.',restMaxStrength:'Max strength (1-5 reps)',restHypertrophy:'Hypertrophy (6-12)',restEndurance:'Endurance (15+)',restPower:'Power / explosive',restSupersetVal:'0 s between, 90 s after',restTip:'The heavier the load, the longer the rest needed to recover the nervous system.',deloadTag:' · deload',missedTag:'Missed',restTag:'Rest',
     newPersoPlan:'New custom plan',createCustomPlan:'Build your custom plan',
     createCustomPlanDesc:'Add your own sessions, pick dates, types and paces. Everything syncs with your home and stats.',
-    sessionsCount:'{0} sessions · {1} done',followedTag:'Following',duplicate:'Duplicate',share:'Share',
+    sessionsCount:{one:'{0} session · {1} done',other:'{0} sessions · {1} done'},followedTag:'Following',duplicate:'Duplicate',share:'Share',
     planNamePrompt:'Plan name:',myPersoPlanDefault:'My custom plan',
     you:'there',dowShort:'M,T,W,T,F,S,S',greet:'Hi',
     weekPhaseLabel:'Week {0} · {1}',thresholdPaceShort:'Threshold pace',vsLastWeekShort:'vs last week',
@@ -2449,7 +2546,7 @@ const I18N={
     streakPRSuffix:' — new best',
     // --- Tools ---
     searchTool:'Search for a tool...',favorites:'Favorites',mainTools:'Main tools',otherTools:'Other tools',
-    resultsCount:'{0} result(s)',editFavsTitle:'Edit favorites',tapStarHint:'Tap a star to add/remove a tool from your favorites.',
+    resultsCount:{one:'{0} result',other:'{0} results'},editFavsTitle:'Edit favorites',tapStarHint:'Tap a star to add/remove a tool from your favorites.',
     toolAioName:'Performance Lab',toolAioSub:'Distance · Time · Pace · Speed',
     toolSanteName:'Health Dashboard',toolSanteSub:'Weight, BMI, sleep, nutrition...',
     toolChronoName:'Stopwatch',toolChronoSub:'Laps, splits & statistics',
@@ -2497,7 +2594,7 @@ const I18N={
     clubTitle:'My clubs',tabClub:'My clubs',myClubLab:'My clubs',clubAddAnotherBtn:'Join or create another club',clubMaxReachedToast:'You\'ve reached the 5-club limit.',
     noClubYet:'No club yet',noClubYetDesc:'Join your team’s club with a code, or create your own to bring your teammates together.',
     joinClubCta:'Join a club',createClubCta:'Create a club',clubCodePlaceholder:'6-character code',clubNamePlaceholder:'Club name',
-    joinBtn:'Join',clubMembersCount:'{0} member(s)',copyCodeBtn:'Copy code',shareCodeHint:'Share this code with your teammates so they can join you.',
+    joinBtn:'Join',clubMembersCount:{one:'{0} member',other:'{0} members'},copyCodeBtn:'Copy code',shareCodeHint:'Share this code with your teammates so they can join you.',
     clubAdminChip:'Admin',clubOwnerChip:'Creator',clubPromoteBtn:'Make admin',clubDemoteBtn:'Remove admin',
     clubPromoteConfirm:'Make {0} a club admin? They will be able to change the shared plan and manage other admins.',
     clubDemoteConfirm:'Remove admin rights from {0}?',
@@ -2510,7 +2607,7 @@ const I18N={
     clubPlanConfigureBtn:'Configure the club plan',clubPlanEditBtn:'Edit the club plan',clubPlanNoUpcoming:'No upcoming sessions in this plan.',
     clubPlanSourceLabel:'Which plan to share?',clubPlanSourceGenerated:'My IKORUN plan',clubPlanSourceCustom:'One of my custom plans',
     clubPlanNoGeneratedYet:'You don’t have a generated IKORUN plan yet. Go to Sport to create one, then come back here.',clubPlanNoCustomYet:'You don’t have a custom plan yet. Create one in Sport > Custom plan.',
-    clubPlanSessionsCount:'{0} sessions scheduled',clubMeetupLabel:'Meetup',clubMeetupModeSlot:'Time & place',clubMeetupModeText:'Free description',
+    clubPlanSessionsCount:{one:'{0} session scheduled',other:'{0} sessions scheduled'},clubMeetupLabel:'Meetup',clubMeetupModeSlot:'Time & place',clubMeetupModeText:'Free description',
     clubMeetupTimeLabel:'Time',clubMeetupPlaceLabel:'Place',clubMeetupPlacePh:'e.g. Central Park, north entrance',
     clubMeetupTextLabel:'Description',clubMeetupTextPh:'e.g. We meet in front of the town hall, join whenever you can...',
     clubPlanPublishBtn:'Publish',clubPlanRemoveBtn:'Remove the club plan',clubPlanPublishedToast:'Club plan published!',clubPlanRemovedToast:'Club plan removed',
@@ -2670,7 +2767,7 @@ const I18N={
     alarmDefaultTitle:'Alarm',timeUpMsg:'Time\u2019s up!',timeUpTitle:'Time\u2019s up!',
     rkNovice:'Novice',rkAthlete:'Athlete',rkCompetitor:'Competitor',rkElite:'Elite',rkChampion:'Champion',rkLegend:'Legend',rkImmortal:'Immortal',rkIkorunElite:'IKORUN Elite',
     bpXpTotal:'Total XP',bpTotalDistance:'Total distance',bpAccountAge:'Account age',
-    badgeTierReached:'Tier reached',badgeAlmostThere:'Keep going, you\u2019re almost there.',badgeRemainDay:'{0} more day to unlock this badge.',badgeRemainDays:'{0} more days to unlock this badge.',badgeRemainUnit:'{0} more {1} to unlock this badge.',
+    badgeTierReached:'Tier reached',badgeAlmostThere:'Keep going, you\u2019re almost there.',badgeRemainDays:{one:'{0} more day to unlock this badge.',other:'{0} more days to unlock this badge.'},badgeRemainUnit:'{0} more {1} to unlock this badge.',
     syncedToast:'Synced',langChangedToast:'Language updated',timerSetLabel:'Set (min : sec)',pauseShort:'Pause',timerDoneTitle:'Timer finished',badgeUnlockedShare:'Badge unlocked on IKORUN',
     stopAlarm:'Stop alarm',remindIn5Min:'Remind in 5 min',reminderCap:'Reminder',fiveMinElapsed:'5 minutes elapsed',
     sessionInProgress:'Session in progress',welcomeToast:'Welcome',
@@ -2681,20 +2778,20 @@ const I18N={
     notifEnabledToast:'Notifications enabled',notifDeniedToast:'Notifications denied',
     notifBlockedTip:'Notifications blocked — enable them in your phone settings for this app.',
     notifUnsupportedToast:'Notifications not available on this device',
-    prayerNotifLabel:'Prayer reminders',
+    prayerNotifLabel:'Prayer reminders',socialNotifLabel:'My friends’ records',socialNotifDesc:'A notification when a friend or a member of your club improves their VDOT. Your own VDOT progress is shared with them the same way — never your times or your sessions.',socialNotifOnToast:'You’ll be notified of your friends’ records',
     customizedTag:'Customized',customizeSessionBtn:'Customize this session',customizeMoveLabel:'Move to another day',
     customizeVolumeLabel:'Adjust volume',customizeSkipBtn:'Turn into a rest day',customizeResetBtn:'Reset',
     customizeMovedToast:'Session moved',customizeSkippedToast:'Session turned into rest',customizeResetToast:'Session reset',
     resumeSessionConfirm:'A "{0}" session was in progress ({1} min). Resume?',sessionColonName:'Session: {0}',
     accentBlue:'Blue',accentRed:'Red',accentGreen:'Military green',accentBrown:'Woodland brown',accentYellow:'Yellow',accentCarbon:'Carbon fiber',
     colorApplied:'Color applied',easyModeOn:'Simplified mode enabled',easyModeOff:'Simplified mode disabled',
-    profileIncompleteAddTime:'Incomplete profile: add a time in your records',chooseCompDate:'Choose a race date',raceDateTooSoon:'Choose a race date at least 7 days away — a past or too-close date doesn’t leave enough time to build a plan.',planStartsOn:'Your plan starts on {0}: it covers the 28 weeks before the race.',raceDateInvalid:'Invalid race date: pick one at least 7 days away.',bdayInvalid:'Invalid date of birth.',sessionKmRequired:'Enter the session distance (km).',paceFormatInvalid:'Invalid pace: use the min:ss format (e.g. 5:30).',addSessionBtn:'Add session',psTitleLab:'Title',psTitlePh:'Morning run',typeVMA:'VO₂max',typeFractionne:'Intervals',typeTest:'Test',persoFollowingDesc:'Your home screen and review use this plan. The IKORUN plan keeps adjusting in the background based on what you do here.',persoFollowDesc:'Your home screen will show this plan\'s sessions instead of the generated plan. You can switch back to the IKORUN plan anytime.',persoStopBtn:'Stop',persoFollowBtn:'Follow',persoNoSession:'No session yet. Add your first one!',typeLab:'Type',psHowLab:'How do you want to enter this session?',psModeSimple:'Simple (km + pace)',psModeReps:'By repetition (time of each)',psPaceLab:'Pace /km',psRepDistLab:'Distance per repetition',psAddRepBtn:'Add a repetition',psDescLab:'Description (optional)',psDescPh:'Session details...',psNewSessionTitle:'New session',psRepShort:'Rep.',chooseAtLeastOneDay:'Choose at least one day',profileValuesInvalid:'Value out of range: height 100-250 cm, weight 25-250 kg, max HR 120-230, resting HR 30-120 (below max HR), km/week 0-250.',
+    profileIncompleteAddTime:'Incomplete profile: add a time in your records',chooseCompDate:'Choose a race date',raceDateTooSoon:'Choose a race date at least 7 days away — a past or too-close date doesn’t leave enough time to build a plan.',planStartsOn:'Your plan starts on {0}: it covers the 28 weeks before the race.',planSafetyAdjustedToast:'Plan secured: load increases capped at +10% per week, with proper recovery.',planSafetyMigratedToast:'Your plan was adjusted: safer load progression, no back-to-back hard sessions.',planSafetyHint:'To limit injury risk, IKORUN raises your volume by 10% per week at most and lightens one week in four.',debriefTitle:'Session review',offlineStartToast:'Offline mode: everything works, your changes will sync once you’re back online.',offlineReadyToast:'IKORUN is ready to work offline',raceDateInvalid:'Invalid race date: pick one at least 7 days away.',bdayInvalid:'Invalid date of birth.',sessionKmRequired:'Enter the session distance (km).',paceFormatInvalid:'Invalid pace: use the min:ss format (e.g. 5:30).',addSessionBtn:'Add session',psTitleLab:'Title',psTitlePh:'Morning run',typeVMA:'VO₂max',typeFractionne:'Intervals',typeTest:'Test',persoFollowingDesc:'Your home screen and review use this plan. The IKORUN plan keeps adjusting in the background based on what you do here.',persoFollowDesc:'Your home screen will show this plan\'s sessions instead of the generated plan. You can switch back to the IKORUN plan anytime.',persoStopBtn:'Stop',persoFollowBtn:'Follow',persoNoSession:'No session yet. Add your first one!',typeLab:'Type',psHowLab:'How do you want to enter this session?',psModeSimple:'Simple (km + pace)',psModeReps:'By repetition (time of each)',psPaceLab:'Pace /km',psRepDistLab:'Distance per repetition',psAddRepBtn:'Add a repetition',psDescLab:'Description (optional)',psDescPh:'Session details...',psNewSessionTitle:'New session',psRepShort:'Rep.',chooseAtLeastOneDay:'Choose at least one day',profileValuesInvalid:'Value out of range: height 100-250 cm, weight 25-250 kg, max HR 120-230, resting HR 30-120 (below max HR), km/week 0-250.',
     planGenerated:'"{0}" plan generated: {1} wk, {2} sessions',raceGeneric:'race',
     followingPersoPlan:'You\u2019re now following this custom plan',backToIkorunPlan:'Back to IKORUN plan',
     namePromptLabel:'Name:',copySuffix:'(copy)',confirmDeletePlan:'Delete this plan?',
     addAtLeastOneRepTime:'Add at least one rep time',sessionAdded:'Session added',
     myPlanColon:'My plan: {0}',shareNotSupported:'Sharing not supported',confirmDeleteProgram:'Delete this program?',
-    routineTitle:'Routine',exercisesCount:'{0} exercises',exercisesCap:'Exercises',setsCap:'Sets',estDurationCap:'Est. duration',
+    routineTitle:'Routine',exercisesCount:{one:'{0} exercise',other:'{0} exercises'},exercisesCap:'Exercises',setsCap:'Sets',estDurationCap:'Est. duration',
     setsRepsLine:'{0} sets · {1} reps',addExercise:'Add an exercise',startWorkout:'Start workout',
     defaultProgramsNotEditable:'Default programs can\u2019t be edited',
     heightCmTitle:'Height (cm)',weightKgTitle:'Weight (kg)',heightSaved:'Height saved',weightSaved:'Weight saved',
@@ -2704,11 +2801,10 @@ const I18N={
     usernameJustTaken:'This username was just taken, pick another one',usernameUpdated:'Username updated',
     profileUpdated:'Profile updated',localDataOnly:'Local data only',exportGenerated:'Export generated',
     confirmClearAll:'Clear everything? This action is irreversible.',confirmClearAllFinal:'Really sure? All your data will be lost.',
-    offlineSinceDays:'Offline for {0} days — remember to reconnect',dataSynced:'Data synced',
+    offlineSinceDays:{one:'Offline for {0} day — remember to reconnect',other:'Offline for {0} days — remember to reconnect'},dataSynced:'Data synced',
     connectionRestored:'Connection restored · syncing…',offlineModeAvailable:'Offline mode — everything stays accessible',
     dataImported:'Data imported',invalidFile:'Invalid file',
     searchExercisePlaceholder:'Search an exercise...',muscleLabel:'Muscle',equipmentLabel:'Equipment',levelLabel:'Level',
-    exercisesWordPlural:'exercises',exerciseWordSingular:'exercise',
     movementDemoCap:'MOVEMENT DEMONSTRATION',movementDemo:'Movement demonstration',
     musclesWorked:'Muscles worked',primaryLabel:'Primary',secondaryLabel:'Secondary',
     stepByStepExecution:'Step-by-step execution',breathingLabel:'Breathing',commonMistakesLabel:'Common mistakes',
@@ -3002,7 +3098,7 @@ const I18N={
     iDidIt:'أنجزتها',notDone:'لم أنجزها',nextLab:'التالي',dayPlusShort:'+{0} ي',rpeShort:'RPE',kmWeekShort:'كم/أسبوع',sessionsLab:'حصص',
     syncSlowToast:'المزامنة بطيئة — التطبيق يبدأ وبياناتك في الطريق',syncFailedLocalToast:'تعذّرت المزامنة — أنت تعمل على بياناتك المحلية',syncCloudErrorToast:'خطأ في المزامنة مع السحابة',
     doneTag:'تمّت',
-    setsCount:'{0} مجموعات',daysAgoShort:'قبل {0} ي',neverDoneLab:'لم تُنجز بعد',
+    setsCount:{zero:'{0} مجموعة',one:'مجموعة واحدة',two:'مجموعتان',few:'{0} مجموعات',many:'{0} مجموعة',other:'{0} مجموعة'},daysAgoShort:'قبل {0} ي',neverDoneLab:'لم تُنجز بعد',
     pauseLab:'إيقاف مؤقت',restTimerBtn:'مؤقّت الراحة',
     googleStandaloneTitle:'Google والتطبيق المثبّت',googleUseGuestBtn:'المتابعة كضيف',googleOpenSafariBtn:'الفتح في Safari',googleStandaloneHint:'غير متاح من التطبيق المثبّت',
     declineBtn:'رفض',saveLabel:'حفظ',renameLab:'إعادة تسمية',favoriteLab:'مفضّل',
@@ -3025,18 +3121,18 @@ const I18N={
     configureGenerate:'إعداد وتوليد',weekN:'الأسبوع {0}',acwrUnder:'حمل ناقص',acwrOptimal:'مثالي',acwrHigh:'مرتفع',acwrRisk:'خطر إصابة',acwrRatioLab:'نسبة الحمل الحاد/المزمن (ACWR)',acwrAcuteLab:'الحمل الحاد (7 أيام)',acwrChronicLab:'الحمل المزمن (28 يومًا)',acwrTip:'المنطقة المثالية: 0.8–1.3. فوق 1.5 يرتفع خطر الإصابة بشدة.',restMaxStrength:'القوة القصوى (1-5 تكرارات)',restHypertrophy:'تضخيم العضلات (6-12)',restEndurance:'التحمّل (15+)',restPower:'القوة / الانفجارية',restSupersetVal:'0 ث بين التمرينين، 90 ث بعدهما',restTip:'كلما كان الحمل أثقل، يجب أن تكون الراحة أطول لاستعادة الجهاز العصبي.',deloadTag:' · مخففة',missedTag:'فائتة',restTag:'راحة',
     newPersoPlan:'خطة شخصية جديدة',createCustomPlan:'أنشئ خطتك المخصصة',
     createCustomPlanDesc:'أضف حصصك الخاصة، اختر التواريخ والأنواع والوتيرة. كل شيء يتزامن مع صفحتك الرئيسية وإحصائياتك.',
-    sessionsCount:'{0} حصص · {1} منجزة',followedTag:'متابَعة',duplicate:'نسخ',share:'مشاركة',
+    sessionsCount:{zero:'{0} حصة · {1} منجزة',one:'حصة واحدة · {1} منجزة',two:'حصتان · {1} منجزة',few:'{0} حصص · {1} منجزة',many:'{0} حصة · {1} منجزة',other:'{0} حصة · {1} منجزة'},followedTag:'متابَعة',duplicate:'نسخ',share:'مشاركة',
     planNamePrompt:'اسم الخطة:',myPersoPlanDefault:'خطتي الشخصية',
     you:'أنت',dowShort:'ن,ث,ر,خ,ج,س,ح',greet:'مرحبا',
     weekPhaseLabel:'الأسبوع {0} · {1}',thresholdPaceShort:'وتيرة العتبة',vsLastWeekShort:'مقابل الأسبوع الماضي',
     nextSessionMeta:'الحصة القادمة · {0}',newWeekTag:'أسبوع جديد',thisWeekCap:'هذا الأسبوع',
     totalTime:'الوقت الإجمالي',remainingCap:'المتبقي',sessionsRemainingVal:'{0} حصص',objectiveReached:'تم بلوغ الهدف',
     untilEndWeek:'حتى الأحد',sessionsDoneShort:'{0} حصص',planOfWeek:'خطة الأسبوع',
-    streakDaysShort:'سلسلة {0} أيام',seePlan:'عرض الخطة',
+    streakDaysShort:{zero:'سلسلة {0} يوم',one:'سلسلة يوم واحد',two:'سلسلة يومين',few:'سلسلة {0} أيام',many:'سلسلة {0} يومًا',other:'سلسلة {0} يوم'},seePlan:'عرض الخطة',
     streakPRSuffix:' — رقم قياسي جديد',
     // --- الأدوات ---
     searchTool:'ابحث عن أداة...',favorites:'المفضلة',mainTools:'الأدوات الرئيسية',otherTools:'أدوات أخرى',
-    resultsCount:'{0} نتيجة',editFavsTitle:'تعديل المفضلة',tapStarHint:'اضغط على النجمة لإضافة/إزالة أداة من مفضلتك.',
+    resultsCount:{zero:'{0} نتيجة',one:'نتيجة واحدة',two:'نتيجتان',few:'{0} نتائج',many:'{0} نتيجة',other:'{0} نتيجة'},editFavsTitle:'تعديل المفضلة',tapStarHint:'اضغط على النجمة لإضافة/إزالة أداة من مفضلتك.',
     toolAioName:'مختبر الأداء',toolAioSub:'المسافة · الوقت · الوتيرة · السرعة',
     toolSanteName:'لوحة الصحة',toolSanteSub:'الوزن، كتلة الجسم، النوم، التغذية...',
     toolChronoName:'ساعة توقيت',toolChronoSub:'الأشواط والإحصائيات',
@@ -3084,7 +3180,7 @@ const I18N={
     clubTitle:'أنديتي',tabClub:'أنديتي',myClubLab:'أنديتي',clubAddAnotherBtn:'الانضمام إلى نادٍ آخر أو إنشاؤه',clubMaxReachedToast:'لقد وصلت إلى الحد الأقصى وهو 5 أندية.',
     noClubYet:'لا نادي بعد',noClubYetDesc:'انضم إلى نادي فريقك باستخدام رمز، أو أنشئ ناديك الخاص لتجميع زملائك.',
     joinClubCta:'الانضمام إلى نادٍ',createClubCta:'إنشاء نادٍ',clubCodePlaceholder:'رمز من 6 أحرف',clubNamePlaceholder:'اسم النادي',
-    joinBtn:'انضمام',clubMembersCount:'{0} عضو',copyCodeBtn:'نسخ الرمز',shareCodeHint:'شارك هذا الرمز مع زملائك لينضموا إليك.',
+    joinBtn:'انضمام',clubMembersCount:{zero:'{0} عضو',one:'عضو واحد',two:'عضوان',few:'{0} أعضاء',many:'{0} عضوًا',other:'{0} عضو'},copyCodeBtn:'نسخ الرمز',shareCodeHint:'شارك هذا الرمز مع زملائك لينضموا إليك.',
     clubAdminChip:'مشرف',clubOwnerChip:'المنشئ',clubPromoteBtn:'تعيين مشرفًا',clubDemoteBtn:'إزالة الإشراف',
     clubPromoteConfirm:'تعيين {0} مشرفًا على النادي؟ سيتمكن من تعديل الخطة المشتركة وإدارة المشرفين الآخرين.',
     clubDemoteConfirm:'إزالة صلاحيات الإشراف من {0}؟',
@@ -3097,7 +3193,7 @@ const I18N={
     clubPlanConfigureBtn:'إعداد خطة النادي',clubPlanEditBtn:'تعديل خطة النادي',clubPlanNoUpcoming:'لا توجد حصص قادمة في هذه الخطة.',
     clubPlanSourceLabel:'أي خطة تريد مشاركتها؟',clubPlanSourceGenerated:'خطتي في IKORUN',clubPlanSourceCustom:'إحدى خططي الشخصية',
     clubPlanNoGeneratedYet:'ليس لديك خطة IKORUN مُولَّدة بعد. اذهب إلى رياضة لإنشاء واحدة، ثم عد إلى هنا.',clubPlanNoCustomYet:'ليس لديك خطة شخصية بعد. أنشئ واحدة من رياضة > خطة شخصية.',
-    clubPlanSessionsCount:'{0} حصة مبرمجة',clubMeetupLabel:'مكان التجمّع',clubMeetupModeSlot:'الوقت والمكان',clubMeetupModeText:'وصف حر',
+    clubPlanSessionsCount:{zero:'{0} حصة مبرمجة',one:'حصة واحدة مبرمجة',two:'حصتان مبرمجتان',few:'{0} حصص مبرمجة',many:'{0} حصة مبرمجة',other:'{0} حصة مبرمجة'},clubMeetupLabel:'مكان التجمّع',clubMeetupModeSlot:'الوقت والمكان',clubMeetupModeText:'وصف حر',
     clubMeetupTimeLabel:'الوقت',clubMeetupPlaceLabel:'المكان',clubMeetupPlacePh:'مثال: الحديقة المركزية، المدخل الشمالي',
     clubMeetupTextLabel:'الوصف',clubMeetupTextPh:'مثال: نلتقي أمام البلدية، انضم عندما تستطيع...',
     clubPlanPublishBtn:'نشر',clubPlanRemoveBtn:'إزالة خطة النادي',clubPlanPublishedToast:'تم نشر خطة النادي!',clubPlanRemovedToast:'تمت إزالة خطة النادي',
@@ -3257,7 +3353,7 @@ const I18N={
     alarmDefaultTitle:'منبّه',timeUpMsg:'انتهى الوقت!',timeUpTitle:'انتهى الوقت!',
     rkNovice:'مبتدئ',rkAthlete:'رياضي',rkCompetitor:'منافس',rkElite:'نخبة',rkChampion:'بطل',rkLegend:'أسطورة',rkImmortal:'خالد',rkIkorunElite:'نخبة IKORUN',
     bpXpTotal:'إجمالي XP',bpTotalDistance:'المسافة الإجمالية',bpAccountAge:'عمر الحساب',
-    badgeTierReached:'تم بلوغ المستوى',badgeAlmostThere:'واصل، أوشكت على ذلك.',badgeRemainDay:'يتبقّى يوم واحد لفتح هذا الوسام.',badgeRemainDays:'يتبقّى {0} يوم لفتح هذا الوسام.',badgeRemainUnit:'يتبقّى {0} {1} لفتح هذا الوسام.',
+    badgeTierReached:'تم بلوغ المستوى',badgeAlmostThere:'واصل، أوشكت على ذلك.',badgeRemainDays:{zero:'يتبقّى {0} يوم لفتح هذا الوسام.',one:'يتبقّى يوم واحد لفتح هذا الوسام.',two:'يتبقّى يومان لفتح هذا الوسام.',few:'يتبقّى {0} أيام لفتح هذا الوسام.',many:'يتبقّى {0} يومًا لفتح هذا الوسام.',other:'يتبقّى {0} يوم لفتح هذا الوسام.'},badgeRemainUnit:'يتبقّى {0} {1} لفتح هذا الوسام.',
     syncedToast:'تمت المزامنة',langChangedToast:'تم تحديث اللغة',timerSetLabel:'الضبط (دقيقة : ثانية)',pauseShort:'إيقاف',timerDoneTitle:'انتهى المؤقّت',badgeUnlockedShare:'وسام مفتوح على IKORUN',
     stopAlarm:'إيقاف المنبّه',remindIn5Min:'تذكير بعد 5 دقائق',reminderCap:'تذكير',fiveMinElapsed:'مرت 5 دقائق',
     sessionInProgress:'الحصة جارية',welcomeToast:'مرحبًا',
@@ -3268,20 +3364,20 @@ const I18N={
     notifEnabledToast:'تم تفعيل الإشعارات',notifDeniedToast:'تم رفض الإشعارات',
     notifBlockedTip:'الإشعارات محظورة — فعّلها من إعدادات هاتفك لهذا التطبيق.',
     notifUnsupportedToast:'الإشعارات غير متوفرة على هذا الجهاز',
-    prayerNotifLabel:'تذكيرات الصلاة',
+    prayerNotifLabel:'تذكيرات الصلاة',socialNotifLabel:'أرقام أصدقائي القياسية',socialNotifDesc:'إشعار عندما يحسّن صديق أو عضو في ناديك مؤشر VDOT لديه. ويُعلَن تقدّمك أنت في VDOT لهم بالطريقة نفسها — دون أزمنتك أو حصصك أبدًا.',socialNotifOnToast:'سيتم إعلامك بأرقام أصدقائك القياسية',
     customizedTag:'مخصّصة',customizeSessionBtn:'تخصيص هذه الحصة',customizeMoveLabel:'نقل إلى يوم آخر',
     customizeVolumeLabel:'تعديل الحجم',customizeSkipBtn:'تحويلها إلى يوم راحة',customizeResetBtn:'إعادة التعيين',
     customizeMovedToast:'تم نقل الحصة',customizeSkippedToast:'تم تحويل الحصة إلى راحة',customizeResetToast:'تمت إعادة تعيين الحصة',
     resumeSessionConfirm:'كانت حصة « {0} » جارية ({1} د). المتابعة؟',sessionColonName:'حصة: {0}',
     accentBlue:'أزرق',accentRed:'أحمر',accentGreen:'أخضر عسكري',accentBrown:'بني خشبي',accentYellow:'أصفر',accentCarbon:'ألياف الكربون',
     colorApplied:'تم تطبيق اللون',easyModeOn:'تم تفعيل الوضع المبسّط',easyModeOff:'تم إلغاء الوضع المبسّط',
-    profileIncompleteAddTime:'الملف غير مكتمل: أضف زمنًا في أرقامك القياسية',chooseCompDate:'اختر تاريخ المنافسة',raceDateTooSoon:'اختر تاريخ سباق بعد 7 أيام على الأقل — تاريخ ماضٍ أو قريب جدًا لا يترك وقتًا كافيًا لبناء خطة.',planStartsOn:'تبدأ خطتك يوم {0}: تغطي الأسابيع الـ28 التي تسبق السباق.',raceDateInvalid:'تاريخ سباق غير صالح: اختره بعد 7 أيام على الأقل.',bdayInvalid:'تاريخ ميلاد غير صالح.',sessionKmRequired:'أدخل مسافة الحصة (كم).',paceFormatInvalid:'وتيرة غير صالحة: اكتبها بصيغة د:ث (مثال 5:30).',addSessionBtn:'إضافة الحصة',psTitleLab:'العنوان',psTitlePh:'جري الصباح',typeVMA:'VO₂max',typeFractionne:'تمارين متقطعة',typeTest:'اختبار',persoFollowingDesc:'تستخدم الشاشة الرئيسية والحصيلة هذه الخطة. تواصل خطة IKORUN التكيّف في الخلفية حسب ما تفعله هنا.',persoFollowDesc:'ستعرض شاشتك الرئيسية حصص هذه الخطة بدل الخطة المُولَّدة. يمكنك العودة إلى خطة IKORUN متى شئت.',persoStopBtn:'إيقاف',persoFollowBtn:'متابعة',persoNoSession:'لا توجد حصص بعد. أضف حصتك الأولى!',typeLab:'النوع',psHowLab:'كيف تريد إدخال هذه الحصة؟',psModeSimple:'بسيط (كم + وتيرة)',psModeReps:'حسب التكرار (زمن كل تكرار)',psPaceLab:'الوتيرة /كم',psRepDistLab:'مسافة كل تكرار',psAddRepBtn:'إضافة تكرار',psDescLab:'الوصف (اختياري)',psDescPh:'تفاصيل الحصة...',psNewSessionTitle:'حصة جديدة',psRepShort:'تكرار',chooseAtLeastOneDay:'اختر يومًا واحدًا على الأقل',profileValuesInvalid:'قيمة خارج الحدود: الطول 100-250 سم، الوزن 25-250 كغ، النبض الأقصى 120-230، نبض الراحة 30-120 (أقل من الأقصى)، كم/أسبوع 0-250.',
+    profileIncompleteAddTime:'الملف غير مكتمل: أضف زمنًا في أرقامك القياسية',chooseCompDate:'اختر تاريخ المنافسة',raceDateTooSoon:'اختر تاريخ سباق بعد 7 أيام على الأقل — تاريخ ماضٍ أو قريب جدًا لا يترك وقتًا كافيًا لبناء خطة.',planStartsOn:'تبدأ خطتك يوم {0}: تغطي الأسابيع الـ28 التي تسبق السباق.',planSafetyAdjustedToast:'خطة آمنة: زيادة الحمل محدودة بـ 10% أسبوعيًا مع احترام الاستشفاء.',planSafetyMigratedToast:'تم تعديل خطتك: تدرّج أكثر أمانًا في الحمل، دون حصص صعبة متتالية.',planSafetyHint:'للحدّ من خطر الإصابة، يرفع IKORUN حجمك بـ 10% أسبوعيًا كحد أقصى ويخفّف أسبوعًا من كل أربعة.',debriefTitle:'حصيلة الحصة',offlineStartToast:'وضع عدم الاتصال: كل شيء يعمل، وستُزامَن تعديلاتك عند عودة الإنترنت.',offlineReadyToast:'IKORUN جاهز للعمل دون اتصال',raceDateInvalid:'تاريخ سباق غير صالح: اختره بعد 7 أيام على الأقل.',bdayInvalid:'تاريخ ميلاد غير صالح.',sessionKmRequired:'أدخل مسافة الحصة (كم).',paceFormatInvalid:'وتيرة غير صالحة: اكتبها بصيغة د:ث (مثال 5:30).',addSessionBtn:'إضافة الحصة',psTitleLab:'العنوان',psTitlePh:'جري الصباح',typeVMA:'VO₂max',typeFractionne:'تمارين متقطعة',typeTest:'اختبار',persoFollowingDesc:'تستخدم الشاشة الرئيسية والحصيلة هذه الخطة. تواصل خطة IKORUN التكيّف في الخلفية حسب ما تفعله هنا.',persoFollowDesc:'ستعرض شاشتك الرئيسية حصص هذه الخطة بدل الخطة المُولَّدة. يمكنك العودة إلى خطة IKORUN متى شئت.',persoStopBtn:'إيقاف',persoFollowBtn:'متابعة',persoNoSession:'لا توجد حصص بعد. أضف حصتك الأولى!',typeLab:'النوع',psHowLab:'كيف تريد إدخال هذه الحصة؟',psModeSimple:'بسيط (كم + وتيرة)',psModeReps:'حسب التكرار (زمن كل تكرار)',psPaceLab:'الوتيرة /كم',psRepDistLab:'مسافة كل تكرار',psAddRepBtn:'إضافة تكرار',psDescLab:'الوصف (اختياري)',psDescPh:'تفاصيل الحصة...',psNewSessionTitle:'حصة جديدة',psRepShort:'تكرار',chooseAtLeastOneDay:'اختر يومًا واحدًا على الأقل',profileValuesInvalid:'قيمة خارج الحدود: الطول 100-250 سم، الوزن 25-250 كغ، النبض الأقصى 120-230، نبض الراحة 30-120 (أقل من الأقصى)، كم/أسبوع 0-250.',
     planGenerated:'تم إنشاء خطة « {0} »: {1} أسبوع، {2} حصة',raceGeneric:'سباق',
     followingPersoPlan:'أنت الآن تتبع هذه الخطة الشخصية',backToIkorunPlan:'العودة إلى خطة IKORUN',
     namePromptLabel:'الاسم:',copySuffix:'(نسخة)',confirmDeletePlan:'حذف هذه الخطة؟',
     addAtLeastOneRepTime:'أضف زمنًا واحدًا على الأقل للتكرار',sessionAdded:'تمت إضافة الحصة',
     myPlanColon:'خطتي: {0}',shareNotSupported:'المشاركة غير مدعومة',confirmDeleteProgram:'حذف هذا البرنامج؟',
-    routineTitle:'روتين',exercisesCount:'{0} تمارين',exercisesCap:'تمارين',setsCap:'مجموعات',estDurationCap:'المدة التقديرية',
+    routineTitle:'روتين',exercisesCount:{zero:'{0} تمرين',one:'تمرين واحد',two:'تمرينان',few:'{0} تمارين',many:'{0} تمرينًا',other:'{0} تمرين'},exercisesCap:'تمارين',setsCap:'مجموعات',estDurationCap:'المدة التقديرية',
     setsRepsLine:'{0} مجموعات · {1} تكرار',addExercise:'إضافة تمرين',startWorkout:'بدء التمرين',
     defaultProgramsNotEditable:'لا يمكن تعديل البرامج الافتراضية',
     heightCmTitle:'الطول (سم)',weightKgTitle:'الوزن (كغ)',heightSaved:'تم حفظ الطول',weightSaved:'تم حفظ الوزن',
@@ -3291,11 +3387,10 @@ const I18N={
     usernameJustTaken:'تم أخذ هذا الاسم للتو، اختر اسمًا آخر',usernameUpdated:'تم تحديث اسم المستخدم',
     profileUpdated:'تم تحديث الملف الشخصي',localDataOnly:'بيانات محلية فقط',exportGenerated:'تم إنشاء التصدير',
     confirmClearAll:'مسح كل شيء؟ هذا الإجراء لا رجعة فيه.',confirmClearAllFinal:'متأكد حقًا؟ ستفقد جميع بياناتك.',
-    offlineSinceDays:'غير متصل منذ {0} يوم — تذكّر إعادة الاتصال',dataSynced:'تمت مزامنة البيانات',
+    offlineSinceDays:{zero:'غير متصل منذ {0} يوم — تذكّر إعادة الاتصال',one:'غير متصل منذ يوم واحد — تذكّر إعادة الاتصال',two:'غير متصل منذ يومين — تذكّر إعادة الاتصال',few:'غير متصل منذ {0} أيام — تذكّر إعادة الاتصال',many:'غير متصل منذ {0} يومًا — تذكّر إعادة الاتصال',other:'غير متصل منذ {0} يوم — تذكّر إعادة الاتصال'},dataSynced:'تمت مزامنة البيانات',
     connectionRestored:'تمت استعادة الاتصال · مزامنة…',offlineModeAvailable:'وضع عدم الاتصال — كل شيء يبقى متاحًا',
     dataImported:'تم استيراد البيانات',invalidFile:'ملف غير صالح',
     searchExercisePlaceholder:'ابحث عن تمرين...',muscleLabel:'العضلة',equipmentLabel:'المعدات',levelLabel:'المستوى',
-    exercisesWordPlural:'تمارين',exerciseWordSingular:'تمرين',
     movementDemoCap:'عرض توضيحي للحركة',movementDemo:'عرض توضيحي للحركة',
     musclesWorked:'العضلات المستهدفة',primaryLabel:'الأساسية',secondaryLabel:'الثانوية',
     stepByStepExecution:'التنفيذ خطوة بخطوة',breathingLabel:'التنفس',commonMistakesLabel:'أخطاء شائعة',
@@ -3572,8 +3667,30 @@ const I18N={
   }
 };
 function curLang(){ return (P&&P.lang)||'fr'; }
-function t(key){ const l=curLang(); return (I18N[l]&&I18N[l][key])||I18N.fr[key]||key; }
-function tp(key,...args){ let s=t(key); args.forEach((a,i)=>{ s=s.split('{'+i+'}').join(a==null?'':a); }); return s; }
+/* Pluriels (27/09). Une traduction peut être un objet indexé par catégorie CLDR :
+     fr/en : {one:'{0} membre', other:'{0} membres'}
+     ar    : {zero, one, two, few (3-10), many (11-99), other (100+)}
+   tp() choisit la forme d'après le PREMIER argument via Intl.PluralRules (natif,
+   iOS 13+) ; t() sans nombre rend la forme 'other'. Avant : « {0} membre(s) »,
+   « 1 days » en anglais, et en arabe la forme 3-10 partout (« 25 أعضاء » est faux).
+   Repli si une langue n'a pas la catégorie : 'other', puis le français, puis la clé. */
+const _plRules={};
+function pluralCat(n){
+  const l=curLang();
+  try{ return (_plRules[l]||(_plRules[l]=new Intl.PluralRules(l))).select(Math.abs(Number(n))||0); }
+  catch(e){ return Math.abs(Number(n))===1?'one':'other'; }
+}
+function _pickForm(v,n){
+  if(!v || typeof v!=='object') return v;
+  return (n!=null && v[pluralCat(n)]) || v.other || v.one || '';
+}
+function t(key){ const l=curLang(); return _pickForm((I18N[l]&&I18N[l][key])||I18N.fr[key],null)||key; }
+function tp(key,...args){
+  const l=curLang();
+  let s=_pickForm((I18N[l]&&I18N[l][key])||I18N.fr[key],args[0])||key;
+  args.forEach((a,i)=>{ s=s.split('{'+i+'}').join(a==null?'':a); });
+  return s;
+}
 function localeCode(){ return curLang()==='en'?'en-US':(curLang()==='ar'?'ar-DZ':'fr-FR'); }
 const LANGS=[['fr','FR','Français'],['en','EN','English'],['ar','AR','العربية']];
 function setLang(l){
@@ -4050,7 +4167,7 @@ function badgeHintText(prog){
   const p=badgeBottleneck(prog);
   const remain=Math.ceil(p.need-p.have);
   if(remain<=0) return t('badgeAlmostThere');
-  if(p.unit==='j') return tp(remain>1?'badgeRemainDays':'badgeRemainDay',remain);
+  if(p.unit==='j') return tp('badgeRemainDays',remain);
   return tp('badgeRemainUnit',remain,p.unit);
 }
 /* Migration : les paliers ont été renommés (anciennes clés → nouvelles).
@@ -4124,7 +4241,7 @@ function showBadgeUnlockAnim(b){
   let sparks=''; for(let i=0;i<26;i++){ const a=Math.random()*Math.PI*2, d=90+Math.random()*110;
     sparks+='<span class="bd-spark" style="--tx:'+(Math.cos(a)*d)+'px;--ty:'+(Math.sin(a)*d)+'px;animation-delay:'+(Math.random()*1.2)+'s"></span>'; }
   ov.innerHTML='<div class="bd-flash"></div>'+
-    '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded;margin-bottom:6px">'+t('newBadgeUnlocked')+'</div>'+
+    '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded,system-ui,-apple-system,sans-serif;margin-bottom:6px">'+t('newBadgeUnlocked')+'</div>'+
     '<div class="bd-unlock-stage '+b.cls+'"><div class="bd-rays"></div><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div><div class="bd-ring r4"></div>'+
     '<div class="bd-unlock-badge">'+bdGlyph(b.key).replace('loading="lazy"','loading="eager"')+sparks+'</div></div>'+
     '<div class="man" style="font-weight:800;font-size:30px;margin-top:18px;letter-spacing:.5px">'+b.name+'</div>'+
@@ -4171,7 +4288,7 @@ function previewBadgeAnim(key){
     condHtml='<div class="bd-preview-cond">'+remain.map(p=>'<div class="row" style="justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px"><span>'+p.label+'</span><span class="num">'+Math.min(p.have,p.need)+' / '+p.need+' '+p.unit+'</span></div>').join('')+'</div>';
   }
   ov.innerHTML='<div class="bd-flash"></div>'+
-    '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded;margin-bottom:6px">'+t('previewLocked')+'</div>'+
+    '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded,system-ui,-apple-system,sans-serif;margin-bottom:6px">'+t('previewLocked')+'</div>'+
     '<div class="bd-unlock-stage '+b.cls+'"><div class="bd-rays"></div><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div>'+
     '<div class="bd-unlock-badge">'+bdGlyph(b.key).replace('loading="lazy"','loading="eager"')+sparks+'<div class="bd-lock-chip big">'+ICN('lock',16)+'</div></div></div>'+
     '<div class="man" style="font-weight:800;font-size:26px;margin-top:18px">'+b.name+'</div>'+
@@ -4285,7 +4402,7 @@ function levelUpAnimation(level){
   const ov=document.createElement('div');
   ov.style.cssText='position:fixed;inset:0;z-index:13500;display:flex;align-items:center;justify-content:center;background:rgba(5,7,10,.86);backdrop-filter:blur(8px);animation:fade .3s';
   ov.innerHTML='<div style="text-align:center;animation:popIn .6s cubic-bezier(.34,1.56,.64,1)">'+
-    '<div style="font-size:14px;letter-spacing:3px;color:var(--e);font-weight:700;font-family:Unbounded">'+t('levelUpTitle')+'</div>'+
+    '<div style="font-size:14px;letter-spacing:3px;color:var(--e);font-weight:700;font-family:Unbounded,system-ui,-apple-system,sans-serif">'+t('levelUpTitle')+'</div>'+
     '<div style="margin:6px 0;filter:drop-shadow(0 0 20px var(--e));display:flex;justify-content:center">'+ICN('star',80,'var(--e)')+'</div>'+
     '<div class="man" style="font-weight:800;font-size:54px;background:linear-gradient(135deg,var(--e),#9FD8FF);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">Niv. '+level+'</div>'+
     '<div class="man" style="font-weight:700;font-size:22px;margin-top:4px">'+levelName(level)+'</div>'+
@@ -4510,7 +4627,8 @@ function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('on'); 
 let _actx=null, _busDry=null, _busWet=null, _master=null, _alarmBus=null;
 // isFinite, pas seulement typeof : un NaN venu d'un fichier importé passerait le
 // test "c'est un nombre", et un gain à NaN coupe tout le son sans rien signaler.
-function soundVol(){ const v=(P&&typeof P.soundVol==='number'&&isFinite(P.soundVol))?P.soundVol:0.7; return Math.max(0,Math.min(1,v)); }
+// Défaut 0,55 (27/09, « sons plus sobres ») : un volume déjà réglé par l'utilisateur est conservé.
+function soundVol(){ const v=(P&&typeof P.soundVol==='number'&&isFinite(P.soundVol))?P.soundVol:0.55; return Math.max(0,Math.min(1,v)); }
 /* Réponse impulsionnelle générée : bruit décroissant. Beaucoup plus crédible
    qu'un simple écho, pour ~10 lignes et un seul calcul au démarrage. */
 function _makeIR(ctx,dur,decay){
@@ -4535,11 +4653,12 @@ function _buildAudioGraph(){
   _master=ctx.createGain(); _master.gain.value=soundVol(); _master.connect(out);
   _busDry=ctx.createGain(); _busDry.gain.value=1; _busDry.connect(_master);
   try{
-    const conv=ctx.createConvolver(); conv.buffer=_makeIR(ctx,1.5,3.4);
+    // Sobre (27/09) : pièce plus petite — queue de 0,9 s au lieu de 1,5 s, qui s'éteint plus vite.
+    const conv=ctx.createConvolver(); conv.buffer=_makeIR(ctx,0.9,4.6);
     // passe-haut avant (pas de graves boueux) et passe-bas après (queue feutrée, pas de sifflement)
     const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=420;
     const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=5200;
-    _busWet=ctx.createGain(); _busWet.gain.value=0.9;
+    _busWet=ctx.createGain(); _busWet.gain.value=0.4;
     _busWet.connect(hp); hp.connect(conv); conv.connect(lp); lp.connect(_master);
   }catch(e){ _busWet=null; console.error('[IKORUN] reverb indisponible',e); }
   _alarmBus=ctx.createGain();
@@ -4614,16 +4733,21 @@ function _vary(f,pct){ const p=pct||0.02; return f*(1+(Math.random()*2-1)*p); }
    s'éteignent plus vite que la note (c'est ce qui fait « verre » plutôt que « bip »).
    Registre plus grave, attaque adoucie, une seule gamme (la majeur) pour que tous
    les sons de l'app aillent ensemble. */
-const _GLASS=[[0.5,0.10,1.25],[1,1,1],[2,0.30,0.55],[3,0.10,0.34],[4.2,0.045,0.22]]; // [rapport, niveau, durée relative]
+/* Sobre (27/09) : les partiels ×3 et ×4,2 (le « scintillement » de cloche) sont retirés
+   et l'octave haute baissée — il reste un timbre rond et mat, sans brillance. */
+const _GLASS=[[0.5,0.06,1.1],[1,1,1],[2,0.16,0.45]]; // [rapport, niveau, durée relative]
+// Timbre complet d'avant, gardé pour l'alarme seule : elle doit porter et s'entendre de loin.
+const _GLASS_RICH=[[0.5,0.10,1.25],[1,1,1],[2,0.30,0.55],[3,0.10,0.34],[4.2,0.045,0.22]];
 function _glass(freq,dur,vol,delay,opt){
   const ctx=audioCtx(); if(!ctx||!_busDry) return;
   opt=opt||{};
   const t0=ctx.currentTime+(delay||0), nyq=ctx.sampleRate/2;
   const out=ctx.createGain(); out.gain.value=1;
   const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.Q.value=0.5;
-  lp.frequency.setValueAtTime(Math.min(nyq*0.9,freq*(opt.bright||5)),t0);
+  lp.frequency.setValueAtTime(Math.min(nyq*0.9,freq*(opt.bright||3.2)),t0);
   lp.connect(out);
-  const parts=opt.pure?_GLASS.slice(1,3):_GLASS;
+  const table=opt.rich?_GLASS_RICH:_GLASS;
+  const parts=opt.pure?table.slice(1,3):table;
   const norm=parts.reduce((a,p)=>a+p[1],0);
   for(const [r,lvl,dr] of parts){
     const f=freq*r; if(f>nyq*0.85) continue;
@@ -4631,7 +4755,7 @@ function _glass(freq,dur,vol,delay,opt){
     o.type='sine'; o.frequency.setValueAtTime(f,t0);
     const d=Math.max(0.05,dur*dr), v=Math.max(0.0002,(vol||0.2)*lvl/norm*1.6);
     g.gain.setValueAtTime(0.0001,t0);
-    g.gain.linearRampToValueAtTime(v,t0+(opt.atk||0.006));
+    g.gain.linearRampToValueAtTime(v,t0+(opt.atk||(opt.rich?0.006:0.012)));
     g.gain.exponentialRampToValueAtTime(0.0001,t0+d);
     o.connect(g); g.connect(lp);
     o.start(t0); o.stop(t0+d+0.05);
@@ -4639,20 +4763,6 @@ function _glass(freq,dur,vol,delay,opt){
   if(opt.alarm && _alarmBus){ out.connect(_alarmBus); return; }
   out.connect(_busDry);
   if(_busWet && opt.wet){ const w=ctx.createGain(); w.gain.value=opt.wet; out.connect(w); w.connect(_busWet); }
-}
-// Nappe : accord tenu, attaque lente — le « fond » des grands moments (fin de séance, badge).
-function _pad(freqs,dur,vol,delay,opt){
-  const ctx=audioCtx(); if(!ctx||!_busDry) return;
-  opt=opt||{};
-  const t0=ctx.currentTime+(delay||0);
-  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=opt.cut||1800; lp.Q.value=0.4;
-  const g=ctx.createGain();
-  g.gain.setValueAtTime(0.0001,t0);
-  g.gain.linearRampToValueAtTime(vol||0.08,t0+(opt.atk||0.12));
-  g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
-  freqs.forEach(f=>[-5,5].forEach(dt=>{ const o=ctx.createOscillator(); o.type='sine'; o.frequency.value=f; o.detune.value=dt; o.connect(lp); o.start(t0); o.stop(t0+dur+0.05); }));
-  lp.connect(g); g.connect(_busDry);
-  if(_busWet){ const w=ctx.createGain(); w.gain.value=opt.wet==null?0.5:opt.wet; g.connect(w); w.connect(_busWet); }
 }
 // Appui : un « toc » feutré (souffle filtré très bref + un corps grave), à peine audible.
 let _noiseBuf=null;
@@ -4664,59 +4774,64 @@ function _click(vol,delay){
   const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=_vary(2400,0.05); bp.Q.value=1.1;
   const g=ctx.createGain(); g.gain.value=(vol||0.05);
   src.connect(bp); bp.connect(g); g.connect(_busDry); src.start(t0);
-  _glass(_vary(330,0.02),0.07,(vol||0.05)*0.8,delay,{pure:true,bright:3});
+  _glass(_vary(330,0.02),0.05,(vol||0.05)*0.5,delay,{pure:true,bright:2.5});
 }
 // la majeur : A3 E4 A4 B4 C#5 E5 F#5 A5 B5 C#6 E6
 const _N={A3:220,E4:329.63,A4:440,B4:493.88,Cs5:554.37,E5:659.25,Fs5:739.99,A5:880,B5:987.77,Cs6:1108.73,E6:1318.51};
+/* SONS SOBRES (27/09, demande de Hamou : « des sons plus sobres »). Après la version
+   « verre » (riche, réverbérée, arpèges et nappes), retour à l'essentiel : chaque son est
+   bref (0,2 à 0,8 s), feutré, et tient en une ou deux notes — trois, très brèves, pour un
+   badge. Plus de nappe tenue, réverbération légère. Même gamme (la majeur) pour que tout
+   reste cohérent. L'alarme (plus bas) n'est pas concernée : elle doit s'entendre. */
 function sfx(name){
   if(!soundsOn()) return;
   const N=_N;
   switch(name){
-    // Appui : feutré, presque tactile — jamais un bip.
+    // Appui : un « toc » à peine audible.
     case 'tap':
-      _click(0.16);
+      _click(0.1);
       break;
-    // Série validée : une note de verre claire et courte.
+    // Série validée : une note courte.
     case 'tick':
-      _glass(_vary(N.E5,0.006),0.5,0.34,0,{wet:0.18});
+      _glass(_vary(N.E5,0.006),0.26,0.2,0,{wet:0.06});
       break;
-    // Départ : quinte montante, posée.
+    // Départ : deux notes montantes, brèves.
     case 'start':
-      _glass(N.A4,0.7,0.2,0,{wet:0.2});
-      _glass(N.E5,0.85,0.2,0.1,{wet:0.24});
+      _glass(N.A4,0.3,0.15,0,{wet:0.08});
+      _glass(N.E5,0.4,0.15,0.08,{wet:0.1});
       break;
-    // Arrêt : la même quinte, descendante.
+    // Arrêt : les mêmes, descendantes.
     case 'stop':
-      _glass(N.E5,0.6,0.19,0,{wet:0.2});
-      _glass(N.A4,0.9,0.19,0.12,{wet:0.24});
+      _glass(N.E5,0.3,0.14,0,{wet:0.08});
+      _glass(N.A4,0.42,0.14,0.09,{wet:0.1});
       break;
-    // Objectif atteint : arpège court et lumineux, qui résonne.
+    // Objectif atteint : deux notes, une quarte qui se pose.
     case 'goal':
-      [N.Cs5,N.E5,N.A5].forEach((f,i)=>_glass(f,1.0,0.17,i*0.07,{wet:0.28}));
+      _glass(N.E5,0.4,0.14,0,{wet:0.1});
+      _glass(N.A5,0.55,0.13,0.08,{wet:0.12});
       break;
-    // XP : un scintillement discret.
+    // XP : une seule note douce.
     case 'xp':
-      _glass(N.E6,0.55,0.13,0,{wet:0.3,pure:true});
-      _glass(N.B5,0.6,0.1,0.07,{wet:0.3,pure:true});
+      _glass(N.B5,0.32,0.08,0,{wet:0.08,pure:true});
       break;
-    // Badge : arpège + nappe, le moment le plus « cérémonie ».
+    // Badge : trois notes brèves, sans nappe.
     case 'medal':
-      _pad([N.A3,N.E4,N.Cs5],1.9,0.07,0,{atk:0.18,wet:0.55});
-      [N.A4,N.Cs5,N.E5,N.A5].forEach((f,i)=>_glass(f,1.3,0.17,0.05+i*0.09,{wet:0.34}));
+      [N.A4,N.Cs5,N.E5].forEach((f,i)=>_glass(f,0.55,0.13,i*0.08,{wet:0.12}));
       break;
-    // Séance terminée : accord tenu qui s'ouvre, puis une note haute qui se pose.
+    // Séance terminée : un accord bref (fondamentale + quinte) qui se résout sur l'octave.
     case 'finish':
-      _pad([N.A3,N.E4,N.A4,N.Cs5],2.4,0.085,0,{atk:0.25,wet:0.6});
-      [N.E5,N.A5,N.Cs6].forEach((f,i)=>_glass(f,1.4,0.16,0.08+i*0.11,{wet:0.34}));
+      _glass(N.A4,0.6,0.11,0,{wet:0.12});
+      _glass(N.E5,0.6,0.1,0,{wet:0.12});
+      _glass(N.A5,0.8,0.11,0.14,{wet:0.14});
       break;
-    // Notification : « ding-dong » de verre, quarte descendante.
+    // Notification : deux notes descendantes, discrètes.
     case 'notif':
-      _glass(N.E6,0.8,0.14,0,{wet:0.3});
-      _glass(N.B5,1.1,0.14,0.16,{wet:0.34});
+      _glass(N.E5,0.4,0.12,0,{wet:0.1});
+      _glass(N.B4,0.55,0.12,0.12,{wet:0.12});
       break;
-    // Minuteur : trois pulsations de verre, espacées.
+    // Minuteur : trois pulsations courtes — fonctionnel, il doit s'entendre.
     case 'timer':
-      for(let i=0;i<3;i++) _glass(N.A5,0.55,0.2,i*0.34,{wet:0.2});
+      for(let i=0;i<3;i++) _glass(N.A5,0.24,0.17,i*0.28,{wet:0.06});
       break;
   }
 }
@@ -4733,7 +4848,7 @@ function alarmRing(){
     // 27/09 : motif de verre (la – mi – la – do#) doublé à l'octave grave pour porter,
     // à la place de l'onde carrée : insistant, mais sans agresser.
     const N=_N;
-    [[N.A5,0],[N.E5,0.17],[N.A5,0.34],[N.Cs6,0.51]].forEach(([f,d])=>{ _glass(f,0.55,0.5,d,{alarm:true,bright:6}); _glass(f/2,0.5,0.24,d,{alarm:true,pure:true}); });
+    [[N.A5,0],[N.E5,0.17],[N.A5,0.34],[N.Cs6,0.51]].forEach(([f,d])=>{ _glass(f,0.55,0.5,d,{alarm:true,bright:6,rich:true}); _glass(f/2,0.5,0.24,d,{alarm:true,pure:true,rich:true}); });
   }
   if(navigator.vibrate) navigator.vibrate([400,150,400,150,400]);
 }
@@ -4842,7 +4957,31 @@ function stopBgActivity(){
 // Relais des boutons d'action tapés directement dans la notification (voir sw.js,
 // notificationclick) : la page reste seule source de vérité de l'activité en cours
 // (LIVE/chrono/timer ne vivent qu'en mémoire ici), le Service Worker ne fait que transmettre.
+/* Liens profonds des notifications serveur (27/09) — voir sw.js, notificationclick.
+   App déjà ouverte : message 'ik-open'. App fermée : /?open=… lu au chargement, puis
+   exécuté à la fin d'initApp (l'écran d'accueil doit exister avant). */
+const IK_DEEPLINKS=['sport','prayer','rank'];
+function ikOpenDeepLink(target){
+  if(!IK_DEEPLINKS.includes(target)) return;
+  if(!document.body.dataset.scr || !P || !P.setupDone){ window._pendingDeepLink=target; return; }
+  try{
+    if(target==='sport') nav('sport');
+    else if(target==='prayer') openPrayerFromHome();
+    else if(target==='rank'){ openFriends(); switchSocialTab('rank'); }
+  }catch(e){ console.error('[IKORUN] lien profond',target,e); }
+}
+try{
+  const _open=new URLSearchParams(location.search).get('open');
+  if(_open){ window._pendingDeepLink=_open; history.replaceState(null,'',location.pathname+location.hash); }
+}catch(e){}
 if('serviceWorker'in navigator){
+  navigator.serviceWorker.addEventListener('message',e=>{
+    const d0=e.data||{}; if(d0.type==='ik-open'){ ikOpenDeepLink(d0.open); return; }
+    if(d0.type==='ik-offline-ready'){
+      let deja=false; try{ deja=!!localStorage.getItem('ik_offline_ready'); localStorage.setItem('ik_offline_ready','1'); }catch(x){}
+      if(!deja) setTimeout(()=>toast(t('offlineReadyToast')),2500);
+    }
+  });
   navigator.serviceWorker.addEventListener('message',e=>{
     const d=e.data||{}; if(d.type!=='bgActivityAction' || !_bgActivity) return;
     const kind=_bgActivity.kind;
@@ -4875,6 +5014,8 @@ document.addEventListener('visibilitychange',async()=>{
     checkDayRollover();
     ensurePush();
     syncDailyReminderState();
+    // retour au premier plan : reprise en ligne / envoi des modifications faites hors ligne
+    try{ if(window._offlineBoot) scheduleResume(); else flushDirty(); }catch(e){}
     if(_bgActivity && !_wakeLock){
     try{ if('wakeLock'in navigator) _wakeLock=await navigator.wakeLock.request('screen'); }catch(e){}
     }
@@ -5487,10 +5628,11 @@ async function startApp(){
     if(_startAppSettled) return;
     console.warn('[IKORUN] startApp trop long — déblocage forcé du skeleton');
     let hasSession=false;
-    try{ const { data:{ session } } = await window.supabaseClient.auth.getSession(); hasSession=!!session; }catch(e){}
+    // getSession peut lui-même rester suspendu sur un réseau qui ne répond pas
+    try{ const { data:{ session } } = await Promise.race([window.supabaseClient.auth.getSession(), new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000))]); hasSession=!!session; }catch(e){}
     if(_startAppSettled) return;
     if(hasSession){ hideAppSkeleton(); toast(t('syncSlowToast')); }
-    else startLogin();
+    else if(!(window.__ikOfflineBoot && window.__ikOfflineBoot())) startLogin();
   },10000);
   const _markSettled=()=>{ _startAppSettled=true; clearTimeout(_forceUnstick); };
 
@@ -5504,8 +5646,9 @@ async function startApp(){
     try{
       await window.DB_READY; // déchiffrement local — lancé en parallèle au chargement du script
       ensureLocalCacheOwnership(userId); // purge le cache d'un éventuel compte précédent avant toute lecture/écriture
-      await cloudPullAll(userId);
-      reloadState();
+      window._cloudPulling=true;
+      try{ await cloudPullAll(userId); reloadState(); }
+      finally{ window._cloudPulling=false; }
       // L'adresse est revenue sur la session : la confirmation a abouti, l'écran
       // « adresse à confirmer » (Profil > Compte) n'a plus lieu d'être.
       if(email && P.pendingEmail) P.pendingEmail=null;
@@ -5529,7 +5672,40 @@ async function startApp(){
       _markSettled();
     }
     try{ ensurePublicProfile().then(syncPublicProfile); }catch(e){}
+    setTimeout(()=>{ flushDirty(); },1500); // modifications faites hors ligne lors d'une session précédente
   }
+  /* ---- DÉMARRAGE HORS LIGNE (27/09) ----
+     Le jeton d'accès Supabase expire au bout d'une heure. Sans réseau, getSession()
+     ne peut pas le renouveler et rend une session vide : l'app ouvrait alors l'écran
+     de connexion, alors que toutes les données sont sur le téléphone. supabase-js
+     CONSERVE la session enregistrée quand l'échec vient du réseau (il ne l'efface que
+     si le serveur la refuse) : on démarre donc sur les données locales, et la
+     reconnexion se fait seule au retour d'Internet (resumeFromOffline). */
+  function storedAuthUser(){
+    try{
+      const k=Object.keys(localStorage).find(x=>/^sb-.+-auth-token$/.test(x)); if(!k) return null;
+      const v=JSON.parse(localStorage.getItem(k)||'null');
+      return (v && v.refresh_token && v.user && v.user.id) ? v.user : null;
+    }catch(e){ return null; }
+  }
+  function isNetworkAuthError(err){
+    return !navigator.onLine || !!(err && (err.name==='AuthRetryableFetchError' || err.status===0 || /fetch|network|load failed|timed? ?out/i.test(String(err.message||''))));
+  }
+  async function offlineBoot(u){
+    if(_loggedInOnce) return; _loggedInOnce=true; // finishLogin ne rejouera pas le démarrage
+    window._offlineBoot=true;
+    window.currentUserId=u.id; window.currentUserEmail=u.email||null; window.isGuestUser=isAnonSession(u);
+    try{ await window.DB_READY; ensureLocalCacheOwnership(u.id); reloadState(); }
+    catch(e){ console.error('[IKORUN] démarrage hors ligne — cache local',e); }
+    try{ endLogin(); boot(); }
+    catch(e){ console.error('[IKORUN] démarrage hors ligne — boot',e); hideAppSkeleton(); endLogin(); }
+    finally{ _markSettled(); }
+    setTimeout(()=>toast(t('offlineStartToast')),900);
+    scheduleResume();
+  }
+  // Pour les filets de sécurité (chiens de garde) : démarrer hors ligne plutôt que
+  // renvoyer vers la connexion quand une session existe mais que le réseau traîne.
+  window.__ikOfflineBoot=()=>{ const u=storedAuthUser(); if(!u) return false; offlineBoot(u); return true; };
   // is_anonymous est le champ officiel du SDK Supabase pour un compte invité ;
   // le fallback sur user_metadata.ikorun_guest couvre le cas où ce champ ne
   // serait pas exposé (cf continueAsGuest()).
@@ -5541,6 +5717,7 @@ async function startApp(){
   // n'écoute encore — et on le rate silencieusement (l'app reste bloquée sur
   // l'onboarding malgré une connexion réussie côté serveur).
   window.supabaseClient.auth.onAuthStateChange(async (event, session) => {
+    if(window._offlineBoot && session && (event==='TOKEN_REFRESHED' || event==='SIGNED_IN' || event==='INITIAL_SESSION')){ resumeFromOffline(); return; }
     if((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session){
       const wasFirstLogin = !_loggedInOnce;
       await finishLogin(session.user.id, session.user.email, isAnonSession(session.user));
@@ -5572,11 +5749,31 @@ async function startApp(){
   // getSession() ne dépend pas du cache local déchiffré : on le lance sans
   // attendre DB_READY, qui tourne déjà en tâche de fond depuis le chargement
   // du script (économise un aller-retour réseau + IndexedDB en série).
+  // Sans réseau, getSession() retente le renouvellement du jeton pendant ~30 s avant
+  // de répondre : on n'attend pas. Hors ligne (ou réseau muet au-delà de 2,5 s) avec
+  // une session enregistrée → démarrage immédiat sur les données locales ; la réponse
+  // tardive de getSession sert alors de reprise en ligne.
+  const _sessP=window.supabaseClient.auth.getSession();
+  const _uStored=storedAuthUser();
+  if(_uStored){
+    const _lent=await Promise.race([
+      _sessP.then(()=>false,()=>false),
+      new Promise(r=>setTimeout(()=>r(true), navigator.onLine?3000:0))
+    ]);
+    if(_lent){
+      _sessP.then(({ data })=>{ if(data && data.session && window._offlineBoot) resumeFromOffline(); }).catch(()=>{});
+      await offlineBoot(_uStored); return;
+    }
+  }
   try{
-    const { data:{ session } } = await window.supabaseClient.auth.getSession();
+    const { data:{ session }, error } = await _sessP;
     if(session && session.user){
       await finishLogin(session.user.id, session.user.email, isAnonSession(session.user));
     } else {
+      // Session enregistrée mais jeton impossible à renouveler faute de réseau :
+      // démarrage sur les données locales (voir offlineBoot).
+      const u=storedAuthUser();
+      if(u && isNetworkAuthError(error)){ await offlineBoot(u); return; }
       // Avec persistSession:true + autoRefreshToken:true, getSession() a déjà
       // restauré/renouvelé la session depuis le localStorage si elle existait.
       // Rien d'autre à tenter : direct au login.
@@ -5585,10 +5782,43 @@ async function startApp(){
       startLogin();
     }
   }catch(e){
+    const u=storedAuthUser();
+    if(u && isNetworkAuthError(e)){ await offlineBoot(u); return; }
     console.error('[IKORUN] startApp erreur — fallback login',e);
     _markSettled();
     startLogin();
   }
+}
+/* Reprise en ligne après un démarrage hors ligne : on attend que supabase-js ait pu
+   renouveler le jeton (il espace ses essais d'une minute après un échec), puis on
+   envoie la file de modifications. Pas de rechargement des données du serveur ici :
+   l'écran en cours n'est pas bousculé ; le lancement suivant fera le tour complet. */
+async function resumeFromOffline(){
+  if(!window._offlineBoot || !navigator.onLine || !window.supabaseClient) return false;
+  try{
+    const { data:{ session } } = await window.supabaseClient.auth.getSession();
+    if(!session || !session.user) return false;
+    if(session.user.id!==window.currentUserId){ location.reload(); return true; } // autre compte : on repart proprement
+    window._offlineBoot=false;
+    window.currentUserEmail=session.user.email||window.currentUserEmail;
+    const synced=await flushDirty();
+    try{ ensurePublicProfile().then(syncPublicProfile); }catch(e){}
+    try{ ensurePush(); syncDailyReminderState(); }catch(e){}
+    if(synced) toast(t('dataSynced'));
+    return true;
+  }catch(e){ return false; }
+}
+let _resumeTimer=null;
+function scheduleResume(){
+  if(!window._offlineBoot) return;
+  clearTimeout(_resumeTimer);
+  let n=0;
+  const essai=async()=>{
+    if(!window._offlineBoot) return;
+    if(navigator.onLine && await resumeFromOffline()) return;
+    if(++n<40) _resumeTimer=setTimeout(essai,20000);
+  };
+  essai();
 }
 
 function logout(){ signOutUser(); }
@@ -5613,6 +5843,17 @@ function initApp(){
   setTimeout(checkMissedSessions,700);
   // Régénération hebdomadaire adaptative du plan (au moins 1x/semaine si nécessaire)
   setTimeout(weeklyAdaptiveRegen,1000);
+  // Plans générés avant le garde-fou de charge (27/09) : on les remet une fois dans
+  // les limites (progression, décharge, enchaînements), sans attendre la prochaine
+  // régénération hebdomadaire qui peut être à 6 jours.
+  setTimeout(()=>{
+    try{
+      if(!PLAN || PLAN.safetyV===PLAN_SAFETY_VERSION) return;
+      const n=planSafetyPass(PLAN);
+      DB.save('run_plan',PLAN);
+      if(n){ toast(t('planSafetyMigratedToast')); if(document.body.dataset.scr==='sport') renderSport(); }
+    }catch(e){ console.error('[IKORUN] planSafetyPass (migration)',e); }
+  },1300);
   // Abonnement push (prière + rappel de séance) et état "séance du jour" —
   // après checkMissedSessions pour ne pas synchroniser un statut qui vient
   // tout juste d'être marqué manquée.
@@ -5621,6 +5862,9 @@ function initApp(){
   if(window._launchTourAfterInit){
     window._launchTourAfterInit=false;
     setTimeout(startAppTour,1200);
+  } else if(window._pendingDeepLink){
+    const target=window._pendingDeepLink; window._pendingDeepLink=null;
+    setTimeout(()=>ikOpenDeepLink(target),700);
   }
 }
 function confirmRegenPlan(){
@@ -7243,8 +7487,10 @@ function applyProgressiveOverload(entry){
   if(PLAN.overloadWeeks.includes(wk)) return;
   PLAN.overloadWeeks.push(wk);
   nextUpcoming(entry.date).slice(0,3).forEach(s=>{
+    if(s.customized) return; // un volume réglé à la main n'est jamais retouché
     if(s.baseType==='EF'||s.baseType==='LONG'){ s.km=Math.round(s.km*1.05*10)/10; s.duration=Math.round(s.duration*1.05); }
   });
+  planSafetyPass(PLAN); // +5 % ne doit jamais faire sortir une semaine des limites de progression
   saveAll();
 }
 
@@ -7283,33 +7529,236 @@ function weeklyAdaptiveRegen(force){
     factor=1.06; reason=t('load_goodAssimilation');
   }
   const vdot=getUserVDOT(); if(!vdot) return;
-  const pace={ EF:paceFromPct(vdot,.70), RC:paceFromPct(vdot,.66), MAR:paceFromPct(vdot,.80),
-    TEMPO:paceFromPct(vdot,.83), SEUIL:paceFromPct(vdot,.88), SPE:predictTime(vdot, raceMeters())/(raceMeters()/1000),
-    VMAl:repPace(vdot,1000), VMAc:repPace(vdot,300), SPRINT:paceFromPct(vdot,1.18) };
+  const pace=planPaces(vdot);
   const seed=(Date.now()^Math.floor(Math.random()*1e9))>>>0;
   const rng=mulberry32(seed);
   const pick=arr=>arr[Math.floor(rng()*arr.length)];
   const upcoming=nextUpcoming(tk);
   if(!upcoming.length){ PLAN.lastAdapt=tk; saveAll(); return; }
-  // km hebdo courant par semaine (avant régénération), pour dériver un wkKm ajusté par séance
-  const wkKmBySemaine={};
-  PLAN.sessions.forEach(s=>{ wkKmBySemaine[s.week]=(wkKmBySemaine[s.week]||0)+(s.km||0); });
-  const nDaysBySemaine={};
-  PLAN.sessions.forEach(s=>{ nDaysBySemaine[s.week]=(nDaysBySemaine[s.week]||0)+1; });
-  upcoming.forEach(s=>{
-    if(s.baseType==='Repos'||s.km===0||s.baseType==='COURSE') return;
-    const wkKm=Math.max(15,Math.round((wkKmBySemaine[s.week]||s.km*4)*factor));
-    const ph={name:s.phase,key:s.phaseKey,color:s.color};
-    const built=buildSessionV2(s.baseType,{vdot,pace,wkKm,nDays:nDaysBySemaine[s.week]||4,phase:ph,rng,pick,isDeload:s.deload,goal:PLAN.goal,w:s.week,weeks:PLAN.weeks});
-    const durMin=built.durMin!=null?built.durMin:(built.pace==='—'?0:Math.round(built.km*parseTime(built.pace)/60));
-    s.type=built.label; s.title=built.title; s.km=built.km; s.duration=durMin; s.pace=built.pace;
-    s.rpe=built.rpe; s.series=built.series||null; s.desc=built.detail.objectif; s.detail=built.detail; s.genParams=built.genParams||null;
+  const kmMax=PLAN.kmMax||planKmMax();
+  const nDays=PLAN.nDays||((P.days&&P.days.length)||4);
+  // Cible de chaque semaine = la cible PRÉVUE à la génération (PLAN.wkKm) × facteur.
+  // Avant (audit 27/09), elle repartait du volume courant de la semaine : chaque
+  // passage multipliait le résultat du précédent, et les footings étaient recalculés
+  // sans le budget de generatePlan — le volume enflait même à facteur 1 (10 km, max
+  // 60 km/sem : S9 59 → 78 → 89 km). Les plans d'avant cette version n'ont pas de
+  // PLAN.wkKm : on retombe sur le volume actuel, plafonné par le garde-fou ensuite.
+  const rebuildable=s=>s.baseType!=='Repos' && s.km>0 && s.baseType!=='COURSE' && !s.customized;
+  const weeksUp=[...new Set(upcoming.filter(rebuildable).map(s=>s.week))];
+  weeksUp.forEach(w=>{
+    const all=PLAN.sessions.filter(s=>s.week===w);
+    const redo=upcoming.filter(s=>s.week===w && rebuildable(s));
+    const base=(PLAN.wkKm&&PLAN.wkKm[w])||planWeekKm(all);
+    const target=Math.min(kmMax,Math.max(15,Math.round(base*factor)));
+    let used=planWeekKm(all.filter(s=>!redo.includes(s)));
+    const build=(s,extra)=>{
+      const built=buildSessionV2(s.baseType,Object.assign({vdot,pace,wkKm:target,nDays,phase:{name:s.phase,key:s.phaseKey,color:s.color},rng,pick,isDeload:s.deload,goal:PLAN.goal,w:s.week,weeks:PLAN.weeks},extra||{}));
+      const durMin=built.durMin!=null?built.durMin:(built.pace==='—'?0:Math.round(built.km*parseTime(built.pace)/60));
+      s.type=built.label; s.title=built.title; s.km=built.km; s.duration=durMin; s.pace=built.pace;
+      s.rpe=built.rpe; s.series=built.series||null; s.desc=built.detail.objectif; s.detail=built.detail; s.genParams=built.genParams||null;
+      return built.km||0;
+    };
+    const isEasy=s=>s.baseType==='EF'||s.baseType==='RECUP';
+    const easy=redo.filter(isEasy), longs=redo.filter(planIsLong), quality=redo.filter(s=>!isEasy(s)&&!planIsLong(s));
+    quality.forEach(s=>{ used+=build(s); });
+    let longKm=0;
+    longs.forEach(s=>{
+      const share=s.baseType==='LONG_COURT'?0.22:(s.phaseKey==='SPE'?0.34:0.30);
+      const room=Math.floor(target-used-4*easy.length);
+      const km=Math.max(8,Math.min(longRunCapKm(),Math.round(target*share),Math.max(8,room)));
+      longKm=build(s,{longKm:km}); used+=longKm;
+    });
+    if(easy.length){
+      const weights=easy.reduce((a,s)=>a+(s.baseType==='RECUP'?0.7:1),0);
+      let easyKm=Math.max(4,Math.min(Math.max(5,Math.round(target/nDays*0.95)),Math.floor((target-used)/weights)));
+      if(longKm) easyKm=Math.max(4,Math.min(easyKm,longKm-1));
+      easy.forEach(s=>build(s,{easyKm}));
+    }
   });
+  planSafetyPass(PLAN,{kmMax});
   PLAN.lastAdapt=tk;
   DB.save('run_plan',PLAN);
   toast(''+tp('planUpdatedWeekReason',reason));
 }
 
+/* ---------- GARDE-FOU DE CHARGE (27/09) ----------
+   Audit du 27/09 : six plans générés, confrontés aux règles d'un validateur de
+   sécurité (progression de charge). Le générateur dépassait régulièrement
+   +10 %/semaine (jusqu'à +29 %), certaines semaines de « décharge » pesaient 100
+   à 114 % du pic, le lendemain d'une sortie longue pouvait être une VMA, deux
+   séances dures se suivaient (surtout d'une semaine à l'autre, ce que assignWeek
+   ne voit pas) et, surtout, weeklyAdaptiveRegen gonflait le volume à chaque
+   passage, même à charge « stable » (10 km, max 60 km/sem : S9 59 → 78 → 89 km).
+   planSafetyPass() passe APRÈS toute génération / régénération et corrige en
+   place, dans cet ordre :
+     1. au plus 2 séances très intenses (VMA, VO2, intervalles, double seuil)
+        par semaine — les suivantes deviennent du seuil ;
+     2. jamais deux séances dures d'affilée, ni une séance dure (ou une autre
+        sortie longue) le lendemain d'une sortie longue, ni la veille de la
+        course — d'abord en échangeant avec un footing de la même semaine,
+        sinon en la transformant en footing ;
+     3. volume : semaine de charge ≤ +10 % de la précédente, décharge ≤ 80 % du
+        pic du bloc, affûtage ≤ dernière semaine de charge, jamais au-dessus du
+        km/sem maxi choisi. On réduit d'abord footings et sortie longue (jamais la
+        structure d'une séance de qualité) ; si ça ne suffit pas, la séance de
+        qualité la moins prioritaire devient un footing (on en garde toujours une).
+   Seules les séances à venir, non faites et non personnalisées à la main
+   (s.customized) sont modifiées ; les autres comptent quand même dans les totaux. */
+const SAFE_WEEKLY_INCREASE=1.10, SAFE_DELOAD_MAX=0.80, SAFE_MAX_VERY_HARD=2, PLAN_SAFETY_VERSION=1;
+const PLAN_VERY_HARD=['VMAc','VMAl','VO2','INTERVAL','DBLSEUIL'];
+const PLAN_HARD_Q=['VMAc','VMAl','VO2','INTERVAL','DBLSEUIL','SEUIL','SPE','SPE_COURT','TEMPO_SPE','TEMPO','PROGRESSIF','FARTLEK','COTES'];
+// Ordre de sacrifice quand une séance de qualité doit devenir un footing : les plus « annexes » d'abord.
+const PLAN_DROP_ORDER=['FARTLEK','PROGRESSIF','COTES','TEMPO','INTERVAL','VMAc','VO2','VMAl','SEUIL','TEMPO_SPE','DBLSEUIL','SPE_COURT','SPE'];
+const PLAN_EASY_FLOOR={EF:4,RECUP:4,LIGNES:4,PROGRESSIF:5,LONG:8,LONG_COURT:8};
+function planPaces(vdot){
+  return { EF:paceFromPct(vdot,.70), RC:paceFromPct(vdot,.66), MAR:paceFromPct(vdot,.80),
+    TEMPO:paceFromPct(vdot,.83), SEUIL:paceFromPct(vdot,.88), SPE:predictTime(vdot, raceMeters())/(raceMeters()/1000),
+    // VMAc = allure "répétition" (courtes reps ≤ 400 m), VMAl = allure "intervalle" (reps 800-1200 m).
+    // Les deux utilisent la courbe distance→intensité calibrée sur données réelles (REP_INTENSITY_CURVE
+    // / repPace) au lieu d'un % fixe — nettement plus rapide et réaliste sur les 200/300 m.
+    VMAl:repPace(vdot,1000), VMAc:repPace(vdot,300), SPRINT:paceFromPct(vdot,1.18) };
+}
+function planKmMax(){ return P.kmWeekMax||Math.round((P.kmWeek||35)*1.6); }
+function planIsLong(s){ return !!s && (s.baseType==='LONG'||s.baseType==='LONG_COURT'); }
+function planIsHard(s){ return !!s && PLAN_HARD_Q.includes(s.baseType); }
+function planWeekKm(list){ return list.reduce((a,s)=>a+(s.baseType==='COURSE'?0:(+s.km||0)),0); }
+// Charge réelle des 4 dernières semaines, en km/semaine — seulement si l'historique
+// est crédible (≥ 6 sorties étalées sur ≥ 3 semaines), sinon null : une appli toute
+// neuve ne sait rien de ce que la personne courait avant.
+function recentWeeklyKm(){
+  const tk=todayKey(), since=addDaysKey(tk,-28);
+  const recent=(SESS||[]).filter(s=>s.date && s.date>=since && s.date<tk && (+s.km||0)>0);
+  if(recent.length<6) return null;
+  const first=recent.map(s=>s.date).sort()[0];
+  if(daysBetween(new Date(first+'T00:00:00'),new Date(tk+'T00:00:00'))<21) return null;
+  return recent.reduce((a,s)=>a+(+s.km||0),0)/4;
+}
+function planSafetyPass(plan,opts){
+  if(!plan || !plan.sessions || !plan.sessions.length) return 0;
+  opts=opts||{};
+  const tk=todayKey();
+  const vdot=plan.vdot||getUserVDOT(); if(!vdot) return 0;
+  const pace=planPaces(vdot);
+  const kmMax=opts.kmMax||plan.kmMax||planKmMax();
+  const nDays=plan.nDays||((P.days&&P.days.length)||4);
+  const rng=mulberry32(((plan.seed||1)^0x5AFE)>>>0), pick=arr=>arr[Math.floor(rng()*arr.length)];
+  const sessions=plan.sessions;
+  let changes=0;
+  const editable=s=>!!s && !s.done && !s.missed && !s.customized && s.date>=tk && s.baseType!=='COURSE' && s.baseType!=='Repos' && (s.km||0)>0;
+  const weekOf=w=>sessions.filter(s=>s.week===w);
+  const rebuild=(s,type,over)=>{
+    const built=buildSessionV2(type,Object.assign({vdot,pace,wkKm:Math.max(15,planWeekKm(weekOf(s.week))),nDays,
+      phase:{name:s.phase,key:s.phaseKey,color:s.color},rng,pick,isDeload:!!s.deload,goal:plan.goal,w:s.week,weeks:plan.weeks},over||{}));
+    const durMin=built.durMin!=null?built.durMin:(built.pace==='—'?0:Math.round(built.km*parseTime(built.pace)/60));
+    Object.assign(s,{type:built.label,baseType:type,title:built.title,km:built.km,duration:durMin,pace:built.pace,rpe:built.rpe,
+      series:built.series||null,desc:built.detail.objectif,detail:built.detail,genParams:built.genParams||null});
+    changes++;
+  };
+  const toEasy=(s,km)=>rebuild(s,'EF',{easyKm:Math.max(4,Math.round(km))});
+  const setKm=(s,km)=>{ if(km===s.km) return; s.km=km; const spk=parseTime(s.pace); if(spk>0) s.duration=Math.round(km*spk/60); changes++; };
+  const weeks=[...new Set(sessions.map(s=>s.week))].sort((a,b)=>a-b);
+
+  // 0. Double seuil (deux sorties au seuil le même jour, ~20-23 km) : réservé aux
+  //    semaines de charge d'au moins 50 km. En dessous, il pesait à lui seul plus de
+  //    la moitié de la semaine (22,9 km dans une semaine prévue à 20 km), et il
+  //    tombait aussi en semaine de décharge. Il devient une séance de seuil simple.
+  sessions.forEach(s=>{
+    if(s.baseType!=='DBLSEUIL' || !editable(s)) return;
+    const tgt=(plan.wkKm&&plan.wkKm[s.week])||planWeekKm(weekOf(s.week));
+    if(s.deload || tgt<50) rebuild(s,'SEUIL');
+  });
+  // 1. Au plus SAFE_MAX_VERY_HARD séances très intenses par semaine.
+  weeks.forEach(w=>{
+    const vh=weekOf(w).filter(s=>PLAN_VERY_HARD.includes(s.baseType)).sort((a,b)=>a.date<b.date?-1:1);
+    for(let i=vh.length-1;i>=0 && vh.filter(s=>PLAN_VERY_HARD.includes(s.baseType)).length>SAFE_MAX_VERY_HARD;i--){
+      if(editable(vh[i])) rebuild(vh[i],'SEUIL');
+    }
+  });
+
+  // 2. Enchaînements : dur → dur, sortie longue → dur/longue, dur/longue → course.
+  const byDate=()=>{ const m={}; sessions.forEach(s=>{ if(s.baseType!=='Repos' && (s.km||0)>0) m[s.date]=s; }); return m; };
+  const clash=(a,b)=>!!a && !!b && ((planIsHard(a)&&planIsHard(b)) || (planIsLong(a)&&(planIsHard(b)||planIsLong(b))) || (b.baseType==='COURSE'&&(planIsHard(a)||planIsLong(a))));
+  const clashesAround=(m,d)=>clash(m[addDaysKey(d,-1)],m[d]) || clash(m[d],m[addDaysKey(d,1)]);
+  const trySwap=(x)=>{
+    const easy=weekOf(x.week).filter(e=>e!==x && editable(e) && ['EF','RECUP','LIGNES'].includes(e.baseType));
+    for(const e of easy){
+      const dx=x.date, de=e.date; x.date=de; e.date=dx;
+      const m=byDate();
+      if(!clashesAround(m,de) && !clashesAround(m,dx)){ changes++; return true; }
+      x.date=dx; e.date=de;
+    }
+    return false;
+  };
+  const easyKmDefault=Math.max(5,Math.round(kmMax/nDays*0.8));
+  const stuck=new Set(); // enchaînements impossibles à corriger (séances faites ou personnalisées)
+  for(let guard=0;guard<120;guard++){
+    const m=byDate();
+    const dates=Object.keys(m).sort();
+    let pair=null;
+    for(const d of dates){ const n=m[addDaysKey(d,1)]; if(clash(m[d],n) && !stuck.has(d)){ pair=[m[d],n,d]; break; } }
+    if(!pair) break;
+    const [a,b,d]=pair;
+    if(editable(b) && trySwap(b)) continue;
+    if(editable(a) && !planIsLong(a) && trySwap(a)) continue;
+    if(editable(b)){ toEasy(b, Math.min(b.km, easyKmDefault)); continue; }
+    if(editable(a)){ toEasy(a, Math.min(a.km, easyKmDefault)); continue; }
+    stuck.add(d);
+  }
+
+  // 3. Volume semaine par semaine.
+  const reduceWeek=(list,cap,isDeload)=>{
+    let excess=planWeekKm(list)-cap;
+    const red=list.filter(s=>editable(s) && PLAN_EASY_FLOOR[s.baseType]!=null);
+    const avail=red.reduce((a,s)=>a+Math.max(0,s.km-PLAN_EASY_FLOOR[s.baseType]),0);
+    if(excess>0.05 && avail>0){
+      const ratio=Math.min(1,excess/avail);
+      red.forEach(s=>{ const f=PLAN_EASY_FLOOR[s.baseType]; setKm(s,Math.max(f,Math.floor(s.km-(s.km-f)*ratio))); });
+      excess=planWeekKm(list)-cap;
+    }
+    // Séances de qualité : d'abord leur variante la plus courte (moins de répétitions,
+    // tempo plus court — même type, même intensité), plus sûr que de les supprimer.
+    if(excess>0.05){
+      list.filter(s=>editable(s) && planIsHard(s)).forEach(s=>{
+        if(excess<=0.05) return;
+        const keep=JSON.stringify(s), km0=s.km, c0=changes; let best=null;
+        for(let i=0;i<8;i++){ rebuild(s,s.baseType); if(best==null || s.km<best.km) best=JSON.parse(JSON.stringify(s)); }
+        if(best && best.km<km0-0.05){ Object.assign(s,best); changes=c0+1; excess=planWeekKm(list)-cap; }
+        else { Object.assign(s,JSON.parse(keep)); changes=c0; }
+      });
+    }
+    for(let guard=0;excess>0.05 && guard<6;guard++){
+      const allQ=list.filter(planIsHard);
+      // On garde toujours une séance de qualité en semaine de charge ; une semaine de
+      // décharge peut, elle, redevenir entièrement facile.
+      if(allQ.length<=(isDeload?0:1)) break;
+      const q=allQ.filter(editable).sort((a,b)=>PLAN_DROP_ORDER.indexOf(a.baseType)-PLAN_DROP_ORDER.indexOf(b.baseType))[0];
+      if(!q) break;
+      toEasy(q, Math.max(4,Math.min(q.km-excess,Math.round(kmMax/nDays*0.8))));
+      excess=planWeekKm(list)-cap;
+    }
+  };
+  const chronic=opts.useHistory?recentWeeklyKm():null;
+  let lastLoad=chronic!=null?Math.max(15,chronic*1.3/SAFE_WEEKLY_INCREASE):null, blockPeak=0;
+  const firstWeek=weeks[0];
+  weeks.forEach(w=>{
+    const list=weekOf(w);
+    const hasRace=list.some(s=>s.baseType==='COURSE');
+    const isTaper=list.some(s=>s.phaseKey==='TAPER') || hasRace;
+    const isDeload=list.some(s=>s.deload);
+    const partial=(w===firstWeek && list.filter(s=>s.baseType!=='COURSE').length<nDays);
+    let cap=kmMax;
+    if(isTaper){ if(lastLoad!=null) cap=Math.min(cap,lastLoad); }
+    else if(isDeload){ if(blockPeak>0) cap=Math.min(cap,blockPeak*SAFE_DELOAD_MAX); }
+    else if(lastLoad!=null && !partial) cap=Math.min(cap,lastLoad*SAFE_WEEKLY_INCREASE);
+    if(planWeekKm(list)>cap+0.05) reduceWeek(list,cap,isDeload||isTaper);
+    const km=planWeekKm(list);
+    if(isTaper) blockPeak=0;
+    else if(isDeload) blockPeak=0;
+    else if(!partial){ lastLoad=km; blockPeak=Math.max(blockPeak,km); }
+  });
+  plan.safetyV=PLAN_SAFETY_VERSION;
+  return changes;
+}
 function minRaceDate(){ const d=new Date(); d.setDate(d.getDate()+7); return d.toISOString().slice(0,10); }
 function generatePlan(){
   const vdot=getUserVDOT();
@@ -7344,15 +7793,11 @@ function generatePlan(){
   const rng=mulberry32(seed);
   const pick=arr=>arr[Math.floor(rng()*arr.length)];
   // allures
-  const pace={ EF:paceFromPct(vdot,.70), RC:paceFromPct(vdot,.66), MAR:paceFromPct(vdot,.80),
-    TEMPO:paceFromPct(vdot,.83), SEUIL:paceFromPct(vdot,.88), SPE:predictTime(vdot, raceMeters())/(raceMeters()/1000),
-    // VMAc = allure "répétition" (courtes reps ≤ 400 m), VMAl = allure "intervalle" (reps 800-1200 m).
-    // Les deux utilisent la courbe distance→intensité calibrée sur données réelles (REP_INTENSITY_CURVE
-    // / repPace) au lieu d'un % fixe — nettement plus rapide et réaliste sur les 200/300 m.
-    VMAl:repPace(vdot,1000), VMAc:repPace(vdot,300), SPRINT:paceFromPct(vdot,1.18) };
+  const pace=planPaces(vdot);
   // volume : kmMin -> kmMax avec deload toutes 4 sem + taper
   const kmMin=P.kmWeekMin||P.kmWeek||35;
-  const kmMax=P.kmWeekMax||Math.round((P.kmWeek||35)*1.6);
+  const kmMax=planKmMax();
+  const wkTargets={};
   const liked=(PREFS.likedTypes&&PREFS.likedTypes.length)?PREFS.likedTypes:null;
   const sessions=[]; let id=1;
   const goal=P.objGoal||'Record personnel';
@@ -7366,19 +7811,28 @@ function generatePlan(){
   };
   const HARD=['VMAc','VMAl','VO2','INTERVAL','DBLSEUIL','SEUIL','SPE','SPE_COURT','TEMPO_SPE','TEMPO','PROGRESSIF','FARTLEK','COTES','LONG','LONG_COURT'];
   const isEasyT=t=>t==='EF'||t==='RECUP', isLongT=t=>t==='LONG'||t==='LONG_COURT';
-  let lastWkKm=kmMin;
+  let lastWkKm=kmMin, prevLoadTarget=null;
   for(let w=1;w<=weeks;w++){
     const ph=phaseByWeek[w];
     const prog=(w-1)/(weeks-1||1);
     let wkKm;
-    if(ph.key==='TAPER'){ const tp=(weeks-w); wkKm=Math.round(kmMax*(0.45+tp*0.12)); }
+    if(ph.key==='TAPER'){ const tp=(weeks-w); wkKm=Math.round(kmMax*(0.45+tp*0.12)); if(prevLoadTarget) wkKm=Math.min(wkKm,prevLoadTarget); }
     else wkKm=Math.round(kmMin+(kmMax-kmMin)*Math.min(1,prog*1.25));
     const isDeload=(w%4===0)&&ph.key!=='TAPER'&&w<weeks-2;
-    if(isDeload) wkKm=Math.round(wkKm*0.75);
+    // Progression à la source (garde-fou du 27/09) : une semaine de charge ne dépasse
+    // jamais +10 % de la précédente ; une décharge vaut 75 % de la dernière semaine de
+    // charge (avant : 75 % de la cible de la semaine, déjà plus haute que la précédente).
+    if(isDeload) wkKm=Math.round((prevLoadTarget||wkKm)*0.75);
+    else if(ph.key!=='TAPER' && prevLoadTarget) wkKm=Math.min(wkKm,Math.round(prevLoadTarget*SAFE_WEEKLY_INCREASE));
     wkKm=Math.max(kmMin*0.7,Math.min(kmMax,wkKm));
+    if(!isDeload && ph.key!=='TAPER') prevLoadTarget=wkKm;
+    wkTargets[w]=wkKm;
     lastWkKm=wkKm;
-    // composition de la semaine selon la phase
-    const qualityCount=days.length>=5?(ph.key==='AERO'?2:ph.key==='PG'?1:3):(days.length>=4?2:1);
+    // composition de la semaine selon la phase — une séance de qualité de moins en
+    // semaine de décharge : leur structure (échauffement + bloc + retour au calme) est
+    // fixe, si bien qu'avec le même nombre de séances la décharge n'allégeait rien.
+    let qualityCount=days.length>=5?(ph.key==='AERO'?2:ph.key==='PG'?1:3):(days.length>=4?2:1);
+    if(isDeload) qualityCount=Math.max(1,qualityCount-1);
     const weekPlan=composeWeek(ph,days.length,qualityCount,isDeload,pick,rng,liked,w===weeks);
     const assigned=assignWeek(days,weekPlan);
     const slots=[];
@@ -7449,13 +7903,15 @@ function generatePlan(){
   // — sans ce tri, la 1re semaine affichait ses séances dans le désordre (ex: lun. 7 sept.
   // avant ven. 4 sept.) dès que le plan était généré un autre jour que dimanche/lundi.
   sessions.sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:0);
-  PLAN={ created:todayKey(), vdot, weeks, seed, sessions, goal, race:P.objRace||'5 km' };
+  PLAN={ created:todayKey(), vdot, weeks, seed, sessions, goal, race:P.objRace||'5 km', kmMax, nDays:days.length, wkKm:wkTargets };
+  const safetyFixes=planSafetyPass(PLAN,{kmMax,useHistory:true});
   DB.save('run_plan',PLAN);
-  toast(''+tp('planGenerated',(trRace(P.objRace)||t('raceGeneric')),weeks,sessions.length));
+  toast(''+tp('planGenerated',(trRace(P.objRace)||t('raceGeneric')),weeks,PLAN.sessions.length));
+  if(safetyFixes) setTimeout(()=>toast(t('planSafetyAdjustedToast')),2600);
   // Course à plus de 28 semaines : le plan commence plus tard qu'aujourd'hui, il
   // faut le dire, sinon l'écran Sport paraît vide sans explication.
   if(sessions[0] && daysBetween(today,new Date(sessions[0].date+'T00:00:00'))>7)
-    setTimeout(()=>toast(tp('planStartsOn',fmtDate(sessions[0].date))),2600);
+    setTimeout(()=>toast(tp('planStartsOn',fmtDate(sessions[0].date))),safetyFixes?5200:2600);
   burst(); renderSport();
 }
 function raceMeters(){ const m={'5 km':5000,'10 km':10000,'Semi-marathon':21097,'Marathon':42195,'Trail':21097,'Cross':8000,'Ultra':50000}; return m[P.objRace]||5000; }
@@ -7511,6 +7967,7 @@ function renderPlanSetup(){
   h+='<div class="field"><label>'+t('targetTimeOptionalLabel')+'</label><input class="inp" value="'+escHtml(s.objTime||'')+'" oninput="setupTmp.objTime=this.value" placeholder="ex: 18:30"></div>';
   h+='<div class="field"><label>'+t('trainingDaysLabel')+'</label><div class="pills">'+[1,2,3,4,5,6,0].map(d=>'<div class="pill '+(s.days.includes(d)?'on':'')+'" onclick="toggleSetupDay('+d+')">'+dn[d]+'</div>').join('')+'</div></div>';
   h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>'+t('minKmWeekLabel')+'</label><input class="inp" type="number" value="'+s.kmWeekMin+'" oninput="setupTmp.kmWeekMin=+this.value"></div><div class="field" style="flex:1"><label>'+t('maxKmWeekLabel')+'</label><input class="inp" type="number" value="'+s.kmWeekMax+'" oninput="setupTmp.kmWeekMax=+this.value"></div></div>';
+  h+='<p class="ps-hint">'+t('planSafetyHint')+'</p>';
   h+='<div class="field"><label>'+t('preferredSessionsLabel')+'</label><div class="pills">'+LIKED_TYPES.map(lt=>'<div class="pill '+(s.likedTypes.includes(lt)?'on':'')+'" onclick="toggleLiked(\''+lt.replace(/'/g,"\\'")+'\')">'+trLikedType(lt)+'</div>').join('')+'</div></div>';
   h+='<button class="btn" onclick="confirmPlanSetup()">'+t('generateMyPlanBtn')+'</button>';
   $('#progBody').innerHTML=h;
@@ -7534,6 +7991,14 @@ function confirmPlanSetup(){
   const s=setupTmp;
   if(!s.compDate){ toast(t('chooseCompDate')); return; }
   if(!s.days.length){ toast(t('chooseAtLeastOneDay')); return; }
+  // Saisie libre : un minimum plus grand que le maximum (ou vide, ou absurde) donnait
+  // un plan incohérent sans prévenir. On remet les bornes dans l'ordre et dans une
+  // plage réaliste (5-200 km/sem), comme le reste des champs du profil.
+  let mn=+s.kmWeekMin||0, mx=+s.kmWeekMax||0;
+  if(!(mn>0)) mn=P.kmWeek||20;
+  if(!(mx>0)) mx=Math.round(mn*1.6);
+  if(mn>mx) [mn,mx]=[mx,mn];
+  s.kmWeekMin=Math.min(200,Math.max(5,Math.round(mn))); s.kmWeekMax=Math.min(200,Math.max(s.kmWeekMin,Math.round(mx)));
   Object.assign(P,{objRace:s.objRace,compDate:s.compDate,objProfile:s.objProfile,objGoal:s.objGoal,objTime:s.objTime,days:s.days.sort((a,b)=>a-b),kmWeekMin:s.kmWeekMin,kmWeekMax:s.kmWeekMax});
   PREFS.likedTypes=s.likedTypes;
   saveAll(); closeOv('ovProg'); generatePlan();
@@ -8123,7 +8588,7 @@ function renderHome(){
   // deja calcules plus haut ; homeLoadQuip() et homeStreakBadge() existaient
   // deja mais n'etaient utilises qu'en mode simplifie.
   html+='<div class="hv7-score">'+
-    '<div class="hv7-score-ring">'+ringSVG(64,form,7,'var(--e)')+'<div class="val">'+form+'%</div></div>'+
+    '<div class="hv7-score-ring">'+ringSVG(64,form,7,'var(--e)')+'<div class="val'+(form>=100?' x3':'')+'">'+form+'%</div></div>'+
     '<div class="hv7-score-txt"><div class="hv7-score-lab">'+t('homeScoreLab')+'</div>'+
     '<div class="hv7-score-quip">'+escHtml(homeLoadQuip(kmW))+'</div>'+
     homeStreakBadge()+
@@ -8168,7 +8633,7 @@ function renderHome(){
         '<div class="hv7-day-top"><span class="hv7-day-chip" style="color:var(--e2)">IKORUN</span>'+
           '<span class="hv7-day-when">'+escHtml(wdCap)+'</span></div>'+
         '<div class="hv7-day-title">'+t('planIkorunTitle')+'</div>'+
-        '<div class="hv7-day-why">'+tp('planIkorunDescLong',(vdot||t('vdotToBeCalculated')))+'</div>'+
+        '<div class="hv7-day-why">'+tp('planIkorunDescLong',(vdot?fmt1(vdot):t('vdotToBeCalculated')))+'</div>'+
         '<div class="hv7-day-acts"><button class="hv7-act main">'+t('configureGenerate')+'</button></div>'+
       '</div>';
     }
@@ -8300,7 +8765,7 @@ function renderRunning(){
   let h='<div class="seg-ctrl sub"><div class="seg-btn'+(runSub==='ia'?' on':'')+'" onclick="runSub=\'ia\';renderSport()">'+t('planIkorunPill')+'</div><div class="seg-btn'+(runSub==='perso'?' on':'')+'" onclick="runSub=\'perso\';renderSport()">'+t('myPlanPill')+'</div></div>';
   if(runSub==='ia'){
     if(!PLAN){
-      h+='<div class="card" id="tourPlanCta"><div class="empty"><div class="em-ic">'+ICN('bolt',36,'currentColor')+'</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">'+t('planIkorunTitle')+'</div><div style="font-size:13px;margin-bottom:16px">'+tp('planIkorunDescLong',(getUserVDOT()||t('vdotToBeCalculated')))+'</div><button class="btn" onclick="openPlanSetup()">'+t('configureGenerate')+'</button></div></div>';
+      h+='<div class="card" id="tourPlanCta"><div class="empty"><div class="em-ic">'+ICN('bolt',36,'currentColor')+'</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">'+t('planIkorunTitle')+'</div><div style="font-size:13px;margin-bottom:16px">'+tp('planIkorunDescLong',(getUserVDOT()?fmt1(getUserVDOT()):t('vdotToBeCalculated')))+'</div><button class="btn" onclick="openPlanSetup()">'+t('configureGenerate')+'</button></div></div>';
     } else {
       h+=planHeroHTML();
       // Seule la semaine en cours est listée ici ; le reste du plan s'ouvre en
@@ -8442,7 +8907,7 @@ function renderCalendarView(){
 
   let h='<div class="row" style="margin-bottom:2px"><div class="x" onclick="calBack()" style="margin-right:8px">‹</div><div style="flex:1"></div></div>';
   h+='<div class="card">';
-  h+='<div class="row" style="margin-bottom:12px"><div style="font-weight:800;font-family:\'Unbounded\';font-size:15px;text-transform:capitalize">'+monthLab+'</div>'+
+  h+='<div class="row" style="margin-bottom:12px"><div style="font-weight:800;font-family:\'Unbounded\',system-ui,-apple-system,sans-serif;font-size:15px;text-transform:capitalize">'+monthLab+'</div>'+
     '<div style="display:flex;gap:6px"><div class="tb-gear" style="width:28px;height:28px" onclick="calMonthNav(-1)">‹</div><div class="tb-gear" style="width:28px;height:28px" onclick="calMonthNav(1)">›</div></div></div>';
   h+='<div class="cal-grid cal-head">'+t('dowShort').split(',').map(l=>'<span>'+l+'</span>').join('')+'</div>';
   h+='<div class="cal-grid">';
@@ -8664,7 +9129,7 @@ function openSessionDebrief(ctx){
     n:i+1, dist:sr.dist, target:Math.round(splitSecFromPace(sr.paceSecPerKm,sr.dist)), timeS:null, respected:null
   })):[];
   renderDebrief();
-  openOv('ovProg'); $('#ovProgTitle').textContent='Bilan de séance';
+  openOv('ovProg'); $('#ovProgTitle').textContent=t('debriefTitle');
 }
 function pickDebriefRepTime(i){
   const r=debriefReps[i];
@@ -8708,7 +9173,7 @@ function renderDebrief(){
       const st=r.respected===true?'border-color:rgba(51,211,153,.4);background:linear-gradient(rgba(51,211,153,.08),rgba(51,211,153,.08)),var(--lg-fill)':r.respected===false?'border-color:rgba(255,92,108,.35);background:linear-gradient(rgba(255,92,108,.07),rgba(255,92,108,.07)),var(--lg-fill)':'';
       h+='<div class="row" style="align-items:center;gap:8px;border:1px solid var(--hair);border-radius:12px;padding:8px 10px;margin-bottom:6px;'+st+'">'
         +'<div style="flex:1"><div style="font-weight:700;font-size:13px">'+tp('repNumDist',r.n,r.dist)+'</div><div style="font-size:11px;color:var(--muted)">'+tp('targetColon',fmtSplit(r.target))+'</div></div>'
-        +'<div style="font-weight:700;font-family:\'JetBrains Mono\';font-size:14px;min-width:44px;text-align:right">'+(r.timeS!=null?fmtSplit(r.timeS):'—')+'</div>'
+        +'<div style="font-weight:700;font-family:\'JetBrains Mono\',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;min-width:44px;text-align:right">'+(r.timeS!=null?fmtSplit(r.timeS):'—')+'</div>'
         +'<button class="btn ghost sm" style="width:auto;padding:6px 10px" onclick="pickDebriefRepTime('+i+')">\u23f1</button>'
         +'<button class="btn ghost sm" style="width:auto;padding:6px 10px;color:var(--ok)" onclick="quickRespectDebriefRep('+i+')">\u2713</button>'
         +'</div>';
@@ -8724,8 +9189,10 @@ function renderDebrief(){
   // globale ferait doublon.
   if(!debriefReps.length){
     h+='<div class="field"><label>'+t('paceAdherenceLabel')+'</label><div class="pills">'+
-      [['faster','⚡',t('paceFasterOpt')],['asPlanned','✅',t('paceAsPlannedOpt')],['slower','🐢',t('paceSlowerOpt')],['muchSlower','🥵',t('paceMuchSlowerOpt')]]
-      .map(o=>'<div class="pill '+(d.paceAdherence===o[0]?'on':'')+'" onclick="debriefData.paceAdherence=\''+o[0]+'\';renderDebrief()">'+o[1]+' '+o[2]+'</div>').join('')
+      // Icônes du jeu IKORUN (les émojis ⚡✅🐢🥵 étaient les derniers de l'interface,
+      // rendus différemment selon le téléphone et hors du style de l'app).
+      [['faster','bolt',t('paceFasterOpt')],['asPlanned','check',t('paceAsPlannedOpt')],['slower','timer',t('paceSlowerOpt')],['muchSlower','warning',t('paceMuchSlowerOpt')]]
+      .map(o=>'<div class="pill '+(d.paceAdherence===o[0]?'on':'')+'" onclick="debriefData.paceAdherence=\''+o[0]+'\';renderDebrief()"><span style="display:inline-flex;vertical-align:-2px;margin-inline-end:6px">'+ICN(o[1],14)+'</span>'+o[2]+'</div>').join('')
     +'</div></div>';
   }
   // Le bilan avait 10 champs affichés d'un bloc — signalé comme trop chargé. Ce qui
@@ -8869,13 +9336,13 @@ function openRunSheet(id){
   let h='';
 
   // EN-TÊTE — badge type, titre, sous-titre semaine/objectif
-  h+='<div class="rs-badge" style="background:color-mix(in srgb,'+col+' 13%,transparent);color:'+col+'">'+(planSessLabel(s)||'').slice(0,2).toUpperCase()+'</div>';
+  h+='<div class="rs-badge" style="background:color-mix(in srgb,'+col+' 13%,transparent);color:'+col+'">'+escHtml(planSessLabel(s)||'')+'</div>';
   h+='<div class="rs-title">'+planSessTitle(s)+(s.customized?' <span class="chrome-chip" style="font-size:10px;vertical-align:middle">'+t('customizedTag')+'</span>':'')+'</div>';
   h+='<span class="rs-sub">'+(PLAN.weekLabel?PLAN.weekLabel:t('weekLabelWithNum')+' '+s.week)+' · '+(trRace(P.objRace)||t('objectiveWord'))+'</span>';
 
   // 3 STATS
   if(s.km){
-    h+='<div class="rs-stats"><div class="rs-stat"><div class="v">'+s.km+'</div><div class="l">km</div></div><div class="rs-div"></div>'
+    h+='<div class="rs-stats"><div class="rs-stat"><div class="v">'+hKm(s.km)+'</div><div class="l">km</div></div><div class="rs-div"></div>'
       +'<div class="rs-stat"><div class="v" style="font-size:17px">'+s.pace+'</div><div class="l">'+t('avgPerKmLabel')+'</div></div><div class="rs-div"></div>'
       +'<div class="rs-stat"><div class="v">'+s.duration+'</div><div class="l">min</div></div></div>';
   }
@@ -9951,7 +10418,7 @@ function renderLib(){
     if(q && !e.name.toLowerCase().includes(q) && !trExName(e.name).toLowerCase().includes(q)) return false;
     return true;
   });
-  h+='<div class="row" style="margin-bottom:8px"><div class="lab" style="flex:1">'+list.length+' '+(list.length>1?t('exercisesWordPlural'):t('exerciseWordSingular'))+'</div><div style="display:flex;gap:6px"><span class="mini-ic" style="'+(libView==='grid'?'color:var(--e);border-color:var(--e)':'')+'" onclick="libView=\'grid\';renderLib()">▦</span><span class="mini-ic" style="'+(libView==='list'?'color:var(--e);border-color:var(--e)':'')+'" onclick="libView=\'list\';renderLib()"></span></div></div>';
+  h+='<div class="row" style="margin-bottom:8px"><div class="lab" style="flex:1">'+tp('exercisesCount',list.length)+'</div><div style="display:flex;gap:6px"><span class="mini-ic" style="'+(libView==='grid'?'color:var(--e);border-color:var(--e)':'')+'" onclick="libView=\'grid\';renderLib()">▦</span><span class="mini-ic" style="'+(libView==='list'?'color:var(--e);border-color:var(--e)':'')+'" onclick="libView=\'list\';renderLib()"></span></div></div>';
   if(libView==='grid'){
     h+='<div class="exg-grid">';
     list.forEach(e=>{
@@ -10492,7 +10959,7 @@ function showAchUnlockAnim(a){
   let sparks=''; for(let i=0;i<26;i++){ const ang=Math.random()*Math.PI*2, d=90+Math.random()*110;
     sparks+='<span class="bd-spark" style="--tx:'+(Math.cos(ang)*d)+'px;--ty:'+(Math.sin(ang)*d)+'px;animation-delay:'+(Math.random()*1.2)+'s"></span>'; }
   ov.innerHTML='<div class="bd-flash"></div>'+
-    '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded;margin-bottom:6px">'+t('newTrophyUnlocked')+'</div>'+
+    '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded,system-ui,-apple-system,sans-serif;margin-bottom:6px">'+t('newTrophyUnlocked')+'</div>'+
     '<div class="bd-unlock-stage '+(a.cls||'bd-athlete')+'"><div class="bd-rays"></div><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div><div class="bd-ring r4"></div>'+
     '<div class="bd-unlock-badge">'+achImg(a).replace('loading="lazy"','loading="eager"')+sparks+'</div></div>'+
     '<div class="man" style="font-weight:800;font-size:30px;margin-top:18px;letter-spacing:.5px">'+a.name+'</div>'+
@@ -10532,7 +10999,7 @@ function previewAchAnim(key){
   let sparks=''; for(let i=0;i<16;i++){ const ang=Math.random()*Math.PI*2, d=80+Math.random()*90;
     sparks+='<span class="bd-spark" style="--tx:'+(Math.cos(ang)*d)+'px;--ty:'+(Math.sin(ang)*d)+'px;animation-delay:'+(Math.random()*1.4)+'s"></span>'; }
   ov.innerHTML='<div class="bd-flash"></div>'+
-    '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded;margin-bottom:6px">'+t('previewLocked')+'</div>'+
+    '<div style="font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;font-family:Unbounded,system-ui,-apple-system,sans-serif;margin-bottom:6px">'+t('previewLocked')+'</div>'+
     '<div class="bd-unlock-stage '+(a.cls||'bd-athlete')+'"><div class="bd-rays"></div><div class="bd-ring"></div><div class="bd-ring r2"></div><div class="bd-ring r3"></div>'+
     '<div class="bd-unlock-badge">'+achImg(a).replace('loading="lazy"','loading="eager"')+sparks+'<div class="bd-lock-chip big">'+ICN('lock',16)+'</div></div></div>'+
     '<div class="man" style="font-weight:800;font-size:26px;margin-top:18px">'+a.name+'</div>'+
@@ -11028,8 +11495,11 @@ function renderVDOTtool(){
     h+='<div class="card"><div class="card-t">'+t('physioEstimates')+'</div>'+
       '<div class="zrow"><span class="zname">'+t('vo2maxEst')+'</span><span class="zval">'+vo2+' ml/kg/min</span></div>'+
       '<div class="zrow"><span class="zname">'+t('thresholdPace')+'</span><span class="zval mono">'+spkToStr(paceFromPct(vdot,.88))+'/km</span></div>'+
-      '<div class="zrow"><span class="zname">'+t('marathonPace')+'</span><span class="zval mono">'+spkToStr(paceFromPct(vdot,.80))+'/km</span></div>'+
-      '<div class="zrow"><span class="zname">'+t('halfPace')+'</span><span class="zval mono">'+spkToStr(paceFromPct(vdot,.835))+'/km</span></div>'+
+      // Allures de COURSE prédites (même calcul que le Jour J et les prédictions des
+      // Stats). Avant : 80 % / 83,5 % de vVO2max, soit 4:48/km au marathon pour un
+      // VDOT 50 alors que la prédiction du même VDOT donne 4:31/km (audit 27/09).
+      '<div class="zrow"><span class="zname">'+t('marathonPace')+'</span><span class="zval mono">'+spkToStr(predictTime(vdot,42195)/42.195)+'/km</span></div>'+
+      '<div class="zrow"><span class="zname">'+t('halfPace')+'</span><span class="zval mono">'+spkToStr(predictTime(vdot,21097.5)/21.0975)+'/km</span></div>'+
       '<div class="zrow"><span class="zname">'+t('efPace')+'</span><span class="zval mono">'+spkToStr(paceFromPct(vdot,.70))+'/km</span></div></div>';
   }
   h+='<div class="tip">'+t('vdotAutoTip')+'</div>';
@@ -11555,7 +12025,7 @@ function avatarHTML(size,fs){
   // injecter du HTML ici, ce sink n'ayant historiquement aucun échappement.
   const ph=safePhotoUrl(P.photo);
   if(ph) return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background-image:url(\''+ph+'\');background-size:cover;background-position:center;margin:0 auto;border:2.5px solid rgba(var(--e-rgb),.35);box-shadow:0 6px 18px -6px rgba(var(--e-rgb),.4)"></div>';
-  return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:linear-gradient(135deg,var(--e),var(--marineL));display:flex;align-items:center;justify-content:center;margin:0 auto;font-family:Unbounded;font-weight:800;font-size:'+fs+'px;border:2.5px solid rgba(var(--e-rgb),.35);box-shadow:0 6px 18px -6px rgba(var(--e-rgb),.4)">'+(P.name?P.name[0].toUpperCase():'?')+'</div>';
+  return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:linear-gradient(135deg,var(--e),var(--marineL));display:flex;align-items:center;justify-content:center;margin:0 auto;font-family:Unbounded,system-ui,-apple-system,sans-serif;font-weight:800;font-size:'+fs+'px;border:2.5px solid rgba(var(--e-rgb),.35);box-shadow:0 6px 18px -6px rgba(var(--e-rgb),.4)">'+(P.name?P.name[0].toUpperCase():'?')+'</div>';
 }
 function renderProfile(){
   if(P.easyMode){ $('#s-profil').innerHTML=renderProfileSimple(); return; }
@@ -11691,7 +12161,7 @@ function pfSectionHTML(key){
    volontairement omise (facultatif pour un particulier non-professionnel).
    Reste à faire évoluer si l'app devient payante/commerciale un jour (cf.
    texte de l'art. 13 lui-même) — pas une relecture juridique professionnelle. */
-const LEGAL_LAST_UPDATE='6 septembre 2026';
+const LEGAL_LAST_UPDATE='27 septembre 2026';
 function legalP(title,body){ return '<div style="font-weight:800;font-size:13.5px;margin:16px 0 6px;color:var(--snow)">'+title+'</div><div style="font-size:12.5px;color:var(--muted);line-height:1.65">'+body+'</div>'; }
 function legalWrapHTML(bodyHtml){
   return '<div class="card" style="padding:16px">'+
@@ -11759,7 +12229,7 @@ function legalPrivacyHTML(){
   +legalP('10. Stockage local et cookies',
     'L’Application utilise le stockage local de ton navigateur (localStorage) pour fonctionner hors-ligne et mémoriser tes préférences, IndexedDB pour conserver la clé de chiffrement propre à ton appareil, et le cache d’un service worker pour l’affichage hors-ligne. Ces éléments restent sur ton appareil. Si tu actives les notifications, ton navigateur crée en plus un abonnement push propre à cet appareil, dont l’identifiant est enregistré sur nos serveurs jusqu’à ce que tu désactives les rappels ou supprimes ton compte. À ce jour, aucun cookie publicitaire, aucun traceur d’audience et aucun outil de mesure tiers ne sont utilisés ; voir l’article 3 bis si cela évolue.')
   +legalP('10 bis. Notifications',
-    'Les notifications sont facultatives et désactivées tant que tu n’as pas explicitement accepté la demande de ton navigateur. Deux types existent : les rappels d’entraînement, envoyés au maximum deux fois par jour (à 12h et 16h) uniquement si la séance prévue n’est pas encore faite, et les rappels de prière, envoyés aux cinq horaires quotidiens si tu les as activés. Chaque type dispose de son propre interrupteur dans Profil > Notifications, et tu peux aussi les révoquer entièrement depuis les réglages de ton téléphone. Aucune notification commerciale ou promotionnelle n’est envoyée.')
+    'Les notifications sont facultatives et désactivées tant que tu n’as pas explicitement accepté la demande de ton navigateur. Trois types existent : les rappels d’entraînement, envoyés au maximum deux fois par jour (à 12h et 16h) uniquement si la séance prévue n’est pas encore faite, les rappels de prière, envoyés aux cinq horaires quotidiens si tu les as activés, et les records de tes amis (désactivés par défaut) : quand un ami ou un membre de ton club améliore son VDOT, tu en es informé — et, réciproquement, tant que ce réglage est actif, l’amélioration de ton propre VDOT (donnée déjà visible d’eux, voir §5) leur est annoncée ; jamais un chrono, une séance ou un ressenti. Chaque type dispose de son propre interrupteur dans Profil > Notifications, et tu peux aussi les révoquer entièrement depuis les réglages de ton téléphone. Aucune notification commerciale ou promotionnelle n’est envoyée.')
   +legalP('11. Sécurité',
     'Sur ton appareil, tes données d’entraînement sont chiffrées (AES-GCM 256 bits) avant d’être stockées dans le navigateur ; la clé est générée localement, non exportable, et n’est envoyée nulle part. Les échanges avec le serveur passent par HTTPS. En revanche, sois conscient(e) que la copie sauvegardée sur nos serveurs n’est pas chiffrée de bout en bout : elle est techniquement lisible par l’hébergeur et par l’Éditeur, et protégée par les contrôles d’accès de la base de données ainsi que par le chiffrement disque de l’hébergeur. Aucun système n’est infaillible ; en cas de faille de sécurité avérée, tu en serais informé(e) conformément à la réglementation.')
   +legalP('12. Mineurs',
@@ -12017,6 +12487,18 @@ function previewSfx(name){
   try{ audioCtx(); }catch(e){}
   sfx(name);
 }
+// Records de mes amis (27/09) : désactivé par défaut. Opt-in RÉCIPROQUE, expliqué
+// sous l'interrupteur : on reçoit les progrès de VDOT de ses amis et de son club,
+// et les siens leur sont annoncés de la même façon (voir trg_ikorun_social_event).
+function toggleSocialNotif(el){
+  P.socialNotif=P.socialNotif!==true;
+  if(el) el.classList.toggle('on',P.socialNotif);
+  if(P.socialNotif) ensureNotifPerm();
+  saveAll();
+  if(P.socialNotif){ ensurePush(); setPushFlag('social_enabled',true); toast(t('socialNotifOnToast')); }
+  else setPushFlag('social_enabled',false);
+  sfx('tap');
+}
 function togglePrayerNotif(el){
   P.prayerNotif=(P.prayerNotif===false)?true:false;
   if(el) el.classList.toggle('on',P.prayerNotif!==false);
@@ -12072,6 +12554,8 @@ function pfNotifHTML(){
   }
   h+='<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('trainReminders')+'</span><div class="toggle'+(P.notif!==false?' on':'')+'" onclick="toggleNotif(this)"></div></div>'+
     '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('prayerNotifLabel')+'</span><div class="toggle'+(P.prayerNotif!==false?' on':'')+'" onclick="togglePrayerNotif(this)"></div></div>'+
+    '<div class="row" style="margin-bottom:4px"><span style="font-size:14px">'+t('socialNotifLabel')+'</span><div class="toggle'+(P.socialNotif===true?' on':'')+'" onclick="toggleSocialNotif(this)"></div></div>'+
+    '<div style="font-size:11.5px;color:var(--muted);line-height:1.45;margin-bottom:14px">'+t('socialNotifDesc')+'</div>'+
     '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('sounds')+'</span><div class="toggle'+(P.sounds!==false?' on':'')+'" onclick="toggleSounds(this)"></div></div>'+
     // Le volume et l'écoute n'apparaissent que si les sons sont actifs : un
     // curseur sur un réglage éteint ne veut rien dire.
@@ -12449,18 +12933,21 @@ function checkConnectivity(){
   const online=navigator.onLine;
   if(online){ syncOnline(true); }
   else {
-    const last=PREFS.lastOnline||Date.now();
+    const last=lastOnlineGet()||PREFS.lastOnline||Date.now();
     const days=Math.floor((Date.now()-last)/86400000);
     if(days>=3) setTimeout(()=>toast(''+tp('offlineSinceDays',days)),1500);
   }
   return online;
 }
+// Dernière connexion : propre à l'appareil, gardée hors de « prefs » (sinon la clé
+// repartait vers le serveur au lancement puis toutes les 5 min, pour une simple heure).
+function lastOnlineGet(){ try{ return +localStorage.getItem('ik_last_online')||0; }catch(e){ return 0; } }
 /* Synchronisation silencieuse quand Internet est disponible */
 function syncOnline(silent){
   if(!navigator.onLine) return;
   if(silent && Date.now()-_lastScrollTouch<1000){ setTimeout(()=>syncOnline(silent),1500); return; } // évite de re-render sous le doigt
-  PREFS.lastOnline=Date.now();
-  PREFS.lastSync=Date.now();
+  try{ localStorage.setItem('ik_last_online',String(Date.now())); }catch(e){}
+  if('lastOnline' in PREFS || 'lastSync' in PREFS){ delete PREFS.lastOnline; delete PREFS.lastSync; }
   // Recalcule/rafraîchit les données dépendantes de la date (prières, calendrier, J-X…)
   checkDayRollover(); // couvre le cas ou l'app reste affichee au passage de minuit
   try{ if($('#s-home')&&$('#s-home').classList.contains('on')) renderHome(); }catch(e){}
@@ -12469,10 +12956,10 @@ function syncOnline(silent){
   if(!silent) toast(''+t('dataSynced'));
   nudgeScroll();
 }
-window.addEventListener('online',()=>{ toast(''+t('connectionRestored')); syncOnline(false); });
+window.addEventListener('online',()=>{ toast(''+t('connectionRestored')); syncOnline(false); if(window._offlineBoot) scheduleResume(); else flushDirty().then(ok=>{ if(ok) toast(t('dataSynced')); }); });
 window.addEventListener('offline',()=>{ toast(''+t('offlineModeAvailable')); });
 // Sync silencieuse périodique tant que l'app est ouverte
-setInterval(()=>{ if(navigator.onLine) syncOnline(true); },5*60*1000);
+setInterval(()=>{ if(navigator.onLine){ syncOnline(true); flushDirty(); } },5*60*1000);
 
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',startApp); else startApp();
 setTimeout(hideAppSkeleton,7000); // filet de sécurité si le réseau/l'auth traîne
