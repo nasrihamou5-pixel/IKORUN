@@ -115,6 +115,13 @@
       chk(c,'les noms de rang suivent la langue', rFr!==rEn && rEn!==rAr, rEn.slice(0,40));
       P.lang='en';
       chk(c,'les outils suivent la langue', TOOLS_DEF().chrono.name!==t('toolChronoName') ? false : true, '');
+      // Pluriels (27/09) : « {0} membre(s) », « 1 days », et en arabe la forme 3-10 partout.
+      P.lang='fr'; var pFr=[1,2].map(function(n){return tp('clubMembersCount',n);});
+      P.lang='en'; var pEn=[1,5].map(function(n){return tp('clubMembersCount',n);});
+      P.lang='ar'; var pAr=[2,3,11].map(function(n){return tp('clubMembersCount',n);});
+      chk(c,'les pluriels suivent le nombre et la langue',
+        pFr[0]!==pFr[1] && pEn[0]!==pEn[1] && pAr[0]!==pAr[1] && pAr[1]!==pAr[2] && pFr.concat(pEn,pAr).every(function(x){return x.indexOf('(s)')===-1;}),
+        pFr.concat(pEn).join(' · '));
     } finally { if(P) P.lang=avant; }
   }
 
@@ -297,6 +304,60 @@
     });
   }
 
+  /* ======================= 9. PLAN — GARDE-FOU DE CHARGE ================== */
+  // Audit du 27/09 : +29 % d'une semaine à l'autre, décharges à 100-114 % du pic,
+  // VMA le lendemain d'une sortie longue, et une régénération hebdomadaire qui
+  // gonflait le volume même à charge stable (S9 : 59 → 78 → 89 km pour un max de 60).
+  function testGardeFou(){
+    var c='10. Plan — garde-fou de charge';
+    var SC=[['10 km',[1,2,4,5,6],40,60,14],['Semi-marathon',[1,3,5,0],35,56,16],['Marathon',[1,2,4,5,0],50,80,18]];
+    photographie();
+    var saved={compDate:P.compDate,days:P.days,objRace:P.objRace,kmWeekMin:P.kmWeekMin,kmWeekMax:P.kmWeekMax};
+    var vraiToast=window.toast, vraiBurst=window.burst, vraiRender=window.renderSport;
+    var bilan={saut:[],decharge:[],enchaine:[],max:[],regen:[]};
+    try{
+      window.toast=function(){}; window.burst=function(){}; window.renderSport=function(){};
+      if(!getUserVDOT()) RECORDS=[{dist:'5000 m',meters:5000,time:'21:00',date:todayKey()}];
+      SC.forEach(function(sc){
+        var d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+sc[4]*7-1);
+        P.compDate=dateKey(d); P.days=sc[1]; P.objRace=sc[0]; P.kmWeekMin=sc[2]; P.kmWeekMax=sc[3];
+        SESSLOG=[]; SESS=[];
+        generatePlan();
+        var nom=sc[0];
+        var semaines={}; PLAN.sessions.forEach(function(s){ (semaines[s.week]=semaines[s.week]||[]).push(s); });
+        var ws=Object.keys(semaines).map(Number).sort(function(a,b){return a-b;});
+        var derniere=null, pic=0;
+        ws.forEach(function(w,i){
+          var l=semaines[w], km=planWeekKm(l);
+          var affut=l.some(function(s){return s.phaseKey==='TAPER'||s.baseType==='COURSE';});
+          var dech=l.some(function(s){return s.deload;});
+          var partielle=(i===0 && l.length<sc[1].length);
+          if(km>sc[3]+1) bilan.max.push(nom+' S'+w+' '+Math.round(km)+' km');
+          if(affut||dech){ if(dech && pic && km>pic*0.8+0.5) bilan.decharge.push(nom+' S'+w+' '+Math.round(km/pic*100)+' %'); pic=0; return; }
+          if(!partielle){ if(derniere && km>derniere*1.1+0.5) bilan.saut.push(nom+' S'+w+' +'+Math.round((km/derniere-1)*100)+' %'); derniere=km; pic=Math.max(pic,km); }
+        });
+        var parDate={}; PLAN.sessions.forEach(function(s){ if(s.km>0) parDate[s.date]=s; });
+        PLAN.sessions.forEach(function(s){
+          var n=parDate[addDaysKey(s.date,1)]; if(!n) return;
+          if((planIsHard(s)&&planIsHard(n))||(planIsLong(s)&&(planIsHard(n)||planIsLong(n)))) bilan.enchaine.push(nom+' '+s.date+' '+s.baseType+'→'+n.baseType);
+        });
+        weeklyAdaptiveRegen(true); weeklyAdaptiveRegen(true);
+        var apres={}; PLAN.sessions.forEach(function(s){ apres[s.week]=(apres[s.week]||0)+(s.baseType==='COURSE'?0:(s.km||0)); });
+        Object.keys(apres).forEach(function(w){ if(apres[w]>sc[3]+1) bilan.regen.push(nom+' S'+w+' '+Math.round(apres[w])+' km'); });
+      });
+      chk(c,'aucune semaine de charge au-delà de +10 %', !bilan.saut.length, bilan.saut.slice(0,4).join(' | ')||'3 plans types vérifiés');
+      chk(c,'une décharge pèse au plus 80 % du pic', !bilan.decharge.length, bilan.decharge.slice(0,4).join(' | '));
+      chk(c,'jamais deux séances dures d\'affilée ni dure le lendemain d\'une sortie longue', !bilan.enchaine.length, bilan.enchaine.slice(0,3).join(' | '));
+      chk(c,'aucune semaine au-dessus du km/sem maxi', !bilan.max.length, bilan.max.slice(0,4).join(' | '));
+      chk(c,'la régénération hebdomadaire ne dépasse pas le km/sem maxi', !bilan.regen.length, bilan.regen.slice(0,4).join(' | ')||'2 régénérations par plan');
+    }catch(e){ ko(c,'exécution',e&&e.message); }
+    finally{
+      window.toast=vraiToast; window.burst=vraiBurst; window.renderSport=vraiRender;
+      P.compDate=saved.compDate; P.days=saved.days; P.objRace=saved.objRace; P.kmWeekMin=saved.kmWeekMin; P.kmWeekMax=saved.kmWeekMax;
+      restaure();
+    }
+  }
+
   function testIntegrite(){
     var c='7. Données';
     // Bug réel : double validation = deux entrées dans SESS et XP crédité deux
@@ -435,6 +496,7 @@
     testMinuteurs();
     testIntegrite();
     testAudit2409();
+    testGardeFou();
     Promise.resolve(testI18nUsage())
       .then(function(){ return testSon(); })
       .catch(function(e){ ko('0. Suite','exécution', e && e.message); })

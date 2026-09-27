@@ -20,7 +20,7 @@
 // cache. Changer le nom du cache supprime les anciennes entrées à l'activation, ce
 // qui garantit que le vrai manifest.json est bien récupéré — condition nécessaire
 // pour que le navigateur propose l'installation de l'app.
-const C = 'ikorun-v92';
+const C = 'ikorun-v93';
 
 // Une réponse est réutilisable telle quelle si son URL identifie déjà une version
 // précise : soit elle porte un paramètre ?v=..., soit c'est un binaire dont le nom
@@ -47,7 +47,10 @@ const SHELL = [
   'favicon-32.png',
   'favicon-16.png',
   'vendor/supabase.js?v=1',
-  'vendor/sb-init.js?v=2'
+  'vendor/sb-init.js?v=2',
+  // polices hébergées (27/09) : celles du premier écran, pour un démarrage hors ligne sans Times
+  'fonts/unbounded-latin.woff2',
+  'fonts/inter-latin.woff2'
 ];
 
 self.addEventListener('install', e => {
@@ -150,7 +153,9 @@ self.addEventListener('push', e => {
     tag: data.tag || 'ikorun-push',
     renotify: true,
     icon: 'icon-192.png',
-    badge: 'icon-192.png'
+    badge: 'icon-192.png',
+    // Lien profond (27/09) : 'sport' (séance du jour), 'prayer', 'rank' (record d'un ami).
+    data: { open: data.open || '' }
   }));
 });
 
@@ -173,10 +178,20 @@ self.addEventListener('notificationclick', e => {
     );
     return;
   }
+  // Notification serveur (rappel, prière, record d'un ami) : on la referme, on remet
+  // l'app au premier plan et on lui dit quel écran ouvrir ; app fermée, on l'ouvre
+  // directement sur cet écran (?open=…, lu au démarrage par app.js).
+  const open = (e.notification.data && e.notification.data.open) || '';
+  e.notification.close();
   e.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
-      for (const c of list) { if ('focus' in c) return c.focus(); }
-      if (clients.openWindow) return clients.openWindow('/');
+      for (const c of list) {
+        if ('focus' in c) {
+          if (open) c.postMessage({ type: 'ik-open', open });
+          return c.focus();
+        }
+      }
+      if (clients.openWindow) return clients.openWindow(open ? '/?open=' + encodeURIComponent(open) : '/');
     })
   );
 });
