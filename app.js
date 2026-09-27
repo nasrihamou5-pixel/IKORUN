@@ -4337,7 +4337,7 @@ function appVersionTag(){ return t('footerTag')+' · v3.02.'+appBuildNumber(); }
    ensuite il s'affiche directement, sans aucun mouvement. Plus rien ne tourne en
    boucle. Restent les réponses à un geste (série validée, tour de chrono…). */
 const IK_TABS=['home','sport','stats','outils','profil'];
-const IK_GROUPS=[['.kbars-row','.kbar'],['.hv7-hero-week','.hv7-hw-bar b'],['.sp-rail','i'],['.bd-grid','.bd-cell'],['svg','.lc-dot']];
+const IK_GROUPS=[['.kbars-row','.kbar'],['.sp-rail','i'],['.bd-grid','.bd-cell'],['svg','.lc-dot']];
 let _ikPrevTab='home';
 const _ikSeenTabs=new Set();
 // Vrai la première fois que `key` est vu sur `el` depuis le lancement de l'app.
@@ -7104,7 +7104,7 @@ function openMissedFlow(sid){
 }
 function renderMissedReason(){
   const s=PLAN.sessions.find(x=>x.id===missedCtx.sessionId); if(!s) return;
-  let h='<div class="card" style="border-color:rgba(255,92,108,.35);background:rgba(255,92,108,.08);margin-bottom:18px"><div style="font-weight:700;color:var(--bad)">'+t('missedSessionTitle')+'</div><div style="font-size:13px;color:var(--muted);margin-top:4px">'+planSessTitle(s)+' · '+fmtDate(s.date)+'</div></div>';
+  let h='<div class="card" style="border-color:rgba(255,92,108,.35);background:linear-gradient(rgba(255,92,108,.07),rgba(255,92,108,.07)),var(--lg-fill);margin-bottom:18px"><div style="font-weight:700;color:var(--bad)">'+t('missedSessionTitle')+'</div><div style="font-size:13px;color:var(--muted);margin-top:4px">'+planSessTitle(s)+' · '+fmtDate(s.date)+'</div></div>';
   h+='<div class="lab" style="margin-bottom:10px">'+t('missedReasonPrompt')+'</div>';
   h+='<div class="reason-grid">'+MISSED_REASONS.map(r=>'<div class="reason-tile" onclick="selectMissedReason(\''+r+'\')">'+(MISSED_REASON_ICONS[r]?ICN(MISSED_REASON_ICONS[r],18):'')+' '+trReason(r)+'</div>').join('')+'</div>';
   $('#progBody').innerHTML=h;
@@ -8039,34 +8039,6 @@ function bestBarLabel(per,bars,i){
   return bars.labels[i];
 }
 function fmt1(v){ const n=Number(v); return (v!==''&&v!=null&&isFinite(n))?n.toLocaleString(localeCode(),{minimumFractionDigits:1,maximumFractionDigits:1}):String(v); }
-// 7 barres de charge quotidienne de la semaine. Les jours déjà courus sont pleins ; les jours
-// à venir affichent en creux la charge PRÉVUE par le plan, pour que la semaine se lise en
-// entier et pas seulement dans sa partie écoulée. Le jour courant est mis en avant.
-function homeWeekBarsHTML(){
-  const ws=weekStart(), dowLabels=t('dowShort').split(','), tk=todayKey();
-  const EFFORT_TYPES=['Tempo','Seuil','VMA','Intervalle'];
-  const week=[];
-  for(let i=0;i<7;i++){
-    const d=new Date(ws); d.setDate(ws.getDate()+i); const k=dateKey(d);
-    const daySess=[...SESS,...MSESS].filter(s=>s.date===k);
-    let km=daySess.reduce((a,s)=>a+(s.km||0),0);
-    let effort=daySess.some(s=>EFFORT_TYPES.includes(s.type)), planned=false;
-    if(!km && PLAN && PLAN.sessions){
-      const p=PLAN.sessions.find(s=>s.date===k && s.km>0 && s.type!=='Repos' && !s.missed);
-      if(p){ km=p.km; effort=HARD_TYPES.includes(p.baseType); planned=true; }
-    }
-    week.push({k,km,effort,planned});
-  }
-  const maxDay=Math.max(1,...week.map(w=>w.km));
-  let bars='';
-  week.forEach((w,i)=>{
-    const isToday=w.k===tk;
-    const cls=isToday?'now':(w.planned?'plan':(w.effort?'effort':'done'));
-    const inner=w.km>0?'<b class="'+cls+'" style="height:'+Math.max(12,Math.round(w.km/maxDay*100))+'%"></b>':'';
-    bars+='<div class="hv7-hw-day'+(isToday?' today':'')+'"><div class="hv7-hw-bar">'+inner+'</div><span class="hv7-hw-lab">'+dowLabels[i]+'</span></div>';
-  });
-  return '<div class="hv7-hero-week">'+bars+'</div>';
-}
 // Les n prochaines vraies séances du plan (hors repos), strictement après aujourd'hui.
 function homeNextRows(n){
   if(!PLAN||!PLAN.sessions) return null;
@@ -8201,9 +8173,6 @@ function renderHome(){
       '</div>';
     }
   }
-
-  // SEMAINE COMPACTE — 7 barres de charge, jour courant repéré
-  html+=homeWeekBarsHTML();
 
   // 3 TUILES — volume de la semaine, séances faites sur l'objectif, VDOT courant
   html+='<div class="hv7-krow3" onclick="nav(\'stats\')">'+
@@ -8522,7 +8491,7 @@ function persoDetailHTML(){
     sorted.forEach(s=>{
       const isToday=s.date===tk; const col='var('+(TYPE_COLORS[s.type]||'--e')+')';
       const detail=(s.intervals&&s.intervals.length)?(' · '+s.intervals.length+' × '+s.intervals[0].dist+' m'):(s.km?' · '+s.km+' km · '+s.pace+'/km':'');
-      h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'"><div class="row" onclick="openPersoSheet('+s.id+')" style="cursor:pointer"><div><div style="font-weight:700;font-size:14px">'+escHtml(s.title)+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+fmtDate(s.date)+detail+'</div></div><div class="badge" style="background:rgba(var(--e-rgb),.15);color:'+col+';font-size:11px">'+escHtml(s.type)+'</div></div></div>';
+      h+='<div class="sess '+(s.done?'done':'')+' '+(isToday?'today':'')+'"><div class="row" onclick="openPersoSheet('+s.id+')" style="cursor:pointer"><div><div style="font-weight:700;font-size:14px">'+escHtml(s.title)+'</div><div style="color:var(--muted);font-size:12px;margin-top:3px">'+fmtDate(s.date)+detail+'</div></div><div class="badge" style="background:color-mix(in srgb,'+col+' 10%,transparent);color:'+col+';font-size:11px">'+escHtml(s.type)+'</div></div></div>';
     });
   }
   return h;
@@ -8642,7 +8611,7 @@ function openPersoSheet(sid){
   curPersoSess=sid;
   $('#sheetTitle').textContent=s.title;
   const col='var('+(TYPE_COLORS[s.type]||'--e')+')';
-  let h='<div class="badge" style="background:color-mix(in srgb,'+col+' 12%,transparent);color:'+col+';margin-bottom:14px">'+escHtml(s.type)+' · '+fmtDate(s.date)+'</div>';
+  let h='<div class="badge" style="background:color-mix(in srgb,'+col+' 10%,transparent);color:'+col+';margin-bottom:14px">'+escHtml(s.type)+' · '+fmtDate(s.date)+'</div>';
   if(s.km) h+='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+s.km+'</div><div class="l">km</div></div><div class="sbox"><div class="v" style="font-size:18px">'+s.pace+'</div><div class="l">'+t('avgPerKmLabel')+'</div></div><div class="sbox"><div class="v">'+s.duration+'</div><div class="l">min</div></div></div>';
   if(s.intervals && s.intervals.length){
     h+='<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:8px">'+s.intervals.length+' × '+s.intervals[0].dist+' m</div><div style="display:flex;flex-direction:column;gap:6px">';
@@ -8653,7 +8622,7 @@ function openPersoSheet(sid){
   // Même garde-fou anti-triche que le plan IKORUN (voir markPersoDone/markRunDone) :
   // un plan perso peut tout autant contenir des séances datées dans le futur.
   if(s.done) h+='<div class="badge" style="background:rgba(51,211,153,.18);color:var(--ok);width:100%;justify-content:center;padding:14px;border-radius:14px;margin-bottom:10px">'+t('sessionCompleted')+'</div>';
-  else if(s.date>todayKey()) h+='<div class="badge" style="background:var(--s2);color:var(--muted);width:100%;justify-content:center;padding:14px;border-radius:14px;margin-bottom:10px">'+t('sessionNotYetLabel')+'</div>';
+  else if(s.date>todayKey()) h+='<div class="badge" style="background:var(--lg-well);box-shadow:var(--lg-well-rim);color:var(--muted);width:100%;justify-content:center;padding:14px;border-radius:14px;margin-bottom:10px">'+t('sessionNotYetLabel')+'</div>';
   else h+='<button class="btn" style="margin-bottom:10px" onclick="markPersoDone()">'+t('markCompleted')+'</button>';
   h+='<button class="btn ghost sm" style="color:var(--bad)" onclick="delPersoSession()">'+t('delete')+'</button>';
   $('#sheetBody').innerHTML=h; openOv('ovSheet');
@@ -8736,7 +8705,7 @@ function renderDebrief(){
     const doneCount=debriefReps.filter(r=>r.respected===true).length;
     h+='<div class="chrome-box"><div class="cb-head">\U0001f3c3 '+tp('repByRepSummary',debriefReps.length,debriefReps[0].dist)+' <span style="margin-left:auto;font-weight:600;color:var(--e2)">'+tp('respectedCount',doneCount,debriefReps.length)+'</span></div>';
     debriefReps.forEach((r,i)=>{
-      const st=r.respected===true?'border-color:rgba(51,211,153,.4);background:rgba(51,211,153,.08)':r.respected===false?'border-color:rgba(255,92,108,.35);background:rgba(255,92,108,.08)':'';
+      const st=r.respected===true?'border-color:rgba(51,211,153,.4);background:linear-gradient(rgba(51,211,153,.08),rgba(51,211,153,.08)),var(--lg-fill)':r.respected===false?'border-color:rgba(255,92,108,.35);background:linear-gradient(rgba(255,92,108,.07),rgba(255,92,108,.07)),var(--lg-fill)':'';
       h+='<div class="row" style="align-items:center;gap:8px;border:1px solid var(--hair);border-radius:12px;padding:8px 10px;margin-bottom:6px;'+st+'">'
         +'<div style="flex:1"><div style="font-weight:700;font-size:13px">'+tp('repNumDist',r.n,r.dist)+'</div><div style="font-size:11px;color:var(--muted)">'+tp('targetColon',fmtSplit(r.target))+'</div></div>'
         +'<div style="font-weight:700;font-family:\'JetBrains Mono\';font-size:14px;min-width:44px;text-align:right">'+(r.timeS!=null?fmtSplit(r.timeS):'—')+'</div>'
@@ -8918,7 +8887,7 @@ function openRunSheet(id){
   // d'XP jamais courus (voir markRunDone, qui applique le même garde-fou
   // en dur — celui-ci n'est que l'état visuel correspondant).
   if(s.done) h+='<div class="badge" style="background:rgba(51,211,153,.18);color:var(--ok);width:100%;justify-content:center;padding:14px;border-radius:18px;margin-bottom:18px">'+t('sessionCompleted')+'</div>';
-  else if(s.date>todayKey()) h+='<div class="badge" style="background:var(--s2);color:var(--muted);width:100%;justify-content:center;padding:14px;border-radius:18px;margin-bottom:18px">'+t('sessionNotYetLabel')+'</div>';
+  else if(s.date>todayKey()) h+='<div class="badge" style="background:var(--lg-well);box-shadow:var(--lg-well-rim);color:var(--muted);width:100%;justify-content:center;padding:14px;border-radius:18px;margin-bottom:18px">'+t('sessionNotYetLabel')+'</div>';
   else if(s.type!=='Repos') h+='<button class="btn" style="margin-bottom:18px" onclick="markRunDone()">'+t('markCompleted')+'</button>';
   // Personnalisation : uniquement pour une séance future non encore validée — une fois
   // done, ou dans le passé, s.km/s.date ont déjà servi à créditer le bilan ou à détecter
@@ -9146,7 +9115,7 @@ function renderMuscu(){
   // de cet ecran, comme TOOLS, regle le probleme sans toucher au reste du boot.
   PROGS=PROGS_DEF();
   let h='';
-  if(DB.load('live_paused')){ const sv=DB.load('live_paused'); h+='<div class="card" style="border-color:var(--warn);background:rgba(255,180,84,.08)"><div class="row"><div><div style="font-weight:700">'+t('sessionPausedLab')+'</div><div style="font-size:12px;color:var(--muted)">'+escHtml(sv.prog.name)+'</div></div><button class="btn sm" style="width:auto;padding:8px 14px" onclick="resumeLive()">'+t('resumeBtn')+'</button></div></div>'; }
+  if(DB.load('live_paused')){ const sv=DB.load('live_paused'); h+='<div class="card" style="border-color:var(--warn);background:linear-gradient(rgba(255,180,84,.09),rgba(255,180,84,.09)),var(--lg-fill)"><div class="row"><div><div style="font-weight:700">'+t('sessionPausedLab')+'</div><div style="font-size:12px;color:var(--muted)">'+escHtml(sv.prog.name)+'</div></div><button class="btn sm" style="width:auto;padding:8px 14px" onclick="resumeLive()">'+t('resumeBtn')+'</button></div></div>'; }
   h+='<div class="row" style="gap:10px;margin-bottom:16px"><button class="btn" onclick="openCreate()">＋ '+t('createBtn')+'</button><button class="btn ghost" onclick="openLibBrowse()">'+t('libraryLab')+'</button></div>';
   const custs=CUSTOM.filter(p=>p.kind==='muscu');
   if(custs.length){
@@ -9433,7 +9402,7 @@ function exDemoImgPair(g){
     '<img id="exDemoB" src="'+g[1]+'" '+onerr+' style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s ease">';
 }
 function exDemoMediaHTML(g,aspect){
-  return '<div data-exdemo style="position:relative;background:var(--s2);border:1px solid var(--hair);border-radius:16px;overflow:hidden;margin-bottom:14px;aspect-ratio:'+aspect+'">'+exDemoImgPair(g)+'</div>';
+  return '<div data-exdemo style="position:relative;background:var(--lg-well);box-shadow:var(--lg-well-rim);border-radius:16px;overflow:hidden;margin-bottom:14px;aspect-ratio:'+aspect+'">'+exDemoImgPair(g)+'</div>';
 }
 let _exDemo2=null;
 function startExDemoAuto(g){
@@ -10010,7 +9979,7 @@ function openFiche(name){
   // visuel animé (placeholder élégant simulant un GIF/avatar)
   if(f.gif){
     // Démonstration animée réelle (2 frames alternées = mouvement)
-    h+='<div data-exdemo style="position:relative;background:var(--s2);border:1px solid var(--hair);border-radius:18px;overflow:hidden;margin-bottom:14px;aspect-ratio:5/4">'+
+    h+='<div data-exdemo style="position:relative;background:var(--lg-well);box-shadow:var(--lg-well-rim);border-radius:18px;overflow:hidden;margin-bottom:14px;aspect-ratio:5/4">'+
       exDemoImgPair(f.gif)+
       '<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));padding:10px 12px 8px;display:flex;align-items:center;gap:6px;font-size:11px;color:#fff;font-weight:700;z-index:1"><span style="width:7px;height:7px;border-radius:50%;background:var(--e);animation:demoPulse 1s infinite"></span>'+t('movementDemoCap')+'</div></div>';
     h+='<div id="exDemoFallback" style="display:none;position:relative;background:linear-gradient(135deg,var(--s2),var(--s1));border:1px solid var(--hair);border-radius:18px;padding:34px 16px;text-align:center;margin-bottom:14px"><div style="animation:demoFloat 1.5s ease-in-out infinite">'+exGlyph(f,68)+'</div><div style="font-size:11px;color:var(--dim);margin-top:8px">'+t('movementDemo')+'</div></div>';
@@ -10949,7 +10918,7 @@ function renderSanteTool(){
   if(WEIGHTLOG.length>=2) h+='<div style="margin-top:12px">'+weightSparkline()+'</div>';
   h+='</div>';
   // IMC
-  h+='<div class="card"><div class="row"><div><div class="card-t" style="margin:0">'+t('imcLab')+'</div><div class="man" style="font-size:28px;font-weight:800;margin-top:6px;color:var('+imcCol+')">'+imc.toFixed(1)+'</div></div><div class="badge" style="background:color-mix(in srgb,var('+imcCol+') 12%,transparent);color:var('+imcCol+')">'+imcCat+'</div></div>'+
+  h+='<div class="card"><div class="row"><div><div class="card-t" style="margin:0">'+t('imcLab')+'</div><div class="man" style="font-size:28px;font-weight:800;margin-top:6px;color:var('+imcCol+')">'+imc.toFixed(1)+'</div></div><div class="badge" style="background:color-mix(in srgb,var('+imcCol+') 10%,transparent);color:var('+imcCol+')">'+imcCat+'</div></div>'+
     '<div class="pbar" style="margin-top:12px"><div style="width:'+Math.min(100,(imc/40)*100)+'%;background:var('+imcCol+')"></div></div></div>';
   // INDICATEURS — grille
   h+='<div class="sgrid" style="margin-bottom:14px">';
@@ -11091,7 +11060,7 @@ function renderLoadTool(){
   acute/=7; chronic/=28;
   const ratio=chronic>0?(acute/chronic):0;
   let status,col; if(ratio===0){status=t('noDataLab');col='--dim';} else if(ratio<0.8){status=t('acwrUnder');col='--platine';} else if(ratio<=1.3){status=t('acwrOptimal');col='--ok';} else if(ratio<=1.5){status=t('acwrHigh');col='--warn';} else {status=t('acwrRisk');col='--bad';}
-  let h='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var('+col+')">'+ratio.toFixed(2)+'</div><div class="lab">'+t('acwrRatioLab')+'</div><div class="badge" style="margin-top:10px;background:color-mix(in srgb,var('+col+') 12%,transparent);color:var('+col+')">'+status+'</div></div>';
+  let h='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var('+col+')">'+ratio.toFixed(2)+'</div><div class="lab">'+t('acwrRatioLab')+'</div><div class="badge" style="margin-top:10px;background:color-mix(in srgb,var('+col+') 10%,transparent);color:var('+col+')">'+status+'</div></div>';
   h+='<div class="sgrid"><div class="sbox"><div class="v">'+Math.round(acute)+'</div><div class="l">'+t('acwrAcuteLab')+'</div></div><div class="sbox"><div class="v">'+Math.round(chronic)+'</div><div class="l">'+t('acwrChronicLab')+'</div></div></div>';
   h+='<div class="tip" style="margin-top:12px">'+t('acwrTip')+'</div>';
   $('#outBody').innerHTML=h;
@@ -11212,7 +11181,7 @@ function renderPomodoro(){
   const pct=pomoState.left/total*100;
   const col=pomoState.phase==='work'?'var(--bad)':'var(--ok)';
   const lab=pomoState.phase==='work'?t('pomoFocus'):t('pomoBreak');
-  let h='<div class="card" style="text-align:center"><div class="badge" style="background:color-mix(in srgb,'+col+' 12%,transparent);color:'+col+'">'+lab+'</div><div class="ring-wrap" style="width:180px;height:180px;margin:14px auto"><span id="pmRing">'+ringSVG(180,pct,12,col)+'</span><div class="ring-c"><div class="big mono" id="pmNum" style="font-size:36px">'+fmtMS(pomoState.left)+'</div></div></div>';
+  let h='<div class="card" style="text-align:center"><div class="badge" style="background:color-mix(in srgb,'+col+' 10%,transparent);color:'+col+'">'+lab+'</div><div class="ring-wrap" style="width:180px;height:180px;margin:14px auto"><span id="pmRing">'+ringSVG(180,pct,12,col)+'</span><div class="ring-c"><div class="big mono" id="pmNum" style="font-size:36px">'+fmtMS(pomoState.left)+'</div></div></div>';
   h+='<div class="row" style="gap:10px"><button class="btn" onclick="pomoToggle()">'+(pomoState.running?t('pauseShort'):'▶ '+t('playLab'))+'</button><button class="btn ghost" onclick="pomoReset()">↺</button></div>';
   h+='<div style="margin-top:12px;font-size:12px;color:var(--muted)">'+tp('pomodorosDoneLab',pomoState.count)+'</div></div>';
   $('#outBody').innerHTML=h;
@@ -11815,7 +11784,7 @@ function pfAccountHTML(){
       '<div class="row" style="gap:8px;margin-top:14px"><button class="btn ghost sm" style="flex:1" onclick="addAnotherAccount()">'+t('addAccountBtn')+'</button>'+
       '<button class="btn ghost sm" style="flex:1;color:var(--bad)" onclick="logout()">'+t('logout')+'</button></div>'+
     '</div>'+
-    '<div class="card" style="padding:16px;margin-top:12px;border-color:rgba(255,92,108,.35);background:rgba(255,92,108,.05)">'+
+    '<div class="card" style="padding:16px;margin-top:12px;border-color:rgba(255,92,108,.35);background:linear-gradient(rgba(255,92,108,.07),rgba(255,92,108,.07)),var(--lg-fill)">'+
       '<div class="card-t" style="color:var(--bad)">'+ICN('warning',15,'var(--bad)')+t('dangerZoneLab')+'</div>'+
       '<div style="font-size:11.5px;color:var(--muted);margin-bottom:12px;line-height:1.5">'+t('deleteAccountDesc')+'</div>'+
       '<button class="btn ghost sm" style="color:var(--bad);width:100%" onclick="deleteAccountCompletely()">'+t('deleteAccountBtn')+'</button>'+
@@ -12154,7 +12123,7 @@ function pfDataHTML(){
       '<button class="btn ghost sm" style="width:100%;margin-bottom:8px" onclick="exportData()">'+t('exportData')+'</button>'+
       '<button class="btn ghost sm" style="width:100%" onclick="importData()">'+t('importData')+'</button>'+
     '</div>'+
-    '<div class="card" style="padding:16px;margin-top:12px;border-color:rgba(255,92,108,.35);background:rgba(255,92,108,.05)">'+
+    '<div class="card" style="padding:16px;margin-top:12px;border-color:rgba(255,92,108,.35);background:linear-gradient(rgba(255,92,108,.07),rgba(255,92,108,.07)),var(--lg-fill)">'+
       '<div class="card-t" style="color:var(--bad)">'+ICN('warning',15,'var(--bad)')+t('dangerZoneLab')+'</div>'+
       '<div style="font-size:11.5px;color:var(--muted);margin-bottom:12px;line-height:1.5">'+t('resetDesc')+'</div>'+
       '<button class="btn ghost sm" style="width:100%;color:var(--bad)" onclick="resetAll()">'+t('resetApp')+'</button>'+

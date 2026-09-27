@@ -93,7 +93,7 @@
 <!-- téléchargés dès maintenant, exécutés après la première image (voir bas de page) -->
 <link rel="preload" as="script" href="vendor/supabase.js?v=1">
 <link rel="preload" as="script" href="vendor/sb-init.js?v=2">
-<link rel="preload" as="script" href="app.js?v=101">
+<link rel="preload" as="script" href="app.js?v=102">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
@@ -545,20 +545,6 @@ html[data-mode="dark"][data-accent="yellow"] .hv7-act.main{color:#2A2205;text-sh
 .hv7-day-state.ok{background:rgba(51,211,153,.16);color:var(--ok);}
 .hv7-day-state.ko{background:rgba(255,92,108,.14);color:var(--bad);}
 
-.hv7-hero-week{display:flex;justify-content:space-between;margin:0 2px 20px;}
-.hv7-hw-day{display:flex;flex-direction:column;align-items:center;gap:6px;}
-.hv7-hw-bar{width:5px;height:30px;border-radius:3px;background:rgba(255,255,255,.08);position:relative;}
-html[data-mode="light"] .hv7-hw-bar{background:rgba(0,0,0,.07);}
-.hv7-hw-bar b{position:absolute;bottom:0;left:0;width:100%;border-radius:3px;display:block;}
-.hv7-hw-bar b.done{background:rgba(var(--e-rgb),.42);}
-.hv7-hw-bar b.effort{background:linear-gradient(180deg,var(--e2),var(--e));box-shadow:0 0 12px rgba(var(--e-rgb),.55);}
-/* Jour à venir : la charge prévue par le plan, dessinée en creux. */
-.hv7-hw-bar b.plan{background:rgba(var(--e-rgb),.10);box-shadow:0 0 0 1px rgba(var(--e-rgb),.5) inset;}
-.hv7-hw-bar b.now{background:linear-gradient(180deg,var(--e2),var(--e));box-shadow:0 0 14px rgba(var(--e-rgb),.85);}
-.hv7-hw-lab{font-family:'JetBrains Mono';font-size:9px;color:var(--dim);font-weight:600;}
-.hv7-hw-day.today .hv7-hw-lab{color:var(--snow);}
-.hv7-hw-day.today .hv7-hw-bar{box-shadow:0 0 0 1px var(--hair2) inset;}
-
 .hv7-krow3{display:flex;gap:8px;margin-bottom:6px;}
 .hv7-ktile{flex:1;background:rgba(255,255,255,.045);border:1px solid rgba(var(--e-rgb),.22);border-radius:16px;padding:12px 10px;text-align:center;}
 html[data-mode="light"] .hv7-ktile{background:rgba(0,0,0,.025);}
@@ -635,7 +621,7 @@ html[data-mode="light"] .hv7-ktile{background:rgba(0,0,0,.025);}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
 .cal-head span{text-align:center;font-size:10.5px;color:var(--muted);font-weight:700;padding-bottom:8px;}
 .cal-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;border-radius:10px;position:relative;color:var(--snow);}
-.cal-cell.muted{color:var(--dim);opacity:.4;}
+.cal-cell.muted{color:var(--dim);opacity:.62;}
 .cal-cell.today{background:var(--e);color:#fff;font-weight:800;}
 .cal-dot{position:absolute;bottom:4px;width:4px;height:4px;border-radius:50%;background:var(--e2);}
 
@@ -2295,7 +2281,7 @@ html[data-mode="light"] .ik-streak i{mix-blend-mode:normal;background:linear-gra
 @keyframes ikStreak{to{transform:translateX(380%) skewX(-19deg);}}
 
 /* --- Graphiques qui se dessinent (.ik-play posé ~2,5 s sur le conteneur) --- */
-.ik-play .kbar,.ik-play .hv7-hw-bar b{transform-origin:50% 100%;animation:ikGrow .75s var(--ease-stride) both;animation-delay:calc(.12s + var(--bi,0) * 55ms);}
+.ik-play .kbar{transform-origin:50% 100%;animation:ikGrow .75s var(--ease-stride) both;animation-delay:calc(.12s + var(--bi,0) * 55ms);}
 @keyframes ikGrow{from{transform:scaleY(0);opacity:.2;}to{transform:none;opacity:1;}}
 .ik-play :is(.pbar,.kgoal-bar,.goal-bar)>div{transform-origin:0 50%;animation:ikFill 1s .22s var(--ease-stride) both;}
 [dir="rtl"] .ik-play :is(.pbar,.kgoal-bar,.goal-bar)>div{transform-origin:100% 50%;}
@@ -2763,18 +2749,20 @@ html[data-mode="light"]{
 }
 
 /* FOND : les halos de l'accueil, étendus à toute l'app (fixes, sans mouvement) */
-body::before{background:
+:root{--ambient:
   radial-gradient(58% 38% at 12% 1%,rgba(var(--e-rgb),.32),transparent 70%),
   radial-gradient(46% 30% at 98% 28%,rgba(var(--e2-rgb),.17),transparent 70%),
   radial-gradient(56% 34% at 2% 68%,rgba(var(--e-rgb),.13),transparent 72%),
   radial-gradient(62% 40% at 94% 100%,rgba(var(--e2-rgb),.11),transparent 72%),
   var(--bg);}
-html[data-mode="light"] body::before{background:
+html[data-mode="light"]{--ambient:
   radial-gradient(58% 38% at 12% 1%,rgba(var(--e-rgb),.17),transparent 70%),
   radial-gradient(46% 30% at 98% 28%,rgba(var(--e2-rgb),.11),transparent 70%),
   radial-gradient(56% 34% at 2% 68%,rgba(var(--e-rgb),.08),transparent 72%),
   radial-gradient(62% 40% at 94% 100%,rgba(var(--e2-rgb),.07),transparent 72%),
   var(--bg);}
+body::before{background:var(--ambient);}
+html[data-mode="light"] body::before{background:var(--ambient);}
 .hv7-bg{display:none;}
 /* les halos propres à chaque écran (.scr::before) faisaient doublon avec ce fond commun,
    et commençaient sous la bannière : une démarcation horizontale visible */
@@ -2815,6 +2803,25 @@ html[data-mode] :is(.seg-ctrl:not(.sub),.fr-tabs,.inp,.li-field,.chrome-chip){ba
 html[data-mode] :is(.inp,.li-field):is(:focus,:focus-within){box-shadow:var(--lg-well-rim),0 0 0 3px rgba(var(--e-rgb),.28) !important;}
 html[data-mode] .seg-ctrl.sub{background:transparent;border-color:transparent;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);}
 html[data-mode="light"] .seg-ctrl.sub{box-shadow:inset 0 0 0 1px rgba(20,30,50,.1);}
+/* SPORT (vérifié vue par vue le 27/09) : derniers éléments restés en gris plein */
+html[data-mode] :is(.reason-tile,.setcheck:not(.on)){background:var(--lg-spec-sm),var(--lg-ctl) !important;border-color:transparent !important;box-shadow:var(--lg-rim),var(--lg-drop-sm);}
+html[data-mode] .reason-tile:active{background:linear-gradient(rgba(var(--e-rgb),.16),rgba(var(--e-rgb),.16)) !important;box-shadow:inset 0 0 0 1px rgba(var(--e-rgb),.45);}
+html[data-mode] :is(.setcell,.mtag,.rs-sub){background:var(--lg-well) !important;border-color:transparent !important;box-shadow:var(--lg-well-rim);}
+html[data-mode] .setcell:focus{box-shadow:var(--lg-well-rim),0 0 0 2px rgba(var(--e-rgb),.5);}
+html[data-mode] .mini-ic{color:var(--e2) !important;}
+.mtile.on .mtile-lab{color:var(--e2);}
+html[data-mode] .setcheck.on{box-shadow:var(--lg-tint-rim),0 4px 12px -4px rgba(51,211,153,.5);}
+/* ligne de série : reste OPAQUE (elle recouvre le bouton rouge « supprimer » révélé au glissé),
+   mais avec l'anatomie du verre (reflet, liseré) sur une base pleine */
+html[data-mode] .card.ex-swipe-card{border:0 !important;background:var(--lg-spec),var(--lg-body),rgb(var(--s1-rgb)) !important;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:var(--lg-rim),var(--lg-drop);}
+/* les boutons rouges cachés sous les cartes débordaient d'un pixel sur l'arrondi (liseré rouge) :
+   rentrés de 2 px, ils ne se voient qu'une fois la carte glissée */
+.ex-swipe-action{top:2px !important;bottom:2px;height:auto !important;}
+.ex-swipe-action,.set-swipe-action{background:var(--fill-danger) !important;}
+.ex-swipe-action.left{left:2px !important;} .ex-swipe-action.right{right:2px !important;}
+.set-swipe-action{top:1px !important;bottom:1px;height:auto !important;}
+.set-swipe-action.left{left:1px !important;} .set-swipe-action.right{right:1px !important;}
+html[data-mode] .set-swipe-row{background:var(--lg-spec),var(--lg-body),rgb(var(--s1-rgb));box-shadow:var(--lg-rim);}
 /* interrupteur éteint : piste de verre bien visible (un creux sombre disparaissait sur les feuilles) */
 html[data-mode] .toggle:not(.on){background:rgba(255,255,255,.13) !important;border-color:transparent !important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),inset 0 1px 2px rgba(0,0,0,.35);}
 html[data-mode="light"] .toggle:not(.on){background:rgba(20,30,50,.14) !important;box-shadow:inset 0 0 0 1px rgba(20,30,50,.08),inset 0 1px 2px rgba(20,30,50,.12);}
@@ -2835,6 +2842,7 @@ html[data-mode] .ov-card::before{background:rgba(255,255,255,.28);}
 html[data-mode="light"] .ov-card::before{background:rgba(20,30,50,.18);}
 html[data-mode] .ov{background:rgba(5,7,10,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);}
 html[data-mode="light"] .ov{background:rgba(120,130,150,.3);}
+html[data-mode] .ov.ov-push .ov-card{background:var(--ambient);-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none;}
 /* BARRE DU BAS et barre de titre compacte */
 html[data-mode] #nav{background:var(--lg-spec),rgba(var(--s1-rgb),.66);
   -webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%);
@@ -3125,7 +3133,7 @@ html[data-mode="light"] body.tb-compact:not([data-scr="home"]) .topbar{box-shado
      ne persiste RIEN : elle photographie l'état, teste, restaure. -->
 <script>
 (function(){
-  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=2', 'app.js?v=101'];
+  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=2', 'app.js?v=102'];
   if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=2');
   var lance = false;
   function charge(){
