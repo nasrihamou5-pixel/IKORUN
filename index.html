@@ -384,7 +384,7 @@ html.easy-mode .nb[data-s="outils"]{ display:none!important; }
 html{transition:background .25s ease;}
 .card,.btn,.pill,.inp,.favtile,.sbox{transition:background .25s ease,border-color .25s ease,color .25s ease;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{background:var(--bg);color:var(--snow);font-family:'Inter',sans-serif;overflow-x:hidden;width:100%;}
+html,body{background:var(--bg);color:var(--snow);font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;overflow-x:hidden;width:100%;}
 #ob h1,#login h1{font-family:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif}
 body{max-width:430px;margin:0 auto;position:relative;min-height:100vh;isolation:isolate;}
 /* AMBIENT DEPTH LAYER — glow bleu profond façon "hero" produit, sur fond quasi noir */
@@ -773,8 +773,8 @@ html[data-mode="light"] .ch-bar{background:rgba(20,30,55,.1);}
 .card.accent-purple{border-left:2px solid rgba(181,125,255,.5);}
 .card-divider{height:1px;background:linear-gradient(90deg,transparent,var(--hair2),transparent);margin:14px 0;}
 /* micro-interaction tap feedback sur les cartes : voir bloc .card principal plus bas */
-.mono{font-family:'JetBrains Mono',monospace;}
-.man{font-family:'Unbounded',sans-serif;}
+.mono{font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;}
+.man{font-family:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;}
 ::-webkit-scrollbar{display:none;}
 
 /* SCROLL ZONE */
@@ -2106,7 +2106,7 @@ html[data-mode="light"]{
 
 .fr-ref-card{background:linear-gradient(150deg,rgba(var(--e-rgb),.16),rgba(var(--e2-rgb),.04));border:1px solid rgba(var(--e-rgb),.3);border-radius:var(--r-lg);padding:24px 20px;text-align:center;}
 .fr-ref-lab{font-size:11px;letter-spacing:1.5px;color:var(--muted);font-weight:700;text-transform:uppercase;}
-.fr-ref-code{font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:800;letter-spacing:.12em;margin-top:8px;
+.fr-ref-code{font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:30px;font-weight:800;letter-spacing:.12em;margin-top:8px;
   background:linear-gradient(180deg,#fff,var(--e2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
 
 .fr-profile-hero{text-align:center;padding:28px 20px 20px;position:relative;overflow:hidden;border-radius:var(--r-lg);
@@ -2452,8 +2452,8 @@ html[data-mode="light"] .iki-word{color:#10141B;}
 .sbox .v,.pstat .v,.chrome-sbox .v{font-family:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:700;letter-spacing:-.4px;font-variant-numeric:tabular-nums;}
 .sbox .v{font-size:18px;}
 .zval,.mus-last,.sp-rail-lab span,.fr-rank-num,.goals-count,
-.stepper .val,.setcell,.week-spark-days span,.num{font-family:Inter,system-ui,sans-serif;font-variant-numeric:tabular-nums;}
-.zval.mono,.sbox .v.mono{font-family:'JetBrains Mono',monospace;letter-spacing:-.3px;}
+.stepper .val,.setcell,.week-spark-days span,.num{font-family:Inter,system-ui,-apple-system,'Segoe UI',sans-serif;font-variant-numeric:tabular-nums;}
+.zval.mono,.sbox .v.mono{font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:-.3px;}
 .mus-last{font-size:11px;letter-spacing:0;}
 
 
