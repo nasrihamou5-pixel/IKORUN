@@ -1,3 +1,4 @@
 # Livrables générés (archives de déploiement, aperçus) : envoyés à part, jamais versionnés
 *.zip
 apercu_*.png
+sons_*.wav

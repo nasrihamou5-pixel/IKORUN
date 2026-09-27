@@ -4534,7 +4534,8 @@ function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('on'); 
 let _actx=null, _busDry=null, _busWet=null, _master=null, _alarmBus=null;
 // isFinite, pas seulement typeof : un NaN venu d'un fichier importé passerait le
 // test "c'est un nombre", et un gain à NaN coupe tout le son sans rien signaler.
-function soundVol(){ const v=(P&&typeof P.soundVol==='number'&&isFinite(P.soundVol))?P.soundVol:0.7; return Math.max(0,Math.min(1,v)); }
+// Défaut 0,55 (27/09, « sons plus sobres ») : un volume déjà réglé par l'utilisateur est conservé.
+function soundVol(){ const v=(P&&typeof P.soundVol==='number'&&isFinite(P.soundVol))?P.soundVol:0.55; return Math.max(0,Math.min(1,v)); }
 /* Réponse impulsionnelle générée : bruit décroissant. Beaucoup plus crédible
    qu'un simple écho, pour ~10 lignes et un seul calcul au démarrage. */
 function _makeIR(ctx,dur,decay){
@@ -4559,11 +4560,12 @@ function _buildAudioGraph(){
   _master=ctx.createGain(); _master.gain.value=soundVol(); _master.connect(out);
   _busDry=ctx.createGain(); _busDry.gain.value=1; _busDry.connect(_master);
   try{
-    const conv=ctx.createConvolver(); conv.buffer=_makeIR(ctx,1.5,3.4);
+    // Sobre (27/09) : pièce plus petite — queue de 0,9 s au lieu de 1,5 s, qui s'éteint plus vite.
+    const conv=ctx.createConvolver(); conv.buffer=_makeIR(ctx,0.9,4.6);
     // passe-haut avant (pas de graves boueux) et passe-bas après (queue feutrée, pas de sifflement)
     const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=420;
     const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=5200;
-    _busWet=ctx.createGain(); _busWet.gain.value=0.9;
+    _busWet=ctx.createGain(); _busWet.gain.value=0.4;
     _busWet.connect(hp); hp.connect(conv); conv.connect(lp); lp.connect(_master);
   }catch(e){ _busWet=null; console.error('[IKORUN] reverb indisponible',e); }
   _alarmBus=ctx.createGain();
@@ -4638,16 +4640,21 @@ function _vary(f,pct){ const p=pct||0.02; return f*(1+(Math.random()*2-1)*p); }
    s'éteignent plus vite que la note (c'est ce qui fait « verre » plutôt que « bip »).
    Registre plus grave, attaque adoucie, une seule gamme (la majeur) pour que tous
    les sons de l'app aillent ensemble. */
-const _GLASS=[[0.5,0.10,1.25],[1,1,1],[2,0.30,0.55],[3,0.10,0.34],[4.2,0.045,0.22]]; // [rapport, niveau, durée relative]
+/* Sobre (27/09) : les partiels ×3 et ×4,2 (le « scintillement » de cloche) sont retirés
+   et l'octave haute baissée — il reste un timbre rond et mat, sans brillance. */
+const _GLASS=[[0.5,0.06,1.1],[1,1,1],[2,0.16,0.45]]; // [rapport, niveau, durée relative]
+// Timbre complet d'avant, gardé pour l'alarme seule : elle doit porter et s'entendre de loin.
+const _GLASS_RICH=[[0.5,0.10,1.25],[1,1,1],[2,0.30,0.55],[3,0.10,0.34],[4.2,0.045,0.22]];
 function _glass(freq,dur,vol,delay,opt){
   const ctx=audioCtx(); if(!ctx||!_busDry) return;
   opt=opt||{};
   const t0=ctx.currentTime+(delay||0), nyq=ctx.sampleRate/2;
   const out=ctx.createGain(); out.gain.value=1;
   const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.Q.value=0.5;
-  lp.frequency.setValueAtTime(Math.min(nyq*0.9,freq*(opt.bright||5)),t0);
+  lp.frequency.setValueAtTime(Math.min(nyq*0.9,freq*(opt.bright||3.2)),t0);
   lp.connect(out);
-  const parts=opt.pure?_GLASS.slice(1,3):_GLASS;
+  const table=opt.rich?_GLASS_RICH:_GLASS;
+  const parts=opt.pure?table.slice(1,3):table;
   const norm=parts.reduce((a,p)=>a+p[1],0);
   for(const [r,lvl,dr] of parts){
     const f=freq*r; if(f>nyq*0.85) continue;
@@ -4655,7 +4662,7 @@ function _glass(freq,dur,vol,delay,opt){
     o.type='sine'; o.frequency.setValueAtTime(f,t0);
     const d=Math.max(0.05,dur*dr), v=Math.max(0.0002,(vol||0.2)*lvl/norm*1.6);
     g.gain.setValueAtTime(0.0001,t0);
-    g.gain.linearRampToValueAtTime(v,t0+(opt.atk||0.006));
+    g.gain.linearRampToValueAtTime(v,t0+(opt.atk||(opt.rich?0.006:0.012)));
     g.gain.exponentialRampToValueAtTime(0.0001,t0+d);
     o.connect(g); g.connect(lp);
     o.start(t0); o.stop(t0+d+0.05);
@@ -4663,20 +4670,6 @@ function _glass(freq,dur,vol,delay,opt){
   if(opt.alarm && _alarmBus){ out.connect(_alarmBus); return; }
   out.connect(_busDry);
   if(_busWet && opt.wet){ const w=ctx.createGain(); w.gain.value=opt.wet; out.connect(w); w.connect(_busWet); }
-}
-// Nappe : accord tenu, attaque lente — le « fond » des grands moments (fin de séance, badge).
-function _pad(freqs,dur,vol,delay,opt){
-  const ctx=audioCtx(); if(!ctx||!_busDry) return;
-  opt=opt||{};
-  const t0=ctx.currentTime+(delay||0);
-  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=opt.cut||1800; lp.Q.value=0.4;
-  const g=ctx.createGain();
-  g.gain.setValueAtTime(0.0001,t0);
-  g.gain.linearRampToValueAtTime(vol||0.08,t0+(opt.atk||0.12));
-  g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
-  freqs.forEach(f=>[-5,5].forEach(dt=>{ const o=ctx.createOscillator(); o.type='sine'; o.frequency.value=f; o.detune.value=dt; o.connect(lp); o.start(t0); o.stop(t0+dur+0.05); }));
-  lp.connect(g); g.connect(_busDry);
-  if(_busWet){ const w=ctx.createGain(); w.gain.value=opt.wet==null?0.5:opt.wet; g.connect(w); w.connect(_busWet); }
 }
 // Appui : un « toc » feutré (souffle filtré très bref + un corps grave), à peine audible.
 let _noiseBuf=null;
@@ -4688,59 +4681,64 @@ function _click(vol,delay){
   const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=_vary(2400,0.05); bp.Q.value=1.1;
   const g=ctx.createGain(); g.gain.value=(vol||0.05);
   src.connect(bp); bp.connect(g); g.connect(_busDry); src.start(t0);
-  _glass(_vary(330,0.02),0.07,(vol||0.05)*0.8,delay,{pure:true,bright:3});
+  _glass(_vary(330,0.02),0.05,(vol||0.05)*0.5,delay,{pure:true,bright:2.5});
 }
 // la majeur : A3 E4 A4 B4 C#5 E5 F#5 A5 B5 C#6 E6
 const _N={A3:220,E4:329.63,A4:440,B4:493.88,Cs5:554.37,E5:659.25,Fs5:739.99,A5:880,B5:987.77,Cs6:1108.73,E6:1318.51};
+/* SONS SOBRES (27/09, demande de Hamou : « des sons plus sobres »). Après la version
+   « verre » (riche, réverbérée, arpèges et nappes), retour à l'essentiel : chaque son est
+   bref (0,2 à 0,8 s), feutré, et tient en une ou deux notes — trois, très brèves, pour un
+   badge. Plus de nappe tenue, réverbération légère. Même gamme (la majeur) pour que tout
+   reste cohérent. L'alarme (plus bas) n'est pas concernée : elle doit s'entendre. */
 function sfx(name){
   if(!soundsOn()) return;
   const N=_N;
   switch(name){
-    // Appui : feutré, presque tactile — jamais un bip.
+    // Appui : un « toc » à peine audible.
     case 'tap':
-      _click(0.16);
+      _click(0.1);
       break;
-    // Série validée : une note de verre claire et courte.
+    // Série validée : une note courte.
     case 'tick':
-      _glass(_vary(N.E5,0.006),0.5,0.34,0,{wet:0.18});
+      _glass(_vary(N.E5,0.006),0.26,0.2,0,{wet:0.06});
       break;
-    // Départ : quinte montante, posée.
+    // Départ : deux notes montantes, brèves.
     case 'start':
-      _glass(N.A4,0.7,0.2,0,{wet:0.2});
-      _glass(N.E5,0.85,0.2,0.1,{wet:0.24});
+      _glass(N.A4,0.3,0.15,0,{wet:0.08});
+      _glass(N.E5,0.4,0.15,0.08,{wet:0.1});
       break;
-    // Arrêt : la même quinte, descendante.
+    // Arrêt : les mêmes, descendantes.
     case 'stop':
-      _glass(N.E5,0.6,0.19,0,{wet:0.2});
-      _glass(N.A4,0.9,0.19,0.12,{wet:0.24});
+      _glass(N.E5,0.3,0.14,0,{wet:0.08});
+      _glass(N.A4,0.42,0.14,0.09,{wet:0.1});
       break;
-    // Objectif atteint : arpège court et lumineux, qui résonne.
+    // Objectif atteint : deux notes, une quarte qui se pose.
     case 'goal':
-      [N.Cs5,N.E5,N.A5].forEach((f,i)=>_glass(f,1.0,0.17,i*0.07,{wet:0.28}));
+      _glass(N.E5,0.4,0.14,0,{wet:0.1});
+      _glass(N.A5,0.55,0.13,0.08,{wet:0.12});
       break;
-    // XP : un scintillement discret.
+    // XP : une seule note douce.
     case 'xp':
-      _glass(N.E6,0.55,0.13,0,{wet:0.3,pure:true});
-      _glass(N.B5,0.6,0.1,0.07,{wet:0.3,pure:true});
+      _glass(N.B5,0.32,0.08,0,{wet:0.08,pure:true});
       break;
-    // Badge : arpège + nappe, le moment le plus « cérémonie ».
+    // Badge : trois notes brèves, sans nappe.
     case 'medal':
-      _pad([N.A3,N.E4,N.Cs5],1.9,0.07,0,{atk:0.18,wet:0.55});
-      [N.A4,N.Cs5,N.E5,N.A5].forEach((f,i)=>_glass(f,1.3,0.17,0.05+i*0.09,{wet:0.34}));
+      [N.A4,N.Cs5,N.E5].forEach((f,i)=>_glass(f,0.55,0.13,i*0.08,{wet:0.12}));
       break;
-    // Séance terminée : accord tenu qui s'ouvre, puis une note haute qui se pose.
+    // Séance terminée : un accord bref (fondamentale + quinte) qui se résout sur l'octave.
     case 'finish':
-      _pad([N.A3,N.E4,N.A4,N.Cs5],2.4,0.085,0,{atk:0.25,wet:0.6});
-      [N.E5,N.A5,N.Cs6].forEach((f,i)=>_glass(f,1.4,0.16,0.08+i*0.11,{wet:0.34}));
+      _glass(N.A4,0.6,0.11,0,{wet:0.12});
+      _glass(N.E5,0.6,0.1,0,{wet:0.12});
+      _glass(N.A5,0.8,0.11,0.14,{wet:0.14});
       break;
-    // Notification : « ding-dong » de verre, quarte descendante.
+    // Notification : deux notes descendantes, discrètes.
     case 'notif':
-      _glass(N.E6,0.8,0.14,0,{wet:0.3});
-      _glass(N.B5,1.1,0.14,0.16,{wet:0.34});
+      _glass(N.E5,0.4,0.12,0,{wet:0.1});
+      _glass(N.B4,0.55,0.12,0.12,{wet:0.12});
       break;
-    // Minuteur : trois pulsations de verre, espacées.
+    // Minuteur : trois pulsations courtes — fonctionnel, il doit s'entendre.
     case 'timer':
-      for(let i=0;i<3;i++) _glass(N.A5,0.55,0.2,i*0.34,{wet:0.2});
+      for(let i=0;i<3;i++) _glass(N.A5,0.24,0.17,i*0.28,{wet:0.06});
       break;
   }
 }
@@ -4757,7 +4755,7 @@ function alarmRing(){
     // 27/09 : motif de verre (la – mi – la – do#) doublé à l'octave grave pour porter,
     // à la place de l'onde carrée : insistant, mais sans agresser.
     const N=_N;
-    [[N.A5,0],[N.E5,0.17],[N.A5,0.34],[N.Cs6,0.51]].forEach(([f,d])=>{ _glass(f,0.55,0.5,d,{alarm:true,bright:6}); _glass(f/2,0.5,0.24,d,{alarm:true,pure:true}); });
+    [[N.A5,0],[N.E5,0.17],[N.A5,0.34],[N.Cs6,0.51]].forEach(([f,d])=>{ _glass(f,0.55,0.5,d,{alarm:true,bright:6,rich:true}); _glass(f/2,0.5,0.24,d,{alarm:true,pure:true,rich:true}); });
   }
   if(navigator.vibrate) navigator.vibrate([400,150,400,150,400]);
 }
