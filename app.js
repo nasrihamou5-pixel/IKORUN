@@ -4524,18 +4524,27 @@ function _makeIR(ctx,dur,decay){
 }
 function _buildAudioGraph(){
   const ctx=_actx;
-  _master=ctx.createGain(); _master.gain.value=soundVol(); _master.connect(ctx.destination);
+  // 27/09 : un compresseur doux en sortie « colle » les sons entre eux (même niveau
+  // perçu d'un son à l'autre, pas de pic) — la différence entre un bip et un son d'app.
+  let out=ctx.destination;
+  try{
+    const comp=ctx.createDynamicsCompressor();
+    comp.threshold.value=-20; comp.knee.value=14; comp.ratio.value=3; comp.attack.value=0.004; comp.release.value=0.22;
+    comp.connect(ctx.destination); out=comp;
+  }catch(e){}
+  _master=ctx.createGain(); _master.gain.value=soundVol(); _master.connect(out);
   _busDry=ctx.createGain(); _busDry.gain.value=1; _busDry.connect(_master);
   try{
-    const conv=ctx.createConvolver(); conv.buffer=_makeIR(ctx,0.55,2.6);
-    // Un passe-haut avant la réverb évite que les graves ne la rendent boueuse.
-    const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=500;
-    _busWet=ctx.createGain(); _busWet.gain.value=1;
-    _busWet.connect(hp); hp.connect(conv); conv.connect(_master);
+    const conv=ctx.createConvolver(); conv.buffer=_makeIR(ctx,1.5,3.4);
+    // passe-haut avant (pas de graves boueux) et passe-bas après (queue feutrée, pas de sifflement)
+    const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=420;
+    const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=5200;
+    _busWet=ctx.createGain(); _busWet.gain.value=0.9;
+    _busWet.connect(hp); hp.connect(conv); conv.connect(lp); lp.connect(_master);
   }catch(e){ _busWet=null; console.error('[IKORUN] reverb indisponible',e); }
   _alarmBus=ctx.createGain();
   _alarmBus.gain.value=Math.max(0.6,soundVol()); // plancher : une alarme baissée ne sert à rien
-  _alarmBus.connect(ctx.destination);
+  _alarmBus.connect(out);
 }
 function audioCtx(){
   if(!_actx){
@@ -4598,57 +4607,116 @@ function _note(freq,dur,type,vol,delay,toFreq,opt){
 // Micro-variation de hauteur sur les sons répétés (tap, tick) : sans elle, dix
 // appuis d'affilée sonnent comme une mitraillette, toujours à la note exacte.
 function _vary(f,pct){ const p=pct||0.02; return f*(1+(Math.random()*2-1)*p); }
+/* ---- Voix « verre » (27/09) ----
+   Hamou trouvait les sons « riquiqui » : des bips courts, aigus, sans corps. Les
+   sons sont maintenant des timbres de verre / cloche douce, par synthèse additive :
+   une fondamentale, une octave sous elle pour le corps, et quelques partiels qui
+   s'éteignent plus vite que la note (c'est ce qui fait « verre » plutôt que « bip »).
+   Registre plus grave, attaque adoucie, une seule gamme (la majeur) pour que tous
+   les sons de l'app aillent ensemble. */
+const _GLASS=[[0.5,0.10,1.25],[1,1,1],[2,0.30,0.55],[3,0.10,0.34],[4.2,0.045,0.22]]; // [rapport, niveau, durée relative]
+function _glass(freq,dur,vol,delay,opt){
+  const ctx=audioCtx(); if(!ctx||!_busDry) return;
+  opt=opt||{};
+  const t0=ctx.currentTime+(delay||0), nyq=ctx.sampleRate/2;
+  const out=ctx.createGain(); out.gain.value=1;
+  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.Q.value=0.5;
+  lp.frequency.setValueAtTime(Math.min(nyq*0.9,freq*(opt.bright||5)),t0);
+  lp.connect(out);
+  const parts=opt.pure?_GLASS.slice(1,3):_GLASS;
+  const norm=parts.reduce((a,p)=>a+p[1],0);
+  for(const [r,lvl,dr] of parts){
+    const f=freq*r; if(f>nyq*0.85) continue;
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.type='sine'; o.frequency.setValueAtTime(f,t0);
+    const d=Math.max(0.05,dur*dr), v=Math.max(0.0002,(vol||0.2)*lvl/norm*1.6);
+    g.gain.setValueAtTime(0.0001,t0);
+    g.gain.linearRampToValueAtTime(v,t0+(opt.atk||0.006));
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+d);
+    o.connect(g); g.connect(lp);
+    o.start(t0); o.stop(t0+d+0.05);
+  }
+  if(opt.alarm && _alarmBus){ out.connect(_alarmBus); return; }
+  out.connect(_busDry);
+  if(_busWet && opt.wet){ const w=ctx.createGain(); w.gain.value=opt.wet; out.connect(w); w.connect(_busWet); }
+}
+// Nappe : accord tenu, attaque lente — le « fond » des grands moments (fin de séance, badge).
+function _pad(freqs,dur,vol,delay,opt){
+  const ctx=audioCtx(); if(!ctx||!_busDry) return;
+  opt=opt||{};
+  const t0=ctx.currentTime+(delay||0);
+  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=opt.cut||1800; lp.Q.value=0.4;
+  const g=ctx.createGain();
+  g.gain.setValueAtTime(0.0001,t0);
+  g.gain.linearRampToValueAtTime(vol||0.08,t0+(opt.atk||0.12));
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  freqs.forEach(f=>[-5,5].forEach(dt=>{ const o=ctx.createOscillator(); o.type='sine'; o.frequency.value=f; o.detune.value=dt; o.connect(lp); o.start(t0); o.stop(t0+dur+0.05); }));
+  lp.connect(g); g.connect(_busDry);
+  if(_busWet){ const w=ctx.createGain(); w.gain.value=opt.wet==null?0.5:opt.wet; g.connect(w); w.connect(_busWet); }
+}
+// Appui : un « toc » feutré (souffle filtré très bref + un corps grave), à peine audible.
+let _noiseBuf=null;
+function _click(vol,delay){
+  const ctx=audioCtx(); if(!ctx||!_busDry) return;
+  const t0=ctx.currentTime+(delay||0);
+  if(!_noiseBuf){ const n=Math.floor(ctx.sampleRate*0.03); _noiseBuf=ctx.createBuffer(1,n,ctx.sampleRate); const d=_noiseBuf.getChannelData(0); for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3); }
+  const src=ctx.createBufferSource(); src.buffer=_noiseBuf;
+  const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=_vary(2400,0.05); bp.Q.value=1.1;
+  const g=ctx.createGain(); g.gain.value=(vol||0.05);
+  src.connect(bp); bp.connect(g); g.connect(_busDry); src.start(t0);
+  _glass(_vary(330,0.02),0.07,(vol||0.05)*0.8,delay,{pure:true,bright:3});
+}
+// la majeur : A3 E4 A4 B4 C#5 E5 F#5 A5 B5 C#6 E6
+const _N={A3:220,E4:329.63,A4:440,B4:493.88,Cs5:554.37,E5:659.25,Fs5:739.99,A5:880,B5:987.77,Cs6:1108.73,E6:1318.51};
 function sfx(name){
   if(!soundsOn()) return;
+  const N=_N;
   switch(name){
-    // Retour d'appui : très court, sourd, presque subliminal.
+    // Appui : feutré, presque tactile — jamais un bip.
     case 'tap':
-      _note(_vary(520),0.055,'sine',0.075,0,null,{cut:1300,detune:0,wet:0.05});
+      _click(0.16);
       break;
-    // Série validée : net, avec un petit éclat au-dessus au lieu d'une onde carrée.
+    // Série validée : une note de verre claire et courte.
     case 'tick':
-      _note(_vary(1046),0.05,'triangle',0.09,0,null,{cut:3000,detune:0,wet:0.08});
-      _note(_vary(2093),0.028,'sine',0.035,0.004,null,{cut:6000,detune:0});
+      _glass(_vary(N.E5,0.006),0.5,0.34,0,{wet:0.18});
       break;
-    // Départ : quinte montante + une basse discrète qui donne du corps.
+    // Départ : quinte montante, posée.
     case 'start':
-      _note(523,0.14,'sine',0.16,0,null,{cut:2200,wet:0.14});
-      _note(784,0.22,'sine',0.16,0.10,null,{cut:2600,wet:0.20});
-      _note(261,0.24,'sine',0.07,0,null,{cut:800,detune:0});
+      _glass(N.A4,0.7,0.2,0,{wet:0.2});
+      _glass(N.E5,0.85,0.2,0.1,{wet:0.24});
       break;
-    // Arrêt : la même chose à l'envers, ça se pose.
+    // Arrêt : la même quinte, descendante.
     case 'stop':
-      _note(523,0.16,'sine',0.14,0,null,{cut:1800,wet:0.12});
-      _note(392,0.28,'sine',0.14,0.10,null,{cut:1400,wet:0.18});
+      _glass(N.E5,0.6,0.19,0,{wet:0.2});
+      _glass(N.A4,0.9,0.19,0.12,{wet:0.24});
       break;
-    // Objectif atteint : sixte majeure, chaleureux, plus une pointe brillante.
+    // Objectif atteint : arpège court et lumineux, qui résonne.
     case 'goal':
-      _note(659,0.12,'sine',0.15,0,null,{cut:2400,wet:0.16});
-      _note(880,0.22,'sine',0.15,0.09,null,{cut:2800,wet:0.24});
-      _note(1318,0.18,'triangle',0.055,0.16,null,{cut:5000,detune:0,wet:0.3});
+      [N.Cs5,N.E5,N.A5].forEach((f,i)=>_glass(f,1.0,0.17,i*0.07,{wet:0.28}));
       break;
-    // XP : léger, scintillant, ne doit jamais couvrir le reste.
+    // XP : un scintillement discret.
     case 'xp':
-      _note(1046,0.075,'triangle',0.09,0,null,{cut:4000,wet:0.18});
-      _note(1568,0.12,'triangle',0.08,0.06,null,{cut:5500,wet:0.28});
+      _glass(N.E6,0.55,0.13,0,{wet:0.3,pure:true});
+      _glass(N.B5,0.6,0.1,0.07,{wet:0.3,pure:true});
       break;
-    // Badge débloqué : arpège majeur, réverbération plus généreuse.
+    // Badge : arpège + nappe, le moment le plus « cérémonie ».
     case 'medal':
-      [523,659,784,1046].forEach((f,i)=>_note(f,0.30,'sine',0.15,i*0.075,null,{cut:f*4,wet:0.34}));
-      _note(1568,0.45,'triangle',0.05,0.30,null,{cut:6000,detune:0,wet:0.45});
+      _pad([N.A3,N.E4,N.Cs5],1.9,0.07,0,{atk:0.18,wet:0.55});
+      [N.A4,N.Cs5,N.E5,N.A5].forEach((f,i)=>_glass(f,1.3,0.17,0.05+i*0.09,{wet:0.34}));
       break;
-    // Séance terminée : montée puis accord tenu — le seul son vraiment "grand".
+    // Séance terminée : accord tenu qui s'ouvre, puis une note haute qui se pose.
     case 'finish':
-      [523,659,784,1046].forEach((f,i)=>_note(f,0.24,'sine',0.15,i*0.10,null,{cut:f*4,wet:0.26}));
-      [523,659,784].forEach(f=>_note(f,0.75,'sine',0.055,0.42,null,{cut:2400,wet:0.4,atk:0.05}));
+      _pad([N.A3,N.E4,N.A4,N.Cs5],2.4,0.085,0,{atk:0.25,wet:0.6});
+      [N.E5,N.A5,N.Cs6].forEach((f,i)=>_glass(f,1.4,0.16,0.08+i*0.11,{wet:0.34}));
       break;
-    // Notification : petite cloche à deux notes.
+    // Notification : « ding-dong » de verre, quarte descendante.
     case 'notif':
-      _note(880,0.14,'triangle',0.14,0,null,{cut:3600,wet:0.22});
-      _note(1174,0.26,'triangle',0.13,0.11,null,{cut:4200,wet:0.3});
+      _glass(N.E6,0.8,0.14,0,{wet:0.3});
+      _glass(N.B5,1.1,0.14,0.16,{wet:0.34});
       break;
+    // Minuteur : trois pulsations de verre, espacées.
     case 'timer':
-      for(let i=0;i<3;i++) _note(1046,0.16,'sine',0.18,i*0.28,null,{cut:3000,wet:0.15});
+      for(let i=0;i<3;i++) _glass(N.A5,0.55,0.2,i*0.34,{wet:0.2});
       break;
   }
 }
@@ -4662,9 +4730,10 @@ function alarmRing(){
   // filtrée : avant, ses harmoniques hautes passaient brutes et le son était
   // strident au point qu'on coupait le son de l'app plutôt que de le supporter.
   if(soundsOn()){
-    const seq=[[880,0],[1175,0.18],[880,0.36],[1175,0.54]];
-    seq.forEach(([f,d])=>_note(f,0.16,'square',0.30,d,null,{cut:2600,detune:4,alarm:true}));
-    _note(660,0.5,'sine',0.17,0.74,null,{cut:1800,alarm:true});
+    // 27/09 : motif de verre (la – mi – la – do#) doublé à l'octave grave pour porter,
+    // à la place de l'onde carrée : insistant, mais sans agresser.
+    const N=_N;
+    [[N.A5,0],[N.E5,0.17],[N.A5,0.34],[N.Cs6,0.51]].forEach(([f,d])=>{ _glass(f,0.55,0.5,d,{alarm:true,bright:6}); _glass(f/2,0.5,0.24,d,{alarm:true,pure:true}); });
   }
   if(navigator.vibrate) navigator.vibrate([400,150,400,150,400]);
 }

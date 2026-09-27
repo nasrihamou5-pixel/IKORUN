@@ -93,7 +93,7 @@
 <!-- téléchargés dès maintenant, exécutés après la première image (voir bas de page) -->
 <link rel="preload" as="script" href="vendor/supabase.js?v=1">
 <link rel="preload" as="script" href="vendor/sb-init.js?v=2">
-<link rel="preload" as="script" href="app.js?v=100">
+<link rel="preload" as="script" href="app.js?v=101">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
@@ -1874,7 +1874,7 @@ html.easy-mode .favtile::before{display:none!important;}
    Elle sert au rail de la carte plan et aux en-têtes de phase de la liste. */
 :root{
   --ph-PG:#5B87BC; --ph-AERO:#3E9C84; --ph-VO2:#C99240;
-  --ph-SPE:#C2603E; --ph-PIC:#D2586B; --ph-TAPER:#7E6DB0;
+  --ph-SPE:#D06B48; --ph-PIC:#D2586B; --ph-TAPER:#7E6DB0;
 }
 html[data-mode="light"]{
   --ph-PG:#3B6A9D; --ph-AERO:#2A7A63; --ph-VO2:#946719;
@@ -2712,6 +2712,163 @@ html[data-mode="light"] .ikh-ob-big .login-brand{color:var(--snow);}
 [dir="rtl"] .ikh-ob>.ikh-fx{left:4px;}
 [dir="rtl"] #ikHead .ikh-av{right:auto;left:14px;}
 
+/* ===================================================================
+   LIQUID GLASS — MATIÈRE UNIQUE (27/09, demande de Hamou : « une et unique
+   matière, le liquid glass, comme sur l'accueil »).
+   Tout est du verre ; seul le rôle change la TEINTE, jamais la matière :
+     · surface (cartes, tuiles, lignes)  → verre clair (flou sur les grandes)
+     · contrôle (boutons 2nds, puces, icônes) → verre clair, plus fin
+     · creux (pistes de sélecteurs, champs) → verre enfoncé
+     · action / élément choisi            → verre teinté d'accent
+     · fenêtres, barre du bas, bannières  → verre dépoli
+   Chaque verre a la même anatomie : remplissage translucide, reflet spéculaire
+   en haut à gauche, liseré lumineux sur l'arête haute, ombre portée douce.
+   Ce qui rendait l'accueil « vivant » : des halos de couleur DERRIÈRE le verre
+   (.hv7-bg). Ils deviennent le fond de toute l'app (body::before, fixe) : les
+   cartes changent de reflet en défilant au-dessus — sans aucune animation.
+   =================================================================== */
+:root{
+  --lg-fill:rgba(var(--s1-rgb),.62);
+  --lg-body:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.02) 60%);
+  --lg-spec:radial-gradient(130% 80% at 10% -18%,rgba(255,255,255,.17),transparent 55%);
+  --lg-rim:inset 0 0 0 1px rgba(255,255,255,.085),inset 0 1px 0 rgba(255,255,255,.2),inset 0 -1px 0 rgba(0,0,0,.25);
+  --lg-drop:0 14px 34px -16px rgba(0,0,0,.62),0 2px 8px -3px rgba(0,0,0,.35);
+  --lg-drop-sm:0 6px 16px -8px rgba(0,0,0,.55);
+  --lg-blur:blur(22px) saturate(170%);
+  --lg-ctl:rgba(255,255,255,.05);
+  --lg-spec-sm:radial-gradient(130% 80% at 10% -18%,rgba(255,255,255,.1),transparent 55%);
+  --lg-well:rgba(0,0,0,.24);
+  --lg-well-rim:inset 0 1px 3px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.07);
+  --lg-tint-rim:inset 0 0 0 1px rgba(255,255,255,.16),inset 0 1px 0 rgba(255,255,255,.34),inset 0 -1px 0 rgba(0,0,0,.18);
+  --lg-sheet:rgba(var(--bg-rgb),.88);
+  /* les anciens jetons « verre » pointent sur la matière unique : tout ce qui les utilisait suit */
+  --glass-bg:var(--lg-fill); --glass-shine:var(--lg-spec); --grad-card:var(--lg-body);
+  --glass-shadow:var(--lg-drop); --ring-soft:var(--lg-rim); --glass-blur:22px; --glass-sat:1.7;
+}
+html[data-mode="light"]{
+  --lg-fill:rgba(255,255,255,.62);
+  --lg-body:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.15) 60%);
+  --lg-spec:radial-gradient(130% 80% at 10% -18%,rgba(255,255,255,.95),transparent 55%);
+  --lg-rim:inset 0 0 0 1px rgba(255,255,255,.7),inset 0 1px 0 #fff,0 0 0 1px rgba(20,30,50,.07);
+  --lg-drop:0 14px 32px -16px rgba(30,40,60,.24),0 2px 8px -3px rgba(30,40,60,.08);
+  --lg-drop-sm:0 6px 14px -8px rgba(30,40,60,.22);
+  --lg-ctl:rgba(255,255,255,.62);
+  --lg-spec-sm:var(--lg-spec);
+  --lg-well:rgba(20,30,50,.06);
+  --lg-well-rim:inset 0 1px 2px rgba(20,30,50,.09),inset 0 0 0 1px rgba(20,30,50,.05);
+  --lg-tint-rim:inset 0 0 0 1px rgba(255,255,255,.22),inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(0,0,0,.12);
+  --lg-sheet:rgba(var(--bg-rgb),.9);
+  --glass-bg:var(--lg-fill); --glass-shine:var(--lg-spec); --grad-card:var(--lg-body);
+  --glass-shadow:var(--lg-drop); --ring-soft:var(--lg-rim);
+}
+
+/* FOND : les halos de l'accueil, étendus à toute l'app (fixes, sans mouvement) */
+body::before{background:
+  radial-gradient(58% 38% at 12% 1%,rgba(var(--e-rgb),.32),transparent 70%),
+  radial-gradient(46% 30% at 98% 28%,rgba(var(--e2-rgb),.17),transparent 70%),
+  radial-gradient(56% 34% at 2% 68%,rgba(var(--e-rgb),.13),transparent 72%),
+  radial-gradient(62% 40% at 94% 100%,rgba(var(--e2-rgb),.11),transparent 72%),
+  var(--bg);}
+html[data-mode="light"] body::before{background:
+  radial-gradient(58% 38% at 12% 1%,rgba(var(--e-rgb),.17),transparent 70%),
+  radial-gradient(46% 30% at 98% 28%,rgba(var(--e2-rgb),.11),transparent 70%),
+  radial-gradient(56% 34% at 2% 68%,rgba(var(--e-rgb),.08),transparent 72%),
+  radial-gradient(62% 40% at 94% 100%,rgba(var(--e2-rgb),.07),transparent 72%),
+  var(--bg);}
+.hv7-bg{display:none;}
+/* les halos propres à chaque écran (.scr::before) faisaient doublon avec ce fond commun,
+   et commençaient sous la bannière : une démarcation horizontale visible */
+.scr:not(#s-home)::before{display:none;}
+
+/* SURFACES — verre clair. Grandes surfaces : flou d'arrière-plan. */
+html[data-mode] :is(.card,.grp-card,.kchart-card,.chrome-box,.kduo-card,.cv-card,.hv7-score,.hv7-day[onclick^="openPrayerFromHome"]){
+  background:var(--lg-spec),var(--lg-body),var(--lg-fill);
+  -webkit-backdrop-filter:var(--lg-blur);backdrop-filter:var(--lg-blur);
+  border-color:transparent;box-shadow:var(--lg-rim),var(--lg-drop);}
+/* petites surfaces : même verre, sans flou (léger à faire défiler) */
+html[data-mode] :is(.ktile,.sbox,.chrome-sbox,.favtile,.hv7-ktile,.sess:not(.today),.list-row,.exg-card,.mus-card,.goal-item,.ob-mode-card,.wheel,.fr-req-card){
+  background:var(--lg-spec),var(--lg-body),var(--lg-fill);
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+  border-color:transparent;box-shadow:var(--lg-rim),var(--lg-drop-sm);}
+html[data-mode] .mus-card{border-radius:var(--r-md);}
+html[data-mode] .wheel{box-shadow:var(--lg-well-rim);background:var(--lg-well);}
+/* HÉROS (carte du jour, plan) : le même verre, avec un halo d'accent */
+html[data-mode] :is(.hv7-day:not([onclick^="openPrayerFromHome"]),.sp-plan){
+  background:radial-gradient(120% 90% at 100% 0%,rgba(var(--e-rgb),.2),transparent 62%),var(--lg-spec),var(--lg-body),var(--lg-fill);
+  -webkit-backdrop-filter:var(--lg-blur);backdrop-filter:var(--lg-blur);
+  border-color:transparent;box-shadow:var(--lg-rim),inset 0 0 0 1px rgba(var(--e-rgb),.2),var(--lg-drop);}
+/* élément « courant » dans une liste (séance du jour, moi dans un classement) : verre teinté léger */
+html[data-mode] .sess.today{background:linear-gradient(rgba(var(--e-rgb),.15),rgba(var(--e-rgb),.15)),var(--lg-spec),var(--lg-fill);
+  box-shadow:inset 0 0 0 1px rgba(var(--e-rgb),.45),inset 0 1px 0 rgba(255,255,255,.14),var(--lg-drop-sm);}
+
+/* CONTRÔLES — verre clair */
+html[data-mode] :is(.btn.ghost,.hv7-act.ghost,.sp-acts button:not(.lnk),.chbtn,.pill:not(.on),.cv-unit:not(.on),.stepper button,.addperf){
+  background:var(--lg-spec-sm),var(--lg-ctl) !important;border-color:transparent !important;box-shadow:var(--lg-rim),var(--lg-drop-sm);}
+html[data-mode] .pills.sub .pill:not(.on){background:transparent !important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);}
+html[data-mode="light"] .pills.sub .pill:not(.on){box-shadow:inset 0 0 0 1px rgba(20,30,50,.12);}
+html[data-mode] :is(.x,.tb-gear:not(#tbAvatar),.ik-bell,.ik-people,.hv7-icon-btn,.hv7-people,.live-ic,.mini-ic,.pf-edit,.cv-swap,.rl-ctrl:not(.main)){
+  background:var(--lg-spec-sm),var(--lg-ctl) !important;border-color:transparent !important;box-shadow:var(--lg-rim),var(--lg-drop-sm) !important;}
+html[data-mode] .addperf{border:0;}
+html[data-mode] .chbtn[style*="--bad"]{box-shadow:inset 0 0 0 1px rgba(255,107,122,.55),inset 0 1px 0 rgba(255,255,255,.14),var(--lg-drop-sm) !important;}
+/* CREUX — pistes de sélecteurs et champs de saisie */
+html[data-mode] :is(.seg-ctrl:not(.sub),.fr-tabs,.inp,.li-field,.chrome-chip){background:var(--lg-well) !important;border-color:transparent !important;box-shadow:var(--lg-well-rim) !important;}
+html[data-mode] :is(.inp,.li-field):is(:focus,:focus-within){box-shadow:var(--lg-well-rim),0 0 0 3px rgba(var(--e-rgb),.28) !important;}
+html[data-mode] .seg-ctrl.sub{background:transparent;border-color:transparent;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);}
+html[data-mode="light"] .seg-ctrl.sub{box-shadow:inset 0 0 0 1px rgba(20,30,50,.1);}
+/* interrupteur éteint : piste de verre bien visible (un creux sombre disparaissait sur les feuilles) */
+html[data-mode] .toggle:not(.on){background:rgba(255,255,255,.13) !important;border-color:transparent !important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),inset 0 1px 2px rgba(0,0,0,.35);}
+html[data-mode="light"] .toggle:not(.on){background:rgba(20,30,50,.14) !important;box-shadow:inset 0 0 0 1px rgba(20,30,50,.08),inset 0 1px 2px rgba(20,30,50,.12);}
+html[data-mode] .toggle::after{box-shadow:0 1px 3px rgba(0,0,0,.35),inset 0 -1px 0 rgba(0,0,0,.08);}
+/* ACTION / CHOISI — verre teinté d'accent (même dégradé lisible, arêtes de verre) */
+html[data-mode] :is(.btn:not(.ghost):not(.danger),.hv7-act.main,.promo-cta,.rs-cta,.rl-ctrl.main){box-shadow:var(--lg-tint-rim),var(--sh-e) !important;}
+html[data-mode] :is(.seg-btn.on,.fr-tab.on,.pill.on,.toggle.on,.cal-cell.today,.pf-cam,#tbAvatar){box-shadow:var(--lg-tint-rim),var(--sh-accent-sm) !important;}
+html[data-mode] .btn.danger{box-shadow:var(--lg-tint-rim),var(--sh-danger) !important;}
+html[data-mode] :is(.seg-ctrl.sub .seg-btn.on,.pills.sub .pill.on,.cv-unit.on){
+  background:linear-gradient(rgba(var(--e-rgb),.13),rgba(var(--e-rgb),.13)) !important;
+  box-shadow:inset 0 0 0 1px rgba(var(--e-rgb),.45),inset 0 1px 0 rgba(255,255,255,.14) !important;}
+
+/* FENÊTRES — feuille de verre dépoli sur la page assombrie */
+html[data-mode] .ov-card{background:var(--lg-spec),var(--lg-sheet);
+  -webkit-backdrop-filter:blur(30px) saturate(160%);backdrop-filter:blur(30px) saturate(160%);
+  border-top-color:transparent;box-shadow:var(--lg-rim),0 -12px 40px -14px rgba(0,0,0,.55);}
+html[data-mode] .ov-card::before{background:rgba(255,255,255,.28);}
+html[data-mode="light"] .ov-card::before{background:rgba(20,30,50,.18);}
+html[data-mode] .ov{background:rgba(5,7,10,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);}
+html[data-mode="light"] .ov{background:rgba(120,130,150,.3);}
+/* BARRE DU BAS et barre de titre compacte */
+html[data-mode] #nav{background:var(--lg-spec),rgba(var(--s1-rgb),.66);
+  -webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%);
+  border-color:transparent;box-shadow:var(--lg-rim),0 18px 40px -16px rgba(0,0,0,.65);}
+html[data-mode="light"] #nav{background:var(--lg-spec),rgba(255,255,255,.7);box-shadow:var(--lg-rim),0 16px 34px -16px rgba(30,40,60,.3);}
+body.tb-compact:not([data-scr="home"]) .topbar{background:var(--lg-sheet);box-shadow:inset 0 -1px 0 rgba(255,255,255,.08),0 12px 24px -16px rgba(0,0,0,.55);}
+html[data-mode="light"] body.tb-compact:not([data-scr="home"]) .topbar{box-shadow:inset 0 -1px 0 rgba(20,30,50,.08),0 12px 24px -18px rgba(30,40,60,.25);}
+
+/* BANNIÈRE — la même matière que les écrans : un verre, plus bas, plus sobre.
+   (Hamou : « elle fait too much » : bloc sombre à part, 108 px de haut, titre 25 px.) */
+.ikh:not(.ikh-dark){color:var(--snow);min-height:84px;padding:14px 16px 15px;
+  background:radial-gradient(90% 120% at 96% 0%,rgba(var(--e-rgb),.26),transparent 60%),var(--lg-spec),var(--lg-body),var(--lg-fill) !important;
+  -webkit-backdrop-filter:var(--lg-blur);backdrop-filter:var(--lg-blur);
+  box-shadow:var(--lg-rim),var(--lg-drop) !important;}
+.ikh:not(.ikh-dark) .ikh-title{color:var(--snow);font-size:21px;letter-spacing:-.4px;}
+.ikh:not(.ikh-dark) .ikh-sub{color:var(--muted);font-size:12px;margin-top:4px;}
+.ikh:not(.ikh-dark)>.ikh-fx{width:132px;right:6px;top:2px;}
+.ikh.ikh-home{padding:12px 14px 16px;}
+.ikh.ikh-home:not(.ikh-dark)>.ikh-fx{width:132px;top:auto;bottom:-8px;right:4px;}
+.ikh-home .hv7-greet h1{color:var(--snow) !important;font-size:22px;}
+.ikh-home .hv7-greet p{color:var(--muted) !important;}
+.ikh-home .hv7-logo span{color:var(--snow) !important;}
+.ikh-home .hv7-header{margin-bottom:18px;}
+.ikh.ikh-ob:not(.ikh-dark)>.ikh-fx{width:104px;top:auto;bottom:-6px;}
+.ikh-ob-big{min-height:120px !important;}
+.ikh.ikh-ob-big:not(.ikh-dark)>.ikh-fx{width:176px;top:auto;bottom:-4px;}
+.ikh-ob-big .login-brand{color:var(--snow) !important;}
+[dir="rtl"] .ikh:not(.ikh-dark)>.ikh-fx{right:auto;left:6px;}
+[dir="rtl"] .ikh.ikh-home:not(.ikh-dark)>.ikh-fx{right:auto;left:4px;}
+/* connexion (toujours sur fond sombre) : verre fumé */
+.ikh.ikh-dark{background:radial-gradient(90% 120% at 96% 0%,rgba(var(--e-rgb),.3),transparent 60%),radial-gradient(130% 80% at 10% -18%,rgba(255,255,255,.14),transparent 55%),rgba(8,11,18,.5) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),inset 0 1px 0 rgba(255,255,255,.22),0 14px 34px -16px rgba(0,0,0,.6) !important;}
+
 /* « Réduire les animations » (réglage du téléphone) : seules 3 animations de
    fond le respectaient, une vingtaine d'autres tournaient en boucle. Les
    animations se terminent désormais instantanément dans leur état final. */
@@ -2968,7 +3125,7 @@ html[data-mode="light"] .ikh-ob-big .login-brand{color:var(--snow);}
      ne persiste RIEN : elle photographie l'état, teste, restaure. -->
 <script>
 (function(){
-  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=2', 'app.js?v=100'];
+  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=2', 'app.js?v=101'];
   if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=2');
   var lance = false;
   function charge(){
