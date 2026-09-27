@@ -4916,7 +4916,7 @@ function customConfirm(msg,onYes,opts){
     '<div style="font-size:13px;color:var(--muted);margin-bottom:18px;white-space:pre-line">'+escHtml(msg)+'</div>'+
     '<div class="row" style="gap:10px">'+
       '<button class="btn ghost" style="flex:1" id="genConfirmNo">'+(opts.noLabel||t('cancel'))+'</button>'+
-      '<button class="btn" style="flex:1'+(opts.danger?';background:var(--bad)':'')+'" id="genConfirmYes">'+(opts.yesLabel||t('validate'))+'</button>'+
+      '<button class="btn'+(opts.danger?' danger':'')+'" style="flex:1" id="genConfirmYes">'+(opts.yesLabel||t('validate'))+'</button>'+
     '</div></div>';
   document.body.appendChild(ov);
   $('#genConfirmNo').onclick=()=>{ ov.remove(); if(opts.onNo) opts.onNo(); };
@@ -6742,11 +6742,11 @@ let PROGS=PROGS_DEF();
 function allProgs(){ return [...PROGS,...CUSTOM]; }
 
 /* ---------- RUN PLAN GENERATOR ---------- */
-const TYPE_COLORS={EF:'--ok','Tempo':'--warn','Seuil':'--or','VMA':'--bad','Intervalle':'--bad','Récup':'--dim','Long':'--e','Course':'--e','Repos':'--dim'};
+const TYPE_COLORS={EF:'--ok','Tempo':'--warn','Seuil':'--or','VMA':'--bad','Intervalle':'--bad','Récup':'--muted','Long':'--e','Course':'--e','Repos':'--muted'};
 // Couleur par baseType brut (codes générés par buildSessionV2) — utilisée pour la puce de type
 // affichée AVANT clic sur la carte de séance (aperçu rapide).
-const BASETYPE_COLORS={EF:'--ok',RECUP:'--dim',LIGNES:'--ok',LONG:'--e',LONG_COURT:'--e',TEMPO:'--warn',TEMPO_SPE:'--warn',FARTLEK:'--warn',PROGRESSIF:'--warn',COTES:'--bad',SPE:'--e2',SPE_COURT:'--e2',
-  SEUIL:'--or',DBLSEUIL:'--or',VMAc:'--bad',VMAl:'--bad',VO2:'--bad',INTERVAL:'--bad',COURSE:'--e',Repos:'--dim'};
+const BASETYPE_COLORS={EF:'--ok',RECUP:'--muted',LIGNES:'--ok',LONG:'--e',LONG_COURT:'--e',TEMPO:'--warn',TEMPO_SPE:'--warn',FARTLEK:'--warn',PROGRESSIF:'--warn',COTES:'--bad',SPE:'--e2',SPE_COURT:'--e2',
+  SEUIL:'--or',DBLSEUIL:'--or',VMAc:'--bad',VMAl:'--bad',VO2:'--bad',INTERVAL:'--bad',COURSE:'--e',Repos:'--muted'};
 function baseTypeColor(bt){ return 'var('+(BASETYPE_COLORS[bt]||'--e')+')'; }
 
 /* ============================================================
@@ -8749,12 +8749,12 @@ function coachAnalyze(e){
 }
 function renderCoachAnalysis(a){
   let h='<div style="text-align:center;margin-bottom:14px"><div style="display:flex;justify-content:center">'+ICN('brain',40,'var(--e)')+'</div><div class="man" style="font-weight:800;font-size:20px">'+t('coachAnalysisTitle')+'</div><div style="font-size:12px;color:var(--muted)">'+a.e.title+'</div></div>';
-  const blk=(icon,title,items,color)=>items.length?'<div class="card-t" style="margin-top:14px;'+(color?'color:'+color:'')+'">'+icon+' '+title+'</div>'+items.map(x=>'<div class="tip" style="margin-bottom:6px;'+(color?'border-color:'+color+'33;background:'+color+'11':'')+'">'+x+'</div>').join(''):'';
+  const blk=(icon,title,items,color)=>items.length?'<div class="card-t" style="margin-top:14px;'+(color?'color:'+color:'')+'">'+icon+' '+title+'</div>'+items.map(x=>'<div class="tip" style="margin-bottom:6px;'+(color?'border-color:color-mix(in srgb,'+color+' 30%,transparent);background:color-mix(in srgb,'+color+' 10%,transparent)':'')+'">'+x+'</div>').join(''):'';
   h+=blk(ICN('check',15,'var(--ok)'),t('positivePointsTitle'),a.pos,'var(--ok)');
   h+=blk(ICN('warning',15,'var(--warn)'),t('constructiveCriticismTitle'),a.errs,'var(--warn)');
   h+=blk(ICN('bulb',15,'var(--e)'),t('adviceLabel'),a.tips,'');
   h+=blk(ICN('gear',15,'var(--e)'),t('upcomingAdjustmentsTitle'),a.adjust,'var(--e)');
-  h+='<div style="background:linear-gradient(135deg,var(--ed),rgba(31,47,80,.3));border:1px solid var(--e);border-radius:14px;padding:14px;margin-top:16px;text-align:center"><div style="font-style:italic;font-size:15px">"'+a.motiv+'"</div></div>';
+  h+='<div style="background:var(--ed);box-shadow:inset 0 0 0 1px rgba(var(--e-rgb),.45);border-radius:14px;padding:14px;margin-top:16px;text-align:center"><div style="font-style:italic;font-size:15px">"'+a.motiv+'"</div></div>';
   h+='<button class="btn" style="margin-top:16px" onclick="closeOv(\'ovProg\');renderSport();nav(\'home\')">'+t('notedCoachBtn')+'</button>';
   $('#progBody').innerHTML=h; $('#ovProgTitle').textContent=t('ikorunAnalysisTitle');
 }
@@ -8793,7 +8793,7 @@ function openRunSheet(id){
   let h='';
 
   // EN-TÊTE — badge type, titre, sous-titre semaine/objectif
-  h+='<div class="rs-badge" style="background:'+col+'22;color:'+col+'">'+(planSessLabel(s)||'').slice(0,2).toUpperCase()+'</div>';
+  h+='<div class="rs-badge" style="background:color-mix(in srgb,'+col+' 13%,transparent);color:'+col+'">'+(planSessLabel(s)||'').slice(0,2).toUpperCase()+'</div>';
   h+='<div class="rs-title">'+planSessTitle(s)+(s.customized?' <span class="chrome-chip" style="font-size:10px;vertical-align:middle">'+t('customizedTag')+'</span>':'')+'</div>';
   h+='<span class="rs-sub">'+(PLAN.weekLabel?PLAN.weekLabel:t('weekLabelWithNum')+' '+s.week)+' · '+(trRace(P.objRace)||t('objectiveWord'))+'</span>';
 
@@ -9099,7 +9099,7 @@ function openProg(id){
   // Bouton "contrasté inversé" : var(--snow)/var(--bg) s'inversent avec le thème
   // (clair sur fond sombre, sombre sur fond clair). En dur (#fff/#111) il devenait
   // un bouton blanc quasi invisible sur le fond clair du mode jour.
-  h+='<button class="btn" style="position:sticky;bottom:8px;background:var(--snow);color:var(--bg);border-radius:26px" onclick="startLive(\''+p.id+'\')">'+t('startWorkout')+'</button>';
+  h+='<button class="btn" style="position:sticky;bottom:8px" onclick="startLive(\''+p.id+'\')">'+t('startWorkout')+'</button>';
   $('#progBody').innerHTML=h;
   openOv('ovProg');
 }
@@ -9655,7 +9655,7 @@ function confirmDeleteLiveEx(i){
     '<div style="font-size:13px;color:var(--muted);margin-bottom:18px">'+name+'</div>'+
     '<div class="row" style="gap:10px">'+
       '<button class="btn ghost" style="flex:1" onclick="document.getElementById(\'delExOv\').remove()">'+t('cancelLab')+'</button>'+
-      '<button class="btn" style="flex:1;background:var(--bad)" onclick="doDeleteLiveEx('+i+')">'+t('removeLab2')+'</button>'+
+      '<button class="btn danger" style="flex:1" onclick="doDeleteLiveEx('+i+')">'+t('removeLab2')+'</button>'+
     '</div></div>';
   document.body.appendChild(ov);
 }
@@ -9758,7 +9758,7 @@ function confirmCloseLive(){
     '<div style="font-size:13px;color:var(--muted);margin-bottom:18px">'+t('progressLostText')+'</div>'+
     '<div class="row" style="gap:10px">'+
       '<button class="btn ghost" style="flex:1" onclick="document.getElementById(\'cancelLiveOv\').remove()">'+t('continueLab2')+'</button>'+
-      '<button class="btn" style="flex:1;background:var(--bad)" onclick="doCancelLive()">'+t('yesCancelLab')+'</button>'+
+      '<button class="btn danger" style="flex:1" onclick="doCancelLive()">'+t('yesCancelLab')+'</button>'+
     '</div></div>';
   document.body.appendChild(ov);
 }
@@ -10621,7 +10621,7 @@ const MUSCLE_ICON_MAP={'Pectoraux':'dumbbell','Pectoraux bas':'dumbbell','Pector
 function muscleIconName(group){ return MUSCLE_ICON_MAP[group]||'dumbbell'; }
 function exGlyph(e,size){ const g=(e&&((e.muscles&&e.muscles[0])||(e.primary&&e.primary[0])||e.group))||'Corps entier'; return ICN(muscleIconName(g),size||28,'var(--e)'); }
 /* colored rounded-square icon badge used in card headers, replaces flat emoji */
-function cardIcon(name,color){ color=color||'var(--e)'; return '<span class="icb" style="background:linear-gradient(145deg,'+color+'22,'+color+'0d);box-shadow:0 0 0 1px '+color+'33 inset,0 4px 10px -4px '+color+'55;color:'+color+'">'+ICN(name,15,color)+'</span>'; }
+function cardIcon(name,color){ color=color||'var(--e)'; return '<span class="icb" style="background:linear-gradient(145deg,color-mix(in srgb,'+color+' 13%,transparent),color-mix(in srgb,'+color+' 5%,transparent));box-shadow:0 0 0 1px color-mix(in srgb,'+color+' 20%,transparent) inset,0 4px 10px -4px color-mix(in srgb,'+color+' 33%,transparent);color:'+color+'">'+ICN(name,15,color)+'</span>'; }
 
 /* ---------- BADGE CRESTS (SVG sur-mesure, remplace les emojis) ----------
    Inspiré des rangs Rocket League : un écusson qui gagne des ailes et des
@@ -11272,14 +11272,14 @@ function renderChrono(){
   // Boutons
   h+='<div class="row" style="gap:14px;margin-top:24px;justify-content:center">';
   if(!chrono.running && total===0){
-    h+='<div style="width:62px"></div><button class="btn" style="width:84px;height:84px;border-radius:50%;font-size:30px;flex:none;background:var(--ok)" onclick="chronoToggle()" aria-label="'+t('playLab')+'">'+ICN('play',28,'#fff')+'</button><div style="width:62px"></div>';
+    h+='<div style="width:62px"></div><button class="btn" style="width:84px;height:84px;border-radius:50%;font-size:30px;flex:none" onclick="chronoToggle()" aria-label="'+t('playLab')+'">'+ICN('play',28)+'</button><div style="width:62px"></div>';
   } else if(chrono.running){
     h+='<button class="chbtn" onclick="chronoLap()">'+t('lapBtn')+'</button>';
-    h+='<button class="btn" style="width:84px;height:84px;border-radius:50%;flex:none;background:var(--warn)" onclick="chronoToggle()" aria-label="'+t('pauseLab')+'">'+ICN('pause',30,'#fff')+'</button>';
+    h+='<button class="btn" style="width:84px;height:84px;border-radius:50%;flex:none" onclick="chronoToggle()" aria-label="'+t('pauseLab')+'">'+ICN('pause',30)+'</button>';
     h+='<button class="chbtn" style="border-color:var(--bad);color:var(--bad)" onclick="chronoStop()">'+t('stopBtn')+'</button>';
   } else {
     h+='<button class="chbtn" style="border-color:var(--bad);color:var(--bad)" onclick="chronoReset()">'+t('resetBtn2')+'</button>';
-    h+='<button class="btn" style="width:84px;height:84px;border-radius:50%;font-size:30px;flex:none;background:var(--ok)" onclick="chronoToggle()" aria-label="'+t('playLab')+'">'+ICN('play',28,'#fff')+'</button>';
+    h+='<button class="btn" style="width:84px;height:84px;border-radius:50%;font-size:30px;flex:none" onclick="chronoToggle()" aria-label="'+t('playLab')+'">'+ICN('play',28)+'</button>';
     h+='<button class="chbtn" onclick="chronoLap()">'+t('lapBtn')+'</button>';
   }
   h+='</div></div>';

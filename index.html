@@ -93,7 +93,7 @@
 <!-- téléchargés dès maintenant, exécutés après la première image (voir bas de page) -->
 <link rel="preload" as="script" href="vendor/supabase.js?v=1">
 <link rel="preload" as="script" href="vendor/sb-init.js?v=2">
-<link rel="preload" as="script" href="app.js?v=98">
+<link rel="preload" as="script" href="app.js?v=99">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
@@ -152,7 +152,7 @@
 @keyframes glassGlow{0%,100%{opacity:.55;}50%{opacity:1;}}
 /* ===== MODE CLAIR ===== */
 html[data-mode="light"]{
-  --bg:#F2F4F8; --s1:#FFFFFF; --s2:#EDF0F5; --marineL:#D7E3FF; --hair:#E2E6ED;
+  --bg:#F2F4F8; --s1:#FFFFFF; --s2:#EDF0F5; --marineL:#D7E3FF; --hair:#E2E6ED; --hair2:#CDD3DD;
   --dim:#5F6675; --muted:#525A68; --snow:#10141B;
   /* vert/orange/rouge d'état assombris : #11A56B/#D98914/#E0394A tombaient à
      2,9–3,7:1 sur blanc (petits textes « −17 % », « 75 % de la cible »…) */
@@ -166,6 +166,18 @@ html[data-mode="light"]{
   --glass-border:rgba(255,255,255,.6); --glass-border-soft:rgba(20,25,35,.06);
   --glass-shine:linear-gradient(155deg,rgba(255,255,255,.7) 0%,rgba(255,255,255,.15) 25%,rgba(255,255,255,0) 48%);
   --glass-shadow:0 16px 40px -16px rgba(30,40,60,.22),0 2px 8px -2px rgba(30,40,60,.1),0 1px 0 rgba(255,255,255,.8) inset;
+  /* 27/09 : ombres propres au mode clair. Il héritait des ombres NOIRES du mode sombre
+     (50 à 70 %) : les tuiles et les boutons avaient un fondu sale et lourd, alors que
+     les cartes voisines (--glass-shadow ci-dessus) restaient légères. Même dessin,
+     teinte ardoise, intensité réduite. Le filet --hair2 manquait aussi (il restait
+     à la valeur sombre #323C4C : contour quasi noir sur les boutons secondaires). */
+  --sh-sm:0 1px 2px rgba(30,40,60,.10),0 1px 0 rgba(255,255,255,.8) inset;
+  --sh-md:0 6px 18px -8px rgba(30,40,60,.18),0 1px 0 rgba(255,255,255,.8) inset;
+  --sh-lg:0 16px 40px -12px rgba(30,40,60,.22),0 1px 0 rgba(255,255,255,.8) inset;
+  --sh-deep:0 10px 28px -10px rgba(30,40,60,.22),0 2px 6px -2px rgba(30,40,60,.10);
+  --float-sm:0 8px 20px -10px rgba(30,40,60,.20),0 2px 6px -2px rgba(30,40,60,.08),0 1px 0 rgba(255,255,255,.8) inset;
+  --float-md:0 14px 34px -14px rgba(30,40,60,.22),0 3px 10px -3px rgba(30,40,60,.09),0 1px 0 rgba(255,255,255,.8) inset;
+  --float-lg:0 22px 50px -18px rgba(30,40,60,.26),0 6px 16px -6px rgba(30,40,60,.10),0 1px 0 rgba(255,255,255,.8) inset;
 }
 html[data-mode="light"] #nav{background:rgba(255,255,255,.92);}
 html[data-mode="light"] .ov{background:rgba(120,130,150,.35);}
@@ -2534,6 +2546,48 @@ html[data-mode] :is(.hv7-day,.sp-plan,.hv7-score){border-radius:var(--r-lg);
 #nav::before{display:none;}
 html[data-mode="light"] #nav{background:var(--glass-shine),rgba(255,255,255,.92);}
 
+/* ---- 2e passe (27/09) : relevé automatique de TOUS les boutons et surfaces, écran
+   par écran et fenêtre par fenêtre. Ce qui sortait encore du lot : */
+/* ACCENT — une seule ombre pour les grandes actions, une seule pour les petites.
+   Avant : trois ombres différentes (bouton, « Je l'ai faite », onglet) et un reflet
+   rond en haut à gauche sur .btn seulement. */
+.btn:not(.ghost):not(.danger),.hv7-act.main,.promo-cta,.rs-cta,.rl-ctrl.main{box-shadow:var(--sh-e);}
+.btn:not(.ghost):not(.danger):active{box-shadow:0 3px 10px -4px rgba(var(--e-rgb),.4);}
+.btn:not(.ghost){border-color:transparent;}
+.btn::after{display:none;}
+.rs-cta,.rl-ctrl.main,#tbAvatar{background:var(--fill-accent) !important;color:var(--accent-ink) !important;text-shadow:var(--accent-ink-shadow);}
+#tbAvatar,.pf-cam{box-shadow:var(--sh-accent-sm);}
+.rs-cta{border-radius:var(--r-sm);}
+/* DANGER — même recette que l'accent (reflet + dégradé + ombre de sa couleur), en rouge
+   profond : texte blanc ≥ 4,5:1 (le rouge vif --bad plafonnait à 3:1). */
+:root{--fill-danger:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 55%),linear-gradient(180deg,#E5484D,#C62F3C 55%,#A8232F);
+  --sh-danger:0 8px 22px -6px rgba(198,47,60,.45),0 2px 6px -2px rgba(198,47,60,.3);}
+html[data-mode] .btn.danger{background:var(--fill-danger);box-shadow:var(--sh-danger);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45);}
+.btn.danger::before{display:none;}
+/* SECONDAIRE — derniers boutons qui avaient leur propre gris ou leur propre filet */
+.pf-edit,.cv-swap,.rl-ctrl:not(.main){background:var(--s2) !important;border:1px solid var(--hair2) !important;box-shadow:var(--sh-sm);}
+.chbtn{border-width:1px;}
+.toggle:not(.on){border-color:var(--hair2);}
+.cv-unit{background:var(--s2);border-color:var(--hair2);}
+.cv-unit.on{background:var(--ed);color:var(--e2);border-color:transparent;box-shadow:inset 0 0 0 1px rgba(var(--e-rgb),.45);}
+/* VERRE — cartes et lignes restées pleines avec un contour, à côté de voisines en verre
+   (Stats « Temps total / Séances », liste d'Outils, bibliothèque, convertisseur) */
+html[data-mode] :is(.kduo-card,.cv-card){border-radius:var(--r-md);
+  background:var(--glass-bg);background-image:var(--glass-shine),var(--grad-card);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
+  border-color:transparent;box-shadow:var(--glass-shadow),var(--ring-soft);}
+html[data-mode] :is(.list-row,.exg-card){
+  background:var(--glass-bg);background-image:var(--glass-shine),var(--grad-card);
+  border-color:transparent;box-shadow:var(--float-sm),var(--ring-soft);}
+/* SÉANCE DU JOUR dans les listes : même repère que tout élément « courant » (teinte
+   d'accent + liseré intérieur). Son fond finissait sur un bleu marine codé en dur,
+   visible quel que soit l'accent choisi (vert, rouge…). */
+html[data-mode] .sess.today{border-radius:var(--r-sm);background:linear-gradient(var(--ed),var(--ed)),var(--glass-bg);
+  border-color:transparent;box-shadow:var(--float-sm),inset 0 0 0 1px rgba(var(--e-rgb),.45);}
+/* TOUCHER — le même enfoncement par rôle : action .96, icône .9, carte/ligne .985 */
+.btn:active,.hv7-act:active,.rs-cta:active{transform:scale(.96);}
+.x:active,.tb-gear:active,.ik-bell:active,.ik-people:active,.hv7-icon-btn:active,.hv7-people:active,.mini-ic:active,.pf-edit:active,.chbtn:active,.rl-ctrl:active{transform:scale(.9);}
+
 /* « Réduire les animations » (réglage du téléphone) : seules 3 animations de
    fond le respectaient, une vingtaine d'autres tournaient en boucle. Les
    animations se terminent désormais instantanément dans leur état final. */
@@ -2793,7 +2847,7 @@ html[data-mode="light"] #nav{background:var(--glass-shine),rgba(255,255,255,.92)
      ne persiste RIEN : elle photographie l'état, teste, restaure. -->
 <script>
 (function(){
-  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=2', 'app.js?v=98'];
+  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=2', 'app.js?v=99'];
   if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=2');
   var lance = false;
   function charge(){
