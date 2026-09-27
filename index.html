@@ -94,7 +94,7 @@
 <!-- téléchargés dès maintenant, exécutés après la première image (voir bas de page) -->
 <link rel="preload" as="script" href="vendor/supabase.js?v=1">
 <link rel="preload" as="script" href="vendor/sb-init.js?v=2">
-<link rel="preload" as="script" href="app.js?v=105">
+<link rel="preload" as="script" href="app.js?v=106">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
@@ -414,6 +414,7 @@ html[data-mode="light"] body::after{opacity:.02;}
    background, afin qu'il suive automatiquement la couleur d'accent active
    (uni pour bleu/rouge/vert/marron/jaune, dégradé chromé pour carbone). */
 .ik-logo-mark{display:block;flex-shrink:0;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='84 78 356 280'%3E%3Cg fill='%23000' stroke='%23000' stroke-width='12' stroke-linejoin='round'%3E%3Cpolygon points='92,350 205,258 415,183 296,292'/%3E%3Cpolygon points='160,240 218,160 432,86 376,168'/%3E%3C/g%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='84 78 356 280'%3E%3Cg fill='%23000' stroke='%23000' stroke-width='12' stroke-linejoin='round'%3E%3Cpolygon points='92,350 205,258 415,183 296,292'/%3E%3Cpolygon points='160,240 218,160 432,86 376,168'/%3E%3C/g%3E%3C/svg%3E");
   -webkit-mask-position:center;mask-position:center;-webkit-mask-size:contain;mask-size:contain;
   background:var(--e);transition:background .35s var(--ease);}
 .ik-logo .ik-logo-mark{width:26px;height:26px;}
@@ -2000,25 +2001,6 @@ html[data-mode="light"]{
   border-radius:999px;padding:5px 11px;font-size:11px;font-weight:700;color:#ffb35c;margin:8px 0 4px;}
 .streak b{font-weight:800;}
 
-/* Carte "score de la semaine" de l'accueil — anneau + quip + serie.
-   Meme traitement verre que .hv7-day (cf. son commentaire) : fond translucide
-   + flou sature plutot qu'un fond plein, pour laisser passer les halos animes
-   de .hv7-bg en arriere-plan. */
-.hv7-score{position:relative;overflow:hidden;display:flex;align-items:center;gap:16px;
-  background:rgba(var(--e-rgb),.09);border:1px solid rgba(var(--e-rgb),.22);
-  border-radius:22px;padding:16px 18px;margin-bottom:16px;
-  box-shadow:0 1px 0 rgba(255,255,255,.08) inset;
-  backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);}
-.hv7-score::before{content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;
-  background:radial-gradient(circle 160px at 78% 12%, rgba(255,255,255,.13), transparent 72%);}
-.hv7-score>*{position:relative;}
-.hv7-score-ring{position:relative;width:64px;height:64px;flex:none;}
-.hv7-score-ring .val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  font-family:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:700;font-size:15px;color:var(--snow);}
-.hv7-score-txt{flex:1;min-width:0;}
-.hv7-score-lab{font-size:10.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
-.hv7-score-quip{font-size:12.5px;color:var(--snow);font-weight:600;margin-top:3px;}
-.hv7-score-txt .streak{margin:6px 0 0;}
 
 .sec-lab{font-size:11px;letter-spacing:1px;color:var(--e2);font-weight:700;margin:16px 0 8px;text-transform:uppercase;
   display:flex;justify-content:space-between;align-items:center;text-shadow:0 0 10px rgba(var(--e-rgb),.35);}
@@ -2599,11 +2581,12 @@ html[data-mode] :is(.hv7-score,.hv7-day[onclick^="openPrayerFromHome"]){border-r
 
 /* ===================================================================
    BANNIÈRES D'EN-TÊTE (27/09, demande de Hamou) — chaque page s'ouvre sur une
-   bannière composée du logo : les deux lames en grand, leurs échos en traînée
-   (le mouvement de l'intro, figé). Nuit en mode sombre (lame blanche + lame
-   d'accent, comme l'icône), jour en mode clair (lame encre + lame d'accent, comme
-   l'intro claire). Sur Sport/Stats/Outils/Profil, la barre de titre compacte
-   n'apparaît qu'une fois la bannière passée sous le haut de l'écran.
+   bannière : le petit logo IKORUN (symbole + nom) en haut à gauche, comme sur
+   l'accueil, et les deux lames du logo, nettes, à droite (choix de Hamou, v106 :
+   les lames géantes et leurs échos en traînée « faisaient trop »). Lame blanche +
+   lame d'accent en mode sombre, lame encre + lame d'accent en mode clair. Sur
+   Sport/Stats/Outils/Profil, la barre de titre compacte n'apparaît qu'une fois la
+   bannière passée sous le haut de l'écran.
    Lames = masques SVG colorés par background : elles suivent l'accent choisi.
    =================================================================== */
 .ikh{position:relative;overflow:hidden;isolation:isolate;border-radius:var(--r-lg);
@@ -2615,9 +2598,8 @@ html[data-mode] :is(.hv7-score,.hv7-day[onclick^="openPrayerFromHome"]){border-r
     linear-gradient(160deg,#111A2B 0%,#0B111D 55%,#080B12 100%);
   box-shadow:var(--glass-shadow),inset 0 0 0 1px rgba(255,255,255,.07);}
 .ikh>*{position:relative;z-index:1;}
-.ikh>.ikh-fx{position:absolute;z-index:0;right:2px;top:0;width:176px;aspect-ratio:500/380;pointer-events:none;
-  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-40 60 500 380' fill='none' stroke-linejoin='round' stroke-linecap='round'%3E%3Cg stroke='rgba(255,255,255,.28)' stroke-width='3'%3E%3Cpolygon points='38,380 151,288 361,213 242,322'/%3E%3Cpolygon points='106,270 164,190 378,116 322,198'/%3E%3C/g%3E%3Cg stroke='rgba(255,255,255,.14)' stroke-width='3'%3E%3Cpolygon points='-16,410 97,318 307,243 188,352'/%3E%3Cpolygon points='52,300 110,220 324,146 268,228'/%3E%3C/g%3E%3Cg stroke='rgba(255,255,255,.14)' stroke-width='5'%3E%3Cline x1='-20' y1='420' x2='210' y2='301'/%3E%3Cline x1='70' y1='436' x2='250' y2='343'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;
-  -webkit-mask-image:linear-gradient(100deg,transparent 0%,#000 26%);mask-image:linear-gradient(100deg,transparent 0%,#000 26%);}
+.ikh>.ikh-fx{position:absolute;z-index:0;right:14px;top:50%;width:104px;aspect-ratio:500/380;pointer-events:none;transform:translateY(-50%);
+  filter:drop-shadow(0 6px 14px rgba(var(--e-rgb),.4));}
 .ikh-fx::before,.ikh-fx::after{content:'';position:absolute;inset:0;
   -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center;
   -webkit-mask-size:contain;mask-size:contain;}
@@ -2636,7 +2618,6 @@ html[data-mode="light"] .ikh:not(.ikh-dark){color:var(--snow);
     radial-gradient(70% 90% at 0% 110%,rgba(var(--e-rgb),.07),transparent 70%),
     linear-gradient(160deg,#FFFFFF 0%,#F0F3F9 100%);
   box-shadow:var(--glass-shadow),inset 0 0 0 1px rgba(20,25,35,.06);}
-html[data-mode="light"] .ikh:not(.ikh-dark)>.ikh-fx{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-40 60 500 380' fill='none' stroke-linejoin='round' stroke-linecap='round'%3E%3Cg stroke='rgba(16,20,27,.28)' stroke-width='3'%3E%3Cpolygon points='38,380 151,288 361,213 242,322'/%3E%3Cpolygon points='106,270 164,190 378,116 322,198'/%3E%3C/g%3E%3Cg stroke='rgba(16,20,27,.14)' stroke-width='3'%3E%3Cpolygon points='-16,410 97,318 307,243 188,352'/%3E%3Cpolygon points='52,300 110,220 324,146 268,228'/%3E%3C/g%3E%3Cg stroke='rgba(16,20,27,.14)' stroke-width='5'%3E%3Cline x1='-20' y1='420' x2='210' y2='301'/%3E%3Cline x1='70' y1='436' x2='250' y2='343'/%3E%3C/g%3E%3C/svg%3E");}
 html[data-mode="light"] .ikh:not(.ikh-dark) .ikh-fx::after{background:linear-gradient(32deg,#10141B 10%,#46516A 80%);}
 html[data-mode="light"] .ikh:not(.ikh-dark) .ikh-title{color:var(--snow);}
 html[data-mode="light"] .ikh:not(.ikh-dark) .ikh-sub{color:var(--muted);}
@@ -2670,7 +2651,6 @@ html[data-mode="light"] body.tb-compact:not([data-scr="home"]) .topbar{backgroun
 
 /* ACCUEIL : l'en-tête (logo + boutons) et la salutation forment la bannière */
 .ikh-home{margin:max(8px,env(safe-area-inset-top)) 0 14px;min-height:0;padding:14px 16px 20px;justify-content:flex-start;}
-.ikh-home>.ikh-fx{top:auto;bottom:-22px;right:1px;width:162px;}
 .ikh-home .hv7-header{padding:0;margin:0 0 26px;}
 .ikh-home .hv7-greet{margin:0;padding:0;}
 .ikh-home .hv7-greet h1{font-family:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:800;font-size:25px;letter-spacing:-.6px;line-height:1.1;color:#fff;max-width:64%;}
@@ -2681,14 +2661,11 @@ html[data-mode="light"] .ikh-home .hv7-greet p{color:var(--muted);}
 
 /* CONNEXION et PREMIÈRE CONFIGURATION */
 .ikh-login{margin:0 0 22px;min-height:132px;text-align:left;}
-.ikh-login>.ikh-fx{top:auto;bottom:-6px;right:0;width:196px;}
 .ikh-login .login-brand{font-family:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:30px;letter-spacing:.2px;line-height:1;color:#fff;}
 .ikh-login .login-tag{margin-top:8px;text-align:left;}
 .ikh-ob{margin:0 0 18px;min-height:74px;padding:14px 16px;}
-.ikh-ob>.ikh-fx{top:auto;bottom:-10px;right:4px;width:112px;}
 .ikh-ob .ikh-title{font-size:19px;}
 .ikh-ob-big{min-height:150px;margin:0 0 22px;}
-.ikh-ob-big>.ikh-fx{top:auto;bottom:-8px;right:0;width:214px;}
 #ob:has(.ob-step[data-step="1"].on) .ikh-ob{display:none;}
 /* connexion : la carte était centrée par justify-content — sur un petit écran, plus
    haute que l'écran, son haut (logo) sortait par le haut et ne pouvait plus être
@@ -2704,10 +2681,6 @@ html[data-mode="light"] .ikh-home .hv7-greet p{color:var(--muted);}
 html[data-mode="light"] .ikh-ob-big .login-brand{color:var(--snow);}
 .ikh{text-align:start;}
 /* arabe (droite à gauche) : les lames passent à gauche, en miroir, loin du texte */
-[dir="rtl"] .ikh>.ikh-fx{right:auto;left:2px;transform:scaleX(-1);}
-[dir="rtl"] .ikh-home>.ikh-fx{left:1px;}
-[dir="rtl"] .ikh-login>.ikh-fx,[dir="rtl"] .ikh-ob-big>.ikh-fx{left:0;}
-[dir="rtl"] .ikh-ob>.ikh-fx{left:4px;}
 [dir="rtl"] #ikHead .ikh-av{right:auto;left:14px;}
 
 /* ===================================================================
@@ -2871,19 +2844,26 @@ html[data-mode="light"] body.tb-compact:not([data-scr="home"]) .topbar{box-shado
   box-shadow:var(--lg-rim),var(--lg-drop) !important;}
 .ikh:not(.ikh-dark) .ikh-title{color:var(--snow);font-size:21px;letter-spacing:-.4px;}
 .ikh:not(.ikh-dark) .ikh-sub{color:var(--muted);font-size:12px;margin-top:4px;}
-.ikh:not(.ikh-dark)>.ikh-fx{width:132px;right:6px;top:2px;}
 .ikh.ikh-home{padding:12px 14px 16px;}
-.ikh.ikh-home:not(.ikh-dark)>.ikh-fx{width:132px;top:auto;bottom:-8px;right:4px;}
 .ikh-home .hv7-greet h1{color:var(--snow) !important;font-size:22px;}
 .ikh-home .hv7-greet p{color:var(--muted) !important;}
 .ikh-home .hv7-logo span{color:var(--snow) !important;}
 .ikh-home .hv7-header{margin-bottom:18px;}
-.ikh.ikh-ob:not(.ikh-dark)>.ikh-fx{width:104px;top:auto;bottom:-6px;}
+/* plus d'illustration à droite (27/09) : la salutation prend toute la largeur */
+.ikh-home .hv7-greet h1,.ikh-home .hv7-greet p{max-width:none;}
 .ikh-ob-big{min-height:120px !important;}
-.ikh.ikh-ob-big:not(.ikh-dark)>.ikh-fx{width:176px;top:auto;bottom:-4px;}
 .ikh-ob-big .login-brand{color:var(--snow) !important;}
-[dir="rtl"] .ikh:not(.ikh-dark)>.ikh-fx{right:auto;left:6px;}
-[dir="rtl"] .ikh.ikh-home:not(.ikh-dark)>.ikh-fx{right:auto;left:4px;}
+/* LOGO DES BANNIÈRES (v106) — signature en haut à gauche, lames nettes à droite */
+.ikh-brand{display:flex;align-items:center;gap:7px;margin:0 0 10px;
+  font-family:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:800;font-size:11px;letter-spacing:.9px;line-height:1;color:var(--muted);}
+.ikh-brand .ik-logo-mark{width:18px;height:18px;}
+#ikHead{justify-content:flex-start;}
+.ikh-login>.ikh-fx{width:112px;right:10px;top:16px;transform:none;}
+.ikh.ikh-ob>.ikh-fx{width:84px;}
+.ikh.ikh-ob-big>.ikh-fx{width:118px;right:10px;top:12px;transform:none;}
+/* arabe : les lames passent à gauche, sans miroir (un logo ne se retourne pas) */
+[dir="rtl"] .ikh>.ikh-fx{right:auto;left:14px;}
+[dir="rtl"] .ikh-login>.ikh-fx,[dir="rtl"] .ikh.ikh-ob-big>.ikh-fx{left:10px;}
 /* connexion (toujours sur fond sombre) : verre fumé */
 .ikh.ikh-dark{background:radial-gradient(90% 120% at 96% 0%,rgba(var(--e-rgb),.3),transparent 60%),radial-gradient(130% 80% at 10% -18%,rgba(255,255,255,.14),transparent 55%),rgba(8,11,18,.5) !important;
   -webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);
@@ -2997,8 +2977,6 @@ html.easy-mode[data-mode] .toggle::after{background:#fff !important;box-shadow:0
 html.easy-mode[data-mode] #nav-pill{background:var(--ed) !important;border:2px solid rgba(var(--e-rgb),.35) !important;box-shadow:none !important;}
 html.easy-mode #toast{background:var(--s1);border:2px solid var(--e);box-shadow:0 8px 20px -8px rgba(0,0,0,.5);
   max-width:min(76vw,330px);} /* html.easy-mode est zoomé à 1,16 : 88vw débordait de l'écran */
-/* SCORE DE LA SEMAINE — « 100% » débordait de l'anneau de 64 px */
-.hv7-score-ring .val.x3{font-size:12.5px;letter-spacing:-.4px;}
 /* CONNEXION — liens secondaires : centrés, en texte courant (ils étaient en Unbounded gras, alignés à gauche) */
 .login-guest{text-align:center;font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:700;font-size:14px;line-height:1.4;}
 .login-guest.subtle{font-weight:600;font-size:12.5px;}
@@ -3204,8 +3182,8 @@ html.easy-mode #toast{background:var(--s1);border:2px solid var(--e);box-shadow:
     <div><div class="tb-title" id="tbTitle">Accueil</div><div class="tb-sub" id="tbSub"></div></div>
     <div class="tb-gear" id="tbAvatar" onclick="nav('profil')"></div>
   </div>
-  <!-- Bannière d'en-tête (titre de la page + logo) — voir « BANNIÈRES D'EN-TÊTE » dans le CSS -->
-  <div class="ikh" id="ikHead"><i class="ikh-fx" aria-hidden="true"></i><button class="ikh-av" id="ikhAv" type="button" onclick="nav('profil')"></button><div class="ikh-title" id="ikhTitle"></div><div class="ikh-sub" id="ikhSub"></div></div>
+  <!-- Bannière d'en-tête (logo IKORUN + titre de la page + lames) — voir « BANNIÈRES D'EN-TÊTE » dans le CSS -->
+  <div class="ikh" id="ikHead"><i class="ikh-fx" aria-hidden="true"></i><button class="ikh-av" id="ikhAv" type="button" onclick="nav('profil')"></button><div class="ikh-brand" aria-hidden="true"><i class="ik-logo-mark"></i><span>IKORUN</span></div><div class="ikh-title" id="ikhTitle"></div><div class="ikh-sub" id="ikhSub"></div></div>
 
   <div class="scr on" id="s-home"></div>
   <div class="scr" id="s-sport"></div>
@@ -3259,7 +3237,7 @@ html.easy-mode #toast{background:var(--s1);border:2px solid var(--e);box-shadow:
      ne persiste RIEN : elle photographie l'état, teste, restaure. -->
 <script>
 (function(){
-  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=2', 'app.js?v=105'];
+  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=2', 'app.js?v=106'];
   if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=4');
   var lance = false;
   function charge(){
