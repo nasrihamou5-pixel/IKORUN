@@ -4448,11 +4448,15 @@ function ikEnterScreen(s){
   if(tb) tb.classList.remove('ik-title-r','ik-title-l');
   const first=!_ikSeenTabs.has(s); _ikSeenTabs.add(s);
   if(!first || ikMotionOff()) return; // déjà ouvert : affichage direct
+  const ban=s==='home'?scr.querySelector('.ikh'):document.getElementById('ikHead');
+  if(ban){ ban.classList.remove('ikh-in'); void ban.offsetWidth; ban.classList.add('ikh-in');
+    clearTimeout(ban._ikhT); ban._ikhT=setTimeout(()=>ban.classList.remove('ikh-in'),1300); }
   let dir=null;
   if(from!==s){ dir=IK_TABS.indexOf(s)>IK_TABS.indexOf(from)?'r':'l'; if(document.documentElement.dir==='rtl') dir=dir==='r'?'l':'r'; }
   scr.classList.remove('pagein');
   void scr.offsetWidth;
-  if(dir){ scr.classList.add('ik-from-'+dir); if(tb) tb.classList.add('ik-title-'+dir); }
+  // (le titre compact ne glisse plus : c'est la bannière d'en-tête qui fait l'entrée)
+  if(dir) scr.classList.add('ik-from-'+dir);
   if(s!=='stats') ikPlay(scr); // Stats : la cascade part quand le vrai contenu remplace le squelette
   ikStreak(scr.querySelector('.hv7-day,.sp-plan,.pf-hero,.card'));
 }
@@ -5125,6 +5129,7 @@ function nav(s){
   if(s==='outils') renderOutils();
   if(s==='profil') renderProfile();
   markScreenSeen('s-'+s);
+  ikhSync(); ikhCompact();
   ikEnterScreen(s);
 }
 /* Marque un écran comme "déjà vu" une fois ses animations d'entrée jouées,
@@ -5309,6 +5314,34 @@ let _lastScrollTouch=0;
   sc.addEventListener('scroll',()=>{
     if(!ticking){ requestAnimationFrame(onScroll); ticking=true; }
   },{passive:true});
+})();
+/* ---------- BANNIÈRE D'EN-TÊTE (27/09) ----------
+   #ikHead reprend le titre, le sous-titre et l'avatar de la barre de titre : tout ce
+   qui les modifie (nav(), vue calendrier de Sport…) est suivi par un MutationObserver.
+   La barre compacte flotte au-dessus de la bannière (marge négative, aucune place
+   prise) et ne s'affiche qu'une fois la bannière passée sous le haut de l'écran. */
+function ikhSync(){
+  const t1=$('#tbTitle'), s1=$('#tbSub'), a1=$('#tbAvatar'); if(!t1||!$('#ikHead')) return;
+  $('#ikhTitle').textContent=t1.textContent;
+  $('#ikhSub').textContent=(s1&&s1.textContent.trim())||'Elite Athletic Intelligence';
+  const av=$('#ikhAv');
+  if(av&&a1){ av.innerHTML=a1.innerHTML; av.setAttribute('aria-label',a1.getAttribute('aria-label')||t('profil'));
+    av.querySelectorAll('img').forEach(im=>{ im.alt=''; im.onerror=()=>im.remove(); }); }
+}
+function ikhCompact(){
+  const tb=document.querySelector('.topbar'), h=$('#ikHead'); if(!tb) return;
+  const easy=document.documentElement.classList.contains('easy-mode');
+  if(document.body.dataset.scr==='home'||easy||!h){ document.body.classList.add('tb-compact'); tb.style.marginBottom=''; return; }
+  tb.style.marginBottom=(-tb.offsetHeight)+'px';
+  document.body.classList.toggle('tb-compact', h.getBoundingClientRect().bottom < tb.getBoundingClientRect().bottom+4);
+}
+(function(){
+  const sc=$('#scroll'); if(!sc) return;
+  let tk=false;
+  sc.addEventListener('scroll',()=>{ if(!tk){ tk=true; requestAnimationFrame(()=>{ tk=false; ikhCompact(); }); } },{passive:true});
+  const obs=new MutationObserver(ikhSync);
+  ['#tbTitle','#tbSub','#tbAvatar'].forEach(q=>{ const el=$(q); if(el) obs.observe(el,{childList:true,characterData:true,subtree:true}); });
+  ikhSync(); ikhCompact();
 })();
 function nudgeScroll(){
   const sc=document.getElementById('scroll'); if(!sc) return;
@@ -6228,6 +6261,7 @@ function applyTheme(){
   document.documentElement.setAttribute('data-mode',mode);
   document.documentElement.setAttribute('data-accent',P.theme||'blue');
   document.documentElement.classList.toggle('easy-mode',!!P.easyMode);
+  if(typeof ikhCompact==='function') ikhCompact();
   const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.content=(P.easyMode?(mode==='light'?'#FFFFFF':'#000000'):(mode==='light'?'#F2F4F8':'#0A0D12'));
   // Miroir en clair (mode/accent/easyMode ne sont pas des données sensibles) pour que
   // le script tout en haut de <head> puisse réappliquer le thème avant le premier
@@ -7694,8 +7728,9 @@ function kmBarSeries(period){
     return {labels,values,total:values.reduce((a,v)=>a+v,0),prevTotal};
   }
   // 'week' par défaut
-  const labels=['L','M','M','J','V','S','D']; const values=[];
-  for(let i=0;i<7;i++){ const d=new Date(ws); d.setDate(ws.getDate()+i); const en=new Date(d); en.setDate(d.getDate()+1); values.push(sumKmBetween(d,en)); }
+  // initiales des jours dans la langue de l'app (elles restaient en français en anglais/arabe)
+  const labels=[]; const values=[];
+  for(let i=0;i<7;i++){ const d=new Date(ws); d.setDate(ws.getDate()+i); const en=new Date(d); en.setDate(d.getDate()+1); values.push(sumKmBetween(d,en)); labels.push(d.toLocaleDateString(localeCode(),{weekday:'narrow'})); }
   return {labels,values,total:values.reduce((a,v)=>a+v,0),prevTotal};
 }
 /* Tendance hebdo (8 dernières semaines) pour le graphe en ligne, indépendante
@@ -7766,8 +7801,9 @@ function tonnageBarSeries(period){
       values.push(sumTonnageBetween(d,en)); labels.push(initials[d.getMonth()]); }
     return {labels,values,total:values.reduce((a,v)=>a+v,0),prevTotal};
   }
-  const labels=['L','M','M','J','V','S','D']; const values=[];
-  for(let i=0;i<7;i++){ const d=new Date(ws); d.setDate(ws.getDate()+i); const en=new Date(d); en.setDate(d.getDate()+1); values.push(sumTonnageBetween(d,en)); }
+  // initiales des jours dans la langue de l'app (elles restaient en français en anglais/arabe)
+  const labels=[]; const values=[];
+  for(let i=0;i<7;i++){ const d=new Date(ws); d.setDate(ws.getDate()+i); const en=new Date(d); en.setDate(d.getDate()+1); values.push(sumTonnageBetween(d,en)); labels.push(d.toLocaleDateString(localeCode(),{weekday:'narrow'})); }
   return {labels,values,total:values.reduce((a,v)=>a+v,0),prevTotal};
 }
 function weeklyTonnageTrend8(){
@@ -7998,10 +8034,12 @@ function renderHome(){
   let html='<div class="hv7-bg"><span class="hv7-lb1"></span><span class="hv7-lb2"></span><span class="hv7-lb3"></span></div>';
   html+='<div class="hv7-content">';
 
-  // HEADER — logo IKORUN (gauche) + partage/notifs/amis (droite)
+  // HEADER — logo IKORUN (gauche) + partage/notifs/amis (droite). Il forme, avec la
+  // salutation, la bannière d'en-tête de l'accueil (voir « BANNIÈRES D'EN-TÊTE »).
+  let homeHdr='';
   {
     const hasReminderDot=(P.notif!==false)&&ps&&ps.type!=='Repos';
-    html+='<div class="hv7-header"><div class="hv7-header-left"><div class="hv7-logo">'+
+    homeHdr='<div class="hv7-header"><div class="hv7-header-left"><div class="hv7-logo">'+
       '<div class="ik-logo-mark" style="-webkit-mask-image:url(\''+LOGO_MARK_URI+'\');mask-image:url(\''+LOGO_MARK_URI+'\')" role="img" aria-label="IKORUN"></div><span>IKORUN</span></div></div>'+
       '<div class="hv7-header-right">'+
         '<div class="hv7-icon-btn" onclick="shareApp()" title="'+t('share')+'">'+ICN('share',17)+'</div>'+
@@ -8010,9 +8048,6 @@ function renderHome(){
         '<div class="hv7-people" onclick="openFriends()">'+ICN('users',18)+'</div>'+
       '</div></div>';
   }
-
-  html+=notifPermBubbleHTML();
-  html+=homePrayerCardHTML();
 
   // SALUTATION — semaine/phase du plan si actif, sinon quip objectif. La série en cours,
   // quand il y en a une, est glissée en suffixe pour ne pas encombrer la carte du jour.
@@ -8034,7 +8069,10 @@ function renderHome(){
     const streak=streakDays();
     if(streak>=2) sub+=' · '+tp('streakDaysShort',streak);
   }
-  html+='<div class="hv7-greet"><h1>'+t('greet')+' '+escHtml(first||t('you'))+'</h1><p>'+sub+'</p></div>';
+  html+='<div class="ikh ikh-home"><i class="ikh-fx" aria-hidden="true"></i>'+homeHdr+
+    '<div class="hv7-greet"><h1>'+t('greet')+' '+escHtml(first||t('you'))+'</h1><p>'+sub+'</p></div></div>';
+  html+=notifPermBubbleHTML();
+  html+=homePrayerCardHTML();
 
   // SCORE DE LA SEMAINE — anneau + quip + serie, inspire de l'ecran d'accueil
   // de KORE (version anterieure de l'app) : meme idee (un chiffre fort, en
@@ -8535,7 +8573,7 @@ function openPersoSheet(sid){
   curPersoSess=sid;
   $('#sheetTitle').textContent=s.title;
   const col='var('+(TYPE_COLORS[s.type]||'--e')+')';
-  let h='<div class="badge" style="background:rgba(var(--e-rgb),.15);color:'+col+';margin-bottom:14px">'+escHtml(s.type)+' · '+fmtDate(s.date)+'</div>';
+  let h='<div class="badge" style="background:color-mix(in srgb,'+col+' 12%,transparent);color:'+col+';margin-bottom:14px">'+escHtml(s.type)+' · '+fmtDate(s.date)+'</div>';
   if(s.km) h+='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+s.km+'</div><div class="l">km</div></div><div class="sbox"><div class="v" style="font-size:18px">'+s.pace+'</div><div class="l">'+t('avgPerKmLabel')+'</div></div><div class="sbox"><div class="v">'+s.duration+'</div><div class="l">min</div></div></div>';
   if(s.intervals && s.intervals.length){
     h+='<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:8px">'+s.intervals.length+' × '+s.intervals[0].dist+' m</div><div style="display:flex;flex-direction:column;gap:6px">';
@@ -10829,7 +10867,8 @@ function renderSanteTool(){
   let imcCat,imcCol; if(imc<18.5){imcCat=t('imcUnderweight');imcCol='--warn';}else if(imc<25){imcCat=t('imcNormal');imcCol='--ok';}else if(imc<30){imcCat=t('imcOverweight');imcCol='--warn';}else{imcCat=t('imcObese');imcCol='--bad';}
   // dernier log santé / sommeil depuis SESSLOG (debriefs)
   const lastLog=SESSLOG[SESSLOG.length-1]||{};
-  const bmr=Math.round((P.sex==='Femme')?(10*w+6.25*ht-5*(age()||25)-161):(10*w+6.25*ht-5*(age()||25)+5));
+  const ag=+age(), bmrAge=isFinite(ag)&&ag>0?ag:25;
+  const bmr=Math.round((P.sex==='Femme')?(10*w+6.25*ht-5*bmrAge-161):(10*w+6.25*ht-5*bmrAge+5));
   const burned=SESS.slice(-7).reduce((a,s)=>a+(s.km||0)*0.9*w/1000*1000,0); // approx kcal 7j run
   const freq=runCountWeek()+muscuCountWeek();
   let h='';
@@ -10841,7 +10880,7 @@ function renderSanteTool(){
   if(WEIGHTLOG.length>=2) h+='<div style="margin-top:12px">'+weightSparkline()+'</div>';
   h+='</div>';
   // IMC
-  h+='<div class="card"><div class="row"><div><div class="card-t" style="margin:0">'+t('imcLab')+'</div><div class="man" style="font-size:28px;font-weight:800;margin-top:6px;color:var('+imcCol+')">'+imc.toFixed(1)+'</div></div><div class="badge" style="background:var(--ed);color:var('+imcCol+')">'+imcCat+'</div></div>'+
+  h+='<div class="card"><div class="row"><div><div class="card-t" style="margin:0">'+t('imcLab')+'</div><div class="man" style="font-size:28px;font-weight:800;margin-top:6px;color:var('+imcCol+')">'+imc.toFixed(1)+'</div></div><div class="badge" style="background:color-mix(in srgb,var('+imcCol+') 12%,transparent);color:var('+imcCol+')">'+imcCat+'</div></div>'+
     '<div class="pbar" style="margin-top:12px"><div style="width:'+Math.min(100,(imc/40)*100)+'%;background:var('+imcCol+')"></div></div></div>';
   // INDICATEURS — grille
   h+='<div class="sgrid" style="margin-bottom:14px">';
@@ -10983,7 +11022,7 @@ function renderLoadTool(){
   acute/=7; chronic/=28;
   const ratio=chronic>0?(acute/chronic):0;
   let status,col; if(ratio===0){status=t('noDataLab');col='--dim';} else if(ratio<0.8){status=t('acwrUnder');col='--platine';} else if(ratio<=1.3){status=t('acwrOptimal');col='--ok';} else if(ratio<=1.5){status=t('acwrHigh');col='--warn';} else {status=t('acwrRisk');col='--bad';}
-  let h='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var('+col+')">'+ratio.toFixed(2)+'</div><div class="lab">'+t('acwrRatioLab')+'</div><div class="badge" style="margin-top:10px;background:var(--ed);color:var('+col+')">'+status+'</div></div>';
+  let h='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var('+col+')">'+ratio.toFixed(2)+'</div><div class="lab">'+t('acwrRatioLab')+'</div><div class="badge" style="margin-top:10px;background:color-mix(in srgb,var('+col+') 12%,transparent);color:var('+col+')">'+status+'</div></div>';
   h+='<div class="sgrid"><div class="sbox"><div class="v">'+Math.round(acute)+'</div><div class="l">'+t('acwrAcuteLab')+'</div></div><div class="sbox"><div class="v">'+Math.round(chronic)+'</div><div class="l">'+t('acwrChronicLab')+'</div></div></div>';
   h+='<div class="tip" style="margin-top:12px">'+t('acwrTip')+'</div>';
   $('#outBody').innerHTML=h;
@@ -11002,7 +11041,7 @@ function renderHydraTool(){
 }
 let bmrSex=(P&&P.sex)||'Homme';
 function renderBMRtool(){
-  const w=P.weight||62,ht=P.height||175,a=age()||25;
+  const w=P.weight||62,ht=P.height||175,ag=+age(),a=isFinite(ag)&&ag>0?ag:25;
   const bmr=Math.round(bmrSex==='Femme'?(10*w+6.25*ht-5*a-161):(10*w+6.25*ht-5*a+5));
   let h='<div class="card" style="text-align:center"><div class="man" style="font-size:40px;font-weight:800;color:var(--e)">'+bmr+'</div><div class="lab">'+t('basalMetabolism')+'</div></div>';
   h+='<div class="card"><div class="card-t">'+t('needsByActivity')+'</div>'+[[t('actSedentary'),1.2],[t('actLight'),1.375],[t('actModerate'),1.55],[t('actIntense'),1.725],[t('actAthlete'),1.9]].map(x=>'<div class="zrow"><span class="zname">'+x[0]+'</span><span class="zval">'+Math.round(bmr*x[1])+' kcal</span></div>').join('')+'</div>';
@@ -11104,7 +11143,7 @@ function renderPomodoro(){
   const pct=pomoState.left/total*100;
   const col=pomoState.phase==='work'?'var(--bad)':'var(--ok)';
   const lab=pomoState.phase==='work'?t('pomoFocus'):t('pomoBreak');
-  let h='<div class="card" style="text-align:center"><div class="badge" style="background:var(--ed);color:'+col+'">'+lab+'</div><div class="ring-wrap" style="width:180px;height:180px;margin:14px auto"><span id="pmRing">'+ringSVG(180,pct,12,col)+'</span><div class="ring-c"><div class="big mono" id="pmNum" style="font-size:36px">'+fmtMS(pomoState.left)+'</div></div></div>';
+  let h='<div class="card" style="text-align:center"><div class="badge" style="background:color-mix(in srgb,'+col+' 12%,transparent);color:'+col+'">'+lab+'</div><div class="ring-wrap" style="width:180px;height:180px;margin:14px auto"><span id="pmRing">'+ringSVG(180,pct,12,col)+'</span><div class="ring-c"><div class="big mono" id="pmNum" style="font-size:36px">'+fmtMS(pomoState.left)+'</div></div></div>';
   h+='<div class="row" style="gap:10px"><button class="btn" onclick="pomoToggle()">'+(pomoState.running?t('pauseShort'):'▶ '+t('playLab'))+'</button><button class="btn ghost" onclick="pomoReset()">↺</button></div>';
   h+='<div style="margin-top:12px;font-size:12px;color:var(--muted)">'+tp('pomodorosDoneLab',pomoState.count)+'</div></div>';
   $('#outBody').innerHTML=h;

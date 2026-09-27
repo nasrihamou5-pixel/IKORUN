@@ -93,7 +93,7 @@
 <!-- téléchargés dès maintenant, exécutés après la première image (voir bas de page) -->
 <link rel="preload" as="script" href="vendor/supabase.js?v=1">
 <link rel="preload" as="script" href="vendor/sb-init.js?v=2">
-<link rel="preload" as="script" href="app.js?v=99">
+<link rel="preload" as="script" href="app.js?v=100">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
@@ -105,11 +105,11 @@
 <style>
 :root{
   --bg:#07090D; --s1:#12161D; --s2:#1A2028; --s3:#232B37; --marineL:#1F2F50; --hair:#252D3A; --hair2:#323C4C;
-  --dim:#7D8598; --muted:#8993A6; --snow:#F4F6F9; --e:#3D7FFF; --e2:#6FA0FF; --ed:rgba(var(--e-rgb),.14);
-  --e-rgb:61,127,255; --e2-rgb:111,160,255;
+  --dim:#8B94A7; --muted:#97A0B2; --snow:#F4F6F9; --e:#4F8DFF; --e2:#6FA0FF; --ed:rgba(var(--e-rgb),.14);
+  --e-rgb:79,141,255; --e2-rgb:111,160,255;
   --bronze:#C97B4A; --argent:#D7DCE3; --or:#F2B84B; --platine:#9FD8FF;
   --diamant:#7FE0E8; --maitre:#A98CF0; --legende:#FFD76A;
-  --ok:#33D399; --warn:#FFB454; --bad:#FF5C6C;
+  --ok:#33D399; --warn:#FFB454; --bad:#FF6B7A;
   /* ===== DESIGN SYSTEM TOKENS ===== */
   --r-xs:10px; --r-sm:14px; --r-md:18px; --r-lg:22px; --r-pill:999px;
   --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px;
@@ -119,7 +119,7 @@
   --sh-lg:0 16px 40px -12px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.04) inset;
   --sh-e:0 8px 22px -6px rgba(var(--e-rgb),.45),0 2px 6px -2px rgba(var(--e-rgb),.3);
   --grad-card:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,0) 40%);
-  --grad-btn:linear-gradient(180deg,#4180FF,#2B66EC 55%,#2257D6);
+  --grad-btn:linear-gradient(180deg,#3775F2,#2961E0 55%,#2152CC);
   --sh-hero:0 24px 60px -16px rgba(0,0,0,.7),0 8px 24px -8px rgba(var(--e-rgb),.18),0 1px 0 rgba(255,255,255,.05) inset;
   --sh-deep:0 10px 28px -10px rgba(0,0,0,.65),0 2px 6px -2px rgba(0,0,0,.4),0 1px 0 rgba(255,255,255,.03) inset;
   --bg-rgb:7,9,13;
@@ -156,7 +156,8 @@ html[data-mode="light"]{
   --dim:#5F6675; --muted:#525A68; --snow:#10141B;
   /* vert/orange/rouge d'état assombris : #11A56B/#D98914/#E0394A tombaient à
      2,9–3,7:1 sur blanc (petits textes « −17 % », « 75 % de la cible »…) */
-  --ok:#087A4E; --warn:#9A5B00; --bad:#C42536;
+  --ok:#066B45; --warn:#9A5B00; --bad:#C42536;
+  --or:#945800; --platine:#1B6FA3; --bronze:#9A5A2E; --maitre:#6E4FC4;
   --bg-rgb:242,244,248;
   --s1-rgb:255,255,255; --s2-rgb:237,240,245; --s3:#E0E5ED; --s3-rgb:224,229,237;
   /* --dim était trop clair (#9AA3B2, ~2.5:1 sur blanc) : assombri pour repasser
@@ -194,7 +195,7 @@ html[data-mode="light"][data-accent="blue"]{
 /* ===== COULEURS D'ACCENT — Bleu (défaut) / Vert militaire chromé / Marron boisé chromé / Jaune chromé / Fibre de carbone ===== */
 html[data-accent="green"]{
   --e:#7FB856; --e2:#A6D687; --e-rgb:127,184,86; --e2-rgb:166,214,135;
-  --grad-btn:linear-gradient(180deg,#57923A,#437A2C 55%,#36661F);
+  --grad-btn:linear-gradient(180deg,#4E8734,#3E7229 55%,#325E1D);
   --marineL:#24361F; --hair:#1E2A1B; --hair2:#2C3D27;
   --bg:#0A0D08; --s1:#141C10; --s2:#1D2818; --s3:#293620;
   --bg-rgb:10,13,8; --s1-rgb:20,28,16; --s2-rgb:29,40,24; --s3-rgb:41,54,32;
@@ -207,7 +208,7 @@ html[data-mode="light"][data-accent="green"]{
   --grad-btn:linear-gradient(180deg,#4F9530,#3F7A26 55%,#2E5C1B);
 }
 html[data-accent="brown"]{
-  --e:#B9793E; --e2:#DDA873; --e-rgb:185,121,62; --e2-rgb:221,168,115;
+  --e:#C88A4E; --e2:#DDA873; --e-rgb:200,138,78; --e2-rgb:221,168,115;
   --grad-btn:linear-gradient(180deg,#B07434,#93602B 55%,#7A4E22);
   --marineL:#3A2A1C; --hair:#2C2019; --hair2:#3D2C21;
   --bg:#0D0A07; --s1:#1E150E; --s2:#281C13; --s3:#36271A;
@@ -1021,7 +1022,7 @@ html.easy-mode .pagein{animation:none!important;}
   font-family:'Unbounded';font-weight:700;font-size:15px;letter-spacing:-.1px;border:1px solid rgba(255,255,255,.08);
   border-radius:var(--r-sm);padding:14px;box-shadow:var(--sh-e);
   width:100%;cursor:pointer;position:relative;overflow:hidden;transition:transform .16s var(--ease-spring),box-shadow .2s var(--ease),filter .15s,background .25s ease,border-color .25s ease,color .25s ease;}
-.btn::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.16),transparent 55%);pointer-events:none;}
+.btn::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.12),transparent 55%);pointer-events:none;}
 /* Meme reflet "verre" que .card/.hv7-day, en ::after ici car ::before est deja
    pris par le sheen lineaire existant. Fond du bouton reste plein (pas de
    backdrop-filter, pas de translucidite) : un CTA doit rester lisible/tapable
@@ -1873,7 +1874,7 @@ html.easy-mode .favtile::before{display:none!important;}
    Elle sert au rail de la carte plan et aux en-têtes de phase de la liste. */
 :root{
   --ph-PG:#5B87BC; --ph-AERO:#3E9C84; --ph-VO2:#C99240;
-  --ph-SPE:#C2603E; --ph-PIC:#B8404F; --ph-TAPER:#7E6DB0;
+  --ph-SPE:#C2603E; --ph-PIC:#D2586B; --ph-TAPER:#7E6DB0;
 }
 html[data-mode="light"]{
   --ph-PG:#3B6A9D; --ph-AERO:#2A7A63; --ph-VO2:#946719;
@@ -2480,7 +2481,7 @@ html[data-mode="light"] .iki-word{color:#10141B;}
    change : seules les matières, couleurs, ombres et arrondis sont unifiés.
    =================================================================== */
 :root{
-  --fill-accent:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 55%),var(--grad-btn);
+  --fill-accent:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,0) 55%),var(--grad-btn);
   --sh-accent-sm:0 4px 12px -4px rgba(var(--e-rgb),.55);
   --accent-ink:#FFFFFF; --accent-ink-shadow:0 1px 2px rgba(0,0,0,.45);
   --ring-soft:inset 0 0 0 1px var(--glass-border-soft);
@@ -2560,7 +2561,7 @@ html[data-mode="light"] #nav{background:var(--glass-shine),rgba(255,255,255,.92)
 .rs-cta{border-radius:var(--r-sm);}
 /* DANGER — même recette que l'accent (reflet + dégradé + ombre de sa couleur), en rouge
    profond : texte blanc ≥ 4,5:1 (le rouge vif --bad plafonnait à 3:1). */
-:root{--fill-danger:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 55%),linear-gradient(180deg,#E5484D,#C62F3C 55%,#A8232F);
+:root{--fill-danger:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,0) 55%),linear-gradient(180deg,#E5484D,#C62F3C 55%,#A8232F);
   --sh-danger:0 8px 22px -6px rgba(198,47,60,.45),0 2px 6px -2px rgba(198,47,60,.3);}
 html[data-mode] .btn.danger{background:var(--fill-danger);box-shadow:var(--sh-danger);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45);}
 .btn.danger::before{display:none;}
@@ -2584,9 +2585,132 @@ html[data-mode] :is(.list-row,.exg-card){
    visible quel que soit l'accent choisi (vert, rouge…). */
 html[data-mode] .sess.today{border-radius:var(--r-sm);background:linear-gradient(var(--ed),var(--ed)),var(--glass-bg);
   border-color:transparent;box-shadow:var(--float-sm),inset 0 0 0 1px rgba(var(--e-rgb),.45);}
+/* Hiérarchie de l'accueil : la bannière porte la marque, la carte du jour reste la seule
+   carte « héros » ; la prière et le score redeviennent des cartes en verre (quatre halos
+   d'accent empilés en haut de l'écran, c'était trop) */
+html[data-mode] :is(.hv7-score,.hv7-day[onclick^="openPrayerFromHome"]){border-radius:var(--r-md);
+  background:var(--glass-bg);background-image:var(--glass-shine),var(--grad-card);
+  border-color:transparent;box-shadow:var(--glass-shadow),var(--ring-soft);}
+.hv7-day[onclick^="openPrayerFromHome"]::before{display:none;}
+/* 3e passe (27/09) : textes posés sur la ligne « moi » d'un classement (teinte d'accent) */
+.fr-row.me :is(.fr-rank-num,.fr-km-txt){color:var(--e2);}
+.fr-row.me .fr-lvl-chip{color:var(--snow);}
 /* TOUCHER — le même enfoncement par rôle : action .96, icône .9, carte/ligne .985 */
 .btn:active,.hv7-act:active,.rs-cta:active{transform:scale(.96);}
 .x:active,.tb-gear:active,.ik-bell:active,.ik-people:active,.hv7-icon-btn:active,.hv7-people:active,.mini-ic:active,.pf-edit:active,.chbtn:active,.rl-ctrl:active{transform:scale(.9);}
+
+/* ===================================================================
+   BANNIÈRES D'EN-TÊTE (27/09, demande de Hamou) — chaque page s'ouvre sur une
+   bannière composée du logo : les deux lames en grand, leurs échos en traînée
+   (le mouvement de l'intro, figé). Nuit en mode sombre (lame blanche + lame
+   d'accent, comme l'icône), jour en mode clair (lame encre + lame d'accent, comme
+   l'intro claire). Sur Sport/Stats/Outils/Profil, la barre de titre compacte
+   n'apparaît qu'une fois la bannière passée sous le haut de l'écran.
+   Lames = masques SVG colorés par background : elles suivent l'accent choisi.
+   =================================================================== */
+.ikh{position:relative;overflow:hidden;isolation:isolate;border-radius:var(--r-lg);
+  padding:18px;min-height:108px;display:flex;flex-direction:column;justify-content:flex-end;
+  color:#F4F6F9;
+  background:
+    radial-gradient(80% 110% at 90% 6%,rgba(var(--e-rgb),.42),transparent 62%),
+    radial-gradient(70% 90% at 0% 110%,rgba(var(--e-rgb),.14),transparent 70%),
+    linear-gradient(160deg,#111A2B 0%,#0B111D 55%,#080B12 100%);
+  box-shadow:var(--glass-shadow),inset 0 0 0 1px rgba(255,255,255,.07);}
+.ikh>*{position:relative;z-index:1;}
+.ikh>.ikh-fx{position:absolute;z-index:0;right:2px;top:0;width:176px;aspect-ratio:500/380;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-40 60 500 380' fill='none' stroke-linejoin='round' stroke-linecap='round'%3E%3Cg stroke='rgba(255,255,255,.28)' stroke-width='3'%3E%3Cpolygon points='38,380 151,288 361,213 242,322'/%3E%3Cpolygon points='106,270 164,190 378,116 322,198'/%3E%3C/g%3E%3Cg stroke='rgba(255,255,255,.14)' stroke-width='3'%3E%3Cpolygon points='-16,410 97,318 307,243 188,352'/%3E%3Cpolygon points='52,300 110,220 324,146 268,228'/%3E%3C/g%3E%3Cg stroke='rgba(255,255,255,.14)' stroke-width='5'%3E%3Cline x1='-20' y1='420' x2='210' y2='301'/%3E%3Cline x1='70' y1='436' x2='250' y2='343'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;
+  -webkit-mask-image:linear-gradient(100deg,transparent 0%,#000 26%);mask-image:linear-gradient(100deg,transparent 0%,#000 26%);}
+.ikh-fx::before,.ikh-fx::after{content:'';position:absolute;inset:0;
+  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center;
+  -webkit-mask-size:contain;mask-size:contain;}
+.ikh-fx::before{background:linear-gradient(32deg,var(--e) 20%,var(--e2) 85%);
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-40 60 500 380'%3E%3Cpolygon points='92,350 205,258 415,183 296,292' fill='%23000' stroke='%23000' stroke-width='12' stroke-linejoin='round'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-40 60 500 380'%3E%3Cpolygon points='92,350 205,258 415,183 296,292' fill='%23000' stroke='%23000' stroke-width='12' stroke-linejoin='round'/%3E%3C/svg%3E");}
+.ikh-fx::after{background:linear-gradient(32deg,#8E9AAE 10%,#FFFFFF 80%);
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-40 60 500 380'%3E%3Cpolygon points='160,240 218,160 432,86 376,168' fill='%23000' stroke='%23000' stroke-width='12' stroke-linejoin='round'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-40 60 500 380'%3E%3Cpolygon points='160,240 218,160 432,86 376,168' fill='%23000' stroke='%23000' stroke-width='12' stroke-linejoin='round'/%3E%3C/svg%3E");}
+html[data-accent="carbon"] .ikh-fx::before{background:var(--grad-btn);}
+.ikh-title{font-family:'Unbounded';font-weight:800;font-size:25px;letter-spacing:-.6px;line-height:1.1;color:#fff;max-width:62%;}
+.ikh-sub{margin-top:6px;font-size:12.5px;font-weight:600;line-height:1.35;color:rgba(232,238,247,.8);max-width:62%;}
+.ikh-sub:empty{display:none;}
+/* mode clair : la version « jour » (comme l'intro claire) */
+html[data-mode="light"] .ikh:not(.ikh-dark){color:var(--snow);
+  background:
+    radial-gradient(80% 110% at 90% 6%,rgba(var(--e-rgb),.22),transparent 62%),
+    radial-gradient(70% 90% at 0% 110%,rgba(var(--e-rgb),.07),transparent 70%),
+    linear-gradient(160deg,#FFFFFF 0%,#F0F3F9 100%);
+  box-shadow:var(--glass-shadow),inset 0 0 0 1px rgba(20,25,35,.06);}
+html[data-mode="light"] .ikh:not(.ikh-dark)>.ikh-fx{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-40 60 500 380' fill='none' stroke-linejoin='round' stroke-linecap='round'%3E%3Cg stroke='rgba(16,20,27,.28)' stroke-width='3'%3E%3Cpolygon points='38,380 151,288 361,213 242,322'/%3E%3Cpolygon points='106,270 164,190 378,116 322,198'/%3E%3C/g%3E%3Cg stroke='rgba(16,20,27,.14)' stroke-width='3'%3E%3Cpolygon points='-16,410 97,318 307,243 188,352'/%3E%3Cpolygon points='52,300 110,220 324,146 268,228'/%3E%3C/g%3E%3Cg stroke='rgba(16,20,27,.14)' stroke-width='5'%3E%3Cline x1='-20' y1='420' x2='210' y2='301'/%3E%3Cline x1='70' y1='436' x2='250' y2='343'/%3E%3C/g%3E%3C/svg%3E");}
+html[data-mode="light"] .ikh:not(.ikh-dark) .ikh-fx::after{background:linear-gradient(32deg,#10141B 10%,#46516A 80%);}
+html[data-mode="light"] .ikh:not(.ikh-dark) .ikh-title{color:var(--snow);}
+html[data-mode="light"] .ikh:not(.ikh-dark) .ikh-sub{color:var(--muted);}
+/* entrée : les lames arrivent en diagonale, la première fois qu'on ouvre la page */
+.ikh.ikh-in .ikh-fx::before{animation:ikhBlade .75s var(--ease-out) both;}
+.ikh.ikh-in .ikh-fx::after{animation:ikhBlade .75s .08s var(--ease-out) both;}
+.ikh.ikh-in>.ikh-fx{animation:ikhEcho .9s var(--ease-out) both;}
+@keyframes ikhBlade{from{transform:translate(-46px,24px);opacity:0;}}
+@keyframes ikhEcho{from{opacity:0;}}
+
+/* PAGES Sport/Stats/Outils/Profil : bannière commune #ikHead sous la barre de titre */
+#ikHead{margin:max(8px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 14px max(14px,env(safe-area-inset-left));}
+#ikHead .ikh-av{position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:50%;border:0;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+  background:var(--fill-accent);color:var(--accent-ink);text-shadow:var(--accent-ink-shadow);
+  font-family:'Unbounded';font-weight:800;font-size:14px;box-shadow:var(--sh-accent-sm),0 0 0 2px rgba(255,255,255,.14);}
+#ikHead .ikh-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+body[data-scr="home"] #ikHead,#ikHead .ikh-av{display:none;}
+html.easy-mode #ikHead{display:none;}
+/* la barre compacte flotte au-dessus de la bannière et ne se montre qu'une fois celle-ci passée */
+body:not(.tb-compact):not([data-scr="home"]) .topbar{background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;pointer-events:none;}
+body:not(.tb-compact):not([data-scr="home"]) .topbar>*{opacity:0;}
+.topbar>*{transition:opacity .22s ease;}
+/* barre compacte : un vrai fond (avant, un dégradé 58 % → 0 % laissait passer les cartes
+   sous le titre et le sous-titre, deux textes superposés en haut de l'écran) */
+.topbar{transition:background-color .22s ease,box-shadow .22s ease;}
+body.tb-compact:not([data-scr="home"]) .topbar{background:rgba(var(--bg-rgb),.9);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%);
+  box-shadow:0 1px 0 var(--hair),0 12px 24px -16px rgba(0,0,0,.7);}
+html[data-mode="light"] body.tb-compact:not([data-scr="home"]) .topbar{background:rgba(var(--bg-rgb),.92);box-shadow:0 1px 0 var(--hair),0 12px 24px -18px rgba(30,40,60,.3);}
+
+/* ACCUEIL : l'en-tête (logo + boutons) et la salutation forment la bannière */
+.ikh-home{margin:max(8px,env(safe-area-inset-top)) 0 14px;min-height:0;padding:14px 16px 20px;justify-content:flex-start;}
+.ikh-home>.ikh-fx{top:auto;bottom:-22px;right:1px;width:162px;}
+.ikh-home .hv7-header{padding:0;margin:0 0 26px;}
+.ikh-home .hv7-greet{margin:0;padding:0;}
+.ikh-home .hv7-greet h1{font-family:'Unbounded';font-weight:800;font-size:25px;letter-spacing:-.6px;line-height:1.1;color:#fff;max-width:64%;}
+.ikh-home .hv7-greet p{margin-top:7px;font-size:11.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:rgba(232,238,247,.8);max-width:60%;}
+.ikh-home .hv7-logo span{color:#fff;}
+html[data-mode="light"] .ikh-home .hv7-greet h1,html[data-mode="light"] .ikh-home .hv7-logo span{color:var(--snow);}
+html[data-mode="light"] .ikh-home .hv7-greet p{color:var(--muted);}
+
+/* CONNEXION et PREMIÈRE CONFIGURATION */
+.ikh-login{margin:0 0 22px;min-height:132px;text-align:left;}
+.ikh-login>.ikh-fx{top:auto;bottom:-6px;right:0;width:196px;}
+.ikh-login .login-brand{font-family:'Unbounded';font-size:30px;letter-spacing:.2px;line-height:1;color:#fff;}
+.ikh-login .login-tag{margin-top:8px;text-align:left;}
+.ikh-ob{margin:0 0 18px;min-height:74px;padding:14px 16px;}
+.ikh-ob>.ikh-fx{top:auto;bottom:-10px;right:4px;width:112px;}
+.ikh-ob .ikh-title{font-size:19px;}
+.ikh-ob-big{min-height:150px;margin:0 0 22px;}
+.ikh-ob-big>.ikh-fx{top:auto;bottom:-8px;right:0;width:214px;}
+#ob:has(.ob-step[data-step="1"].on) .ikh-ob{display:none;}
+/* connexion : la carte était centrée par justify-content — sur un petit écran, plus
+   haute que l'écran, son haut (logo) sortait par le haut et ne pouvait plus être
+   atteint en faisant défiler. Marges automatiques : centrée si elle tient, sinon
+   elle commence en haut et défile normalement. */
+#login{justify-content:flex-start;}
+#login .login-card{margin-block:auto;}
+/* même correction pour les étapes de la première configuration */
+.ob-step{justify-content:flex-start;}
+.ob-step>:first-child{margin-top:auto;}
+.ob-step>:last-child{margin-bottom:auto;}
+.ikh-ob-big .login-brand{font-family:'Unbounded';font-size:30px;line-height:1;color:#fff;}
+html[data-mode="light"] .ikh-ob-big .login-brand{color:var(--snow);}
+.ikh{text-align:start;}
+/* arabe (droite à gauche) : les lames passent à gauche, en miroir, loin du texte */
+[dir="rtl"] .ikh>.ikh-fx{right:auto;left:2px;transform:scaleX(-1);}
+[dir="rtl"] .ikh-home>.ikh-fx{left:1px;}
+[dir="rtl"] .ikh-login>.ikh-fx,[dir="rtl"] .ikh-ob-big>.ikh-fx{left:0;}
+[dir="rtl"] .ikh-ob>.ikh-fx{left:4px;}
+[dir="rtl"] #ikHead .ikh-av{right:auto;left:14px;}
 
 /* « Réduire les animations » (réglage du téléphone) : seules 3 animations de
    fond le respectaient, une vingtaine d'autres tournaient en boucle. Les
@@ -2683,16 +2807,10 @@ html[data-mode] .sess.today{border-radius:var(--r-sm);background:linear-gradient
 <!-- LOGIN / AUTH -->
 <div id="login">
   <div class="login-card">
-    <div class="login-top">
-      <!-- Si icon-192.png ne charge pas (réseau coupé au mauvais moment, cache du
-           service worker vidé par une mise à jour), le navigateur affichait le texte
-           alternatif brut : un « IKORUN » nu au milieu du cadre, sans image ni fond.
-           On bascule maintenant sur une tuile dessinée en CSS avec le monogramme. -->
-      <div class="login-logo" role="img" aria-label="IKORUN"><img src="icon-192.png" alt="" onerror="this.closest('.login-logo').classList.add('noimg');this.remove()"><span class="login-logo-fb" aria-hidden="true">IK</span></div>
-      <div class="login-brand man">IKO<span>RUN</span></div>
+    <div class="ikh ikh-dark ikh-login"><i class="ikh-fx" aria-hidden="true"></i>
+      <div class="login-brand man" role="img" aria-label="IKORUN">IKO<span>RUN</span></div>
       <div class="login-tag">Elite Athletic Intelligence</div>
     </div>
-    <div class="login-hero"><svg viewBox="0 0 24 24" width="72" height="72" fill="none" stroke="var(--e)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"/><path d="M5 21l3-6 4-2-2-5M12 8l4 2 2 4M7 12l-2 3"/></svg></div>
     <div id="loginMain"></div>
     <div class="login-legal" id="loginLegal"></div>
     <div id="loginInstallRow"></div>
@@ -2701,10 +2819,11 @@ html[data-mode] .sess.today{border-radius:var(--r-sm);background:linear-gradient
 
 <!-- ONBOARDING -->
 <div id="ob">
+  <div class="ikh ikh-ob"><i class="ikh-fx" aria-hidden="true"></i><div class="ikh-title">IKORUN</div><div class="ikh-sub">Elite Athletic Intelligence</div></div>
   <div class="ob-prog" id="obProg"></div>
   <div class="ob-step on" data-step="1">
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;">
-      <div style="margin-bottom:16px;display:flex;justify-content:center"><svg viewBox="0 0 24 24" width="72" height="72" fill="none" stroke="var(--e)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"/><path d="M5 21l3-6 4-2-2-5M12 8l4 2 2 4M7 12l-2 3"/></svg></div>
+      <div class="ikh ikh-ob-big"><i class="ikh-fx" aria-hidden="true"></i><div class="login-brand man" role="img" aria-label="IKORUN">IKO<span>RUN</span></div></div>
       <h1>Bienvenue sur IKORUN</h1>
       <p class="intro">Elite Athletic Intelligence.<br>Ton coaching personnel, calculé scientifiquement, 100% hors-ligne.</p>
     </div>
@@ -2794,6 +2913,8 @@ html[data-mode] .sess.today{border-radius:var(--r-sm);background:linear-gradient
     <div><div class="tb-title" id="tbTitle">Accueil</div><div class="tb-sub" id="tbSub"></div></div>
     <div class="tb-gear" id="tbAvatar" onclick="nav('profil')"></div>
   </div>
+  <!-- Bannière d'en-tête (titre de la page + logo) — voir « BANNIÈRES D'EN-TÊTE » dans le CSS -->
+  <div class="ikh" id="ikHead"><i class="ikh-fx" aria-hidden="true"></i><button class="ikh-av" id="ikhAv" type="button" onclick="nav('profil')"></button><div class="ikh-title" id="ikhTitle"></div><div class="ikh-sub" id="ikhSub"></div></div>
 
   <div class="scr on" id="s-home"></div>
   <div class="scr" id="s-sport"></div>
@@ -2847,7 +2968,7 @@ html[data-mode] .sess.today{border-radius:var(--r-sm);background:linear-gradient
      ne persiste RIEN : elle photographie l'état, teste, restaure. -->
 <script>
 (function(){
-  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=2', 'app.js?v=99'];
+  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=2', 'app.js?v=100'];
   if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=2');
   var lance = false;
   function charge(){
