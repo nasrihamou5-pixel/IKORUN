@@ -105,6 +105,14 @@ if git diff --cached --name-only | grep -q '^app\.js$'; then
     || echo "ATTENTION : app.js modifie sans bump de app.js?v=N dans index.html"
 fi
 
+# --- 4a. Feuille de style ----------------------------------------------------
+# app.css est servi « immutable » un an (voir _headers) : modifie sans monter
+# app.css?v=N dans index.html, les telephones garderaient l ancienne version.
+if git diff --cached --name-only | grep -q '^app\.css$'; then
+  git diff --cached -U0 -- index.html | grep -q '^+.*app\.css?v=' || {
+    echo "ERREUR : app.css modifie sans monter app.css?v=N dans index.html"; fail=1; }
+fi
+
 # --- 4b. Numero de version affiche -----------------------------------------
 # APP_VERSION (app.js) est le numero que voit l utilisateur (V3.2.0). Toute nouvelle
 # version d app.js (?v=N change dans index.html) doit le faire evoluer.
