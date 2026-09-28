@@ -3076,3 +3076,117 @@ html.easy-mode .ch-face.paused #chDisp{animation:none;}
 .ik-live-dot{width:7px;height:7px;border-radius:50%;background:var(--bad);box-shadow:0 0 0 0 rgba(224,57,74,.6);animation:ikLive 1.6s ease-out infinite;flex:none;}
 @keyframes ikLive{0%{box-shadow:0 0 0 0 rgba(224,57,74,.55);}70%{box-shadow:0 0 0 7px rgba(224,57,74,0);}100%{box-shadow:0 0 0 0 rgba(224,57,74,0);}}
 @media (prefers-reduced-motion: reduce){ .ik-live-dot{animation:none;} }
+
+/* ===================================================================
+   LIQUID GLASS INTERACTIF (V3.3.0)
+   =================================================================== */
+/* pastille de la barre du bas : une goutte qui s'étire puis se resserre (tous les modes) */
+#nav-pill{transition:left .42s var(--ease-spring),width .42s var(--ease-spring),transform .38s var(--ease-spring),background .3s ease,box-shadow .3s ease,border-color .3s ease,backdrop-filter .3s ease;}
+#nav-pill.liquid{transition:left .16s cubic-bezier(.3,0,.2,1),width .16s cubic-bezier(.3,0,.2,1),transform .16s ease;transform:scaleY(.84);border-radius:22px;}
+/* lumière au toucher (Maximal) */
+.ik-touchlight{position:absolute;z-index:6;width:260px;height:260px;margin:-130px 0 0 -130px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(255,255,255,.62) 0%,rgba(var(--e2-rgb),.42) 20%,rgba(var(--e-rgb),.16) 44%,transparent 66%);mix-blend-mode:screen;
+  animation:ikLightIn .32s var(--ease-out) both;transition:left .08s linear,top .08s linear;}
+/* l'onde : comme une goutte qui tombe sur le verre */
+.ik-touchlight::after{content:'';position:absolute;inset:18%;border-radius:50%;border:1.5px solid rgba(255,255,255,.7);
+  box-shadow:0 0 14px rgba(var(--e2-rgb),.8);animation:ikRipple .7s cubic-bezier(.2,.7,.3,1) both;}
+@keyframes ikRipple{from{transform:scale(.15);opacity:1;}to{transform:scale(1.25);opacity:0;}}
+.ik-touchlight.out{animation:ikLightOut .5s ease forwards;}
+html[data-mode="light"] .ik-touchlight{mix-blend-mode:normal;background:radial-gradient(circle,rgba(255,255,255,.98),rgba(var(--e-rgb),.2) 34%,transparent 66%);}
+html[data-mode="light"] .ik-touchlight::after{border-color:rgba(var(--e-rgb),.55);box-shadow:0 0 12px rgba(var(--e-rgb),.35);}
+@keyframes ikLightIn{from{transform:scale(.25);opacity:0;}}
+@keyframes ikLightOut{to{transform:scale(1.6);opacity:0;}}
+html[data-glass="max"] :is(.card,.grp-card,.kchart-card,.kduo-card,.list-row,.favtile,.hv7-ktile,.ktile,.sess,.pb-card,.mus-card,.exg-card):has(> .ik-touchlight){overflow:hidden;}
+/* boutons « gelée » (Maximal) */
+.ik-jelly{animation:ikJelly .55s cubic-bezier(.2,.8,.3,1.2);}
+@keyframes ikJelly{0%{transform:scale(1);}22%{transform:scale(1.09,.88);}48%{transform:scale(.95,1.07);}72%{transform:scale(1.02,.98);}100%{transform:scale(1);}}
+/* reflets vivants (Maximal) : ils suivent l'inclinaison du téléphone, ou le défilement */
+html[data-glass="max"]{
+  --lg-spec:linear-gradient(calc(135deg + var(--tilt-x,0) * 28deg),rgba(255,255,255,.26) calc(var(--tilt-y,0) * 14%),rgba(255,255,255,.07) calc(26% + var(--tilt-y,0) * 14%),transparent calc(44% + var(--tilt-y,0) * 14%)),
+    radial-gradient(120% 70% at calc(12% + var(--tilt-x,0) * 40%) calc(-14% + var(--tilt-y,0) * 22%),rgba(255,255,255,.32),transparent 52%),
+    radial-gradient(90% 60% at 100% 120%,rgba(var(--e2-rgb),.24),transparent 60%);
+}
+html[data-glass="max"][data-mode="light"]{
+  --lg-spec:linear-gradient(calc(135deg + var(--tilt-x,0) * 28deg),rgba(255,255,255,.9) calc(var(--tilt-y,0) * 14%),rgba(255,255,255,.2) calc(26% + var(--tilt-y,0) * 14%),transparent calc(44% + var(--tilt-y,0) * 14%)),
+    radial-gradient(90% 60% at 100% 120%,rgba(var(--e-rgb),.16),transparent 60%);
+}
+@media (prefers-reduced-motion: reduce){ #nav-pill.liquid{transform:none;} .ik-jelly{animation:none;} .ik-touchlight{display:none;} }
+
+/* ===================================================================
+   TRAIT LUMINEUX VIVANT (V3.3.0) — déploiement à l'entrée + étincelle qui passe
+   =================================================================== */
+:root{--ik-spark:linear-gradient(90deg,transparent,rgba(255,255,255,.9) 42%,#fff 50%,rgba(255,255,255,.9) 58%,transparent);}
+html[data-mode="light"]{--ik-spark:linear-gradient(90deg,transparent,rgba(var(--e-rgb),.95) 50%,transparent);}
+/* déploiement : depuis le centre pour les traits centrés, depuis le titre pour les traits qui le suivent */
+html.ik-lines-anim :is(.hv7-sec-lab,.sec-lab)::before,html.ik-lines-anim .ikh:not(.ikh-dark)::after{transform:scaleX(0);transform-origin:50% 50%;transition:transform .9s var(--ease-stride);}
+html.ik-lines-anim :is(.grp-lab,#toolRes > .lab,#toolRes > .row > .lab:first-child,#progBody > .lab)::after{transform:scaleX(0);transform-origin:0 50%;transition:transform .9s var(--ease-stride);}
+html.ik-lines-anim .ik-lit:is(.hv7-sec-lab,.sec-lab)::before,html.ik-lines-anim .ikh.ik-lit:not(.ikh-dark)::after,
+html.ik-lines-anim .ik-lit:is(.grp-lab,#toolRes > .lab,#toolRes > .row > .lab:first-child,#progBody > .lab)::after{transform:none;}
+html.ik-lines-anim .ik-lit-now::before,html.ik-lines-anim .ik-lit-now::after{transition:none !important;}
+[dir="rtl"] :is(.grp-lab,#toolRes > .lab,#progBody > .lab)::after{transform-origin:100% 50%;}
+/* l'étincelle */
+.ik-lit:is(.hv7-sec-lab,.sec-lab)::before,.ikh.ik-lit:not(.ikh-dark)::after{
+  background:var(--ik-spark) no-repeat,var(--ik-line);background-size:64px 100%,100% 100%;background-position:-30% 0,0 0;
+  animation:ikSpark 9s var(--spark-delay,2s) ease-in-out infinite;}
+.ik-lit:is(.grp-lab,#toolRes > .lab,#toolRes > .row > .lab:first-child,#progBody > .lab)::after{
+  background:var(--ik-spark) no-repeat,var(--ik-line-r);background-size:48px 100%,100% 100%;background-position:-30% 0,0 0;
+  animation:ikSpark 9s var(--spark-delay,2s) ease-in-out infinite;}
+@keyframes ikSpark{0%{background-position:-30% 0,0 0;}14%{background-position:130% 0,0 0;}100%{background-position:130% 0,0 0;}}
+html.easy-mode .ik-lit::before,html.easy-mode .ik-lit::after{animation:none;}
+@media (prefers-reduced-motion: reduce){ .ik-lit::before,.ik-lit::after{animation:none !important;} }
+
+/* ===================================================================
+   CHRONOS VIVANTS · 2 (V3.3.0) — graduations, comète, embrasement, ondes,
+   sphère liquide, séance en cours
+   =================================================================== */
+/* graduations des secondes écoulées : allumées */
+.ch-tk{transition:stroke .35s ease,filter .35s ease;}
+.ch-tk.on{stroke:rgba(var(--e2-rgb),.95);filter:drop-shadow(0 0 3px rgba(var(--e-rgb),.9));}
+.ch-tk.big.on{stroke:#fff;}
+html[data-mode="light"] .ch-tk.on{stroke:var(--e);}
+html[data-mode="light"] .ch-tk.big.on{stroke:var(--e);}
+/* traînée de comète */
+.ch-tail{fill:rgba(var(--e2-rgb),1);filter:drop-shadow(0 0 4px rgba(var(--e-rgb),.9));}
+html[data-mode="light"] .ch-tail{fill:var(--e);}
+.ch-face.paused .ch-tail{opacity:0 !important;transition:opacity .3s;}
+/* départ : les graduations s'embrasent en vague */
+.ch-face.ignite .ch-tk{animation:chIgnite .55s calc(var(--i) * 9ms) ease-out both;}
+@keyframes chIgnite{35%{stroke:#fff;filter:drop-shadow(0 0 6px var(--e)) drop-shadow(0 0 12px rgba(var(--e-rgb),.9));}}
+/* onde de choc (tour, fin de minuteur, séance terminée) */
+.ik-shock{position:absolute;left:50%;top:50%;width:100%;aspect-ratio:1;max-width:320px;border-radius:50%;pointer-events:none;z-index:4;
+  border:2px solid rgba(var(--e2-rgb),.9);box-shadow:0 0 18px rgba(var(--e-rgb),.7),inset 0 0 12px rgba(var(--e-rgb),.5);
+  transform:translate(-50%,-50%) scale(.4);opacity:0;animation:ikShock .9s cubic-bezier(.2,.7,.3,1) both;}
+.ik-live-prog .ik-shock{width:120%;max-width:none;aspect-ratio:auto;height:34px;border-radius:999px;}
+@keyframes ikShock{0%{opacity:.95;transform:translate(-50%,-50%) scale(.45);}100%{opacity:0;transform:translate(-50%,-50%) scale(1.35);}}
+
+/* sphère liquide au centre des anneaux de décompte */
+.ik-orb{position:absolute;inset:18px;border-radius:50%;overflow:hidden;z-index:0;pointer-events:none;
+  background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.1),transparent 55%),rgba(var(--bg-rgb),.25);
+  box-shadow:inset 0 0 18px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.12);}
+.ik-orb svg{position:absolute;inset:0;width:100%;height:100%;}
+.ik-orb-lvl{transform:translateY(calc((1 - var(--lvl,1)) * 100px));transition:transform 1s linear;}
+.ik-wave{fill:var(--orb,var(--e));}
+.ik-wave.w1{opacity:.42;animation:ikWave 3.2s linear infinite;}
+.ik-wave.w2{opacity:.26;animation:ikWave2 5.1s linear infinite;}
+@keyframes ikWave{from{transform:translateX(0);}to{transform:translateX(-100px);}}
+@keyframes ikWave2{from{transform:translate(-100px,3px);}to{transform:translate(0,3px);}}
+.ring-wrap > .ring-c{z-index:1;}
+.ring-wrap > span[id$="Ring"]{position:relative;z-index:1;}
+html[data-mode="light"] .ik-orb{background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.9),transparent 55%),rgba(255,255,255,.35);box-shadow:inset 0 0 16px rgba(30,40,60,.12);}
+
+/* séance en cours : barre de progression lumineuse */
+.ik-live-prog{position:relative;height:6px;margin:14px 10px 2px;border-radius:999px;background:rgba(var(--e-rgb),.12);overflow:visible;}
+.ik-live-prog > i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;overflow:hidden;
+  background:linear-gradient(90deg,var(--e),var(--e2));box-shadow:0 0 12px rgba(var(--e-rgb),.7);transition:width .8s var(--ease-stride);}
+.ik-live-prog > i::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);
+  transform:translateX(-100%);animation:ikBarShine 2.4s ease-in-out infinite;}
+@keyframes ikBarShine{60%,100%{transform:translateX(100%);}}
+/* série validée : la coche se dessine */
+.ik-done .setcheck.on svg *{stroke-dasharray:32;stroke-dashoffset:32;animation:ikDraw .45s .08s ease-out forwards;}
+@keyframes ikDraw{to{stroke-dashoffset:0;}}
+
+@media (prefers-reduced-motion: reduce){
+  .ch-face.ignite .ch-tk,.ik-shock,.ik-wave,.ik-live-prog > i::after,.ik-done .setcheck.on svg *{animation:none !important;}
+  .ik-done .setcheck.on svg *{stroke-dashoffset:0;} .ik-shock{display:none;}
+}
+html.easy-mode .ik-wave,html.easy-mode .ik-live-prog > i::after{animation:none;}

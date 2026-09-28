@@ -2225,7 +2225,7 @@ const I18N={
     resumeSessionConfirm:'Une séance « {0} » était en cours ({1} min). Reprendre ?',sessionColonName:'Séance : {0}',
     accentBlue:'Bleu',accentRed:'Rouge',accentGreen:'Vert militaire',accentBrown:'Marron boisé',accentYellow:'Jaune',accentCarbon:'Fibre de carbone',
     colorApplied:'Couleur appliquée',easyModeOn:'Mode simplifié activé',easyModeOff:'Mode simplifié désactivé',
-    profileIncompleteAddTime:'Profil incomplet : ajoute un chrono dans tes records',chooseCompDate:'Choisis une date de compétition',raceDateTooSoon:'Choisis une date de course à au moins 7 jours — une date passée ou trop proche ne laisse pas assez de temps pour préparer un plan.',planStartsOn:'Ton plan démarre le {0} : il couvre les 28 semaines avant la course.',planSafetyAdjustedToast:'Plan sécurisé : progression limitée à +10 % par semaine et récupération respectée.',planSafetyMigratedToast:'Ton plan a été ajusté : progression de charge plus sûre, sans séances dures enchaînées.',planSafetyHint:'Pour limiter le risque de blessure, IKORUN augmente ton volume de 10 % par semaine au maximum et allège une semaine sur quatre.',debriefTitle:'Bilan de séance',modeLightLab:'Clair',modeDarkLab:'Sombre',glassLab:'Effet verre (Liquid Glass)',glassFlat:'Sobre',glassStd:'Liquid Glass',glassMax:'Maximal',glassHintFlat:'Surfaces pleines, sans transparence : le plus rapide et le plus économe en batterie.',glassHintStd:'Le verre IKORUN : reflets, bords lumineux, transparence dosée. Le bon équilibre.',glassHintMax:'Effet maximal : verre très transparent et flou sur tout l’écran, reflets renforcés, fond vivant qui bouge sous le verre. Consomme un peu plus de batterie.',restGoToast:'C’est reparti !',offlineStartToast:'Mode hors ligne : tout fonctionne, tes modifications partiront au retour d’Internet.',offlineReadyToast:'IKORUN est prête à fonctionner hors ligne',raceDateInvalid:'Date de course invalide : choisis-la à au moins 7 jours.',bdayInvalid:'Date de naissance invalide.',sessionKmRequired:'Indique la distance de la séance (en km).',paceFormatInvalid:'Allure invalide : écris-la au format min:ss (ex. 5:30).',addSessionBtn:'Ajouter la séance',psTitleLab:'Titre',psTitlePh:'Footing du matin',typeVMA:'VMA',typeFractionne:'Fractionné',typeTest:'Test',persoFollowingDesc:'Ton accueil et ton bilan utilisent ce plan. Le plan IKORUN continue de s’ajuster en arrière-plan selon ce que tu fais ici.',persoFollowDesc:'Ton accueil affichera les séances de ce plan au lieu du plan généré. Tu peux revenir au plan IKORUN quand tu veux.',persoStopBtn:'Arrêter',persoFollowBtn:'Suivre',persoNoSession:'Aucune séance. Ajoute ta première !',typeLab:'Type',psHowLab:'Comment veux-tu saisir cette séance ?',psModeSimple:'Simple (km + allure)',psModeReps:'Par répétition (temps de chaque)',psPaceLab:'Allure /km',psRepDistLab:'Distance par répétition',psAddRepBtn:'Ajouter une répétition',psDescLab:'Description (optionnel)',psDescPh:'Détails de la séance...',psNewSessionTitle:'Nouvelle séance',psRepShort:'Rép.',chooseAtLeastOneDay:'Choisis au moins un jour',profileValuesInvalid:'Valeur hors limites : taille 100-250 cm, poids 25-250 kg, FC max 120-230, FC repos 30-120 (sous la FC max), km/sem 0-250.',
+    profileIncompleteAddTime:'Profil incomplet : ajoute un chrono dans tes records',chooseCompDate:'Choisis une date de compétition',raceDateTooSoon:'Choisis une date de course à au moins 7 jours — une date passée ou trop proche ne laisse pas assez de temps pour préparer un plan.',planStartsOn:'Ton plan démarre le {0} : il couvre les 28 semaines avant la course.',planSafetyAdjustedToast:'Plan sécurisé : progression limitée à +10 % par semaine et récupération respectée.',planSafetyMigratedToast:'Ton plan a été ajusté : progression de charge plus sûre, sans séances dures enchaînées.',planSafetyHint:'Pour limiter le risque de blessure, IKORUN augmente ton volume de 10 % par semaine au maximum et allège une semaine sur quatre.',debriefTitle:'Bilan de séance',modeLightLab:'Clair',modeDarkLab:'Sombre',glassLab:'Effet verre (Liquid Glass)',glassFlat:'Sobre',glassStd:'Liquid Glass',glassMax:'Maximal',glassHintFlat:'Surfaces pleines, sans transparence : le plus rapide et le plus économe en batterie.',glassHintStd:'Le verre IKORUN : reflets, bords lumineux, transparence dosée. Le bon équilibre.',glassHintMax:'Effet maximal : verre très transparent et flou sur tout l’écran, reflets renforcés, fond vivant qui bouge sous le verre. Consomme un peu plus de batterie.',restGoToast:'C’est reparti !',glassTiltBtn:'Reflets selon l’inclinaison du téléphone',glassTiltActive:'Reflets selon l’inclinaison : activés',glassTiltOn:'Les reflets suivent maintenant l’inclinaison du téléphone',glassTiltOff:'Pas d’accès aux mouvements : les reflets suivent le défilement',offlineStartToast:'Mode hors ligne : tout fonctionne, tes modifications partiront au retour d’Internet.',offlineReadyToast:'IKORUN est prête à fonctionner hors ligne',raceDateInvalid:'Date de course invalide : choisis-la à au moins 7 jours.',bdayInvalid:'Date de naissance invalide.',sessionKmRequired:'Indique la distance de la séance (en km).',paceFormatInvalid:'Allure invalide : écris-la au format min:ss (ex. 5:30).',addSessionBtn:'Ajouter la séance',psTitleLab:'Titre',psTitlePh:'Footing du matin',typeVMA:'VMA',typeFractionne:'Fractionné',typeTest:'Test',persoFollowingDesc:'Ton accueil et ton bilan utilisent ce plan. Le plan IKORUN continue de s’ajuster en arrière-plan selon ce que tu fais ici.',persoFollowDesc:'Ton accueil affichera les séances de ce plan au lieu du plan généré. Tu peux revenir au plan IKORUN quand tu veux.',persoStopBtn:'Arrêter',persoFollowBtn:'Suivre',persoNoSession:'Aucune séance. Ajoute ta première !',typeLab:'Type',psHowLab:'Comment veux-tu saisir cette séance ?',psModeSimple:'Simple (km + allure)',psModeReps:'Par répétition (temps de chaque)',psPaceLab:'Allure /km',psRepDistLab:'Distance par répétition',psAddRepBtn:'Ajouter une répétition',psDescLab:'Description (optionnel)',psDescPh:'Détails de la séance...',psNewSessionTitle:'Nouvelle séance',psRepShort:'Rép.',chooseAtLeastOneDay:'Choisis au moins un jour',profileValuesInvalid:'Valeur hors limites : taille 100-250 cm, poids 25-250 kg, FC max 120-230, FC repos 30-120 (sous la FC max), km/sem 0-250.',
     planGenerated:'Plan « {0} » généré : {1} sem, {2} séances',raceGeneric:'course',
     followingPersoPlan:'Tu suis maintenant ce plan perso',backToIkorunPlan:'Retour au plan IKORUN',
     namePromptLabel:'Nom :',copySuffix:'(copie)',confirmDeletePlan:'Supprimer ce plan ?',
@@ -2811,7 +2811,7 @@ const I18N={
     resumeSessionConfirm:'A "{0}" session was in progress ({1} min). Resume?',sessionColonName:'Session: {0}',
     accentBlue:'Blue',accentRed:'Red',accentGreen:'Military green',accentBrown:'Woodland brown',accentYellow:'Yellow',accentCarbon:'Carbon fiber',
     colorApplied:'Color applied',easyModeOn:'Simplified mode enabled',easyModeOff:'Simplified mode disabled',
-    profileIncompleteAddTime:'Incomplete profile: add a time in your records',chooseCompDate:'Choose a race date',raceDateTooSoon:'Choose a race date at least 7 days away — a past or too-close date doesn’t leave enough time to build a plan.',planStartsOn:'Your plan starts on {0}: it covers the 28 weeks before the race.',planSafetyAdjustedToast:'Plan secured: load increases capped at +10% per week, with proper recovery.',planSafetyMigratedToast:'Your plan was adjusted: safer load progression, no back-to-back hard sessions.',planSafetyHint:'To limit injury risk, IKORUN raises your volume by 10% per week at most and lightens one week in four.',debriefTitle:'Session review',modeLightLab:'Light',modeDarkLab:'Dark',glassLab:'Glass effect (Liquid Glass)',glassFlat:'Plain',glassStd:'Liquid Glass',glassMax:'Maximum',glassHintFlat:'Solid surfaces, no transparency: the fastest and most battery-friendly.',glassHintStd:'IKORUN glass: reflections, glowing edges, measured transparency. The right balance.',glassHintMax:'Maximum effect: very transparent, blurred glass across the whole screen, stronger reflections, a living background moving under the glass. Uses a little more battery.',restGoToast:'Back at it!',offlineStartToast:'Offline mode: everything works, your changes will sync once you’re back online.',offlineReadyToast:'IKORUN is ready to work offline',raceDateInvalid:'Invalid race date: pick one at least 7 days away.',bdayInvalid:'Invalid date of birth.',sessionKmRequired:'Enter the session distance (km).',paceFormatInvalid:'Invalid pace: use the min:ss format (e.g. 5:30).',addSessionBtn:'Add session',psTitleLab:'Title',psTitlePh:'Morning run',typeVMA:'VO₂max',typeFractionne:'Intervals',typeTest:'Test',persoFollowingDesc:'Your home screen and review use this plan. The IKORUN plan keeps adjusting in the background based on what you do here.',persoFollowDesc:'Your home screen will show this plan\'s sessions instead of the generated plan. You can switch back to the IKORUN plan anytime.',persoStopBtn:'Stop',persoFollowBtn:'Follow',persoNoSession:'No session yet. Add your first one!',typeLab:'Type',psHowLab:'How do you want to enter this session?',psModeSimple:'Simple (km + pace)',psModeReps:'By repetition (time of each)',psPaceLab:'Pace /km',psRepDistLab:'Distance per repetition',psAddRepBtn:'Add a repetition',psDescLab:'Description (optional)',psDescPh:'Session details...',psNewSessionTitle:'New session',psRepShort:'Rep.',chooseAtLeastOneDay:'Choose at least one day',profileValuesInvalid:'Value out of range: height 100-250 cm, weight 25-250 kg, max HR 120-230, resting HR 30-120 (below max HR), km/week 0-250.',
+    profileIncompleteAddTime:'Incomplete profile: add a time in your records',chooseCompDate:'Choose a race date',raceDateTooSoon:'Choose a race date at least 7 days away — a past or too-close date doesn’t leave enough time to build a plan.',planStartsOn:'Your plan starts on {0}: it covers the 28 weeks before the race.',planSafetyAdjustedToast:'Plan secured: load increases capped at +10% per week, with proper recovery.',planSafetyMigratedToast:'Your plan was adjusted: safer load progression, no back-to-back hard sessions.',planSafetyHint:'To limit injury risk, IKORUN raises your volume by 10% per week at most and lightens one week in four.',debriefTitle:'Session review',modeLightLab:'Light',modeDarkLab:'Dark',glassLab:'Glass effect (Liquid Glass)',glassFlat:'Plain',glassStd:'Liquid Glass',glassMax:'Maximum',glassHintFlat:'Solid surfaces, no transparency: the fastest and most battery-friendly.',glassHintStd:'IKORUN glass: reflections, glowing edges, measured transparency. The right balance.',glassHintMax:'Maximum effect: very transparent, blurred glass across the whole screen, stronger reflections, a living background moving under the glass. Uses a little more battery.',restGoToast:'Back at it!',glassTiltBtn:'Reflections follow phone tilt',glassTiltActive:'Tilt reflections: on',glassTiltOn:'Reflections now follow your phone’s tilt',glassTiltOff:'No motion access: reflections follow scrolling',offlineStartToast:'Offline mode: everything works, your changes will sync once you’re back online.',offlineReadyToast:'IKORUN is ready to work offline',raceDateInvalid:'Invalid race date: pick one at least 7 days away.',bdayInvalid:'Invalid date of birth.',sessionKmRequired:'Enter the session distance (km).',paceFormatInvalid:'Invalid pace: use the min:ss format (e.g. 5:30).',addSessionBtn:'Add session',psTitleLab:'Title',psTitlePh:'Morning run',typeVMA:'VO₂max',typeFractionne:'Intervals',typeTest:'Test',persoFollowingDesc:'Your home screen and review use this plan. The IKORUN plan keeps adjusting in the background based on what you do here.',persoFollowDesc:'Your home screen will show this plan\'s sessions instead of the generated plan. You can switch back to the IKORUN plan anytime.',persoStopBtn:'Stop',persoFollowBtn:'Follow',persoNoSession:'No session yet. Add your first one!',typeLab:'Type',psHowLab:'How do you want to enter this session?',psModeSimple:'Simple (km + pace)',psModeReps:'By repetition (time of each)',psPaceLab:'Pace /km',psRepDistLab:'Distance per repetition',psAddRepBtn:'Add a repetition',psDescLab:'Description (optional)',psDescPh:'Session details...',psNewSessionTitle:'New session',psRepShort:'Rep.',chooseAtLeastOneDay:'Choose at least one day',profileValuesInvalid:'Value out of range: height 100-250 cm, weight 25-250 kg, max HR 120-230, resting HR 30-120 (below max HR), km/week 0-250.',
     planGenerated:'"{0}" plan generated: {1} wk, {2} sessions',raceGeneric:'race',
     followingPersoPlan:'You\u2019re now following this custom plan',backToIkorunPlan:'Back to IKORUN plan',
     namePromptLabel:'Name:',copySuffix:'(copy)',confirmDeletePlan:'Delete this plan?',
@@ -3397,7 +3397,7 @@ const I18N={
     resumeSessionConfirm:'كانت حصة « {0} » جارية ({1} د). المتابعة؟',sessionColonName:'حصة: {0}',
     accentBlue:'أزرق',accentRed:'أحمر',accentGreen:'أخضر عسكري',accentBrown:'بني خشبي',accentYellow:'أصفر',accentCarbon:'ألياف الكربون',
     colorApplied:'تم تطبيق اللون',easyModeOn:'تم تفعيل الوضع المبسّط',easyModeOff:'تم إلغاء الوضع المبسّط',
-    profileIncompleteAddTime:'الملف غير مكتمل: أضف زمنًا في أرقامك القياسية',chooseCompDate:'اختر تاريخ المنافسة',raceDateTooSoon:'اختر تاريخ سباق بعد 7 أيام على الأقل — تاريخ ماضٍ أو قريب جدًا لا يترك وقتًا كافيًا لبناء خطة.',planStartsOn:'تبدأ خطتك يوم {0}: تغطي الأسابيع الـ28 التي تسبق السباق.',planSafetyAdjustedToast:'خطة آمنة: زيادة الحمل محدودة بـ 10% أسبوعيًا مع احترام الاستشفاء.',planSafetyMigratedToast:'تم تعديل خطتك: تدرّج أكثر أمانًا في الحمل، دون حصص صعبة متتالية.',planSafetyHint:'للحدّ من خطر الإصابة، يرفع IKORUN حجمك بـ 10% أسبوعيًا كحد أقصى ويخفّف أسبوعًا من كل أربعة.',debriefTitle:'حصيلة الحصة',modeLightLab:'فاتح',modeDarkLab:'داكن',glassLab:'تأثير الزجاج (Liquid Glass)',glassFlat:'بسيط',glassStd:'Liquid Glass',glassMax:'أقصى',glassHintFlat:'أسطح مصمتة بلا شفافية: الأسرع والأوفر للبطارية.',glassHintStd:'زجاج IKORUN: انعكاسات وحواف مضيئة وشفافية معتدلة. التوازن المثالي.',glassHintMax:'أقصى تأثير: زجاج شفاف جدًا وضبابي على كامل الشاشة، انعكاسات أقوى وخلفية حية تتحرك تحت الزجاج. يستهلك بطارية أكثر قليلًا.',restGoToast:'هيا نعود!',offlineStartToast:'وضع عدم الاتصال: كل شيء يعمل، وستُزامَن تعديلاتك عند عودة الإنترنت.',offlineReadyToast:'IKORUN جاهز للعمل دون اتصال',raceDateInvalid:'تاريخ سباق غير صالح: اختره بعد 7 أيام على الأقل.',bdayInvalid:'تاريخ ميلاد غير صالح.',sessionKmRequired:'أدخل مسافة الحصة (كم).',paceFormatInvalid:'وتيرة غير صالحة: اكتبها بصيغة د:ث (مثال 5:30).',addSessionBtn:'إضافة الحصة',psTitleLab:'العنوان',psTitlePh:'جري الصباح',typeVMA:'VO₂max',typeFractionne:'تمارين متقطعة',typeTest:'اختبار',persoFollowingDesc:'تستخدم الشاشة الرئيسية والحصيلة هذه الخطة. تواصل خطة IKORUN التكيّف في الخلفية حسب ما تفعله هنا.',persoFollowDesc:'ستعرض شاشتك الرئيسية حصص هذه الخطة بدل الخطة المُولَّدة. يمكنك العودة إلى خطة IKORUN متى شئت.',persoStopBtn:'إيقاف',persoFollowBtn:'متابعة',persoNoSession:'لا توجد حصص بعد. أضف حصتك الأولى!',typeLab:'النوع',psHowLab:'كيف تريد إدخال هذه الحصة؟',psModeSimple:'بسيط (كم + وتيرة)',psModeReps:'حسب التكرار (زمن كل تكرار)',psPaceLab:'الوتيرة /كم',psRepDistLab:'مسافة كل تكرار',psAddRepBtn:'إضافة تكرار',psDescLab:'الوصف (اختياري)',psDescPh:'تفاصيل الحصة...',psNewSessionTitle:'حصة جديدة',psRepShort:'تكرار',chooseAtLeastOneDay:'اختر يومًا واحدًا على الأقل',profileValuesInvalid:'قيمة خارج الحدود: الطول 100-250 سم، الوزن 25-250 كغ، النبض الأقصى 120-230، نبض الراحة 30-120 (أقل من الأقصى)، كم/أسبوع 0-250.',
+    profileIncompleteAddTime:'الملف غير مكتمل: أضف زمنًا في أرقامك القياسية',chooseCompDate:'اختر تاريخ المنافسة',raceDateTooSoon:'اختر تاريخ سباق بعد 7 أيام على الأقل — تاريخ ماضٍ أو قريب جدًا لا يترك وقتًا كافيًا لبناء خطة.',planStartsOn:'تبدأ خطتك يوم {0}: تغطي الأسابيع الـ28 التي تسبق السباق.',planSafetyAdjustedToast:'خطة آمنة: زيادة الحمل محدودة بـ 10% أسبوعيًا مع احترام الاستشفاء.',planSafetyMigratedToast:'تم تعديل خطتك: تدرّج أكثر أمانًا في الحمل، دون حصص صعبة متتالية.',planSafetyHint:'للحدّ من خطر الإصابة، يرفع IKORUN حجمك بـ 10% أسبوعيًا كحد أقصى ويخفّف أسبوعًا من كل أربعة.',debriefTitle:'حصيلة الحصة',modeLightLab:'فاتح',modeDarkLab:'داكن',glassLab:'تأثير الزجاج (Liquid Glass)',glassFlat:'بسيط',glassStd:'Liquid Glass',glassMax:'أقصى',glassHintFlat:'أسطح مصمتة بلا شفافية: الأسرع والأوفر للبطارية.',glassHintStd:'زجاج IKORUN: انعكاسات وحواف مضيئة وشفافية معتدلة. التوازن المثالي.',glassHintMax:'أقصى تأثير: زجاج شفاف جدًا وضبابي على كامل الشاشة، انعكاسات أقوى وخلفية حية تتحرك تحت الزجاج. يستهلك بطارية أكثر قليلًا.',restGoToast:'هيا نعود!',glassTiltBtn:'انعكاسات حسب ميل الهاتف',glassTiltActive:'انعكاسات حسب الميل: مفعّلة',glassTiltOn:'الانعكاسات تتبع ميل الهاتف الآن',glassTiltOff:'لا وصول للحركة: الانعكاسات تتبع التمرير',offlineStartToast:'وضع عدم الاتصال: كل شيء يعمل، وستُزامَن تعديلاتك عند عودة الإنترنت.',offlineReadyToast:'IKORUN جاهز للعمل دون اتصال',raceDateInvalid:'تاريخ سباق غير صالح: اختره بعد 7 أيام على الأقل.',bdayInvalid:'تاريخ ميلاد غير صالح.',sessionKmRequired:'أدخل مسافة الحصة (كم).',paceFormatInvalid:'وتيرة غير صالحة: اكتبها بصيغة د:ث (مثال 5:30).',addSessionBtn:'إضافة الحصة',psTitleLab:'العنوان',psTitlePh:'جري الصباح',typeVMA:'VO₂max',typeFractionne:'تمارين متقطعة',typeTest:'اختبار',persoFollowingDesc:'تستخدم الشاشة الرئيسية والحصيلة هذه الخطة. تواصل خطة IKORUN التكيّف في الخلفية حسب ما تفعله هنا.',persoFollowDesc:'ستعرض شاشتك الرئيسية حصص هذه الخطة بدل الخطة المُولَّدة. يمكنك العودة إلى خطة IKORUN متى شئت.',persoStopBtn:'إيقاف',persoFollowBtn:'متابعة',persoNoSession:'لا توجد حصص بعد. أضف حصتك الأولى!',typeLab:'النوع',psHowLab:'كيف تريد إدخال هذه الحصة؟',psModeSimple:'بسيط (كم + وتيرة)',psModeReps:'حسب التكرار (زمن كل تكرار)',psPaceLab:'الوتيرة /كم',psRepDistLab:'مسافة كل تكرار',psAddRepBtn:'إضافة تكرار',psDescLab:'الوصف (اختياري)',psDescPh:'تفاصيل الحصة...',psNewSessionTitle:'حصة جديدة',psRepShort:'تكرار',chooseAtLeastOneDay:'اختر يومًا واحدًا على الأقل',profileValuesInvalid:'قيمة خارج الحدود: الطول 100-250 سم، الوزن 25-250 كغ، النبض الأقصى 120-230، نبض الراحة 30-120 (أقل من الأقصى)، كم/أسبوع 0-250.',
     planGenerated:'تم إنشاء خطة « {0} »: {1} أسبوع، {2} حصة',raceGeneric:'سباق',
     followingPersoPlan:'أنت الآن تتبع هذه الخطة الشخصية',backToIkorunPlan:'العودة إلى خطة IKORUN',
     namePromptLabel:'الاسم:',copySuffix:'(نسخة)',confirmDeletePlan:'حذف هذه الخطة؟',
@@ -5310,8 +5310,15 @@ function positionNavPill(btn){
   const z=uiZoomFactor();
   const navRect=nav.getBoundingClientRect(), btnRect=btn.getBoundingClientRect();
   const pad=3; // marge interne autour du bouton pour l'effet "capsule"
-  pill.style.left=((btnRect.left-navRect.left)/z+pad)+'px';
-  pill.style.width=(btnRect.width/z-pad*2)+'px';
+  const nl=(btnRect.left-navRect.left)/z+pad, nw=btnRect.width/z-pad*2;
+  // PASTILLE LIQUIDE (V3.3.0) : comme une goutte, elle s'étire d'abord jusqu'au nouvel
+  // onglet en s'aplatissant, puis se resserre dessus.
+  const ol=parseFloat(pill.style.left), ow=parseFloat(pill.style.width);
+  clearTimeout(pill._liq);
+  if(!isFinite(ol) || !isFinite(ow) || Math.abs(nl-ol)<2 || ikMotionOff()){ pill.classList.remove('liquid'); pill.style.left=nl+'px'; pill.style.width=nw+'px'; return; }
+  const L=Math.min(ol,nl), R=Math.max(ol+ow,nl+nw);
+  pill.classList.add('liquid'); pill.style.left=L+'px'; pill.style.width=(R-L)+'px';
+  pill._liq=setTimeout(()=>{ pill.classList.remove('liquid'); pill.style.left=nl+'px'; pill.style.width=nw+'px'; },160);
 }
 function nav(s){
   /* Garde-fou : nav() peut etre appele avec un ecran inconnu (lien profond,
@@ -5383,6 +5390,85 @@ function markScreenSeen(id){
   setTimeout(()=>{ const el=document.getElementById(id); if(el) el.setAttribute('data-seen','1'); },900);
 }
 $$('.nb').forEach(b=>b.onclick=()=>nav(b.dataset.s));
+
+/* ---------- LIQUID GLASS INTERACTIF (V3.3.0, effet « Maximal ») ----------
+   · lumière au toucher : une onde de lumière naît sous le doigt et le suit sur le verre ;
+   · boutons « gelée » : ils s'écrasent puis rebondissent au relâcher ;
+   · reflets vivants : ils suivent l'inclinaison du téléphone (autorisation demandée dans
+     Profil › Apparence) ou, à défaut, glissent avec le défilement.
+   Rien de tout cela hors du mode Maximal, ni en mouvement réduit / mode simplifié. */
+const GLASS_LIT='.card,.grp-card,.kchart-card,.kduo-card,.hv7-day,.sp-plan,.list-row,.favtile,.hv7-ktile,.ktile,.sess,.pb-card,.mus-card,.exg-card';
+const GLASS_JELLY='.btn,.seg-btn,.favtile,.hv7-icon-btn,.hv7-people,.chbtn,.tb-gear,.pill,.x';
+function glassMax(){ return document.documentElement.getAttribute('data-glass')==='max' && !ikMotionOff(); }
+(function(){
+  let cur=null;
+  const off=()=>{ if(!cur) return; const l=cur; cur=null; l.classList.add('out'); setTimeout(()=>l.remove(),520); };
+  document.addEventListener('pointerdown',e=>{
+    if(!glassMax() || e.pointerType==='mouse' && e.button!==0 || !e.target || !e.target.closest) return;
+    const host=e.target.closest(GLASS_LIT); if(!host) return;
+    off();
+    const r=host.getBoundingClientRect(), z=uiZoomFactor();
+    const l=document.createElement('i'); l.className='ik-touchlight'; l.setAttribute('aria-hidden','true');
+    l.style.left=((e.clientX-r.left)/z)+'px'; l.style.top=((e.clientY-r.top)/z)+'px';
+    if(getComputedStyle(host).position==='static') host.style.position='relative';
+    host.appendChild(l); cur=l; cur._host=host;
+  },{passive:true});
+  document.addEventListener('pointermove',e=>{
+    if(!cur) return; const r=cur._host.getBoundingClientRect(), z=uiZoomFactor();
+    cur.style.left=((e.clientX-r.left)/z)+'px'; cur.style.top=((e.clientY-r.top)/z)+'px';
+  },{passive:true});
+  ['pointerup','pointercancel'].forEach(ev=>document.addEventListener(ev,off,{passive:true}));
+  document.addEventListener('pointerup',e=>{
+    if(!glassMax() || !e.target || !e.target.closest) return; const b=e.target.closest(GLASS_JELLY); if(!b) return;
+    b.classList.remove('ik-jelly'); void b.offsetWidth; b.classList.add('ik-jelly');
+    clearTimeout(b._jt); b._jt=setTimeout(()=>b.classList.remove('ik-jelly'),560);
+  },{passive:true});
+  // reflets vivants : inclinaison si autorisée, sinon défilement
+  let raf=0, tx=0, ty=0, lastTilt=0;
+  const push=()=>{ raf=0; const h=document.documentElement; h.style.setProperty('--tilt-x',tx.toFixed(3)); h.style.setProperty('--tilt-y',ty.toFixed(3)); };
+  const ask=()=>{ if(!raf) raf=requestAnimationFrame(push); };
+  window.addEventListener('deviceorientation',e=>{
+    if(!glassMax() || e.gamma==null) return;
+    const nx=Math.max(-1,Math.min(1,e.gamma/30)), ny=Math.max(-1,Math.min(1,((e.beta||45)-45)/30));
+    if(Math.abs(nx-tx)<.02 && Math.abs(ny-ty)<.02) return;
+    tx=nx; ty=ny; lastTilt=Date.now(); ask();
+  });
+  const sc=document.getElementById('scroll');
+  if(sc) sc.addEventListener('scroll',()=>{
+    if(!glassMax() || Date.now()-lastTilt<3000) return; // l'inclinaison a la priorité
+    const v=Math.sin(sc.scrollTop/260); ty=v; tx=v*.4; ask();
+  },{passive:true});
+})();
+/* ---------- TRAIT LUMINEUX VIVANT (V3.3.0) ----------
+   Chaque trait (sous la bannière, au-dessus ou derrière les titres de section) se déploie
+   quand il entre à l'écran, puis une étincelle le parcourt de temps en temps. Un trait déjà
+   vu (même titre) s'affiche directement : un écran redessiné après une coche ne clignote pas. */
+(function(){
+  if(!('IntersectionObserver' in window) || !('MutationObserver' in window)) return;
+  const SEL='.hv7-sec-lab,.sec-lab,.grp-lab,#toolRes > .lab,#toolRes > .row > .lab:first-child,#progBody > .lab,.ikh:not(.ikh-dark)';
+  const vus=new Set();
+  const cle=el=>el.className.split(' ')[0]+'|'+(el.textContent||'').trim().slice(0,40);
+  const allume=(el,direct)=>{ el.style.setProperty('--spark-delay',(1+Math.random()*6).toFixed(2)+'s'); if(direct) el.classList.add('ik-lit-now'); el.classList.add('ik-lit'); vus.add(cle(el)); };
+  const io=new IntersectionObserver(es=>es.forEach(en=>{ if(!en.isIntersecting) return; io.unobserve(en.target); allume(en.target,false); }),{threshold:.5});
+  function scan(){
+    const h=document.documentElement;
+    if(ikMotionOff()){ h.classList.remove('ik-lines-anim'); return; }
+    h.classList.add('ik-lines-anim');
+    document.querySelectorAll(SEL).forEach(el=>{ if(el._ikLine) return; el._ikLine=1; if(vus.has(cle(el))) allume(el,true); else io.observe(el); });
+  }
+  let t=0; const plus=()=>{ clearTimeout(t); t=setTimeout(scan,60); };
+  // seuls les ajouts d'éléments comptent : le chrono réécrit son texte 60 fois par seconde
+  new MutationObserver(recs=>{ for(const r of recs) for(const n of r.addedNodes) if(n.nodeType===1){ plus(); return; } }).observe(document.body,{childList:true,subtree:true});
+  plus();
+})();
+// Profil › Apparence : iOS n'envoie l'inclinaison qu'après un « oui » explicite, demandé ici
+// au toucher (obligatoire). Refus ou appareil sans capteur : les reflets suivent le défilement.
+function askGlassTilt(){
+  const D=window.DeviceOrientationEvent;
+  if(D && typeof D.requestPermission==='function'){
+    D.requestPermission().then(r=>{ P.glassTilt=(r==='granted'); saveAll(); refreshPfSheet(); toast(t(r==='granted'?'glassTiltOn':'glassTiltOff')); }).catch(()=>toast(t('glassTiltOff')));
+  } else { P.glassTilt=true; saveAll(); refreshPfSheet(); toast(t('glassTiltOn')); }
+}
 
 /* ---------- APPUI LONG + GLISSER pour changer d'onglet (style iOS) ---------- */
 (function(){
@@ -8509,9 +8595,30 @@ function ringSVG(size,pct,stroke,color,bg){
     '<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="'+(bg||'var(--s2)')+'" stroke-width="'+stroke+'"/>'+
     '<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="url(#'+gid+')" stroke-width="'+stroke+'" stroke-linecap="round" stroke-dasharray="'+c+'" stroke-dashoffset="'+off+'" style="transition:stroke-dashoffset 1s var(--ease);filter:drop-shadow(0 0 7px color-mix(in srgb,'+color+' 65%,transparent))"/></svg>';
 }
+/* SPHÈRE LIQUIDE (V3.3.0) — au centre des anneaux de décompte, un liquide ondule et se
+   vide avec le temps (vagues : deux chemins SVG qui glissent sans fin ; niveau : transition
+   d'1 s linéaire). Sa couleur suit celle de l'anneau (bleu → orange → rouge). */
+let _orbN=0;
+function orbHTML(id,frac,color){
+  const n=++_orbN, wave='M0 8 Q12.5 2 25 8 T50 8 T75 8 T100 8 T125 8 T150 8 T175 8 T200 8 V140 H0 Z';
+  return '<div class="ik-orb" id="'+id+'" style="--lvl:'+Math.max(0,Math.min(1,frac)).toFixed(3)+';--orb:'+color+'" aria-hidden="true">'+
+    '<svg viewBox="0 0 100 100" preserveAspectRatio="none"><defs><clipPath id="orbc'+n+'"><circle cx="50" cy="50" r="50"/></clipPath></defs>'+
+    '<g clip-path="url(#orbc'+n+')"><g class="ik-orb-lvl"><path class="ik-wave w1" d="'+wave+'"/><path class="ik-wave w2" d="'+wave+'"/></g></g></svg></div>';
+}
+function orbSet(id,frac,color){
+  const o=document.getElementById(id); if(!o) return;
+  o.style.setProperty('--lvl',Math.max(0,Math.min(1,frac)).toFixed(3));
+  if(color && o._c!==color){ o._c=color; o.style.setProperty('--orb',color); }
+}
 // Met à jour un anneau déjà dessiné au lieu de le recréer à chaque tic (V3.3.0) : recréé,
 // il repartait de zéro et avançait par sauts ; mis à jour, sa transition d'1 s linéaire le
 // fait se vider en continu. Change aussi sa couleur (bleu → orange → rouge en fin de décompte).
+// Onde de choc : deux anneaux qui s'élargissent depuis un élément (fin de minuteur, tour…).
+function ikShock(el){
+  if(!el || ikMotionOff()) return;
+  if(getComputedStyle(el).position==='static') el.style.position='relative';
+  for(let k=0;k<2;k++){ const w=document.createElement('i'); w.className='ik-shock'; w.style.animationDelay=(k*.14)+'s'; el.appendChild(w); setTimeout(()=>w.remove(),1100); }
+}
 function ringSet(holder,size,pct,stroke,color){
   if(!holder) return;
   const svg=holder.querySelector('svg[data-ring="'+size+'"]');
@@ -10041,7 +10148,9 @@ function renderLive(){
     '<div style="flex:1;border-right:1px solid var(--hair)"><div class="lab" style="margin:0 0 4px;display:inline-flex;align-items:center;gap:6px"><i class="ik-live-dot" aria-hidden="true"></i>'+t('durationLab')+'</div><div class="mono" id="liveTime" style="font-weight:800;font-size:16px;color:var(--e)">'+dur+'</div></div>'+
     '<div style="flex:1;border-right:1px solid var(--hair)"><div class="lab" style="margin:0 0 4px">'+t('volumeLab')+'</div><div id="liveVol" style="font-weight:800;font-size:16px">'+Math.round(LIVE.tonnage)+' kg</div></div>'+
     '<div style="flex:1"><div class="lab" style="margin:0 0 4px">'+t('setsLab')+'</div><div id="liveSets" style="font-weight:800;font-size:16px">'+LIVE.setsDone+'/'+totalSets+'</div></div>'+
-    '</div></div>';
+    '</div>'+
+    // progression de la séance : barre lumineuse (partie de la valeur précédente, voir plus bas)
+    '<div class="ik-live-prog" aria-hidden="true"><i id="liveProg" style="width:'+(LIVE._progPrev||0)+'%"></i></div></div>';
   // Une carte par exercice, repliée sur le nom par défaut — on tape dessus pour dérouler les séries.
   // Un seul exercice ouvert à la fois (accordéon), et tout est animé en douceur (transition CSS).
   p.ex.forEach((e,i)=>{
@@ -10087,6 +10196,9 @@ function renderLive(){
   h+='<button class="btn ghost" style="margin:6px 0 10px" onclick="liveAddExercise()">'+t('addExerciseBtn')+'</button>';
   h+='<button class="btn ghost sm" style="margin-bottom:8px;color:var(--bad)" onclick="confirmCloseLive()">'+t('cancelSessionBtn')+'</button>';
   $('#liveBody').innerHTML=h;
+  { const now=totalSets?Math.round(LIVE.setsDone/totalSets*100):0, bar=$('#liveProg');
+    if(bar){ requestAnimationFrame(()=>{ bar.style.width=now+'%'; }); if(now===100 && LIVE._progPrev!==100) ikShock(bar.parentElement); }
+    LIVE._progPrev=now; }
   initLiveSwipe();
 }
 /* ---------- LIVE : swipe gauche/droite sur une carte exercice pour révéler "Supprimer" ---------- */
@@ -10381,12 +10493,13 @@ function openRest(secs){
   const prev=$('#restOv'); if(prev) prev.remove();
   let sec=secs||90; const total=sec; const endAt=Date.now()+sec*1000;
   const ov=document.createElement('div'); ov.className='ov on'; ov.id='restOv'; ov.style.zIndex=topZ();
-  ov.innerHTML='<div class="ov-card" style="text-align:center"><div class="card-t" style="justify-content:center">'+t('restTitle')+'</div><div class="ring-wrap run" style="width:170px;height:170px;margin:10px auto"><span id="restRing"></span><div class="ring-c"><div class="big mono" id="restNum" style="font-size:38px">'+sec+'</div><div class="sm">'+t('secLab')+'</div></div></div><div class="row" style="gap:10px"><button class="btn ghost" onclick="addRest(30)">'+t('add30sLab')+'</button><button class="btn" onclick="skipRest()">'+t('skipLab')+'</button></div></div>';
+  ov.innerHTML='<div class="ov-card" style="text-align:center"><div class="card-t" style="justify-content:center">'+t('restTitle')+'</div><div class="ring-wrap run" style="width:170px;height:170px;margin:10px auto"><span id="restRing"></span>'+orbHTML('restOrb',1,'var(--e)')+'<div class="ring-c"><div class="big mono" id="restNum" style="font-size:38px">'+sec+'</div><div class="sm">'+t('secLab')+'</div></div></div><div class="row" style="gap:10px"><button class="btn ghost" onclick="addRest(30)">'+t('add30sLab')+'</button><button class="btn" onclick="skipRest()">'+t('skipLab')+'</button></div></div>';
   document.body.appendChild(ov);
   let extra=0;
   function tick(){
     sec=Math.max(0,Math.round((endAt+extra*1000-Date.now())/1000));
-    const rr=$('#restRing'); ringSet(rr,170,sec/(total+extra)*100,12,sec<=5?'var(--warn)':'var(--e)');
+    const rr=$('#restRing'), rc=sec<=5?'var(--warn)':'var(--e)'; ringSet(rr,170,sec/(total+extra)*100,12,rc); orbSet('restOrb',sec/(total+extra),rc);
+    if(sec>0 && sec<=3 && sec!==window._restLastBuzz){ window._restLastBuzz=sec; try{ if(navigator.vibrate) navigator.vibrate(28); }catch(e){} }
     const rn=$('#restNum'); if(rn){ if(rn.textContent!==String(sec) && sec>0 && sec<=5) ikBump(rn); rn.textContent=sec; }
     if(rr&&rr.parentElement) rr.parentElement.classList.toggle('ik-urgent',sec>0&&sec<=5);
     if(sec<=0){ sfx('tick'); try{ if(navigator.vibrate) navigator.vibrate([90,60,140]); }catch(e){} skipRest(); toast(t('restGoToast')); return; }
@@ -11766,7 +11879,7 @@ function renderPomodoro(){
   const pct=pomoState.left/total*100;
   const col=pomoState.phase==='work'?'var(--bad)':'var(--ok)';
   const lab=pomoState.phase==='work'?t('pomoFocus'):t('pomoBreak');
-  let h='<div class="card" style="text-align:center"><div><div class="badge" style="background:color-mix(in srgb,'+col+' 10%,transparent);color:'+col+'">'+lab+'</div></div><div class="ring-wrap'+(pomoState.running?' run':'')+'" style="width:180px;height:180px;margin:14px auto"><span id="pmRing">'+ringSVG(180,pct,12,col)+'</span><div class="ring-c"><div class="big mono" id="pmNum" style="font-size:36px">'+fmtMS(pomoState.left)+'</div></div></div>';
+  let h='<div class="card" style="text-align:center"><div><div class="badge" style="background:color-mix(in srgb,'+col+' 10%,transparent);color:'+col+'">'+lab+'</div></div><div class="ring-wrap'+(pomoState.running?' run':'')+'" style="width:180px;height:180px;margin:14px auto"><span id="pmRing">'+ringSVG(180,pct,12,col)+'</span>'+orbHTML('pmOrb',pct/100,col)+'<div class="ring-c"><div class="big mono" id="pmNum" style="font-size:36px">'+fmtMS(pomoState.left)+'</div></div></div>';
   h+='<div class="row" style="gap:10px"><button class="btn" onclick="pomoToggle()">'+(pomoState.running?t('pauseShort'):'▶ '+t('playLab'))+'</button><button class="btn ghost" onclick="pomoReset()">↺</button></div>';
   h+='<div style="margin-top:12px;font-size:12px;color:var(--muted)">'+tp('pomodorosDoneLab',pomoState.count)+'</div></div>';
   $('#outBody').innerHTML=h;
@@ -11788,7 +11901,7 @@ function pomoToggle(){
     if(pomoState.left!==affiche){ // 1 mise à jour par seconde affichée, pas 4
       affiche=pomoState.left;
       const r=$('#pmRing'),n=$('#pmNum'); const col=pomoState.phase==='work'?'var(--bad)':'var(--ok)';
-      ringSet(r,180,pomoState.left/pomoLen(pomoState.phase)*100,12,col); if(n)n.textContent=fmtMS(pomoState.left);
+      ringSet(r,180,pomoState.left/pomoLen(pomoState.phase)*100,12,col); orbSet('pmOrb',pomoState.left/pomoLen(pomoState.phase),col); if(n)n.textContent=fmtMS(pomoState.left);
     }
     if(pomoState.left<=0){ clearInterval(pomoState.iv); pomoState.running=false; pomoState.endAt=null; burst(); sfx('finish');
       try{ if(navigator.vibrate) navigator.vibrate([120,80,120]); }catch(e){}
@@ -11985,30 +12098,44 @@ function chronoToggle(){
   if(chrono.running){ chrono.running=false; chrono.elapsed+=Date.now()-chrono.start; cancelAnimationFrame(chrono.raf); sfx('stop'); stopBgActivity(); }
   else { chrono.running=true; chrono.start=Date.now(); chronoTick(); sfx('start'); startBgActivity(t('toolChronoName'),'chrono'); }
   renderChronoIfVisible();
+  // départ : le cadran s'embrase (les graduations s'allument en vague)
+  if(chrono.running && !ikMotionOff()){ const f=document.querySelector('.ch-face'); if(f){ f.classList.add('ignite'); setTimeout(()=>f.classList.remove('ignite'),1100); } }
 }
 /* CADRAN DU CHRONO (V3.3.0) — 60 graduations, un arc qui fait le tour en une minute et une
    tête lumineuse ; le cadran respire quand il tourne, les chiffres clignotent en pause. */
 const CH_R=104, CH_C=2*Math.PI*CH_R;
 let _chTicks=null;
 function chronoDialHTML(total){
-  if(!_chTicks){ let tk=''; for(let i=0;i<60;i++){ const a=i*6*Math.PI/180, big=i%5===0, r1=big?114:117, r2=122;
-    tk+='<line x1="'+(130+r1*Math.sin(a)).toFixed(1)+'" y1="'+(130-r1*Math.cos(a)).toFixed(1)+'" x2="'+(130+r2*Math.sin(a)).toFixed(1)+'" y2="'+(130-r2*Math.cos(a)).toFixed(1)+'" class="'+(big?'ch-tk big':'ch-tk')+'"/>'; } _chTicks=tk; }
-  const f=(total%60000)/60000;
-  return '<div class="ch-dial"><svg class="ch-bezel" viewBox="0 0 260 260" aria-hidden="true">'+_chTicks+
+  if(!_chTicks){ _chTicks=[]; for(let i=0;i<60;i++){ const a=i*6*Math.PI/180, big=i%5===0, r1=big?114:117, r2=122;
+    _chTicks.push('<line x1="'+(130+r1*Math.sin(a)).toFixed(1)+'" y1="'+(130-r1*Math.cos(a)).toFixed(1)+'" x2="'+(130+r2*Math.sin(a)).toFixed(1)+'" y2="'+(130-r2*Math.cos(a)).toFixed(1)+'" style="--i:'+i+'" class="'+(big?'ch-tk big':'ch-tk')); } }
+  const f=(total%60000)/60000, sec=total>0?Math.floor((total%60000)/1000):-1;
+  _chLastSec=sec;
+  // graduations : celles des secondes écoulées dans la minute sont allumées
+  const ticks=_chTicks.map((l,i)=>l+(i<=sec?' on':'')+'"/>').join('');
+  // traînée de comète derrière la tête : 9 billes qui s'effacent le long de l'arc
+  let tail=''; for(let k=1;k<=9;k++){ const an=-k*3.1*Math.PI/180; tail+='<circle class="ch-tail" cx="'+(130+CH_R*Math.sin(an)).toFixed(1)+'" cy="'+(130-CH_R*Math.cos(an)).toFixed(1)+'" r="'+(5*(1-k/11)).toFixed(2)+'" style="opacity:'+(.55*(1-k/10)).toFixed(2)+'"/>'; }
+  return '<div class="ch-dial"><svg class="ch-bezel" viewBox="0 0 260 260" aria-hidden="true">'+ticks+
     '<circle class="ch-track" cx="130" cy="130" r="'+CH_R+'"/>'+
     '<circle class="ch-arc" id="chArc" cx="130" cy="130" r="'+CH_R+'" stroke-dasharray="'+CH_C.toFixed(1)+'" stroke-dashoffset="'+(CH_C*(1-f)).toFixed(1)+'"/>'+
-    '<g id="chHead" style="transform:rotate('+(f*360).toFixed(2)+'deg)"><circle class="ch-head" cx="130" cy="'+(130-CH_R)+'" r="5.5"/></g></svg>'+
+    '<g id="chHead" style="transform:rotate('+(f*360).toFixed(2)+'deg)">'+tail+'<circle class="ch-head" cx="130" cy="'+(130-CH_R)+'" r="5.5"/></g></svg>'+
     '<div class="ch-mid"><div class="mono" id="chDisp">'+fmtChrono(total)+'</div><div class="ch-sub">'+(chrono.laps.length?t('lapBtn')+' '+(chrono.laps.length+1):'&nbsp;')+'</div></div></div>';
 }
+let _chLastSec=-1;
 function chronoDialSet(total){
   const f=(total%60000)/60000, arc=document.getElementById('chArc'), hd=document.getElementById('chHead');
   if(arc) arc.setAttribute('stroke-dashoffset',(CH_C*(1-f)).toFixed(1));
   if(hd) hd.style.transform='rotate('+(f*360).toFixed(2)+'deg)';
+  const sec=Math.floor((total%60000)/1000);
+  if(sec!==_chLastSec){
+    const tks=document.querySelectorAll('.ch-bezel .ch-tk');
+    if(tks.length){ if(sec<_chLastSec) tks.forEach(x=>x.classList.remove('on')); for(let i=Math.max(0,_chLastSec);i<=sec;i++) tks[i]&&tks[i].classList.add('on'); }
+    _chLastSec=sec;
+  }
 }
 function chronoTick(){ if(!chrono.running)return; const tot=chrono.elapsed+Date.now()-chrono.start; const d=$('#chDisp'); if(d)d.textContent=fmtChrono(tot); chronoDialSet(tot); chrono.raf=requestAnimationFrame(chronoTick); }
 let _ikNewLap=false; // le tour qui vient d'être pris glisse dans la liste
 function chronoLap(){ const total=chrono.elapsed+(chrono.running?Date.now()-chrono.start:0); if(total<=0)return; const prev=chrono.laps.reduce((a,b)=>a+b,0); chrono.laps.push(total-prev); _ikNewLap=true; renderChrono(); sfx('tick');
-  const f=document.querySelector('.ch-face'); if(f && !ikMotionOff()){ f.classList.remove('lap'); void f.offsetWidth; f.classList.add('lap'); } }
+  const f=document.querySelector('.ch-face'); if(f && !ikMotionOff()){ f.classList.remove('lap'); void f.offsetWidth; f.classList.add('lap'); ikShock(f.querySelector('.ch-dial')); } }
 
 /* ---------- MINUTEUR ---------- */
 let timer={total:300,left:300,running:false,iv:null,m:5,s:0};
@@ -12019,7 +12146,7 @@ function renderTimer(){
   }
   const pct=timer.total>0?timer.left/timer.total*100:0;
   const col=pct>50?'var(--e)':pct>20?'var(--warn)':'var(--bad)';
-  h+='<div class="ring-wrap'+(timer.running?' run':'')+'" style="width:180px;height:180px;margin:14px auto"><span id="tmRing">'+ringSVG(180,pct,12,col)+'</span><div class="ring-c"><div class="big mono" id="tmNum" style="font-size:36px">'+fmtMS(timer.left)+'</div></div></div>';
+  h+='<div class="ring-wrap'+(timer.running?' run':'')+'" style="display:flex;width:180px;height:180px;margin:14px auto"><span id="tmRing">'+ringSVG(180,pct,12,col)+'</span>'+orbHTML('tmOrb',pct/100,col)+'<div class="ring-c"><div class="big mono" id="tmNum" style="font-size:36px">'+fmtMS(timer.left)+'</div></div></div>';
   h+='<div class="row" style="gap:10px"><button class="btn ghost" onclick="addTimer(60)">+1min</button><button class="btn" onclick="timerToggle()">'+(timer.running?t('pauseShort'):'▶ '+t('playLab'))+'</button><button class="btn ghost" onclick="resetTimer()">↺</button></div></div>';
   $('#outBody').innerHTML=h;
   if(!timer.running) attachWheels();
@@ -12054,9 +12181,10 @@ function timerToggle(){
     const r=$('#tmRing'),n=$('#tmNum');
     const txt=fmtMS(timer.left);
     if(n && n.textContent===txt && r && r.childElementCount) return; // rien de nouveau à afficher (4 tics/s, 1 changement)
-    ringSet(r,180,pct,12,col); if(n){ if(n.textContent!==txt && timer.left>0 && timer.left<=10) ikBump(n); n.textContent=txt; }
+    ringSet(r,180,pct,12,col); orbSet('tmOrb',pct/100,col); if(n){ if(n.textContent!==txt && timer.left>0 && timer.left<=10) ikBump(n); n.textContent=txt; }
+    if(timer.left>0 && timer.left<=3){ try{ if(navigator.vibrate) navigator.vibrate(28); }catch(e){} }
     if(r&&r.parentElement) r.parentElement.classList.toggle('ik-urgent',timer.left>0&&timer.left<=10);
-    if(timer.left<=0){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; burst(); stopBgActivity(); startAlarm(t('timerDoneTitle'),t('timeUpMsg')); renderTimerIfVisible(); }
+    if(timer.left<=0){ const w=r&&r.parentElement; clearInterval(timer.iv); timer.running=false; timer.endAt=null; burst(); stopBgActivity(); startAlarm(t('timerDoneTitle'),t('timeUpMsg')); renderTimerIfVisible(); ikShock(document.querySelector('#tmRing')&&document.querySelector('#tmRing').parentElement||w); }
   },250);
 }
 function resetTimer(){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; stopAlarm(); stopBgActivity(); timer.left=timer.total=timer.m*60+timer.s||300; renderTimerIfVisible(); }
@@ -12588,7 +12716,8 @@ function pfAppearanceHTML(){
      '<div class="seg-ctrl glass-seg">'+[['flat','glassFlat'],['std','glassStd'],['max','glassMax']].map(([k,l])=>
        '<div class="seg-btn'+(g===k?' on':'')+'" role="button" onclick="setGlass(\''+k+'\')">'+t(l)+'</div>').join('')+'</div>'+
      '<div class="glass-demo" aria-hidden="true"><div class="glass-demo-card card"><div class="glass-demo-t">IKORUN</div><div class="glass-demo-s">'+t(g==='max'?'glassMax':g==='flat'?'glassFlat':'glassStd')+'</div></div></div>'+
-     '<div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5">'+t(g==='max'?'glassHintMax':g==='flat'?'glassHintFlat':'glassHintStd')+'</div>';
+     '<div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5">'+t(g==='max'?'glassHintMax':g==='flat'?'glassHintFlat':'glassHintStd')+'</div>'+
+     (g==='max'?'<button class="btn ghost" style="margin-top:12px" onclick="askGlassTilt()">'+ICN('bolt',16)+' '+t(P.glassTilt?'glassTiltActive':'glassTiltBtn')+'</button>':'');
   s+='<div class="lab" style="margin:22px 0 10px">'+t('animationsLab')+'</div>'+
      '<button class="btn ghost" onclick="closeOv(\'ovProg\');setTimeout(()=>{ if(window.ikIntro) ikIntro(\'full\'); },260)">'+t('introReplayBtn')+'</button>';
   return s;
