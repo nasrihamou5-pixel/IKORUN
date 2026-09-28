@@ -3276,3 +3276,85 @@ html.easy-mode .mus-body{width:70px;}
 html.easy-mode .mus-name{font-size:16px;}
 html.easy-mode .mus-meta{font-size:12.5px;}
 html.easy-mode .list-row .lr-sub{font-size:12px;}
+
+/* ===================================================================
+   ÎLOT D'ACTIVITÉ (V3.4.0) — séance, repos, chrono, minuteur, Pomodoro
+   Capsule noire vitrée (comme l'îlot de l'iPhone, en clair comme en sombre), posée
+   au-dessus de la barre du bas ; elle descend à sa place quand la barre se masque.
+   =================================================================== */
+#ikIsland{--isl-nav:62px;position:fixed;left:50%;z-index:9999;width:calc(100% - 26px);max-width:404px;
+  bottom:calc(18px + var(--isl-nav) + env(safe-area-inset-bottom));
+  display:flex;align-items:center;gap:8px;pointer-events:none;opacity:0;
+  transform:translate(-50%,26px) scale(.55,.4);transform-origin:50% 100%;
+  transition:transform .55s var(--ease-spring),opacity .22s ease,bottom .38s var(--ease-spring);}
+#ikIsland.on{pointer-events:auto;opacity:1;transform:translate(-50%,0) scale(1);}
+#nav.nav-hidden ~ #ikIsland{bottom:calc(10px + env(safe-area-inset-bottom));}
+body.isl-on #scroll{padding-bottom:calc(214px + env(safe-area-inset-bottom));}
+body.isl-on #toast{bottom:172px;}
+.isl-main,.isl-mini{--isl-c:var(--e);position:relative;overflow:hidden;color:#fff;cursor:pointer;
+  background:radial-gradient(120% 140% at 0% 0%,color-mix(in srgb,var(--isl-c) 22%,transparent),transparent 58%),linear-gradient(180deg,#1b1f27,#07090c);
+  border:1px solid rgba(255,255,255,.09);
+  box-shadow:0 18px 38px -14px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.14),inset 0 -8px 16px -10px rgba(0,0,0,.7),0 0 28px -8px color-mix(in srgb,var(--isl-c) 70%,transparent);
+  -webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%);
+  -webkit-tap-highlight-color:transparent;transition:transform .2s var(--ease-spring),box-shadow .3s ease;}
+.isl-main{flex:1;min-width:0;height:60px;border-radius:30px;display:flex;align-items:center;gap:10px;padding:0 8px 0 9px;}
+.isl-main:active,.isl-mini:active{transform:scale(.97);}
+/* reflet qui glisse lentement sur la capsule : une goutte de lumière, pas un clignotement */
+.isl-main::after{content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.09) 45%,transparent 60%);
+  transform:translateX(-120%);animation:islSheen 5.5s ease-in-out infinite;}
+@keyframes islSheen{0%,55%{transform:translateX(-120%);}100%{transform:translateX(120%);}}
+.isl-mini{width:56px;height:56px;border-radius:50%;flex:none;display:none;padding:0;align-items:center;justify-content:center;}
+#ikIsland.duo .isl-mini{display:flex;animation:islPop .5s var(--ease-spring);}
+@keyframes islPop{from{transform:scale(.3);opacity:0;}to{transform:none;opacity:1;}}
+.isl-ring{position:relative;width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;}
+.isl-mini .isl-ring{width:44px;height:44px;}
+.isl-ring > svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);overflow:visible;}
+.isl-trk{fill:none;stroke:rgba(255,255,255,.13);stroke-width:3.2;}
+.isl-arc{fill:none;stroke:var(--isl-c);stroke-width:3.2;stroke-linecap:round;
+  filter:drop-shadow(0 0 4px var(--isl-c));transition:stroke-dashoffset .3s linear,stroke .4s ease;}
+.isl-ic{display:flex;color:#fff;font-style:normal;}
+.isl-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;line-height:1.2;}
+.isl-t{font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.1px;}
+.isl-s{font-size:11.5px;color:rgba(255,255,255,.62);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;}
+.isl-s:empty{display:none;}
+.isl-time{font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:19px;font-weight:700;
+  letter-spacing:-.5px;font-variant-numeric:tabular-nums;color:#fff;flex:none;text-shadow:0 0 14px color-mix(in srgb,var(--isl-c) 55%,transparent);}
+.isl-acts{display:flex;gap:6px;flex:none;}
+.isl-b{width:40px;height:40px;border-radius:50%;border:0;display:flex;align-items:center;justify-content:center;cursor:pointer;
+  color:#fff;background:rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.14);font:800 12px 'Inter',system-ui,sans-serif;
+  -webkit-tap-highlight-color:transparent;transition:transform .15s var(--ease-spring),background .15s;}
+.isl-b:active{transform:scale(.88);background:rgba(255,255,255,.22);}
+.isl-b[data-act="toggle"]{background:color-mix(in srgb,var(--isl-c) 34%,rgba(255,255,255,.08));}
+.isl-go{display:flex;color:rgba(255,255,255,.55);padding:0 6px;}
+/* séance ou chrono qui tourne : le point de vie respire au bord de l'anneau */
+.live .isl-ring::after{content:'';position:absolute;top:1px;right:1px;width:8px;height:8px;border-radius:50%;
+  background:var(--isl-c);box-shadow:0 0 8px var(--isl-c);animation:islBeat 1.6s ease-in-out infinite;}
+@keyframes islBeat{0%,100%{transform:scale(.8);opacity:.7;}50%{transform:scale(1.15);opacity:1;}}
+/* dernières secondes : la capsule s'embrase doucement */
+.isl-main.urgent{animation:islUrgent 1s ease-in-out infinite;}
+.isl-main.urgent .isl-time{color:var(--isl-c);}
+@keyframes islUrgent{0%,100%{box-shadow:0 18px 38px -14px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.14),0 0 22px -8px var(--isl-c);}
+  50%{box-shadow:0 18px 38px -14px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.14),0 0 34px -2px var(--isl-c);}}
+/* changement d'activité : la capsule se déforme comme une goutte, puis se reforme */
+.isl-main.morph{animation:islMorph .55s var(--ease-spring);}
+@keyframes islMorph{0%{transform:scale(1);}30%{transform:scale(1.05,.86);}65%{transform:scale(.98,1.04);}100%{transform:none;}}
+/* fin d'un repos réduit : message bref, capsule teintée */
+.isl-flash{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:800;font-size:15px;
+  opacity:0;pointer-events:none;transition:opacity .25s ease;padding:0 18px;text-align:center;}
+.isl-main.flash{background:linear-gradient(180deg,color-mix(in srgb,var(--isl-c) 70%,#07090c),color-mix(in srgb,var(--isl-c) 40%,#07090c));}
+.isl-main.flash > :not(.isl-flash){opacity:0;}
+.isl-main.flash .isl-flash{opacity:1;}
+/* deux activités : la capsule se resserre (anneau, chiffres et boutons un peu plus petits) */
+#ikIsland.duo .isl-main{gap:7px;padding:0 7px 0 8px;}
+#ikIsland.duo .isl-main .isl-ring{width:36px;height:36px;}
+#ikIsland.duo .isl-time{font-size:17px;}
+#ikIsland.duo .isl-b{width:36px;height:36px;}
+/* mode simplifié : une seule activité à la fois, sans sous-titre ni remise à zéro */
+html.easy-mode #ikIsland.duo .isl-mini{display:none;}
+html.easy-mode .isl-s,html.easy-mode .isl-b[data-act="reset"]{display:none;}
+@media (prefers-reduced-motion: reduce){ .isl-main::after,.live .isl-ring::after,.isl-main.urgent,.isl-main.morph{animation:none;} #ikIsland{transition:opacity .2s ease;} }
+html.easy-mode .isl-main::after,html.easy-mode .live .isl-ring::after{animation:none;}
+/* bouton « réduire » de la séance en cours */
+.ik-min-btn svg{transition:transform .2s var(--ease-spring);}
+.ik-min-btn:active svg{transform:translateY(2px);}

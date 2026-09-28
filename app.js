@@ -2061,7 +2061,7 @@ const I18N={
     loadingLab:'Chargement…',friendsLoadError:'Impossible de charger tes amis. Vérifie ta connexion.',retryBtn:'Réessayer',
     resumeBtn:'Reprendre',discardBtn:'Abandonner',
     alreadyLinked:'déjà lié',addBtn:'Ajouter',searchError:'Erreur de recherche',alreadySentOrFriend:'Déjà envoyé ou déjà ami',
-    requestSent:'Demande envoyée',friendProfileTitle:'Profil',removeLab:'Retirer',lvlDot:'Niv.',kmThisWeekShort:'{0} km cette semaine',lastWeekKm:'Semaine dernière : {0} km',glassEasyNote:'Le mode simplifié garde un affichage net, sans effet verre : ce réglage reprendra effet quand tu le désactiveras.',youDefaultName:'Toi',backToFriends:'Retour aux amis',profileNotFound:'Profil introuvable.',noBadgeUnlocked:'Aucun badge débloqué pour l\u2019instant.',kmPerWeek:'km/sem.',daysStreak:'Jours de suite',kmTotalLab:'km au total',tonnageKgLab:'Tonnage kg',
+    requestSent:'Demande envoyée',friendProfileTitle:'Profil',removeLab:'Retirer',lvlDot:'Niv.',kmThisWeekShort:'{0} km cette semaine',lastWeekKm:'Semaine dernière : {0} km',minimizeLab:'Réduire',liveAlreadyRunning:'Une séance est déjà en cours. Termine-la ou annule-la avant d’en commencer une autre.',backToSessionLab:'Revenir à la séance',islandNext:'Ensuite : {0}',islandEndsAt:'Fin à {0}',islandPaused:'En pause',islandSets:'{0}/{1} séries',glassEasyNote:'Le mode simplifié garde un affichage net, sans effet verre : ce réglage reprendra effet quand tu le désactiveras.',youDefaultName:'Toi',backToFriends:'Retour aux amis',profileNotFound:'Profil introuvable.',noBadgeUnlocked:'Aucun badge débloqué pour l\u2019instant.',kmPerWeek:'km/sem.',daysStreak:'Jours de suite',kmTotalLab:'km au total',tonnageKgLab:'Tonnage kg',
     addPerf:'Ajouter une performance',addChronosHint:'Ajoute tes chronos : ils alimentent ton VDOT et ton plan.',
     bestPerf:'Meilleure perf',avgHR:'FC moy',maxHRshort:'max',perfHistoryTitle:'Historique des performances',
     chooseDistance:'Choisis la distance',otherDist:'Autre',customDistance:'Distance personnalisée',
@@ -2647,7 +2647,7 @@ const I18N={
     loadingLab:'Loading…',friendsLoadError:'Couldn\'t load your friends. Check your connection.',retryBtn:'Retry',
     resumeBtn:'Resume',discardBtn:'Discard',
     alreadyLinked:'already linked',addBtn:'Add',searchError:'Search error',alreadySentOrFriend:'Already sent or already friends',
-    requestSent:'Request sent',friendProfileTitle:'Profile',removeLab:'Remove',lvlDot:'Lvl.',kmThisWeekShort:'{0} km this week',lastWeekKm:'Last week: {0} km',glassEasyNote:'Simplified mode keeps a clean display with no glass effect: this setting applies again once you turn it off.',youDefaultName:'You',backToFriends:'Back to friends',profileNotFound:'Profile not found.',noBadgeUnlocked:'No badge unlocked yet.',kmPerWeek:'km/wk',daysStreak:'Day streak',kmTotalLab:'total km',tonnageKgLab:'Volume kg',
+    requestSent:'Request sent',friendProfileTitle:'Profile',removeLab:'Remove',lvlDot:'Lvl.',kmThisWeekShort:'{0} km this week',lastWeekKm:'Last week: {0} km',minimizeLab:'Minimize',liveAlreadyRunning:'A session is already running. Finish or cancel it before starting another one.',backToSessionLab:'Back to session',islandNext:'Next: {0}',islandEndsAt:'Ends at {0}',islandPaused:'Paused',islandSets:'{0}/{1} sets',glassEasyNote:'Simplified mode keeps a clean display with no glass effect: this setting applies again once you turn it off.',youDefaultName:'You',backToFriends:'Back to friends',profileNotFound:'Profile not found.',noBadgeUnlocked:'No badge unlocked yet.',kmPerWeek:'km/wk',daysStreak:'Day streak',kmTotalLab:'total km',tonnageKgLab:'Volume kg',
     addPerf:'Add a performance',addChronosHint:'Add your times: they power your VDOT and your plan.',
     bestPerf:'Best performance',avgHR:'avg HR',maxHRshort:'max',perfHistoryTitle:'Performance history',
     chooseDistance:'Choose the distance',otherDist:'Other',customDistance:'Custom distance',
@@ -3233,7 +3233,7 @@ const I18N={
     loadingLab:'جارٍ التحميل…',friendsLoadError:'تعذّر تحميل أصدقائك. تحقّق من اتصالك.',retryBtn:'إعادة المحاولة',
     resumeBtn:'استئناف',discardBtn:'التخلي',
     alreadyLinked:'مرتبط بالفعل',addBtn:'إضافة',searchError:'خطأ في البحث',alreadySentOrFriend:'تم الإرسال بالفعل أو صديق بالفعل',
-    requestSent:'تم إرسال الطلب',friendProfileTitle:'الملف الشخصي',removeLab:'إزالة',lvlDot:'مستوى',kmThisWeekShort:'{0} كم هذا الأسبوع',lastWeekKm:'الأسبوع الماضي: {0} كم',glassEasyNote:'الوضع المبسّط يُبقي العرض واضحًا دون تأثير الزجاج: يعود هذا الإعداد للعمل عند إيقافه.',youDefaultName:'أنت',backToFriends:'العودة إلى الأصدقاء',profileNotFound:'الملف غير موجود.',noBadgeUnlocked:'لا يوجد وسام مفتوح بعد.',kmPerWeek:'كم/أسبوع',daysStreak:'أيام متتالية',kmTotalLab:'كم إجمالية',tonnageKgLab:'الحمولة كغ',
+    requestSent:'تم إرسال الطلب',friendProfileTitle:'الملف الشخصي',removeLab:'إزالة',lvlDot:'مستوى',kmThisWeekShort:'{0} كم هذا الأسبوع',lastWeekKm:'الأسبوع الماضي: {0} كم',minimizeLab:'تصغير',liveAlreadyRunning:'هناك حصة جارية بالفعل. أنهِها أو ألغِها قبل بدء حصة أخرى.',backToSessionLab:'العودة إلى الحصة',islandNext:'التالي: {0}',islandEndsAt:'ينتهي عند {0}',islandPaused:'متوقف مؤقتًا',islandSets:'{0}/{1} مجموعات',glassEasyNote:'الوضع المبسّط يُبقي العرض واضحًا دون تأثير الزجاج: يعود هذا الإعداد للعمل عند إيقافه.',youDefaultName:'أنت',backToFriends:'العودة إلى الأصدقاء',profileNotFound:'الملف غير موجود.',noBadgeUnlocked:'لا يوجد وسام مفتوح بعد.',kmPerWeek:'كم/أسبوع',daysStreak:'أيام متتالية',kmTotalLab:'كم إجمالية',tonnageKgLab:'الحمولة كغ',
     addPerf:'إضافة أداء',addChronosHint:'أضف أوقاتك: تُستخدم لحساب VDOT وخطتك.',
     bestPerf:'أفضل أداء',avgHR:'متوسط النبض',maxHRshort:'الأقصى',perfHistoryTitle:'سجل الأداء',
     chooseDistance:'اختر المسافة',otherDist:'أخرى',customDistance:'مسافة مخصصة',
@@ -5121,7 +5121,7 @@ function ovLeave(el){
   clearTimeout(el._leaveT); el.classList.add('ov-leaving');
   el._leaveT=setTimeout(()=>{ el.classList.remove('ov-leaving'); const c=el.querySelector('.ov-card'); if(c) c.style.transform=''; },280);
 }
-function openOv(id){ const el=$('#'+id); if(!el) return; clearTimeout(el._leaveT); el.classList.remove('ov-leaving'); const c=el.querySelector('.ov-card'); if(c) c.style.transform=''; el.style.zIndex=topZ(); el.classList.add('on'); ikOpenOv(el); }
+function openOv(id){ const el=$('#'+id); if(!el) return; clearTimeout(el._leaveT); el.classList.remove('ov-leaving'); const c=el.querySelector('.ov-card'); if(c) c.style.transform=''; el.style.zIndex=topZ(); el.classList.add('on'); ikOpenOv(el); if(id==='ovLive' && typeof ikIslandKick==='function') ikIslandKick(); }
 function closeOv(id){ const el=$('#'+id); if(!el) return; ovLeave(el); el.classList.remove('on'); el.style.zIndex=''; if(id==='ovProg') _pfSheet=null; if(id==='ovLib'&&typeof _exDemoTimer!=='undefined'){ clearInterval(_exDemoTimer); } if((id==='ovProg'||id==='ovLive')&&typeof _exDemo2!=='undefined'&&_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; }
   // Garde-fou : openLibFor() ferme ovCreate pour ouvrir la bibliothèque par-dessus (voir plus
   // bas). Sans ce bloc, annuler depuis la bibliothèque ou depuis "Configurer" (X, pas
@@ -5130,7 +5130,10 @@ function closeOv(id){ const el=$('#'+id); if(!el) return; ovLeave(el); el.classL
   if((id==='ovLib'||id==='ovCfg') && _libFromCreate && typeof newProg!=='undefined' && newProg){ _libFromCreate=false; renderCreate(); openOv('ovCreate'); }
   // Garde-fou : si ovLive se ferme par un chemin qui n'est pas pauseLive/doCancelLive/finishLive,
   // on ne laisse jamais liveTimer/restTimer tourner en fond perdu.
-  if(id==='ovLive'){ if(typeof liveTimer!=='undefined'){ clearInterval(liveTimer); } if(typeof restTimer!=='undefined'){ clearInterval(restTimer); } }
+  // Le repos part avec (minuteur, fenêtre ET état) : avant, sa fenêtre restait affichée,
+  // figée, après « Mettre en pause » — et l'îlot d'activité l'aurait montrée arrêtée.
+  if(id==='ovLive'){ if(typeof liveTimer!=='undefined'){ clearInterval(liveTimer); } if(typeof skipRest==='function') skipRest(); }
+  if(typeof ikIslandKick==='function') ikIslandKick();
 }
 // Fenêtre créée à la volée (confirmation, saisie) : même sortie animée que les autres.
 // Ses identifiants tombent tout de suite — une nouvelle fenêtre ouverte pendant la sortie
@@ -5410,6 +5413,7 @@ function nav(s){
   markScreenSeen('s-'+s);
   ikhSync(); ikhCompact();
   ikEnterScreen(s);
+  ikIslandKick();
 }
 /* Marque un écran comme "déjà vu" une fois ses animations d'entrée jouées,
    pour qu'elles ne se répètent plus à chaque retour sur l'onglet. */
@@ -5572,12 +5576,15 @@ function askGlassTilt(){
 /* ---------- FENÊTRES DU BAS : glisser vers le bas / toucher le fond pour fermer (v107) ----------
    Le geste part de la poignée ou de l'en-tête (72 px du haut) : dans le contenu, le
    doigt fait défiler, règle une roue ou un curseur — jamais une fermeture surprise.
-   Formulaires (profil, programme, réglage d'exercice) et séance en cours : fermeture
-   volontaire uniquement, pour ne jamais perdre une saisie. */
+   Formulaires (profil, programme, réglage d'exercice) : fermeture volontaire uniquement,
+   pour ne jamais perdre une saisie. Séance en cours et repos (V3.4.0) : le même geste les
+   RÉDUIT dans l'îlot d'activité — rien ne s'arrête, rien ne se perd. */
 (function(){
   const FERMABLES=new Set(['ovSettings','ovBadges','ovFullPlan','ovPicker']);
+  const REDUCTIBLES={ovLive:()=>minimizeLive(),restOv:()=>minimizeRest()};
   let s=null;
-  const fermable=ov=>ov && ov.id && FERMABLES.has(ov.id) && ov.classList.contains('on');
+  const fermable=ov=>ov && ov.id && (FERMABLES.has(ov.id)||REDUCTIBLES[ov.id]) && ov.classList.contains('on');
+  const ferme=id=>{ if(REDUCTIBLES[id]) REDUCTIBLES[id](); else closeOv(id); };
   document.addEventListener('touchstart',e=>{
     s=null;
     const card=e.target.closest('.ov-card'); if(!card) return;
@@ -5602,13 +5609,13 @@ function askGlassTilt(){
     if(!s) return; const st=s; s=null; if(!st.on) return;
     st.ov.classList.remove('sheet-drag');
     const v=st.dy/Math.max(1,performance.now()-st.t0);
-    if(st.dy>110 || (st.dy>40 && v>0.5)){ closeOv(st.ov.id); return; }
+    if(st.dy>110 || (st.dy>40 && v>0.5)){ ferme(st.ov.id); return; }
     st.card.style.transition='transform .25s var(--ease-out)'; st.card.style.transform='';
     setTimeout(()=>{ st.card.style.transition=''; },270);
   };
   document.addEventListener('touchend',fin); document.addEventListener('touchcancel',fin);
   // toucher le fond sombre autour de la fenêtre
-  document.addEventListener('click',e=>{ const ov=e.target; if(ov && ov.classList && ov.classList.contains('ov') && fermable(ov)) closeOv(ov.id); });
+  document.addEventListener('click',e=>{ const ov=e.target; if(ov && ov.classList && ov.classList.contains('ov') && fermable(ov)) ferme(ov.id); });
 })();
 
 /* ---------- PULL-TO-REFRESH sur #scroll ----------
@@ -10131,7 +10138,15 @@ function startExDemoAuto(g){
 
 /* ---------- LIVE MUSCU SESSION ---------- */
 let LIVE=null,liveTimer=null,restTimer=null,liveOpenEx=0,_finishingLive=false;
+// Réduite dans l'îlot, une séance laisse désormais l'app utilisable : sans ce garde, lancer
+// un autre programme écrasait la séance en cours (et toute sa progression).
+function liveBusy(){
+  if(!LIVE || _finishingLive) return false;
+  customConfirm(t('liveAlreadyRunning'),()=>expandLive(),{title:t('sessionInProgress'),yesLabel:t('backToSessionLab'),noLabel:t('cancel')});
+  return true;
+}
 function startLive(id,startIdx){
+  if(liveBusy()) return;
   const p=allProgs().find(x=>x.id===id); if(!p) return;
   _finishingLive=false; // nouvelle séance : la garde de ré-entrée de finishLive repart à zéro
   if(_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; }
@@ -10146,6 +10161,7 @@ function startLive(id,startIdx){
   clearInterval(liveTimer);
   liveTimer=setInterval(updateLiveTimer,500);
   sfx('start'); startBgActivity(tp('sessionColonName',p.name),'muscu');
+  ikIslandKick();
 }
 function updateLiveTimer(){
   if(!LIVE) return;
@@ -10173,7 +10189,9 @@ function renderLive(){
   // Le bouton minuteur était rendu vide (aucun contenu dans le span) : il occupait
   // sa place sans rien afficher, donc invisible et introuvable. Les deux actions
   // secondaires ont maintenant leur pictogramme et leur libellé accessible.
+  // Réduire (V3.4.0) : la séance continue dans l'îlot d'activité et l'app reste utilisable.
   let h='<div class="live-top">'+
+    '<button class="live-ic ik-min-btn" onclick="minimizeLive()" aria-label="'+t('minimizeLab')+'" title="'+t('minimizeLab')+'">'+ICN('chevronD',19)+'</button>'+
     '<button class="live-ic" onclick="pauseLive()" aria-label="'+t('pauseLab')+'" title="'+t('pauseLab')+'">'+ICN('pause',17)+'</button>'+
     '<div style="flex:1"></div>'+
     '<button class="live-ic" onclick="openRest(90)" aria-label="'+t('restTimerBtn')+'" title="'+t('restTimerBtn')+'">'+ICN('stopwatch',17)+'</button>'+
@@ -10487,6 +10505,7 @@ function pauseLive(){
   stopBgActivity(); renderSport();
 }
 function resumeLive(){
+  if(liveBusy()) return;
   _finishingLive=false;
   const saved=DB.load('live_paused'); if(!saved) return;
   LIVE=saved; // on garde saved.prog tel quel (avec les exos ajoutés/retirés pendant la séance),
@@ -10529,24 +10548,33 @@ function openRest(secs){
   clearInterval(restTimer);
   const prev=$('#restOv'); if(prev) prev.remove();
   let sec=secs||90; const total=sec; const endAt=Date.now()+sec*1000;
+  _rest={endAt,total,extra:0};
   const ov=document.createElement('div'); ov.className='ov on'; ov.id='restOv'; ov.style.zIndex=topZ();
   ov.innerHTML='<div class="ov-card" style="text-align:center"><div class="card-t" style="justify-content:center">'+t('restTitle')+'</div><div class="ring-wrap run" style="width:170px;height:170px;margin:10px auto"><span id="restRing"></span>'+orbHTML('restOrb',1,'var(--e)')+'<div class="ring-c"><div class="big mono" id="restNum" style="font-size:38px">'+sec+'</div><div class="sm">'+t('secLab')+'</div></div></div><div class="row" style="gap:10px"><button class="btn ghost" onclick="addRest(30)">'+t('add30sLab')+'</button><button class="btn" onclick="skipRest()">'+t('skipLab')+'</button></div></div>';
   document.body.appendChild(ov);
-  let extra=0;
+  const R=_rest;
   function tick(){
+    if(_rest!==R) return;
+    const extra=R.extra;
     sec=Math.max(0,Math.round((endAt+extra*1000-Date.now())/1000));
     const rr=$('#restRing'), rc=sec<=5?'var(--warn)':'var(--e)'; ringSet(rr,170,sec/(total+extra)*100,12,rc); orbSet('restOrb',sec/(total+extra),rc);
     if(sec>0 && sec<=3 && sec!==window._restLastBuzz){ window._restLastBuzz=sec; try{ if(navigator.vibrate) navigator.vibrate(28); }catch(e){} }
     const rn=$('#restNum'); if(rn){ if(rn.textContent!==String(sec) && sec>0 && sec<=5) ikBump(rn); rn.textContent=sec; }
     if(rr&&rr.parentElement) rr.parentElement.classList.toggle('ik-urgent',sec>0&&sec<=5);
-    if(sec<=0){ sfx('tick'); try{ if(navigator.vibrate) navigator.vibrate([90,60,140]); }catch(e){} skipRest(); toast(t('restGoToast')); return; }
+    if(sec<=0){ sfx('go'); try{ if(navigator.vibrate) navigator.vibrate([90,60,140]); }catch(e){}
+      const cache=!(ov.classList.contains('on')); skipRest();
+      if(cache) ikIslandFlash(t('restGoToast'),'var(--ok)'); else toast(t('restGoToast'));
+      return; }
   }
   tick();
   restTimer=setInterval(tick,250);
-  window._restAdd=(s)=>{ extra+=s; };
+  ikIslandKick();
 }
-function addRest(s){ if(window._restAdd)window._restAdd(s); }
-function skipRest(){ clearInterval(restTimer); const o=$('#restOv'); if(o)o.remove(); }
+// Repos en cours ({endAt,total,extra}) : lu par l'îlot d'activité, qui le montre quand la
+// fenêtre du repos est réduite (ou quand on navigue ailleurs dans l'app).
+let _rest=null;
+function addRest(s){ if(_rest){ _rest.extra+=s; ikIslandKick(); } }
+function skipRest(){ clearInterval(restTimer); _rest=null; const o=$('#restOv'); if(o)o.remove(); ikIslandKick(); }
 function confirmCloseLive(){
   // Popup "maison" à la place de confirm() natif, qui ne fonctionne pas dans une app ajoutée à l'écran d'accueil (iOS)
   const old=$('#cancelLiveOv'); if(old) old.remove();
@@ -11352,6 +11380,9 @@ const ICONS={
   bolt:'<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>',
   medal:'<circle cx="12" cy="15" r="6"/><path d="M9 10 6 3M15 10l3-7M9.5 13.5 12 16l2.5-2.5"/>',
   chevronR:'<path d="M9 5l7 7-7 7"/>',
+  chevronD:'<path d="M5 9l7 7 7-7"/>',
+  chevronU:'<path d="M5 15l7-7 7 7"/>',
+  skip:'<path d="M5 5l9 7-9 7V5z"/><path d="M18 5v14"/>',
   moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/>',
   edit:'<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
   pin:'<path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/>',
@@ -11547,7 +11578,7 @@ let toolSearch='';
 function recentTools(){ return PREFS.recentTools||[]; }
 function pushRecent(k){ let r=recentTools().filter(x=>x!==k); r.unshift(k); PREFS.recentTools=r.slice(0,4); saveAll(); }
 function renderOutils(){
-  TOOLS=TOOLS_DEF();
+  TOOLS=TOOLS_DEF(); ikIslandKick();
   let h='';
   if(outilsTab==='home'){ h=outilsHome(); swapIn('s-outils',h); bindToolSearch(); return; }
   if(outilsTab==='_timer'){ renderOutilsTimer(); return; }
@@ -11940,10 +11971,10 @@ function renderPomodoro(){
 function pomoToggle(){
   if(pomoState.running){
     clearInterval(pomoState.iv); pomoState.left=Math.max(0,Math.round((pomoState.endAt-Date.now())/1000));
-    pomoState.running=false; pomoState.endAt=null; sfx('stop'); renderPomodoro(); return;
+    pomoState.running=false; pomoState.endAt=null; sfx('stop'); renderPomodoroIfVisible(); ikIslandKick(); return;
   }
   if(pomoState.left<=0) pomoState.left=pomoLen(pomoState.phase);
-  pomoState.running=true; pomoState.endAt=Date.now()+pomoState.left*1000; sfx('start'); renderPomodoro();
+  pomoState.running=true; pomoState.endAt=Date.now()+pomoState.left*1000; sfx('start'); renderPomodoroIfVisible(); ikIslandKick();
   let affiche=-1;
   clearInterval(pomoState.iv);
   pomoState.iv=setInterval(()=>{
@@ -11960,7 +11991,10 @@ function pomoToggle(){
       pomoState.left=pomoLen(pomoState.phase); if(outilsTab==='pomodoro' && $('#outBody')) renderPomodoro(); }
   },250);
 }
-function pomoReset(){ clearInterval(pomoState.iv); pomoState={phase:'work',left:25*60,running:false,iv:null,count:pomoState.count,endAt:null}; renderPomodoro(); }
+function pomoReset(){ clearInterval(pomoState.iv); pomoState={phase:'work',left:25*60,running:false,iv:null,count:pomoState.count,endAt:null}; renderPomodoroIfVisible(); ikIslandKick(); }
+// Le Pomodoro se commande aussi depuis l'îlot d'activité, alors qu'un autre outil peut être
+// affiché : redessiner sans vérifier remplaçait le contenu de cet outil par le Pomodoro.
+function renderPomodoroIfVisible(){ if(outilsTab==='pomodoro' && $('#outBody')) renderPomodoro(); }
 function renderNotesTool(){
   const notes=PREFS.quickNotes||'';
   let h='<div class="card"><div class="card-t">'+t('quickNotesTitle')+'</div><textarea class="inp" rows="12" id="qnotes" placeholder="'+t('notesPlaceholder')+'" oninput="PREFS.quickNotes=this.value;saveSoon()" onblur="flushSaveSoon()">'+escHtml(notes)+'</textarea><div style="font-size:11px;color:var(--dim);margin-top:8px">'+t('autoSaveLocal')+'</div></div>';
@@ -12137,8 +12171,8 @@ function renderChrono(){
    écran (voir le relais bgActivityAction). Redessiner sans vérifier écrasait l'outil
    affiché à ce moment-là, ou levait une erreur si #outBody n'existait plus. */
 function renderChronoIfVisible(){ if(outilsTab!=='chrono' || !$('#outBody')) return; renderChrono(); }
-function chronoStop(){ chrono.running=false; chrono.elapsed+=Date.now()-chrono.start; cancelAnimationFrame(chrono.raf); sfx('stop'); stopBgActivity(); renderChronoIfVisible(); }
-function chronoReset(){ chrono={running:false,start:0,elapsed:0,laps:[],raf:null}; renderChronoIfVisible(); }
+function chronoStop(){ if(chrono.running){ chrono.running=false; chrono.elapsed+=Date.now()-chrono.start; } cancelAnimationFrame(chrono.raf); sfx('stop'); stopBgActivity(); renderChronoIfVisible(); ikIslandKick(); }
+function chronoReset(){ cancelAnimationFrame(chrono.raf); chrono={running:false,start:0,elapsed:0,laps:[],raf:null}; renderChronoIfVisible(); ikIslandKick(); }
 function exportLaps(){
   let txt='IKORUN Chronomètre\n'; chrono.laps.forEach((l,i)=>txt+=t('lapBtn')+' '+(i+1)+' : '+fmtChrono(l)+'\n');
   if(navigator.share) navigator.share({title:'Chrono IKORUN',text:txt}); else { navigator.clipboard&&navigator.clipboard.writeText(txt); toast(t('lapsCopied')); }
@@ -12147,7 +12181,7 @@ function fmtChrono(ms){ const t=Math.floor(ms); const m=Math.floor(t/60000),s=Ma
 function chronoToggle(){
   if(chrono.running){ chrono.running=false; chrono.elapsed+=Date.now()-chrono.start; cancelAnimationFrame(chrono.raf); sfx('stop'); stopBgActivity(); }
   else { chrono.running=true; chrono.start=Date.now(); chronoTick(); sfx('start'); startBgActivity(t('toolChronoName'),'chrono'); }
-  renderChronoIfVisible();
+  renderChronoIfVisible(); ikIslandKick();
   // départ : le cadran s'embrase (les graduations s'allument en vague)
   if(chrono.running && !ikMotionOff()){ const f=document.querySelector('.ch-face'); if(f){ f.classList.add('ignite'); setTimeout(()=>f.classList.remove('ignite'),1100); } }
 }
@@ -12219,10 +12253,10 @@ setWheelVal=function(key,val){ if(key==='TM'){timer.m=val;timer.total=timer.left
 function addTimer(s){ timer.left+=s; timer.total=Math.max(timer.total,timer.left); const n=$('#tmNum'); if(n)n.textContent=fmtMS(timer.left); }
 function timerToggle(){
   stopAlarm();
-  if(timer.running){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; stopBgActivity(); renderTimerIfVisible(); return; }
+  if(timer.running){ clearInterval(timer.iv); timer.left=Math.max(0,Math.round((timer.endAt-Date.now())/1000)); timer.running=false; timer.endAt=null; stopBgActivity(); renderTimerIfVisible(); ikIslandKick(); return; }
   if(timer.left<=0){ timer.left=timer.total=timer.m*60+timer.s; }
   if(timer.left<=0){ toast(t('setDuration')); return; }
-  timer.running=true; timer.endAt=Date.now()+timer.left*1000; sfx('start'); startBgActivity(t('quickTimer'),'timer'); renderTimerIfVisible();
+  timer.running=true; timer.endAt=Date.now()+timer.left*1000; sfx('start'); startBgActivity(t('quickTimer'),'timer'); renderTimerIfVisible(); ikIslandKick();
   timer.iv=setInterval(()=>{
     // basé sur l'horloge → reste exact même en arrière-plan
     timer.left=Math.max(0,Math.round((timer.endAt-Date.now())/1000));
@@ -12237,7 +12271,161 @@ function timerToggle(){
     if(timer.left<=0){ const w=r&&r.parentElement; clearInterval(timer.iv); timer.running=false; timer.endAt=null; burst(); stopBgActivity(); startAlarm(t('timerDoneTitle'),t('timeUpMsg')); renderTimerIfVisible(); ikShock(document.querySelector('#tmRing')&&document.querySelector('#tmRing').parentElement||w); }
   },250);
 }
-function resetTimer(){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; stopAlarm(); stopBgActivity(); timer.left=timer.total=timer.m*60+timer.s||300; renderTimerIfVisible(); }
+function resetTimer(){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; stopAlarm(); stopBgActivity(); timer.left=timer.total=timer.m*60+timer.s||300; renderTimerIfVisible(); ikIslandKick(); }
+
+/* ---------- ÎLOT D'ACTIVITÉ (V3.4.0) ----------
+   Une séance, un repos, un chrono, un minuteur ou un Pomodoro en cours restent visibles
+   partout, dans une capsule posée au-dessus de la barre du bas : on continue d'utiliser
+   l'app pendant qu'ils tournent. Deux activités à la fois : la plus urgente occupe la
+   capsule, l'autre une bulle à côté (comme l'îlot de l'iPhone). Toucher la capsule ramène
+   à l'écran de l'activité ; ses boutons agissent sur place (pause, +30 s, passer).
+   Une activité n'y figure pas quand son propre écran est déjà affiché.
+   (Une vraie « Live Activity » sur l'écran verrouillé reste réservée aux apps natives :
+   voir showBgActivityNotif, qui garde sa notification au démarrage.) */
+function ikFmtClock(ms){ const d=new Date(ms); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+function liveNextExName(){
+  if(!LIVE||!LIVE.state) return '';
+  const i=LIVE.state.findIndex(st=>st.sets.some(x=>!x));
+  return i>=0 && LIVE.prog.ex[i] ? LIVE.prog.ex[i].name : '';
+}
+function ikScrIs(tab){ return document.body.dataset.scr==='outils' && outilsTab===tab; }
+function ikActivities(){
+  const now=Date.now(), out=[];
+  if(_rest){
+    const left=Math.max(0,(_rest.endAt+_rest.extra*1000-now)/1000), tot=_rest.total+_rest.extra, nx=liveNextExName();
+    out.push({k:'rest',icon:'pause',title:t('restTitle'),sub:nx?tp('islandNext',nx):'',time:fmtMS(Math.ceil(left)),f:tot?left/tot:0,
+      c:left<=5?'var(--warn)':'var(--e2)',urgent:left>0&&left<=5,acts:'rest',
+      mine:()=>{ const o=$('#restOv'); return !!(o&&o.classList.contains('on')); }});
+  }
+  const tLeft=timer.running&&timer.endAt?Math.max(0,Math.ceil((timer.endAt-now)/1000)):timer.left;
+  if(timer.running || (tLeft>0 && tLeft<timer.total)){
+    const pct=timer.total?tLeft/timer.total:0;
+    out.push({k:'timer',icon:'timer',title:t('quickTimer'),sub:timer.running?tp('islandEndsAt',ikFmtClock(timer.endAt)):t('islandPaused'),
+      time:fmtMS(tLeft),f:pct,c:pct>.5?'var(--e)':pct>.2?'var(--warn)':'var(--bad)',urgent:timer.running&&tLeft<=10,acts:'toggle',on:timer.running,
+      mine:()=>ikScrIs('_timer')});
+  }
+  const pLen=pomoLen(pomoState.phase), pLeft=pomoState.running&&pomoState.endAt?Math.max(0,Math.ceil((pomoState.endAt-now)/1000)):pomoState.left;
+  if(pomoState.running || (pLeft>0 && pLeft<pLen)){
+    const work=pomoState.phase==='work';
+    out.push({k:'pomo',icon:work?'brain':'coffee',title:work?t('pomoFocus'):t('pomoBreak'),sub:pomoState.running?tp('islandEndsAt',ikFmtClock(pomoState.endAt)):t('islandPaused'),
+      time:fmtMS(pLeft),f:pLen?pLeft/pLen:0,c:work?'var(--bad)':'var(--ok)',acts:'toggle',on:pomoState.running,mine:()=>ikScrIs('pomodoro')});
+  }
+  if(LIVE && !_finishingLive && LIVE.prog){
+    const tot=LIVE.prog.ex.reduce((a,x)=>a+(x.sets||0),0);
+    out.push({k:'live',icon:'dumbbell',title:LIVE.prog.name,sub:tp('islandSets',LIVE.setsDone,tot),time:fmtTime((now-LIVE.start)/1000),
+      f:tot?LIVE.setsDone/tot:0,c:'var(--e)',acts:'open',live:true,
+      mine:()=>{ const o=$('#ovLive'); return !!(o&&o.classList.contains('on')); }});
+  }
+  const cTot=chrono.elapsed+(chrono.running?now-chrono.start:0);
+  if(chrono.running || cTot>0){
+    out.push({k:'chrono',icon:'stopwatch',title:t('toolChronoName'),sub:chrono.laps.length?t('lapBtn')+' '+(chrono.laps.length+1):(chrono.running?'':t('islandPaused')),
+      time:fmtChrono(cTot).slice(0,-1),f:(cTot%60000)/60000,c:'var(--e)',acts:'toggle',on:chrono.running,live:chrono.running,mine:()=>ikScrIs('chrono')});
+  }
+  return out;
+}
+function ikIslandOpen(k){
+  if(k==='live') return expandLive();
+  if(k==='rest'){ if(LIVE && !$('#ovLive').classList.contains('on')) expandLive(); return expandRest(); }
+  if(k==='timer'){ nav('outils'); openQuickTimer(); }
+  else if(k==='pomo'){ nav('outils'); openTool('pomodoro'); }
+  else if(k==='chrono'){ nav('outils'); openTool('chrono'); }
+  ikIslandKick();
+}
+function ikIslandAct(k,a){
+  if(a==='add') addRest(30);
+  else if(a==='skip') skipRest();
+  else if(a==='toggle'){ if(k==='timer') timerToggle(); else if(k==='pomo') pomoToggle(); else if(k==='chrono') chronoToggle(); }
+  else if(a==='reset'){ if(k==='timer') resetTimer(); else if(k==='pomo') pomoReset(); else if(k==='chrono') chronoReset(); }
+  try{ if(navigator.vibrate) navigator.vibrate(8); }catch(e){}
+  ikIslandKick();
+}
+let _iki=null, _ikiT=0, _ikiFlash=null;
+const IKI_C=2*Math.PI*16;
+function ikRingSVG(){ return '<svg viewBox="0 0 40 40" aria-hidden="true"><circle class="isl-trk" cx="20" cy="20" r="16"/><circle class="isl-arc" cx="20" cy="20" r="16" stroke-dasharray="'+IKI_C.toFixed(2)+'" stroke-dashoffset="0"/></svg>'; }
+function ikIslandEl(){
+  if(_iki) return _iki;
+  const el=document.createElement('div'); el.id='ikIsland'; el.setAttribute('role','group');
+  el.innerHTML='<button type="button" class="isl-mini"><span class="isl-ring">'+ikRingSVG()+'<i class="isl-ic"></i></span></button>'+
+    '<div class="isl-main" role="button" tabindex="0"><span class="isl-ring">'+ikRingSVG()+'<i class="isl-ic"></i></span>'+
+    '<span class="isl-txt"><b class="isl-t"></b><span class="isl-s"></span></span><span class="isl-time mono"></span><span class="isl-acts"></span>'+
+    '<span class="isl-flash"></span></div>';
+  document.body.appendChild(el); // après #nav : sa position suit la barre (voir #nav.nav-hidden ~ #ikIsland)
+  el.addEventListener('click',e=>{
+    const b=e.target.closest('[data-act]');
+    if(b){ e.stopPropagation(); return ikIslandAct(b.dataset.k,b.dataset.act); }
+    if(e.target.closest('.isl-mini')){ if(el._mini) ikIslandOpen(el._mini.k); return; }
+    if(e.target.closest('.isl-main') && el._main) ikIslandOpen(el._main.k);
+  });
+  el.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ') && e.target.classList.contains('isl-main') && el._main){ e.preventDefault(); ikIslandOpen(el._main.k); } });
+  _iki={el,main:el.querySelector('.isl-main'),mini:el.querySelector('.isl-mini')};
+  return _iki;
+}
+function ikIslandBlocked(){
+  return !!(document.querySelector('#login.on,#ob.on,#ikIntro,#alarmOv') || (typeof _tourOn!=='undefined' && _tourOn));
+}
+function ikIslandFill(box,a,full){
+  const arc=box.querySelector('.isl-arc'), ic=box.querySelector('.isl-ic');
+  if(box._k!==a.k || box._icon!==a.icon){ ic.innerHTML=ICN(a.icon,full?17:19); box._icon=a.icon; }
+  box.style.setProperty('--isl-c',a.c);
+  arc.setAttribute('stroke-dashoffset',(IKI_C*(1-Math.max(0,Math.min(1,a.f)))).toFixed(2));
+  box.classList.toggle('urgent',!!a.urgent); box.classList.toggle('live',!!a.live);
+  if(!full){ box.setAttribute('aria-label',a.title+' · '+a.time); box._k=a.k; return; }
+  const tt=box.querySelector('.isl-t'), ss=box.querySelector('.isl-s'), tm=box.querySelector('.isl-time'), ac=box.querySelector('.isl-acts');
+  if(tt.textContent!==a.title) tt.textContent=a.title;
+  if(ss.textContent!==a.sub) ss.textContent=a.sub;
+  if(tm.textContent!==a.time) tm.textContent=a.time;
+  const sig=a.k+'|'+a.acts+'|'+(a.on?1:0);
+  if(ac._sig!==sig){
+    ac._sig=sig;
+    const btn=(act,inner,lab)=>'<button type="button" class="isl-b" data-k="'+a.k+'" data-act="'+act+'" aria-label="'+lab+'">'+inner+'</button>';
+    ac.innerHTML=a.acts==='rest'? btn('add','<span dir="ltr">+30</span>',t('add30sLab'))+btn('skip',ICN('skip',16),t('skipLab'))
+      : a.acts==='toggle'? (a.on?'':btn('reset',ICN('close',15),t('resetBtn2')))+btn('toggle',ICN(a.on?'pause':'play',16),a.on?t('pauseShort'):t('playLab'))
+      : '<span class="isl-go" aria-hidden="true">'+ICN('chevronU',18)+'</span>';
+  }
+  box.setAttribute('aria-label',a.title+' · '+a.time+(a.sub?' · '+a.sub:''));
+  if(box._k && box._k!==a.k && !ikMotionOff()){ box.classList.remove('morph'); void box.offsetWidth; box.classList.add('morph'); }
+  box._k=a.k;
+}
+function ikIslandFlash(msg,c){ _ikiFlash={msg,c:c||'var(--ok)',until:Date.now()+2600}; ikIslandKick(); }
+function ikIslandKick(){ clearTimeout(_ikiT); _ikiT=setTimeout(ikIslandTick,0); }
+function ikIslandTick(){
+  _ikiT=0;
+  const I=ikIslandEl(), el=I.el, now=Date.now();
+  const acts=ikActivities();
+  const flash=_ikiFlash && now<_ikiFlash.until ? _ikiFlash : null; if(!flash) _ikiFlash=null;
+  const vis=ikIslandBlocked()?[]:acts.filter(a=>!a.mine());
+  const show=vis.length>0 || (flash && !ikIslandBlocked());
+  if(el.classList.contains('on')!==!!show){
+    el.classList.toggle('on',!!show); document.body.classList.toggle('isl-on',!!show);
+    if(show){ const n=document.getElementById('nav'); if(n) el.style.setProperty('--isl-nav',n.offsetHeight+'px'); }
+  }
+  if(show){
+    const main=vis[0], mini=vis[1];
+    I.main.classList.toggle('flash',!!flash);
+    if(main) ikIslandFill(I.main,main,true);
+    if(flash){ const f=I.main.querySelector('.isl-flash'); f.textContent=flash.msg; I.main.style.setProperty('--isl-c',flash.c); }
+    el._main=main||null; el._mini=mini||null;
+    el.classList.toggle('duo',!!mini);
+    if(mini) ikIslandFill(I.mini,mini,false);
+  }
+  if(acts.length || flash){
+    const fast=show && vis[0] && vis[0].k==='chrono' && chrono.running;
+    _ikiT=setTimeout(ikIslandTick, fast?100:(show?250:400));
+  }
+}
+// La séance se réduit dans l'îlot (bouton ⌄, glisser la fenêtre vers le bas, toucher le fond)
+// sans jamais passer par closeOv('ovLive'), qui arrête ses minuteurs.
+function minimizeLive(){
+  if(!LIVE) return;
+  const ov=$('#ovLive'); if(ov && ov.classList.contains('on')){ ovLeave(ov); ov.classList.remove('on'); ov.style.zIndex=''; }
+  minimizeRest();
+  ikIslandKick();
+}
+function expandLive(){ if(!LIVE) return; renderLive(); openOv('ovLive'); ikIslandKick(); }
+function minimizeRest(){ const r=$('#restOv'); if(r && r.classList.contains('on')){ ovLeave(r); r.classList.remove('on'); } ikIslandKick(); }
+function expandRest(){ const r=$('#restOv'); if(r){ clearTimeout(r._leaveT); r.classList.remove('ov-leaving'); const c=r.querySelector('.ov-card'); if(c) c.style.transform=''; r.style.zIndex=topZ(); r.classList.add('on'); } ikIslandKick(); }
+// Barre du bas masquée au défilement : l'îlot descend prendre sa place.
+if('ResizeObserver' in window){ const n=document.getElementById('nav'); if(n) new ResizeObserver(()=>{ if(_iki) _iki.el.style.setProperty('--isl-nav',n.offsetHeight+'px'); }).observe(n); }
 
 /* ---------- AGENDA ---------- */
 function renderAgenda(){
