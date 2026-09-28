@@ -207,7 +207,7 @@ async function flushDirty(){
         // Les variables de l'app (SESS, RECORDS…) doivent voir la liste fusionnée, sinon la
         // prochaine sauvegarde renverrait l'ancienne et effacerait les ajouts de l'autre appareil.
         reloadState();
-        try{ const r={home:renderHome,sport:renderSport,stats:renderStats,profil:renderProfile}[document.body.dataset.scr]; if(r) r(); }catch(e){}
+        refreshScreen();
       }
     }
     for(const k of keys) await cloudPush(k, DB.load(k));
@@ -901,10 +901,22 @@ async function ensurePublicProfile(){
 // public_profiles + deux rpc sync_verified_public_profile pour rien. Même
 // garde en vol/cooldown que subscribeToPush().
 let _syncPPInFlight=null, _syncPPLastAt=0;
-async function syncPublicProfile(){
+// v107 : appelé par saveAll() à chaque coche, il envoyait deux requêtes toutes les 3 s tant
+// qu'on utilisait l'app — et ratait la dernière modification (fenêtre de 3 s sans rattrapage).
+// Désormais : 2,5 s après la dernière sauvegarde, et seulement si ce que voient les amis a
+// pu changer (VDOT, photo, séances, XP).
+let _ppTimer=null, _ppSig=null;
+function schedulePublicProfileSync(){ clearTimeout(_ppTimer); _ppTimer=setTimeout(()=>{ _ppTimer=null; syncPublicProfile(true); },2500); }
+function publicProfileSig(){
+  const ph=P&&P.photo?String(P.photo):''; const last=a=>{ const x=a&&a[a.length-1]; return x?(x.id||x.date||''):''; };
+  return [getUserVDOT()||0, ph.length, ph.slice(-24), (SESS||[]).length, last(SESS), (MSESS||[]).length, last(MSESS), XP&&XP.total||0, todayKey()].join('|');
+}
+async function syncPublicProfile(seulementSiChange){
   if(!window.supabaseClient || !window.currentUserId) return;
   if(_syncPPInFlight) return _syncPPInFlight;
-  if(Date.now()-_syncPPLastAt<3000) return;
+  const sig=publicProfileSig();
+  if(seulementSiChange && sig===_ppSig) return;
+  if(!seulementSiChange && Date.now()-_syncPPLastAt<3000) return;
   _syncPPInFlight=(async()=>{ try{
     // Le pseudo n'est JAMAIS écrasé ici : il est géré uniquement via claimUsername()
     // pour garantir son unicité (onboarding + modification dans le profil).
@@ -920,7 +932,8 @@ async function syncPublicProfile(){
       photo_url: P.photo||null,
       updated_at: new Date().toISOString()
     }).eq('user_id', window.currentUserId);
-    await window.supabaseClient.rpc('sync_verified_public_profile',{p_user_id:window.currentUserId});
+    const { error } = await window.supabaseClient.rpc('sync_verified_public_profile',{p_user_id:window.currentUserId});
+    if(!error) _ppSig=sig;
   }catch(e){ /* silencieux : pas bloquant pour l'app */ } })();
   try{ await _syncPPInFlight; }
   finally{ _syncPPLastAt=Date.now(); _syncPPInFlight=null; }
@@ -1788,7 +1801,9 @@ const DB = {
     }));
   },
   _quotaWarned:false,
-  _persist(k,v){
+  _ph:{}, // empreinte de la dernière valeur écrite par clé (voir save) ; inconnue si écrite ailleurs
+  _persist(k,v,h){
+    this._ph[k]=h; // appel direct sans empreinte (fusion cloud…) : la prochaine save() réécrira
     if(this.degraded) return; // mode mémoire seule : ne jamais écrire en clair par défaut
     VVVCrypto.encrypt(v).then(ct=>{
       try{ localStorage.setItem('vvv_'+k, ct); }
@@ -1807,11 +1822,16 @@ const DB = {
     // sessions, xp...) même quand rien n'avait changé, ce qui déclenchait un upsert
     // Supabase par clé à CHAQUE ouverture de l'app (jusqu'à 14, sur le plan gratuit).
     // On ne pousse au cloud que si la valeur a réellement changé ; l'écriture locale
-    // (cache + chiffrement) reste inconditionnelle, elle est quasi gratuite.
+    // chiffrée aussi (voir v107 plus bas : elle n'était pas gratuite du tout).
     // Comparée à ce que le serveur a (voir markSynced), pas au cache : le cache est le
     // même objet que la variable de l'app, donc toujours « égal » après une modification sur place.
-    const changed=differsFromSynced(k,v);
-    this._cache[k]=v; this._persist(k,v);
+    // v107 : une seule sérialisation, et l'écriture chiffrée n'a lieu que si la valeur a
+    // changé depuis la dernière — saveAll() rechiffrait les 13 clés à chaque coche, série
+    // ou lettre tapée (AES sur tout l'historique), ce qui ralentissait toute l'app.
+    let h=null; if(v!==null && v!==undefined){ try{ h=_fnv(JSON.stringify(v)); }catch(e){} }
+    const changed=(v===null||v===undefined) ? (k in _hashes()) : (h===null || _hashes()[k]!==h);
+    this._cache[k]=v;
+    if(h===null || this._ph[k]!==h) this._persist(k,v,h);
     if(changed) cloudPush(k,v);
   },
   // IMPORTANT : toujours utiliser DB.remove() (et jamais localStorage.removeItem direct) pour les clés
@@ -1898,8 +1918,15 @@ function saveAll(){
   DB.save('agenda',AGENDA); DB.save('xp',XP);
   DB.save('records',RECORDS); DB.save('prefs',PREFS); DB.save('weightlog',WEIGHTLOG);
   DB.save('tracker',TRACKER); DB.save('sesslog',SESSLOG);
-  if(window.currentUserId){ syncPublicProfile(); try{ syncDailyReminderState(); }catch(e){} }
+  if(window.currentUserId){ schedulePublicProfileSync(); try{ syncDailyReminderState(); }catch(e){} }
 }
+// Saisie au clavier (notes…) : une sauvegarde après une courte pause plutôt qu'à chaque
+// lettre ; jamais perdue — rattrapée quand l'app passe en arrière-plan ou se ferme.
+let _saveSoonT=null;
+function saveSoon(ms){ clearTimeout(_saveSoonT); _saveSoonT=setTimeout(()=>{ _saveSoonT=null; saveAll(); },ms||700); }
+function flushSaveSoon(){ if(_saveSoonT){ clearTimeout(_saveSoonT); _saveSoonT=null; saveAll(); } }
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') flushSaveSoon(); });
+window.addEventListener('pagehide',flushSaveSoon);
 
 /* ============ INTERNATIONALISATION (FR / EN / AR) ============ */
 const I18N={
@@ -1981,7 +2008,7 @@ const I18N={
     notConnected:'Non connecté',notifLabel:'Notifications',preferences:'Préférences',historyRecords:'Historique & records',
     statistics:'Statistiques',theme:'Thème',appColor:'Couleur de l\u2019app',simplifiedMode:'Mode simplifié',
     simplifiedModeDesc:'4 onglets, écrans allégés, textes plus grands — l\u2019essentiel seulement',
-    support:'Support',helpCenter:'Centre d\u2019aide',footerTag:'IKORUN — Elite Athletic Intelligence',
+    support:'Support',helpCenter:'Centre d\u2019aide',
     yourSpace:'Ton espace',settings:'Réglages',badgesLabel:'Badges',homePBLabel:'Tes records',toolsCalc:'Outils & calculateurs',editMyProfile:'Modifier mon profil',
     // --- Stats ---
     tabBilan:'Bilan',tabRun:'Course',tabMuscu:'Muscu',tabTrophies:'Trophées',
@@ -2567,7 +2594,7 @@ const I18N={
     notConnected:'Not signed in',notifLabel:'Notifications',preferences:'Preferences',historyRecords:'History & records',
     statistics:'Statistics',theme:'Theme',appColor:'App color',simplifiedMode:'Simplified mode',
     simplifiedModeDesc:'4 tabs, lighter screens, bigger text — the essentials only',
-    support:'Support',helpCenter:'Help center',footerTag:'IKORUN — Elite Athletic Intelligence',
+    support:'Support',helpCenter:'Help center',
     yourSpace:'Your space',settings:'Settings',badgesLabel:'Badges',homePBLabel:'Your PBs',toolsCalc:'Tools & calculators',editMyProfile:'Edit my profile',
     // --- Stats ---
     tabBilan:'Overview',tabRun:'Running',tabMuscu:'Strength',tabTrophies:'Trophies',
@@ -3153,7 +3180,7 @@ const I18N={
     notConnected:'غير متصل',notifLabel:'الإشعارات',preferences:'التفضيلات',historyRecords:'السجل والأرقام',
     statistics:'الإحصائيات',theme:'المظهر',appColor:'لون التطبيق',simplifiedMode:'الوضع المبسّط',
     simplifiedModeDesc:'4 تبويبات، شاشات أخف، نص أكبر — الأساسيات فقط',
-    support:'الدعم',helpCenter:'مركز المساعدة',footerTag:'IKORUN — Elite Athletic Intelligence',
+    support:'الدعم',helpCenter:'مركز المساعدة',
     yourSpace:'مساحتك',settings:'الإعدادات',badgesLabel:'الأوسمة',homePBLabel:'أرقامك القياسية',toolsCalc:'الأدوات والحاسبات',editMyProfile:'تعديل ملفي الشخصي',
     // --- الإحصائيات ---
     tabBilan:'الحصيلة',tabRun:'الجري',tabMuscu:'كمال الأجسام',tabTrophies:'الأوسمة',
@@ -4414,7 +4441,7 @@ function levelUpAnimation(level){
 /* ---------- UTIL ---------- */
 const $=s=>document.querySelector(s);
 const $$=s=>document.querySelectorAll(s);
-// Numéro de version affiché en bas de Profil. Avant ce correctif, "v3.02.123"
+// Numéro de version (signature IKORUN en bas des écrans). Avant ce correctif, "v3.02.123"
 // était une chaîne écrite en dur dans les 3 blocs de langue : je devais penser
 // à la modifier à la main à CHAQUE déploiement, en plus du ?v=NN de app.js
 // (obligatoire, lui, pour la mise en cache) — deux compteurs séparés à tenir
@@ -4427,7 +4454,6 @@ function appBuildNumber(){
   const m=tag && tag.src.match(/[?&]v=(\d+)/);
   return m ? m[1] : '?';
 }
-function appVersionTag(){ return t('footerTag')+' · v3.02.'+appBuildNumber(); }
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -5098,8 +5124,14 @@ let _ovZTop=12000;
 // démarrage (20000) : sans borne, une session très longue finissait par distribuer
 // des z-index qui recouvraient même les messages système.
 function topZ(){ _ovZTop=Math.min(_ovZTop+1,18000); return _ovZTop; }
-function openOv(id){ const el=$('#'+id); el.style.zIndex=topZ(); el.classList.add('on'); ikOpenOv(el); }
-function closeOv(id){ const el=$('#'+id); el.classList.remove('on'); el.style.zIndex=''; if(id==='ovProg') _pfSheet=null; if(id==='ovLib'&&typeof _exDemoTimer!=='undefined'){ clearInterval(_exDemoTimer); } if((id==='ovProg'||id==='ovLive')&&typeof _exDemo2!=='undefined'&&_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; }
+// Sortie animée (voir .ov-leaving dans index.html) ; une réouverture l'interrompt.
+function ovLeave(el){
+  if(!el || !el.classList.contains('on') || ikMotionOff()) return;
+  clearTimeout(el._leaveT); el.classList.add('ov-leaving');
+  el._leaveT=setTimeout(()=>{ el.classList.remove('ov-leaving'); const c=el.querySelector('.ov-card'); if(c) c.style.transform=''; },280);
+}
+function openOv(id){ const el=$('#'+id); if(!el) return; clearTimeout(el._leaveT); el.classList.remove('ov-leaving'); const c=el.querySelector('.ov-card'); if(c) c.style.transform=''; el.style.zIndex=topZ(); el.classList.add('on'); ikOpenOv(el); }
+function closeOv(id){ const el=$('#'+id); if(!el) return; ovLeave(el); el.classList.remove('on'); el.style.zIndex=''; if(id==='ovProg') _pfSheet=null; if(id==='ovLib'&&typeof _exDemoTimer!=='undefined'){ clearInterval(_exDemoTimer); } if((id==='ovProg'||id==='ovLive')&&typeof _exDemo2!=='undefined'&&_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; }
   // Garde-fou : openLibFor() ferme ovCreate pour ouvrir la bibliothèque par-dessus (voir plus
   // bas). Sans ce bloc, annuler depuis la bibliothèque ou depuis "Configurer" (X, pas
   // "Ajouter") fermait tout et faisait perdre le programme en cours de création — bug
@@ -5108,6 +5140,15 @@ function closeOv(id){ const el=$('#'+id); el.classList.remove('on'); el.style.zI
   // Garde-fou : si ovLive se ferme par un chemin qui n'est pas pauseLive/doCancelLive/finishLive,
   // on ne laisse jamais liveTimer/restTimer tourner en fond perdu.
   if(id==='ovLive'){ if(typeof liveTimer!=='undefined'){ clearInterval(liveTimer); } if(typeof restTimer!=='undefined'){ clearInterval(restTimer); } }
+}
+// Fenêtre créée à la volée (confirmation, saisie) : même sortie animée que les autres.
+// Ses identifiants tombent tout de suite — une nouvelle fenêtre ouverte pendant la sortie
+// ne doit pas retrouver les boutons de l'ancienne.
+function ovDismiss(ov){
+  if(!ov) return;
+  ov.removeAttribute('id'); ov.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));
+  if(ikMotionOff()){ ov.remove(); return; }
+  ov.classList.remove('on'); ov.classList.add('ov-leaving'); setTimeout(()=>ov.remove(),280);
 }
 // Popup de confirmation "maison" à la place de confirm() natif : ce dernier ne se
 // déclenche pas de façon fiable dans une app ajoutée à l'écran d'accueil (iOS PWA
@@ -5132,8 +5173,8 @@ function customConfirm(msg,onYes,opts){
       '<button class="btn'+(opts.danger?' danger':'')+'" style="flex:1" id="genConfirmYes">'+(opts.yesLabel||t('validate'))+'</button>'+
     '</div></div>';
   document.body.appendChild(ov);
-  $('#genConfirmNo').onclick=()=>{ ov.remove(); if(opts.onNo) opts.onNo(); };
-  $('#genConfirmYes').onclick=()=>{ ov.remove(); onYes(); };
+  $('#genConfirmNo').onclick=()=>{ ovDismiss(ov); if(opts.onNo) opts.onNo(); };
+  $('#genConfirmYes').onclick=()=>{ ovDismiss(ov); onYes(); };
 }
 /* Même problème que confirm() : prompt() ne s'affiche pas dans une app ajoutée à
    l'écran d'accueil sur iOS. Il restait utilisé pour nommer un plan perso, le
@@ -5156,8 +5197,8 @@ function customPrompt(msg,defVal,onOk,opts){
     '</div></div>';
   document.body.appendChild(ov);
   const inp=$('#genPromptInp');
-  const done=()=>{ const v=(inp.value||'').trim(); ov.remove(); if(v) onOk(v); else if(opts.onCancel) opts.onCancel(); };
-  $('#genPromptNo').onclick=()=>{ ov.remove(); if(opts.onCancel) opts.onCancel(); };
+  const done=()=>{ const v=(inp.value||'').trim(); ovDismiss(ov); if(v) onOk(v); else if(opts.onCancel) opts.onCancel(); };
+  $('#genPromptNo').onclick=()=>{ ovDismiss(ov); if(opts.onCancel) opts.onCancel(); };
   $('#genPromptYes').onclick=done;
   inp.onkeydown=e=>{ if(e.key==='Enter') done(); };
   // Le focus doit venir après l'insertion dans la page, sinon le clavier ne s'ouvre pas.
@@ -5388,12 +5429,12 @@ $$('.nb').forEach(b=>b.onclick=()=>nav(b.dataset.s));
    en cours, comme le geste "retour" natif iOS. Reprend la logique du
    liveSwipe plus bas (transform direct pendant le drag, seuil au relâcher). */
 (function(){
-  let ovEl=null, ovId=null, startX=0, startY=0, dx=0, dragging=false;
+  let ovEl=null, ovId=null, startX=0, startY=0, dx=0, dragging=false, t0=0;
   const THRESH=90;
   document.addEventListener('touchstart',e=>{
     const edge=e.target.closest('.ov-push-edge'); if(!edge) return;
     ovId=edge.dataset.ovid; ovEl=document.getElementById(ovId); if(!ovEl) return;
-    startX=e.touches[0].clientX; startY=e.touches[0].clientY; dx=0; dragging=true;
+    startX=e.touches[0].clientX; startY=e.touches[0].clientY; dx=0; dragging=true; t0=performance.now();
     ovEl.classList.add('dragging');
   },{passive:true});
   document.addEventListener('touchmove',e=>{
@@ -5410,10 +5451,56 @@ $$('.nb').forEach(b=>b.onclick=()=>nav(b.dataset.s));
   document.addEventListener('touchend',()=>{
     if(!dragging||!ovEl){ dragging=false; return; }
     dragging=false; ovEl.classList.remove('dragging');
-    const card=ovEl.querySelector('.ov-card'); if(card) card.style.transform='';
-    if(dx>THRESH) closeOv(ovId);
+    const card=ovEl.querySelector('.ov-card');
+    const vite=dx>36 && dx/Math.max(1,performance.now()-t0)>0.45; // petit geste rapide = retour aussi
+    // Fermeture : la sortie animée part de là où est le doigt (avant, la page
+    // revenait d'abord à sa place puis disparaissait d'un coup).
+    if(dx>THRESH || vite) closeOv(ovId);
+    else if(card) card.style.transform='';
     dx=0; ovEl=null; ovId=null;
   });
+})();
+
+/* ---------- FENÊTRES DU BAS : glisser vers le bas / toucher le fond pour fermer (v107) ----------
+   Le geste part de la poignée ou de l'en-tête (72 px du haut) : dans le contenu, le
+   doigt fait défiler, règle une roue ou un curseur — jamais une fermeture surprise.
+   Formulaires (profil, programme, réglage d'exercice) et séance en cours : fermeture
+   volontaire uniquement, pour ne jamais perdre une saisie. */
+(function(){
+  const FERMABLES=new Set(['ovSettings','ovBadges','ovFullPlan','ovPicker']);
+  let s=null;
+  const fermable=ov=>ov && ov.id && FERMABLES.has(ov.id) && ov.classList.contains('on');
+  document.addEventListener('touchstart',e=>{
+    s=null;
+    const card=e.target.closest('.ov-card'); if(!card) return;
+    const ov=card.parentElement; if(!fermable(ov)) return;
+    const t=e.touches[0], r=card.getBoundingClientRect();
+    if(t.clientY-r.top>72) return;
+    s={ov,card,x0:t.clientX,y0:t.clientY,t0:performance.now(),dy:0,on:false};
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!s) return;
+    const t=e.touches[0], dy=t.clientY-s.y0, dx=t.clientX-s.x0;
+    if(!s.on){
+      if(Math.abs(dx)>10 && Math.abs(dx)>Math.abs(dy)){ s=null; return; }
+      if(dy<8) return;
+      s.on=true; s.ov.classList.add('sheet-drag');
+    }
+    if(e.cancelable) e.preventDefault(); // la feuille suit le doigt au lieu de défiler
+    s.dy=Math.max(0,dy);
+    s.card.style.transform='translateY('+(s.dy/uiZoomFactor())+'px)';
+  },{passive:false});
+  const fin=()=>{
+    if(!s) return; const st=s; s=null; if(!st.on) return;
+    st.ov.classList.remove('sheet-drag');
+    const v=st.dy/Math.max(1,performance.now()-st.t0);
+    if(st.dy>110 || (st.dy>40 && v>0.5)){ closeOv(st.ov.id); return; }
+    st.card.style.transition='transform .25s var(--ease-out)'; st.card.style.transform='';
+    setTimeout(()=>{ st.card.style.transition=''; },270);
+  };
+  document.addEventListener('touchend',fin); document.addEventListener('touchcancel',fin);
+  // toucher le fond sombre autour de la fenêtre
+  document.addEventListener('click',e=>{ const ov=e.target; if(ov && ov.classList && ov.classList.contains('ov') && fermable(ov)) closeOv(ov.id); });
 })();
 
 /* ---------- PULL-TO-REFRESH sur #scroll ----------
@@ -5429,7 +5516,7 @@ $$('.nb').forEach(b=>b.onclick=()=>nav(b.dataset.s));
     +'transform:translate(-50%,-70px);z-index:9500;width:36px;height:36px;border-radius:50%;'
     +'background:var(--s1);border:1px solid var(--hair);display:flex;align-items:center;justify-content:center;'
     +'color:var(--e);font-size:16px;box-shadow:var(--sh-md);transition:transform .18s var(--ease-out),opacity .18s;opacity:0;';
-  ind.textContent='';
+  ind.innerHTML='<i class="ik-logo-mark"></i>'; // signature : le symbole IKORUN tourne quand on tire
   document.body.appendChild(ind);
   sc.addEventListener('touchstart',e=>{
     if(sc.scrollTop>2||busy) return;
@@ -5447,21 +5534,41 @@ $$('.nb').forEach(b=>b.onclick=()=>nav(b.dataset.s));
     if(!pulling) return;
     pulling=false;
     if(dy>=TRIGGER && !busy){
-      busy=true;
+      busy=true; ind.classList.add('busy');
       ind.style.transform='translate(-50%,50px) rotate(0deg)';
       ind.style.opacity='1';
       if(navigator.vibrate) navigator.vibrate(8);
       try{
-        if(window.currentUserId) await cloudPullAll(window.currentUserId);
-        nav(document.body.dataset.scr||'home');
-        toast(t('syncedToast'));
-      }catch(e){ /* pas de cloud dispo (hors-ligne) : on referme juste l'indicateur */ }
-      busy=false;
+        // Hors ligne : rien à tirer du serveur — le dire, au lieu d'un « Synchronisé » trompeur.
+        if(!navigator.onLine || !window.currentUserId || window._offlineBoot){ toast(t('offlineModeAvailable')); }
+        else {
+          // Les variables de l'app (P, SESS…) doivent reprendre les données tirées : avant,
+          // l'écran se redessinait avec les anciennes et la sauvegarde suivante les réécrivait.
+          window._cloudPulling=true;
+          try{ await cloudPullAll(window.currentUserId); reloadState(); } finally{ window._cloudPulling=false; }
+          await flushDirty();
+          refreshScreen(); // redessine sur place : un outil ouvert ou un chrono en cours ne sont plus fermés
+          toast(t('syncedToast'));
+        }
+      }catch(e){ /* réseau coupé en cours de route : on referme juste l'indicateur */ }
+      busy=false; ind.classList.remove('busy');
     }
     ind.style.opacity='0'; ind.style.transform='translate(-50%,-70px)';
     dy=0;
   });
 })();
+// Redessine l'écran affiché SANS le ramener à sa racine (contrairement à nav() sur l'onglet
+// actif) : l'outil ouvert, la vue calendrier ou l'onglet de Stats restent où ils sont.
+function refreshScreen(){
+  const s=document.body.dataset.scr;
+  try{
+    if(s==='home') renderHome();
+    else if(s==='sport'||s==='calendrier') renderSport();
+    else if(s==='stats') renderStats();
+    else if(s==='outils'){ if(outilsTab==='home') renderOutils(); }
+    else if(s==='profil') renderProfile();
+  }catch(e){ console.error('[IKORUN] refreshScreen',e); }
+}
 function greet(){ const h=new Date().getHours(); const l=curLang();
   const G={fr:[h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir'],en:[h<12?'Good morning':h<18?'Good afternoon':'Good evening'],ar:['مرحباً']};
   return (G[l]||G.fr)[0]+', '+(P.name||t('profil'))+''; }
@@ -5821,6 +5928,9 @@ function scheduleResume(){
 }
 
 function logout(){ signOutUser(); }
+// Numéro de version de la signature (.ik-sign, bas de chaque écran) — même numéro que
+// l'ancienne ligne du Profil, lu sur l'adresse d'app.js (voir appBuildNumber).
+(function(){ try{ const el=document.getElementById('ikSignVer'); if(el) el.textContent='v3.02.'+appBuildNumber(); }catch(e){} })();
 function initApp(){
   $('#ob').classList.remove('on');
   applyTheme();
@@ -8470,7 +8580,7 @@ function homeGoalCard(){
     const curWeekNum=(todaySess||upcoming||PLAN.sessions[PLAN.sessions.length-1]).week;
     pct=PLAN.weeks?Math.min(100,Math.round((curWeekNum/PLAN.weeks)*100)):pct;
   }
-  return '<div class="card goal-card stag" style="animation-delay:.1s" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\'">'+
+  return '<div class="card goal-card stag" style="animation-delay:.1s" onclick="sportTab=\'run\';runSub=\'ia\';sportView=\'list\';nav(\'sport\')">'+
     '<div class="goal-top">'+
       '<div><div class="goal-lab">'+t('objectiveCap')+'</div><div class="goal-race">'+escHtml(trRace(P.objRace)||P.goal||t('yourNextRaceDefault'))+(P.objTime?' — sub '+escHtml(P.objTime):'')+'</div>'+
       '<div class="goal-target">Course le '+fmtDate(P.compDate)+'</div></div>'+
@@ -8503,6 +8613,10 @@ function bestBarLabel(per,bars,i){
   return bars.labels[i];
 }
 function fmt1(v){ const n=Number(v); return (v!==''&&v!=null&&isFinite(n))?n.toLocaleString(localeCode(),{minimumFractionDigits:1,maximumFractionDigits:1}):String(v); }
+// Jusqu'à 2 décimales, sans zéros inutiles (1,25 · 2,5 · 5).
+function hKm2(v){ const n=Number(v); return isFinite(n)?n.toLocaleString(localeCode(),{maximumFractionDigits:2}):String(v); }
+// Même chose avec d décimales fixes (0,83 · 12,50 km/h) : les outils écrivaient « 0.83 » en français.
+function fmtN(v,d){ const n=Number(v); return (v!==''&&v!=null&&isFinite(n))?n.toLocaleString(localeCode(),{minimumFractionDigits:d,maximumFractionDigits:d}):String(v); }
 // Les n prochaines vraies séances du plan (hors repos), strictement après aujourd'hui.
 function homeNextRows(n){
   if(!PLAN||!PLAN.sessions) return null;
@@ -11301,16 +11415,24 @@ function openTool(k){
   if(k==='imc' && P){ if(P.height) imc.h=P.height; if(P.weight) imc.w=P.weight; }
   renderOutils(); $('#scroll').scrollTop=0;
 }
-function bindToolSearch(){ const si=$('#toolSearchInp'); if(si){ si.oninput=()=>{ toolSearch=si.value; $('#s-outils').innerHTML=outilsHome(); bindToolSearch(); const el=$('#toolSearchInp'); el.focus(); el.setSelectionRange(toolSearch.length,toolSearch.length); }; } }
+// Seule la liste sous le champ se redessine à chaque lettre : avant, toute la page (champ
+// compris) était recréée, ce qui faisait clignoter le clavier sur iPhone.
+function bindToolSearch(){ const si=$('#toolSearchInp'); if(si){ si.oninput=()=>{ toolSearch=si.value; const r=$('#toolRes'); if(r) r.innerHTML=outilsList(); }; } }
 function outilsHome(){
   // La VDOT est affichée dans Sport, Stats et Profil : plus de pastille ici (retour du 26/09).
   let h='';
   // Raccourcis rapides Chrono + Minuteur
   h+='<div style="display:flex;gap:10px;margin-bottom:16px"><div class="card" style="flex:1;padding:14px;margin:0;cursor:pointer;text-align:center" onclick="openTool(\'chrono\')"><div style="color:var(--e);display:flex;justify-content:center">'+ICN('stopwatch',26)+'</div><div style="font-weight:700;font-size:13px;margin-top:6px">'+t('toolChronoName')+'</div></div><div class="card" style="flex:1;padding:14px;margin:0;cursor:pointer;text-align:center" onclick="openQuickTimer()"><div style="color:var(--warn);display:flex;justify-content:center">'+ICN('timer',26)+'</div><div style="font-weight:700;font-size:13px;margin-top:6px">'+t('quickTimer')+'</div></div></div>';
-  h+='<div style="display:flex;gap:10px;align-items:center"><div class="searchbox" style="flex:1;min-width:0"><span class="searchic">'+ICN('search',18,'var(--muted)')+'</span><input class="inp" id="toolSearchInp" style="padding-left:42px" placeholder="'+t('searchTool')+'" value="'+escHtml(toolSearch||'')+'"></div></div>';
-  const q=toolSearch.toLowerCase().trim();
+  h+='<div style="display:flex;gap:10px;align-items:center"><div class="searchbox" style="flex:1;min-width:0"><span class="searchic">'+ICN('search',18,'var(--muted)')+'</span><input class="inp" id="toolSearchInp" type="search" enterkeyhint="search" autocomplete="off" style="padding-left:42px" placeholder="'+t('searchTool')+'" value="'+escHtml(toolSearch||'')+'"></div></div>';
+  return h+'<div id="toolRes">'+outilsList()+'</div>';
+}
+// Résultats de recherche, ou favoris + outils principaux + autres outils.
+function outilsList(){
+  let h='';
+  const sansAccent=x=>String(x||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const q=sansAccent(toolSearch).trim();
   if(q){
-    const res=Object.entries(TOOLS).filter(([k,tl])=>tl.name.toLowerCase().includes(q));
+    const res=Object.entries(TOOLS).filter(([k,tl])=>sansAccent(tl.name+' '+tl.sub+' '+favShort(k)).includes(q));
     h+='<div class="lab" style="margin:14px 0 10px">'+tp('resultsCount',res.length)+'</div>';
     res.forEach(([k,tl])=>{ h+=toolRow(k,tl); });
     return h;
@@ -11367,18 +11489,18 @@ function renderSanteTool(){
   const last=WEIGHTLOG[WEIGHTLOG.length-1], prev=WEIGHTLOG[WEIGHTLOG.length-2];
   const trend=last&&prev?(last.w-prev.w):0;
   h+='<div class="card"><div class="row"><div class="card-t" style="margin:0">'+t('weightLab')+'</div><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="addWeight()">'+t('addBtn')+'</span></div>';
-  h+='<div class="row" style="align-items:flex-end;margin-top:8px"><div class="man" style="font-size:36px;font-weight:800">'+(last?last.w:w)+'<span style="font-size:16px;color:var(--muted)"> kg</span></div>'+(trend?'<span class="num" style="margin-left:10px;color:'+(trend<0?'var(--ok)':'var(--warn)')+'">'+(trend>0?'▲ +':'▼ ')+trend.toFixed(1)+' kg</span>':'')+'</div>';
+  h+='<div class="row" style="align-items:flex-end;margin-top:8px"><div class="man" style="font-size:36px;font-weight:800">'+hKm(last?last.w:w)+'<span style="font-size:16px;color:var(--muted)"> kg</span></div>'+(trend?'<span class="num" style="margin-left:10px;color:'+(trend<0?'var(--ok)':'var(--warn)')+'">'+(trend>0?'▲ +':'▼ ')+fmt1(trend)+' kg</span>':'')+'</div>';
   if(WEIGHTLOG.length>=2) h+='<div style="margin-top:12px">'+weightSparkline()+'</div>';
   h+='</div>';
   // IMC
-  h+='<div class="card"><div class="row"><div><div class="card-t" style="margin:0">'+t('imcLab')+'</div><div class="man" style="font-size:28px;font-weight:800;margin-top:6px;color:var('+imcCol+')">'+imc.toFixed(1)+'</div></div><div class="badge" style="background:color-mix(in srgb,var('+imcCol+') 10%,transparent);color:var('+imcCol+')">'+imcCat+'</div></div>'+
+  h+='<div class="card"><div class="row"><div><div class="card-t" style="margin:0">'+t('imcLab')+'</div><div class="man" style="font-size:28px;font-weight:800;margin-top:6px;color:var('+imcCol+')">'+fmt1(imc)+'</div></div><div class="badge" style="background:color-mix(in srgb,var('+imcCol+') 10%,transparent);color:var('+imcCol+')">'+imcCat+'</div></div>'+
     '<div class="pbar" style="margin-top:12px"><div style="width:'+Math.min(100,(imc/40)*100)+'%;background:var('+imcCol+')"></div></div></div>';
   // INDICATEURS — grille
   h+='<div class="sgrid" style="margin-bottom:14px">';
   h+='<div class="sbox"><div class="v" style="color:var(--e)">'+freq+'</div><div class="l">'+t('sessionsPerWeek')+'</div></div>';
   h+='<div class="sbox"><div class="v" style="color:var(--or)">'+bmr+'</div><div class="l">'+t('metabolismKcal')+'</div></div>';
   h+='<div class="sbox"><div class="v" style="color:var(--bad)">'+Math.round(burned)+'</div><div class="l">'+t('burned7d')+'</div></div>';
-  h+='<div class="sbox"><div class="v" style="color:var(--platine)">'+Math.round(w*35/100)/10+'L</div><div class="l">'+t('waterPerDay')+'</div></div>';
+  h+='<div class="sbox"><div class="v" style="color:var(--platine)">'+hKm(Math.round(w*35/100)/10)+' L</div><div class="l">'+t('waterPerDay')+'</div></div>';
   h+='</div>';
   // SOMMEIL / FATIGUE / RÉCUP (depuis derniers debriefs)
   const recent=SESSLOG.slice(-7);
@@ -11406,9 +11528,9 @@ function renderSanteTool(){
 }
 function santeBar(label,val,max,col){ const pct=Math.min(100,val/max*100); const icN=['warning','close','target','check','star'][Math.max(0,Math.min(4,Math.round(val)-1))];
   const ic=val?ICN(icN,14):'';
-  return '<div style="margin-bottom:10px"><div class="row" style="margin-bottom:4px"><span style="font-size:13px">'+label+'</span><span style="font-size:13px;display:inline-flex;align-items:center;gap:4px">'+(val?ic+' '+val.toFixed(1)+'/'+max:'—')+'</span></div><div class="pbar"><div style="width:'+pct+'%;background:var('+col+')"></div></div></div>'; }
+  return '<div style="margin-bottom:10px"><div class="row" style="margin-bottom:4px"><span style="font-size:13px">'+label+'</span><span style="font-size:13px;display:inline-flex;align-items:center;gap:4px">'+(val?ic+' '+fmt1(val)+'/'+max:'—')+'</span></div><div class="pbar"><div style="width:'+pct+'%;background:var('+col+')"></div></div></div>'; }
 function weightSparkline(){
-  const data=WEIGHTLOG.slice(-14).map(x=>x.w); if(data.length<2)return'';
+  const data=WEIGHTLOG.slice(-14).map(x=>+(x&&x.w)).filter(Number.isFinite); if(data.length<2)return''; // une entrée importée mal formée ne casse plus le tracé
   const min=Math.min(...data),max=Math.max(...data),rng=(max-min)||1; const W=300,H=60;
   const pts=data.map((v,i)=>(i/(data.length-1)*W).toFixed(1)+','+(H-(v-min)/rng*H).toFixed(1)).join(' ');
   return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:60px"><polyline points="'+pts+'" fill="none" stroke="var(--e)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -11447,17 +11569,17 @@ function computeLab(){
 function renderAIO(){
   const computed=f=>LAB.recent.length>=2 && !LAB.recent.includes(f) && LAB[f]!=null;
   let h='<div class="tip" style="margin-bottom:16px">'+t('labHint')+'</div>';
-  h+=labField(t('distField'),'','dist',LAB.dist!=null?LAB.dist.toFixed(2)+' km':'—',computed('dist'));
+  h+=labField(t('distField'),'','dist',LAB.dist!=null?fmtN(LAB.dist,2)+' km':'—',computed('dist'));
   h+=labField(t('timeField'),'','time',LAB.time!=null?fmtTime(LAB.time):'—',computed('time'));
   h+=labField(t('paceField'),'','pace',LAB.pace!=null?spkToStr(LAB.pace)+' /km':'—',computed('pace'));
-  h+=labField(t('speedField'),'','speed',LAB.speed!=null?LAB.speed.toFixed(2)+' km/h':'—',computed('speed'));
+  h+=labField(t('speedField'),'','speed',LAB.speed!=null?fmtN(LAB.speed,2)+' km/h':'—',computed('speed'));
   h+='<button class="btn ghost" style="margin-top:10px" onclick="resetLab()">'+t('resetBtn')+'</button>';
   // Bonus : splits + prédictions si distance & pace connus
   if(LAB.dist&&LAB.pace&&LAB.dist>=1){
     h+='<div class="card-t" style="margin-top:20px">'+t('splitTimesTitle')+'</div>';
     const n=Math.min(Math.floor(LAB.dist),42);
     for(let k=1;k<=n;k++){ const hi=[5,10,21,42].includes(k); h+='<div class="zrow" style="padding:9px 0"><span class="zname" style="'+(hi?'color:var(--e)':'')+'">km '+k+(hi?'':'')+'</span><span class="zval mono">'+fmtTime(LAB.pace*k)+'</span></div>'; }
-    if(LAB.dist%1>0.01) h+='<div class="zrow" style="padding:9px 0"><span class="zname">'+LAB.dist.toFixed(2)+' km</span><span class="zval mono">'+fmtTime(LAB.time)+'</span></div>';
+    if(LAB.dist%1>0.01) h+='<div class="zrow" style="padding:9px 0"><span class="zname">'+fmtN(LAB.dist,2)+' km</span><span class="zval mono">'+fmtTime(LAB.time)+'</span></div>';
   }
   $('#outBody').innerHTML=h;
 }
@@ -11477,7 +11599,7 @@ function resetLab(){ LAB={dist:null,time:null,pace:null,speed:null,recent:[]}; r
 function renderVDOTtool(){
   const vdot=getUserVDOT();
   let h='<div class="card" style="text-align:center"><div class="man" style="font-size:48px;font-weight:800;color:var(--e)">'+(vdot?fmt1(vdot):'—')+'</div><div class="lab">'+t('vdotToolTitle')+'</div></div>';
-  if(vdot){ const vo2=(vdot).toFixed(1);
+  if(vdot){ const vo2=fmt1(vdot);
     h+='<div class="card"><div class="card-t">'+t('physioEstimates')+'</div>'+
       '<div class="zrow"><span class="zname">'+t('vo2maxEst')+'</span><span class="zval">'+vo2+' ml/kg/min</span></div>'+
       '<div class="zrow"><span class="zname">'+t('thresholdPace')+'</span><span class="zval mono">'+spkToStr(paceFromPct(vdot,.88))+'/km</span></div>'+
@@ -11503,7 +11625,7 @@ function renderRMtool(){
 let tonW=60,tonS=4,tonR=10;
 function renderTonnageTool(){
   const ton=tonW*tonS*tonR;
-  let h='<div class="card"><div class="field"><label>'+t('loadKgLab')+'</label><div class="stepper"><button onclick="tonW=Math.max(0,tonW-2.5);renderTonnageTool()">−</button><span class="val">'+tonW+'</span><button onclick="tonW+=2.5;renderTonnageTool()">+</button></div></div><div class="field"><label>'+t('setsLab')+'</label><div class="stepper"><button onclick="tonS=Math.max(1,tonS-1);renderTonnageTool()">−</button><span class="val">'+tonS+'</span><button onclick="tonS++;renderTonnageTool()">+</button></div></div><div class="field"><label>'+t('repsShort')+'</label><div class="stepper"><button onclick="tonR=Math.max(1,tonR-1);renderTonnageTool()">−</button><span class="val">'+tonR+'</span><button onclick="tonR++;renderTonnageTool()">+</button></div></div></div>';
+  let h='<div class="card"><div class="field"><label>'+t('loadKgLab')+'</label><div class="stepper"><button onclick="tonW=Math.max(0,tonW-2.5);renderTonnageTool()">−</button><span class="val">'+tonW+'</span><button onclick="tonW+=2.5;renderTonnageTool()">+</button></div></div><div class="field"><label>'+t('setsLab')+'</label><div class="stepper"><button onclick="tonS=Math.max(1,tonS-1);renderTonnageTool()">−</button><span class="val">'+tonS+'</span><button onclick="tonS++;renderTonnageTool()">+</button></div></div><div class="field"><label>'+t('repsLab')+'</label><div class="stepper"><button onclick="tonR=Math.max(1,tonR-1);renderTonnageTool()">−</button><span class="val">'+tonR+'</span><button onclick="tonR++;renderTonnageTool()">+</button></div></div></div>';
   h+='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var(--e)">'+ton+' kg</div><div class="lab">'+tp('totalTonnageLab',tonS,tonR,tonW)+'</div></div>';
   $('#outBody').innerHTML=h;
 }
@@ -11516,7 +11638,7 @@ function renderLoadTool(){
   acute/=7; chronic/=28;
   const ratio=chronic>0?(acute/chronic):0;
   let status,col; if(ratio===0){status=t('noDataLab');col='--dim';} else if(ratio<0.8){status=t('acwrUnder');col='--platine';} else if(ratio<=1.3){status=t('acwrOptimal');col='--ok';} else if(ratio<=1.5){status=t('acwrHigh');col='--warn';} else {status=t('acwrRisk');col='--bad';}
-  let h='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var('+col+')">'+ratio.toFixed(2)+'</div><div class="lab">'+t('acwrRatioLab')+'</div><div class="badge" style="margin-top:10px;background:color-mix(in srgb,var('+col+') 10%,transparent);color:var('+col+')">'+status+'</div></div>';
+  let h='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var('+col+')">'+fmtN(ratio,2)+'</div><div class="lab">'+t('acwrRatioLab')+'</div><div class="badge" style="margin-top:10px;background:color-mix(in srgb,var('+col+') 10%,transparent);color:var('+col+')">'+status+'</div></div>';
   h+='<div class="sgrid"><div class="sbox"><div class="v">'+Math.round(acute)+'</div><div class="l">'+t('acwrAcuteLab')+'</div></div><div class="sbox"><div class="v">'+Math.round(chronic)+'</div><div class="l">'+t('acwrChronicLab')+'</div></div></div>';
   h+='<div class="tip" style="margin-top:12px">'+t('acwrTip')+'</div>';
   $('#outBody').innerHTML=h;
@@ -11530,7 +11652,7 @@ function renderCaloriesTool(){
 }
 function renderHydraTool(){
   const w=P.weight||62; const daily=Math.round(w*35); const perH=Math.round(0.5*1000);
-  let h='<div class="card"><div class="card-t">'+t('waterNeedsTitle')+'</div><div class="zrow"><span class="zname">'+t('dailyRest')+'</span><span class="zval">'+(daily/1000).toFixed(1)+' L</span></div><div class="zrow"><span class="zname">'+t('perRunHour')+'</span><span class="zval">0,4–0,8 L</span></div><div class="zrow"><span class="zname">'+t('perHeatHour')+'</span><span class="zval">+0,3 L</span></div></div><div class="tip">'+t('hydraTip')+'</div>';
+  let h='<div class="card"><div class="card-t">'+t('waterNeedsTitle')+'</div><div class="zrow"><span class="zname">'+t('dailyRest')+'</span><span class="zval">'+fmt1(daily/1000)+' L</span></div><div class="zrow"><span class="zname">'+t('perRunHour')+'</span><span class="zval">0,4–0,8 L</span></div><div class="zrow"><span class="zname">'+t('perHeatHour')+'</span><span class="zval">+0,3 L</span></div></div><div class="tip">'+t('hydraTip')+'</div>';
   $('#outBody').innerHTML=h;
 }
 let bmrSex=(P&&P.sex)||'Homme';
@@ -11610,8 +11732,8 @@ function renderConvertTool(){
     const rows=[
       ['min/km', spkToStr(spk)+' /km'],
       ['min/mi', spkToStr(spk*1.609344)+' /mi'],
-      ['km/h', (3600/spk).toFixed(2)],
-      ['mph', (3600/(spk*1.609344)).toFixed(2)]
+      ['km/h', fmtN(3600/spk,2)],
+      ['mph', fmtN(3600/(spk*1.609344),2)]
     ];
     h+='<div class="cv-pace-hero" onclick="cvPickPace()"><div class="cv-lab">'+t('cvTapToEdit')+'</div><div class="cv-val" style="font-size:40px">'+spkToStr(spk)+'<span style="font-size:16px;color:var(--muted)"> /km</span></div></div>';
     h+='<div class="card cv-pace-table">'+rows.map(r=>'<div class="zrow"><span class="zname">'+r[0]+'</span><span class="zval mono">'+r[1]+'</span></div>').join('')+'</div>';
@@ -11620,9 +11742,9 @@ function renderConvertTool(){
 }
 let pgW=60,pgInc=2.5,pgWk=8;
 function renderProgTool(){
-  let h='<div class="card"><div class="field"><label>'+t('currentLoadKgLab')+'</label><div class="stepper"><button onclick="pgW=Math.max(0,pgW-2.5);renderProgTool()">−</button><span class="val">'+pgW+'</span><button onclick="pgW+=2.5;renderProgTool()">+</button></div></div><div class="field"><label>'+t('weeklyProgressKgLab')+'</label><div class="pills">'+[1.25,2.5,5].map(x=>'<div class="pill '+(pgInc===x?'on':'')+'" onclick="pgInc='+x+';renderProgTool()">+'+x+'</div>').join('')+'</div></div><div class="field"><label>'+t('weeksLab')+'</label><div class="stepper"><button onclick="pgWk=Math.max(1,pgWk-1);renderProgTool()">−</button><span class="val">'+pgWk+'</span><button onclick="pgWk++;renderProgTool()">+</button></div></div></div>';
+  let h='<div class="card"><div class="field"><label>'+t('currentLoadKgLab')+'</label><div class="stepper"><button onclick="pgW=Math.max(0,pgW-2.5);renderProgTool()">−</button><span class="val">'+pgW+'</span><button onclick="pgW+=2.5;renderProgTool()">+</button></div></div><div class="field"><label>'+t('weeklyProgressKgLab')+'</label><div class="pills">'+[1.25,2.5,5].map(x=>'<div class="pill '+(pgInc===x?'on':'')+'" onclick="pgInc='+x+';renderProgTool()">+'+hKm2(x)+'</div>').join('')+'</div></div><div class="field"><label>'+t('weeksLab')+'</label><div class="stepper"><button onclick="pgWk=Math.max(1,pgWk-1);renderProgTool()">−</button><span class="val">'+pgWk+'</span><button onclick="pgWk++;renderProgTool()">+</button></div></div></div>';
   h+='<div class="card"><div class="card-t">'+t('projectionLab')+'</div>';
-  for(let i=1;i<=pgWk;i++){ h+='<div class="zrow"><span class="zname">'+tp('weekN',i)+'</span><span class="zval">'+(pgW+pgInc*i)+' kg</span></div>'; }
+  for(let i=1;i<=pgWk;i++){ h+='<div class="zrow"><span class="zname">'+tp('weekN',i)+'</span><span class="zval">'+hKm2(pgW+pgInc*i)+' kg</span></div>'; }
   h+='</div>';
   $('#outBody').innerHTML=h;
 }
@@ -11631,35 +11753,49 @@ function renderReposTool(){
   let h='<div class="card"><div class="card-t">'+ICN('timer',15,'var(--e)')+t('restTimesLab')+'</div>'+data.map(d=>'<div class="zrow"><span class="zname">'+d[0]+'</span><span class="zval mono">'+d[1]+'</span></div>').join('')+'</div><div class="tip">'+t('restTip')+'</div>';
   $('#outBody').innerHTML=h;
 }
-let pomoState={phase:'work',left:25*60,running:false,iv:null,count:0};
+let pomoState={phase:'work',left:25*60,running:false,iv:null,count:0,endAt:null};
+function pomoLen(ph){ return ph==='work'?25*60:(ph==='long'?15*60:5*60); }
 function renderPomodoro(){
-  const total=pomoState.phase==='work'?25*60:(pomoState.phase==='long'?15*60:5*60);
+  if(pomoState.running && pomoState.endAt) pomoState.left=Math.max(0,Math.round((pomoState.endAt-Date.now())/1000));
+  const total=pomoLen(pomoState.phase);
   const pct=pomoState.left/total*100;
   const col=pomoState.phase==='work'?'var(--bad)':'var(--ok)';
   const lab=pomoState.phase==='work'?t('pomoFocus'):t('pomoBreak');
-  let h='<div class="card" style="text-align:center"><div class="badge" style="background:color-mix(in srgb,'+col+' 10%,transparent);color:'+col+'">'+lab+'</div><div class="ring-wrap" style="width:180px;height:180px;margin:14px auto"><span id="pmRing">'+ringSVG(180,pct,12,col)+'</span><div class="ring-c"><div class="big mono" id="pmNum" style="font-size:36px">'+fmtMS(pomoState.left)+'</div></div></div>';
+  let h='<div class="card" style="text-align:center"><div><div class="badge" style="background:color-mix(in srgb,'+col+' 10%,transparent);color:'+col+'">'+lab+'</div></div><div class="ring-wrap" style="width:180px;height:180px;margin:14px auto"><span id="pmRing">'+ringSVG(180,pct,12,col)+'</span><div class="ring-c"><div class="big mono" id="pmNum" style="font-size:36px">'+fmtMS(pomoState.left)+'</div></div></div>';
   h+='<div class="row" style="gap:10px"><button class="btn" onclick="pomoToggle()">'+(pomoState.running?t('pauseShort'):'▶ '+t('playLab'))+'</button><button class="btn ghost" onclick="pomoReset()">↺</button></div>';
   h+='<div style="margin-top:12px;font-size:12px;color:var(--muted)">'+tp('pomodorosDoneLab',pomoState.count)+'</div></div>';
   $('#outBody').innerHTML=h;
 }
+/* Pomodoro sur l'horloge (v107) : il décomptait « une seconde par tic » — il dérivait, se
+   figeait quand l'app passait en arrière-plan (iOS suspend les minuteries) et finissait
+   en silence. Comme le minuteur : heure de fin fixée au départ, son + vibration à la fin. */
 function pomoToggle(){
-  if(pomoState.running){ clearInterval(pomoState.iv); pomoState.running=false; renderPomodoro(); return; }
-  pomoState.running=true; renderPomodoro();
+  if(pomoState.running){
+    clearInterval(pomoState.iv); pomoState.left=Math.max(0,Math.round((pomoState.endAt-Date.now())/1000));
+    pomoState.running=false; pomoState.endAt=null; sfx('stop'); renderPomodoro(); return;
+  }
+  if(pomoState.left<=0) pomoState.left=pomoLen(pomoState.phase);
+  pomoState.running=true; pomoState.endAt=Date.now()+pomoState.left*1000; sfx('start'); renderPomodoro();
+  let affiche=-1;
+  clearInterval(pomoState.iv);
   pomoState.iv=setInterval(()=>{
-    pomoState.left--;
-    const total=pomoState.phase==='work'?25*60:(pomoState.phase==='long'?15*60:5*60);
-    const r=$('#pmRing'),n=$('#pmNum'); const col=pomoState.phase==='work'?'var(--bad)':'var(--ok)';
-    if(r)r.innerHTML=ringSVG(180,pomoState.left/total*100,12,col); if(n)n.textContent=fmtMS(pomoState.left);
-    if(pomoState.left<=0){ clearInterval(pomoState.iv); pomoState.running=false; burst();
+    pomoState.left=Math.max(0,Math.round((pomoState.endAt-Date.now())/1000));
+    if(pomoState.left!==affiche){ // 1 mise à jour par seconde affichée, pas 4
+      affiche=pomoState.left;
+      const r=$('#pmRing'),n=$('#pmNum'); const col=pomoState.phase==='work'?'var(--bad)':'var(--ok)';
+      if(r)r.innerHTML=ringSVG(180,pomoState.left/pomoLen(pomoState.phase)*100,12,col); if(n)n.textContent=fmtMS(pomoState.left);
+    }
+    if(pomoState.left<=0){ clearInterval(pomoState.iv); pomoState.running=false; pomoState.endAt=null; burst(); sfx('finish');
+      try{ if(navigator.vibrate) navigator.vibrate([120,80,120]); }catch(e){}
       if(pomoState.phase==='work'){ pomoState.count++; pomoState.phase=(pomoState.count%4===0)?'long':'short'; toast(t('deservedBreak')); }
       else { pomoState.phase='work'; toast(t('backToWork')); }
-      pomoState.left=pomoState.phase==='work'?25*60:(pomoState.phase==='long'?15*60:5*60); renderPomodoro(); }
-  },1000);
+      pomoState.left=pomoLen(pomoState.phase); if(outilsTab==='pomodoro' && $('#outBody')) renderPomodoro(); }
+  },250);
 }
-function pomoReset(){ clearInterval(pomoState.iv); pomoState={phase:'work',left:25*60,running:false,iv:null,count:pomoState.count}; renderPomodoro(); }
+function pomoReset(){ clearInterval(pomoState.iv); pomoState={phase:'work',left:25*60,running:false,iv:null,count:pomoState.count,endAt:null}; renderPomodoro(); }
 function renderNotesTool(){
   const notes=PREFS.quickNotes||'';
-  let h='<div class="card"><div class="card-t">'+t('quickNotesTitle')+'</div><textarea class="inp" rows="12" id="qnotes" placeholder="'+t('notesPlaceholder')+'" oninput="PREFS.quickNotes=this.value;saveAll()">'+escHtml(notes)+'</textarea><div style="font-size:11px;color:var(--dim);margin-top:8px">'+t('autoSaveLocal')+'</div></div>';
+  let h='<div class="card"><div class="card-t">'+t('quickNotesTitle')+'</div><textarea class="inp" rows="12" id="qnotes" placeholder="'+t('notesPlaceholder')+'" oninput="PREFS.quickNotes=this.value;saveSoon()" onblur="flushSaveSoon()">'+escHtml(notes)+'</textarea><div style="font-size:11px;color:var(--dim);margin-top:8px">'+t('autoSaveLocal')+'</div></div>';
   $('#outBody').innerHTML=h;
 }
 let sleepH=8;
@@ -11684,7 +11820,7 @@ function renderCalc(){
   h+='<div class="field"><label>'+t('timeHMSLabel')+'</label><div class="wheels">'+wheel('TH.h',0,9,calc.TH.h)+'<span class="wheel-sep">:</span>'+wheel('TH.m',0,59,calc.TH.m)+'<span class="wheel-sep">:</span>'+wheel('TH.s',0,59,calc.TH.s)+'</div></div>';
   h+='<div class="field"><label>'+t('paceMinSecKmLabel')+'</label><div class="wheels">'+wheel('TP.m',2,12,calc.TP.m)+'<span class="wheel-sep">:</span>'+wheel('TP.s',0,59,calc.TP.s)+'</div></div>';
   // speed
-  const spk=calc.TP.m*60+calc.TP.s; const kmh=spk>0?(3600/spk).toFixed(1):'0';
+  const spk=calc.TP.m*60+calc.TP.s; const kmh=spk>0?fmt1(3600/spk):'0';
   h+='<div class="sbox" style="text-align:center;margin-bottom:12px"><div class="v" style="color:var(--e)">'+kmh+' km/h</div><div class="l">'+t('speedLabel')+'</div></div>';
   h+='<div class="row" style="gap:8px"><button class="btn ghost sm" onclick="resetCalc()">'+t('resetShortLabel')+'</button><button class="btn ghost sm" onclick="calc._adv=!calc._adv;renderCalc()">'+t('advancedLabel')+'</button><button class="btn sm" onclick="doCalc()">'+t('calculateLabel')+'</button></div>';
   if(calc._adv){
@@ -11740,7 +11876,7 @@ function renderCalcResult(){
   let h='<div class="card popin"><div class="card-t">'+t('resultsLabel')+'</div>';
   h+='<div class="pills" style="margin-bottom:14px;overflow-x:auto;flex-wrap:nowrap;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent)">'+Object.entries(DISTANCES).map(([k,v])=>'<div class="pill '+(resultDist===v?'on':'')+'" onclick="resultDist='+v+';renderCalc()">'+k+'</div>').join('')+'</div>';
   const predT=vdot?predictTime(vdot,resultDist):calc.lastResult.spk*resultDist/1000;
-  const spk=predT/(resultDist/1000); const kmh=(3600/spk).toFixed(1);
+  const spk=predT/(resultDist/1000); const kmh=fmt1(3600/spk);
   h+='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v" style="font-size:18px">'+fmtTime(predT)+'</div><div class="l">'+t('predictedTimeLabel')+'</div></div><div class="sbox"><div class="v" style="font-size:18px">'+spkToStr(spk)+'</div><div class="l">'+t('paceKmLabel')+'</div></div><div class="sbox"><div class="v">'+kmh+'</div><div class="l">km/h</div></div><div class="sbox"><div class="v">'+(resultDist/1000)+'</div><div class="l">km</div></div></div>';
   // splits
   h+='<div class="lab" style="margin-bottom:8px">'+t('kmSplitsLabel')+'</div><div style="max-height:180px;overflow-y:auto">';
@@ -11891,7 +12027,9 @@ function timerToggle(){
     const pct=timer.left/timer.total*100;
     const col=pct>50?'var(--e)':pct>20?'var(--warn)':'var(--bad)';
     const r=$('#tmRing'),n=$('#tmNum');
-    if(r)r.innerHTML=ringSVG(180,pct,12,col); if(n){ const txt=fmtMS(timer.left); if(n.textContent!==txt && timer.left>0 && timer.left<=10) ikBump(n); n.textContent=txt; }
+    const txt=fmtMS(timer.left);
+    if(n && n.textContent===txt && r && r.childElementCount) return; // rien de nouveau à afficher (4 tics/s, 1 changement)
+    if(r)r.innerHTML=ringSVG(180,pct,12,col); if(n){ if(n.textContent!==txt && timer.left>0 && timer.left<=10) ikBump(n); n.textContent=txt; }
     if(r&&r.parentElement) r.parentElement.classList.toggle('ik-urgent',timer.left>0&&timer.left<=10);
     if(timer.left<=0){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; burst(); stopBgActivity(); startAlarm(t('timerDoneTitle'),t('timeUpMsg')); renderTimerIfVisible(); }
   },250);
@@ -12085,7 +12223,7 @@ function renderProfile(){
     '<div class="grp-row" onclick="openProfileSection(\'privacy\')"><div class="lr-icon">'+ICN('shield',20,'currentColor')+'</div><div class="lr-title">'+t('privacyPolicyLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileSection(\'data\')"><div class="lr-icon">'+ICN('lock',20,'currentColor')+'</div><div class="lr-title">'+t('dataPrivacy')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
-  h+='<div style="text-align:center;color:var(--dim);font-size:12px;margin:20px 0">'+appVersionTag()+'</div>';
+  // (le numéro de version est désormais dans la signature IKORUN en bas de chaque écran)
   swapIn('s-profil',h);
 }
 function renderProfileSimple(){

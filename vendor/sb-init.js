@@ -19,7 +19,9 @@ if(!window.supabaseClient){
   // chargé après la première image : DOMContentLoaded est souvent déjà passé
   const show=()=>{
     const b=document.body;
-    if(b) b.insertAdjacentHTML('afterbegin','<div style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#E0394A;color:#fff;padding:12px 16px;font:600 13px/1.4 system-ui,sans-serif;text-align:center">Connexion au serveur impossible. Vérifie ta connexion et recharge la page.</div>');
+    // Un toucher le referme : fixé tout en haut, il recouvrait sinon pour de bon les boutons
+    // « retour » des pages plein écran (audit du 27/09).
+    if(b) b.insertAdjacentHTML('afterbegin','<div onclick="this.remove()" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#E0394A;color:#fff;padding:max(12px,env(safe-area-inset-top)) 16px 12px;font:600 13px/1.4 system-ui,sans-serif;text-align:center;cursor:pointer">Connexion au serveur impossible. Vérifie ta connexion et recharge la page. <span style="opacity:.8;font-weight:500">(toucher pour masquer)</span></div>');
   };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',show); else show();
 }
