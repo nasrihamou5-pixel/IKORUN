@@ -34,6 +34,10 @@
   // en arrière-plan, qui s'affiche au lancement suivant ou via le bandeau
   // « mise à jour » : pas de version figée. Pour forcer une purge totale après
   // un futur déploiement problématique, il suffit d'incrémenter C dans sw.js.
+  // UNE APP NE ZOOME PAS (v109) : iOS ignore user-scalable=no depuis iOS 10 — le pincement
+  // agrandissait toute l'interface. On bloque donc aussi ses évènements de geste (pincer),
+  // et touch-action (CSS) coupe le double-toucher et le pincement sur les autres navigateurs.
+  ['gesturestart','gesturechange','gestureend'].forEach(function(ev){ document.addEventListener(ev,function(e){ e.preventDefault(); },{passive:false}); });
   if('serviceWorker' in navigator){
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('sw.js').catch(()=>{});
@@ -81,7 +85,7 @@
   form-action 'self';
 ">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="IKORUN">
@@ -94,7 +98,7 @@
 <!-- téléchargés dès maintenant, exécutés après la première image (voir bas de page) -->
 <link rel="preload" as="script" href="vendor/supabase.js?v=1">
 <link rel="preload" as="script" href="vendor/sb-init.js?v=3">
-<link rel="preload" as="script" href="app.js?v=107">
+<link rel="preload" as="script" href="app.js?v=109">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
@@ -3021,7 +3025,7 @@ html.easy-mode #toast{background:var(--s1);border:2px solid var(--e);box-shadow:
 /* GESTES (v107) — glisser depuis le bord gauche ferme la page plein écran de l'app ;
    sans ceci, Chrome/Android (et IKORUN ouvert dans un onglet) faisait « page précédente »
    et sortait de l'app. */
-html,body{overscroll-behavior-x:none;}
+html,body{overscroll-behavior-x:none;touch-action:pan-x pan-y;} /* ni pincer ni double-toucher pour zoomer (v109) */
 /* SIGNATURES IKORUN (v107) — discrètes : fin de chaque écran, en-tête des pages plein
    écran, indicateur « tirer pour actualiser ». */
 .ik-sign{display:flex;flex-direction:column;align-items:center;gap:5px;margin:30px auto 4px;opacity:.55;text-align:center;}
@@ -3289,7 +3293,7 @@ html[data-accent="carbon"] .ov.ov-push .ov-head::after{background:var(--grad-btn
      ne persiste RIEN : elle photographie l'état, teste, restaure. -->
 <script>
 (function(){
-  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=3', 'app.js?v=107'];
+  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=3', 'app.js?v=109'];
   if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=5');
   var lance = false;
   function charge(){
