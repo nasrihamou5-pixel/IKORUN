@@ -2852,15 +2852,24 @@ html[data-mode="light"] #nav{background:var(--lg-spec),rgba(255,255,255,.7);box-
 body.tb-compact:not([data-scr="home"]) .topbar{background:var(--lg-sheet);box-shadow:inset 0 -1px 0 rgba(255,255,255,.08),0 12px 24px -16px rgba(0,0,0,.55);}
 html[data-mode="light"] body.tb-compact:not([data-scr="home"]) .topbar{box-shadow:inset 0 -1px 0 rgba(20,30,50,.08),0 12px 24px -18px rgba(30,40,60,.25);}
 
-/* BANNIÈRE — la même matière que les écrans : un verre, plus bas, plus sobre.
-   (Hamou : « elle fait too much » : bloc sombre à part, 108 px de haut, titre 25 px.) */
-.ikh:not(.ikh-dark){color:var(--snow);min-height:84px;padding:14px 16px 15px;
-  background:radial-gradient(90% 120% at 96% 0%,rgba(var(--e-rgb),.26),transparent 60%),var(--lg-spec),var(--lg-body),var(--lg-fill) !important;
-  -webkit-backdrop-filter:var(--lg-blur);backdrop-filter:var(--lg-blur);
-  box-shadow:var(--lg-rim),var(--lg-drop) !important;}
+/* BANNIÈRE FONDUE DANS LA PAGE (v108, choix de Hamou parmi 3 modèles : « sans cadre +
+   trait ») — avant : un bloc de verre (fond, liseré, ombre) qui se détachait du reste.
+   Désormais le titre et le logo reposent sur le fond de l'app, un halo d'accent sans bord
+   derrière les lames, et un fin trait lumineux qui s'efface aux deux bouts sépare
+   l'en-tête du contenu. Plus léger à dessiner aussi : ni ombre ni dégradés superposés. */
+html .ikh:not(.ikh-dark){color:var(--snow);min-height:0;padding:10px 4px 16px;border-radius:0;overflow:visible;
+  background:none !important;box-shadow:none !important;-webkit-backdrop-filter:none;backdrop-filter:none;}
+html .ikh:not(.ikh-dark)::before{content:'';position:absolute;z-index:0;right:-20px;top:-30px;width:200px;height:150px;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(var(--e-rgb),.16),transparent);}
+html .ikh:not(.ikh-dark)::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(var(--e-rgb),.55) 30%,rgba(var(--e2-rgb),.35) 70%,transparent);}
+#ikHead{margin-bottom:6px;}
+#ikHead>.ikh-fx{right:4px;}
+.ikh.ikh-home{margin-bottom:8px;}
+[dir="rtl"] .ikh:not(.ikh-dark)::before{right:auto;left:-20px;}
+[dir="rtl"] #ikHead>.ikh-fx{right:auto;left:4px;}
 .ikh:not(.ikh-dark) .ikh-title{color:var(--snow);font-size:21px;letter-spacing:-.4px;}
 .ikh:not(.ikh-dark) .ikh-sub{color:var(--muted);font-size:12px;margin-top:4px;}
-.ikh.ikh-home{padding:12px 14px 16px;}
 .ikh-home .hv7-greet h1{color:var(--snow) !important;font-size:22px;}
 .ikh-home .hv7-greet p{color:var(--muted) !important;}
 .ikh-home .hv7-logo span{color:var(--snow) !important;}
