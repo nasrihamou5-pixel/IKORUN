@@ -2061,7 +2061,7 @@ const I18N={
     loadingLab:'Chargement…',friendsLoadError:'Impossible de charger tes amis. Vérifie ta connexion.',retryBtn:'Réessayer',
     resumeBtn:'Reprendre',discardBtn:'Abandonner',
     alreadyLinked:'déjà lié',addBtn:'Ajouter',searchError:'Erreur de recherche',alreadySentOrFriend:'Déjà envoyé ou déjà ami',
-    requestSent:'Demande envoyée',friendProfileTitle:'Profil',removeLab:'Retirer',lvlDot:'Niv.',kmThisWeekShort:'{0} km cette semaine',lastWeekKm:'Semaine dernière : {0} km',minimizeLab:'Réduire',liveAlreadyRunning:'Une séance est déjà en cours. Termine-la ou annule-la avant d’en commencer une autre.',backToSessionLab:'Revenir à la séance',islandNext:'Ensuite : {0}',islandEndsAt:'Fin à {0}',islandPaused:'En pause',islandSets:'{0}/{1} séries',glassEasyNote:'Le mode simplifié garde un affichage net, sans effet verre : ce réglage reprendra effet quand tu le désactiveras.',youDefaultName:'Toi',backToFriends:'Retour aux amis',profileNotFound:'Profil introuvable.',noBadgeUnlocked:'Aucun badge débloqué pour l\u2019instant.',kmPerWeek:'km/sem.',daysStreak:'Jours de suite',kmTotalLab:'km au total',tonnageKgLab:'Tonnage kg',
+    requestSent:'Demande envoyée',friendProfileTitle:'Profil',removeLab:'Retirer',lvlDot:'Niv.',kmThisWeekShort:'{0} km cette semaine',lastWeekKm:'Semaine dernière : {0} km',minimizeLab:'Réduire',accentOcean:'Océan',accentViolet:'Améthyste',accentLavender:'Lavande',accentPink:'Framboise',accentSakura:'Sakura',accentMint:'Menthe',accentTeal:'Lagon',accentOrange:'Ambre',accentMono:'Mono',colorFamCool:'Bleus et violets',colorFamWarm:'Roses et chauds',colorFamNature:'Nature',colorFamNeutral:'Neutres',liveAlreadyRunning:'Une séance est déjà en cours. Termine-la ou annule-la avant d’en commencer une autre.',backToSessionLab:'Revenir à la séance',islandNext:'Ensuite : {0}',islandEndsAt:'Fin à {0}',islandPaused:'En pause',islandSets:'{0}/{1} séries',glassEasyNote:'Le mode simplifié garde un affichage net, sans effet verre : ce réglage reprendra effet quand tu le désactiveras.',youDefaultName:'Toi',backToFriends:'Retour aux amis',profileNotFound:'Profil introuvable.',noBadgeUnlocked:'Aucun badge débloqué pour l\u2019instant.',kmPerWeek:'km/sem.',daysStreak:'Jours de suite',kmTotalLab:'km au total',tonnageKgLab:'Tonnage kg',
     addPerf:'Ajouter une performance',addChronosHint:'Ajoute tes chronos : ils alimentent ton VDOT et ton plan.',
     bestPerf:'Meilleure perf',avgHR:'FC moy',maxHRshort:'max',perfHistoryTitle:'Historique des performances',
     chooseDistance:'Choisis la distance',otherDist:'Autre',customDistance:'Distance personnalisée',
@@ -2647,7 +2647,7 @@ const I18N={
     loadingLab:'Loading…',friendsLoadError:'Couldn\'t load your friends. Check your connection.',retryBtn:'Retry',
     resumeBtn:'Resume',discardBtn:'Discard',
     alreadyLinked:'already linked',addBtn:'Add',searchError:'Search error',alreadySentOrFriend:'Already sent or already friends',
-    requestSent:'Request sent',friendProfileTitle:'Profile',removeLab:'Remove',lvlDot:'Lvl.',kmThisWeekShort:'{0} km this week',lastWeekKm:'Last week: {0} km',minimizeLab:'Minimize',liveAlreadyRunning:'A session is already running. Finish or cancel it before starting another one.',backToSessionLab:'Back to session',islandNext:'Next: {0}',islandEndsAt:'Ends at {0}',islandPaused:'Paused',islandSets:'{0}/{1} sets',glassEasyNote:'Simplified mode keeps a clean display with no glass effect: this setting applies again once you turn it off.',youDefaultName:'You',backToFriends:'Back to friends',profileNotFound:'Profile not found.',noBadgeUnlocked:'No badge unlocked yet.',kmPerWeek:'km/wk',daysStreak:'Day streak',kmTotalLab:'total km',tonnageKgLab:'Volume kg',
+    requestSent:'Request sent',friendProfileTitle:'Profile',removeLab:'Remove',lvlDot:'Lvl.',kmThisWeekShort:'{0} km this week',lastWeekKm:'Last week: {0} km',minimizeLab:'Minimize',accentOcean:'Ocean',accentViolet:'Amethyst',accentLavender:'Lavender',accentPink:'Raspberry',accentSakura:'Sakura',accentMint:'Mint',accentTeal:'Lagoon',accentOrange:'Amber',accentMono:'Mono',colorFamCool:'Blues & purples',colorFamWarm:'Pinks & warm',colorFamNature:'Nature',colorFamNeutral:'Neutrals',liveAlreadyRunning:'A session is already running. Finish or cancel it before starting another one.',backToSessionLab:'Back to session',islandNext:'Next: {0}',islandEndsAt:'Ends at {0}',islandPaused:'Paused',islandSets:'{0}/{1} sets',glassEasyNote:'Simplified mode keeps a clean display with no glass effect: this setting applies again once you turn it off.',youDefaultName:'You',backToFriends:'Back to friends',profileNotFound:'Profile not found.',noBadgeUnlocked:'No badge unlocked yet.',kmPerWeek:'km/wk',daysStreak:'Day streak',kmTotalLab:'total km',tonnageKgLab:'Volume kg',
     addPerf:'Add a performance',addChronosHint:'Add your times: they power your VDOT and your plan.',
     bestPerf:'Best performance',avgHR:'avg HR',maxHRshort:'max',perfHistoryTitle:'Performance history',
     chooseDistance:'Choose the distance',otherDist:'Other',customDistance:'Custom distance',
@@ -3233,7 +3233,7 @@ const I18N={
     loadingLab:'جارٍ التحميل…',friendsLoadError:'تعذّر تحميل أصدقائك. تحقّق من اتصالك.',retryBtn:'إعادة المحاولة',
     resumeBtn:'استئناف',discardBtn:'التخلي',
     alreadyLinked:'مرتبط بالفعل',addBtn:'إضافة',searchError:'خطأ في البحث',alreadySentOrFriend:'تم الإرسال بالفعل أو صديق بالفعل',
-    requestSent:'تم إرسال الطلب',friendProfileTitle:'الملف الشخصي',removeLab:'إزالة',lvlDot:'مستوى',kmThisWeekShort:'{0} كم هذا الأسبوع',lastWeekKm:'الأسبوع الماضي: {0} كم',minimizeLab:'تصغير',liveAlreadyRunning:'هناك حصة جارية بالفعل. أنهِها أو ألغِها قبل بدء حصة أخرى.',backToSessionLab:'العودة إلى الحصة',islandNext:'التالي: {0}',islandEndsAt:'ينتهي عند {0}',islandPaused:'متوقف مؤقتًا',islandSets:'{0}/{1} مجموعات',glassEasyNote:'الوضع المبسّط يُبقي العرض واضحًا دون تأثير الزجاج: يعود هذا الإعداد للعمل عند إيقافه.',youDefaultName:'أنت',backToFriends:'العودة إلى الأصدقاء',profileNotFound:'الملف غير موجود.',noBadgeUnlocked:'لا يوجد وسام مفتوح بعد.',kmPerWeek:'كم/أسبوع',daysStreak:'أيام متتالية',kmTotalLab:'كم إجمالية',tonnageKgLab:'الحمولة كغ',
+    requestSent:'تم إرسال الطلب',friendProfileTitle:'الملف الشخصي',removeLab:'إزالة',lvlDot:'مستوى',kmThisWeekShort:'{0} كم هذا الأسبوع',lastWeekKm:'الأسبوع الماضي: {0} كم',minimizeLab:'تصغير',accentOcean:'محيط',accentViolet:'جمشت',accentLavender:'خزامى',accentPink:'توت',accentSakura:'ساكورا',accentMint:'نعناع',accentTeal:'بحيرة',accentOrange:'كهرمان',accentMono:'أحادي',colorFamCool:'أزرق وبنفسجي',colorFamWarm:'وردي ودافئ',colorFamNature:'طبيعة',colorFamNeutral:'محايدة',liveAlreadyRunning:'هناك حصة جارية بالفعل. أنهِها أو ألغِها قبل بدء حصة أخرى.',backToSessionLab:'العودة إلى الحصة',islandNext:'التالي: {0}',islandEndsAt:'ينتهي عند {0}',islandPaused:'متوقف مؤقتًا',islandSets:'{0}/{1} مجموعات',glassEasyNote:'الوضع المبسّط يُبقي العرض واضحًا دون تأثير الزجاج: يعود هذا الإعداد للعمل عند إيقافه.',youDefaultName:'أنت',backToFriends:'العودة إلى الأصدقاء',profileNotFound:'الملف غير موجود.',noBadgeUnlocked:'لا يوجد وسام مفتوح بعد.',kmPerWeek:'كم/أسبوع',daysStreak:'أيام متتالية',kmTotalLab:'كم إجمالية',tonnageKgLab:'الحمولة كغ',
     addPerf:'إضافة أداء',addChronosHint:'أضف أوقاتك: تُستخدم لحساب VDOT وخطتك.',
     bestPerf:'أفضل أداء',avgHR:'متوسط النبض',maxHRshort:'الأقصى',perfHistoryTitle:'سجل الأداء',
     chooseDistance:'اختر المسافة',otherDist:'أخرى',customDistance:'مسافة مخصصة',
@@ -4646,14 +4646,16 @@ let _actx=null, _busDry=null, _busWet=null, _master=null, _alarmBus=null;
 // test "c'est un nombre", et un gain à NaN coupe tout le son sans rien signaler.
 // Défaut 0,55 (27/09, « sons plus sobres ») : un volume déjà réglé par l'utilisateur est conservé.
 function soundVol(){ const v=(P&&typeof P.soundVol==='number'&&isFinite(P.soundVol))?P.soundVol:0.55; return Math.max(0,Math.min(1,v)); }
-/* Réponse impulsionnelle générée : bruit décroissant. Beaucoup plus crédible
-   qu'un simple écho, pour ~10 lignes et un seul calcul au démarrage. */
-function _makeIR(ctx,dur,decay){
-  const n=Math.max(1,Math.floor(ctx.sampleRate*dur));
-  const buf=ctx.createBuffer(2,n,ctx.sampleRate);
+/* Réponse impulsionnelle générée : petite pièce feutrée (V3.4.0). Bruit filtré (passe-bas
+   à un pôle : plus de sifflement), décroissance exponentielle, gauche et droite
+   indépendantes pour l'ampleur, 12 ms de pré-délai. Multiplication pas à pas plutôt que
+   Math.pow à chaque échantillon : ~10× plus rapide. */
+function _makeIR(ctx,dur,decaySec){
+  const sr=ctx.sampleRate, n=Math.max(1,Math.floor(sr*dur)), pre=Math.floor(sr*0.012);
+  const buf=ctx.createBuffer(2,n,sr), k=Math.exp(-1/(sr*decaySec)), a=0.62;
   for(let ch=0;ch<2;ch++){
-    const d=buf.getChannelData(ch);
-    for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/n,decay);
+    const d=buf.getChannelData(ch); let env=1, y=0;
+    for(let i=pre;i<n;i++){ y=a*y+(1-a)*(Math.random()*2-1); d[i]=y*env*2.2; env*=k; }
   }
   return buf;
 }
@@ -4664,14 +4666,17 @@ function _buildAudioGraph(){
   let out=ctx.destination;
   try{
     const comp=ctx.createDynamicsCompressor();
-    comp.threshold.value=-20; comp.knee.value=14; comp.ratio.value=3; comp.attack.value=0.004; comp.release.value=0.22;
-    comp.connect(ctx.destination); out=comp;
+    comp.threshold.value=-18; comp.knee.value=12; comp.ratio.value=3.5; comp.attack.value=0.003; comp.release.value=0.25;
+    // léger adoucissement des aigus (-3 dB au-dessus de 5 kHz) : jamais de son perçant
+    const shelf=ctx.createBiquadFilter(); shelf.type='highshelf'; shelf.frequency.value=5000; shelf.gain.value=-3;
+    comp.connect(shelf); shelf.connect(ctx.destination); out=comp;
   }catch(e){}
   _master=ctx.createGain(); _master.gain.value=soundVol(); _master.connect(out);
   _busDry=ctx.createGain(); _busDry.gain.value=1; _busDry.connect(_master);
   try{
     // Sobre (27/09) : pièce plus petite — queue de 0,9 s au lieu de 1,5 s, qui s'éteint plus vite.
-    const conv=ctx.createConvolver(); conv.buffer=_makeIR(ctx,0.9,4.6);
+    // IR posée juste après : le tout premier son part sans attendre son calcul.
+    const conv=ctx.createConvolver(); setTimeout(()=>{ try{ conv.buffer=_makeIR(ctx,1.1,0.22); }catch(e){} },30);
     // passe-haut avant (pas de graves boueux) et passe-bas après (queue feutrée, pas de sifflement)
     const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=420;
     const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=5200;
@@ -4702,154 +4707,92 @@ function applySoundVol(){
 function soundsOn(){ return !P || P.sounds!==false; }
 // Débloque l'audio au premier geste utilisateur (politique navigateur)
 document.addEventListener('pointerdown',function unlockAudio(){ try{ audioCtx(); }catch(e){} document.removeEventListener('pointerdown',unlockAudio); },{once:true});
-/* note : fréquence, durée, type, volume, délai, glide vers, options
-   opt.cut    fréquence de coupure du passe-bas (défaut : 4,5 × la fondamentale)
-   opt.detune désaccordage en cents entre les deux oscillateurs (0 = un seul)
-   opt.wet    dose de réverbération (0 à 1)
-   opt.atk    durée d'attaque
-   opt.alarm  route vers le bus d'alarme, qui ignore le volume bas */
-function _note(freq,dur,type,vol,delay,toFreq,opt){
-  const ctx=audioCtx(); if(!ctx||!_busDry) return;
-  opt=opt||{};
-  const t0=ctx.currentTime+(delay||0);
-  const nyq=ctx.sampleRate/2;
-  const filt=ctx.createBiquadFilter();
-  filt.type='lowpass';
-  filt.frequency.setValueAtTime(Math.min(nyq*0.9, opt.cut||freq*4.5), t0);
-  filt.Q.setValueAtTime(opt.q||0.7, t0);
-  const g=ctx.createGain();
-  const det=(opt.detune==null)?7:opt.detune;
-  // Deux voix = environ deux fois plus fort : on compense pour garder le même
-  // niveau perçu qu'avant, sinon tous les sons deviennent brutalement plus forts.
-  const v=Math.max(0.0002,(vol||0.18)*(det?0.62:1));
-  g.gain.setValueAtTime(0.0001,t0);
-  g.gain.linearRampToValueAtTime(v,t0+(opt.atk||0.014));
-  g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
-  const spread=det?[-det,det]:[0];
-  for(const d of spread){
-    const o=ctx.createOscillator();
-    o.type=type||'sine';
-    o.detune.setValueAtTime(d,t0);
-    o.frequency.setValueAtTime(freq,t0);
-    if(toFreq) o.frequency.exponentialRampToValueAtTime(Math.max(1,toFreq),t0+dur);
-    o.connect(filt);
-    o.start(t0); o.stop(t0+dur+0.03);
-  }
-  filt.connect(g);
-  if(opt.alarm && _alarmBus){ g.connect(_alarmBus); return; }
-  g.connect(_busDry);
-  if(_busWet && opt.wet){ const w=ctx.createGain(); w.gain.value=opt.wet; g.connect(w); w.connect(_busWet); }
+/* ---- Voix « goutte & marimba » (V3.4.0) ----
+   « Le son est dégueulasse » : les timbres de verre (sinus + octave grave + réverbération
+   de bruit brut) sonnaient creux et un peu sale. Refonte complète, dans l'esprit liquide
+   de l'app :
+   · appuis : une petite goutte (sinus dont la hauteur remonte en 40 ms, le « bloop »
+     d'une bulle), très bas ;
+   · événements : des notes de marimba en synthèse FM — un modulateur qui s'éteint en
+     quelques millisecondes donne la frappe de la mailloche, puis il reste une note ronde
+     et boisée, avec le partiel ×3,9 d'une vraie lame, bref ;
+   · une seule gamme pentatonique (do majeur) : deux sons qui se chevauchent sont
+     toujours consonants ;
+   · enveloppes en décroissance naturelle (setTargetAtTime), plus de coupure qui claque ;
+     réverbération de petite pièce, feutrée (bruit filtré, gauche/droite décorrélés),
+     calculée hors du premier son pour ne rien ralentir. */
+function _env(g,t0,v,atk,tau){ g.gain.setValueAtTime(0.0001,t0); g.gain.linearRampToValueAtTime(v,t0+atk); g.gain.setTargetAtTime(0.0001,t0+atk,tau); }
+function _route(node,opt){
+  if(opt.alarm && _alarmBus){ node.connect(_alarmBus); return; }
+  node.connect(_busDry);
+  if(_busWet && opt.wet){ const w=_actx.createGain(); w.gain.value=opt.wet; node.connect(w); w.connect(_busWet); }
 }
-// Micro-variation de hauteur sur les sons répétés (tap, tick) : sans elle, dix
-// appuis d'affilée sonnent comme une mitraillette, toujours à la note exacte.
-function _vary(f,pct){ const p=pct||0.02; return f*(1+(Math.random()*2-1)*p); }
-/* ---- Voix « verre » (27/09) ----
-   Hamou trouvait les sons « riquiqui » : des bips courts, aigus, sans corps. Les
-   sons sont maintenant des timbres de verre / cloche douce, par synthèse additive :
-   une fondamentale, une octave sous elle pour le corps, et quelques partiels qui
-   s'éteignent plus vite que la note (c'est ce qui fait « verre » plutôt que « bip »).
-   Registre plus grave, attaque adoucie, une seule gamme (la majeur) pour que tous
-   les sons de l'app aillent ensemble. */
-/* Sobre (27/09) : les partiels ×3 et ×4,2 (le « scintillement » de cloche) sont retirés
-   et l'octave haute baissée — il reste un timbre rond et mat, sans brillance. */
-const _GLASS=[[0.5,0.06,1.1],[1,1,1],[2,0.16,0.45]]; // [rapport, niveau, durée relative]
-// Timbre complet d'avant, gardé pour l'alarme seule : elle doit porter et s'entendre de loin.
-const _GLASS_RICH=[[0.5,0.10,1.25],[1,1,1],[2,0.30,0.55],[3,0.10,0.34],[4.2,0.045,0.22]];
-function _glass(freq,dur,vol,delay,opt){
+// Marimba (FM) : fréquence, durée de résonance, volume, délai ; opt.ratio (1 = bois,
+// 3,5 = kalimba plus cristalline), opt.hard (force de frappe), opt.wet, opt.alarm.
+function _mallet(freq,dur,vol,delay,opt){
   const ctx=audioCtx(); if(!ctx||!_busDry) return;
   opt=opt||{};
-  const t0=ctx.currentTime+(delay||0), nyq=ctx.sampleRate/2;
-  const out=ctx.createGain(); out.gain.value=1;
-  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.Q.value=0.5;
-  lp.frequency.setValueAtTime(Math.min(nyq*0.9,freq*(opt.bright||3.2)),t0);
+  const t0=ctx.currentTime+(delay||0), nyq=ctx.sampleRate/2, tau=Math.max(0.03,dur/4.6);
+  const out=ctx.createGain(); _env(out,t0,Math.max(0.0002,vol||0.16),0.003,tau);
+  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.Q.value=0.4; lp.frequency.setValueAtTime(Math.min(nyq*0.9,freq*6),t0);
+  lp.frequency.setTargetAtTime(Math.min(nyq*0.9,freq*2.4),t0,0.06);
   lp.connect(out);
-  const table=opt.rich?_GLASS_RICH:_GLASS;
-  const parts=opt.pure?table.slice(1,3):table;
-  const norm=parts.reduce((a,p)=>a+p[1],0);
-  for(const [r,lvl,dr] of parts){
-    const f=freq*r; if(f>nyq*0.85) continue;
-    const o=ctx.createOscillator(), g=ctx.createGain();
-    o.type='sine'; o.frequency.setValueAtTime(f,t0);
-    const d=Math.max(0.05,dur*dr), v=Math.max(0.0002,(vol||0.2)*lvl/norm*1.6);
-    g.gain.setValueAtTime(0.0001,t0);
-    g.gain.linearRampToValueAtTime(v,t0+(opt.atk||(opt.rich?0.006:0.012)));
-    g.gain.exponentialRampToValueAtTime(0.0001,t0+d);
-    o.connect(g); g.connect(lp);
-    o.start(t0); o.stop(t0+d+0.05);
-  }
-  if(opt.alarm && _alarmBus){ out.connect(_alarmBus); return; }
-  out.connect(_busDry);
-  if(_busWet && opt.wet){ const w=ctx.createGain(); w.gain.value=opt.wet; out.connect(w); w.connect(_busWet); }
+  const car=ctx.createOscillator(); car.type='sine'; car.frequency.setValueAtTime(freq,t0);
+  const mod=ctx.createOscillator(); mod.type='sine'; mod.frequency.setValueAtTime(freq*(opt.ratio||1),t0);
+  const mg=ctx.createGain(); const idx=freq*(opt.hard||1.6);
+  mg.gain.setValueAtTime(idx,t0); mg.gain.setTargetAtTime(0,t0,0.012+0.02/(opt.hard||1.6));
+  mod.connect(mg); mg.connect(car.frequency); car.connect(lp);
+  // partiel de lame (×3,9), qui s'éteint très vite : le « toc » du bois
+  const bar=freq*3.93;
+  if(bar<nyq*0.85){ const o=ctx.createOscillator(), g=ctx.createGain(); o.type='sine'; o.frequency.setValueAtTime(bar,t0);
+    _env(g,t0,0.22,0.002,0.018); o.connect(g); g.connect(lp); o.start(t0); o.stop(t0+0.2); }
+  const end=t0+0.003+tau*6;
+  car.start(t0); mod.start(t0); car.stop(end); mod.stop(end);
+  _route(out,opt);
 }
-// Appui : un « toc » feutré (souffle filtré très bref + un corps grave), à peine audible.
-let _noiseBuf=null;
-function _click(vol,delay){
+// Goutte : un sinus dont la hauteur remonte d'un coup (la bulle qui éclate).
+function _drop(f0,f1,dur,vol,delay,opt){
   const ctx=audioCtx(); if(!ctx||!_busDry) return;
+  opt=opt||{};
   const t0=ctx.currentTime+(delay||0);
-  if(!_noiseBuf){ const n=Math.floor(ctx.sampleRate*0.03); _noiseBuf=ctx.createBuffer(1,n,ctx.sampleRate); const d=_noiseBuf.getChannelData(0); for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3); }
-  const src=ctx.createBufferSource(); src.buffer=_noiseBuf;
-  const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=_vary(2400,0.05); bp.Q.value=1.1;
-  const g=ctx.createGain(); g.gain.value=(vol||0.05);
-  src.connect(bp); bp.connect(g); g.connect(_busDry); src.start(t0);
-  _glass(_vary(330,0.02),0.05,(vol||0.05)*0.5,delay,{pure:true,bright:2.5});
+  const o=ctx.createOscillator(); o.type='sine';
+  o.frequency.setValueAtTime(f0,t0); o.frequency.exponentialRampToValueAtTime(Math.max(1,f1),t0+dur*0.7);
+  const g=ctx.createGain(); _env(g,t0,Math.max(0.0002,vol||0.05),0.002,dur/3);
+  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=Math.max(f0,f1)*2.2; lp.Q.value=0.3;
+  o.connect(g); g.connect(lp); o.start(t0); o.stop(t0+dur*2.2);
+  _route(lp,opt);
 }
-// la majeur : A3 E4 A4 B4 C#5 E5 F#5 A5 B5 C#6 E6
-const _N={A3:220,E4:329.63,A4:440,B4:493.88,Cs5:554.37,E5:659.25,Fs5:739.99,A5:880,B5:987.77,Cs6:1108.73,E6:1318.51};
-/* SONS SOBRES (27/09, demande de Hamou : « des sons plus sobres »). Après la version
-   « verre » (riche, réverbérée, arpèges et nappes), retour à l'essentiel : chaque son est
-   bref (0,2 à 0,8 s), feutré, et tient en une ou deux notes — trois, très brèves, pour un
-   badge. Plus de nappe tenue, réverbération légère. Même gamme (la majeur) pour que tout
-   reste cohérent. L'alarme (plus bas) n'est pas concernée : elle doit s'entendre. */
+// Micro-variation de hauteur sur les sons répétés (tap, coche) : sans elle, dix appuis
+// d'affilée sonnent comme une mitraillette, toujours à la note exacte.
+function _vary(f,pct){ const p=pct||0.02; return f*(1+(Math.random()*2-1)*p); }
+// do majeur pentatonique (do ré mi sol la), du sol3 au mi6
+const _N={G4:392,A4:440,C5:523.25,D5:587.33,E5:659.25,G5:783.99,A5:880,C6:1046.5,D6:1174.66,E6:1318.51};
 function sfx(name){
   if(!soundsOn()) return;
   const N=_N;
   switch(name){
-    // Appui : un « toc » à peine audible.
-    case 'tap':
-      _click(0.1);
-      break;
-    // Série validée : une note courte.
-    case 'tick':
-      _glass(_vary(N.E5,0.006),0.26,0.2,0,{wet:0.06});
-      break;
-    // Départ : deux notes montantes, brèves.
-    case 'start':
-      _glass(N.A4,0.3,0.15,0,{wet:0.08});
-      _glass(N.E5,0.4,0.15,0.08,{wet:0.1});
-      break;
-    // Arrêt : les mêmes, descendantes.
-    case 'stop':
-      _glass(N.E5,0.3,0.14,0,{wet:0.08});
-      _glass(N.A4,0.42,0.14,0.09,{wet:0.1});
-      break;
-    // Objectif atteint : deux notes, une quarte qui se pose.
-    case 'goal':
-      _glass(N.E5,0.4,0.14,0,{wet:0.1});
-      _glass(N.A5,0.55,0.13,0.08,{wet:0.12});
-      break;
-    // XP : une seule note douce.
-    case 'xp':
-      _glass(N.B5,0.32,0.08,0,{wet:0.08,pure:true});
-      break;
-    // Badge : trois notes brèves, sans nappe.
-    case 'medal':
-      [N.A4,N.Cs5,N.E5].forEach((f,i)=>_glass(f,0.55,0.13,i*0.08,{wet:0.12}));
-      break;
-    // Séance terminée : un accord bref (fondamentale + quinte) qui se résout sur l'octave.
-    case 'finish':
-      _glass(N.A4,0.6,0.11,0,{wet:0.12});
-      _glass(N.E5,0.6,0.1,0,{wet:0.12});
-      _glass(N.A5,0.8,0.11,0.14,{wet:0.14});
-      break;
-    // Notification : deux notes descendantes, discrètes.
-    case 'notif':
-      _glass(N.E5,0.4,0.12,0,{wet:0.1});
-      _glass(N.B4,0.55,0.12,0.12,{wet:0.12});
-      break;
-    // Minuteur : trois pulsations courtes — fonctionnel, il doit s'entendre.
-    case 'timer':
-      for(let i=0;i<3;i++) _glass(N.A5,0.24,0.17,i*0.28,{wet:0.06});
-      break;
+    // Appui : une goutte, à peine audible.
+    case 'tap': _drop(_vary(430,0.04),_vary(980,0.04),0.05,0.06); break;
+    // Série validée : un « toc » de marimba clair.
+    case 'tick': _mallet(_vary(N.C6,0.004),0.38,0.17,0,{wet:0.1}); break;
+    // Départ : deux notes qui montent (do → sol).
+    case 'start': _mallet(N.C5,0.5,0.15,0,{wet:0.12}); _mallet(N.G5,0.6,0.15,0.085,{wet:0.14}); break;
+    // Arrêt : les mêmes, qui redescendent.
+    case 'stop': _mallet(N.G5,0.45,0.14,0,{wet:0.12}); _mallet(N.C5,0.6,0.14,0.09,{wet:0.14}); break;
+    // Repos terminé : trois notes vives qui relancent (do mi sol).
+    case 'go': [N.C5,N.E5,N.G5].forEach((f,i)=>_mallet(f,i===2?0.7:0.35,0.16,i*0.07,{wet:0.12,hard:2})); break;
+    // Objectif atteint : une quarte qui se pose, et une goutte haute pour la lumière.
+    case 'goal': _mallet(N.E5,0.55,0.14,0,{wet:0.14}); _mallet(N.A5,0.8,0.14,0.09,{wet:0.16}); _drop(1400,2600,0.06,0.02,0.2,{wet:0.2}); break;
+    // XP : une note de kalimba, légère.
+    case 'xp': _mallet(N.A5,0.45,0.085,0,{wet:0.12,ratio:3.5,hard:0.7}); break;
+    // Badge : arpège de kalimba (do mi sol do), la dernière note résonne.
+    case 'medal': [N.C5,N.E5,N.G5,N.C6].forEach((f,i)=>_mallet(f,i===3?1.1:0.5,0.13,i*0.075,{wet:0.18,ratio:3.5,hard:0.9})); break;
+    // Séance terminée : accord de do (do mi sol) puis l'octave qui conclut.
+    case 'finish': [N.C5,N.E5,N.G5].forEach(f=>_mallet(f,0.9,0.1,0,{wet:0.16})); _mallet(N.C6,1.2,0.13,0.16,{wet:0.2,ratio:3.5,hard:0.9}); break;
+    // Notification : deux notes qui descendent, discrètes.
+    case 'notif': _mallet(N.A5,0.5,0.12,0,{wet:0.12}); _mallet(N.E5,0.7,0.12,0.12,{wet:0.14}); break;
+    // Minuteur : trois pulsations nettes — fonctionnel, il doit s'entendre.
+    case 'timer': for(let i=0;i<3;i++) _mallet(N.A5,0.3,0.18,i*0.26,{wet:0.06,hard:2.2}); break;
   }
 }
 
@@ -4864,8 +4807,9 @@ function alarmRing(){
   if(soundsOn()){
     // 27/09 : motif de verre (la – mi – la – do#) doublé à l'octave grave pour porter,
     // à la place de l'onde carrée : insistant, mais sans agresser.
+    // V3.4.0 : riff de marimba (sol do mi do sol…), frappe forte et doublé à l'octave grave.
     const N=_N;
-    [[N.A5,0],[N.E5,0.17],[N.A5,0.34],[N.Cs6,0.51]].forEach(([f,d])=>{ _glass(f,0.55,0.5,d,{alarm:true,bright:6,rich:true}); _glass(f/2,0.5,0.24,d,{alarm:true,pure:true,rich:true}); });
+    [[N.G5,0],[N.C6,0.15],[N.E6,0.3],[N.C6,0.45],[N.G5,0.6]].forEach(([f,d])=>{ _mallet(f,0.5,0.46,d,{alarm:true,hard:2.4}); _mallet(f/2,0.45,0.2,d,{alarm:true,hard:1.2}); });
   }
   if(navigator.vibrate) navigator.vibrate([400,150,400,150,400]);
 }
@@ -6805,8 +6749,22 @@ function applyTheme(){
   // paint au prochain chargement, sans attendre le déchiffrement async du profil.
   try{ localStorage.setItem('ik_theme_prefs', JSON.stringify({mode, accent:P.theme||'blue', easyMode:!!P.easyMode, glass:P.glass||'std'})); }catch(e){}
 }
-/* Couleur d'accent de l'app : bleu (défaut) / vert militaire chromé / marron boisé chromé */
-const ACCENTS=[{key:'blue',name:'accentBlue'},{key:'red',name:'accentRed'},{key:'green',name:'accentGreen'},{key:'brown',name:'accentBrown'},{key:'yellow',name:'accentYellow'},{key:'carbon',name:'accentCarbon'}];
+/* Couleurs de l'app (V3.4.0 : quinze, rangées en familles de variantes). Chacune a son
+   fond teinté en sombre et son accent assombri en clair : voir app.css, « COULEURS ». */
+const ACCENTS=[
+  {key:'blue',name:'accentBlue',fam:'cool'},{key:'ocean',name:'accentOcean',fam:'cool'},{key:'violet',name:'accentViolet',fam:'cool'},{key:'lavender',name:'accentLavender',fam:'cool'},
+  {key:'pink',name:'accentPink',fam:'warm'},{key:'sakura',name:'accentSakura',fam:'warm'},{key:'red',name:'accentRed',fam:'warm'},{key:'orange',name:'accentOrange',fam:'warm'},{key:'yellow',name:'accentYellow',fam:'warm'},
+  {key:'green',name:'accentGreen',fam:'nature'},{key:'mint',name:'accentMint',fam:'nature'},{key:'teal',name:'accentTeal',fam:'nature'},{key:'brown',name:'accentBrown',fam:'nature'},
+  {key:'carbon',name:'accentCarbon',fam:'neutral'},{key:'mono',name:'accentMono',fam:'neutral'}];
+const ACCENT_FAMS=[['cool','colorFamCool'],['warm','colorFamWarm'],['nature','colorFamNature'],['neutral','colorFamNeutral']];
+function accentName(k){ const a=ACCENTS.find(x=>x.key===k); return a?t(a.name):t('accentBlue'); }
+// Profil › Couleur de l'app : une fiche par familles, chaque variante avec son nom.
+function pfColorHTML(){
+  const cur=P.theme||'blue';
+  return ACCENT_FAMS.map(([f,lab])=>'<div class="acc-fam"><div class="lab">'+t(lab)+'</div><div class="acc-grid">'+
+    ACCENTS.filter(a=>a.fam===f).map(a=>'<div class="acc-sw'+(cur===a.key?' on':'')+'" role="button" onclick="setAccent(\''+a.key+'\')"><i class="accent-dot'+(cur===a.key?' on':'')+'" data-a="'+a.key+'"></i><span>'+t(a.name)+'</span></div>').join('')+
+    '</div></div>').join('');
+}
 function setAccent(c){
   P.theme=c; saveAll(); applyTheme();
   if($('#s-profil')&&$('#s-profil').classList.contains('on')) renderProfile();
@@ -12615,7 +12573,7 @@ function renderProfile(){
   h+='<div class="grp-card stag" style="animation-delay:.16s">'+
     '<div class="grp-row" onclick="openProfileSection(\'lang\')"><div class="lr-icon">'+ICN('globe',20,'currentColor')+'</div><div class="lr-title">'+t('language')+'</div><div class="lr-val">'+langInfo[1]+' '+langInfo[2]+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('theme')+'</div>'+pfThemeSwitchHTML()+'</div>'+
-    '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('appColor')+'</div>'+pfAccentPickerHTML()+'</div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'color\')"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('appColor')+'</div><div class="lr-val"><i class="accent-dot" data-a="'+(P.theme||'blue')+'" style="display:inline-block;width:14px;height:14px;vertical-align:-2px;margin-inline-end:6px;box-shadow:none"></i>'+accentName(P.theme)+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     // Effet verre (V3.3.0) : la fiche existait mais aucune ligne n'y menait.
     '<div class="grp-row" onclick="openProfileSection(\'appearance\')"><div class="lr-icon">'+ICN('bolt',20,'currentColor')+'</div><div class="lr-title">'+t('glassLab')+'</div><div class="lr-val">'+t(P.glass==='max'?'glassMax':P.glass==='flat'?'glassFlat':'glassStd')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('heart',20,'currentColor')+'</div><div><div class="lr-title">'+t('simplifiedMode')+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px;max-width:200px">'+t('simplifiedModeDesc')+'</div></div><div class="toggle'+(P.easyMode?' on':'')+'" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
@@ -12660,6 +12618,7 @@ function renderProfileSimple(){
   h+='<div class="grp-card">'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('heart',20,'currentColor')+'</div><div class="lr-txt"><div class="lr-title">'+t('simplifiedMode')+'</div><div class="lr-sub">'+t('simplifiedModeDesc')+'</div></div><div class="toggle on" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('theme')+'</div>'+pfThemeSwitchHTML()+'</div>'+
+    row('palette',t('appColor'),"openProfileSection('color')",accentName(P.theme))+
     row('globe',t('language'),"openProfileSection('lang')",langInfo[2])+
     row('bell',t('notifLabel'),"openProfileSection('notif')")+
     row('flag',t('replayTourBtn'),'startAppTour()')+
@@ -12681,7 +12640,7 @@ function renderProfileSimple(){
 let _pfSheet=null;
 function openProfileSection(key){
   _pfSheet=key;
-  const titles={account:t('account'),lang:''+t('language'),appearance:''+t('appearance'),notif:''+t('notifsApp'),data:''+t('dataPrivacy'),terms:t('termsOfUseLab'),privacy:t('privacyPolicyLab')};
+  const titles={account:t('account'),color:t('appColor'),lang:''+t('language'),appearance:''+t('appearance'),notif:''+t('notifsApp'),data:''+t('dataPrivacy'),terms:t('termsOfUseLab'),privacy:t('privacyPolicyLab')};
   $('#ovProgTitle').textContent=titles[key]||t('settings');
   $('#progBody').innerHTML=pfSectionHTML(key);
   openOv('ovProg');
@@ -12691,6 +12650,7 @@ function pfSectionHTML(key){
   if(key==='account') return pfAccountHTML();
   if(key==='lang') return pfLangHTML();
   if(key==='appearance') return pfAppearanceHTML();
+  if(key==='color') return pfColorHTML();
   if(key==='notif') return pfNotifHTML();
   if(key==='data') return pfDataHTML();
   if(key==='terms') return legalTermsHTML();
