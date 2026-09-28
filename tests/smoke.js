@@ -501,6 +501,37 @@
     }
   }
 
+  /* ======================= 7c. ÎLOT ET ANNIVERSAIRE (V3.4.0) ============= */
+  function testIlotEtFete(){
+    var c='7c. Îlot et anniversaire';
+    // L'îlot lit l'état réel des activités : un chrono en pause doit y figurer, rien sinon.
+    essaie(c,'un chrono en pause apparaît dans l\'îlot',function(){
+      if(typeof ikActivities!=='function') throw new Error('îlot absent');
+      var avant=chrono;
+      try{
+        chrono={running:false,start:0,elapsed:0,laps:[],raf:null};
+        if(ikActivities().some(function(a){ return a.k==='chrono'; })) throw new Error('chrono à zéro affiché');
+        chrono={running:false,start:0,elapsed:65000,laps:[],raf:null};
+        var a=ikActivities().filter(function(x){ return x.k==='chrono'; })[0];
+        if(!a) throw new Error('chrono en pause absent');
+        return 'affiché « '+a.time+' »';
+      } finally { chrono=avant; }
+    });
+    // Un 29 février se fête le 28 les années non bissextiles ; une date vide ne fête rien.
+    essaie(c,'le jour d\'anniversaire est bien reconnu (29 février compris)',function(){
+      if(typeof isBirthdayToday!=='function') throw new Error('fonction absente');
+      var avant=P.bday, d=new Date(), y=d.getFullYear();
+      try{
+        P.bday='1990-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+        if(!isBirthdayToday()) throw new Error('aujourd\'hui non reconnu');
+        P.bday=''; if(isBirthdayToday()) throw new Error('date vide fêtée');
+        var bis=(y%4===0&&y%100!==0)||y%400===0;
+        if(!bis && d.getMonth()===1 && d.getDate()===28){ P.bday='2000-02-29'; if(!isBirthdayToday()) throw new Error('29 février non fêté le 28'); }
+        return 'ok';
+      } finally { P.bday=avant; }
+    });
+  }
+
   /* ======================= 8. SON ======================================== */
   function testSon(){
     var c='8. Son';
@@ -595,6 +626,7 @@
     testAudit2409();
     testGardeFou();
     testModeSimple();
+    testIlotEtFete();
     Promise.resolve(testI18nUsage())
       .then(function(){ return testHorsLigne(); })
       .then(function(){ return testSon(); })
