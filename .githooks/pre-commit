@@ -105,6 +105,21 @@ if git diff --cached --name-only | grep -q '^app\.js$'; then
     || echo "ATTENTION : app.js modifie sans bump de app.js?v=N dans index.html"
 fi
 
+# --- 4b. Numero de version affiche -----------------------------------------
+# APP_VERSION (app.js) est le numero que voit l utilisateur (V3.2.0). Toute nouvelle
+# version d app.js (?v=N change dans index.html) doit le faire evoluer.
+if git diff --cached -U0 -- index.html | grep -q '^+.*app\.js?v='; then
+  old=$(git show HEAD:app.js 2>/dev/null | grep -o "const APP_VERSION='[^']*'" | head -1)
+  new=$(git show :app.js 2>/dev/null | grep -o "const APP_VERSION='[^']*'" | head -1)
+  if [ -z "$new" ]; then
+    echo "ERREUR : APP_VERSION introuvable dans app.js"; fail=1
+  elif [ -n "$old" ] && [ "$old" = "$new" ]; then
+    echo "ERREUR : nouvelle version d app.js (?v=) mais $new n a pas change."
+    echo "         Correctif : dernier chiffre +1 (3.2.0 -> 3.2.1) ; nouveautes : 3.2.x -> 3.3.0"
+    fail=1
+  fi
+fi
+
 # --- 5. Rappel des suites ---------------------------------------------------
 if git diff --cached --name-only | grep -qE '^(app\.js|index\.html|sw\.js)$'; then
   echo "Pense a rejouer :"

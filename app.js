@@ -4441,19 +4441,11 @@ function levelUpAnimation(level){
 /* ---------- UTIL ---------- */
 const $=s=>document.querySelector(s);
 const $$=s=>document.querySelectorAll(s);
-// Numéro de version (signature IKORUN en bas des écrans). Avant ce correctif, "v3.02.123"
-// était une chaîne écrite en dur dans les 3 blocs de langue : je devais penser
-// à la modifier à la main à CHAQUE déploiement, en plus du ?v=NN de app.js
-// (obligatoire, lui, pour la mise en cache) — deux compteurs séparés à tenir
-// synchronisés à la main, ça a fini par diverger. Ici, le numéro de build est
-// lu directement depuis l'URL du <script> (index.html porte déjà ?v=NN, unique
-// source de vérité) : il ne peut plus jamais désynchroniser, un seul numéro à
-// incrémenter par déploiement au lieu de deux. Trouvé le 20/09.
-function appBuildNumber(){
-  const tag=document.querySelector('script[src*="app.js?v="]');
-  const m=tag && tag.src.match(/[?&]v=(\d+)/);
-  return m ? m[1] : '?';
-}
+// Version affichée (V3.2.0) — demandée par Hamou le 28/09, au lieu de « v3.02.107 » qui
+// exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
+// chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
+// si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
+const APP_VERSION='3.2.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -5928,9 +5920,8 @@ function scheduleResume(){
 }
 
 function logout(){ signOutUser(); }
-// Numéro de version de la signature (.ik-sign, bas de chaque écran) — même numéro que
-// l'ancienne ligne du Profil, lu sur l'adresse d'app.js (voir appBuildNumber).
-(function(){ try{ const el=document.getElementById('ikSignVer'); if(el) el.textContent='v3.02.'+appBuildNumber(); }catch(e){} })();
+// Numéro de version de la signature (.ik-sign, bas de chaque écran) : voir APP_VERSION.
+(function(){ try{ const el=document.getElementById('ikSignVer'); if(el) el.textContent='V'+APP_VERSION; }catch(e){} })();
 function initApp(){
   $('#ob').classList.remove('on');
   applyTheme();
