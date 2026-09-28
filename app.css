@@ -3358,3 +3358,11 @@ html.easy-mode .isl-main::after,html.easy-mode .live .isl-ring::after{animation:
 /* bouton « réduire » de la séance en cours */
 .ik-min-btn svg{transition:transform .2s var(--ease-spring);}
 .ik-min-btn:active svg{transform:translateY(2px);}
+
+/* SÉANCE EN COURS — fluidité (V3.4.0) : la fiche couvre 92 % de l'écran et son fond était
+   déjà opaque à 88 % ; le flou de 30 px recalculé à chaque image de la montée (et celui du
+   fond de page) faisait accrocher l'ouverture sur téléphone. Fond plein, même reflet. */
+html[data-mode] #ovLive{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(5,7,10,.62);}
+html[data-mode="light"] #ovLive{background:rgba(120,130,150,.42);}
+html[data-mode] #ovLive .ov-card{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--lg-spec),var(--bg);}
+#ovLive .ov-card{will-change:transform;contain:layout paint;}

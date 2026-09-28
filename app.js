@@ -4595,7 +4595,7 @@ function ikEnterScreen(s){
   ikStreak(scr.querySelector('.hv7-day,.sp-plan,.pf-hero,.card'));
 }
 function ikOpenOv(ov){
-  if(!ov || ikMotionOff()) return;
+  if(!ov || ikMotionOff() || ov.id==='ovLive') return; // séance : une seule montée, pas de cascade sur ~40 blocs
   const card=ov.querySelector('.ov-card'); if(!card) return;
   requestAnimationFrame(()=>{ if(ikFirst(ov,ikSig(card.innerHTML))) ikPlay(card,{skip:'.ov-head'}); });
 }
@@ -10150,7 +10150,9 @@ function startLive(id,startIdx){
   const p=allProgs().find(x=>x.id===id); if(!p) return;
   _finishingLive=false; // nouvelle séance : la garde de ré-entrée de finishLive repart à zéro
   if(_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; }
-  closeOv('ovProg');
+  // Sans sortie animée : deux fenêtres en mouvement à la fois (le programme qui part, la
+  // séance qui monte) faisaient accrocher le démarrage.
+  closeOv('ovProg'); { const pr=$('#ovProg'); if(pr){ clearTimeout(pr._leaveT); pr.classList.remove('ov-leaving'); } }
   // On clone le tableau d'exercices (pas les objets exercice eux-mêmes) : ajouter/retirer un exo
   // en pleine séance ne modifie donc que cette séance, jamais la routine enregistrée.
   LIVE={prog:{...p,ex:p.ex.slice()},idx:startIdx||0,start:Date.now(),
@@ -10222,27 +10224,11 @@ function renderLive(){
       '<div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+(allDone?t('exerciseDoneLab'):tp('setsDoneCount',st.sets.filter(Boolean).length,st.sets.length))+'</div></div>'+
       '<span id="exChev'+i+'" style="color:var(--muted);font-size:14px;padding:6px 4px;transition:transform .25s ease;transform:rotate('+(open?'180':'0')+'deg)">⌄</span>'+
       '<span onclick="event.stopPropagation();openLiveExOptions('+i+')" style="color:var(--muted);font-size:20px;padding:4px 4px 4px 8px;cursor:pointer;letter-spacing:1px">⋯</span></div>';
-    // Contenu repliable : notes, repos, tableau des séries
-    h+='<div id="exBody'+i+'" style="max-height:'+(open?'1400px':'0')+'px;opacity:'+(open?'1':'0')+';overflow:hidden;transition:max-height .32s ease,opacity .22s ease,margin-top .32s ease;margin-top:'+(open?'12':'0')+'px">';
-    // Affichait « Désactivé » quand l'exercice n'avait pas de repos défini, alors que
-    // toggleSet() lance bien 90 s dans ce cas (et changeRest ne propose que 15-300 s) :
-    // l'étiquette montre désormais la durée réellement appliquée (audit 24/09).
-    h+='<div class="live-rest" onclick="changeRest('+i+')">'+ICN('stopwatch',15)+'<span>'+tp('restTimerLab',fmtRest(e.rest||90))+'</span></div>';
-    h+='<div style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:8px;text-align:center">'+
-      '<div>'+t('setCol')+'</div><div>'+t('prevCol')+'</div><div>'+t('kgCol')+'</div><div>'+t('repsCol')+'</div><div></div></div>';
-    st.log.forEach((s,j)=>{
-      h+='<div class="set-swipe-wrap" data-i="'+i+'" data-j="'+j+'">'+
-        '<div class="set-swipe-action left" onclick="deleteLiveSet('+i+','+j+')"><span>'+ICN('trash',16)+'</span></div>'+
-        '<div class="set-swipe-action right" onclick="deleteLiveSet('+i+','+j+')"><span>'+ICN('trash',16)+'</span></div>'+
-        '<div class="set-swipe-row" data-i="'+i+'" data-j="'+j+'" style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;align-items:center">'+
-        '<div style="text-align:center;font-weight:700;color:var(--muted)">'+(j+1)+'</div>'+
-        '<div style="text-align:center;font-size:11px;color:var(--dim)">'+(e.weight||20)+'kg×'+(parseInt(e.reps)||10)+'</div>'+
-        '<input class="setcell" type="number" inputmode="decimal" value="'+s.kg+'" onchange="setLog('+i+','+j+',\'kg\',this.value)">'+
-        '<input class="setcell" type="number" inputmode="numeric" value="'+s.reps+'" onchange="setLog('+i+','+j+',\'reps\',this.value)">'+
-        '<div class="setcheck'+(s.done?' on':'')+'" onclick="toggleSet('+i+','+j+')">'+ICN('check',16)+'</div></div>'+
-        '</div>'; // fin .set-swipe-wrap
-    });
-    h+='<button class="btn ghost sm" style="margin-top:4px" onclick="addLiveSet('+i+')">'+t('addSetBtn')+'</button>';
+    // Contenu repliable : notes, repos, tableau des séries. Seul l'exercice ouvert est
+    // construit (V3.4.0) : les autres restent vides jusqu'à leur ouverture (voir
+    // toggleLiveEx). Toute la séance faisait ~800 éléments à recalculer à chaque série
+    // cochée — d'où l'ouverture et les coches qui accrochaient sur téléphone.
+    h+='<div id="exBody'+i+'"'+(open?'':' data-lazy="1"')+' style="max-height:'+(open?'1400px':'0px')+';opacity:'+(open?'1':'0')+';overflow:hidden;transition:max-height .32s ease,opacity .22s ease,margin-top .32s ease;margin-top:'+(open?'12':'0')+'px">'+(open?liveExBodyHTML(i):'');
     h+='</div>'; // fin exBody
     h+='</div>'; // fin .ex-swipe-card
     h+='</div>'; // fin .ex-swipe-wrap
@@ -10254,6 +10240,30 @@ function renderLive(){
     if(bar){ requestAnimationFrame(()=>{ bar.style.width=now+'%'; }); if(now===100 && LIVE._progPrev!==100) ikShock(bar.parentElement); }
     LIVE._progPrev=now; }
   initLiveSwipe();
+}
+// Tableau des séries d'un exercice de la séance en cours (repos, en-têtes, lignes, « + série »).
+function liveExBodyHTML(i){
+  const e=LIVE.prog.ex[i], st=LIVE.state[i];
+  // Affichait « Désactivé » quand l'exercice n'avait pas de repos défini, alors que
+  // toggleSet() lance bien 90 s dans ce cas (et changeRest ne propose que 15-300 s) :
+  // l'étiquette montre désormais la durée réellement appliquée (audit 24/09).
+  let h='<div class="live-rest" onclick="changeRest('+i+')">'+ICN('stopwatch',15)+'<span>'+tp('restTimerLab',fmtRest(e.rest||90))+'</span></div>';
+  h+='<div style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:8px;text-align:center">'+
+    '<div>'+t('setCol')+'</div><div>'+t('prevCol')+'</div><div>'+t('kgCol')+'</div><div>'+t('repsCol')+'</div><div></div></div>';
+  st.log.forEach((s,j)=>{
+    h+='<div class="set-swipe-wrap" data-i="'+i+'" data-j="'+j+'">'+
+      '<div class="set-swipe-action left" onclick="deleteLiveSet('+i+','+j+')"><span>'+ICN('trash',16)+'</span></div>'+
+      '<div class="set-swipe-action right" onclick="deleteLiveSet('+i+','+j+')"><span>'+ICN('trash',16)+'</span></div>'+
+      '<div class="set-swipe-row" data-i="'+i+'" data-j="'+j+'" style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;align-items:center">'+
+      '<div style="text-align:center;font-weight:700;color:var(--muted)">'+(j+1)+'</div>'+
+      '<div style="text-align:center;font-size:11px;color:var(--dim)">'+(e.weight||20)+'kg×'+(parseInt(e.reps)||10)+'</div>'+
+      '<input class="setcell" type="number" inputmode="decimal" value="'+s.kg+'" onchange="setLog('+i+','+j+',\'kg\',this.value)">'+
+      '<input class="setcell" type="number" inputmode="numeric" value="'+s.reps+'" onchange="setLog('+i+','+j+',\'reps\',this.value)">'+
+      '<div class="setcheck'+(s.done?' on':'')+'" onclick="toggleSet('+i+','+j+')">'+ICN('check',16)+'</div></div>'+
+      '</div>'; // fin .set-swipe-wrap
+  });
+  h+='<button class="btn ghost sm" style="margin-top:4px" onclick="addLiveSet('+i+')">'+t('addSetBtn')+'</button>';
+  return h;
 }
 /* ---------- LIVE : swipe gauche/droite sur une carte exercice pour révéler "Supprimer" ---------- */
 const SWIPE_W_EX=88, SWIPE_W_SET=64; // largeurs de la zone rouge révélée (carte exercice / ligne série)
@@ -10420,6 +10430,7 @@ function toggleLiveEx(i){
   }
   const b=$('#exBody'+i);
   if(b){
+    if(willOpen && b.dataset.lazy){ b.innerHTML=liveExBodyHTML(i); delete b.dataset.lazy; void b.offsetHeight; }
     if(willOpen){ b.style.maxHeight='1400px'; b.style.opacity='1'; b.style.marginTop='12px'; }
     else { b.style.maxHeight='0px'; b.style.opacity='0'; b.style.marginTop='0px'; }
   }
