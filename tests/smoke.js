@@ -461,6 +461,46 @@
     });
   }
 
+  /* ======================= 7b. MODE SIMPLIFIÉ ============================ */
+  // Bugs réels (V3.3.1) : sous zoom:1.16, 100vh débordait de l'écran (la page entière
+  // défilait sous la barre du bas) et la pastille partait hors de la barre sur la page
+  // Outils, qui n'a pas d'onglet en mode simplifié. On pose la classe seule, sans
+  // applyTheme() qui recopierait le réglage dans le stockage.
+  function testModeSimple(){
+    var c='7b. Mode simplifié', h=document.documentElement, avant=h.classList.contains('easy-mode');
+    var entreeAvant=(typeof _outilsEntry!=='undefined')?_outilsEntry:null;
+    // html.easy-mode * raccourcit TOUTES les transitions à 0,15 s : mesurée aussitôt après
+    // la pose de la classe, la hauteur était encore en train de glisser depuis l'ancienne.
+    var fige=document.createElement('style'); fige.textContent='html.easy-mode *{transition:none !important;}';
+    try{
+      document.head.appendChild(fige);
+      h.classList.add('easy-mode');
+      essaie(c,'la page ne déborde pas de l\'écran sous le zoom',function(){
+        var d=h.scrollHeight-innerHeight; if(d>1) throw new Error('dépasse de '+d+' px'); return 'au pixel près';
+      });
+      essaie(c,'la pastille reste dans la barre quand l\'onglet Outils est masqué',function(){
+        var outils=document.querySelector('.nb[data-s="outils"]'), pf=document.querySelector('.nb[data-s="profil"]'), pill=document.getElementById('nav-pill');
+        if(!outils||!pf||!pill) return 'barre absente';
+        if(outils.offsetWidth) return false; // l'onglet devrait être masqué
+        _outilsEntry='profil';
+        if(navPillTarget(outils)!==pf) throw new Error('cible '+(navPillTarget(outils)||{}).dataset);
+        positionNavPill(outils); // (la pastille peut s'étirer 160 ms avant de se poser : on vérifie la cible et les bornes)
+        var l=parseFloat(pill.style.left), w=parseFloat(pill.style.width), bar=document.getElementById('nav').clientWidth;
+        if(!(l>=0 && l+w<=bar+1)) throw new Error('hors de la barre : '+Math.round(l)+' + '+Math.round(w)+' px');
+        return pf.classList.contains('on-alt') && 'sous Profil, onglet Profil allumé';
+      });
+      essaie(c,'le facteur des rects suit le moteur (1 ou le zoom)',function(){
+        var z=uiZoomFactor(), k=uiRectFactor(); return (k===1||k===z) && ('zoom '+z+', rects '+k);
+      });
+    } finally {
+      if(!avant) h.classList.remove('easy-mode');
+      fige.remove();
+      if(entreeAvant!==null) _outilsEntry=entreeAvant;
+      document.querySelectorAll('.nb.on-alt').forEach(function(b){ b.classList.remove('on-alt'); });
+      positionNavPill(document.querySelector('.nb.on'));
+    }
+  }
+
   /* ======================= 8. SON ======================================== */
   function testSon(){
     var c='8. Son';
@@ -554,6 +594,7 @@
     testIntegrite();
     testAudit2409();
     testGardeFou();
+    testModeSimple();
     Promise.resolve(testI18nUsage())
       .then(function(){ return testHorsLigne(); })
       .then(function(){ return testSon(); })
