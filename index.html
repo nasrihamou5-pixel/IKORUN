@@ -93,8 +93,8 @@
 <link rel="preload" as="font" type="font/woff2" href="fonts/inter-latin.woff2" crossorigin>
 <!-- téléchargés dès maintenant, exécutés après la première image (voir bas de page) -->
 <link rel="preload" as="script" href="vendor/supabase.js?v=1">
-<link rel="preload" as="script" href="vendor/sb-init.js?v=2">
-<link rel="preload" as="script" href="app.js?v=106">
+<link rel="preload" as="script" href="vendor/sb-init.js?v=3">
+<link rel="preload" as="script" href="app.js?v=107">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
@@ -1258,6 +1258,22 @@ html[data-mode="light"]{
 .ov.ov-push .ov-body-scroll{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 /* zone invisible sur le bord gauche pour capter le swipe-back, façon iOS */
 .ov-push-edge{position:absolute;left:0;top:0;bottom:0;width:22px;z-index:5;}
+/* OUVERTURE / FERMETURE ANIMÉES (v107) — avant, une page plein écran apparaissait
+   d'un coup (la transition ne peut pas partir d'un display:none) et toutes les
+   fenêtres disparaissaient sans transition. .ov-leaving garde la fenêtre affichée
+   le temps de sa sortie ; .on est déjà retiré, la logique la voit fermée. */
+.ov.ov-push.on .ov-card{animation:ovPushIn .34s var(--ease-out);}
+@keyframes ovPushIn{from{transform:translateX(100%);}}
+.ov.ov-leaving{display:flex;pointer-events:none;animation:ovFadeOut .26s ease forwards;}
+.ov.ov-leaving .ov-card{animation:ovSheetDown .26s cubic-bezier(.4,0,1,1) forwards;}
+.ov.ov-push.ov-leaving{animation:none;}
+.ov.ov-push.ov-leaving .ov-card{animation:ovPushOut .26s cubic-bezier(.4,0,1,1) forwards;}
+@keyframes ovSheetDown{to{transform:translateY(104%);}}
+@keyframes ovPushOut{to{transform:translateX(100%);}}
+@keyframes ovFadeOut{to{opacity:0;}}
+.ov.sheet-drag .ov-card{transition:none;animation:none;}
+@media (prefers-reduced-motion: reduce){ .ov.ov-leaving{display:none;} .ov.ov-push.on .ov-card{animation:none;} }
+html.easy-mode .ov.ov-leaving{display:none;}
 
 /* ===== SKELETON — écran de chargement au tout premier lancement ===== */
 #appSkeleton{position:fixed;inset:0;z-index:20000;background:var(--bg);max-width:430px;margin:0 auto;
@@ -2987,6 +3003,31 @@ html.easy-mode #toast{background:var(--s1);border:2px solid var(--e);box-shadow:
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important;}
 }
+/* FLUIDITÉ (v107) — le flou d'arrière-plan des cartes qui défilent ne se voyait pas
+   (fond presque uni derrière elles : captures identiques avec et sans, sombre et clair)
+   mais Safari le recalculait à chaque image du défilement — jusqu'à 13 à la fois sur
+   l'accueil. Gardé là où du contenu passe vraiment dessous : barre de titre compacte,
+   barre du bas, fenêtres, toasts. */
+#scroll *:not(.topbar){-webkit-backdrop-filter:none;backdrop-filter:none;}
+/* GESTES (v107) — glisser depuis le bord gauche ferme la page plein écran de l'app ;
+   sans ceci, Chrome/Android (et IKORUN ouvert dans un onglet) faisait « page précédente »
+   et sortait de l'app. */
+html,body{overscroll-behavior-x:none;}
+/* SIGNATURES IKORUN (v107) — discrètes : fin de chaque écran, en-tête des pages plein
+   écran, indicateur « tirer pour actualiser ». */
+.ik-sign{display:flex;flex-direction:column;align-items:center;gap:5px;margin:30px auto 4px;opacity:.55;text-align:center;}
+.ik-sign .ik-logo-mark{width:22px;height:22px;}
+.ik-sign b{font-family:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:800;font-size:11px;letter-spacing:2.4px;color:var(--snow);}
+.ik-sign span{font-size:10px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);}
+.ik-sign em{font-style:normal;font-size:9.5px;color:var(--dim);font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;}
+.ik-sign em:empty{display:none;}
+html.easy-mode .ik-sign{display:none;}
+.ov.ov-push .ov-head::after{content:'';order:3;flex:none;width:20px;height:20px;opacity:.5;background:var(--e);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='84 78 356 280'%3E%3Cg fill='%23000' stroke='%23000' stroke-width='12' stroke-linejoin='round'%3E%3Cpolygon points='92,350 205,258 415,183 296,292'/%3E%3Cpolygon points='160,240 218,160 432,86 376,168'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='84 78 356 280'%3E%3Cg fill='%23000' stroke='%23000' stroke-width='12' stroke-linejoin='round'%3E%3Cpolygon points='92,350 205,258 415,183 296,292'/%3E%3Cpolygon points='160,240 218,160 432,86 376,168'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;}
+html[data-accent="carbon"] .ov.ov-push .ov-head::after{background:var(--grad-btn);}
+#ptrIndicator .ik-logo-mark{width:18px;height:18px;}
+#ptrIndicator.busy .ik-logo-mark{animation:ikPtrPulse .9s ease-in-out infinite;}
+@keyframes ikPtrPulse{50%{transform:scale(.72);opacity:.55;}}
 </style>
 </head>
 <body>
@@ -3190,6 +3231,8 @@ html.easy-mode #toast{background:var(--s1);border:2px solid var(--e);box-shadow:
   <div class="scr" id="s-stats"></div>
   <div class="scr" id="s-outils"></div>
   <div class="scr" id="s-profil"></div>
+  <!-- Signature IKORUN en bas de chaque écran (v107) -->
+  <div class="ik-sign" aria-hidden="true"><i class="ik-logo-mark"></i><b>IKORUN</b><span>Elite Athletic Intelligence</span><em id="ikSignVer"></em></div>
 </div>
 
 <!-- Voile de transition sous la nav flottante : évite qu'une carte/ligne de contenu
@@ -3237,8 +3280,8 @@ html.easy-mode #toast{background:var(--s1);border:2px solid var(--e);box-shadow:
      ne persiste RIEN : elle photographie l'état, teste, restaure. -->
 <script>
 (function(){
-  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=2', 'app.js?v=106'];
-  if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=4');
+  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=3', 'app.js?v=107'];
+  if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=5');
   var lance = false;
   function charge(){
     if (lance) return; lance = true;
