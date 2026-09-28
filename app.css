@@ -3190,3 +3190,89 @@ html[data-mode="light"] .ik-orb{background:radial-gradient(circle at 34% 28%,rgb
   .ik-done .setcheck.on svg *{stroke-dashoffset:0;} .ik-shock{display:none;}
 }
 html.easy-mode .ik-wave,html.easy-mode .ik-live-prog > i::after{animation:none;}
+
+/* ===================================================================
+   MODE SIMPLIFIÉ (V3.3.1) — corrections et mise au propre
+   =================================================================== */
+/* Hauteurs en pourcentage, pas en vh : sous zoom:1.16, 100vh valait 116 % de l'écran.
+   La page entière défilait alors de 135 px sous la zone de défilement (la barre du bas
+   « sautait » en changeant de page) et les fenêtres dépassaient par le haut (titre de la
+   séance en cours coupé). Un pourcentage suit la vraie taille de l'écran, quel que soit
+   le zoom et le navigateur. */
+html.easy-mode,html.easy-mode body{height:100%;}
+html.easy-mode body{min-height:0;overflow:hidden;}
+html.easy-mode #scroll{height:100%;}
+html.easy-mode .ov-card,html.easy-mode #ovProfile .ov-card{max-height:92%;}
+html.easy-mode #ikMaj{max-width:calc(100% - 24px);}
+html.easy-mode #toast{max-width:min(calc(100% - 40px),330px);}
+/* Feuilles opaques : sans flou, un fond à 88 % laissait lire la page derrière. */
+html.easy-mode[data-mode] .ov:not(.ov-push) .ov-card{background:var(--bg) !important;border-top:2px solid var(--hair2) !important;}
+
+/* Barre du bas : libellés lisibles, onglet « parent » allumé quand la page n'a pas d'onglet */
+.nb.on-alt{color:var(--e2);}
+html.easy-mode .nb span{font-size:10.5px;}
+html.easy-mode .nb svg{width:22px;height:22px;}
+
+/* Moins de bruit : bordures fines et un seul ton, texte courant dans les boutons.
+   L'Unbounded extra-gras sur chaque bouton et chaque pastille criait plus qu'il n'aidait. */
+html.easy-mode .card,html.easy-mode .grp-card,html.easy-mode .favtile,html.easy-mode .sbox,html.easy-mode .inp,html.easy-mode .pill{border-width:1.5px !important;border-color:var(--hair2) !important;}
+html.easy-mode :is(.btn,.pill,.seg-btn){font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;letter-spacing:0;}
+html.easy-mode .btn{font-weight:700;font-size:15.5px;}
+html.easy-mode .pill{font-weight:700;}
+html.easy-mode[data-mode] .btn.ghost{border-width:1.5px !important;}
+
+/* Titres de section : un seul modèle partout (Accueil, Sport, Stats, Profil, Outils),
+   même taille, même couleur, même respiration au-dessus et en dessous. */
+html.easy-mode :is(.next-lab,.sec-lab,.hv7-sec-lab,.grp-lab,#toolRes > .lab){
+  font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11.5px;font-weight:800;letter-spacing:.7px;
+  text-transform:uppercase;color:var(--e2);margin:22px 2px 9px !important;padding-top:0;}
+html.easy-mode .ez-lab-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+html.easy-mode .ez-lab-row .see{font-size:12px;font-weight:700;text-transform:none;letter-spacing:0;color:var(--e2);cursor:pointer;}
+html.easy-mode .scr{padding:0 16px 20px;}
+html.easy-mode .card{margin-bottom:10px;}
+
+/* Accueil */
+html.easy-mode .ik-header{padding-bottom:8px;}
+.ez-av{background:none;border:0;padding:0;border-radius:50%;cursor:pointer;line-height:0;}
+.ez-av > div{margin:0 !important;}
+html.easy-mode .ik-greet{margin-bottom:14px;}
+html.easy-mode .next-title{font-size:16px;}
+html.easy-mode .next-meta{font-size:13px;}
+html.easy-mode .next-when{font-size:13px;}
+html.easy-mode .goal-card .goal-lab{display:none;}
+html.easy-mode .goal-card .goal-race{margin-top:0;font-size:16px;}
+html.easy-mode .goal-card .goal-target{font-size:12.5px;}
+html.easy-mode .goal-count .u{font-size:10px;}
+.ez-week{padding:16px 16px 15px;cursor:pointer;}
+.ez-week-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;font-size:14px;color:var(--muted);font-weight:600;}
+.ez-week-row b{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:24px;font-weight:800;color:var(--snow);letter-spacing:-.4px;font-variant-numeric:tabular-nums;}
+/* (chiffres en Inter : le zéro rond d'Unbounded se lisait comme la lettre O) */
+.ez-week-km b{font-size:18px;}
+.ez-week .kgoal-bar{height:10px;margin-top:12px;}
+.ez-week-prev{font-size:12.5px;color:var(--muted);margin-top:10px;font-weight:500;}
+
+/* Stats */
+.ez-quatro{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+.ez-quatro .stat-card{margin:0;padding:14px 8px;}
+html.easy-mode .stat-v{font-size:18px;}
+html.easy-mode .stat-l{font-size:10px;letter-spacing:.3px;}
+
+/* Profil */
+html.easy-mode .grp-row{padding:14px;}
+html.easy-mode .grp-row .lr-title{font-weight:700 !important;font-size:14.5px;}
+html.easy-mode .grp-row .lr-txt{flex:1;min-width:0;}
+html.easy-mode .grp-row .lr-txt .lr-title{flex:none;}
+html.easy-mode .grp-row .lr-sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.35;}
+.ez-ver{text-align:center;margin:24px 0 4px;font-size:11px;color:var(--dim);font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.4px;}
+
+/* Outils : trois tuiles par ligne, titre d'outil sur deux lignes plutôt que tronqué */
+.ez-toolgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.ez-toolgrid .favtile{padding:14px 6px;}
+html.easy-mode .favlab{font-size:12px;font-weight:700;}
+html.easy-mode .tool-title{white-space:normal !important;overflow:visible !important;font-size:16px !important;line-height:1.2;}
+html.easy-mode .list-row .lr-title{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:700 !important;font-size:15px;}
+/* Musculation : silhouettes un peu plus étroites pour laisser respirer le texte */
+html.easy-mode .mus-body{width:70px;}
+html.easy-mode .mus-name{font-size:16px;}
+html.easy-mode .mus-meta{font-size:12.5px;}
+html.easy-mode .list-row .lr-sub{font-size:12px;}

@@ -2061,7 +2061,7 @@ const I18N={
     loadingLab:'Chargement…',friendsLoadError:'Impossible de charger tes amis. Vérifie ta connexion.',retryBtn:'Réessayer',
     resumeBtn:'Reprendre',discardBtn:'Abandonner',
     alreadyLinked:'déjà lié',addBtn:'Ajouter',searchError:'Erreur de recherche',alreadySentOrFriend:'Déjà envoyé ou déjà ami',
-    requestSent:'Demande envoyée',friendProfileTitle:'Profil',removeLab:'Retirer',lvlDot:'Niv.',kmThisWeekShort:'{0} km cette semaine',youDefaultName:'Toi',backToFriends:'Retour aux amis',profileNotFound:'Profil introuvable.',noBadgeUnlocked:'Aucun badge débloqué pour l\u2019instant.',kmPerWeek:'km/sem.',daysStreak:'Jours de suite',kmTotalLab:'km au total',tonnageKgLab:'Tonnage kg',
+    requestSent:'Demande envoyée',friendProfileTitle:'Profil',removeLab:'Retirer',lvlDot:'Niv.',kmThisWeekShort:'{0} km cette semaine',lastWeekKm:'Semaine dernière : {0} km',glassEasyNote:'Le mode simplifié garde un affichage net, sans effet verre : ce réglage reprendra effet quand tu le désactiveras.',youDefaultName:'Toi',backToFriends:'Retour aux amis',profileNotFound:'Profil introuvable.',noBadgeUnlocked:'Aucun badge débloqué pour l\u2019instant.',kmPerWeek:'km/sem.',daysStreak:'Jours de suite',kmTotalLab:'km au total',tonnageKgLab:'Tonnage kg',
     addPerf:'Ajouter une performance',addChronosHint:'Ajoute tes chronos : ils alimentent ton VDOT et ton plan.',
     bestPerf:'Meilleure perf',avgHR:'FC moy',maxHRshort:'max',perfHistoryTitle:'Historique des performances',
     chooseDistance:'Choisis la distance',otherDist:'Autre',customDistance:'Distance personnalisée',
@@ -2647,7 +2647,7 @@ const I18N={
     loadingLab:'Loading…',friendsLoadError:'Couldn\'t load your friends. Check your connection.',retryBtn:'Retry',
     resumeBtn:'Resume',discardBtn:'Discard',
     alreadyLinked:'already linked',addBtn:'Add',searchError:'Search error',alreadySentOrFriend:'Already sent or already friends',
-    requestSent:'Request sent',friendProfileTitle:'Profile',removeLab:'Remove',lvlDot:'Lvl.',kmThisWeekShort:'{0} km this week',youDefaultName:'You',backToFriends:'Back to friends',profileNotFound:'Profile not found.',noBadgeUnlocked:'No badge unlocked yet.',kmPerWeek:'km/wk',daysStreak:'Day streak',kmTotalLab:'total km',tonnageKgLab:'Volume kg',
+    requestSent:'Request sent',friendProfileTitle:'Profile',removeLab:'Remove',lvlDot:'Lvl.',kmThisWeekShort:'{0} km this week',lastWeekKm:'Last week: {0} km',glassEasyNote:'Simplified mode keeps a clean display with no glass effect: this setting applies again once you turn it off.',youDefaultName:'You',backToFriends:'Back to friends',profileNotFound:'Profile not found.',noBadgeUnlocked:'No badge unlocked yet.',kmPerWeek:'km/wk',daysStreak:'Day streak',kmTotalLab:'total km',tonnageKgLab:'Volume kg',
     addPerf:'Add a performance',addChronosHint:'Add your times: they power your VDOT and your plan.',
     bestPerf:'Best performance',avgHR:'avg HR',maxHRshort:'max',perfHistoryTitle:'Performance history',
     chooseDistance:'Choose the distance',otherDist:'Other',customDistance:'Custom distance',
@@ -3233,7 +3233,7 @@ const I18N={
     loadingLab:'جارٍ التحميل…',friendsLoadError:'تعذّر تحميل أصدقائك. تحقّق من اتصالك.',retryBtn:'إعادة المحاولة',
     resumeBtn:'استئناف',discardBtn:'التخلي',
     alreadyLinked:'مرتبط بالفعل',addBtn:'إضافة',searchError:'خطأ في البحث',alreadySentOrFriend:'تم الإرسال بالفعل أو صديق بالفعل',
-    requestSent:'تم إرسال الطلب',friendProfileTitle:'الملف الشخصي',removeLab:'إزالة',lvlDot:'مستوى',kmThisWeekShort:'{0} كم هذا الأسبوع',youDefaultName:'أنت',backToFriends:'العودة إلى الأصدقاء',profileNotFound:'الملف غير موجود.',noBadgeUnlocked:'لا يوجد وسام مفتوح بعد.',kmPerWeek:'كم/أسبوع',daysStreak:'أيام متتالية',kmTotalLab:'كم إجمالية',tonnageKgLab:'الحمولة كغ',
+    requestSent:'تم إرسال الطلب',friendProfileTitle:'الملف الشخصي',removeLab:'إزالة',lvlDot:'مستوى',kmThisWeekShort:'{0} كم هذا الأسبوع',lastWeekKm:'الأسبوع الماضي: {0} كم',glassEasyNote:'الوضع المبسّط يُبقي العرض واضحًا دون تأثير الزجاج: يعود هذا الإعداد للعمل عند إيقافه.',youDefaultName:'أنت',backToFriends:'العودة إلى الأصدقاء',profileNotFound:'الملف غير موجود.',noBadgeUnlocked:'لا يوجد وسام مفتوح بعد.',kmPerWeek:'كم/أسبوع',daysStreak:'أيام متتالية',kmTotalLab:'كم إجمالية',tonnageKgLab:'الحمولة كغ',
     addPerf:'إضافة أداء',addChronosHint:'أضف أوقاتك: تُستخدم لحساب VDOT وخطتك.',
     bestPerf:'أفضل أداء',avgHR:'متوسط النبض',maxHRshort:'الأقصى',perfHistoryTitle:'سجل الأداء',
     chooseDistance:'اختر المسافة',otherDist:'أخرى',customDistance:'مسافة مخصصة',
@@ -4445,7 +4445,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='3.3.0';
+const APP_VERSION='3.3.1';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -5064,10 +5064,9 @@ function checkDayRollover(){
 function appIconDataURL(){ return "icon-192.png"; }
 function ripple(e,b){
   const r=document.createElement('span'); r.className='ripple';
-  const z=uiZoomFactor(); // rect et clientX sont en px écran, les styles posés en px CSS
-  const rect=b.getBoundingClientRect(), sz=Math.max(rect.width,rect.height)/z;
+  const p=uiLocalPoint(b,e.clientX,e.clientY), sz=Math.max(p.w,p.h); // en px CSS (voir uiZoomFactor)
   r.style.width=r.style.height=sz+'px';
-  r.style.left=((e.clientX-rect.left)/z-sz/2)+'px'; r.style.top=((e.clientY-rect.top)/z-sz/2)+'px';
+  r.style.left=(p.x-sz/2)+'px'; r.style.top=(p.y-sz/2)+'px';
   b.appendChild(r); setTimeout(()=>r.remove(),600);
 }
 document.addEventListener('click',e=>{ const b=e.target.closest('.btn'); if(b) ripple(e,b); });
@@ -5290,27 +5289,57 @@ function pickSpeed(title,init,cb){
 
 /* ---------- NAV ---------- */
 const TITLES={home:['Accueil',''],sport:['Sport','Running & Musculation'],stats:['Statistiques','Tes données réelles'],outils:['Outils','Calculs & timers'],profil:['Profil','']};
-/* Le mode simplifié applique zoom:1.16 sur <html> (voir .easy-mode). Or
-   getBoundingClientRect() renvoie des pixels écran DÉJÀ mis à l'échelle par ce
-   zoom : reposer ces mêmes nombres en style brut (left/top/width...) sur un
-   élément qui subit lui aussi le zoom les fait multiplier une seconde fois.
-   Toute position calculée en JS à partir d'un rect doit donc être divisée par
-   ce facteur avant d'être écrite en style. Vaut 1 hors mode simplifié. */
+/* Le mode simplifié applique zoom:1.16 sur <html> (voir .easy-mode). Trois
+   unités coexistent alors :
+   · pixels ÉCRAN : le doigt (clientX/Y), innerWidth/innerHeight ;
+   · pixels CSS : ce que l'on écrit en style (left, width, translate...), que le
+     zoom multiplie ensuite par 1,16 ;
+   · pixels des rects (getBoundingClientRect) : écran sur Chrome, mais CSS sur
+     Safari/iPhone, qui les divise déjà par le zoom de l'élément.
+   uiZoomFactor() convertit écran → CSS ; uiRectFactor() convertit rect → CSS,
+   mesuré sur place pour suivre le moteur réel. Supposer le modèle de Chrome
+   partout décalait la pastille du bas sur iPhone (d'autant plus que l'onglet
+   était à droite). Tous deux valent 1 hors mode simplifié. */
 function uiZoomFactor(){
   const z=parseFloat(getComputedStyle(document.documentElement).zoom);
   return (z && isFinite(z) && z>0) ? z : 1;
 }
+function uiRectFactor(){
+  const z=uiZoomFactor(); if(z===1) return 1;
+  const el=document.getElementById('scroll')||document.body, w=el&&el.offsetWidth;
+  if(!w) return z;
+  const r=el.getBoundingClientRect().width/w; // offsetWidth est toujours en pixels CSS
+  return Math.abs(r-1)<Math.abs(r-z) ? 1 : z;
+}
+// Mesure d'un rect ramenée en pixels écran (comparable à un déplacement du doigt).
+function uiRectToScreen(v){ return v/uiRectFactor()*uiZoomFactor(); }
+// Point du doigt exprimé en pixels CSS dans le repère de l'élément (ripple, lumière).
+function uiLocalPoint(el,cx,cy){
+  const r=el.getBoundingClientRect(), z=uiZoomFactor(), k=uiRectFactor();
+  return { x:cx/z-r.left/k, y:cy/z-r.top/k, w:r.width/k, h:r.height/k };
+}
+// Onglet masqué (Outils en mode simplifié, où l'on entre depuis Profil ou la carte
+// prière de l'Accueil) : la pastille reste sous la page d'où l'on vient au lieu de
+// filer hors de la barre (elle partait à gauche, à moitié cachée).
+let _outilsEntry='profil';
+function navPillTarget(btn){
+  if(btn && !btn.offsetWidth){
+    const alt=[_outilsEntry,'profil'].map(s=>document.querySelector('.nb[data-s="'+s+'"]')).find(b=>b && b.offsetWidth);
+    if(alt) return alt;
+  }
+  return btn;
+}
 function positionNavPill(btn){
-  // Mesure réelle du bouton pour que la pastille soit toujours parfaitement
-  // centrée sous l'onglet actif, quel que soit le nombre d'onglets ou le
-  // padding du conteneur (évite le décalage causé par un calc() en %% fixe).
+  // Position lue en offsetLeft/offsetWidth : pixels CSS du repère de la barre, les
+  // mêmes que ceux de la pastille, quel que soit le zoom ou le moteur (voir plus haut).
   if(!btn) return;
   const nav=document.getElementById('nav'), pill=document.getElementById('nav-pill');
   if(!nav||!pill) return;
-  const z=uiZoomFactor();
-  const navRect=nav.getBoundingClientRect(), btnRect=btn.getBoundingClientRect();
+  const tgt=navPillTarget(btn);
+  $$('.nb').forEach(b=>b.classList.toggle('on-alt', b===tgt && b!==btn));
+  if(!tgt || !tgt.offsetWidth) return; // barre pas encore affichée : le ResizeObserver rappellera
   const pad=3; // marge interne autour du bouton pour l'effet "capsule"
-  const nl=(btnRect.left-navRect.left)/z+pad, nw=btnRect.width/z-pad*2;
+  const nl=tgt.offsetLeft+pad, nw=tgt.offsetWidth-pad*2;
   // PASTILLE LIQUIDE (V3.3.0) : comme une goutte, elle s'étire d'abord jusqu'au nouvel
   // onglet en s'aplatissant, puis se resserre dessus.
   const ol=parseFloat(pill.style.left), ow=parseFloat(pill.style.width);
@@ -5340,6 +5369,7 @@ function nav(s){
   // ce qui donnait l'impression que le bouton "ne ramenait pas a la bonne
   // page". Trouve lors du retour du 20/09.
   const curScr=document.body.dataset.scr;
+  if(s==='outils' && curScr && curScr!=='outils') _outilsEntry=(curScr==='calendrier'?'sport':curScr);
   // Sport pose 'calendrier' (pas 'sport') comme dataset.scr pendant la vue
   // calendrier (cf renderSport()) — sans ce cas, retaper l'onglet Sport pendant
   // qu'on regarde le calendrier n'etait pas reconnu comme un "re-appui".
@@ -5407,15 +5437,15 @@ function glassMax(){ return document.documentElement.getAttribute('data-glass')=
     if(!glassMax() || e.pointerType==='mouse' && e.button!==0 || !e.target || !e.target.closest) return;
     const host=e.target.closest(GLASS_LIT); if(!host) return;
     off();
-    const r=host.getBoundingClientRect(), z=uiZoomFactor();
+    const p=uiLocalPoint(host,e.clientX,e.clientY);
     const l=document.createElement('i'); l.className='ik-touchlight'; l.setAttribute('aria-hidden','true');
-    l.style.left=((e.clientX-r.left)/z)+'px'; l.style.top=((e.clientY-r.top)/z)+'px';
+    l.style.left=p.x+'px'; l.style.top=p.y+'px';
     if(getComputedStyle(host).position==='static') host.style.position='relative';
     host.appendChild(l); cur=l; cur._host=host;
   },{passive:true});
   document.addEventListener('pointermove',e=>{
-    if(!cur) return; const r=cur._host.getBoundingClientRect(), z=uiZoomFactor();
-    cur.style.left=((e.clientX-r.left)/z)+'px'; cur.style.top=((e.clientY-r.top)/z)+'px';
+    if(!cur) return; const p=uiLocalPoint(cur._host,e.clientX,e.clientY);
+    cur.style.left=p.x+'px'; cur.style.top=p.y+'px';
   },{passive:true});
   ['pointerup','pointercancel'].forEach(ev=>document.addEventListener(ev,off,{passive:true}));
   document.addEventListener('pointerup',e=>{
@@ -5552,8 +5582,8 @@ function askGlassTilt(){
     s=null;
     const card=e.target.closest('.ov-card'); if(!card) return;
     const ov=card.parentElement; if(!fermable(ov)) return;
-    const t=e.touches[0], r=card.getBoundingClientRect();
-    if(t.clientY-r.top>72) return;
+    const t=e.touches[0];
+    if(uiLocalPoint(card,t.clientX,t.clientY).y>72/uiZoomFactor()) return; // zone de la poignée (72 px écran)
     s={ov,card,x0:t.clientX,y0:t.clientY,t0:performance.now(),dy:0,on:false};
   },{passive:true});
   document.addEventListener('touchmove',e=>{
@@ -6254,8 +6284,8 @@ function positionTourOn(el){
     return;
   }
   if(card) card.classList.remove('centered');
-  const r0=el.getBoundingClientRect();
-  const r={left:r0.left/z, top:r0.top/z, right:r0.right/z, bottom:r0.bottom/z, width:r0.width/z, height:r0.height/z};
+  const r0=el.getBoundingClientRect(), k=uiRectFactor(); // rect → px CSS (1 sur iPhone, z sur Chrome)
+  const r={left:r0.left/k, top:r0.top/k, right:r0.right/k, bottom:r0.bottom/k, width:r0.width/k, height:r0.height/k};
   const pad=10, rx=16;
   const x=Math.max(0,r.left-pad), y=Math.max(0,r.top-pad);
   const w=Math.min(W-x,r.width+pad*2), h=Math.min(H-y,r.height+pad*2);
@@ -8695,7 +8725,7 @@ function homeGoalCard(){
   return '<div class="card goal-card stag" style="animation-delay:.1s" onclick="sportTab=\'run\';runSub=\'ia\';sportView=\'list\';nav(\'sport\')">'+
     '<div class="goal-top">'+
       '<div><div class="goal-lab">'+t('objectiveCap')+'</div><div class="goal-race">'+escHtml(trRace(P.objRace)||P.goal||t('yourNextRaceDefault'))+(P.objTime?' — sub '+escHtml(P.objTime):'')+'</div>'+
-      '<div class="goal-target">Course le '+fmtDate(P.compDate)+'</div></div>'+
+      '<div class="goal-target">'+tp('raceOn',fmtDate(P.compDate))+'</div></div>'+
       '<div class="goal-count"><div class="n">'+daysLeft+'</div><div class="u">'+t('daysLab')+'</div></div>'+
     '</div>'+
     '<div class="goal-bar"><div style="width:'+pct+'%"></div></div>'+
@@ -8760,7 +8790,7 @@ function renderHome(){
   const ps=planSessionToday();
   const first=(P.name||'').split(' ')[0]||'';
 
-  if(P.easyMode){ $('#s-home').innerHTML=renderHomeSimple(ps,sessW,sessTarget,vdot,form,first); return; }
+  if(P.easyMode){ $('#s-home').innerHTML=renderHomeSimple(ps,sessW,sessTarget,kmW,first); return; }
 
   let html='<div class="hv7-bg"><span class="hv7-lb1"></span><span class="hv7-lb2"></span><span class="hv7-lb3"></span></div>';
   html+='<div class="hv7-content">';
@@ -8882,12 +8912,16 @@ function renderHome(){
   html+='</div>';
   $('#s-home').innerHTML=html;
 }
-function renderHomeSimple(ps,sessW,sessTarget,vdot,form,first){
+/* ACCUEIL — MODE SIMPLIFIÉ : trois blocs seulement, chacun sous le même type de titre
+   (aujourd'hui, cette semaine, objectif). Plus de VDOT ni de « forme en % », du jargon
+   qui n'aidait personne ici ; en haut à droite, l'avatar mène au Profil comme sur les
+   autres pages (le drapeau des clubs, peu parlant, reste dans Profil › Mes clubs). */
+function renderHomeSimple(ps,sessW,sessTarget,kmW,first){
   let h='';
   h+='<div class="ik-header"><div class="ik-logo">'+
     '<div class="ik-logo-mark" role="img" aria-label="IKORUN"></div>'+
     '<span>IKORUN</span></div>'+
-    '<div class="hv7-icon-btn" onclick="openClub()" title="'+t('myClubLab')+'">'+ICN('flag',17)+'</div>'+
+    '<button type="button" class="ez-av" onclick="nav(\'profil\')" aria-label="'+t('profil')+'">'+avatarHTML(40,16)+'</button>'+
   '</div>';
   h+=homeStreakBadge();
   h+='<div class="ik-greet"><h1>'+t('greet')+' '+escHtml(first||t('you'))+'</h1></div>';
@@ -8908,15 +8942,17 @@ function renderHomeSimple(ps,sessW,sessTarget,vdot,form,first){
       '<div class="next-ic">'+ICN('moon',20)+'</div></div>';
   }
 
-  h+='<div class="stat-quatro" style="grid-template-columns:repeat(3,1fr);margin-top:14px">'+
-    '<div class="card stat-card" onclick="nav(\'sport\')"><div class="stat-ic">'+ICN('run',14)+'</div><div class="stat-v">'+sessW+'/'+sessTarget+'</div><div class="stat-l">'+t('sessionsCap')+'</div></div>'+
-    '<div class="card stat-card" onclick="nav(\'profil\')"><div class="stat-ic">'+ICN('lung',14)+'</div><div class="stat-v">'+(vdot?fmt1(vdot):'—')+'</div><div class="stat-l">VDOT</div></div>'+
-    '<div class="card stat-card" onclick="nav(\'profil\')"><div class="stat-ic">'+ICN('heart',14)+'</div><div class="stat-v">'+form+'%</div><div class="stat-l">'+t('formCap')+'</div></div>'+
-  '</div>';
+  // Cette semaine : séances faites sur prévues (la barre) et kilomètres parcourus.
+  const pct=sessTarget?Math.min(100,Math.round(sessW/sessTarget*100)):0;
+  h+='<div class="next-lab">'+t('thisWeek')+'</div>'+
+    '<div class="card ez-week" onclick="nav(\'stats\')">'+
+      '<div class="ez-week-row"><div><b>'+sessW+'</b> / '+sessTarget+' '+t('sessionsLab')+'</div><div class="ez-week-km"><b>'+hKm(kmW)+'</b> km</div></div>'+
+      '<div class="kgoal-bar"><div style="width:'+pct+'%"></div></div>'+
+    '</div>';
 
-  if(P.objRace||P.goal||P.compDate){
-    h+='<div class="sec-lab" style="margin-top:16px">'+t('objective')+'</div>'+homeGoalCard();
-  }
+  // Objectif : le titre de section suffit, la carte ne le répète plus (voir .goal-lab en CSS).
+  const goal=homeGoalCard();
+  if(goal) h+='<div class="next-lab">'+t('objective')+'</div>'+goal;
   return h;
 }
 function fmtDate(s){ const d=new Date(s); return d.toLocaleDateString(localeCode(),{weekday:'short',day:'numeric',month:'short'}); }
@@ -9778,7 +9814,7 @@ function muscuCardHTML(p,opts){
     '<div class="mus-card-b">'+
       '<div class="mus-name">'+escHtml(p.name)+'</div>'+
       (tags.length?'<div class="mus-tags">'+tags.map(m=>'<span>'+escHtml(m)+'</span>').join('')+'</div>':'')+
-      '<div class="mus-meta">'+tp('exercisesCount',p.ex.length)+' · '+tp('setsCount',sets)+' · ~'+dur+' min</div>'+
+      '<div class="mus-meta">'+tp('exercisesCount',p.ex.length)+' · '+tp('setsCount',sets)+' · ~'+dur+'\u00a0min</div>'+
       '<div class="mus-last'+(last?'':' never')+'">'+(last||t('neverDoneLab'))+'</div>'+
     '</div>'+
     progBodyMini(p)+
@@ -10300,7 +10336,8 @@ function startExDrag(idx,startY,pointerId){
   const wraps=Array.from(box.querySelectorAll('.ex-swipe-wrap'));
   if(wraps.length<2 || idx<0 || idx>=wraps.length){ liveSuppressClick=false; return; }
   const rects=wraps.map(w=>w.getBoundingClientRect());
-  const step=rects.length>1?(rects[1].top-rects[0].top):(rects[0].height+12);
+  // en pixels écran, comme le déplacement du doigt auquel on le compare (voir uiRectFactor)
+  const step=uiRectToScreen(rects.length>1?(rects[1].top-rects[0].top):(rects[0].height+12));
   exDrag={idx,target:idx,wraps,step,startY};
   const w=wraps[idx];
   w.style.transition='none'; w.style.zIndex='30'; w.style.position='relative';
@@ -10775,30 +10812,29 @@ const STATS_SKELETONS={bilan:sklBilan,run:sklRun,muscu:sklMuscu,medals:sklMedals
 function renderStatsSimple(){
   let h='';
   const km=totalKm(), sess=totalSessions(), vdot=getUserVDOT(), streak=streakDays();
-  h+='<div class="stat-quatro" style="margin-top:2px;flex-wrap:wrap">'+
+  h+='<div class="stat-quatro ez-quatro">'+
     '<div class="card stat-card" style="flex:1 1 40%"><div class="stat-ic">'+ICN('road',16)+'</div><div class="stat-v">'+Math.round(km)+'</div><div class="stat-l">'+t('kmTotalLab')+'</div></div>'+
     '<div class="card stat-card" style="flex:1 1 40%"><div class="stat-ic">'+ICN('medal',16)+'</div><div class="stat-v">'+sess+'</div><div class="stat-l">'+t('sessionsCap')+'</div></div>'+
     '<div class="card stat-card" style="flex:1 1 40%"><div class="stat-ic">'+ICN('lung',16)+'</div><div class="stat-v">'+(vdot?fmt1(vdot):'—')+'</div><div class="stat-l">VDOT</div></div>'+
     '<div class="card stat-card" style="flex:1 1 40%"><div class="stat-ic">'+ICN('fire',16)+'</div><div class="stat-v">'+streak+'</div><div class="stat-l">'+t('daysStreak')+'</div></div>'+
   '</div>';
 
+  // Cette semaine : même carte que sur l'Accueil. La semaine dernière n'est plus un
+  // pourcentage rouge (« -100 % » le lundi matin, avant même d'avoir couru) mais un
+  // simple repère en kilomètres.
   const {cur,prev}=periodRanges('week');
   const kmW=sumKmBetween(cur[0],cur[1]), kmPrev=sumKmBetween(prev[0],prev[1]);
   const sessW=countBetween(cur[0],cur[1]), sessTarget=(P.days&&P.days.length)||4;
   const pct=sessTarget?Math.min(100,Math.round(sessW/sessTarget*100)):0;
-  const deltaPct=kmPrev>0?Math.round((kmW-kmPrev)/kmPrev*100):(kmW>0?100:null);
-  h+='<div class="sec-lab" style="margin-top:18px">'+t('thisWeek')+'</div>';
-  h+='<div class="card">'+
-    '<div class="row" style="justify-content:space-between;align-items:baseline;margin-bottom:10px">'+
-      '<span class="man" style="font-weight:800;font-size:17px">'+tp('kmThisWeekShort',fmt1(kmW))+'</span>'+
-      (deltaPct!==null?'<span style="font-size:12px;color:'+(deltaPct<0?'var(--bad)':'var(--ok)')+';font-weight:700">'+(deltaPct>0?'+':'')+deltaPct+'%</span>':'')+
-    '</div>'+
+  h+='<div class="next-lab">'+t('thisWeek')+'</div>';
+  h+='<div class="card ez-week">'+
+    '<div class="ez-week-row"><div><b>'+sessW+'</b> / '+sessTarget+' '+t('sessionsLab')+'</div><div class="ez-week-km"><b>'+hKm(kmW)+'</b> km</div></div>'+
     '<div class="kgoal-bar"><div style="width:'+pct+'%"></div></div>'+
-    '<div style="font-size:11.5px;color:var(--dim);margin-top:8px">'+sessW+' / '+sessTarget+' '+t('sessionsCap').toLowerCase()+' · '+t('vsPrevPeriod')+'</div>'+
+    (kmPrev>0?'<div class="ez-week-prev">'+tp('lastWeekKm',hKm(kmPrev))+'</div>':'')+
   '</div>';
 
   const unlocked=unlockedBadges(); const ukeys=new Set(unlocked.map(u=>u.key));
-  h+='<div class="sec-head" style="margin-top:18px"><h3 class="grp-lab" style="margin:0">'+t('badgesLabel')+'</h3><span class="see" onclick="openBadges()">'+tp('badgesObtainedCount',unlocked.length,BADGE_TIERS.length)+'</span></div>';
+  h+='<div class="next-lab ez-lab-row"><span>'+t('badgesLabel')+'</span><span class="see" onclick="openBadges()">'+tp('badgesObtainedCount',unlocked.length,BADGE_TIERS.length)+'</span></div>';
   h+='<div class="card"><div class="bd-grid">'+
     BADGE_TIERS.slice(0,6).map(b=>{
       const on=ukeys.has(b.key);
@@ -11516,12 +11552,15 @@ function renderOutils(){
   if(outilsTab==='home'){ h=outilsHome(); swapIn('s-outils',h); bindToolSearch(); return; }
   if(outilsTab==='_timer'){ renderOutilsTimer(); return; }
   const tl=TOOLS[outilsTab]; if(!tl){ outilsTab='home'; return renderOutils(); }
-  h='<div class="row" style="margin-bottom:14px"><button class="x" onclick="outilsBack()">‹</button><div class="man" style="font-weight:800;font-size:'+(tl.name.length>18?'15px':'17px')+';flex:1;text-align:center;margin:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+tl.name+'</div><button class="x" onclick="toggleFav(\''+outilsTab+'\')" aria-label="'+t('favoriteLab')+'" style="color:'+(toolFav().includes(outilsTab)?'var(--or)':'var(--dim)')+'">'+ICN('star',17)+'</button></div><div id="outBody"></div>';
+  h='<div class="row" style="margin-bottom:14px"><button class="x" onclick="outilsBack()" aria-label="'+t('back')+'">‹</button><div class="man tool-title" style="font-weight:800;font-size:'+(tl.name.length>18?'15px':'17px')+';flex:1;text-align:center;margin:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+tl.name+'</div><button class="x" onclick="toggleFav(\''+outilsTab+'\')" aria-label="'+t('favoriteLab')+'" style="color:'+(toolFav().includes(outilsTab)?'var(--or)':'var(--dim)')+'">'+ICN('star',17)+'</button></div><div id="outBody"></div>';
   swapIn('s-outils',h);
   window[tl.fn] && window[tl.fn]();
 }
 let outilsFrom='home';
-function outilsBack(){ outilsTab=outilsFrom||'home'; outilsFrom='home'; renderOutils(); }
+function outilsBack(){
+  if(outilsFrom==='_back'){ outilsTab='home'; outilsFrom='home'; return nav(_outilsEntry||'home'); }
+  outilsTab=outilsFrom||'home'; outilsFrom='home'; renderOutils();
+}
 function openTool(k){
   pushRecent(k); outilsFrom=outilsTab; outilsTab=k;
   // L'outil IMC gardait pour toujours ses valeurs par défaut (175cm/62kg) : `imc`
@@ -11553,6 +11592,17 @@ function outilsList(){
     const res=Object.entries(TOOLS).filter(([k,tl])=>sansAccent(tl.name+' '+tl.sub+' '+favShort(k)).includes(q));
     h+='<div class="lab" style="margin:14px 0 10px">'+tp('resultsCount',res.length)+'</div>';
     res.forEach(([k,tl])=>{ h+=toolRow(k,tl); });
+    return h;
+  }
+  const rowHTML=k=>{ const tl=TOOLS[k]; return tl?'<div class="list-row" onclick="openTool(\''+k+'\')"><div class="lr-icon">'+tl.icon+'</div><div class="lr-txt"><div class="lr-title">'+tl.name+'</div><div class="lr-sub">'+tl.sub+'</div></div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>':''; };
+  const tileHTML=k=>{ const tl=TOOLS[k]; return tl?'<div class="favtile" onclick="openTool(\''+k+'\')"><div style="color:var(--e);display:flex;justify-content:center">'+tl.icon+'</div><div class="favlab">'+favShort(k)+'</div></div>':''; };
+  // MODE SIMPLIFIÉ : pas de favoris à gérer ; les outils du quotidien en grandes lignes
+  // (la prière comprise, sinon seulement joignable depuis l'Accueil), le reste en tuiles
+  // de trois par ligne, plus lisibles que les quatre du mode normal.
+  if(P.easyMode){
+    const top=['aio','priere','sante','convert','notes'];
+    h+='<div class="lab" style="margin:20px 0 12px">'+t('mainTools')+'</div>'+top.map(rowHTML).join('');
+    h+='<div class="lab" style="margin:22px 0 12px">'+t('otherTools')+'</div><div class="ez-toolgrid">'+OTHER_TOOLS.filter(k=>!top.includes(k)).map(tileHTML).join('')+'</div>';
     return h;
   }
   // FAVORIS
@@ -12292,7 +12342,9 @@ function homePrayerCardHTML(){
       ICN('chevronR',16,'var(--dim)')+
     '</div></div>';
 }
-function openPrayerFromHome(){ outilsFrom='home'; outilsTab='priere'; nav('outils'); }
+// Retour depuis la prière ouverte par la carte de l'Accueil : on revient sur l'Accueil
+// (et non sur la liste des outils, que le mode simplifié ne montre même pas dans la barre).
+function openPrayerFromHome(){ outilsFrom='_back'; outilsTab='priere'; nav('outils'); }
 
 /* ---------- PROFILE ---------- */
 function age(){ if(!P.bday)return'—'; const d=new Date(P.bday); return Math.floor((Date.now()-d)/31557600000); }
@@ -12365,6 +12417,8 @@ function renderProfile(){
     '<div class="grp-row" onclick="openProfileSection(\'lang\')"><div class="lr-icon">'+ICN('globe',20,'currentColor')+'</div><div class="lr-title">'+t('language')+'</div><div class="lr-val">'+langInfo[1]+' '+langInfo[2]+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('theme')+'</div>'+pfThemeSwitchHTML()+'</div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('appColor')+'</div>'+pfAccentPickerHTML()+'</div>'+
+    // Effet verre (V3.3.0) : la fiche existait mais aucune ligne n'y menait.
+    '<div class="grp-row" onclick="openProfileSection(\'appearance\')"><div class="lr-icon">'+ICN('bolt',20,'currentColor')+'</div><div class="lr-title">'+t('glassLab')+'</div><div class="lr-val">'+t(P.glass==='max'?'glassMax':P.glass==='flat'?'glassFlat':'glassStd')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('heart',20,'currentColor')+'</div><div><div class="lr-title">'+t('simplifiedMode')+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px;max-width:200px">'+t('simplifiedModeDesc')+'</div></div><div class="toggle'+(P.easyMode?' on':'')+'" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
   '</div>';
   h+='<div class="grp-lab stag" style="animation-delay:.18s">'+t('support')+'</div>';
@@ -12388,26 +12442,40 @@ function renderProfileSimple(){
     '<div style="font-size:12px;color:var(--muted);margin-top:2px">'+age()+' '+(curLang()==='en'?'yo':curLang()==='ar'?'سنة':'ans')+' · VDOT '+(getUserVDOT()||'—')+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div>'+
     '<div class="rankchip" style="margin-top:10px;background:'+rk.bg+';color:#fff;display:inline-block">'+t('level')+' '+XP.level+' · '+rk.name+'</div></div>';
 
-  h+='<div class="grp-lab stag" style="animation-delay:.05s">'+t('yourSpace')+'</div>';
-  h+='<div class="grp-card stag" style="animation-delay:.06s">'+
-    '<div class="grp-row pf-club-row" onclick="openClub()"><div class="lr-icon">'+ICN('flag',20,'currentColor')+'</div><div class="lr-title">'+t('myClubLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openFriends()"><div class="lr-icon">'+ICN('users',20,'currentColor')+'</div><div class="lr-title">'+t('friendsRanking')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">'+ICN('chart',20,'currentColor')+'</div><div class="lr-title">'+t('statistics')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openBadges()"><div class="lr-icon">'+ICN('medal',20,'currentColor')+'</div><div class="lr-title">'+t('badgesLabel')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="nav(\'outils\')"><div class="lr-icon">'+ICN('calculator',20,'currentColor')+'</div><div class="lr-title">'+t('toolsCalc')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileEdit()"><div class="lr-icon">'+ICN('edit',20,'currentColor')+'</div><div class="lr-title">'+t('editMyProfile')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+  // Trois groupes au rôle clair. Avant, le thème, la langue, les notifications et les
+  // records n'étaient joignables qu'en quittant le mode simplifié ; « Statistiques »
+  // doublonnait l'onglet du bas.
+  const row=(icon,label,onclick,val)=>'<div class="grp-row" onclick="'+onclick+'"><div class="lr-icon">'+ICN(icon,20,'currentColor')+'</div><div class="lr-title">'+label+'</div>'+(val?'<div class="lr-val">'+val+'</div>':'')+'<span class="lr-chev">'+ICN('chevronR',16)+'</span></div>';
+  const langInfo=LANGS.find(l=>l[0]===curLang())||LANGS[0];
+  h+='<div class="grp-lab">'+t('yourSpace')+'</div>';
+  h+='<div class="grp-card">'+
+    row('edit',t('editMyProfile'),'openProfileEdit()')+
+    row('medal',t('historyRecords'),'openRecords()')+
+    row('calculator',t('toolsCalc'),"nav('outils')")+
+    row('star',t('badgesLabel'),'openBadges()')+
+    row('users',t('friendsRanking'),'openFriends()')+
+    row('flag',t('myClubLab'),'openClub()').replace('class="grp-row"','class="grp-row pf-club-row"')+
   '</div>';
 
-  h+='<div class="grp-lab stag" style="animation-delay:.08s">'+t('settings')+'</div>';
-  h+='<div class="grp-card stag" style="animation-delay:.09s">'+
-    '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('heart',20,'currentColor')+'</div><div class="lr-title">'+t('simplifiedMode')+'</div><div class="toggle on" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
-    '<div class="grp-row" onclick="startAppTour()"><div class="lr-icon">'+ICN('flag',20,'currentColor')+'</div><div class="lr-title">'+t('replayTourBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'account\')"><div class="lr-icon">'+ICN('lock',20,'currentColor')+'</div><div class="lr-title">'+t('account')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openFeedback()"><div class="lr-icon">'+ICN('comment',20,'currentColor')+'</div><div class="lr-title">'+t('sendFeedbackLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    (isStandalone()?'':'<div class="grp-row" onclick="installApp()"><div class="lr-icon">'+ICN('download',20,'currentColor')+'</div><div class="lr-title">'+t('installAppBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>')+
-    '<div class="grp-row" onclick="openProfileSection(\'terms\')"><div class="lr-icon">'+ICN('clipboard',20,'currentColor')+'</div><div class="lr-title">'+t('termsOfUseLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'privacy\')"><div class="lr-icon">'+ICN('shield',20,'currentColor')+'</div><div class="lr-title">'+t('privacyPolicyLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+  h+='<div class="grp-lab">'+t('settings')+'</div>';
+  h+='<div class="grp-card">'+
+    '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('heart',20,'currentColor')+'</div><div class="lr-txt"><div class="lr-title">'+t('simplifiedMode')+'</div><div class="lr-sub">'+t('simplifiedModeDesc')+'</div></div><div class="toggle on" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
+    '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('theme')+'</div>'+pfThemeSwitchHTML()+'</div>'+
+    row('globe',t('language'),"openProfileSection('lang')",langInfo[2])+
+    row('bell',t('notifLabel'),"openProfileSection('notif')")+
+    row('flag',t('replayTourBtn'),'startAppTour()')+
   '</div>';
+
+  h+='<div class="grp-lab">'+t('support')+'</div>';
+  h+='<div class="grp-card">'+
+    row('lock',t('account'),"openProfileSection('account')")+
+    row('comment',t('sendFeedbackLab'),'openFeedback()')+
+    (isStandalone()?'':row('download',t('installAppBtn'),'installApp()'))+
+    row('clipboard',t('termsOfUseLab'),"openProfileSection('terms')")+
+    row('shield',t('privacyPolicyLab'),"openProfileSection('privacy')")+
+  '</div>';
+  // La signature de bas d'écran est masquée en mode simplifié : la version reste lisible ici.
+  h+='<div class="ez-ver">IKORUN · V'+APP_VERSION+'</div>';
   return h;
 }
 /* ---- Fiches de réglages du profil, ouvertes dans l'overlay générique ---- */
@@ -12712,7 +12780,10 @@ function pfAppearanceHTML(){
    '</div>';
   // EFFET VERRE (V3.3.0) — trois niveaux, du plus économe au plus spectaculaire.
   const g=P.glass||'std';
-  s+='<div class="lab" style="margin:22px 0 10px">'+t('glassLab')+'</div>'+
+  // Le mode simplifié coupe tout effet verre (voir html.easy-mode) : proposer les trois
+  // niveaux ici donnait des boutons sans aucun effet visible.
+  if(P.easyMode) s+='<div class="lab" style="margin:22px 0 10px">'+t('glassLab')+'</div><div style="font-size:13px;color:var(--muted);line-height:1.5">'+t('glassEasyNote')+'</div>';
+  else s+='<div class="lab" style="margin:22px 0 10px">'+t('glassLab')+'</div>'+
      '<div class="seg-ctrl glass-seg">'+[['flat','glassFlat'],['std','glassStd'],['max','glassMax']].map(([k,l])=>
        '<div class="seg-btn'+(g===k?' on':'')+'" role="button" onclick="setGlass(\''+k+'\')">'+t(l)+'</div>').join('')+'</div>'+
      '<div class="glass-demo" aria-hidden="true"><div class="glass-demo-card card"><div class="glass-demo-t">IKORUN</div><div class="glass-demo-s">'+t(g==='max'?'glassMax':g==='flat'?'glassFlat':'glassStd')+'</div></div></div>'+
@@ -12725,6 +12796,7 @@ function pfAppearanceHTML(){
 function setGlass(k){
   if(!['flat','std','max'].includes(k)) return;
   P.glass=k; saveAll(); applyTheme(); refreshPfSheet(); sfx&&sfx('tap');
+  if(document.body.dataset.scr==='profil') renderProfile(); // la ligne « Effet verre » affiche le niveau choisi
 }
 /* Bascule le thème avec une petite animation (glissement + pulse + halo qui explose) */
 const ICN_SUN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
