@@ -2061,7 +2061,7 @@ const I18N={
     loadingLab:'Chargement…',friendsLoadError:'Impossible de charger tes amis. Vérifie ta connexion.',retryBtn:'Réessayer',
     resumeBtn:'Reprendre',discardBtn:'Abandonner',
     alreadyLinked:'déjà lié',addBtn:'Ajouter',searchError:'Erreur de recherche',alreadySentOrFriend:'Déjà envoyé ou déjà ami',
-    requestSent:'Demande envoyée',friendProfileTitle:'Profil',removeLab:'Retirer',lvlDot:'Niv.',kmThisWeekShort:'{0} km cette semaine',lastWeekKm:'Semaine dernière : {0} km',minimizeLab:'Réduire',accentOcean:'Océan',accentViolet:'Améthyste',accentLavender:'Lavande',accentPink:'Framboise',accentSakura:'Sakura',accentMint:'Menthe',accentTeal:'Lagon',accentOrange:'Ambre',accentMono:'Mono',colorFamCool:'Bleus et violets',colorFamWarm:'Roses et chauds',colorFamNature:'Nature',colorFamNeutral:'Neutres',liveAlreadyRunning:'Une séance est déjà en cours. Termine-la ou annule-la avant d’en commencer une autre.',backToSessionLab:'Revenir à la séance',islandNext:'Ensuite : {0}',islandEndsAt:'Fin à {0}',islandPaused:'En pause',islandSets:'{0}/{1} séries',glassEasyNote:'Le mode simplifié garde un affichage net, sans effet verre : ce réglage reprendra effet quand tu le désactiveras.',youDefaultName:'Toi',backToFriends:'Retour aux amis',profileNotFound:'Profil introuvable.',noBadgeUnlocked:'Aucun badge débloqué pour l\u2019instant.',kmPerWeek:'km/sem.',daysStreak:'Jours de suite',kmTotalLab:'km au total',tonnageKgLab:'Tonnage kg',
+    requestSent:'Demande envoyée',friendProfileTitle:'Profil',removeLab:'Retirer',lvlDot:'Niv.',kmThisWeekShort:'{0} km cette semaine',lastWeekKm:'Semaine dernière : {0} km',minimizeLab:'Réduire',bdayTitle:'Joyeux anniversaire, {0} !',bdayAge:'{0} ans aujourd’hui',bdayWish:'toute l’équipe IKORUN te souhaite une belle journée',bdayOffBtn:'Mes couleurs',bdayOnBtn:'Remettre la fête',bdayThemeLab:'Thème d’anniversaire',bdayThemeDesc:'Le jour de ton anniversaire, l’app se met en fête : couleurs, confettis et une petite mélodie.',matLab:'Matière',glassClay:'Pâte à modeler',glassHintClay:'Pâte à modeler : surfaces mates et gonflées, lumière douce dans la matière, et tout s’écrase puis rebondit sous le doigt comme une pâte molle.',accentClay:'Pâte à modeler',colorFamSpecial:'Spéciaux',clayOn:'Couleur et matière « pâte à modeler » appliquées',accentOcean:'Océan',accentViolet:'Améthyste',accentLavender:'Lavande',accentPink:'Framboise',accentSakura:'Sakura',accentMint:'Menthe',accentTeal:'Lagon',accentOrange:'Ambre',accentMono:'Mono',colorFamCool:'Bleus et violets',colorFamWarm:'Roses et chauds',colorFamNature:'Nature',colorFamNeutral:'Neutres',liveAlreadyRunning:'Une séance est déjà en cours. Termine-la ou annule-la avant d’en commencer une autre.',backToSessionLab:'Revenir à la séance',islandNext:'Ensuite : {0}',islandEndsAt:'Fin à {0}',islandPaused:'En pause',islandSets:'{0}/{1} séries',glassEasyNote:'Le mode simplifié garde un affichage net, sans effet verre : ce réglage reprendra effet quand tu le désactiveras.',youDefaultName:'Toi',backToFriends:'Retour aux amis',profileNotFound:'Profil introuvable.',noBadgeUnlocked:'Aucun badge débloqué pour l\u2019instant.',kmPerWeek:'km/sem.',daysStreak:'Jours de suite',kmTotalLab:'km au total',tonnageKgLab:'Tonnage kg',
     addPerf:'Ajouter une performance',addChronosHint:'Ajoute tes chronos : ils alimentent ton VDOT et ton plan.',
     bestPerf:'Meilleure perf',avgHR:'FC moy',maxHRshort:'max',perfHistoryTitle:'Historique des performances',
     chooseDistance:'Choisis la distance',otherDist:'Autre',customDistance:'Distance personnalisée',
@@ -2647,7 +2647,7 @@ const I18N={
     loadingLab:'Loading…',friendsLoadError:'Couldn\'t load your friends. Check your connection.',retryBtn:'Retry',
     resumeBtn:'Resume',discardBtn:'Discard',
     alreadyLinked:'already linked',addBtn:'Add',searchError:'Search error',alreadySentOrFriend:'Already sent or already friends',
-    requestSent:'Request sent',friendProfileTitle:'Profile',removeLab:'Remove',lvlDot:'Lvl.',kmThisWeekShort:'{0} km this week',lastWeekKm:'Last week: {0} km',minimizeLab:'Minimize',accentOcean:'Ocean',accentViolet:'Amethyst',accentLavender:'Lavender',accentPink:'Raspberry',accentSakura:'Sakura',accentMint:'Mint',accentTeal:'Lagoon',accentOrange:'Amber',accentMono:'Mono',colorFamCool:'Blues & purples',colorFamWarm:'Pinks & warm',colorFamNature:'Nature',colorFamNeutral:'Neutrals',liveAlreadyRunning:'A session is already running. Finish or cancel it before starting another one.',backToSessionLab:'Back to session',islandNext:'Next: {0}',islandEndsAt:'Ends at {0}',islandPaused:'Paused',islandSets:'{0}/{1} sets',glassEasyNote:'Simplified mode keeps a clean display with no glass effect: this setting applies again once you turn it off.',youDefaultName:'You',backToFriends:'Back to friends',profileNotFound:'Profile not found.',noBadgeUnlocked:'No badge unlocked yet.',kmPerWeek:'km/wk',daysStreak:'Day streak',kmTotalLab:'total km',tonnageKgLab:'Volume kg',
+    requestSent:'Request sent',friendProfileTitle:'Profile',removeLab:'Remove',lvlDot:'Lvl.',kmThisWeekShort:'{0} km this week',lastWeekKm:'Last week: {0} km',minimizeLab:'Minimize',bdayTitle:'Happy birthday, {0}!',bdayAge:'{0} today',bdayWish:'the whole IKORUN team wishes you a great day',bdayOffBtn:'My colors',bdayOnBtn:'Bring back the party',bdayThemeLab:'Birthday theme',bdayThemeDesc:'On your birthday, the app celebrates: colors, confetti and a little tune.',matLab:'Material',glassClay:'Modeling clay',glassHintClay:'Modeling clay: soft, puffy matte surfaces with light inside the material — everything squishes and bounces back under your finger like soft dough.',accentClay:'Modeling clay',colorFamSpecial:'Specials',clayOn:'“Modeling clay” color and material applied',accentOcean:'Ocean',accentViolet:'Amethyst',accentLavender:'Lavender',accentPink:'Raspberry',accentSakura:'Sakura',accentMint:'Mint',accentTeal:'Lagoon',accentOrange:'Amber',accentMono:'Mono',colorFamCool:'Blues & purples',colorFamWarm:'Pinks & warm',colorFamNature:'Nature',colorFamNeutral:'Neutrals',liveAlreadyRunning:'A session is already running. Finish or cancel it before starting another one.',backToSessionLab:'Back to session',islandNext:'Next: {0}',islandEndsAt:'Ends at {0}',islandPaused:'Paused',islandSets:'{0}/{1} sets',glassEasyNote:'Simplified mode keeps a clean display with no glass effect: this setting applies again once you turn it off.',youDefaultName:'You',backToFriends:'Back to friends',profileNotFound:'Profile not found.',noBadgeUnlocked:'No badge unlocked yet.',kmPerWeek:'km/wk',daysStreak:'Day streak',kmTotalLab:'total km',tonnageKgLab:'Volume kg',
     addPerf:'Add a performance',addChronosHint:'Add your times: they power your VDOT and your plan.',
     bestPerf:'Best performance',avgHR:'avg HR',maxHRshort:'max',perfHistoryTitle:'Performance history',
     chooseDistance:'Choose the distance',otherDist:'Other',customDistance:'Custom distance',
@@ -3233,7 +3233,7 @@ const I18N={
     loadingLab:'جارٍ التحميل…',friendsLoadError:'تعذّر تحميل أصدقائك. تحقّق من اتصالك.',retryBtn:'إعادة المحاولة',
     resumeBtn:'استئناف',discardBtn:'التخلي',
     alreadyLinked:'مرتبط بالفعل',addBtn:'إضافة',searchError:'خطأ في البحث',alreadySentOrFriend:'تم الإرسال بالفعل أو صديق بالفعل',
-    requestSent:'تم إرسال الطلب',friendProfileTitle:'الملف الشخصي',removeLab:'إزالة',lvlDot:'مستوى',kmThisWeekShort:'{0} كم هذا الأسبوع',lastWeekKm:'الأسبوع الماضي: {0} كم',minimizeLab:'تصغير',accentOcean:'محيط',accentViolet:'جمشت',accentLavender:'خزامى',accentPink:'توت',accentSakura:'ساكورا',accentMint:'نعناع',accentTeal:'بحيرة',accentOrange:'كهرمان',accentMono:'أحادي',colorFamCool:'أزرق وبنفسجي',colorFamWarm:'وردي ودافئ',colorFamNature:'طبيعة',colorFamNeutral:'محايدة',liveAlreadyRunning:'هناك حصة جارية بالفعل. أنهِها أو ألغِها قبل بدء حصة أخرى.',backToSessionLab:'العودة إلى الحصة',islandNext:'التالي: {0}',islandEndsAt:'ينتهي عند {0}',islandPaused:'متوقف مؤقتًا',islandSets:'{0}/{1} مجموعات',glassEasyNote:'الوضع المبسّط يُبقي العرض واضحًا دون تأثير الزجاج: يعود هذا الإعداد للعمل عند إيقافه.',youDefaultName:'أنت',backToFriends:'العودة إلى الأصدقاء',profileNotFound:'الملف غير موجود.',noBadgeUnlocked:'لا يوجد وسام مفتوح بعد.',kmPerWeek:'كم/أسبوع',daysStreak:'أيام متتالية',kmTotalLab:'كم إجمالية',tonnageKgLab:'الحمولة كغ',
+    requestSent:'تم إرسال الطلب',friendProfileTitle:'الملف الشخصي',removeLab:'إزالة',lvlDot:'مستوى',kmThisWeekShort:'{0} كم هذا الأسبوع',lastWeekKm:'الأسبوع الماضي: {0} كم',minimizeLab:'تصغير',bdayTitle:'عيد ميلاد سعيد يا {0}!',bdayAge:'{0} سنة اليوم',bdayWish:'فريق IKORUN كله يتمنى لك يومًا جميلًا',bdayOffBtn:'ألواني',bdayOnBtn:'أعد الاحتفال',bdayThemeLab:'مظهر عيد الميلاد',bdayThemeDesc:'في يوم عيد ميلادك تحتفل التطبيقة: ألوان وقصاصات ولحن صغير.',matLab:'الخامة',glassClay:'صلصال',glassHintClay:'صلصال: أسطح مطفأة ومنتفخة بإضاءة ناعمة داخل الخامة، وكل شيء ينضغط ثم يرتد تحت إصبعك كعجينة لينة.',accentClay:'صلصال',colorFamSpecial:'خاصة',clayOn:'تم تطبيق لون وخامة «الصلصال»',accentOcean:'محيط',accentViolet:'جمشت',accentLavender:'خزامى',accentPink:'توت',accentSakura:'ساكورا',accentMint:'نعناع',accentTeal:'بحيرة',accentOrange:'كهرمان',accentMono:'أحادي',colorFamCool:'أزرق وبنفسجي',colorFamWarm:'وردي ودافئ',colorFamNature:'طبيعة',colorFamNeutral:'محايدة',liveAlreadyRunning:'هناك حصة جارية بالفعل. أنهِها أو ألغِها قبل بدء حصة أخرى.',backToSessionLab:'العودة إلى الحصة',islandNext:'التالي: {0}',islandEndsAt:'ينتهي عند {0}',islandPaused:'متوقف مؤقتًا',islandSets:'{0}/{1} مجموعات',glassEasyNote:'الوضع المبسّط يُبقي العرض واضحًا دون تأثير الزجاج: يعود هذا الإعداد للعمل عند إيقافه.',youDefaultName:'أنت',backToFriends:'العودة إلى الأصدقاء',profileNotFound:'الملف غير موجود.',noBadgeUnlocked:'لا يوجد وسام مفتوح بعد.',kmPerWeek:'كم/أسبوع',daysStreak:'أيام متتالية',kmTotalLab:'كم إجمالية',tonnageKgLab:'الحمولة كغ',
     addPerf:'إضافة أداء',addChronosHint:'أضف أوقاتك: تُستخدم لحساب VDOT وخطتك.',
     bestPerf:'أفضل أداء',avgHR:'متوسط النبض',maxHRshort:'الأقصى',perfHistoryTitle:'سجل الأداء',
     chooseDistance:'اختر المسافة',otherDist:'أخرى',customDistance:'مسافة مخصصة',
@@ -4791,6 +4791,8 @@ function sfx(name){
     case 'finish': [N.C5,N.E5,N.G5].forEach(f=>_mallet(f,0.9,0.1,0,{wet:0.16})); _mallet(N.C6,1.2,0.13,0.16,{wet:0.2,ratio:3.5,hard:0.9}); break;
     // Notification : deux notes qui descendent, discrètes.
     case 'notif': _mallet(N.A5,0.5,0.12,0,{wet:0.12}); _mallet(N.E5,0.7,0.12,0.12,{wet:0.14}); break;
+    // Anniversaire : « Joyeux anniversaire » (sol sol la sol do si), en kalimba.
+    case 'bday': [[N.G4,0,.35],[N.G4,.3,.2],[N.A4,.45,.45],[N.G4,.85,.45],[N.C5,1.25,.45],[493.88,1.65,1]].forEach(([f,d,l])=>_mallet(f,l+0.3,0.15,d,{wet:0.18,ratio:3.5,hard:1})); break;
     // Minuteur : trois pulsations nettes — fonctionnel, il doit s'entendre.
     case 'timer': for(let i=0;i<3;i++) _mallet(N.A5,0.3,0.18,i*0.26,{wet:0.06,hard:2.2}); break;
   }
@@ -4997,6 +4999,7 @@ function checkDayRollover(){
   if(_lastDayKey===null){ _lastDayKey=tk; return; } // 1er appel : initApp vient de tout faire
   if(_lastDayKey===tk) return;
   _lastDayKey=tk;
+  try{ applyTheme(); celebrateBday(); }catch(e){}
   try{ getDailyGoals(); }catch(e){ console.error('[IKORUN] rollover getDailyGoals',e); }
   try{ refreshXP(); }catch(e){ console.error('[IKORUN] rollover refreshXP',e); }
   try{ checkMissedSessions(); }catch(e){ console.error('[IKORUN] rollover checkMissedSessions',e); }
@@ -5378,6 +5381,8 @@ $$('.nb').forEach(b=>b.onclick=()=>nav(b.dataset.s));
 const GLASS_LIT='.card,.grp-card,.kchart-card,.kduo-card,.hv7-day,.sp-plan,.list-row,.favtile,.hv7-ktile,.ktile,.sess,.pb-card,.mus-card,.exg-card';
 const GLASS_JELLY='.btn,.seg-btn,.favtile,.hv7-icon-btn,.hv7-people,.chbtn,.tb-gear,.pill,.x';
 function glassMax(){ return document.documentElement.getAttribute('data-glass')==='max' && !ikMotionOff(); }
+function glassClay(){ return document.documentElement.getAttribute('data-glass')==='clay' && !ikMotionOff(); }
+function glassJellyOn(){ return glassMax() || glassClay(); }
 (function(){
   let cur=null;
   const off=()=>{ if(!cur) return; const l=cur; cur=null; l.classList.add('out'); setTimeout(()=>l.remove(),520); };
@@ -5397,9 +5402,12 @@ function glassMax(){ return document.documentElement.getAttribute('data-glass')=
   },{passive:true});
   ['pointerup','pointercancel'].forEach(ev=>document.addEventListener(ev,off,{passive:true}));
   document.addEventListener('pointerup',e=>{
-    if(!glassMax() || !e.target || !e.target.closest) return; const b=e.target.closest(GLASS_JELLY); if(!b) return;
-    b.classList.remove('ik-jelly'); void b.offsetWidth; b.classList.add('ik-jelly');
-    clearTimeout(b._jt); b._jt=setTimeout(()=>b.classList.remove('ik-jelly'),560);
+    if(!glassJellyOn() || !e.target || !e.target.closest) return;
+    // pâte à modeler : les cartes rebondissent aussi, plus doucement (.ik-clay)
+    const b=e.target.closest(GLASS_JELLY), c=!b && glassClay() ? e.target.closest(GLASS_LIT) : null, el=b||c; if(!el) return;
+    const cls=b?'ik-jelly':'ik-clay';
+    el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls);
+    clearTimeout(el._jt); el._jt=setTimeout(()=>el.classList.remove(cls),620);
   },{passive:true});
   // reflets vivants : inclinaison si autorisée, sinon défilement
   let raf=0, tx=0, ty=0, lastTilt=0;
@@ -6000,6 +6008,7 @@ function initApp(){
   _lastDayKey=todayKey(); // repere pour la detection de changement de jour (checkDayRollover)
   refreshXP();
   nav('home');
+  celebrateBday(); // jour d'anniversaire : confettis et mélodie, une fois par an
   scheduleMotionSettle(1400);
   // Reprise automatique d'une séance muscu interrompue
   setTimeout(maybeResumeLive,600);
@@ -6741,7 +6750,8 @@ function applyTheme(){
   document.documentElement.setAttribute('data-mode',mode);
   document.documentElement.setAttribute('data-accent',P.theme||'blue');
   document.documentElement.classList.toggle('easy-mode',!!P.easyMode);
-  document.documentElement.setAttribute('data-glass',P.glass||'std'); // effet verre : flat / std / max
+  document.documentElement.setAttribute('data-glass',P.glass||'std'); // matière : flat / std / max / clay
+  document.documentElement.toggleAttribute('data-bday', typeof bdayThemeOn==='function' && bdayThemeOn());
   if(typeof ikhCompact==='function') ikhCompact();
   const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.content=(P.easyMode?(mode==='light'?'#FFFFFF':'#000000'):(mode==='light'?'#F2F4F8':'#0A0D12'));
   // Miroir en clair (mode/accent/easyMode ne sont pas des données sensibles) pour que
@@ -6755,8 +6765,9 @@ const ACCENTS=[
   {key:'blue',name:'accentBlue',fam:'cool'},{key:'ocean',name:'accentOcean',fam:'cool'},{key:'violet',name:'accentViolet',fam:'cool'},{key:'lavender',name:'accentLavender',fam:'cool'},
   {key:'pink',name:'accentPink',fam:'warm'},{key:'sakura',name:'accentSakura',fam:'warm'},{key:'red',name:'accentRed',fam:'warm'},{key:'orange',name:'accentOrange',fam:'warm'},{key:'yellow',name:'accentYellow',fam:'warm'},
   {key:'green',name:'accentGreen',fam:'nature'},{key:'mint',name:'accentMint',fam:'nature'},{key:'teal',name:'accentTeal',fam:'nature'},{key:'brown',name:'accentBrown',fam:'nature'},
-  {key:'carbon',name:'accentCarbon',fam:'neutral'},{key:'mono',name:'accentMono',fam:'neutral'}];
-const ACCENT_FAMS=[['cool','colorFamCool'],['warm','colorFamWarm'],['nature','colorFamNature'],['neutral','colorFamNeutral']];
+  {key:'carbon',name:'accentCarbon',fam:'neutral'},{key:'mono',name:'accentMono',fam:'neutral'},
+  {key:'clay',name:'accentClay',fam:'special'}];
+const ACCENT_FAMS=[['cool','colorFamCool'],['warm','colorFamWarm'],['nature','colorFamNature'],['neutral','colorFamNeutral'],['special','colorFamSpecial']];
 function accentName(k){ const a=ACCENTS.find(x=>x.key===k); return a?t(a.name):t('accentBlue'); }
 // Profil › Couleur de l'app : une fiche par familles, chaque variante avec son nom.
 function pfColorHTML(){
@@ -6766,7 +6777,11 @@ function pfColorHTML(){
     '</div></div>').join('');
 }
 function setAccent(c){
-  P.theme=c; saveAll(); applyTheme();
+  P.theme=c;
+  // la couleur « pâte à modeler » vient avec sa matière (modifiable ensuite dans Apparence)
+  const pate=c==='clay' && P.glass!=='clay'; if(pate) P.glass='clay';
+  saveAll(); applyTheme();
+  if(pate){ if($('#s-profil')&&$('#s-profil').classList.contains('on')) renderProfile(); refreshPfSheet(); sfx&&sfx('tap'); toast(t('clayOn')); return; }
   if($('#s-profil')&&$('#s-profil').classList.contains('on')) renderProfile();
   refreshPfSheet();
   sfx&&sfx('tap');
@@ -8798,6 +8813,7 @@ function renderHome(){
   // Pas de grande illustration ici : le logo IKORUN est déjà en tête de la bannière (27/09).
   html+='<div class="ikh ikh-home">'+homeHdr+
     '<div class="hv7-greet"><h1>'+t('greet')+' '+escHtml(first||t('you'))+'</h1><p>'+sub+'</p></div></div>';
+  html+=bdayCardHTML();
   html+=notifPermBubbleHTML();
   html+=homePrayerCardHTML();
 
@@ -8890,6 +8906,7 @@ function renderHomeSimple(ps,sessW,sessTarget,kmW,first){
   '</div>';
   h+=homeStreakBadge();
   h+='<div class="ik-greet"><h1>'+t('greet')+' '+escHtml(first||t('you'))+'</h1></div>';
+  h+=bdayCardHTML();
   h+=notifPermBubbleHTML();
   h+=homePrayerCardHTML();
 
@@ -11350,6 +11367,7 @@ const ICONS={
   medal:'<circle cx="12" cy="15" r="6"/><path d="M9 10 6 3M15 10l3-7M9.5 13.5 12 16l2.5-2.5"/>',
   chevronR:'<path d="M9 5l7 7-7 7"/>',
   chevronD:'<path d="M5 9l7 7 7-7"/>',
+  cake:'<path d="M4 20h16v-7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7z"/><path d="M4 15.5c1.3 0 1.3 1 2.7 1s1.3-1 2.6-1 1.4 1 2.7 1 1.3-1 2.7-1 1.3 1 2.6 1 1.4-1 2.7-1"/><path d="M8 11V8M12 11V8M16 11V8"/><path d="M8 5.5c0-.8.6-1.5.6-1.5S9 4.7 9 5.5a.5.5 0 0 1-1 0zM12 5.5c0-.8.6-1.5.6-1.5s.4.7.4 1.5a.5.5 0 0 1-1 0zM16 5.5c0-.8.6-1.5.6-1.5s.4.7.4 1.5a.5.5 0 0 1-1 0z"/>',
   chevronU:'<path d="M5 15l7-7 7 7"/>',
   skip:'<path d="M5 5l9 7-9 7V5z"/><path d="M18 5v14"/>',
   moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/>',
@@ -12242,6 +12260,37 @@ function timerToggle(){
 }
 function resetTimer(){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; stopAlarm(); stopBgActivity(); timer.left=timer.total=timer.m*60+timer.s||300; renderTimerIfVisible(); ikIslandKick(); }
 
+/* ---------- ANNIVERSAIRE (V3.4.0) ----------
+   Le jour J (date de naissance du profil ; un 29 février se fête le 28 les années non
+   bissextiles), l'app se met en fête : couleurs rose et or, confettis qui tombent
+   doucement en fond, une carte de vœux sur l'Accueil, et à la première ouverture de la
+   journée un feu de confettis sur « Joyeux anniversaire » au marimba. « Revenir à mes
+   couleurs » coupe la fête pour la journée ; Profil › Apparence la désactive pour de bon. */
+function isBirthdayToday(){
+  if(!P || !P.bday) return false;
+  const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(P.bday)); if(!m) return false;
+  const now=new Date(), y=now.getFullYear(); let mo=+m[2], d=+m[3];
+  if(mo===2 && d===29 && !((y%4===0 && y%100!==0) || y%400===0)) d=28;
+  return now.getMonth()+1===mo && now.getDate()===d;
+}
+function bdayThemeOn(){ return isBirthdayToday() && P.bdayTheme!==false && P.bdayOff!==todayKey(); }
+function bdayCardHTML(){
+  if(!isBirthdayToday() || P.bdayTheme===false) return '';
+  const first=escHtml((P.name||'').split(' ')[0]||t('you')), on=bdayThemeOn(), a=age();
+  return '<div class="bday-card" role="status"><i class="bday-cake" aria-hidden="true">'+ICN('cake',26)+'</i>'+
+    '<div class="bday-txt"><b>'+tp('bdayTitle',first)+'</b><span>'+(typeof a==='number'?tp('bdayAge',a)+' · ':'')+t('bdayWish')+'</span></div>'+
+    '<button type="button" class="bday-btn" onclick="event.stopPropagation();toggleBdayToday()">'+t(on?'bdayOffBtn':'bdayOnBtn')+'</button></div>';
+}
+function toggleBdayToday(){
+  P.bdayOff=bdayThemeOn()?todayKey():null; saveAll(); applyTheme(); renderHome();
+  if(bdayThemeOn()) celebrateBday(true);
+}
+function celebrateBday(force){
+  if(!bdayThemeOn()) return;
+  const k='ik_bday_'+new Date().getFullYear();
+  try{ if(!force && localStorage.getItem(k)) return; localStorage.setItem(k,'1'); }catch(e){}
+  setTimeout(()=>{ try{ if(!ikMotionOff()) burst(); sfx('bday'); if(navigator.vibrate) navigator.vibrate([30,60,30,60,80]); }catch(e){} },700);
+}
 /* ---------- ÎLOT D'ACTIVITÉ (V3.4.0) ----------
    Une séance, un repos, un chrono, un minuteur ou un Pomodoro en cours restent visibles
    partout, dans une capsule posée au-dessus de la barre du bas : on continue d'utiliser
@@ -12575,7 +12624,7 @@ function renderProfile(){
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('theme')+'</div>'+pfThemeSwitchHTML()+'</div>'+
     '<div class="grp-row" onclick="openProfileSection(\'color\')"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('appColor')+'</div><div class="lr-val"><i class="accent-dot" data-a="'+(P.theme||'blue')+'" style="display:inline-block;width:14px;height:14px;vertical-align:-2px;margin-inline-end:6px;box-shadow:none"></i>'+accentName(P.theme)+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     // Effet verre (V3.3.0) : la fiche existait mais aucune ligne n'y menait.
-    '<div class="grp-row" onclick="openProfileSection(\'appearance\')"><div class="lr-icon">'+ICN('bolt',20,'currentColor')+'</div><div class="lr-title">'+t('glassLab')+'</div><div class="lr-val">'+t(P.glass==='max'?'glassMax':P.glass==='flat'?'glassFlat':'glassStd')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'appearance\')"><div class="lr-icon">'+ICN('bolt',20,'currentColor')+'</div><div class="lr-title">'+t('matLab')+'</div><div class="lr-val">'+t(P.glass==='max'?'glassMax':P.glass==='flat'?'glassFlat':P.glass==='clay'?'glassClay':'glassStd')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('heart',20,'currentColor')+'</div><div><div class="lr-title">'+t('simplifiedMode')+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px;max-width:200px">'+t('simplifiedModeDesc')+'</div></div><div class="toggle'+(P.easyMode?' on':'')+'" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
   '</div>';
   h+='<div class="grp-lab stag" style="animation-delay:.18s">'+t('support')+'</div>';
@@ -12941,19 +12990,24 @@ function pfAppearanceHTML(){
   const g=P.glass||'std';
   // Le mode simplifié coupe tout effet verre (voir html.easy-mode) : proposer les trois
   // niveaux ici donnait des boutons sans aucun effet visible.
-  if(P.easyMode) s+='<div class="lab" style="margin:22px 0 10px">'+t('glassLab')+'</div><div style="font-size:13px;color:var(--muted);line-height:1.5">'+t('glassEasyNote')+'</div>';
-  else s+='<div class="lab" style="margin:22px 0 10px">'+t('glassLab')+'</div>'+
-     '<div class="seg-ctrl glass-seg">'+[['flat','glassFlat'],['std','glassStd'],['max','glassMax']].map(([k,l])=>
-       '<div class="seg-btn'+(g===k?' on':'')+'" role="button" onclick="setGlass(\''+k+'\')">'+t(l)+'</div>').join('')+'</div>'+
-     '<div class="glass-demo" aria-hidden="true"><div class="glass-demo-card card"><div class="glass-demo-t">IKORUN</div><div class="glass-demo-s">'+t(g==='max'?'glassMax':g==='flat'?'glassFlat':'glassStd')+'</div></div></div>'+
-     '<div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5">'+t(g==='max'?'glassHintMax':g==='flat'?'glassHintFlat':'glassHintStd')+'</div>'+
+  // V3.4.0 : quatre matières, dont la pâte à modeler — des échantillons plutôt qu'un sélecteur
+  // à quatre segments, trop serré pour « Pâte à modeler ».
+  const MATS=[['flat','glassFlat','glassHintFlat'],['std','glassStd','glassHintStd'],['max','glassMax','glassHintMax'],['clay','glassClay','glassHintClay']];
+  const cm=MATS.find(m=>m[0]===g)||MATS[1];
+  if(P.easyMode) s+='<div class="lab" style="margin:22px 0 10px">'+t('matLab')+'</div><div style="font-size:13px;color:var(--muted);line-height:1.5">'+t('glassEasyNote')+'</div>';
+  else s+='<div class="lab" style="margin:22px 0 10px">'+t('matLab')+'</div>'+
+     '<div class="mat-grid">'+MATS.map(([k,l])=>'<div class="mat-sw'+(g===k?' on':'')+'" role="button" onclick="setGlass(\''+k+'\')"><i class="mat-ico '+k+'"></i><b>'+t(l)+'</b></div>').join('')+'</div>'+
+     '<div class="glass-demo" aria-hidden="true"><div class="glass-demo-card card"><div class="glass-demo-t">IKORUN</div><div class="glass-demo-s">'+t(cm[1])+'</div></div></div>'+
+     '<div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5">'+t(cm[2])+'</div>'+
      (g==='max'?'<button class="btn ghost" style="margin-top:12px" onclick="askGlassTilt()">'+ICN('bolt',16)+' '+t(P.glassTilt?'glassTiltActive':'glassTiltBtn')+'</button>':'');
+  s+='<div class="row" style="justify-content:space-between;align-items:center;gap:12px;margin-top:20px"><div><div style="font-weight:700;font-size:14px">'+t('bdayThemeLab')+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4">'+t('bdayThemeDesc')+'</div></div>'+
+     '<div class="toggle'+(P.bdayTheme!==false?' on':'')+'" onclick="P.bdayTheme=(P.bdayTheme===false);saveAll();applyTheme();refreshPfSheet()"></div></div>';
   s+='<div class="lab" style="margin:22px 0 10px">'+t('animationsLab')+'</div>'+
      '<button class="btn ghost" onclick="closeOv(\'ovProg\');setTimeout(()=>{ if(window.ikIntro) ikIntro(\'full\'); },260)">'+t('introReplayBtn')+'</button>';
   return s;
 }
 function setGlass(k){
-  if(!['flat','std','max'].includes(k)) return;
+  if(!['flat','std','max','clay'].includes(k)) return;
   P.glass=k; saveAll(); applyTheme(); refreshPfSheet(); sfx&&sfx('tap');
   if(document.body.dataset.scr==='profil') renderProfile(); // la ligne « Effet verre » affiche le niveau choisi
 }
@@ -13222,11 +13276,11 @@ function cleanImportedProfile(src){
     if(src[k]==null || src[k]==='') return;
     const n=Number(src[k]); if(Number.isFinite(n)) o[k]=n;
   });
-  ['easyMode','notif','prayerNotif','sounds','notifPromptDismissed','setupDone'].forEach(k=>{
+  ['easyMode','bdayTheme','notif','prayerNotif','sounds','notifPromptDismissed','setupDone'].forEach(k=>{
     if(typeof src[k]==='boolean') o[k]=src[k];
   });
   const STR={name:40,username:20,bio:160,city:60,goal:80,compDate:10,bday:10,objRace:40,objTime:12,
-    t5k:12,t3k:12,t10k:12,t1500:12,pb5k:12,pb3k:12,pb10k:12,pb1500:12,lang:2,mode:10,theme:20,
+    t5k:12,t3k:12,t10k:12,t1500:12,pb5k:12,pb3k:12,pb10k:12,pb1500:12,lang:2,mode:10,theme:20,glass:8,
     sex:10,objGoal:40,objProfile:40,followPerso:40};
   Object.keys(STR).forEach(k=>{ if(typeof src[k]==='string') o[k]=stripHtmlChars(src[k]).slice(0,STR[k]); });
   if(Array.isArray(src.days)) o.days=src.days.filter(x=>Number.isInteger(x)&&x>=0&&x<=6).slice(0,7);
