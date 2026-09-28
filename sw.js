@@ -32,7 +32,7 @@
 // ou immuable (app.js n'est plus retéléchargé à chaque ouverture) ; chaque fichier
 // est ajouté séparément (un seul fichier manquant ne fait pas échouer l'installation).
 // ============================================================================
-const C = 'ikorun-v94';
+const C = 'ikorun-v95';
 const STATIC = 'ikorun-static-v1';
 const EXT = 'ikorun-ext-v1';
 const EXT_MAX = 250;
@@ -58,7 +58,8 @@ const STATIC_ASSETS = [
 
 // Scripts chargés par la page : 'vendor/supabase.js?v=1', 'app.js?v=104'… (le préchargement
 // <link rel=preload> et la liste SCRIPTS du bas d'index.html). tests/smoke.js n'en fait pas partie.
-const SCRIPTS_DE_LA_PAGE = /['"]((?:vendor\/)?[\w.-]+\.js\?v=\d+)['"]/g;
+// …et sa feuille de style app.css?v=N (sortie d'index.html le 28/09).
+const SCRIPTS_DE_LA_PAGE = /['"]((?:vendor\/)?[\w.-]+\.(?:js|css)\?v=\d+)['"]/g;
 
 // Une réponse issue d'une redirection (/index.html → /) ne peut pas resservir une
 // navigation telle quelle (Safari refuse) : on en fait une copie propre.

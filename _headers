@@ -24,6 +24,10 @@
 /app.js
   Cache-Control: public, max-age=31536000, immutable
 
+# Feuille de style (sortie d'index.html le 28/09) : même règle, monter app.css?v=N.
+/app.css
+  Cache-Control: public, max-age=31536000, immutable
+
 /vendor/supabase.js
   Cache-Control: public, max-age=31536000, immutable
 
