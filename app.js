@@ -2061,7 +2061,7 @@ const I18N={
     loadingLab:'Chargement…',friendsLoadError:'Impossible de charger tes amis. Vérifie ta connexion.',retryBtn:'Réessayer',
     resumeBtn:'Reprendre',discardBtn:'Abandonner',
     alreadyLinked:'déjà lié',addBtn:'Ajouter',searchError:'Erreur de recherche',alreadySentOrFriend:'Déjà envoyé ou déjà ami',
-    requestSent:'Demande envoyée',friendProfileTitle:'Profil',removeLab:'Retirer',lvlDot:'Niv.',kmThisWeekShort:'{0} km cette semaine',lastWeekKm:'Semaine dernière : {0} km',glassEasyNote:'Le mode simplifié garde un affichage net, sans effet verre : ce réglage reprendra effet quand tu le désactiveras.',youDefaultName:'Toi',backToFriends:'Retour aux amis',profileNotFound:'Profil introuvable.',noBadgeUnlocked:'Aucun badge débloqué pour l\u2019instant.',kmPerWeek:'km/sem.',daysStreak:'Jours de suite',kmTotalLab:'km au total',tonnageKgLab:'Tonnage kg',
+    requestSent:'Demande envoyée',friendProfileTitle:'Profil',removeLab:'Retirer',lvlDot:'Niv.',kmThisWeekShort:'{0} km cette semaine',lastWeekKm:'Semaine dernière : {0} km',minimizeLab:'Réduire',bdayTitle:'Joyeux anniversaire, {0} !',bdayAge:'{0} ans aujourd’hui',bdayWish:'toute l’équipe IKORUN te souhaite une belle journée',bdayOffBtn:'Mes couleurs',bdayOnBtn:'Remettre la fête',bdayThemeLab:'Thème d’anniversaire',bdayThemeDesc:'Le jour de ton anniversaire, l’app se met en fête : couleurs, confettis et une petite mélodie.',matLab:'Matière',glassClay:'Pâte à modeler',glassHintClay:'Pâte à modeler : surfaces mates et gonflées, lumière douce dans la matière, et tout s’écrase puis rebondit sous le doigt comme une pâte molle.',accentClay:'Pâte à modeler',colorFamSpecial:'Spéciaux',clayOn:'Couleur et matière « pâte à modeler » appliquées',accentOcean:'Océan',accentViolet:'Améthyste',accentLavender:'Lavande',accentPink:'Framboise',accentSakura:'Sakura',accentMint:'Menthe',accentTeal:'Lagon',accentOrange:'Ambre',accentMono:'Mono',colorFamCool:'Bleus et violets',colorFamWarm:'Roses et chauds',colorFamNature:'Nature',colorFamNeutral:'Neutres',liveAlreadyRunning:'Une séance est déjà en cours. Termine-la ou annule-la avant d’en commencer une autre.',backToSessionLab:'Revenir à la séance',islandNext:'Ensuite : {0}',islandEndsAt:'Fin à {0}',islandPaused:'En pause',islandSets:'{0}/{1} séries',glassEasyNote:'Le mode simplifié garde un affichage net, sans effet verre : ce réglage reprendra effet quand tu le désactiveras.',youDefaultName:'Toi',backToFriends:'Retour aux amis',profileNotFound:'Profil introuvable.',noBadgeUnlocked:'Aucun badge débloqué pour l\u2019instant.',kmPerWeek:'km/sem.',daysStreak:'Jours de suite',kmTotalLab:'km au total',tonnageKgLab:'Tonnage kg',
     addPerf:'Ajouter une performance',addChronosHint:'Ajoute tes chronos : ils alimentent ton VDOT et ton plan.',
     bestPerf:'Meilleure perf',avgHR:'FC moy',maxHRshort:'max',perfHistoryTitle:'Historique des performances',
     chooseDistance:'Choisis la distance',otherDist:'Autre',customDistance:'Distance personnalisée',
@@ -2647,7 +2647,7 @@ const I18N={
     loadingLab:'Loading…',friendsLoadError:'Couldn\'t load your friends. Check your connection.',retryBtn:'Retry',
     resumeBtn:'Resume',discardBtn:'Discard',
     alreadyLinked:'already linked',addBtn:'Add',searchError:'Search error',alreadySentOrFriend:'Already sent or already friends',
-    requestSent:'Request sent',friendProfileTitle:'Profile',removeLab:'Remove',lvlDot:'Lvl.',kmThisWeekShort:'{0} km this week',lastWeekKm:'Last week: {0} km',glassEasyNote:'Simplified mode keeps a clean display with no glass effect: this setting applies again once you turn it off.',youDefaultName:'You',backToFriends:'Back to friends',profileNotFound:'Profile not found.',noBadgeUnlocked:'No badge unlocked yet.',kmPerWeek:'km/wk',daysStreak:'Day streak',kmTotalLab:'total km',tonnageKgLab:'Volume kg',
+    requestSent:'Request sent',friendProfileTitle:'Profile',removeLab:'Remove',lvlDot:'Lvl.',kmThisWeekShort:'{0} km this week',lastWeekKm:'Last week: {0} km',minimizeLab:'Minimize',bdayTitle:'Happy birthday, {0}!',bdayAge:'{0} today',bdayWish:'the whole IKORUN team wishes you a great day',bdayOffBtn:'My colors',bdayOnBtn:'Bring back the party',bdayThemeLab:'Birthday theme',bdayThemeDesc:'On your birthday, the app celebrates: colors, confetti and a little tune.',matLab:'Material',glassClay:'Modeling clay',glassHintClay:'Modeling clay: soft, puffy matte surfaces with light inside the material — everything squishes and bounces back under your finger like soft dough.',accentClay:'Modeling clay',colorFamSpecial:'Specials',clayOn:'“Modeling clay” color and material applied',accentOcean:'Ocean',accentViolet:'Amethyst',accentLavender:'Lavender',accentPink:'Raspberry',accentSakura:'Sakura',accentMint:'Mint',accentTeal:'Lagoon',accentOrange:'Amber',accentMono:'Mono',colorFamCool:'Blues & purples',colorFamWarm:'Pinks & warm',colorFamNature:'Nature',colorFamNeutral:'Neutrals',liveAlreadyRunning:'A session is already running. Finish or cancel it before starting another one.',backToSessionLab:'Back to session',islandNext:'Next: {0}',islandEndsAt:'Ends at {0}',islandPaused:'Paused',islandSets:'{0}/{1} sets',glassEasyNote:'Simplified mode keeps a clean display with no glass effect: this setting applies again once you turn it off.',youDefaultName:'You',backToFriends:'Back to friends',profileNotFound:'Profile not found.',noBadgeUnlocked:'No badge unlocked yet.',kmPerWeek:'km/wk',daysStreak:'Day streak',kmTotalLab:'total km',tonnageKgLab:'Volume kg',
     addPerf:'Add a performance',addChronosHint:'Add your times: they power your VDOT and your plan.',
     bestPerf:'Best performance',avgHR:'avg HR',maxHRshort:'max',perfHistoryTitle:'Performance history',
     chooseDistance:'Choose the distance',otherDist:'Other',customDistance:'Custom distance',
@@ -3233,7 +3233,7 @@ const I18N={
     loadingLab:'جارٍ التحميل…',friendsLoadError:'تعذّر تحميل أصدقائك. تحقّق من اتصالك.',retryBtn:'إعادة المحاولة',
     resumeBtn:'استئناف',discardBtn:'التخلي',
     alreadyLinked:'مرتبط بالفعل',addBtn:'إضافة',searchError:'خطأ في البحث',alreadySentOrFriend:'تم الإرسال بالفعل أو صديق بالفعل',
-    requestSent:'تم إرسال الطلب',friendProfileTitle:'الملف الشخصي',removeLab:'إزالة',lvlDot:'مستوى',kmThisWeekShort:'{0} كم هذا الأسبوع',lastWeekKm:'الأسبوع الماضي: {0} كم',glassEasyNote:'الوضع المبسّط يُبقي العرض واضحًا دون تأثير الزجاج: يعود هذا الإعداد للعمل عند إيقافه.',youDefaultName:'أنت',backToFriends:'العودة إلى الأصدقاء',profileNotFound:'الملف غير موجود.',noBadgeUnlocked:'لا يوجد وسام مفتوح بعد.',kmPerWeek:'كم/أسبوع',daysStreak:'أيام متتالية',kmTotalLab:'كم إجمالية',tonnageKgLab:'الحمولة كغ',
+    requestSent:'تم إرسال الطلب',friendProfileTitle:'الملف الشخصي',removeLab:'إزالة',lvlDot:'مستوى',kmThisWeekShort:'{0} كم هذا الأسبوع',lastWeekKm:'الأسبوع الماضي: {0} كم',minimizeLab:'تصغير',bdayTitle:'عيد ميلاد سعيد يا {0}!',bdayAge:'{0} سنة اليوم',bdayWish:'فريق IKORUN كله يتمنى لك يومًا جميلًا',bdayOffBtn:'ألواني',bdayOnBtn:'أعد الاحتفال',bdayThemeLab:'مظهر عيد الميلاد',bdayThemeDesc:'في يوم عيد ميلادك تحتفل التطبيقة: ألوان وقصاصات ولحن صغير.',matLab:'الخامة',glassClay:'صلصال',glassHintClay:'صلصال: أسطح مطفأة ومنتفخة بإضاءة ناعمة داخل الخامة، وكل شيء ينضغط ثم يرتد تحت إصبعك كعجينة لينة.',accentClay:'صلصال',colorFamSpecial:'خاصة',clayOn:'تم تطبيق لون وخامة «الصلصال»',accentOcean:'محيط',accentViolet:'جمشت',accentLavender:'خزامى',accentPink:'توت',accentSakura:'ساكورا',accentMint:'نعناع',accentTeal:'بحيرة',accentOrange:'كهرمان',accentMono:'أحادي',colorFamCool:'أزرق وبنفسجي',colorFamWarm:'وردي ودافئ',colorFamNature:'طبيعة',colorFamNeutral:'محايدة',liveAlreadyRunning:'هناك حصة جارية بالفعل. أنهِها أو ألغِها قبل بدء حصة أخرى.',backToSessionLab:'العودة إلى الحصة',islandNext:'التالي: {0}',islandEndsAt:'ينتهي عند {0}',islandPaused:'متوقف مؤقتًا',islandSets:'{0}/{1} مجموعات',glassEasyNote:'الوضع المبسّط يُبقي العرض واضحًا دون تأثير الزجاج: يعود هذا الإعداد للعمل عند إيقافه.',youDefaultName:'أنت',backToFriends:'العودة إلى الأصدقاء',profileNotFound:'الملف غير موجود.',noBadgeUnlocked:'لا يوجد وسام مفتوح بعد.',kmPerWeek:'كم/أسبوع',daysStreak:'أيام متتالية',kmTotalLab:'كم إجمالية',tonnageKgLab:'الحمولة كغ',
     addPerf:'إضافة أداء',addChronosHint:'أضف أوقاتك: تُستخدم لحساب VDOT وخطتك.',
     bestPerf:'أفضل أداء',avgHR:'متوسط النبض',maxHRshort:'الأقصى',perfHistoryTitle:'سجل الأداء',
     chooseDistance:'اختر المسافة',otherDist:'أخرى',customDistance:'مسافة مخصصة',
@@ -4445,7 +4445,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='3.3.1';
+const APP_VERSION='3.4.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -4595,7 +4595,7 @@ function ikEnterScreen(s){
   ikStreak(scr.querySelector('.hv7-day,.sp-plan,.pf-hero,.card'));
 }
 function ikOpenOv(ov){
-  if(!ov || ikMotionOff()) return;
+  if(!ov || ikMotionOff() || ov.id==='ovLive') return; // séance : une seule montée, pas de cascade sur ~40 blocs
   const card=ov.querySelector('.ov-card'); if(!card) return;
   requestAnimationFrame(()=>{ if(ikFirst(ov,ikSig(card.innerHTML))) ikPlay(card,{skip:'.ov-head'}); });
 }
@@ -4646,14 +4646,16 @@ let _actx=null, _busDry=null, _busWet=null, _master=null, _alarmBus=null;
 // test "c'est un nombre", et un gain à NaN coupe tout le son sans rien signaler.
 // Défaut 0,55 (27/09, « sons plus sobres ») : un volume déjà réglé par l'utilisateur est conservé.
 function soundVol(){ const v=(P&&typeof P.soundVol==='number'&&isFinite(P.soundVol))?P.soundVol:0.55; return Math.max(0,Math.min(1,v)); }
-/* Réponse impulsionnelle générée : bruit décroissant. Beaucoup plus crédible
-   qu'un simple écho, pour ~10 lignes et un seul calcul au démarrage. */
-function _makeIR(ctx,dur,decay){
-  const n=Math.max(1,Math.floor(ctx.sampleRate*dur));
-  const buf=ctx.createBuffer(2,n,ctx.sampleRate);
+/* Réponse impulsionnelle générée : petite pièce feutrée (V3.4.0). Bruit filtré (passe-bas
+   à un pôle : plus de sifflement), décroissance exponentielle, gauche et droite
+   indépendantes pour l'ampleur, 12 ms de pré-délai. Multiplication pas à pas plutôt que
+   Math.pow à chaque échantillon : ~10× plus rapide. */
+function _makeIR(ctx,dur,decaySec){
+  const sr=ctx.sampleRate, n=Math.max(1,Math.floor(sr*dur)), pre=Math.floor(sr*0.012);
+  const buf=ctx.createBuffer(2,n,sr), k=Math.exp(-1/(sr*decaySec)), a=0.62;
   for(let ch=0;ch<2;ch++){
-    const d=buf.getChannelData(ch);
-    for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/n,decay);
+    const d=buf.getChannelData(ch); let env=1, y=0;
+    for(let i=pre;i<n;i++){ y=a*y+(1-a)*(Math.random()*2-1); d[i]=y*env*2.2; env*=k; }
   }
   return buf;
 }
@@ -4664,14 +4666,17 @@ function _buildAudioGraph(){
   let out=ctx.destination;
   try{
     const comp=ctx.createDynamicsCompressor();
-    comp.threshold.value=-20; comp.knee.value=14; comp.ratio.value=3; comp.attack.value=0.004; comp.release.value=0.22;
-    comp.connect(ctx.destination); out=comp;
+    comp.threshold.value=-18; comp.knee.value=12; comp.ratio.value=3.5; comp.attack.value=0.003; comp.release.value=0.25;
+    // léger adoucissement des aigus (-3 dB au-dessus de 5 kHz) : jamais de son perçant
+    const shelf=ctx.createBiquadFilter(); shelf.type='highshelf'; shelf.frequency.value=5000; shelf.gain.value=-3;
+    comp.connect(shelf); shelf.connect(ctx.destination); out=comp;
   }catch(e){}
   _master=ctx.createGain(); _master.gain.value=soundVol(); _master.connect(out);
   _busDry=ctx.createGain(); _busDry.gain.value=1; _busDry.connect(_master);
   try{
     // Sobre (27/09) : pièce plus petite — queue de 0,9 s au lieu de 1,5 s, qui s'éteint plus vite.
-    const conv=ctx.createConvolver(); conv.buffer=_makeIR(ctx,0.9,4.6);
+    // IR posée juste après : le tout premier son part sans attendre son calcul.
+    const conv=ctx.createConvolver(); setTimeout(()=>{ try{ conv.buffer=_makeIR(ctx,1.1,0.22); }catch(e){} },30);
     // passe-haut avant (pas de graves boueux) et passe-bas après (queue feutrée, pas de sifflement)
     const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=420;
     const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=5200;
@@ -4702,154 +4707,94 @@ function applySoundVol(){
 function soundsOn(){ return !P || P.sounds!==false; }
 // Débloque l'audio au premier geste utilisateur (politique navigateur)
 document.addEventListener('pointerdown',function unlockAudio(){ try{ audioCtx(); }catch(e){} document.removeEventListener('pointerdown',unlockAudio); },{once:true});
-/* note : fréquence, durée, type, volume, délai, glide vers, options
-   opt.cut    fréquence de coupure du passe-bas (défaut : 4,5 × la fondamentale)
-   opt.detune désaccordage en cents entre les deux oscillateurs (0 = un seul)
-   opt.wet    dose de réverbération (0 à 1)
-   opt.atk    durée d'attaque
-   opt.alarm  route vers le bus d'alarme, qui ignore le volume bas */
-function _note(freq,dur,type,vol,delay,toFreq,opt){
-  const ctx=audioCtx(); if(!ctx||!_busDry) return;
-  opt=opt||{};
-  const t0=ctx.currentTime+(delay||0);
-  const nyq=ctx.sampleRate/2;
-  const filt=ctx.createBiquadFilter();
-  filt.type='lowpass';
-  filt.frequency.setValueAtTime(Math.min(nyq*0.9, opt.cut||freq*4.5), t0);
-  filt.Q.setValueAtTime(opt.q||0.7, t0);
-  const g=ctx.createGain();
-  const det=(opt.detune==null)?7:opt.detune;
-  // Deux voix = environ deux fois plus fort : on compense pour garder le même
-  // niveau perçu qu'avant, sinon tous les sons deviennent brutalement plus forts.
-  const v=Math.max(0.0002,(vol||0.18)*(det?0.62:1));
-  g.gain.setValueAtTime(0.0001,t0);
-  g.gain.linearRampToValueAtTime(v,t0+(opt.atk||0.014));
-  g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
-  const spread=det?[-det,det]:[0];
-  for(const d of spread){
-    const o=ctx.createOscillator();
-    o.type=type||'sine';
-    o.detune.setValueAtTime(d,t0);
-    o.frequency.setValueAtTime(freq,t0);
-    if(toFreq) o.frequency.exponentialRampToValueAtTime(Math.max(1,toFreq),t0+dur);
-    o.connect(filt);
-    o.start(t0); o.stop(t0+dur+0.03);
-  }
-  filt.connect(g);
-  if(opt.alarm && _alarmBus){ g.connect(_alarmBus); return; }
-  g.connect(_busDry);
-  if(_busWet && opt.wet){ const w=ctx.createGain(); w.gain.value=opt.wet; g.connect(w); w.connect(_busWet); }
+/* ---- Voix « goutte & marimba » (V3.4.0) ----
+   « Le son est dégueulasse » : les timbres de verre (sinus + octave grave + réverbération
+   de bruit brut) sonnaient creux et un peu sale. Refonte complète, dans l'esprit liquide
+   de l'app :
+   · appuis : une petite goutte (sinus dont la hauteur remonte en 40 ms, le « bloop »
+     d'une bulle), très bas ;
+   · événements : des notes de marimba en synthèse FM — un modulateur qui s'éteint en
+     quelques millisecondes donne la frappe de la mailloche, puis il reste une note ronde
+     et boisée, avec le partiel ×3,9 d'une vraie lame, bref ;
+   · une seule gamme pentatonique (do majeur) : deux sons qui se chevauchent sont
+     toujours consonants ;
+   · enveloppes en décroissance naturelle (setTargetAtTime), plus de coupure qui claque ;
+     réverbération de petite pièce, feutrée (bruit filtré, gauche/droite décorrélés),
+     calculée hors du premier son pour ne rien ralentir. */
+function _env(g,t0,v,atk,tau){ g.gain.setValueAtTime(0.0001,t0); g.gain.linearRampToValueAtTime(v,t0+atk); g.gain.setTargetAtTime(0.0001,t0+atk,tau); }
+function _route(node,opt){
+  if(opt.alarm && _alarmBus){ node.connect(_alarmBus); return; }
+  node.connect(_busDry);
+  if(_busWet && opt.wet){ const w=_actx.createGain(); w.gain.value=opt.wet; node.connect(w); w.connect(_busWet); }
 }
-// Micro-variation de hauteur sur les sons répétés (tap, tick) : sans elle, dix
-// appuis d'affilée sonnent comme une mitraillette, toujours à la note exacte.
-function _vary(f,pct){ const p=pct||0.02; return f*(1+(Math.random()*2-1)*p); }
-/* ---- Voix « verre » (27/09) ----
-   Hamou trouvait les sons « riquiqui » : des bips courts, aigus, sans corps. Les
-   sons sont maintenant des timbres de verre / cloche douce, par synthèse additive :
-   une fondamentale, une octave sous elle pour le corps, et quelques partiels qui
-   s'éteignent plus vite que la note (c'est ce qui fait « verre » plutôt que « bip »).
-   Registre plus grave, attaque adoucie, une seule gamme (la majeur) pour que tous
-   les sons de l'app aillent ensemble. */
-/* Sobre (27/09) : les partiels ×3 et ×4,2 (le « scintillement » de cloche) sont retirés
-   et l'octave haute baissée — il reste un timbre rond et mat, sans brillance. */
-const _GLASS=[[0.5,0.06,1.1],[1,1,1],[2,0.16,0.45]]; // [rapport, niveau, durée relative]
-// Timbre complet d'avant, gardé pour l'alarme seule : elle doit porter et s'entendre de loin.
-const _GLASS_RICH=[[0.5,0.10,1.25],[1,1,1],[2,0.30,0.55],[3,0.10,0.34],[4.2,0.045,0.22]];
-function _glass(freq,dur,vol,delay,opt){
+// Marimba (FM) : fréquence, durée de résonance, volume, délai ; opt.ratio (1 = bois,
+// 3,5 = kalimba plus cristalline), opt.hard (force de frappe), opt.wet, opt.alarm.
+function _mallet(freq,dur,vol,delay,opt){
   const ctx=audioCtx(); if(!ctx||!_busDry) return;
   opt=opt||{};
-  const t0=ctx.currentTime+(delay||0), nyq=ctx.sampleRate/2;
-  const out=ctx.createGain(); out.gain.value=1;
-  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.Q.value=0.5;
-  lp.frequency.setValueAtTime(Math.min(nyq*0.9,freq*(opt.bright||3.2)),t0);
+  const t0=ctx.currentTime+(delay||0), nyq=ctx.sampleRate/2, tau=Math.max(0.03,dur/4.6);
+  const out=ctx.createGain(); _env(out,t0,Math.max(0.0002,vol||0.16),0.003,tau);
+  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.Q.value=0.4; lp.frequency.setValueAtTime(Math.min(nyq*0.9,freq*6),t0);
+  lp.frequency.setTargetAtTime(Math.min(nyq*0.9,freq*2.4),t0,0.06);
   lp.connect(out);
-  const table=opt.rich?_GLASS_RICH:_GLASS;
-  const parts=opt.pure?table.slice(1,3):table;
-  const norm=parts.reduce((a,p)=>a+p[1],0);
-  for(const [r,lvl,dr] of parts){
-    const f=freq*r; if(f>nyq*0.85) continue;
-    const o=ctx.createOscillator(), g=ctx.createGain();
-    o.type='sine'; o.frequency.setValueAtTime(f,t0);
-    const d=Math.max(0.05,dur*dr), v=Math.max(0.0002,(vol||0.2)*lvl/norm*1.6);
-    g.gain.setValueAtTime(0.0001,t0);
-    g.gain.linearRampToValueAtTime(v,t0+(opt.atk||(opt.rich?0.006:0.012)));
-    g.gain.exponentialRampToValueAtTime(0.0001,t0+d);
-    o.connect(g); g.connect(lp);
-    o.start(t0); o.stop(t0+d+0.05);
-  }
-  if(opt.alarm && _alarmBus){ out.connect(_alarmBus); return; }
-  out.connect(_busDry);
-  if(_busWet && opt.wet){ const w=ctx.createGain(); w.gain.value=opt.wet; out.connect(w); w.connect(_busWet); }
+  const car=ctx.createOscillator(); car.type='sine'; car.frequency.setValueAtTime(freq,t0);
+  const mod=ctx.createOscillator(); mod.type='sine'; mod.frequency.setValueAtTime(freq*(opt.ratio||1),t0);
+  const mg=ctx.createGain(); const idx=freq*(opt.hard||1.6);
+  mg.gain.setValueAtTime(idx,t0); mg.gain.setTargetAtTime(0,t0,0.012+0.02/(opt.hard||1.6));
+  mod.connect(mg); mg.connect(car.frequency); car.connect(lp);
+  // partiel de lame (×3,9), qui s'éteint très vite : le « toc » du bois
+  const bar=freq*3.93;
+  if(bar<nyq*0.85){ const o=ctx.createOscillator(), g=ctx.createGain(); o.type='sine'; o.frequency.setValueAtTime(bar,t0);
+    _env(g,t0,0.22,0.002,0.018); o.connect(g); g.connect(lp); o.start(t0); o.stop(t0+0.2); }
+  const end=t0+0.003+tau*6;
+  car.start(t0); mod.start(t0); car.stop(end); mod.stop(end);
+  _route(out,opt);
 }
-// Appui : un « toc » feutré (souffle filtré très bref + un corps grave), à peine audible.
-let _noiseBuf=null;
-function _click(vol,delay){
+// Goutte : un sinus dont la hauteur remonte d'un coup (la bulle qui éclate).
+function _drop(f0,f1,dur,vol,delay,opt){
   const ctx=audioCtx(); if(!ctx||!_busDry) return;
+  opt=opt||{};
   const t0=ctx.currentTime+(delay||0);
-  if(!_noiseBuf){ const n=Math.floor(ctx.sampleRate*0.03); _noiseBuf=ctx.createBuffer(1,n,ctx.sampleRate); const d=_noiseBuf.getChannelData(0); for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3); }
-  const src=ctx.createBufferSource(); src.buffer=_noiseBuf;
-  const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=_vary(2400,0.05); bp.Q.value=1.1;
-  const g=ctx.createGain(); g.gain.value=(vol||0.05);
-  src.connect(bp); bp.connect(g); g.connect(_busDry); src.start(t0);
-  _glass(_vary(330,0.02),0.05,(vol||0.05)*0.5,delay,{pure:true,bright:2.5});
+  const o=ctx.createOscillator(); o.type='sine';
+  o.frequency.setValueAtTime(f0,t0); o.frequency.exponentialRampToValueAtTime(Math.max(1,f1),t0+dur*0.7);
+  const g=ctx.createGain(); _env(g,t0,Math.max(0.0002,vol||0.05),0.002,dur/3);
+  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=Math.max(f0,f1)*2.2; lp.Q.value=0.3;
+  o.connect(g); g.connect(lp); o.start(t0); o.stop(t0+dur*2.2);
+  _route(lp,opt);
 }
-// la majeur : A3 E4 A4 B4 C#5 E5 F#5 A5 B5 C#6 E6
-const _N={A3:220,E4:329.63,A4:440,B4:493.88,Cs5:554.37,E5:659.25,Fs5:739.99,A5:880,B5:987.77,Cs6:1108.73,E6:1318.51};
-/* SONS SOBRES (27/09, demande de Hamou : « des sons plus sobres »). Après la version
-   « verre » (riche, réverbérée, arpèges et nappes), retour à l'essentiel : chaque son est
-   bref (0,2 à 0,8 s), feutré, et tient en une ou deux notes — trois, très brèves, pour un
-   badge. Plus de nappe tenue, réverbération légère. Même gamme (la majeur) pour que tout
-   reste cohérent. L'alarme (plus bas) n'est pas concernée : elle doit s'entendre. */
+// Micro-variation de hauteur sur les sons répétés (tap, coche) : sans elle, dix appuis
+// d'affilée sonnent comme une mitraillette, toujours à la note exacte.
+function _vary(f,pct){ const p=pct||0.02; return f*(1+(Math.random()*2-1)*p); }
+// do majeur pentatonique (do ré mi sol la), du sol3 au mi6
+const _N={G4:392,A4:440,C5:523.25,D5:587.33,E5:659.25,G5:783.99,A5:880,C6:1046.5,D6:1174.66,E6:1318.51};
 function sfx(name){
   if(!soundsOn()) return;
   const N=_N;
   switch(name){
-    // Appui : un « toc » à peine audible.
-    case 'tap':
-      _click(0.1);
-      break;
-    // Série validée : une note courte.
-    case 'tick':
-      _glass(_vary(N.E5,0.006),0.26,0.2,0,{wet:0.06});
-      break;
-    // Départ : deux notes montantes, brèves.
-    case 'start':
-      _glass(N.A4,0.3,0.15,0,{wet:0.08});
-      _glass(N.E5,0.4,0.15,0.08,{wet:0.1});
-      break;
-    // Arrêt : les mêmes, descendantes.
-    case 'stop':
-      _glass(N.E5,0.3,0.14,0,{wet:0.08});
-      _glass(N.A4,0.42,0.14,0.09,{wet:0.1});
-      break;
-    // Objectif atteint : deux notes, une quarte qui se pose.
-    case 'goal':
-      _glass(N.E5,0.4,0.14,0,{wet:0.1});
-      _glass(N.A5,0.55,0.13,0.08,{wet:0.12});
-      break;
-    // XP : une seule note douce.
-    case 'xp':
-      _glass(N.B5,0.32,0.08,0,{wet:0.08,pure:true});
-      break;
-    // Badge : trois notes brèves, sans nappe.
-    case 'medal':
-      [N.A4,N.Cs5,N.E5].forEach((f,i)=>_glass(f,0.55,0.13,i*0.08,{wet:0.12}));
-      break;
-    // Séance terminée : un accord bref (fondamentale + quinte) qui se résout sur l'octave.
-    case 'finish':
-      _glass(N.A4,0.6,0.11,0,{wet:0.12});
-      _glass(N.E5,0.6,0.1,0,{wet:0.12});
-      _glass(N.A5,0.8,0.11,0.14,{wet:0.14});
-      break;
-    // Notification : deux notes descendantes, discrètes.
-    case 'notif':
-      _glass(N.E5,0.4,0.12,0,{wet:0.1});
-      _glass(N.B4,0.55,0.12,0.12,{wet:0.12});
-      break;
-    // Minuteur : trois pulsations courtes — fonctionnel, il doit s'entendre.
-    case 'timer':
-      for(let i=0;i<3;i++) _glass(N.A5,0.24,0.17,i*0.28,{wet:0.06});
-      break;
+    // Appui : une goutte, à peine audible.
+    case 'tap': _drop(_vary(430,0.04),_vary(980,0.04),0.05,0.06); break;
+    // Série validée : un « toc » de marimba clair.
+    case 'tick': _mallet(_vary(N.C6,0.004),0.38,0.17,0,{wet:0.1}); break;
+    // Départ : deux notes qui montent (do → sol).
+    case 'start': _mallet(N.C5,0.5,0.15,0,{wet:0.12}); _mallet(N.G5,0.6,0.15,0.085,{wet:0.14}); break;
+    // Arrêt : les mêmes, qui redescendent.
+    case 'stop': _mallet(N.G5,0.45,0.14,0,{wet:0.12}); _mallet(N.C5,0.6,0.14,0.09,{wet:0.14}); break;
+    // Repos terminé : trois notes vives qui relancent (do mi sol).
+    case 'go': [N.C5,N.E5,N.G5].forEach((f,i)=>_mallet(f,i===2?0.7:0.35,0.16,i*0.07,{wet:0.12,hard:2})); break;
+    // Objectif atteint : une quarte qui se pose, et une goutte haute pour la lumière.
+    case 'goal': _mallet(N.E5,0.55,0.14,0,{wet:0.14}); _mallet(N.A5,0.8,0.14,0.09,{wet:0.16}); _drop(1400,2600,0.06,0.02,0.2,{wet:0.2}); break;
+    // XP : une note de kalimba, légère.
+    case 'xp': _mallet(N.A5,0.45,0.085,0,{wet:0.12,ratio:3.5,hard:0.7}); break;
+    // Badge : arpège de kalimba (do mi sol do), la dernière note résonne.
+    case 'medal': [N.C5,N.E5,N.G5,N.C6].forEach((f,i)=>_mallet(f,i===3?1.1:0.5,0.13,i*0.075,{wet:0.18,ratio:3.5,hard:0.9})); break;
+    // Séance terminée : accord de do (do mi sol) puis l'octave qui conclut.
+    case 'finish': [N.C5,N.E5,N.G5].forEach(f=>_mallet(f,0.9,0.1,0,{wet:0.16})); _mallet(N.C6,1.2,0.13,0.16,{wet:0.2,ratio:3.5,hard:0.9}); break;
+    // Notification : deux notes qui descendent, discrètes.
+    case 'notif': _mallet(N.A5,0.5,0.12,0,{wet:0.12}); _mallet(N.E5,0.7,0.12,0.12,{wet:0.14}); break;
+    // Anniversaire : « Joyeux anniversaire » (sol sol la sol do si), en kalimba.
+    case 'bday': [[N.G4,0,.35],[N.G4,.3,.2],[N.A4,.45,.45],[N.G4,.85,.45],[N.C5,1.25,.45],[493.88,1.65,1]].forEach(([f,d,l])=>_mallet(f,l+0.3,0.15,d,{wet:0.18,ratio:3.5,hard:1})); break;
+    // Minuteur : trois pulsations nettes — fonctionnel, il doit s'entendre.
+    case 'timer': for(let i=0;i<3;i++) _mallet(N.A5,0.3,0.18,i*0.26,{wet:0.06,hard:2.2}); break;
   }
 }
 
@@ -4864,8 +4809,9 @@ function alarmRing(){
   if(soundsOn()){
     // 27/09 : motif de verre (la – mi – la – do#) doublé à l'octave grave pour porter,
     // à la place de l'onde carrée : insistant, mais sans agresser.
+    // V3.4.0 : riff de marimba (sol do mi do sol…), frappe forte et doublé à l'octave grave.
     const N=_N;
-    [[N.A5,0],[N.E5,0.17],[N.A5,0.34],[N.Cs6,0.51]].forEach(([f,d])=>{ _glass(f,0.55,0.5,d,{alarm:true,bright:6,rich:true}); _glass(f/2,0.5,0.24,d,{alarm:true,pure:true,rich:true}); });
+    [[N.G5,0],[N.C6,0.15],[N.E6,0.3],[N.C6,0.45],[N.G5,0.6]].forEach(([f,d])=>{ _mallet(f,0.5,0.46,d,{alarm:true,hard:2.4}); _mallet(f/2,0.45,0.2,d,{alarm:true,hard:1.2}); });
   }
   if(navigator.vibrate) navigator.vibrate([400,150,400,150,400]);
 }
@@ -5053,6 +4999,7 @@ function checkDayRollover(){
   if(_lastDayKey===null){ _lastDayKey=tk; return; } // 1er appel : initApp vient de tout faire
   if(_lastDayKey===tk) return;
   _lastDayKey=tk;
+  try{ applyTheme(); celebrateBday(); }catch(e){}
   try{ getDailyGoals(); }catch(e){ console.error('[IKORUN] rollover getDailyGoals',e); }
   try{ refreshXP(); }catch(e){ console.error('[IKORUN] rollover refreshXP',e); }
   try{ checkMissedSessions(); }catch(e){ console.error('[IKORUN] rollover checkMissedSessions',e); }
@@ -5121,7 +5068,7 @@ function ovLeave(el){
   clearTimeout(el._leaveT); el.classList.add('ov-leaving');
   el._leaveT=setTimeout(()=>{ el.classList.remove('ov-leaving'); const c=el.querySelector('.ov-card'); if(c) c.style.transform=''; },280);
 }
-function openOv(id){ const el=$('#'+id); if(!el) return; clearTimeout(el._leaveT); el.classList.remove('ov-leaving'); const c=el.querySelector('.ov-card'); if(c) c.style.transform=''; el.style.zIndex=topZ(); el.classList.add('on'); ikOpenOv(el); }
+function openOv(id){ const el=$('#'+id); if(!el) return; clearTimeout(el._leaveT); el.classList.remove('ov-leaving'); const c=el.querySelector('.ov-card'); if(c) c.style.transform=''; el.style.zIndex=topZ(); el.classList.add('on'); ikOpenOv(el); if(id==='ovLive' && typeof ikIslandKick==='function') ikIslandKick(); }
 function closeOv(id){ const el=$('#'+id); if(!el) return; ovLeave(el); el.classList.remove('on'); el.style.zIndex=''; if(id==='ovProg') _pfSheet=null; if(id==='ovLib'&&typeof _exDemoTimer!=='undefined'){ clearInterval(_exDemoTimer); } if((id==='ovProg'||id==='ovLive')&&typeof _exDemo2!=='undefined'&&_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; }
   // Garde-fou : openLibFor() ferme ovCreate pour ouvrir la bibliothèque par-dessus (voir plus
   // bas). Sans ce bloc, annuler depuis la bibliothèque ou depuis "Configurer" (X, pas
@@ -5130,7 +5077,10 @@ function closeOv(id){ const el=$('#'+id); if(!el) return; ovLeave(el); el.classL
   if((id==='ovLib'||id==='ovCfg') && _libFromCreate && typeof newProg!=='undefined' && newProg){ _libFromCreate=false; renderCreate(); openOv('ovCreate'); }
   // Garde-fou : si ovLive se ferme par un chemin qui n'est pas pauseLive/doCancelLive/finishLive,
   // on ne laisse jamais liveTimer/restTimer tourner en fond perdu.
-  if(id==='ovLive'){ if(typeof liveTimer!=='undefined'){ clearInterval(liveTimer); } if(typeof restTimer!=='undefined'){ clearInterval(restTimer); } }
+  // Le repos part avec (minuteur, fenêtre ET état) : avant, sa fenêtre restait affichée,
+  // figée, après « Mettre en pause » — et l'îlot d'activité l'aurait montrée arrêtée.
+  if(id==='ovLive'){ if(typeof liveTimer!=='undefined'){ clearInterval(liveTimer); } if(typeof skipRest==='function') skipRest(); }
+  if(typeof ikIslandKick==='function') ikIslandKick();
 }
 // Fenêtre créée à la volée (confirmation, saisie) : même sortie animée que les autres.
 // Ses identifiants tombent tout de suite — une nouvelle fenêtre ouverte pendant la sortie
@@ -5410,6 +5360,7 @@ function nav(s){
   markScreenSeen('s-'+s);
   ikhSync(); ikhCompact();
   ikEnterScreen(s);
+  ikIslandKick();
 }
 /* Marque un écran comme "déjà vu" une fois ses animations d'entrée jouées,
    pour qu'elles ne se répètent plus à chaque retour sur l'onglet. */
@@ -5430,6 +5381,8 @@ $$('.nb').forEach(b=>b.onclick=()=>nav(b.dataset.s));
 const GLASS_LIT='.card,.grp-card,.kchart-card,.kduo-card,.hv7-day,.sp-plan,.list-row,.favtile,.hv7-ktile,.ktile,.sess,.pb-card,.mus-card,.exg-card';
 const GLASS_JELLY='.btn,.seg-btn,.favtile,.hv7-icon-btn,.hv7-people,.chbtn,.tb-gear,.pill,.x';
 function glassMax(){ return document.documentElement.getAttribute('data-glass')==='max' && !ikMotionOff(); }
+function glassClay(){ return document.documentElement.getAttribute('data-glass')==='clay' && !ikMotionOff(); }
+function glassJellyOn(){ return glassMax() || glassClay(); }
 (function(){
   let cur=null;
   const off=()=>{ if(!cur) return; const l=cur; cur=null; l.classList.add('out'); setTimeout(()=>l.remove(),520); };
@@ -5449,9 +5402,12 @@ function glassMax(){ return document.documentElement.getAttribute('data-glass')=
   },{passive:true});
   ['pointerup','pointercancel'].forEach(ev=>document.addEventListener(ev,off,{passive:true}));
   document.addEventListener('pointerup',e=>{
-    if(!glassMax() || !e.target || !e.target.closest) return; const b=e.target.closest(GLASS_JELLY); if(!b) return;
-    b.classList.remove('ik-jelly'); void b.offsetWidth; b.classList.add('ik-jelly');
-    clearTimeout(b._jt); b._jt=setTimeout(()=>b.classList.remove('ik-jelly'),560);
+    if(!glassJellyOn() || !e.target || !e.target.closest) return;
+    // pâte à modeler : les cartes rebondissent aussi, plus doucement (.ik-clay)
+    const b=e.target.closest(GLASS_JELLY), c=!b && glassClay() ? e.target.closest(GLASS_LIT) : null, el=b||c; if(!el) return;
+    const cls=b?'ik-jelly':'ik-clay';
+    el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls);
+    clearTimeout(el._jt); el._jt=setTimeout(()=>el.classList.remove(cls),620);
   },{passive:true});
   // reflets vivants : inclinaison si autorisée, sinon défilement
   let raf=0, tx=0, ty=0, lastTilt=0;
@@ -5572,12 +5528,15 @@ function askGlassTilt(){
 /* ---------- FENÊTRES DU BAS : glisser vers le bas / toucher le fond pour fermer (v107) ----------
    Le geste part de la poignée ou de l'en-tête (72 px du haut) : dans le contenu, le
    doigt fait défiler, règle une roue ou un curseur — jamais une fermeture surprise.
-   Formulaires (profil, programme, réglage d'exercice) et séance en cours : fermeture
-   volontaire uniquement, pour ne jamais perdre une saisie. */
+   Formulaires (profil, programme, réglage d'exercice) : fermeture volontaire uniquement,
+   pour ne jamais perdre une saisie. Séance en cours et repos (V3.4.0) : le même geste les
+   RÉDUIT dans l'îlot d'activité — rien ne s'arrête, rien ne se perd. */
 (function(){
   const FERMABLES=new Set(['ovSettings','ovBadges','ovFullPlan','ovPicker']);
+  const REDUCTIBLES={ovLive:()=>minimizeLive(),restOv:()=>minimizeRest()};
   let s=null;
-  const fermable=ov=>ov && ov.id && FERMABLES.has(ov.id) && ov.classList.contains('on');
+  const fermable=ov=>ov && ov.id && (FERMABLES.has(ov.id)||REDUCTIBLES[ov.id]) && ov.classList.contains('on');
+  const ferme=id=>{ if(REDUCTIBLES[id]) REDUCTIBLES[id](); else closeOv(id); };
   document.addEventListener('touchstart',e=>{
     s=null;
     const card=e.target.closest('.ov-card'); if(!card) return;
@@ -5602,13 +5561,13 @@ function askGlassTilt(){
     if(!s) return; const st=s; s=null; if(!st.on) return;
     st.ov.classList.remove('sheet-drag');
     const v=st.dy/Math.max(1,performance.now()-st.t0);
-    if(st.dy>110 || (st.dy>40 && v>0.5)){ closeOv(st.ov.id); return; }
+    if(st.dy>110 || (st.dy>40 && v>0.5)){ ferme(st.ov.id); return; }
     st.card.style.transition='transform .25s var(--ease-out)'; st.card.style.transform='';
     setTimeout(()=>{ st.card.style.transition=''; },270);
   };
   document.addEventListener('touchend',fin); document.addEventListener('touchcancel',fin);
   // toucher le fond sombre autour de la fenêtre
-  document.addEventListener('click',e=>{ const ov=e.target; if(ov && ov.classList && ov.classList.contains('ov') && fermable(ov)) closeOv(ov.id); });
+  document.addEventListener('click',e=>{ const ov=e.target; if(ov && ov.classList && ov.classList.contains('ov') && fermable(ov)) ferme(ov.id); });
 })();
 
 /* ---------- PULL-TO-REFRESH sur #scroll ----------
@@ -6049,6 +6008,7 @@ function initApp(){
   _lastDayKey=todayKey(); // repere pour la detection de changement de jour (checkDayRollover)
   refreshXP();
   nav('home');
+  celebrateBday(); // jour d'anniversaire : confettis et mélodie, une fois par an
   scheduleMotionSettle(1400);
   // Reprise automatique d'une séance muscu interrompue
   setTimeout(maybeResumeLive,600);
@@ -6790,7 +6750,8 @@ function applyTheme(){
   document.documentElement.setAttribute('data-mode',mode);
   document.documentElement.setAttribute('data-accent',P.theme||'blue');
   document.documentElement.classList.toggle('easy-mode',!!P.easyMode);
-  document.documentElement.setAttribute('data-glass',P.glass||'std'); // effet verre : flat / std / max
+  document.documentElement.setAttribute('data-glass',P.glass||'std'); // matière : flat / std / max / clay
+  document.documentElement.toggleAttribute('data-bday', typeof bdayThemeOn==='function' && bdayThemeOn());
   if(typeof ikhCompact==='function') ikhCompact();
   const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.content=(P.easyMode?(mode==='light'?'#FFFFFF':'#000000'):(mode==='light'?'#F2F4F8':'#0A0D12'));
   // Miroir en clair (mode/accent/easyMode ne sont pas des données sensibles) pour que
@@ -6798,10 +6759,29 @@ function applyTheme(){
   // paint au prochain chargement, sans attendre le déchiffrement async du profil.
   try{ localStorage.setItem('ik_theme_prefs', JSON.stringify({mode, accent:P.theme||'blue', easyMode:!!P.easyMode, glass:P.glass||'std'})); }catch(e){}
 }
-/* Couleur d'accent de l'app : bleu (défaut) / vert militaire chromé / marron boisé chromé */
-const ACCENTS=[{key:'blue',name:'accentBlue'},{key:'red',name:'accentRed'},{key:'green',name:'accentGreen'},{key:'brown',name:'accentBrown'},{key:'yellow',name:'accentYellow'},{key:'carbon',name:'accentCarbon'}];
+/* Couleurs de l'app (V3.4.0 : quinze, rangées en familles de variantes). Chacune a son
+   fond teinté en sombre et son accent assombri en clair : voir app.css, « COULEURS ». */
+const ACCENTS=[
+  {key:'blue',name:'accentBlue',fam:'cool'},{key:'ocean',name:'accentOcean',fam:'cool'},{key:'violet',name:'accentViolet',fam:'cool'},{key:'lavender',name:'accentLavender',fam:'cool'},
+  {key:'pink',name:'accentPink',fam:'warm'},{key:'sakura',name:'accentSakura',fam:'warm'},{key:'red',name:'accentRed',fam:'warm'},{key:'orange',name:'accentOrange',fam:'warm'},{key:'yellow',name:'accentYellow',fam:'warm'},
+  {key:'green',name:'accentGreen',fam:'nature'},{key:'mint',name:'accentMint',fam:'nature'},{key:'teal',name:'accentTeal',fam:'nature'},{key:'brown',name:'accentBrown',fam:'nature'},
+  {key:'carbon',name:'accentCarbon',fam:'neutral'},{key:'mono',name:'accentMono',fam:'neutral'},
+  {key:'clay',name:'accentClay',fam:'special'}];
+const ACCENT_FAMS=[['cool','colorFamCool'],['warm','colorFamWarm'],['nature','colorFamNature'],['neutral','colorFamNeutral'],['special','colorFamSpecial']];
+function accentName(k){ const a=ACCENTS.find(x=>x.key===k); return a?t(a.name):t('accentBlue'); }
+// Profil › Couleur de l'app : une fiche par familles, chaque variante avec son nom.
+function pfColorHTML(){
+  const cur=P.theme||'blue';
+  return ACCENT_FAMS.map(([f,lab])=>'<div class="acc-fam"><div class="lab">'+t(lab)+'</div><div class="acc-grid">'+
+    ACCENTS.filter(a=>a.fam===f).map(a=>'<div class="acc-sw'+(cur===a.key?' on':'')+'" role="button" onclick="setAccent(\''+a.key+'\')"><i class="accent-dot'+(cur===a.key?' on':'')+'" data-a="'+a.key+'"></i><span>'+t(a.name)+'</span></div>').join('')+
+    '</div></div>').join('');
+}
 function setAccent(c){
-  P.theme=c; saveAll(); applyTheme();
+  P.theme=c;
+  // la couleur « pâte à modeler » vient avec sa matière (modifiable ensuite dans Apparence)
+  const pate=c==='clay' && P.glass!=='clay'; if(pate) P.glass='clay';
+  saveAll(); applyTheme();
+  if(pate){ if($('#s-profil')&&$('#s-profil').classList.contains('on')) renderProfile(); refreshPfSheet(); sfx&&sfx('tap'); toast(t('clayOn')); return; }
   if($('#s-profil')&&$('#s-profil').classList.contains('on')) renderProfile();
   refreshPfSheet();
   sfx&&sfx('tap');
@@ -8833,6 +8813,7 @@ function renderHome(){
   // Pas de grande illustration ici : le logo IKORUN est déjà en tête de la bannière (27/09).
   html+='<div class="ikh ikh-home">'+homeHdr+
     '<div class="hv7-greet"><h1>'+t('greet')+' '+escHtml(first||t('you'))+'</h1><p>'+sub+'</p></div></div>';
+  html+=bdayCardHTML();
   html+=notifPermBubbleHTML();
   html+=homePrayerCardHTML();
 
@@ -8925,6 +8906,7 @@ function renderHomeSimple(ps,sessW,sessTarget,kmW,first){
   '</div>';
   h+=homeStreakBadge();
   h+='<div class="ik-greet"><h1>'+t('greet')+' '+escHtml(first||t('you'))+'</h1></div>';
+  h+=bdayCardHTML();
   h+=notifPermBubbleHTML();
   h+=homePrayerCardHTML();
 
@@ -10131,11 +10113,21 @@ function startExDemoAuto(g){
 
 /* ---------- LIVE MUSCU SESSION ---------- */
 let LIVE=null,liveTimer=null,restTimer=null,liveOpenEx=0,_finishingLive=false;
+// Réduite dans l'îlot, une séance laisse désormais l'app utilisable : sans ce garde, lancer
+// un autre programme écrasait la séance en cours (et toute sa progression).
+function liveBusy(){
+  if(!LIVE || _finishingLive) return false;
+  customConfirm(t('liveAlreadyRunning'),()=>expandLive(),{title:t('sessionInProgress'),yesLabel:t('backToSessionLab'),noLabel:t('cancel')});
+  return true;
+}
 function startLive(id,startIdx){
+  if(liveBusy()) return;
   const p=allProgs().find(x=>x.id===id); if(!p) return;
   _finishingLive=false; // nouvelle séance : la garde de ré-entrée de finishLive repart à zéro
   if(_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; }
-  closeOv('ovProg');
+  // Sans sortie animée : deux fenêtres en mouvement à la fois (le programme qui part, la
+  // séance qui monte) faisaient accrocher le démarrage.
+  closeOv('ovProg'); { const pr=$('#ovProg'); if(pr){ clearTimeout(pr._leaveT); pr.classList.remove('ov-leaving'); } }
   // On clone le tableau d'exercices (pas les objets exercice eux-mêmes) : ajouter/retirer un exo
   // en pleine séance ne modifie donc que cette séance, jamais la routine enregistrée.
   LIVE={prog:{...p,ex:p.ex.slice()},idx:startIdx||0,start:Date.now(),
@@ -10146,6 +10138,7 @@ function startLive(id,startIdx){
   clearInterval(liveTimer);
   liveTimer=setInterval(updateLiveTimer,500);
   sfx('start'); startBgActivity(tp('sessionColonName',p.name),'muscu');
+  ikIslandKick();
 }
 function updateLiveTimer(){
   if(!LIVE) return;
@@ -10173,7 +10166,9 @@ function renderLive(){
   // Le bouton minuteur était rendu vide (aucun contenu dans le span) : il occupait
   // sa place sans rien afficher, donc invisible et introuvable. Les deux actions
   // secondaires ont maintenant leur pictogramme et leur libellé accessible.
+  // Réduire (V3.4.0) : la séance continue dans l'îlot d'activité et l'app reste utilisable.
   let h='<div class="live-top">'+
+    '<button class="live-ic ik-min-btn" onclick="minimizeLive()" aria-label="'+t('minimizeLab')+'" title="'+t('minimizeLab')+'">'+ICN('chevronD',19)+'</button>'+
     '<button class="live-ic" onclick="pauseLive()" aria-label="'+t('pauseLab')+'" title="'+t('pauseLab')+'">'+ICN('pause',17)+'</button>'+
     '<div style="flex:1"></div>'+
     '<button class="live-ic" onclick="openRest(90)" aria-label="'+t('restTimerBtn')+'" title="'+t('restTimerBtn')+'">'+ICN('stopwatch',17)+'</button>'+
@@ -10204,27 +10199,11 @@ function renderLive(){
       '<div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+(allDone?t('exerciseDoneLab'):tp('setsDoneCount',st.sets.filter(Boolean).length,st.sets.length))+'</div></div>'+
       '<span id="exChev'+i+'" style="color:var(--muted);font-size:14px;padding:6px 4px;transition:transform .25s ease;transform:rotate('+(open?'180':'0')+'deg)">⌄</span>'+
       '<span onclick="event.stopPropagation();openLiveExOptions('+i+')" style="color:var(--muted);font-size:20px;padding:4px 4px 4px 8px;cursor:pointer;letter-spacing:1px">⋯</span></div>';
-    // Contenu repliable : notes, repos, tableau des séries
-    h+='<div id="exBody'+i+'" style="max-height:'+(open?'1400px':'0')+'px;opacity:'+(open?'1':'0')+';overflow:hidden;transition:max-height .32s ease,opacity .22s ease,margin-top .32s ease;margin-top:'+(open?'12':'0')+'px">';
-    // Affichait « Désactivé » quand l'exercice n'avait pas de repos défini, alors que
-    // toggleSet() lance bien 90 s dans ce cas (et changeRest ne propose que 15-300 s) :
-    // l'étiquette montre désormais la durée réellement appliquée (audit 24/09).
-    h+='<div class="live-rest" onclick="changeRest('+i+')">'+ICN('stopwatch',15)+'<span>'+tp('restTimerLab',fmtRest(e.rest||90))+'</span></div>';
-    h+='<div style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:8px;text-align:center">'+
-      '<div>'+t('setCol')+'</div><div>'+t('prevCol')+'</div><div>'+t('kgCol')+'</div><div>'+t('repsCol')+'</div><div></div></div>';
-    st.log.forEach((s,j)=>{
-      h+='<div class="set-swipe-wrap" data-i="'+i+'" data-j="'+j+'">'+
-        '<div class="set-swipe-action left" onclick="deleteLiveSet('+i+','+j+')"><span>'+ICN('trash',16)+'</span></div>'+
-        '<div class="set-swipe-action right" onclick="deleteLiveSet('+i+','+j+')"><span>'+ICN('trash',16)+'</span></div>'+
-        '<div class="set-swipe-row" data-i="'+i+'" data-j="'+j+'" style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;align-items:center">'+
-        '<div style="text-align:center;font-weight:700;color:var(--muted)">'+(j+1)+'</div>'+
-        '<div style="text-align:center;font-size:11px;color:var(--dim)">'+(e.weight||20)+'kg×'+(parseInt(e.reps)||10)+'</div>'+
-        '<input class="setcell" type="number" inputmode="decimal" value="'+s.kg+'" onchange="setLog('+i+','+j+',\'kg\',this.value)">'+
-        '<input class="setcell" type="number" inputmode="numeric" value="'+s.reps+'" onchange="setLog('+i+','+j+',\'reps\',this.value)">'+
-        '<div class="setcheck'+(s.done?' on':'')+'" onclick="toggleSet('+i+','+j+')">'+ICN('check',16)+'</div></div>'+
-        '</div>'; // fin .set-swipe-wrap
-    });
-    h+='<button class="btn ghost sm" style="margin-top:4px" onclick="addLiveSet('+i+')">'+t('addSetBtn')+'</button>';
+    // Contenu repliable : notes, repos, tableau des séries. Seul l'exercice ouvert est
+    // construit (V3.4.0) : les autres restent vides jusqu'à leur ouverture (voir
+    // toggleLiveEx). Toute la séance faisait ~800 éléments à recalculer à chaque série
+    // cochée — d'où l'ouverture et les coches qui accrochaient sur téléphone.
+    h+='<div id="exBody'+i+'"'+(open?'':' data-lazy="1"')+' style="max-height:'+(open?'1400px':'0px')+';opacity:'+(open?'1':'0')+';overflow:hidden;transition:max-height .32s ease,opacity .22s ease,margin-top .32s ease;margin-top:'+(open?'12':'0')+'px">'+(open?liveExBodyHTML(i):'');
     h+='</div>'; // fin exBody
     h+='</div>'; // fin .ex-swipe-card
     h+='</div>'; // fin .ex-swipe-wrap
@@ -10236,6 +10215,30 @@ function renderLive(){
     if(bar){ requestAnimationFrame(()=>{ bar.style.width=now+'%'; }); if(now===100 && LIVE._progPrev!==100) ikShock(bar.parentElement); }
     LIVE._progPrev=now; }
   initLiveSwipe();
+}
+// Tableau des séries d'un exercice de la séance en cours (repos, en-têtes, lignes, « + série »).
+function liveExBodyHTML(i){
+  const e=LIVE.prog.ex[i], st=LIVE.state[i];
+  // Affichait « Désactivé » quand l'exercice n'avait pas de repos défini, alors que
+  // toggleSet() lance bien 90 s dans ce cas (et changeRest ne propose que 15-300 s) :
+  // l'étiquette montre désormais la durée réellement appliquée (audit 24/09).
+  let h='<div class="live-rest" onclick="changeRest('+i+')">'+ICN('stopwatch',15)+'<span>'+tp('restTimerLab',fmtRest(e.rest||90))+'</span></div>';
+  h+='<div style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:8px;text-align:center">'+
+    '<div>'+t('setCol')+'</div><div>'+t('prevCol')+'</div><div>'+t('kgCol')+'</div><div>'+t('repsCol')+'</div><div></div></div>';
+  st.log.forEach((s,j)=>{
+    h+='<div class="set-swipe-wrap" data-i="'+i+'" data-j="'+j+'">'+
+      '<div class="set-swipe-action left" onclick="deleteLiveSet('+i+','+j+')"><span>'+ICN('trash',16)+'</span></div>'+
+      '<div class="set-swipe-action right" onclick="deleteLiveSet('+i+','+j+')"><span>'+ICN('trash',16)+'</span></div>'+
+      '<div class="set-swipe-row" data-i="'+i+'" data-j="'+j+'" style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;align-items:center">'+
+      '<div style="text-align:center;font-weight:700;color:var(--muted)">'+(j+1)+'</div>'+
+      '<div style="text-align:center;font-size:11px;color:var(--dim)">'+(e.weight||20)+'kg×'+(parseInt(e.reps)||10)+'</div>'+
+      '<input class="setcell" type="number" inputmode="decimal" value="'+s.kg+'" onchange="setLog('+i+','+j+',\'kg\',this.value)">'+
+      '<input class="setcell" type="number" inputmode="numeric" value="'+s.reps+'" onchange="setLog('+i+','+j+',\'reps\',this.value)">'+
+      '<div class="setcheck'+(s.done?' on':'')+'" onclick="toggleSet('+i+','+j+')">'+ICN('check',16)+'</div></div>'+
+      '</div>'; // fin .set-swipe-wrap
+  });
+  h+='<button class="btn ghost sm" style="margin-top:4px" onclick="addLiveSet('+i+')">'+t('addSetBtn')+'</button>';
+  return h;
 }
 /* ---------- LIVE : swipe gauche/droite sur une carte exercice pour révéler "Supprimer" ---------- */
 const SWIPE_W_EX=88, SWIPE_W_SET=64; // largeurs de la zone rouge révélée (carte exercice / ligne série)
@@ -10402,6 +10405,7 @@ function toggleLiveEx(i){
   }
   const b=$('#exBody'+i);
   if(b){
+    if(willOpen && b.dataset.lazy){ b.innerHTML=liveExBodyHTML(i); delete b.dataset.lazy; void b.offsetHeight; }
     if(willOpen){ b.style.maxHeight='1400px'; b.style.opacity='1'; b.style.marginTop='12px'; }
     else { b.style.maxHeight='0px'; b.style.opacity='0'; b.style.marginTop='0px'; }
   }
@@ -10487,6 +10491,7 @@ function pauseLive(){
   stopBgActivity(); renderSport();
 }
 function resumeLive(){
+  if(liveBusy()) return;
   _finishingLive=false;
   const saved=DB.load('live_paused'); if(!saved) return;
   LIVE=saved; // on garde saved.prog tel quel (avec les exos ajoutés/retirés pendant la séance),
@@ -10529,24 +10534,33 @@ function openRest(secs){
   clearInterval(restTimer);
   const prev=$('#restOv'); if(prev) prev.remove();
   let sec=secs||90; const total=sec; const endAt=Date.now()+sec*1000;
+  _rest={endAt,total,extra:0};
   const ov=document.createElement('div'); ov.className='ov on'; ov.id='restOv'; ov.style.zIndex=topZ();
   ov.innerHTML='<div class="ov-card" style="text-align:center"><div class="card-t" style="justify-content:center">'+t('restTitle')+'</div><div class="ring-wrap run" style="width:170px;height:170px;margin:10px auto"><span id="restRing"></span>'+orbHTML('restOrb',1,'var(--e)')+'<div class="ring-c"><div class="big mono" id="restNum" style="font-size:38px">'+sec+'</div><div class="sm">'+t('secLab')+'</div></div></div><div class="row" style="gap:10px"><button class="btn ghost" onclick="addRest(30)">'+t('add30sLab')+'</button><button class="btn" onclick="skipRest()">'+t('skipLab')+'</button></div></div>';
   document.body.appendChild(ov);
-  let extra=0;
+  const R=_rest;
   function tick(){
+    if(_rest!==R) return;
+    const extra=R.extra;
     sec=Math.max(0,Math.round((endAt+extra*1000-Date.now())/1000));
     const rr=$('#restRing'), rc=sec<=5?'var(--warn)':'var(--e)'; ringSet(rr,170,sec/(total+extra)*100,12,rc); orbSet('restOrb',sec/(total+extra),rc);
     if(sec>0 && sec<=3 && sec!==window._restLastBuzz){ window._restLastBuzz=sec; try{ if(navigator.vibrate) navigator.vibrate(28); }catch(e){} }
     const rn=$('#restNum'); if(rn){ if(rn.textContent!==String(sec) && sec>0 && sec<=5) ikBump(rn); rn.textContent=sec; }
     if(rr&&rr.parentElement) rr.parentElement.classList.toggle('ik-urgent',sec>0&&sec<=5);
-    if(sec<=0){ sfx('tick'); try{ if(navigator.vibrate) navigator.vibrate([90,60,140]); }catch(e){} skipRest(); toast(t('restGoToast')); return; }
+    if(sec<=0){ sfx('go'); try{ if(navigator.vibrate) navigator.vibrate([90,60,140]); }catch(e){}
+      const cache=!(ov.classList.contains('on')); skipRest();
+      if(cache) ikIslandFlash(t('restGoToast'),'var(--ok)'); else toast(t('restGoToast'));
+      return; }
   }
   tick();
   restTimer=setInterval(tick,250);
-  window._restAdd=(s)=>{ extra+=s; };
+  ikIslandKick();
 }
-function addRest(s){ if(window._restAdd)window._restAdd(s); }
-function skipRest(){ clearInterval(restTimer); const o=$('#restOv'); if(o)o.remove(); }
+// Repos en cours ({endAt,total,extra}) : lu par l'îlot d'activité, qui le montre quand la
+// fenêtre du repos est réduite (ou quand on navigue ailleurs dans l'app).
+let _rest=null;
+function addRest(s){ if(_rest){ _rest.extra+=s; ikIslandKick(); } }
+function skipRest(){ clearInterval(restTimer); _rest=null; const o=$('#restOv'); if(o)o.remove(); ikIslandKick(); }
 function confirmCloseLive(){
   // Popup "maison" à la place de confirm() natif, qui ne fonctionne pas dans une app ajoutée à l'écran d'accueil (iOS)
   const old=$('#cancelLiveOv'); if(old) old.remove();
@@ -11352,6 +11366,10 @@ const ICONS={
   bolt:'<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>',
   medal:'<circle cx="12" cy="15" r="6"/><path d="M9 10 6 3M15 10l3-7M9.5 13.5 12 16l2.5-2.5"/>',
   chevronR:'<path d="M9 5l7 7-7 7"/>',
+  chevronD:'<path d="M5 9l7 7 7-7"/>',
+  cake:'<path d="M4 20h16v-7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7z"/><path d="M4 15.5c1.3 0 1.3 1 2.7 1s1.3-1 2.6-1 1.4 1 2.7 1 1.3-1 2.7-1 1.3 1 2.6 1 1.4-1 2.7-1"/><path d="M8 11V8M12 11V8M16 11V8"/><path d="M8 5.5c0-.8.6-1.5.6-1.5S9 4.7 9 5.5a.5.5 0 0 1-1 0zM12 5.5c0-.8.6-1.5.6-1.5s.4.7.4 1.5a.5.5 0 0 1-1 0zM16 5.5c0-.8.6-1.5.6-1.5s.4.7.4 1.5a.5.5 0 0 1-1 0z"/>',
+  chevronU:'<path d="M5 15l7-7 7 7"/>',
+  skip:'<path d="M5 5l9 7-9 7V5z"/><path d="M18 5v14"/>',
   moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/>',
   edit:'<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
   pin:'<path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/>',
@@ -11547,7 +11565,7 @@ let toolSearch='';
 function recentTools(){ return PREFS.recentTools||[]; }
 function pushRecent(k){ let r=recentTools().filter(x=>x!==k); r.unshift(k); PREFS.recentTools=r.slice(0,4); saveAll(); }
 function renderOutils(){
-  TOOLS=TOOLS_DEF();
+  TOOLS=TOOLS_DEF(); ikIslandKick();
   let h='';
   if(outilsTab==='home'){ h=outilsHome(); swapIn('s-outils',h); bindToolSearch(); return; }
   if(outilsTab==='_timer'){ renderOutilsTimer(); return; }
@@ -11940,10 +11958,10 @@ function renderPomodoro(){
 function pomoToggle(){
   if(pomoState.running){
     clearInterval(pomoState.iv); pomoState.left=Math.max(0,Math.round((pomoState.endAt-Date.now())/1000));
-    pomoState.running=false; pomoState.endAt=null; sfx('stop'); renderPomodoro(); return;
+    pomoState.running=false; pomoState.endAt=null; sfx('stop'); renderPomodoroIfVisible(); ikIslandKick(); return;
   }
   if(pomoState.left<=0) pomoState.left=pomoLen(pomoState.phase);
-  pomoState.running=true; pomoState.endAt=Date.now()+pomoState.left*1000; sfx('start'); renderPomodoro();
+  pomoState.running=true; pomoState.endAt=Date.now()+pomoState.left*1000; sfx('start'); renderPomodoroIfVisible(); ikIslandKick();
   let affiche=-1;
   clearInterval(pomoState.iv);
   pomoState.iv=setInterval(()=>{
@@ -11960,7 +11978,10 @@ function pomoToggle(){
       pomoState.left=pomoLen(pomoState.phase); if(outilsTab==='pomodoro' && $('#outBody')) renderPomodoro(); }
   },250);
 }
-function pomoReset(){ clearInterval(pomoState.iv); pomoState={phase:'work',left:25*60,running:false,iv:null,count:pomoState.count,endAt:null}; renderPomodoro(); }
+function pomoReset(){ clearInterval(pomoState.iv); pomoState={phase:'work',left:25*60,running:false,iv:null,count:pomoState.count,endAt:null}; renderPomodoroIfVisible(); ikIslandKick(); }
+// Le Pomodoro se commande aussi depuis l'îlot d'activité, alors qu'un autre outil peut être
+// affiché : redessiner sans vérifier remplaçait le contenu de cet outil par le Pomodoro.
+function renderPomodoroIfVisible(){ if(outilsTab==='pomodoro' && $('#outBody')) renderPomodoro(); }
 function renderNotesTool(){
   const notes=PREFS.quickNotes||'';
   let h='<div class="card"><div class="card-t">'+t('quickNotesTitle')+'</div><textarea class="inp" rows="12" id="qnotes" placeholder="'+t('notesPlaceholder')+'" oninput="PREFS.quickNotes=this.value;saveSoon()" onblur="flushSaveSoon()">'+escHtml(notes)+'</textarea><div style="font-size:11px;color:var(--dim);margin-top:8px">'+t('autoSaveLocal')+'</div></div>';
@@ -12137,8 +12158,8 @@ function renderChrono(){
    écran (voir le relais bgActivityAction). Redessiner sans vérifier écrasait l'outil
    affiché à ce moment-là, ou levait une erreur si #outBody n'existait plus. */
 function renderChronoIfVisible(){ if(outilsTab!=='chrono' || !$('#outBody')) return; renderChrono(); }
-function chronoStop(){ chrono.running=false; chrono.elapsed+=Date.now()-chrono.start; cancelAnimationFrame(chrono.raf); sfx('stop'); stopBgActivity(); renderChronoIfVisible(); }
-function chronoReset(){ chrono={running:false,start:0,elapsed:0,laps:[],raf:null}; renderChronoIfVisible(); }
+function chronoStop(){ if(chrono.running){ chrono.running=false; chrono.elapsed+=Date.now()-chrono.start; } cancelAnimationFrame(chrono.raf); sfx('stop'); stopBgActivity(); renderChronoIfVisible(); ikIslandKick(); }
+function chronoReset(){ cancelAnimationFrame(chrono.raf); chrono={running:false,start:0,elapsed:0,laps:[],raf:null}; renderChronoIfVisible(); ikIslandKick(); }
 function exportLaps(){
   let txt='IKORUN Chronomètre\n'; chrono.laps.forEach((l,i)=>txt+=t('lapBtn')+' '+(i+1)+' : '+fmtChrono(l)+'\n');
   if(navigator.share) navigator.share({title:'Chrono IKORUN',text:txt}); else { navigator.clipboard&&navigator.clipboard.writeText(txt); toast(t('lapsCopied')); }
@@ -12147,7 +12168,7 @@ function fmtChrono(ms){ const t=Math.floor(ms); const m=Math.floor(t/60000),s=Ma
 function chronoToggle(){
   if(chrono.running){ chrono.running=false; chrono.elapsed+=Date.now()-chrono.start; cancelAnimationFrame(chrono.raf); sfx('stop'); stopBgActivity(); }
   else { chrono.running=true; chrono.start=Date.now(); chronoTick(); sfx('start'); startBgActivity(t('toolChronoName'),'chrono'); }
-  renderChronoIfVisible();
+  renderChronoIfVisible(); ikIslandKick();
   // départ : le cadran s'embrase (les graduations s'allument en vague)
   if(chrono.running && !ikMotionOff()){ const f=document.querySelector('.ch-face'); if(f){ f.classList.add('ignite'); setTimeout(()=>f.classList.remove('ignite'),1100); } }
 }
@@ -12219,10 +12240,10 @@ setWheelVal=function(key,val){ if(key==='TM'){timer.m=val;timer.total=timer.left
 function addTimer(s){ timer.left+=s; timer.total=Math.max(timer.total,timer.left); const n=$('#tmNum'); if(n)n.textContent=fmtMS(timer.left); }
 function timerToggle(){
   stopAlarm();
-  if(timer.running){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; stopBgActivity(); renderTimerIfVisible(); return; }
+  if(timer.running){ clearInterval(timer.iv); timer.left=Math.max(0,Math.round((timer.endAt-Date.now())/1000)); timer.running=false; timer.endAt=null; stopBgActivity(); renderTimerIfVisible(); ikIslandKick(); return; }
   if(timer.left<=0){ timer.left=timer.total=timer.m*60+timer.s; }
   if(timer.left<=0){ toast(t('setDuration')); return; }
-  timer.running=true; timer.endAt=Date.now()+timer.left*1000; sfx('start'); startBgActivity(t('quickTimer'),'timer'); renderTimerIfVisible();
+  timer.running=true; timer.endAt=Date.now()+timer.left*1000; sfx('start'); startBgActivity(t('quickTimer'),'timer'); renderTimerIfVisible(); ikIslandKick();
   timer.iv=setInterval(()=>{
     // basé sur l'horloge → reste exact même en arrière-plan
     timer.left=Math.max(0,Math.round((timer.endAt-Date.now())/1000));
@@ -12237,7 +12258,192 @@ function timerToggle(){
     if(timer.left<=0){ const w=r&&r.parentElement; clearInterval(timer.iv); timer.running=false; timer.endAt=null; burst(); stopBgActivity(); startAlarm(t('timerDoneTitle'),t('timeUpMsg')); renderTimerIfVisible(); ikShock(document.querySelector('#tmRing')&&document.querySelector('#tmRing').parentElement||w); }
   },250);
 }
-function resetTimer(){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; stopAlarm(); stopBgActivity(); timer.left=timer.total=timer.m*60+timer.s||300; renderTimerIfVisible(); }
+function resetTimer(){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; stopAlarm(); stopBgActivity(); timer.left=timer.total=timer.m*60+timer.s||300; renderTimerIfVisible(); ikIslandKick(); }
+
+/* ---------- ANNIVERSAIRE (V3.4.0) ----------
+   Le jour J (date de naissance du profil ; un 29 février se fête le 28 les années non
+   bissextiles), l'app se met en fête : couleurs rose et or, confettis qui tombent
+   doucement en fond, une carte de vœux sur l'Accueil, et à la première ouverture de la
+   journée un feu de confettis sur « Joyeux anniversaire » au marimba. « Revenir à mes
+   couleurs » coupe la fête pour la journée ; Profil › Apparence la désactive pour de bon. */
+function isBirthdayToday(){
+  if(!P || !P.bday) return false;
+  const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(P.bday)); if(!m) return false;
+  const now=new Date(), y=now.getFullYear(); let mo=+m[2], d=+m[3];
+  if(mo===2 && d===29 && !((y%4===0 && y%100!==0) || y%400===0)) d=28;
+  return now.getMonth()+1===mo && now.getDate()===d;
+}
+function bdayThemeOn(){ return isBirthdayToday() && P.bdayTheme!==false && P.bdayOff!==todayKey(); }
+function bdayCardHTML(){
+  if(!isBirthdayToday() || P.bdayTheme===false) return '';
+  const first=escHtml((P.name||'').split(' ')[0]||t('you')), on=bdayThemeOn(), a=age();
+  return '<div class="bday-card" role="status"><i class="bday-cake" aria-hidden="true">'+ICN('cake',26)+'</i>'+
+    '<div class="bday-txt"><b>'+tp('bdayTitle',first)+'</b><span>'+(typeof a==='number'?tp('bdayAge',a)+' · ':'')+t('bdayWish')+'</span></div>'+
+    '<button type="button" class="bday-btn" onclick="event.stopPropagation();toggleBdayToday()">'+t(on?'bdayOffBtn':'bdayOnBtn')+'</button></div>';
+}
+function toggleBdayToday(){
+  P.bdayOff=bdayThemeOn()?todayKey():null; saveAll(); applyTheme(); renderHome();
+  if(bdayThemeOn()) celebrateBday(true);
+}
+function celebrateBday(force){
+  if(!bdayThemeOn()) return;
+  const k='ik_bday_'+new Date().getFullYear();
+  try{ if(!force && localStorage.getItem(k)) return; localStorage.setItem(k,'1'); }catch(e){}
+  setTimeout(()=>{ try{ if(!ikMotionOff()) burst(); sfx('bday'); if(navigator.vibrate) navigator.vibrate([30,60,30,60,80]); }catch(e){} },700);
+}
+/* ---------- ÎLOT D'ACTIVITÉ (V3.4.0) ----------
+   Une séance, un repos, un chrono, un minuteur ou un Pomodoro en cours restent visibles
+   partout, dans une capsule posée au-dessus de la barre du bas : on continue d'utiliser
+   l'app pendant qu'ils tournent. Deux activités à la fois : la plus urgente occupe la
+   capsule, l'autre une bulle à côté (comme l'îlot de l'iPhone). Toucher la capsule ramène
+   à l'écran de l'activité ; ses boutons agissent sur place (pause, +30 s, passer).
+   Une activité n'y figure pas quand son propre écran est déjà affiché.
+   (Une vraie « Live Activity » sur l'écran verrouillé reste réservée aux apps natives :
+   voir showBgActivityNotif, qui garde sa notification au démarrage.) */
+function ikFmtClock(ms){ const d=new Date(ms); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+function liveNextExName(){
+  if(!LIVE||!LIVE.state) return '';
+  const i=LIVE.state.findIndex(st=>st.sets.some(x=>!x));
+  return i>=0 && LIVE.prog.ex[i] ? LIVE.prog.ex[i].name : '';
+}
+function ikScrIs(tab){ return document.body.dataset.scr==='outils' && outilsTab===tab; }
+function ikActivities(){
+  const now=Date.now(), out=[];
+  if(_rest){
+    const left=Math.max(0,(_rest.endAt+_rest.extra*1000-now)/1000), tot=_rest.total+_rest.extra, nx=liveNextExName();
+    out.push({k:'rest',icon:'pause',title:t('restTitle'),sub:nx?tp('islandNext',nx):'',time:fmtMS(Math.ceil(left)),f:tot?left/tot:0,
+      c:left<=5?'var(--warn)':'var(--e2)',urgent:left>0&&left<=5,acts:'rest',
+      mine:()=>{ const o=$('#restOv'); return !!(o&&o.classList.contains('on')); }});
+  }
+  const tLeft=timer.running&&timer.endAt?Math.max(0,Math.ceil((timer.endAt-now)/1000)):timer.left;
+  if(timer.running || (tLeft>0 && tLeft<timer.total)){
+    const pct=timer.total?tLeft/timer.total:0;
+    out.push({k:'timer',icon:'timer',title:t('quickTimer'),sub:timer.running?tp('islandEndsAt',ikFmtClock(timer.endAt)):t('islandPaused'),
+      time:fmtMS(tLeft),f:pct,c:pct>.5?'var(--e)':pct>.2?'var(--warn)':'var(--bad)',urgent:timer.running&&tLeft<=10,acts:'toggle',on:timer.running,
+      mine:()=>ikScrIs('_timer')});
+  }
+  const pLen=pomoLen(pomoState.phase), pLeft=pomoState.running&&pomoState.endAt?Math.max(0,Math.ceil((pomoState.endAt-now)/1000)):pomoState.left;
+  if(pomoState.running || (pLeft>0 && pLeft<pLen)){
+    const work=pomoState.phase==='work';
+    out.push({k:'pomo',icon:work?'brain':'coffee',title:work?t('pomoFocus'):t('pomoBreak'),sub:pomoState.running?tp('islandEndsAt',ikFmtClock(pomoState.endAt)):t('islandPaused'),
+      time:fmtMS(pLeft),f:pLen?pLeft/pLen:0,c:work?'var(--bad)':'var(--ok)',acts:'toggle',on:pomoState.running,mine:()=>ikScrIs('pomodoro')});
+  }
+  if(LIVE && !_finishingLive && LIVE.prog){
+    const tot=LIVE.prog.ex.reduce((a,x)=>a+(x.sets||0),0);
+    out.push({k:'live',icon:'dumbbell',title:LIVE.prog.name,sub:tp('islandSets',LIVE.setsDone,tot),time:fmtTime((now-LIVE.start)/1000),
+      f:tot?LIVE.setsDone/tot:0,c:'var(--e)',acts:'open',live:true,
+      mine:()=>{ const o=$('#ovLive'); return !!(o&&o.classList.contains('on')); }});
+  }
+  const cTot=chrono.elapsed+(chrono.running?now-chrono.start:0);
+  if(chrono.running || cTot>0){
+    out.push({k:'chrono',icon:'stopwatch',title:t('toolChronoName'),sub:chrono.laps.length?t('lapBtn')+' '+(chrono.laps.length+1):(chrono.running?'':t('islandPaused')),
+      time:fmtChrono(cTot).slice(0,-1),f:(cTot%60000)/60000,c:'var(--e)',acts:'toggle',on:chrono.running,live:chrono.running,mine:()=>ikScrIs('chrono')});
+  }
+  return out;
+}
+function ikIslandOpen(k){
+  if(k==='live') return expandLive();
+  if(k==='rest'){ if(LIVE && !$('#ovLive').classList.contains('on')) expandLive(); return expandRest(); }
+  if(k==='timer'){ nav('outils'); openQuickTimer(); }
+  else if(k==='pomo'){ nav('outils'); openTool('pomodoro'); }
+  else if(k==='chrono'){ nav('outils'); openTool('chrono'); }
+  ikIslandKick();
+}
+function ikIslandAct(k,a){
+  if(a==='add') addRest(30);
+  else if(a==='skip') skipRest();
+  else if(a==='toggle'){ if(k==='timer') timerToggle(); else if(k==='pomo') pomoToggle(); else if(k==='chrono') chronoToggle(); }
+  else if(a==='reset'){ if(k==='timer') resetTimer(); else if(k==='pomo') pomoReset(); else if(k==='chrono') chronoReset(); }
+  try{ if(navigator.vibrate) navigator.vibrate(8); }catch(e){}
+  ikIslandKick();
+}
+let _iki=null, _ikiT=0, _ikiFlash=null;
+const IKI_C=2*Math.PI*16;
+function ikRingSVG(){ return '<svg viewBox="0 0 40 40" aria-hidden="true"><circle class="isl-trk" cx="20" cy="20" r="16"/><circle class="isl-arc" cx="20" cy="20" r="16" stroke-dasharray="'+IKI_C.toFixed(2)+'" stroke-dashoffset="0"/></svg>'; }
+function ikIslandEl(){
+  if(_iki) return _iki;
+  const el=document.createElement('div'); el.id='ikIsland'; el.setAttribute('role','group');
+  el.innerHTML='<button type="button" class="isl-mini"><span class="isl-ring">'+ikRingSVG()+'<i class="isl-ic"></i></span></button>'+
+    '<div class="isl-main" role="button" tabindex="0"><span class="isl-ring">'+ikRingSVG()+'<i class="isl-ic"></i></span>'+
+    '<span class="isl-txt"><b class="isl-t"></b><span class="isl-s"></span></span><span class="isl-time mono"></span><span class="isl-acts"></span>'+
+    '<span class="isl-flash"></span></div>';
+  document.body.appendChild(el); // après #nav : sa position suit la barre (voir #nav.nav-hidden ~ #ikIsland)
+  el.addEventListener('click',e=>{
+    const b=e.target.closest('[data-act]');
+    if(b){ e.stopPropagation(); return ikIslandAct(b.dataset.k,b.dataset.act); }
+    if(e.target.closest('.isl-mini')){ if(el._mini) ikIslandOpen(el._mini.k); return; }
+    if(e.target.closest('.isl-main') && el._main) ikIslandOpen(el._main.k);
+  });
+  el.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ') && e.target.classList.contains('isl-main') && el._main){ e.preventDefault(); ikIslandOpen(el._main.k); } });
+  _iki={el,main:el.querySelector('.isl-main'),mini:el.querySelector('.isl-mini')};
+  return _iki;
+}
+function ikIslandBlocked(){
+  return !!(document.querySelector('#login.on,#ob.on,#ikIntro,#alarmOv') || (typeof _tourOn!=='undefined' && _tourOn));
+}
+function ikIslandFill(box,a,full){
+  const arc=box.querySelector('.isl-arc'), ic=box.querySelector('.isl-ic');
+  if(box._k!==a.k || box._icon!==a.icon){ ic.innerHTML=ICN(a.icon,full?17:19); box._icon=a.icon; }
+  box.style.setProperty('--isl-c',a.c);
+  arc.setAttribute('stroke-dashoffset',(IKI_C*(1-Math.max(0,Math.min(1,a.f)))).toFixed(2));
+  box.classList.toggle('urgent',!!a.urgent); box.classList.toggle('live',!!a.live);
+  if(!full){ box.setAttribute('aria-label',a.title+' · '+a.time); box._k=a.k; return; }
+  const tt=box.querySelector('.isl-t'), ss=box.querySelector('.isl-s'), tm=box.querySelector('.isl-time'), ac=box.querySelector('.isl-acts');
+  if(tt.textContent!==a.title) tt.textContent=a.title;
+  if(ss.textContent!==a.sub) ss.textContent=a.sub;
+  if(tm.textContent!==a.time) tm.textContent=a.time;
+  const sig=a.k+'|'+a.acts+'|'+(a.on?1:0);
+  if(ac._sig!==sig){
+    ac._sig=sig;
+    const btn=(act,inner,lab)=>'<button type="button" class="isl-b" data-k="'+a.k+'" data-act="'+act+'" aria-label="'+lab+'">'+inner+'</button>';
+    ac.innerHTML=a.acts==='rest'? btn('add','<span dir="ltr">+30</span>',t('add30sLab'))+btn('skip',ICN('skip',16),t('skipLab'))
+      : a.acts==='toggle'? (a.on?'':btn('reset',ICN('close',15),t('resetBtn2')))+btn('toggle',ICN(a.on?'pause':'play',16),a.on?t('pauseShort'):t('playLab'))
+      : '<span class="isl-go" aria-hidden="true">'+ICN('chevronU',18)+'</span>';
+  }
+  box.setAttribute('aria-label',a.title+' · '+a.time+(a.sub?' · '+a.sub:''));
+  if(box._k && box._k!==a.k && !ikMotionOff()){ box.classList.remove('morph'); void box.offsetWidth; box.classList.add('morph'); }
+  box._k=a.k;
+}
+function ikIslandFlash(msg,c){ _ikiFlash={msg,c:c||'var(--ok)',until:Date.now()+2600}; ikIslandKick(); }
+function ikIslandKick(){ clearTimeout(_ikiT); _ikiT=setTimeout(ikIslandTick,0); }
+function ikIslandTick(){
+  _ikiT=0;
+  const I=ikIslandEl(), el=I.el, now=Date.now();
+  const acts=ikActivities();
+  const flash=_ikiFlash && now<_ikiFlash.until ? _ikiFlash : null; if(!flash) _ikiFlash=null;
+  const vis=ikIslandBlocked()?[]:acts.filter(a=>!a.mine());
+  const show=vis.length>0 || (flash && !ikIslandBlocked());
+  if(el.classList.contains('on')!==!!show){
+    el.classList.toggle('on',!!show); document.body.classList.toggle('isl-on',!!show);
+    if(show){ const n=document.getElementById('nav'); if(n) el.style.setProperty('--isl-nav',n.offsetHeight+'px'); }
+  }
+  if(show){
+    const main=vis[0], mini=vis[1];
+    I.main.classList.toggle('flash',!!flash);
+    if(main) ikIslandFill(I.main,main,true);
+    if(flash){ const f=I.main.querySelector('.isl-flash'); f.textContent=flash.msg; I.main.style.setProperty('--isl-c',flash.c); }
+    el._main=main||null; el._mini=mini||null;
+    el.classList.toggle('duo',!!mini);
+    if(mini) ikIslandFill(I.mini,mini,false);
+  }
+  if(acts.length || flash){
+    const fast=show && vis[0] && vis[0].k==='chrono' && chrono.running;
+    _ikiT=setTimeout(ikIslandTick, fast?100:(show?250:400));
+  }
+}
+// La séance se réduit dans l'îlot (bouton ⌄, glisser la fenêtre vers le bas, toucher le fond)
+// sans jamais passer par closeOv('ovLive'), qui arrête ses minuteurs.
+function minimizeLive(){
+  if(!LIVE) return;
+  const ov=$('#ovLive'); if(ov && ov.classList.contains('on')){ ovLeave(ov); ov.classList.remove('on'); ov.style.zIndex=''; }
+  minimizeRest();
+  ikIslandKick();
+}
+function expandLive(){ if(!LIVE) return; renderLive(); openOv('ovLive'); ikIslandKick(); }
+function minimizeRest(){ const r=$('#restOv'); if(r && r.classList.contains('on')){ ovLeave(r); r.classList.remove('on'); } ikIslandKick(); }
+function expandRest(){ const r=$('#restOv'); if(r){ clearTimeout(r._leaveT); r.classList.remove('ov-leaving'); const c=r.querySelector('.ov-card'); if(c) c.style.transform=''; r.style.zIndex=topZ(); r.classList.add('on'); } ikIslandKick(); }
+// Barre du bas masquée au défilement : l'îlot descend prendre sa place.
+if('ResizeObserver' in window){ const n=document.getElementById('nav'); if(n) new ResizeObserver(()=>{ if(_iki) _iki.el.style.setProperty('--isl-nav',n.offsetHeight+'px'); }).observe(n); }
 
 /* ---------- AGENDA ---------- */
 function renderAgenda(){
@@ -12416,9 +12622,9 @@ function renderProfile(){
   h+='<div class="grp-card stag" style="animation-delay:.16s">'+
     '<div class="grp-row" onclick="openProfileSection(\'lang\')"><div class="lr-icon">'+ICN('globe',20,'currentColor')+'</div><div class="lr-title">'+t('language')+'</div><div class="lr-val">'+langInfo[1]+' '+langInfo[2]+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('theme')+'</div>'+pfThemeSwitchHTML()+'</div>'+
-    '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('appColor')+'</div>'+pfAccentPickerHTML()+'</div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'color\')"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('appColor')+'</div><div class="lr-val"><i class="accent-dot" data-a="'+(P.theme||'blue')+'" style="display:inline-block;width:14px;height:14px;vertical-align:-2px;margin-inline-end:6px;box-shadow:none"></i>'+accentName(P.theme)+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     // Effet verre (V3.3.0) : la fiche existait mais aucune ligne n'y menait.
-    '<div class="grp-row" onclick="openProfileSection(\'appearance\')"><div class="lr-icon">'+ICN('bolt',20,'currentColor')+'</div><div class="lr-title">'+t('glassLab')+'</div><div class="lr-val">'+t(P.glass==='max'?'glassMax':P.glass==='flat'?'glassFlat':'glassStd')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'appearance\')"><div class="lr-icon">'+ICN('bolt',20,'currentColor')+'</div><div class="lr-title">'+t('matLab')+'</div><div class="lr-val">'+t(P.glass==='max'?'glassMax':P.glass==='flat'?'glassFlat':P.glass==='clay'?'glassClay':'glassStd')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('heart',20,'currentColor')+'</div><div><div class="lr-title">'+t('simplifiedMode')+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px;max-width:200px">'+t('simplifiedModeDesc')+'</div></div><div class="toggle'+(P.easyMode?' on':'')+'" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
   '</div>';
   h+='<div class="grp-lab stag" style="animation-delay:.18s">'+t('support')+'</div>';
@@ -12461,6 +12667,7 @@ function renderProfileSimple(){
   h+='<div class="grp-card">'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('heart',20,'currentColor')+'</div><div class="lr-txt"><div class="lr-title">'+t('simplifiedMode')+'</div><div class="lr-sub">'+t('simplifiedModeDesc')+'</div></div><div class="toggle on" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('theme')+'</div>'+pfThemeSwitchHTML()+'</div>'+
+    row('palette',t('appColor'),"openProfileSection('color')",accentName(P.theme))+
     row('globe',t('language'),"openProfileSection('lang')",langInfo[2])+
     row('bell',t('notifLabel'),"openProfileSection('notif')")+
     row('flag',t('replayTourBtn'),'startAppTour()')+
@@ -12482,7 +12689,7 @@ function renderProfileSimple(){
 let _pfSheet=null;
 function openProfileSection(key){
   _pfSheet=key;
-  const titles={account:t('account'),lang:''+t('language'),appearance:''+t('appearance'),notif:''+t('notifsApp'),data:''+t('dataPrivacy'),terms:t('termsOfUseLab'),privacy:t('privacyPolicyLab')};
+  const titles={account:t('account'),color:t('appColor'),lang:''+t('language'),appearance:''+t('appearance'),notif:''+t('notifsApp'),data:''+t('dataPrivacy'),terms:t('termsOfUseLab'),privacy:t('privacyPolicyLab')};
   $('#ovProgTitle').textContent=titles[key]||t('settings');
   $('#progBody').innerHTML=pfSectionHTML(key);
   openOv('ovProg');
@@ -12492,6 +12699,7 @@ function pfSectionHTML(key){
   if(key==='account') return pfAccountHTML();
   if(key==='lang') return pfLangHTML();
   if(key==='appearance') return pfAppearanceHTML();
+  if(key==='color') return pfColorHTML();
   if(key==='notif') return pfNotifHTML();
   if(key==='data') return pfDataHTML();
   if(key==='terms') return legalTermsHTML();
@@ -12782,19 +12990,24 @@ function pfAppearanceHTML(){
   const g=P.glass||'std';
   // Le mode simplifié coupe tout effet verre (voir html.easy-mode) : proposer les trois
   // niveaux ici donnait des boutons sans aucun effet visible.
-  if(P.easyMode) s+='<div class="lab" style="margin:22px 0 10px">'+t('glassLab')+'</div><div style="font-size:13px;color:var(--muted);line-height:1.5">'+t('glassEasyNote')+'</div>';
-  else s+='<div class="lab" style="margin:22px 0 10px">'+t('glassLab')+'</div>'+
-     '<div class="seg-ctrl glass-seg">'+[['flat','glassFlat'],['std','glassStd'],['max','glassMax']].map(([k,l])=>
-       '<div class="seg-btn'+(g===k?' on':'')+'" role="button" onclick="setGlass(\''+k+'\')">'+t(l)+'</div>').join('')+'</div>'+
-     '<div class="glass-demo" aria-hidden="true"><div class="glass-demo-card card"><div class="glass-demo-t">IKORUN</div><div class="glass-demo-s">'+t(g==='max'?'glassMax':g==='flat'?'glassFlat':'glassStd')+'</div></div></div>'+
-     '<div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5">'+t(g==='max'?'glassHintMax':g==='flat'?'glassHintFlat':'glassHintStd')+'</div>'+
+  // V3.4.0 : quatre matières, dont la pâte à modeler — des échantillons plutôt qu'un sélecteur
+  // à quatre segments, trop serré pour « Pâte à modeler ».
+  const MATS=[['flat','glassFlat','glassHintFlat'],['std','glassStd','glassHintStd'],['max','glassMax','glassHintMax'],['clay','glassClay','glassHintClay']];
+  const cm=MATS.find(m=>m[0]===g)||MATS[1];
+  if(P.easyMode) s+='<div class="lab" style="margin:22px 0 10px">'+t('matLab')+'</div><div style="font-size:13px;color:var(--muted);line-height:1.5">'+t('glassEasyNote')+'</div>';
+  else s+='<div class="lab" style="margin:22px 0 10px">'+t('matLab')+'</div>'+
+     '<div class="mat-grid">'+MATS.map(([k,l])=>'<div class="mat-sw'+(g===k?' on':'')+'" role="button" onclick="setGlass(\''+k+'\')"><i class="mat-ico '+k+'"></i><b>'+t(l)+'</b></div>').join('')+'</div>'+
+     '<div class="glass-demo" aria-hidden="true"><div class="glass-demo-card card"><div class="glass-demo-t">IKORUN</div><div class="glass-demo-s">'+t(cm[1])+'</div></div></div>'+
+     '<div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5">'+t(cm[2])+'</div>'+
      (g==='max'?'<button class="btn ghost" style="margin-top:12px" onclick="askGlassTilt()">'+ICN('bolt',16)+' '+t(P.glassTilt?'glassTiltActive':'glassTiltBtn')+'</button>':'');
+  s+='<div class="row" style="justify-content:space-between;align-items:center;gap:12px;margin-top:20px"><div><div style="font-weight:700;font-size:14px">'+t('bdayThemeLab')+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4">'+t('bdayThemeDesc')+'</div></div>'+
+     '<div class="toggle'+(P.bdayTheme!==false?' on':'')+'" onclick="P.bdayTheme=(P.bdayTheme===false);saveAll();applyTheme();refreshPfSheet()"></div></div>';
   s+='<div class="lab" style="margin:22px 0 10px">'+t('animationsLab')+'</div>'+
      '<button class="btn ghost" onclick="closeOv(\'ovProg\');setTimeout(()=>{ if(window.ikIntro) ikIntro(\'full\'); },260)">'+t('introReplayBtn')+'</button>';
   return s;
 }
 function setGlass(k){
-  if(!['flat','std','max'].includes(k)) return;
+  if(!['flat','std','max','clay'].includes(k)) return;
   P.glass=k; saveAll(); applyTheme(); refreshPfSheet(); sfx&&sfx('tap');
   if(document.body.dataset.scr==='profil') renderProfile(); // la ligne « Effet verre » affiche le niveau choisi
 }
@@ -13063,11 +13276,11 @@ function cleanImportedProfile(src){
     if(src[k]==null || src[k]==='') return;
     const n=Number(src[k]); if(Number.isFinite(n)) o[k]=n;
   });
-  ['easyMode','notif','prayerNotif','sounds','notifPromptDismissed','setupDone'].forEach(k=>{
+  ['easyMode','bdayTheme','notif','prayerNotif','sounds','notifPromptDismissed','setupDone'].forEach(k=>{
     if(typeof src[k]==='boolean') o[k]=src[k];
   });
   const STR={name:40,username:20,bio:160,city:60,goal:80,compDate:10,bday:10,objRace:40,objTime:12,
-    t5k:12,t3k:12,t10k:12,t1500:12,pb5k:12,pb3k:12,pb10k:12,pb1500:12,lang:2,mode:10,theme:20,
+    t5k:12,t3k:12,t10k:12,t1500:12,pb5k:12,pb3k:12,pb10k:12,pb1500:12,lang:2,mode:10,theme:20,glass:8,
     sex:10,objGoal:40,objProfile:40,followPerso:40};
   Object.keys(STR).forEach(k=>{ if(typeof src[k]==='string') o[k]=stripHtmlChars(src[k]).slice(0,STR[k]); });
   if(Array.isArray(src.days)) o.days=src.days.filter(x=>Number.isInteger(x)&&x>=0&&x<=6).slice(0,7);
