@@ -5531,6 +5531,28 @@ function askGlassTilt(){
   });
 })();
 
+/* ---------- GARDE-FOU TACTILE (V3.5.0) : la page ne bouge pas comme une page web ----------
+   Sur les iOS qui ignorent overscroll-behavior, un doigt posé là où rien ne défile faisait
+   rebondir toute l'app (et deux doigts la zoomaient). Au toucher, on regarde une fois s'il
+   existe sous le doigt une vraie zone qui défile (ou un champ, un curseur) ; sinon le
+   déplacement est neutralisé. Les gestes maison (glisser une carte, une fiche, la barre du
+   bas) ont leurs propres écouteurs et ne sont pas concernés. */
+(function(){
+  let libre=true;
+  const peutDefiler=el=>{
+    for(;el && el.nodeType===1 && el!==document.body; el=el.parentElement){
+      if(/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable) return true;
+      const cs=getComputedStyle(el);
+      if(/(auto|scroll)/.test(cs.overflowY) && el.scrollHeight>el.clientHeight+1) return true;
+      if(/(auto|scroll)/.test(cs.overflowX) && el.scrollWidth>el.clientWidth+1) return true;
+      if(cs.touchAction==='none') return true; // geste maison : il décide lui-même
+    }
+    return false;
+  };
+  document.addEventListener('touchstart',e=>{ libre=e.touches.length===1 && peutDefiler(e.target); },{passive:true});
+  document.addEventListener('touchmove',e=>{ if(e.cancelable && (!libre || e.touches.length>1)) e.preventDefault(); },{passive:false});
+})();
+
 /* ---------- FENÊTRES DU BAS : glisser vers le bas / toucher le fond pour fermer (v107) ----------
    Le geste part de la poignée ou de l'en-tête (72 px du haut) : dans le contenu, le
    doigt fait défiler, règle une roue ou un curseur — jamais une fermeture surprise.
@@ -12501,7 +12523,7 @@ function delEvent(i){ AGENDA.splice(i,1); saveAll(); renderAgenda(); }
 /* ---------- PRIÈRES (Béjaïa, UOIF) ---------- */
 function renderPriere(){
   const times=prayerTimes();
-  const now=new Date(); const nowMin=now.getHours()*60+now.getMinutes();
+  const now=new Date(); const nowMin=algeriaNowMin();
   const order=['Fajr','Dhuhr','Asr','Maghrib','Isha'];
   let activeIdx=-1;
   order.forEach((p,i)=>{ const[hh,mm]=times[p].split(':').map(Number); if(hh*60+mm<=nowMin) activeIdx=i; });
@@ -12521,10 +12543,13 @@ function prayerTimes(){
   // d'un ou plusieurs jours entiers et TOUTES les heures sortaient négatives
   // (« Fajr -19:03 · dans -44 min »). Même formule côté serveur
   // (send-prayer-notifs), où aucune notification de prière ne partait plus.
+  // V3.5.0 : le jour et l'heure pris en compte sont ceux de l'Algérie, comme côté serveur
+  // (send-prayer-notifs) — plus ceux de l'horloge du téléphone, qui décalait tout d'une
+  // heure sur un téléphone réglé sur un autre fuseau (voyage, réglage manuel).
   const lat=36.75,lon=5.07,tz=1;
-  const now=new Date();
+  const now=new Date(Date.now()+tz*3600*1000);
   const rad=Math.PI/180, fixA=a=>((a%360)+360)%360, fixH=h=>((h%24)+24)%24;
-  const D=(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate(),12)-Date.UTC(2000,0,1,12))/86400000; // jours depuis J2000
+  const D=(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate(),12)-Date.UTC(2000,0,1,12))/86400000; // jours depuis J2000
   const g=fixA(357.529+0.98560028*D)*rad;
   const q=fixA(280.459+0.98564736*D);
   const L=fixA(q+1.915*Math.sin(g)+0.020*Math.sin(2*g))*rad;
@@ -12540,9 +12565,11 @@ function prayerTimes(){
 }
 // Prochaine prière à venir (bascule sur le Fajr du lendemain une fois Isha passée) —
 // utilisé pour la mise en avant sur l'accueil (homePrayerCardHTML).
+// Minutes écoulées depuis minuit, heure de l'Algérie (UTC+1 toute l'année).
+function algeriaNowMin(){ const a=new Date(Date.now()+3600*1000); return a.getUTCHours()*60+a.getUTCMinutes(); }
 function nextPrayerInfo(){
   const times=prayerTimes();
-  const now=new Date(); const nowMin=now.getHours()*60+now.getMinutes();
+  const nowMin=algeriaNowMin();
   for(const p of ['Fajr','Dhuhr','Asr','Maghrib','Isha']){
     const [hh,mm]=times[p].split(':').map(Number);
     const mins=hh*60+mm;
@@ -12570,7 +12597,7 @@ function homePrayerCardHTML(){
   const np=nextPrayerInfo();
   const h=Math.floor(np.inMin/60), m=np.inMin%60;
   const cd=fmtCountdown(h,m);
-  return '<div class="hv7-day" style="padding:14px 16px;margin-bottom:12px" onclick="openPrayerFromHome()">'+
+  return '<div class="hv7-day ik-prayer-card" style="padding:14px 16px;margin-bottom:12px" onclick="openPrayerFromHome()">'+
     '<div class="row" style="justify-content:space-between;align-items:center">'+
       '<div class="row" style="gap:10px;align-items:center">'+ICN('mosque',20,'var(--e)')+
         '<div><div style="font-weight:800;font-size:14px">'+t('nextPrayerLabel')+' · '+trPrayer(np.name)+'</div>'+
@@ -12581,6 +12608,19 @@ function homePrayerCardHTML(){
 // Retour depuis la prière ouverte par la carte de l'Accueil : on revient sur l'Accueil
 // (et non sur la liste des outils, que le mode simplifié ne montre même pas dans la barre).
 function openPrayerFromHome(){ outilsFrom='_back'; outilsTab='priere'; nav('outils'); }
+/* Prière toujours à l'heure (V3.5.0) : la carte de l'Accueil était calculée une seule fois,
+   à l'affichage — l'app restée ouverte gardait « dans 29 min » pour toujours, et la prière
+   passée restait annoncée. On la recalcule chaque minute tant qu'elle est à l'écran, dès que
+   l'app revient au premier plan, et l'outil Prière suit la prière en cours de la même façon. */
+function refreshPrayerUI(){
+  if(document.hidden) return;
+  const c=document.querySelector('#s-home.on .ik-prayer-card');
+  if(c){ const tmp=document.createElement('div'); tmp.innerHTML=homePrayerCardHTML(); const n=tmp.firstElementChild;
+    if(n && n.innerHTML!==c.innerHTML){ c.innerHTML=n.innerHTML; } }
+  if(document.body.dataset.scr==='outils' && outilsTab==='priere' && $('#outBody')) renderPriere();
+}
+setInterval(refreshPrayerUI,20000);
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) refreshPrayerUI(); });
 
 /* ---------- PROFILE ---------- */
 function age(){ if(!P.bday)return'—'; const d=new Date(P.bday); return Math.floor((Date.now()-d)/31557600000); }

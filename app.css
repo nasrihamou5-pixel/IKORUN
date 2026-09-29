@@ -3082,6 +3082,21 @@ html.easy-mode #toast{background:var(--s1);border:2px solid var(--e);box-shadow:
    sans ceci, Chrome/Android (et IKORUN ouvert dans un onglet) faisait « page précédente »
    et sortait de l'app. */
 html,body{overscroll-behavior-x:none;touch-action:pan-x pan-y;} /* ni pincer ni double-toucher pour zoomer (v109) */
+/* UNE APP, PAS UNE PAGE WEB (V3.5.0) — « des pages bougent de droite à gauche, de haut en
+   bas, comme une page Google ; on peut zoomer sur certaines ».
+   · touch-action n'est pas hérité et chaque zone qui défile repart de zéro : le pincement
+     restait donc permis dans la page qui défile, les fiches et les pages plein écran.
+     Posé sur tout, il ne laisse que le défilement ; les gestes maison gardent le leur
+     (sélecteurs plus précis : cartes à glisser, lignes de séries).
+   · la page elle-même ne rebondit plus (overscroll-behavior ; sur les iOS plus anciens,
+     voir le garde-fou tactile dans app.js), et une zone qui défile ne passe jamais son
+     élan à la page derrière.
+   · aucune zone ne défile en largeur : deux fiches (Apparence, Notifications) débordaient
+     de 5 px et glissaient de gauche à droite sous le doigt. */
+*{touch-action:pan-x pan-y;}
+input[type="range"],.ik-dial{touch-action:pan-y;} /* le glissement horizontal reste au curseur */
+html,body{overscroll-behavior:none;}
+:is(#scroll,.ov-card,.ov-body-scroll,#profileEditBody,.ob-step,#login,#progBody){overscroll-behavior:contain;overflow-x:hidden;}
 /* SIGNATURES IKORUN (v107) — discrètes : fin de chaque écran, en-tête des pages plein
    écran, indicateur « tirer pour actualiser ». */
 .ik-sign{display:flex;flex-direction:column;align-items:center;gap:5px;margin:30px auto 4px;opacity:.55;text-align:center;}
