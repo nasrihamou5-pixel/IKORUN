@@ -4445,7 +4445,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='3.5.2';
+const APP_VERSION='3.5.3';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -5783,6 +5783,7 @@ function nudgeScroll(){
 function boot(){
   hideAppSkeleton();
   detectLangIfUnset(); // 1re ouverture : pré-règle la langue depuis le téléphone (modifiable ensuite dans Profil)
+  feteApplyUrlOverride(); // ?fete= : réservé au compte de développement (voir feteDevMode)
   applyTheme(); // applique le mode (clair/sombre) dès le démarrage
   applyStaticLabels();
   checkConnectivity();
@@ -12666,7 +12667,17 @@ function hijriToday(){
 }
 const FETE_KEYS=['bday','race','record','ramadan','qadr','mawlid','achoura','muharram','isra','eidFitr','eidAdha','xmas','newyear','halloween','sportDay'];
 let _fetePreview=null;
-try{ const q=new URLSearchParams(location.search).get('fete'); if(FETE_KEYS.includes(q)) _fetePreview=q; }catch(e){}
+// Les jours spéciaux doivent se découvrir le jour même : personne ne peut les voir à
+// l'avance ni les tester à volonté — sauf le compte de développement, qui garde cette
+// possibilité (aperçu depuis Profil, et le paramètre ?fete= dans l'URL) pour vérifier
+// chaque fête sans attendre son tour dans le calendrier.
+function feteDevMode(){ return window.currentUserEmail==='nasrihamou5@gmail.com'; }
+// L'identité (window.currentUserEmail) n'est connue qu'après la connexion : ce
+// paramètre d'URL n'est donc relu qu'au démarrage (boot()), jamais avant.
+function feteApplyUrlOverride(){
+  if(!feteDevMode()) return;
+  try{ const q=new URLSearchParams(location.search).get('fete'); if(FETE_KEYS.includes(q)) _fetePreview=q; }catch(e){}
+}
 function feteEnabled(){ return P && (P.fetes!=null ? P.fetes!==false : P.bdayTheme!==false); }
 // La fête du jour, la plus personnelle d'abord.
 function feteToday(){
@@ -12750,7 +12761,7 @@ function celebrateFete(force){
 function celebrateBday(force){ celebrateFete(force); }
 // Aperçu depuis Profil › Apparence : la fête s'applique jusqu'au prochain lancement.
 function feteTry(k){
-  if(!FETE_KEYS.includes(k)) return;
+  if(!feteDevMode() || !FETE_KEYS.includes(k)) return;
   _fetePreview=k; applyTheme();
   document.querySelectorAll('.ov.on').forEach(o=>closeOv(o.id));
   nav('home'); celebrateFete(true);
@@ -13672,7 +13683,7 @@ function pfAppearanceHTML(){
      ((near==='max'||carbonKind())?'<button class="btn ghost" style="margin-top:12px" onclick="askGlassTilt()">'+ICN('bolt',16)+' '+t(P.glassTilt?'glassTiltActive':'glassTiltBtn')+'</button>':'');
   s+='<div class="row" style="justify-content:space-between;align-items:center;gap:12px;margin-top:20px"><div><div style="font-weight:700;font-size:14px">'+t('feteLab')+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4">'+t('feteDesc')+'</div></div>'+
      '<div class="toggle'+(feteEnabled()?' on':'')+'" onclick="P.fetes=!feteEnabled();saveAll();applyTheme();refreshPfSheet()"></div></div>'+
-     '<div class="fete-try"><span>'+t('fetePreviewLab')+'</span><div class="pills sub">'+FETE_KEYS.map(k=>'<div class="pill" role="button" onclick="feteTry(\''+k+'\')">'+t('fete_'+k)+'</div>').join('')+'</div></div>';
+     (feteDevMode()?'<div class="fete-try"><span>'+t('fetePreviewLab')+'</span><div class="pills sub">'+FETE_KEYS.map(k=>'<div class="pill" role="button" onclick="feteTry(\''+k+'\')">'+t('fete_'+k)+'</div>').join('')+'</div></div>':'');
   s+='<div class="lab" style="margin:22px 0 10px">'+t('animationsLab')+'</div>'+
      '<button class="btn ghost" onclick="closeOv(\'ovProg\');setTimeout(()=>{ if(window.ikIntro) ikIntro(\'full\'); },260)">'+t('introReplayBtn')+'</button>';
   return s;
