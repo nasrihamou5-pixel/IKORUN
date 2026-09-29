@@ -4445,7 +4445,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='3.5.0';
+const APP_VERSION='3.5.1';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -6830,53 +6830,56 @@ function carbonRng(seed){ let s=seed>>>0||1; return ()=>((s=Math.imul(s^s>>>15,1
 function carbonTwill(phi,light,s,tow){
   const cs=Math.round(tow*s), T=cs*4, cv=document.createElement('canvas'); cv.width=cv.height=T;
   const ctx=cv.getContext('2d'), img=ctx.createImageData(T,T), d=img.data, R=carbonRng(7);
-  // bruit de fibres : une valeur par ligne de pixels, dans le sens des mèches
   const nH=new Float32Array(T), nV=new Float32Array(T); for(let i=0;i<T;i++){ nH[i]=R()*2-1; nV[i]=R()*2-1; }
   const lum=a=>Math.pow(Math.abs(Math.cos(a)),1.6);
   const pH=lum(phi), pV=lum(phi-Math.PI/2);
-  const base=light?192:8, lo=light?208:30, hi=light?246:100;
+  const base=light?185:5, lo=light?205:22, hi=light?248:118;
   const sm=t=>t<=0?0:t>=1?1:t*t*(3-2*t);
   for(let py=0;py<T;py++) for(let px=0;px<T;px++){
     const cx=(px/cs)|0, cy=(py/cs)|0, lx=(px%cs+.5)/cs, ly=(py%cs+.5)/cs, m=(cx+cy)&3, vert=m<2;
     const u=vert?lx:ly, v=vert?(m===0?ly*.5:.5+ly*.5):(m===2?lx*.5:.5+lx*.5);
-    const prof=.25+.75*Math.pow(Math.sin(Math.PI*u),.9), end=.42+.58*sm(v/.24)*sm((1-v)/.24);
+    const prof=.2+.8*Math.pow(Math.sin(Math.PI*u),.85), end=.38+.62*sm(v/.22)*sm((1-v)/.22);
     const fib=vert?nV[px]:nH[py], peak=lo+(hi-lo)*(vert?pV:pH);
-    // la mèche : bombée (profil), assombrie là où elle plonge sous la voisine (end), striée par les fibres
-    let g=base+(peak-base)*prof*end*(1+fib*.2)+fib*(light?6:6);
-    // reflet fin et net au sommet de la mèche (le vernis)
-    g+=(light?8:18)*Math.pow(Math.max(0,1-Math.abs(u-.42)*3.2),2)*end*(.35+.65*(vert?pV:pH));
+    let g=base+(peak-base)*prof*end*(1+fib*.22)+fib*(light?7:7);
+    g+=(light?10:22)*Math.pow(Math.max(0,1-Math.abs(u-.4)*3.2),2)*end*(.3+.7*(vert?pV:pH));
     g=Math.max(0,Math.min(255,g));
     const k=(py*T+px)*4; d[k]=g*.97; d[k+1]=g*.985; d[k+2]=Math.min(255,g*1.05+(light?0:2)); d[k+3]=255;
   }
   ctx.putImageData(img,0,0); return cv;
 }
+// « Carbone forgé » : des éclats anguleux de mèche broyée, pressés au moule — pas des
+// taches rondes (l'ancienne version ressemblait à des microbes) mais une mosaïque à
+// arêtes nettes, striée dans le sens de chaque éclat, avec un joint sombre entre eux et
+// quelques paillettes qui accrochent la lumière, comme le vrai carbone forgé automobile.
 function carbonForged(phi,light,s,size){
   const T=Math.round(size*s), cv=document.createElement('canvas'); cv.width=cv.height=T;
   const ctx=cv.getContext('2d'), R=carbonRng(11);
-  ctx.fillStyle=light?'#bfc4ca':'#0c0d0f'; ctx.fillRect(0,0,T,T);
-  ctx.lineCap='butt'; ctx.lineJoin='round';
-  const lum=a=>Math.pow(Math.abs(Math.cos(a)),2), N=Math.round(330*(size/150)*(size/150));
+  ctx.fillStyle=light?'#e6e9ec':'#050506'; ctx.fillRect(0,0,T,T);
+  const lum=a=>Math.pow(Math.abs(Math.cos(a)),2.4), N=Math.round(240*(size/150)*(size/150));
   const col=c=>{ c=Math.max(0,Math.min(255,c)); return 'rgb('+(c*.97|0)+','+(c*.985|0)+','+(Math.min(255,c*1.05)|0)+')'; };
   for(let i=0;i<N;i++){
-    // un éclat = un bout de mèche coupé, écrasé et plié au moulage : une bande courbe à bouts francs,
-    // striée dans sa longueur ; son éclat dépend de son orientation face à la lumière
-    const x=R()*T, y=R()*T, a=R()*Math.PI*2, L=(14+Math.pow(R(),1.2)*40)*s, W=(5+Math.pow(R(),1.4)*12)*s, k=(R()-.5)*.42;
-    const dx=Math.cos(a), dy=Math.sin(a), nx=-dy, ny=dx, b=lum(a-phi);
-    const c0=light?(182+b*62):(18+b*72)+(R()-.5)*10;
-    const curve=(o,w,c,al)=>{ ctx.globalAlpha=al; ctx.strokeStyle=c; ctx.lineWidth=w; ctx.beginPath();
-      ctx.moveTo(-dx*L/2+nx*o,-dy*L/2+ny*o); ctx.quadraticCurveTo(nx*(k*L+o),ny*(k*L+o),dx*L/2+nx*o,dy*L/2+ny*o); ctx.stroke(); };
+    const x=R()*T, y=R()*T, a=R()*Math.PI*2;
+    const R0=(9+Math.pow(R(),1.25)*24)*s, nv=5+((R()*4)|0);
+    const pts=[]; for(let j=0;j<nv;j++){ const ang=j/nv*Math.PI*2+(R()-.5)*.55, rr=R0*(.5+.55*R()); pts.push([Math.cos(ang)*rr,Math.sin(ang)*rr*(.66+.34*R())]); }
+    const b=lum(a-phi), sparkle=b>.9 && R()<.45;
+    let c0=light?(148+b*104):(9+b*98); if(sparkle) c0=light?252:200+R()*45;
+    c0+=(R()-.5)*(light?14:12);
     for(const ox of [-T,0,T]) for(const oy of [-T,0,T]){
-      const X=x+ox, Y=y+oy; if(X<-L||X>T+L||Y<-L||Y>T+L) continue;
-      ctx.save(); ctx.translate(X,Y);
-      curve(0,W+1.2*s,light?'rgba(110,116,124,.28)':'rgba(0,0,0,.4)',1);
-      curve(0,W,col(c0),1);
-      const n=Math.max(3,Math.round(W/(1.4*s)));
-      for(let j=0;j<n;j++){ const o=(j+.5)/n*W-W/2, e=1-Math.pow(Math.abs(o)/(W/2),2); curve(o,W/n*.9,col(c0*(.86+.2*e)+(R()-.5)*(light?10:10)),.8); }
+      const X=x+ox, Y=y+oy; if(X<-R0-4||X>T+R0+4||Y<-R0-4||Y>T+R0+4) continue;
+      ctx.save(); ctx.translate(X,Y); ctx.rotate(a);
+      ctx.beginPath(); pts.forEach(([px,py],j)=>j?ctx.lineTo(px,py):ctx.moveTo(px,py)); ctx.closePath();
+      ctx.fillStyle=col(c0); ctx.fill();
+      ctx.save(); ctx.clip(); ctx.globalAlpha=light?.16:.24; ctx.strokeStyle=sparkle?(light?'#fff':'#e8ecf0'):(light?'#5a6068':'#b0b8c2'); ctx.lineWidth=.6*s;
+      for(let k=-R0;k<R0;k+=1.35*s){ ctx.beginPath(); ctx.moveTo(-R0*1.4,k); ctx.lineTo(R0*1.4,k+(R()-.5)*2*s); ctx.stroke(); }
+      ctx.restore();
+      ctx.globalAlpha=1; ctx.lineWidth=.9*s; ctx.strokeStyle=light?'rgba(90,96,104,.55)':'rgba(0,0,0,.75)';
+      ctx.beginPath(); pts.forEach(([px,py],j)=>j?ctx.lineTo(px,py):ctx.moveTo(px,py)); ctx.closePath(); ctx.stroke();
       ctx.restore();
     }
   }
-  ctx.globalAlpha=1; return cv;
+  return cv;
 }
+
 const _cfCache={};
 function carbonKind(){ return !P ? null : P.theme==='carbon' ? 'twill' : P.theme==='forged' ? 'forged' : null; }
 function carbonApply(){
@@ -6886,7 +6889,7 @@ function carbonApply(){
   const light=effectiveMode()==='light', s=Math.min(3,Math.max(2,Math.round(window.devicePixelRatio||2))), key=k+(light?'L':'D')+s;
   if(!_cfCache[key]){
     try{
-      const tw=k==='twill', mk=phi=>'url("'+(tw?carbonTwill(phi,light,s,7).toDataURL('image/png'):carbonForged(phi,light,2,150).toDataURL('image/jpeg',.88))+'")';
+      const tw=k==='twill', mk=phi=>'url("'+(tw?carbonTwill(phi,light,s,7).toDataURL('image/png'):carbonForged(phi,light,2,150).toDataURL('image/jpeg',.92))+'")';
       _cfCache[key]={a:mk(0),b:mk(Math.PI/2),sz:tw?'28px':'150px'};
     }catch(e){ root.removeAttribute('data-carbon'); return; }
   }

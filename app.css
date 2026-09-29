@@ -199,14 +199,16 @@ html[data-carbon][data-mode="light"] #ikCarbon{background:#c9ced4;}
 html[data-carbon][data-mode="light"] #ikCarbon b{background:linear-gradient(118deg,transparent 30%,rgba(255,255,255,.25) 44%,rgba(255,255,255,.55) 50%,rgba(255,255,255,.2) 56%,transparent 68%);}
 html[data-carbon][data-mode="light"] body::before{background:#c9ced4;}
 html[data-carbon][data-mode="light"] body::after{background-image:radial-gradient(130% 75% at 50% 0%,rgba(255,255,255,.22) 30%,rgba(236,239,242,.66) 100%),linear-gradient(180deg,rgba(255,255,255,.42),rgba(255,255,255,.3));}
-/* cartes : verre fumé posé sur la plaque, vernis net en haut, arête chromée */
-html[data-carbon]{--lg-fill:rgba(6,7,9,.58);
-  --lg-spec:linear-gradient(180deg,rgba(255,255,255,.09) 0,rgba(255,255,255,.025) 22%,transparent 42%),radial-gradient(120% 70% at 12% -20%,rgba(255,255,255,.12),transparent 55%);
-  --lg-rim:inset 0 0 0 1px rgba(220,226,232,.12),inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(0,0,0,.4);
+/* cartes : verre fumé posé sur la plaque, vernis net en haut, arête chromée. Le voile est
+   volontairement léger et le flou quasi nul — sinon le tressage se noie sous la carte et
+   ne se voit plus (c'était le cas avant : « on dirait du mono », ou pire, du bruit flou). */
+html[data-carbon]{--lg-fill:rgba(5,6,8,.4);--lg-blur:blur(3px) saturate(150%);
+  --lg-spec:linear-gradient(180deg,rgba(255,255,255,.1) 0,rgba(255,255,255,.03) 22%,transparent 42%),radial-gradient(120% 70% at 12% -20%,rgba(255,255,255,.14),transparent 55%);
+  --lg-rim:inset 0 0 0 1px rgba(220,226,232,.14),inset 0 1px 0 rgba(255,255,255,.3),inset 0 -1px 0 rgba(0,0,0,.45);
   --chrome-base:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,0) 42%,rgba(0,0,0,.34)),var(--cf-a,none) 0 0/var(--cf-sz,28px) var(--cf-sz,28px),#0a0b0d;}
-html[data-carbon][data-mode="light"]{--lg-fill:rgba(255,255,255,.68);
-  --lg-spec:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.3) 30%,transparent 52%);
-  --lg-rim:inset 0 0 0 1px rgba(255,255,255,.75),inset 0 1px 0 #fff,0 0 0 1px rgba(20,30,50,.08);}
+html[data-carbon][data-mode="light"]{--lg-fill:rgba(255,255,255,.5);--lg-blur:blur(3px) saturate(120%);
+  --lg-spec:linear-gradient(180deg,rgba(255,255,255,.88),rgba(255,255,255,.28) 30%,transparent 52%);
+  --lg-rim:inset 0 0 0 1px rgba(255,255,255,.7),inset 0 1px 0 #fff,0 0 0 1px rgba(20,30,50,.1);}
 html[data-accent="carbon"] .card,html[data-accent="carbon"] #s-outils .card,
 html[data-accent="carbon"] .grp-card,html[data-accent="carbon"] .chrome-box,
 html[data-accent="carbon"] .chrome-sbox,html[data-accent="carbon"] .chrome-chip,
@@ -3144,8 +3146,8 @@ html[data-glass="max"][data-mode="light"]{
   --lg-blur:blur(34px) saturate(210%);
 }
 /* carbone en Maximal : le verre reste assez fumé pour que le tressage ne brouille pas le texte */
-html[data-carbon][data-glass="max"]{--lg-fill:rgba(6,7,9,.4);}
-html[data-carbon][data-glass="max"][data-mode="light"]{--lg-fill:rgba(255,255,255,.52);}
+html[data-carbon][data-glass="max"]{--lg-fill:rgba(6,7,9,.34);--lg-blur:blur(11px) saturate(190%);}
+html[data-carbon][data-glass="max"][data-mode="light"]{--lg-fill:rgba(255,255,255,.4);--lg-blur:blur(11px) saturate(160%);}
 /* en Maximal, même les petites surfaces (tuiles, lignes, séances) sont en verre flouté */
 html[data-glass="max"] :is(.ktile,.sbox,.chrome-sbox,.favtile,.hv7-ktile,.sess:not(.today),.list-row,.exg-card,.mus-card,.goal-item,.wheel,.fr-req-card,.seg-ctrl,.hv7-icon-btn,.hv7-people,.tb-gear){
   -webkit-backdrop-filter:var(--lg-blur);backdrop-filter:var(--lg-blur);}
