@@ -12415,17 +12415,22 @@ function ikRingSVG(){ return '<svg viewBox="0 0 40 40" aria-hidden="true"><circl
 function ikIslandEl(){
   if(_iki) return _iki;
   const el=document.createElement('div'); el.id='ikIsland'; el.setAttribute('role','group');
-  el.innerHTML='<button type="button" class="isl-mini"><span class="isl-ring">'+ikRingSVG()+'<i class="isl-ic"></i></span></button>'+
+  el.innerHTML='<div class="isl-drag"><button type="button" class="isl-mini"><span class="isl-ring">'+ikRingSVG()+'<i class="isl-ic"></i></span><span class="isl-mt mono"></span></button>'+
     '<div class="isl-main" role="button" tabindex="0"><span class="isl-ring">'+ikRingSVG()+'<i class="isl-ic"></i></span>'+
     '<span class="isl-txt"><b class="isl-t"></b><span class="isl-s"></span></span><span class="isl-time mono"></span><span class="isl-acts"></span>'+
-    '<span class="isl-flash"></span></div>';
+    '<span class="isl-flash"></span></div></div>';
   document.body.appendChild(el); // après #nav : sa position suit la barre (voir #nav.nav-hidden ~ #ikIsland)
+  islApplyPos(el,islSavedPos());
   el.addEventListener('click',e=>{
+    if(el._dragged){ el._dragged=false; e.stopPropagation(); return; } // la fin d'un glisser n'est pas un toucher
     const b=e.target.closest('[data-act]');
     if(b){ e.stopPropagation(); return ikIslandAct(b.dataset.k,b.dataset.act); }
+    // rangé en bulle : un toucher le redéplie (en haut ou en bas, selon où il est rangé)
+    if(el.classList.contains('bub')){ islMoveTo(/^t/.test(el.dataset.pos)?'top':'bottom'); return; }
     if(e.target.closest('.isl-mini')){ if(el._mini) ikIslandOpen(el._mini.k); return; }
     if(e.target.closest('.isl-main') && el._main) ikIslandOpen(el._main.k);
   });
+  islBindDrag(el);
   el.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ') && e.target.classList.contains('isl-main') && el._main){ e.preventDefault(); ikIslandOpen(el._main.k); } });
   _iki={el,main:el.querySelector('.isl-main'),mini:el.querySelector('.isl-mini')};
   return _iki;
@@ -12475,13 +12480,81 @@ function ikIslandTick(){
     if(main) ikIslandFill(I.main,main,true);
     if(flash){ const f=I.main.querySelector('.isl-flash'); f.textContent=flash.msg; I.main.style.setProperty('--isl-c',flash.c); }
     el._main=main||null; el._mini=mini||null;
-    el.classList.toggle('duo',!!mini);
-    if(mini) ikIslandFill(I.mini,mini,false);
+    const bub=el.classList.contains('bub');
+    el.classList.toggle('duo',!!mini && !bub);
+    // en bulle, c'est l'activité principale qui s'y montre, avec son temps
+    if(bub && main){ ikIslandFill(I.mini,main,false); const mt=I.mini.querySelector('.isl-mt'); if(mt.textContent!==main.time) mt.textContent=main.time; }
+    else if(mini) ikIslandFill(I.mini,mini,false);
   }
   if(acts.length || flash){
     const fast=show && vis[0] && vis[0].k==='chrono' && chrono.running;
     _ikiT=setTimeout(ikIslandTick, fast?100:(show?250:400));
   }
+}
+/* ÎLOT QUI SE DÉPLACE (V3.5.0) — à la façon IKORUN : on l'attrape et on le lance.
+   · vers le bas : il se range en bulle dans le coin (celui du côté où part le doigt) ;
+   · vers le haut : il devient une capsule en haut de l'écran, sous l'heure ;
+   · vers un bord : il s'accroche en bulle au coin le plus proche ;
+   · une bulle touchée se redéplie ; lancée vers le milieu, elle redevient capsule.
+   La goutte suit le doigt en s'étirant, puis rebondit à sa place (animation FLIP : on
+   mesure avant/après et on anime l'écart). La place choisie est retenue sur l'appareil. */
+const ISL_POS=['bottom','top','bl','br','tl','tr'];
+function islSavedPos(){ try{ const p=localStorage.getItem('ik_isl_pos'); return ISL_POS.includes(p)?p:'bottom'; }catch(e){ return 'bottom'; } }
+function islApplyPos(el,pos){
+  el.dataset.pos=pos; el.classList.toggle('bub',pos.length===2);
+  document.body.classList.toggle('isl-low',pos==='bottom'); // seule la capsule du bas réserve de la place
+}
+function islMoveTo(pos,fromRect){
+  const I=ikIslandEl(), el=I.el, d=el.querySelector('.isl-drag');
+  const from=fromRect||d.getBoundingClientRect();
+  el.style.transition='none';
+  islApplyPos(el,pos); try{ localStorage.setItem('ik_isl_pos',pos); }catch(e){}
+  clearTimeout(_ikiT); ikIslandTick(); // contenu à jour (bulle ↔ capsule) avant de mesurer
+  const to=d.getBoundingClientRect(), k=uiRectFactor();
+  const dx=((from.left+from.width/2)-(to.left+to.width/2))/k, dy=((from.top+from.height/2)-(to.top+to.height/2))/k;
+  d.style.transition='none'; d.style.transform='translate('+dx.toFixed(1)+'px,'+dy.toFixed(1)+'px)';
+  void d.offsetWidth; el.style.transition='';
+  if(ikMotionOff()){ d.style.transform=''; }
+  else { d.style.transition='transform .55s cubic-bezier(.3,1.35,.45,1)'; d.style.transform=''; clearTimeout(d._t); d._t=setTimeout(()=>{ d.style.transition=''; },580); }
+  try{ if(navigator.vibrate) navigator.vibrate(10); }catch(e){}
+}
+function islBindDrag(el){
+  const d=el.querySelector('.isl-drag'); let st=null;
+  el.addEventListener('pointerdown',e=>{
+    if(e.target.closest('[data-act]') || (e.pointerType==='mouse' && e.button!==0)) return;
+    st={x:e.clientX,y:e.clientY,id:e.pointerId,on:false,lx:e.clientX,ly:e.clientY,lt:performance.now(),vx:0,vy:0};
+  });
+  el.addEventListener('pointermove',e=>{
+    if(!st || e.pointerId!==st.id) return;
+    const dx=e.clientX-st.x, dy=e.clientY-st.y;
+    if(!st.on){ if(Math.hypot(dx,dy)<8) return; st.on=true; el.classList.add('dragging'); try{ el.setPointerCapture(e.pointerId); }catch(err){} }
+    const now=performance.now(), dt=Math.max(1,now-st.lt);
+    st.vx=(e.clientX-st.lx)/dt; st.vy=(e.clientY-st.ly)/dt; st.lx=e.clientX; st.ly=e.clientY; st.lt=now;
+    // la goutte s'étire dans le sens du mouvement
+    const z=uiZoomFactor(), sp=Math.min(1,Math.hypot(st.vx,st.vy)/2.2), ax=Math.abs(st.vx)>Math.abs(st.vy);
+    d.style.transition='none';
+    d.style.transform='translate('+(dx/z).toFixed(1)+'px,'+(dy/z).toFixed(1)+'px) scale('+(ax?1+sp*.08:1-sp*.05).toFixed(3)+','+(ax?1-sp*.05:1+sp*.08).toFixed(3)+')';
+  });
+  const fin=e=>{
+    if(!st || e.pointerId!==st.id) return; const s=st; st=null;
+    if(!s.on) return;
+    el.classList.remove('dragging'); el._dragged=true; setTimeout(()=>{ el._dragged=false; },350);
+    const vw=innerWidth, vh=innerHeight, fx=e.clientX, fy=e.clientY, dx=fx-s.x, dy=fy-s.y, pos=el.dataset.pos||'bottom';
+    const side=fx<vw/2?'l':'r', half=fy<vh/2?'t':'b';
+    let to=pos;
+    if(pos==='bottom'||pos==='top'){
+      if(Math.abs(dx)>vw*.28 || Math.abs(s.vx)>1.1) to=half+(dx<0?'l':'r');
+      else if(pos==='bottom' && (dy>55 || s.vy>.7)) to='b'+side;
+      else if(pos==='bottom' && (fy<vh*.38 || s.vy<-.9)) to='top';
+      else if(pos==='top' && (dy<-40 || s.vy<-.7)) to='t'+side;
+      else if(pos==='top' && (fy>vh*.62 || s.vy>.9)) to='bottom';
+    } else {
+      if(Math.abs(fx-vw/2)<vw*.18) to=fy<vh/2?'top':'bottom';
+      else to=half+side;
+    }
+    islMoveTo(to,d.getBoundingClientRect());
+  };
+  el.addEventListener('pointerup',fin); el.addEventListener('pointercancel',fin);
 }
 // La séance se réduit dans l'îlot (bouton ⌄, glisser la fenêtre vers le bas, toucher le fond)
 // sans jamais passer par closeOv('ovLive'), qui arrête ses minuteurs.
