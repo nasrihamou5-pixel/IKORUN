@@ -168,15 +168,8 @@ html[data-accent="carbon"]{
   --bg-rgb:4,4,4; --s1-rgb:13,14,16; --s2-rgb:21,22,25; --s3-rgb:31,32,35;
   --sh-e:0 8px 24px -6px rgba(195,201,209,.45),0 2px 8px -2px rgba(195,201,209,.28);
   --glass-border:rgba(220,224,229,.22); --glass-border-soft:rgba(220,224,229,.09);
-  /* tressage twill 2×2 (deux nappes croisées à haut contraste) + filet chromé qui balaie la carte */
-  --glass-shine:
-    linear-gradient(112deg,rgba(255,255,255,.20) 6%,rgba(255,255,255,.03) 18%,transparent 34%),
-    repeating-linear-gradient(45deg,rgba(255,255,255,.07) 0 2px,rgba(0,0,0,.62) 2px 4px,rgba(255,255,255,.03) 4px 6px,rgba(0,0,0,.5) 6px 8px),
-    repeating-linear-gradient(-45deg,rgba(255,255,255,.04) 0 2px,rgba(0,0,0,.46) 2px 4px,transparent 4px 6px,rgba(0,0,0,.3) 6px 8px);
-  --chrome-base:
-    repeating-linear-gradient(45deg,rgba(255,255,255,.06) 0 2px,rgba(0,0,0,.65) 2px 4px,rgba(255,255,255,.02) 4px 6px,rgba(0,0,0,.5) 6px 8px),
-    repeating-linear-gradient(-45deg,rgba(255,255,255,.03) 0 2px,rgba(0,0,0,.5) 2px 4px,transparent 4px 6px,rgba(0,0,0,.32) 6px 8px),
-    linear-gradient(165deg,#34373c 0%,#17181b 38%,#060607 62%,#212327 100%);
+  --glass-shine:linear-gradient(112deg,rgba(255,255,255,.18) 6%,rgba(255,255,255,.03) 18%,transparent 34%);
+  --chrome-base:linear-gradient(165deg,#34373c 0%,#17181b 38%,#060607 62%,#212327 100%);
   --chrome-border:rgba(216,221,227,.32);
   --chrome-edge:linear-gradient(180deg,rgba(230,234,238,.6),rgba(230,234,238,0) 30%);
   --chrome-sheen:linear-gradient(100deg,transparent 24%,rgba(230,234,238,.7) 46%,rgba(230,234,238,.08) 55%,transparent 72%);
@@ -187,27 +180,35 @@ html[data-mode="light"][data-accent="carbon"]{
   /* chrome/argent quasi blanc du dark mode invisible sur fond clair → acier brossé foncé, lisible */
   --e:#43474E; --e2:#22252A; --e-rgb:67,71,78; --e2-rgb:34,37,42;
   --sh-e:0 8px 22px -6px rgba(67,71,78,.3),0 2px 6px -2px rgba(67,71,78,.2);
-  /* le tressage sombre du dark mode écraserait le texte sur fond clair → reflet chromé doux, sans nappes noires */
-  --glass-shine:
-    linear-gradient(112deg,rgba(255,255,255,.55) 6%,rgba(255,255,255,.1) 20%,transparent 38%),
-    repeating-linear-gradient(45deg,rgba(20,22,26,.05) 0 2px,transparent 2px 6px),
-    repeating-linear-gradient(-45deg,rgba(20,22,26,.04) 0 2px,transparent 2px 6px);
+  --glass-shine:linear-gradient(112deg,rgba(255,255,255,.55) 6%,rgba(255,255,255,.1) 20%,transparent 38%);
 }
-html[data-accent="carbon"] body::before{
-  background:
-    radial-gradient(140% 60% at 50% -6%, rgba(var(--e-rgb),.14), transparent 58%),
-    radial-gradient(90% 50% at 82% 4%, rgba(var(--e2-rgb),.07), transparent 60%),
-    radial-gradient(80% 45% at 8% 96%, rgba(var(--e-rgb),.05), transparent 62%),
-    var(--bg);
-}
-html[data-accent="carbon"] body::after{
-  opacity:.4; mix-blend-mode:overlay;
-  background-image:
-    repeating-linear-gradient(45deg, rgba(255,255,255,.5) 0 2px, rgba(0,0,0,.6) 2px 4px),
-    repeating-linear-gradient(-45deg, rgba(255,255,255,.32) 0 2px, rgba(0,0,0,.4) 2px 4px);
-  background-size:6px 6px,6px 6px;
-}
-html[data-mode="light"][data-accent="carbon"] body::after{opacity:.05;}
+/* PLAQUE DE CARBONE (V3.5.0) — html[data-carbon="twill|forged"], posé par carbonApply :
+   deux tuiles calculées au canevas (lumière à 0° et à 90°) fondues l'une dans l'autre selon
+   le défilement ou l'inclinaison, un vernis qui glisse par-dessus, puis une vignette. */
+#ikCarbon{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:#07080a;}
+#ikCarbon i{position:absolute;inset:0;background-image:var(--cf-a,none);background-size:var(--cf-sz,28px) var(--cf-sz,28px);}
+#ikCarbon i.b{background-image:var(--cf-b,none);opacity:.5;will-change:opacity;}
+#ikCarbon b{position:absolute;inset:-30%;will-change:transform;
+  background:linear-gradient(118deg,transparent 30%,rgba(255,255,255,.035) 40%,rgba(255,255,255,.1) 47%,rgba(255,255,255,.16) 50%,rgba(255,255,255,.06) 54%,transparent 64%),
+    radial-gradient(38% 26% at 28% 30%,rgba(255,255,255,.07),transparent 70%);}
+html[data-carbon] body::before{background:#07080a;}
+html[data-carbon] body::after{inset:0;opacity:1;mix-blend-mode:normal;background-size:auto;
+  background-image:radial-gradient(130% 75% at 50% 0%,rgba(0,0,0,0) 35%,rgba(0,0,0,.55) 100%),linear-gradient(180deg,rgba(0,0,0,.16),rgba(0,0,0,.42));}
+/* en clair : carbone argent (fibre aluminisée), vernis plus brillant */
+html[data-carbon][data-mode="light"] #ikCarbon{background:#c9ced4;}
+html[data-carbon][data-mode="light"] #ikCarbon b{background:linear-gradient(118deg,transparent 30%,rgba(255,255,255,.25) 44%,rgba(255,255,255,.55) 50%,rgba(255,255,255,.2) 56%,transparent 68%);}
+html[data-carbon][data-mode="light"] body::before{background:#c9ced4;}
+html[data-carbon][data-mode="light"] body::after{background-image:radial-gradient(130% 75% at 50% 0%,rgba(255,255,255,.22) 30%,rgba(236,239,242,.66) 100%),linear-gradient(180deg,rgba(255,255,255,.42),rgba(255,255,255,.3));}
+/* cartes : verre fumé posé sur la plaque, vernis net en haut, arête chromée. Le voile est
+   volontairement léger et le flou quasi nul — sinon le tressage se noie sous la carte et
+   ne se voit plus (c'était le cas avant : « on dirait du mono », ou pire, du bruit flou). */
+html[data-carbon]{--lg-fill:rgba(5,6,8,.4);--lg-blur:blur(3px) saturate(150%);
+  --lg-spec:linear-gradient(180deg,rgba(255,255,255,.1) 0,rgba(255,255,255,.03) 22%,transparent 42%),radial-gradient(120% 70% at 12% -20%,rgba(255,255,255,.14),transparent 55%);
+  --lg-rim:inset 0 0 0 1px rgba(220,226,232,.14),inset 0 1px 0 rgba(255,255,255,.3),inset 0 -1px 0 rgba(0,0,0,.45);
+  --chrome-base:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,0) 42%,rgba(0,0,0,.34)),var(--cf-a,none) 0 0/var(--cf-sz,28px) var(--cf-sz,28px),#0a0b0d;}
+html[data-carbon][data-mode="light"]{--lg-fill:rgba(255,255,255,.5);--lg-blur:blur(3px) saturate(120%);
+  --lg-spec:linear-gradient(180deg,rgba(255,255,255,.88),rgba(255,255,255,.28) 30%,transparent 52%);
+  --lg-rim:inset 0 0 0 1px rgba(255,255,255,.7),inset 0 1px 0 #fff,0 0 0 1px rgba(20,30,50,.1);}
 html[data-accent="carbon"] .card,html[data-accent="carbon"] #s-outils .card,
 html[data-accent="carbon"] .grp-card,html[data-accent="carbon"] .chrome-box,
 html[data-accent="carbon"] .chrome-sbox,html[data-accent="carbon"] .chrome-chip,
@@ -237,6 +238,9 @@ html[data-accent="carbon"] .accent-dot.on{box-shadow:var(--sh-sm),0 0 0 1px rgba
 .accent-dot[data-a="green"]{background:linear-gradient(135deg,#A6D687,#5E9339);}
 .accent-dot[data-a="brown"]{background:linear-gradient(135deg,#DDA873,#98602E);}
 .accent-dot[data-a="yellow"]{background:linear-gradient(135deg,#FFDD75,#D9A518);}
+.accent-dot[data-a="forged"]{background:
+    linear-gradient(115deg,transparent 32%,rgba(255,255,255,.8) 48%,transparent 62%),
+    conic-gradient(from 30deg at 40% 60%,#15171a,#5c6168,#101113,#3c4046,#0b0c0d,#6e737a,#1b1d20,#15171a);}
 .accent-dot[data-a="carbon"]{background:
     linear-gradient(115deg,transparent 32%,rgba(255,255,255,.95) 48%,transparent 64%),
     repeating-linear-gradient(45deg,#2b2d31 0 2px,#050506 2px 4px),
@@ -3074,11 +3078,29 @@ html.easy-mode #toast{background:var(--s1);border:2px solid var(--e);box-shadow:
    mais Safari le recalculait à chaque image du défilement — jusqu'à 13 à la fois sur
    l'accueil. Gardé là où du contenu passe vraiment dessous : barre de titre compacte,
    barre du bas, fenêtres, toasts. */
-html:not([data-glass="max"]) #scroll *:not(.topbar){-webkit-backdrop-filter:none;backdrop-filter:none;} /* rendu en mode Maximal */
+/* V3.5.0 : en Maximal aussi. Derrière les cartes qui défilent il n'y a que le fond de
+   halos, déjà flou : le flou de 34 px y était invisible mais le défilement tombait à
+   13-24 images/s (Profil, Stats, Musculation). Les surfaces fixes gardent le vrai verre. */
+#scroll *:not(.topbar){-webkit-backdrop-filter:none;backdrop-filter:none;}
 /* GESTES (v107) — glisser depuis le bord gauche ferme la page plein écran de l'app ;
    sans ceci, Chrome/Android (et IKORUN ouvert dans un onglet) faisait « page précédente »
    et sortait de l'app. */
 html,body{overscroll-behavior-x:none;touch-action:pan-x pan-y;} /* ni pincer ni double-toucher pour zoomer (v109) */
+/* UNE APP, PAS UNE PAGE WEB (V3.5.0) — « des pages bougent de droite à gauche, de haut en
+   bas, comme une page Google ; on peut zoomer sur certaines ».
+   · touch-action n'est pas hérité et chaque zone qui défile repart de zéro : le pincement
+     restait donc permis dans la page qui défile, les fiches et les pages plein écran.
+     Posé sur tout, il ne laisse que le défilement ; les gestes maison gardent le leur
+     (sélecteurs plus précis : cartes à glisser, lignes de séries).
+   · la page elle-même ne rebondit plus (overscroll-behavior ; sur les iOS plus anciens,
+     voir le garde-fou tactile dans app.js), et une zone qui défile ne passe jamais son
+     élan à la page derrière.
+   · aucune zone ne défile en largeur : deux fiches (Apparence, Notifications) débordaient
+     de 5 px et glissaient de gauche à droite sous le doigt. */
+*{touch-action:pan-x pan-y;}
+input[type="range"],.ik-dial{touch-action:pan-y;} /* le glissement horizontal reste au curseur */
+html,body{overscroll-behavior:none;}
+:is(#scroll,.ov-card,.ov-body-scroll,#profileEditBody,.ob-step,#login,#progBody){overscroll-behavior:contain;overflow-x:hidden;}
 /* SIGNATURES IKORUN (v107) — discrètes : fin de chaque écran, en-tête des pages plein
    écran, indicateur « tirer pour actualiser ». */
 .ik-sign{display:flex;flex-direction:column;align-items:center;gap:5px;margin:30px auto 4px;opacity:.55;text-align:center;}
@@ -3123,6 +3145,9 @@ html[data-glass="max"][data-mode="light"]{
   --lg-rim:inset 0 0 0 1px rgba(255,255,255,.9),inset 0 1.5px 0 #fff,0 0 0 1px rgba(20,30,50,.06),inset 1px 0 0 rgba(var(--e2-rgb),.3),inset 0 -1px 0 rgba(var(--e-rgb),.24);
   --lg-blur:blur(34px) saturate(210%);
 }
+/* carbone en Maximal : le verre reste assez fumé pour que le tressage ne brouille pas le texte */
+html[data-carbon][data-glass="max"]{--lg-fill:rgba(6,7,9,.34);--lg-blur:blur(11px) saturate(190%);}
+html[data-carbon][data-glass="max"][data-mode="light"]{--lg-fill:rgba(255,255,255,.4);--lg-blur:blur(11px) saturate(160%);}
 /* en Maximal, même les petites surfaces (tuiles, lignes, séances) sont en verre flouté */
 html[data-glass="max"] :is(.ktile,.sbox,.chrome-sbox,.favtile,.hv7-ktile,.sess:not(.today),.list-row,.exg-card,.mus-card,.goal-item,.wheel,.fr-req-card,.seg-ctrl,.hv7-icon-btn,.hv7-people,.tb-gear){
   -webkit-backdrop-filter:var(--lg-blur);backdrop-filter:var(--lg-blur);}
@@ -3259,16 +3284,18 @@ html[data-glass="max"] :is(.card,.grp-card,.kchart-card,.kduo-card,.list-row,.fa
 /* boutons « gelée » (Maximal) */
 .ik-jelly{animation:ikJelly .55s cubic-bezier(.2,.8,.3,1.2);}
 @keyframes ikJelly{0%{transform:scale(1);}22%{transform:scale(1.09,.88);}48%{transform:scale(.95,1.07);}72%{transform:scale(1.02,.98);}100%{transform:scale(1);}}
-/* reflets vivants (Maximal) : ils suivent l'inclinaison du téléphone, ou le défilement */
-html[data-glass="max"]{
-  --lg-spec:linear-gradient(calc(135deg + var(--tilt-x,0) * 28deg),rgba(255,255,255,.26) calc(var(--tilt-y,0) * 14%),rgba(255,255,255,.07) calc(26% + var(--tilt-y,0) * 14%),transparent calc(44% + var(--tilt-y,0) * 14%)),
-    radial-gradient(120% 70% at calc(12% + var(--tilt-x,0) * 40%) calc(-14% + var(--tilt-y,0) * 22%),rgba(255,255,255,.32),transparent 52%),
-    radial-gradient(90% 60% at 100% 120%,rgba(var(--e2-rgb),.24),transparent 60%);
-}
-html[data-glass="max"][data-mode="light"]{
-  --lg-spec:linear-gradient(calc(135deg + var(--tilt-x,0) * 28deg),rgba(255,255,255,.9) calc(var(--tilt-y,0) * 14%),rgba(255,255,255,.2) calc(26% + var(--tilt-y,0) * 14%),transparent calc(44% + var(--tilt-y,0) * 14%)),
-    radial-gradient(90% 60% at 100% 120%,rgba(var(--e-rgb),.16),transparent 60%);
-}
+/* reflets vivants (Maximal, V3.5.0) : un calque de lumière unique au-dessus de la page
+   (#ikGlare, voir app.js) — une bande diagonale et un éclat, qui glissent avec
+   l'inclinaison ou le défilement. Seul son transform change : rien à recalculer ailleurs. */
+#ikGlare{position:fixed;inset:-35%;z-index:9998;pointer-events:none;display:none;will-change:transform;transition:transform .12s linear;}
+html[data-glass="max"] #ikGlare{display:block;}
+#ikGlare i,#ikGlare b{position:absolute;inset:0;}
+#ikGlare i{background:linear-gradient(118deg,transparent 41%,rgba(255,255,255,.07) 46%,rgba(255,255,255,.16) 49.5%,rgba(255,255,255,.07) 53%,transparent 58%),
+  linear-gradient(118deg,transparent 60%,rgba(255,255,255,.05) 62.5%,transparent 65%);}
+#ikGlare b{background:radial-gradient(22% 16% at 34% 30%,rgba(255,255,255,.13),transparent 70%);}
+html[data-mode="light"] #ikGlare i{background:linear-gradient(118deg,transparent 41%,rgba(255,255,255,.22) 46%,rgba(255,255,255,.45) 49.5%,rgba(255,255,255,.22) 53%,transparent 58%);}
+html[data-mode="light"] #ikGlare b{background:radial-gradient(22% 16% at 34% 30%,rgba(255,255,255,.35),transparent 70%);}
+html.easy-mode #ikGlare{display:none !important;}
 @media (prefers-reduced-motion: reduce){ #nav-pill.liquid{transform:none;} .ik-jelly{animation:none;} .ik-touchlight{display:none;} }
 
 /* ===================================================================
@@ -3448,8 +3475,8 @@ html.easy-mode .list-row .lr-sub{font-size:12px;}
   transition:transform .55s var(--ease-spring),opacity .22s ease,bottom .38s var(--ease-spring);}
 #ikIsland.on{pointer-events:auto;opacity:1;transform:translate(-50%,0) scale(1);}
 #nav.nav-hidden ~ #ikIsland{bottom:calc(10px + env(safe-area-inset-bottom));}
-body.isl-on #scroll{padding-bottom:calc(214px + env(safe-area-inset-bottom));}
-body.isl-on #toast{bottom:172px;}
+body.isl-on.isl-low #scroll{padding-bottom:calc(214px + env(safe-area-inset-bottom));}
+body.isl-on.isl-low #toast{bottom:172px;}
 .isl-main,.isl-mini{--isl-c:var(--e);position:relative;overflow:hidden;color:#fff;cursor:pointer;
   background:radial-gradient(120% 140% at 0% 0%,color-mix(in srgb,var(--isl-c) 22%,transparent),transparent 58%),linear-gradient(180deg,#1b1f27,#07090c);
   border:1px solid rgba(255,255,255,.09);
@@ -3651,61 +3678,255 @@ html[data-mode="light"][data-accent="clay"] body::before{
 .mat-ico.clay{border-radius:14px;background:var(--grad-btn);box-shadow:inset 3px 4px 6px -2px rgba(255,255,255,.55),inset -4px -5px 8px -3px rgba(0,0,0,.4),0 6px 10px -5px rgba(var(--e-rgb),.7);}
 
 /* ===================================================================
-   ANNIVERSAIRE (V3.4.0) — html[data-bday], posé par applyTheme le jour J seulement.
-   La couleur choisie cède la place à un rose et or de fête ; des confettis ronds
-   tombent lentement derrière le contenu (un motif qui glisse d'une tuile : transform
-   seul, en boucle parfaite) ; l'Accueil affiche la carte de vœux (.bday-card).
+   JOURS SPÉCIAUX (V3.5.0) — html[data-fete="…"], posé par applyTheme ces jours-là :
+   bday, race, record, ramadan, qadr, mawlid, achoura, muharram, isra, eidFitr, eidAdha,
+   xmas, newyear, halloween, sportDay.
+   1. couleurs de la fête (l'accent choisi revient le lendemain) ;
+   2. carte sur l'Accueil (.fete-card), un fond sombre à elle, lisible en clair comme en sombre ;
+   3. calque #ikFete : personnages posés sur la barre du bas, scènes qui passent (voir app.js).
+   Tout bouge en transform/opacity ; rien en mode simplifié ni avec « réduire les animations ».
    =================================================================== */
-html[data-bday]{
-  --e:#FF4FA0; --e2:#FFC94D; --e-rgb:255,79,160; --e2-rgb:255,201,77;
-  --grad-btn:linear-gradient(135deg,#D6246F,#C2410C 55%,#B45309);
-  --accent-ink:#FFFFFF; --accent-ink-shadow:0 1px 2px rgba(0,0,0,.45);
-}
-html[data-bday][data-mode="light"]{--e:#C2186B; --e2:#8A5A00; --e-rgb:194,24,107; --e2-rgb:138,90,0;
-  --grad-btn:linear-gradient(135deg,#D6246F,#C2410C 55%,#B45309);}
-/* le jaune et le mono sombres écrivent en noir sur leurs boutons : pas sur ceux de la fête */
-html[data-bday][data-mode][data-accent] :is(.btn:not(.ghost),.hv7-act.main){color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45);}
-html[data-bday] body::before{
-  background:
-    radial-gradient(38% 28% at 12% 8%,rgba(255,79,160,.38),transparent 70%),
-    radial-gradient(34% 26% at 90% 20%,rgba(255,201,77,.3),transparent 70%),
-    radial-gradient(36% 28% at 16% 70%,rgba(140,110,255,.26),transparent 72%),
-    radial-gradient(34% 26% at 86% 90%,rgba(60,210,230,.22),transparent 72%),
-    var(--bg) !important;}
-html[data-bday][data-mode="light"] body::before{
-  background:
-    radial-gradient(38% 28% at 12% 8%,rgba(255,79,160,.22),transparent 70%),
-    radial-gradient(34% 26% at 90% 20%,rgba(255,201,77,.24),transparent 70%),
-    radial-gradient(36% 28% at 16% 70%,rgba(140,110,255,.16),transparent 72%),
-    radial-gradient(34% 26% at 86% 90%,rgba(60,210,230,.16),transparent 72%),
-    var(--bg) !important;}
-html[data-bday] body::after{inset:-160px 0 0 0;opacity:.55;mix-blend-mode:normal;
+html[data-fete="bday"][data-mode]{--e:#FF5FA2;--e2:#FFC94D;--e-rgb:255,95,162;--e2-rgb:255,201,77;--grad-btn:linear-gradient(135deg,#E23A86,#9B4DE0);}
+html[data-fete="bday"][data-mode="light"]{--e:#C2186B;--e2:#8A5A00;--e-rgb:194,24,107;--e2-rgb:138,90,0;}
+html[data-fete="record"][data-mode]{--e:#FFC83D;--e2:#FF9A3D;--e-rgb:255,200,61;--e2-rgb:255,154,61;--grad-btn:linear-gradient(135deg,#D99A06,#A86B00);}
+html[data-fete="record"][data-mode="light"]{--e:#8A5A00;--e2:#A33D00;--e-rgb:138,90,0;--e2-rgb:163,61,0;}
+html[data-fete="ramadan"][data-mode]{--e:#F2C14E;--e2:#8C9CFF;--e-rgb:242,193,78;--e2-rgb:140,156,255;--grad-btn:linear-gradient(135deg,#B8860B,#7A4E0B);}
+html[data-fete="ramadan"][data-mode="light"]{--e:#8A5E00;--e2:#3F4FD6;--e-rgb:138,94,0;--e2-rgb:63,79,214;}
+html:is([data-fete="eidFitr"],[data-fete="eidAdha"])[data-mode]{--e:#2FD08A;--e2:#F2C14E;--e-rgb:47,208,138;--e2-rgb:242,193,78;--grad-btn:linear-gradient(135deg,#12A26A,#0B6E4D);}
+html:is([data-fete="eidFitr"],[data-fete="eidAdha"])[data-mode="light"]{--e:#0B7A50;--e2:#8A5E00;--e-rgb:11,122,80;--e2-rgb:138,94,0;}
+html:is([data-fete="mawlid"],[data-fete="achoura"],[data-fete="muharram"])[data-mode]{--e:#2FD08A;--e2:#F2C14E;--e-rgb:47,208,138;--e2-rgb:242,193,78;--grad-btn:linear-gradient(135deg,#12A26A,#B8860B);}
+html:is([data-fete="mawlid"],[data-fete="achoura"],[data-fete="muharram"])[data-mode="light"]{--e:#0B7A50;--e2:#8A5E00;--e-rgb:11,122,80;--e2-rgb:138,94,0;}
+html:is([data-fete="qadr"],[data-fete="isra"])[data-mode]{--e:#8C9CFF;--e2:#F2C14E;--e-rgb:140,156,255;--e2-rgb:242,193,78;--grad-btn:linear-gradient(135deg,#3F4FD6,#7A4E0B);}
+html:is([data-fete="qadr"],[data-fete="isra"])[data-mode="light"]{--e:#3F4FD6;--e2:#8A5E00;--e-rgb:63,79,214;--e2-rgb:138,94,0;}
+html[data-fete="sportDay"][data-mode]{--e:#3DA5F5;--e2:#FFA83D;--e-rgb:61,165,245;--e2-rgb:255,168,61;--grad-btn:linear-gradient(135deg,#1477C4,#C97010);}
+html[data-fete="sportDay"][data-mode="light"]{--e:#0C63A8;--e2:#A85800;--e-rgb:12,99,168;--e2-rgb:168,88,0;}
+html[data-fete="xmas"][data-mode]{--e:#FF4D5E;--e2:#3DDC84;--e-rgb:255,77,94;--e2-rgb:61,220,132;--grad-btn:linear-gradient(135deg,#D7263D,#9E1A2C);}
+html[data-fete="xmas"][data-mode="light"]{--e:#C8102E;--e2:#1B7F3B;--e-rgb:200,16,46;--e2-rgb:27,127,59;}
+html[data-fete="newyear"][data-mode]{--e:#F5C542;--e2:#9FB4FF;--e-rgb:245,197,66;--e2-rgb:159,180,255;--grad-btn:linear-gradient(135deg,#C99A2E,#7E5E14);}
+html[data-fete="newyear"][data-mode="light"]{--e:#8A6400;--e2:#3F55C8;--e-rgb:138,100,0;--e2-rgb:63,85,200;}
+html[data-fete="halloween"][data-mode]{--e:#FF8A1F;--e2:#A970FF;--e-rgb:255,138,31;--e2-rgb:169,112,255;--grad-btn:linear-gradient(135deg,#E8590C,#9A3412);}
+html[data-fete="halloween"][data-mode="light"]{--e:#C2410C;--e2:#6D28D9;--e-rgb:194,65,12;--e2-rgb:109,40,217;}
+/* le jaune et le mono sombres écrivent en noir sur leurs boutons : pas ceux des fêtes */
+html[data-fete]:not([data-fete="race"])[data-mode][data-accent] :is(.btn:not(.ghost),.hv7-act.main){color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45);}
+html[data-fete]:not([data-fete="race"]){--accent-ink:#FFFFFF;--accent-ink-shadow:0 1px 2px rgba(0,0,0,.45);}
+/* Halloween : nuit violette, lueur de citrouille en bas */
+html[data-fete="halloween"][data-mode] body::before{background:
+  radial-gradient(70% 40% at 12% 100%,rgba(255,120,20,.3),transparent 70%),
+  radial-gradient(80% 45% at 92% 0%,rgba(140,70,255,.32),transparent 70%),
+  radial-gradient(130% 90% at 50% 45%,transparent 55%,rgba(0,0,0,.5)),var(--bg) !important;}
+html[data-fete="halloween"][data-mode="light"] body::before{background:
+  radial-gradient(70% 40% at 12% 100%,rgba(255,120,20,.16),transparent 70%),
+  radial-gradient(80% 45% at 92% 0%,rgba(140,70,255,.14),transparent 70%),var(--bg) !important;}
+/* ciel derrière le contenu : neige à Noël, étoiles qui scintillent au Ramadan, à l'Aïd et au Nouvel an
+   (une tuile qui glisse ou qui respire : transform/opacity d'un seul calque) */
+html[data-fete="xmas"][data-mode] body::after{inset:-240px 0 0 0;opacity:.5;mix-blend-mode:normal;filter:none;
   background-image:
-    radial-gradient(circle at 12px 18px,#FF4FA0 0 3px,transparent 3.5px),
-    radial-gradient(circle at 74px 40px,#FFC94D 0 2.5px,transparent 3px),
-    radial-gradient(circle at 128px 12px,#8C6EFF 0 3px,transparent 3.5px),
-    radial-gradient(circle at 42px 96px,#3CD2E6 0 2.5px,transparent 3px),
-    radial-gradient(circle at 108px 118px,#FF8A3D 0 3px,transparent 3.5px),
-    radial-gradient(circle at 150px 76px,#4FE39B 0 2px,transparent 2.5px);
-  background-size:160px 160px;animation:bdayFall 16s linear infinite;will-change:transform;}
-html[data-bday][data-mode="light"] body::after{opacity:.45;}
-@keyframes bdayFall{from{transform:translateY(0);}to{transform:translateY(160px);}}
-@media (prefers-reduced-motion: reduce){ html[data-bday] body::after{animation:none;} }
-html.easy-mode[data-bday] body::after{animation:none;}
-/* carte de vœux */
-.bday-card{position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;margin:0 0 12px;padding:14px 14px 14px 12px;border-radius:22px;color:#fff;
-  background:linear-gradient(120deg,#D6246F,#C2410C 55%,#B45309);box-shadow:0 16px 30px -14px rgba(214,36,111,.7),inset 0 1px 0 rgba(255,255,255,.28);}
-.bday-card::after{content:'';position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(circle at 18% 20%,rgba(255,255,255,.35) 0 2px,transparent 2.5px) 0 0/34px 30px,
-             radial-gradient(circle at 70% 60%,rgba(255,230,140,.5) 0 1.5px,transparent 2px) 0 0/28px 26px;opacity:.7;}
-.bday-cake{width:46px;height:46px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  background:rgba(255,255,255,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.35);animation:bdayBob 2.4s ease-in-out infinite;}
-@keyframes bdayBob{0%,100%{transform:translateY(0) rotate(-4deg);}50%{transform:translateY(-3px) rotate(4deg);}}
-.bday-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;position:relative;z-index:1;}
-.bday-txt b{font-weight:800;font-size:15px;line-height:1.2;letter-spacing:-.1px;}
-.bday-txt span{font-size:11.5px;opacity:.92;line-height:1.35;font-weight:600;}
-.bday-btn{position:relative;z-index:1;flex:none;border:0;border-radius:999px;padding:8px 12px;font:800 11.5px 'Inter',system-ui,sans-serif;color:#fff;
-  background:rgba(255,255,255,.2);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35);cursor:pointer;}
-.bday-btn:active{transform:scale(.94);}
-@media (prefers-reduced-motion: reduce){ .bday-cake{animation:none;} }
-html.easy-mode .bday-cake{animation:none;}
+    radial-gradient(circle at 22px 30px,rgba(255,255,255,.95) 0 2.2px,rgba(255,255,255,0) 3.6px),radial-gradient(circle at 96px 84px,rgba(255,255,255,.95) 0 1.4px,rgba(255,255,255,0) 2.8px),
+    radial-gradient(circle at 160px 22px,rgba(255,255,255,.95) 0 2.6px,rgba(255,255,255,0) 4.0px),radial-gradient(circle at 58px 158px,rgba(255,255,255,.95) 0 1.7px,rgba(255,255,255,0) 3.1px),
+    radial-gradient(circle at 184px 134px,rgba(255,255,255,.95) 0 1.2px,rgba(255,255,255,0) 2.6px),radial-gradient(circle at 126px 196px,rgba(255,255,255,.95) 0 2.1px,rgba(255,255,255,0) 3.5px),
+    radial-gradient(circle at 12px 212px,rgba(255,255,255,.95) 0 1.3px,rgba(255,255,255,0) 2.7px);
+  background-size:240px 240px;animation:fxSnow 16s linear infinite;will-change:transform;}
+html[data-fete="xmas"][data-mode="light"] body::after{opacity:.45;filter:brightness(.72) sepia(.3) hue-rotate(170deg) saturate(2.2);}
+@keyframes fxSnow{from{transform:translateY(0);}to{transform:translateY(240px);}}
+html:is([data-fete="ramadan"],[data-fete="eidFitr"],[data-fete="eidAdha"],[data-fete="newyear"],[data-fete="mawlid"],[data-fete="achoura"],[data-fete="muharram"],[data-fete="qadr"],[data-fete="isra"])[data-mode] body::after{inset:0;opacity:.8;mix-blend-mode:normal;filter:none;
+  background-image:
+    radial-gradient(circle at 30px 40px,#FFE9A0 0 1.3px,transparent 1.9px),radial-gradient(circle at 150px 20px,#fff 0 1px,transparent 1.6px),
+    radial-gradient(circle at 110px 120px,#FFE9A0 0 1.6px,transparent 2.2px),radial-gradient(circle at 200px 90px,#fff 0 .9px,transparent 1.5px),
+    radial-gradient(circle at 60px 190px,#fff 0 1.2px,transparent 1.8px),radial-gradient(circle at 180px 210px,#FFE9A0 0 1px,transparent 1.6px);
+  background-size:230px 230px;-webkit-mask:linear-gradient(180deg,#000 0,#000 45%,transparent 85%);mask:linear-gradient(180deg,#000 0,#000 45%,transparent 85%);
+  animation:fxTwinkle 3.2s ease-in-out infinite alternate;}
+html:is([data-fete="ramadan"],[data-fete="eidFitr"],[data-fete="eidAdha"],[data-fete="newyear"],[data-fete="mawlid"],[data-fete="achoura"],[data-fete="muharram"],[data-fete="qadr"],[data-fete="isra"])[data-mode="light"] body::after{opacity:.5;filter:brightness(.55) sepia(1) saturate(3);}
+@keyframes fxTwinkle{from{opacity:.35;}to{opacity:.85;}}
+
+/* ---------- carte de l'Accueil ---------- */
+.fete-card{position:relative;overflow:hidden;isolation:isolate;display:flex;align-items:center;gap:14px;margin:0 0 12px;padding:16px 16px 16px 14px;min-height:112px;
+  border-radius:24px;color:#fff;background:var(--fc-bg);
+  box-shadow:0 18px 34px -18px var(--fc-glow),inset 0 1px 0 rgba(255,255,255,.24),inset 0 0 0 1px rgba(255,255,255,.07);}
+.fete-card::before{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,0) 44%),radial-gradient(120% 90% at 0% 100%,rgba(0,0,0,.22),transparent 60%);}
+.fete-card.off{filter:saturate(.55) brightness(.9);}
+.fc-deco{position:absolute;inset:0;z-index:0;pointer-events:none;}
+.fc-deco > i{position:absolute;display:block;}
+.fc-deco svg,.fc-art svg{display:block;width:100%;height:auto;overflow:visible;}
+.fc-art{position:relative;z-index:1;flex:none;width:78px;height:78px;border-radius:24px;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.11);box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -10px 18px -10px rgba(0,0,0,.35),0 10px 20px -12px rgba(0,0,0,.6);}
+.fc-art > svg{width:62px;animation:fcBob 3.2s ease-in-out infinite;}
+@keyframes fcBob{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-3px) rotate(3deg);}}
+.fc-txt{position:relative;z-index:1;flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:4px;}
+.fc-txt b{font-family:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:700;font-size:16px;line-height:1.22;letter-spacing:-.25px;text-shadow:0 1px 10px rgba(0,0,0,.25);}
+.fc-txt span{font-size:12px;line-height:1.42;font-weight:600;color:rgba(255,255,255,.88);}
+.fc-btn{margin-top:6px;border:0;border-radius:999px;padding:7px 13px;font:800 11.5px 'Inter',system-ui,sans-serif;color:#fff;cursor:pointer;
+  background:rgba(255,255,255,.16);box-shadow:inset 0 0 0 1px rgba(255,255,255,.3),inset 0 1px 0 rgba(255,255,255,.3);}
+.fc-btn:active{transform:scale(.94);}
+html[dir="rtl"] .fete-card{padding:16px 14px 16px 16px;}
+/* chaque fête, son décor */
+.fc-bday{--fc-bg:radial-gradient(90% 90% at 100% 0%,rgba(255,201,77,.34),transparent 55%),linear-gradient(135deg,#3A0E4F 0%,#7B1B6A 52%,#D23C7E 100%);--fc-glow:rgba(210,60,126,.8);padding-top:24px;}
+.fc-bunt{left:-4px;right:-4px;top:-2px;height:34px;}
+.fc-bunt svg{height:34px;}
+.fc-bal{width:17px;right:16px;bottom:8px;opacity:.9;animation:fcFloat 4s ease-in-out infinite;}
+.fc-bal.b2{width:13px;right:38px;bottom:2px;animation-delay:-1.6s;opacity:.75;}
+@keyframes fcFloat{0%,100%{transform:translateY(0) rotate(-4deg);}50%{transform:translateY(-6px) rotate(4deg);}}
+.fc-race{--fc-bg:radial-gradient(80% 90% at 0% 0%,rgba(var(--e-rgb),.45),transparent 60%),linear-gradient(150deg,#0E1624,#18263F 60%,#22365A);--fc-glow:rgba(var(--e-rgb),.6);}
+.fc-check{left:0;right:0;bottom:0;height:8px;opacity:.5;background:repeating-conic-gradient(#fff 0 25%,transparent 0 50%) 0 0/8px 8px;}
+.fc-record{--fc-bg:radial-gradient(90% 90% at 12% 30%,rgba(255,214,90,.42),transparent 60%),linear-gradient(150deg,#2B1B00,#5E3D00 55%,#9A6500);--fc-glow:rgba(217,154,6,.75);}
+.fc-rays{left:-10%;top:-60%;width:120%;aspect-ratio:1;opacity:.18;border-radius:50%;
+  background:repeating-conic-gradient(from 0deg,#FFE9A0 0 6deg,transparent 6deg 18deg);animation:fcSpin 40s linear infinite;
+  -webkit-mask:radial-gradient(closest-side,#000 20%,transparent);mask:radial-gradient(closest-side,#000 20%,transparent);}
+@keyframes fcSpin{to{transform:rotate(360deg);}}
+.fc-eidFitr,.fc-eidAdha{--fc-bg:radial-gradient(70% 80% at 100% 0%,rgba(242,193,78,.3),transparent 60%),linear-gradient(150deg,#053A2E,#0A5E47 55%,#12906A);--fc-glow:rgba(18,144,106,.75);}
+.fc-ramadan{--fc-bg:radial-gradient(70% 80% at 100% 0%,rgba(242,193,78,.28),transparent 60%),linear-gradient(160deg,#0A0F2E,#1A2266 58%,#34308A);--fc-glow:rgba(70,70,190,.75);}
+/* Mawlid, Achoura, Nouvel an musulman : même famille verte/or que l'Aïd, teintes propres */
+.fc-mawlid{--fc-bg:radial-gradient(70% 80% at 100% 0%,rgba(242,193,78,.32),transparent 60%),linear-gradient(150deg,#241A05,#4A3308 55%,#7A5410);--fc-glow:rgba(154,110,16,.75);}
+.fc-achoura{--fc-bg:radial-gradient(70% 80% at 100% 0%,rgba(242,193,78,.3),transparent 60%),linear-gradient(150deg,#0A2E1A,#0F5E36 55%,#189A58);--fc-glow:rgba(24,154,88,.75);}
+.fc-muharram{--fc-bg:radial-gradient(70% 80% at 100% 0%,rgba(185,140,255,.3),transparent 60%),linear-gradient(150deg,#160A3E,#2E1A6E 55%,#4A2E9E);--fc-glow:rgba(74,46,158,.75);}
+/* Nuit du Destin, Isra wal Mi'raj : nuit sobre, presque sans lueur — ce sont des nuits de recueillement */
+:is(.fc-qadr,.fc-isra){--fc-bg:radial-gradient(70% 80% at 100% 0%,rgba(140,156,255,.22),transparent 60%),linear-gradient(160deg,#05050F,#0A0A28 55%,#12123D);--fc-glow:rgba(20,20,60,.6);}
+/* Journée du sport : énergique, bleu vers orange */
+.fc-sportDay{--fc-bg:radial-gradient(70% 80% at 100% 0%,rgba(255,168,61,.3),transparent 60%),linear-gradient(150deg,#051A2E,#0A3D6B 55%,#1477C4);--fc-glow:rgba(20,119,196,.7);}
+.fc-moon{width:34px;right:12px;top:10px;opacity:.95;}
+:is(.fc-eidFitr,.fc-eidAdha,.fc-ramadan,.fc-mawlid,.fc-achoura,.fc-muharram) .fc-txt b{padding-inline-end:34px;}
+.fc-halloween .fc-txt b{padding-inline-end:30px;}
+.fc-stars{inset:0;opacity:.75;background:
+  radial-gradient(circle at 18% 22%,#FFE9A0 0 1.2px,transparent 1.8px),radial-gradient(circle at 62% 14%,#fff 0 1px,transparent 1.6px),
+  radial-gradient(circle at 78% 70%,#FFE9A0 0 1.3px,transparent 1.9px),radial-gradient(circle at 44% 84%,#fff 0 .9px,transparent 1.5px),
+  radial-gradient(circle at 90% 40%,#fff 0 1px,transparent 1.6px);animation:fxTwinkle 2.6s ease-in-out infinite alternate;}
+.fc-xmas{--fc-bg:radial-gradient(90% 80% at 0% 0%,rgba(255,255,255,.12),transparent 60%),linear-gradient(150deg,#0B3A26 0%,#11593A 55%,#1E7A45 100%);--fc-glow:rgba(30,122,69,.75);}
+.fc-snow{inset:0;opacity:.7;background:
+  radial-gradient(circle at 10% 20%,#fff 0 1.6px,transparent 2.2px),radial-gradient(circle at 34% 70%,#fff 0 1.1px,transparent 1.7px),
+  radial-gradient(circle at 58% 18%,#fff 0 1.3px,transparent 1.9px),radial-gradient(circle at 80% 58%,#fff 0 1.8px,transparent 2.4px),
+  radial-gradient(circle at 92% 18%,#fff 0 1px,transparent 1.6px),radial-gradient(circle at 70% 88%,#fff 0 1.2px,transparent 1.8px);}
+.fc-tree{bottom:-6px;opacity:.5;}
+.fc-tree.t1{width:34px;right:10px;} .fc-tree.t2{width:24px;right:40px;bottom:-8px;opacity:.35;}
+.fc-newyear{--fc-bg:radial-gradient(80% 80% at 100% 0%,rgba(245,197,66,.3),transparent 60%),linear-gradient(160deg,#0A0E26,#1B2156 60%,#3A2E7A);--fc-glow:rgba(90,80,200,.7);}
+.fc-halloween{--fc-bg:radial-gradient(80% 70% at 88% 100%,rgba(255,138,31,.42),transparent 62%),linear-gradient(160deg,#120A1F,#2A1142 55%,#4B1A57);--fc-glow:rgba(160,60,200,.7);}
+.fc-web{width:64px;right:-2px;top:-2px;}
+.fc-spider{width:20px;right:20px;top:0;animation:fcSpider 3.6s ease-in-out infinite;}
+.fc-spider b{position:absolute;left:50%;bottom:70%;width:1px;height:60px;background:rgba(255,255,255,.5);}
+.fc-spider svg{transform:rotate(180deg);}
+@keyframes fcSpider{0%,100%{transform:translateY(4px);}50%{transform:translateY(12px);}}
+html[dir="rtl"] :is(.fc-moon,.fc-web,.fc-spider,.fc-tree,.fc-bal){right:auto;left:10px;}
+html[dir="rtl"] .fc-web{left:-2px;transform:scaleX(-1);}
+html[dir="rtl"] .fc-spider{left:20px;} html[dir="rtl"] .fc-tree.t2,html[dir="rtl"] .fc-bal.b2{left:40px;}
+html.easy-mode .fete-card{min-height:0;}
+.fete-try{margin-top:12px;}
+.fete-try > span{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;}
+html.easy-mode .fete-card *,.fete-card.off *{animation:none !important;}
+
+/* ---------- micro-animations des dessins (SVG) ---------- */
+.fx-tw{transform-box:fill-box;transform-origin:50% 50%;animation:fxTw 2.4s ease-in-out infinite;}
+@keyframes fxTw{0%,100%{transform:scale(1) rotate(0);opacity:1;}50%{transform:scale(.8) rotate(16deg);opacity:.8;}}
+.fx-blink{animation:fxBlink 1.8s ease-in-out infinite;}
+@keyframes fxBlink{0%,100%{opacity:1;}50%{opacity:.55;}}
+.fx-eyes{transform-box:fill-box;transform-origin:50% 50%;animation:fxEyes 4.4s infinite;}
+@keyframes fxEyes{0%,45%,51%,100%{transform:scaleY(1);}48%{transform:scaleY(.12);}}
+.fx-glow{animation:fxGlow 2.2s ease-in-out infinite;}
+@keyframes fxGlow{0%,100%{opacity:1;}30%{opacity:.78;}55%{opacity:.95;}70%{opacity:.7;}}
+.fx-flame{transform-box:fill-box;transform-origin:50% 100%;animation:fxFlame .9s ease-in-out infinite alternate;}
+.fx-flame:nth-of-type(2n){animation-duration:.7s;animation-delay:-.3s;}
+@keyframes fxFlame{from{transform:scale(1,1) rotate(-4deg);}to{transform:scale(.86,1.12) rotate(4deg);}}
+.fx-wave{transform-box:fill-box;transform-origin:0 50%;animation:fxWave 1.4s ease-in-out infinite alternate;}
+@keyframes fxWave{from{transform:skewY(-6deg) scaleX(.96);}to{transform:skewY(5deg) scaleX(1);}}
+
+/* ---------- calque des fêtes ---------- */
+#ikFete{position:fixed;inset:0;z-index:9990;pointer-events:none;overflow:hidden;contain:layout paint;--navh:62px;}
+#ikFete .fx{position:absolute;left:0;top:0;will-change:transform;}
+#ikFete i{display:block;}
+#ikFete svg{display:block;width:100%;height:auto;overflow:visible;}
+html.easy-mode #ikFete{display:none;}
+@media (prefers-reduced-motion: reduce){ #ikFete *,.fete-card *{animation:none !important;} }
+/* personnages posés sur la barre du bas ; ils descendent avec elle et s'effacent sous l'îlot */
+.fx-gnd{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 5px + var(--navh));display:flex;align-items:flex-end;gap:1px;
+  transition:transform .38s var(--ease-spring,cubic-bezier(.3,1.3,.5,1)),opacity .3s ease;}
+.fx-gnd.l{left:max(20px,env(safe-area-inset-left));} .fx-gnd.r{right:max(20px,env(safe-area-inset-right));}
+.fx-gnd .fx-it{flex:none;filter:drop-shadow(0 6px 6px rgba(0,0,0,.28));}
+.fx-gnd .fx-it.flip svg,.fx-walker.rtl svg,.fx-bat.rtl svg{transform:scaleX(-1);}
+#nav.nav-hidden ~ #ikFete .fx-gnd{transform:translateY(calc(var(--navh) - 2px));}
+body.isl-on.isl-low #ikFete .fx-gnd{opacity:0;transform:translateY(14px);}
+.fx-sway{transform-origin:50% 100%;animation:fxSway 2.8s ease-in-out infinite alternate;}
+@keyframes fxSway{from{transform:rotate(-6deg);}to{transform:rotate(6deg);}}
+/* marcheurs : le corps sautille, les pattes vont et viennent */
+.fx-bob{animation:fxBob .46s ease-in-out infinite alternate;}
+@keyframes fxBob{from{transform:translateY(0);}to{transform:translateY(-3px);}}
+.fx-hop{transform-origin:50% 100%;animation:fxHop 1.15s cubic-bezier(.3,0,.4,1) infinite;}
+@keyframes fxHop{0%,100%{transform:translateY(0) scale(1,1);}14%{transform:translateY(0) scale(1.1,.88);}46%{transform:translateY(-26px) scale(.94,1.07);}78%{transform:translateY(0) scale(1.08,.92);}88%{transform:translateY(0) scale(.98,1.02);}}
+.fx-walker .fx-leg-a,.fx-walker .fx-leg-b{transform-box:fill-box;transform-origin:50% 0;animation:fxLeg .46s ease-in-out infinite alternate;}
+.fx-walker .fx-leg-b{animation-direction:alternate-reverse;}
+@keyframes fxLeg{from{transform:rotate(-12deg);}to{transform:rotate(12deg);}}
+/* araignées */
+.fx-thread{position:absolute;left:50%;bottom:62%;width:1px;height:200vh;margin-left:-.5px;background:rgba(255,255,255,.5);}
+html[data-mode="light"] .fx-thread,html[data-mode="light"] .fc-spider b{background:rgba(30,30,40,.4);}
+.fx-drop .fx-spin svg{transform:rotate(180deg);}
+.fx-drop .fx-leg-a,.fx-drop .fx-leg-b,.fx-run .fx-leg-a,.fx-run .fx-leg-b{transform-box:fill-box;animation:fxLegS .7s ease-in-out infinite alternate;}
+.fx-drop .fx-leg-a,.fx-run .fx-leg-a{transform-origin:100% 40%;} .fx-drop .fx-leg-b,.fx-run .fx-leg-b{transform-origin:0 40%;animation-direction:alternate-reverse;}
+.fx-run .fx-leg-a,.fx-run .fx-leg-b{animation-duration:.11s;}
+@keyframes fxLegS{from{transform:rotate(-7deg);}to{transform:rotate(7deg);}}
+/* chauves-souris */
+.fx-flap{animation:fxBob .3s ease-in-out infinite alternate;}
+.fx-wl,.fx-wr{transform-box:fill-box;animation:fxFlapL .2s ease-in-out infinite alternate;}
+.fx-wl{transform-origin:100% 40%;} .fx-wr{transform-origin:0 40%;animation-name:fxFlapR;}
+@keyframes fxFlapL{from{transform:rotate(-24deg) scaleY(.9);}to{transform:rotate(18deg) scaleY(1);}}
+@keyframes fxFlapR{from{transform:rotate(24deg) scaleY(.9);}to{transform:rotate(-18deg) scaleY(1);}}
+.fx-float{animation:fxFloat 1.7s ease-in-out infinite alternate;}
+@keyframes fxFloat{from{transform:translateY(-6px) rotate(-3deg);}to{transform:translateY(8px) rotate(3deg);}}
+/* yeux dans le noir */
+.fx-eyes2{display:flex;gap:9px;}
+.fx-eyes2 i{width:13px;height:8px;border-radius:50%;background:#FFE14D;box-shadow:0 0 10px 3px rgba(255,190,40,.75);animation:fxEyes 1.3s .5s 2 both;}
+.fx-eyes2 i:first-child{clip-path:polygon(0 42%,100% 0,100% 100%,0 100%);} .fx-eyes2 i:last-child{clip-path:polygon(0 0,100% 42%,100% 100%,0 100%);}
+/* feux d'artifice, étoiles, étoile filante */
+.fx-fw{width:0;height:0;}
+.fx-fw i{position:absolute;left:-2px;top:-7px;width:4px;height:14px;border-radius:3px;background:currentColor;box-shadow:0 0 8px currentColor;}
+.fx-fw b{position:absolute;left:-22px;top:-22px;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle,#fff,rgba(255,255,255,0) 62%);}
+.fx-star{filter:drop-shadow(0 0 4px rgba(255,210,90,.8));}
+.fx-shoot{width:120px;height:2px;margin-top:-1px;border-radius:2px;transform-origin:100% 50%;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,248,220,.95));}
+.fx-shoot::after{content:'';position:absolute;right:-3px;top:-3px;width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 12px 4px rgba(255,236,170,.85);}
+html[data-mode="light"] .fx-shoot{background:linear-gradient(90deg,rgba(200,150,30,0),rgba(200,150,30,.9));}
+html[data-mode="light"] .fx-shoot::after{background:#E0A82E;}
+/* silhouettes des cartes de programmes : images (voir anatomyImg) */
+.mus-body .mus-fig{width:50%;height:auto;display:block;pointer-events:none;-webkit-user-select:none;user-select:none;}
+
+/* ÎLOT QUI SE DÉPLACE (V3.5.0) — capsule en bas (défaut) ou en haut, ou bulle dans un coin */
+#ikIsland,#ikIsland *{touch-action:none;}
+#ikIsland .isl-drag{display:flex;align-items:center;gap:8px;width:100%;will-change:transform;}
+#ikIsland.dragging .isl-main,#ikIsland.dragging .isl-mini{box-shadow:0 26px 44px -14px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.16),0 0 34px -4px color-mix(in srgb,var(--isl-c) 80%,transparent);}
+#ikIsland[data-pos="top"]{bottom:auto;top:calc(env(safe-area-inset-top) + 8px);transform:translate(-50%,-26px) scale(.55,.4);transform-origin:50% 0;}
+#ikIsland[data-pos="top"].on{transform:translate(-50%,0) scale(1);}
+#ikIsland.bub{width:auto;left:auto;right:auto;transform:scale(.3);transform-origin:50% 50%;}
+#ikIsland.bub.on{transform:none;}
+#ikIsland[data-pos="bl"]{left:14px;} #ikIsland[data-pos="br"]{right:14px;}
+#ikIsland[data-pos="tl"],#ikIsland[data-pos="tr"]{bottom:auto;top:calc(env(safe-area-inset-top) + 70px);}
+#ikIsland[data-pos="tl"]{left:14px;} #ikIsland[data-pos="tr"]{right:14px;}
+#nav.nav-hidden ~ #ikIsland[data-pos="top"],#nav.nav-hidden ~ #ikIsland[data-pos="tl"],#nav.nav-hidden ~ #ikIsland[data-pos="tr"]{bottom:auto;}
+#ikIsland.bub .isl-main{display:none;}
+#ikIsland.bub .isl-mini{display:flex;flex-direction:column;gap:1px;width:64px;height:70px;border-radius:24px;animation:islPop .5s var(--ease-spring);}
+#ikIsland.bub .isl-mini .isl-ring{width:40px;height:40px;}
+.isl-mt{display:none;font-size:10.5px;font-weight:700;letter-spacing:-.3px;color:#fff;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;}
+#ikIsland.bub .isl-mt{display:block;}
+
+/* MOLETTES LIBRES (V3.5.0) — thème et matière. Le curseur est une molette crantée (stries
+   verticales, relief) ; la piste montre ce qu'on parcourt. Les crans sont doux : la molette
+   s'y pose d'elle-même, avec une petite vibration. */
+.iks{position:relative;padding:2px 0 0;}
+.iks input[type="range"]{-webkit-appearance:none;appearance:none;display:block;width:100%;height:46px;margin:0;background:transparent;cursor:pointer;touch-action:pan-y;}
+.iks input[type="range"]:focus{outline:none;}
+.iks input[type="range"]::-webkit-slider-runnable-track{height:16px;border-radius:999px;background:var(--iks-track);box-shadow:inset 0 1px 3px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.08),0 1px 0 rgba(255,255,255,.06);}
+.iks input[type="range"]::-moz-range-track{height:16px;border-radius:999px;background:var(--iks-track);}
+.iks input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:30px;height:38px;margin-top:-11px;border-radius:11px;border:0;
+  background:repeating-linear-gradient(90deg,rgba(0,0,0,.2) 0 1.2px,rgba(255,255,255,0) 1.2px 3.6px),linear-gradient(90deg,#9aa2ad,#f4f6f9 32%,#ffffff 50%,#e4e8ed 68%,#8d95a0);
+  box-shadow:0 8px 16px -6px rgba(0,0,0,.6),0 2px 4px -1px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.9),inset 0 -2px 3px rgba(0,0,0,.25);transition:transform .15s var(--ease-spring,ease);}
+.iks input[type="range"]::-moz-range-thumb{width:30px;height:38px;border-radius:11px;border:0;background:linear-gradient(90deg,#9aa2ad,#fff 50%,#8d95a0);}
+.iks input[type="range"]:active::-webkit-slider-thumb{transform:scale(1.08,1.04);}
+.iks-lum{--iks-track:linear-gradient(90deg,#05070a 0%,#262c36 49.4%,rgba(var(--e-rgb),.9) 49.6%,rgba(var(--e-rgb),.9) 50.4%,#c9ced6 50.6%,#f7f9fc 100%);}
+.iks-ends{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:2px;font-size:12px;color:var(--muted);font-weight:600;}
+.iks-ends span{display:inline-flex;align-items:center;gap:5px;}
+.iks-ends b{font-size:12.5px;font-weight:800;color:var(--snow);text-align:center;}
+.iks-mat{--iks-track:linear-gradient(90deg,rgba(var(--e-rgb),.95) 0%,rgba(var(--e-rgb),.55) 14%,#59606b 33.3%,rgba(150,190,255,.5) 58%,rgba(210,230,255,.75) 66.6%,#ff7ad9 84%,#7fe3ff 100%);}
+.iks-ticks{position:relative;height:58px;margin-top:4px;}
+.iks-tick{position:absolute;top:0;inset-inline-start:calc(15px + (100% - 30px) * var(--i) / 3);transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:5px;
+  border:0;background:none;padding:0;cursor:pointer;font:700 11px 'Inter',system-ui,sans-serif;color:var(--muted);width:76px;text-align:center;line-height:1.15;}
+html[dir="rtl"] .iks-tick{transform:translateX(50%);}
+.iks-tick:first-child{inset-inline-start:0;transform:none;align-items:flex-start;text-align:start;}
+.iks-tick:last-child{inset-inline-start:auto;inset-inline-end:0;transform:none;align-items:flex-end;text-align:end;}
+.iks-tick .mat-ico{width:26px;height:26px;border-radius:9px;flex:none;}
+.iks-tick.on{color:var(--snow);}
+.iks-tick.on .mat-ico{box-shadow:0 0 0 2px var(--e),0 0 12px rgba(var(--e-rgb),.5);}
+html[data-mode="light"] .iks input[type="range"]::-webkit-slider-runnable-track{box-shadow:inset 0 1px 3px rgba(20,30,50,.3),inset 0 0 0 1px rgba(20,30,50,.08);}

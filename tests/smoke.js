@@ -501,9 +501,9 @@
     }
   }
 
-  /* ======================= 7c. ÎLOT ET ANNIVERSAIRE (V3.4.0) ============= */
+  /* ======================= 7c. ÎLOT ET JOURS SPÉCIAUX (V3.4.0, V3.5.0) === */
   function testIlotEtFete(){
-    var c='7c. Îlot et anniversaire';
+    var c='7c. Îlot et jours spéciaux';
     // L'îlot lit l'état réel des activités : un chrono en pause doit y figurer, rien sinon.
     essaie(c,'un chrono en pause apparaît dans l\'îlot',function(){
       if(typeof ikActivities!=='function') throw new Error('îlot absent');
@@ -529,6 +529,69 @@
         if(!bis && d.getMonth()===1 && d.getDate()===28){ P.bday='2000-02-29'; if(!isBirthdayToday()) throw new Error('29 février non fêté le 28'); }
         return 'ok';
       } finally { P.bday=avant; }
+    });
+    // Le calendrier hégirien du téléphone donne un mois et un jour plausibles (ou rien).
+    essaie(c,'la date hégirienne est lue correctement',function(){
+      if(typeof hijriToday!=='function') throw new Error('fonction absente');
+      var h=hijriToday();
+      if(h===null) return 'calendrier islamique indisponible sur cet appareil';
+      if(!(h.m>=1&&h.m<=12&&h.d>=1&&h.d<=30)) throw new Error('date incohérente '+JSON.stringify(h));
+      return h.d+'/'+h.m;
+    });
+    // L'anniversaire passe avant les autres fêtes ; « Mes couleurs » la coupe pour la journée.
+    essaie(c,'la fête du jour est reconnue et se coupe pour la journée',function(){
+      var avB=P.bday, avO=P.feteOff, avF=P.fetes, avP=_fetePreview, d=new Date();
+      try{
+        _fetePreview=null; P.fetes=true; P.feteOff=null;
+        P.bday='1990-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+        if(feteToday()!=='bday') throw new Error('anniversaire non prioritaire : '+feteToday());
+        if(!feteOn()) throw new Error('fête éteinte');
+        P.feteOff=todayKey(); if(feteOn()) throw new Error('« Mes couleurs » sans effet');
+        P.feteOff=null; P.fetes=false; if(feteOn()) throw new Error('réglage désactivé ignoré');
+        return 'ok';
+      } finally { P.bday=avB; P.feteOff=avO; P.fetes=avF; _fetePreview=avP; }
+    });
+    // Chaque fête a sa carte (titre, texte, bouton) et chaque scène se joue sans erreur.
+    essaie(c,'chaque fête a sa carte et ses scènes',function(){
+      var avP=_fetePreview, avR=PREFS.recDay, n=0;
+      try{
+        PREFS.recDay={d:todayKey(),txt:'Squat · 100 kg'};
+        FETE_KEYS.forEach(function(k){
+          _fetePreview=k; var h=feteCardHTML();
+          if(h.indexOf('fete-card fc-'+k)<0 || /undefined|\{0\}/.test(h)) throw new Error('carte '+k+' incomplète');
+          if(!FETE_FX[k]) throw new Error('décor '+k+' absent');
+        });
+        var L=feteLayer();
+        Object.keys(FX_ACTS).forEach(function(a){ if(a.charAt(0)==='_') return; FX_ACTS[a](L); n++; });
+        L.querySelectorAll('.fx').forEach(function(e){ e.remove(); });
+        return FETE_KEYS.length+' fêtes, '+n+' scènes';
+      } finally { _fetePreview=avP; PREFS.recDay=avR; applyTheme(); }
+    });
+  }
+
+  /* ======================= 7d. MATIÈRES (V3.5.0) ========================= */
+  function testMatieres(){
+    var c='7d. Matières';
+    // La tuile de carbone doit être un vrai tressage : sans raccord (période de 4 mèches)
+    // et contrastée (mèches allumées et éteintes), pas un aplat.
+    essaie(c,'le tressage de carbone est contrasté et sans raccord',function(){
+      var cv=carbonTwill(0,false,2,7), x=cv.getContext('2d'), d=x.getImageData(0,0,cv.width,cv.height).data, mn=255, mx=0;
+      for(var i=0;i<d.length;i+=4){ if(d[i+1]<mn) mn=d[i+1]; if(d[i+1]>mx) mx=d[i+1]; }
+      if(cv.width!==56) throw new Error('taille '+cv.width);
+      if(mx-mn<50) throw new Error('trop plat ('+mn+'–'+mx+')');
+      return 'niveaux '+mn+'–'+mx;
+    });
+    essaie(c,'le carbone et le carbone forgé posent leur plaque, les autres couleurs non',function(){
+      var av=P.theme, avE=P.easyMode;
+      try{
+        P.easyMode=false; P.theme='carbon'; applyTheme();
+        if(document.documentElement.dataset.carbon!=='twill' || !document.getElementById('ikCarbon')) throw new Error('plaque absente (carbone)');
+        P.theme='forged'; applyTheme();
+        if(document.documentElement.dataset.carbon!=='forged' || document.documentElement.dataset.accent!=='carbon') throw new Error('carbone forgé mal appliqué');
+        P.theme='blue'; applyTheme();
+        if(document.getElementById('ikCarbon') || document.documentElement.dataset.carbon) throw new Error('plaque restée en bleu');
+        return 'ok';
+      } finally { P.theme=av; P.easyMode=avE; applyTheme(); }
     });
   }
 
@@ -627,6 +690,7 @@
     testGardeFou();
     testModeSimple();
     testIlotEtFete();
+    testMatieres();
     Promise.resolve(testI18nUsage())
       .then(function(){ return testHorsLigne(); })
       .then(function(){ return testSon(); })
