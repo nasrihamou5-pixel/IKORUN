@@ -501,9 +501,9 @@
     }
   }
 
-  /* ======================= 7c. ÎLOT ET ANNIVERSAIRE (V3.4.0) ============= */
+  /* ======================= 7c. ÎLOT ET JOURS SPÉCIAUX (V3.4.0, V3.5.0) === */
   function testIlotEtFete(){
-    var c='7c. Îlot et anniversaire';
+    var c='7c. Îlot et jours spéciaux';
     // L'îlot lit l'état réel des activités : un chrono en pause doit y figurer, rien sinon.
     essaie(c,'un chrono en pause apparaît dans l\'îlot',function(){
       if(typeof ikActivities!=='function') throw new Error('îlot absent');
@@ -529,6 +529,43 @@
         if(!bis && d.getMonth()===1 && d.getDate()===28){ P.bday='2000-02-29'; if(!isBirthdayToday()) throw new Error('29 février non fêté le 28'); }
         return 'ok';
       } finally { P.bday=avant; }
+    });
+    // Le calendrier hégirien du téléphone donne un mois et un jour plausibles (ou rien).
+    essaie(c,'la date hégirienne est lue correctement',function(){
+      if(typeof hijriToday!=='function') throw new Error('fonction absente');
+      var h=hijriToday();
+      if(h===null) return 'calendrier islamique indisponible sur cet appareil';
+      if(!(h.m>=1&&h.m<=12&&h.d>=1&&h.d<=30)) throw new Error('date incohérente '+JSON.stringify(h));
+      return h.d+'/'+h.m;
+    });
+    // L'anniversaire passe avant les autres fêtes ; « Mes couleurs » la coupe pour la journée.
+    essaie(c,'la fête du jour est reconnue et se coupe pour la journée',function(){
+      var avB=P.bday, avO=P.feteOff, avF=P.fetes, avP=_fetePreview, d=new Date();
+      try{
+        _fetePreview=null; P.fetes=true; P.feteOff=null;
+        P.bday='1990-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+        if(feteToday()!=='bday') throw new Error('anniversaire non prioritaire : '+feteToday());
+        if(!feteOn()) throw new Error('fête éteinte');
+        P.feteOff=todayKey(); if(feteOn()) throw new Error('« Mes couleurs » sans effet');
+        P.feteOff=null; P.fetes=false; if(feteOn()) throw new Error('réglage désactivé ignoré');
+        return 'ok';
+      } finally { P.bday=avB; P.feteOff=avO; P.fetes=avF; _fetePreview=avP; }
+    });
+    // Chaque fête a sa carte (titre, texte, bouton) et chaque scène se joue sans erreur.
+    essaie(c,'chaque fête a sa carte et ses scènes',function(){
+      var avP=_fetePreview, avR=PREFS.recDay, n=0;
+      try{
+        PREFS.recDay={d:todayKey(),txt:'Squat · 100 kg'};
+        FETE_KEYS.forEach(function(k){
+          _fetePreview=k; var h=feteCardHTML();
+          if(h.indexOf('fete-card fc-'+k)<0 || /undefined|\{0\}/.test(h)) throw new Error('carte '+k+' incomplète');
+          if(!FETE_FX[k]) throw new Error('décor '+k+' absent');
+        });
+        var L=feteLayer();
+        Object.keys(FX_ACTS).forEach(function(a){ if(a.charAt(0)==='_') return; FX_ACTS[a](L); n++; });
+        L.querySelectorAll('.fx').forEach(function(e){ e.remove(); });
+        return FETE_KEYS.length+' fêtes, '+n+' scènes';
+      } finally { _fetePreview=avP; PREFS.recDay=avR; applyTheme(); }
     });
   }
 

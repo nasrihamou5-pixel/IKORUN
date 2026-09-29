@@ -111,7 +111,7 @@
      sont servis par le site lui-même, mis en cache par le service worker (cache d'abord,
      comme les images) et chaque famille a une pile de secours système. Aucune requête vers
      Google : plus rapide (pas de connexion à deux domaines tiers) et plus sobre côté RGPD. -->
-<link rel="stylesheet" href="app.css?v=18">
+<link rel="stylesheet" href="app.css?v=19">
 </head>
 <body>
 <script>
@@ -364,7 +364,7 @@
 <script>
 (function(){
   var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=3', 'app.js?v=112'];
-  if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=8');
+  if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=9');
   var lance = false;
   function charge(){
     if (lance) return; lance = true;

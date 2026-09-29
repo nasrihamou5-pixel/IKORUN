@@ -2061,7 +2061,7 @@ const I18N={
     loadingLab:'Chargement…',friendsLoadError:'Impossible de charger tes amis. Vérifie ta connexion.',retryBtn:'Réessayer',
     resumeBtn:'Reprendre',discardBtn:'Abandonner',
     alreadyLinked:'déjà lié',addBtn:'Ajouter',searchError:'Erreur de recherche',alreadySentOrFriend:'Déjà envoyé ou déjà ami',
-    requestSent:'Demande envoyée',friendProfileTitle:'Profil',removeLab:'Retirer',lvlDot:'Niv.',kmThisWeekShort:'{0} km cette semaine',lastWeekKm:'Semaine dernière : {0} km',minimizeLab:'Réduire',bdayTitle:'Joyeux anniversaire, {0} !',bdayAge:'{0} ans aujourd’hui',bdayWish:'toute l’équipe IKORUN te souhaite une belle journée',bdayOffBtn:'Mes couleurs',bdayOnBtn:'Remettre la fête',bdayThemeLab:'Thème d’anniversaire',bdayThemeDesc:'Le jour de ton anniversaire, l’app se met en fête : couleurs, confettis et une petite mélodie.',matLab:'Matière',glassClay:'Pâte à modeler',glassHintClay:'Pâte à modeler : surfaces mates et gonflées, lumière douce dans la matière, et tout s’écrase puis rebondit sous le doigt comme une pâte molle.',accentClay:'Pâte à modeler',colorFamSpecial:'Spéciaux',clayOn:'Couleur et matière « pâte à modeler » appliquées',accentOcean:'Océan',accentViolet:'Améthyste',accentLavender:'Lavande',accentPink:'Framboise',accentSakura:'Sakura',accentMint:'Menthe',accentTeal:'Lagon',accentOrange:'Ambre',accentMono:'Mono',colorFamCool:'Bleus et violets',colorFamWarm:'Roses et chauds',colorFamNature:'Nature',colorFamNeutral:'Neutres',liveAlreadyRunning:'Une séance est déjà en cours. Termine-la ou annule-la avant d’en commencer une autre.',backToSessionLab:'Revenir à la séance',islandNext:'Ensuite : {0}',islandEndsAt:'Fin à {0}',islandPaused:'En pause',islandSets:'{0}/{1} séries',glassEasyNote:'Le mode simplifié garde un affichage net, sans effet verre : ce réglage reprendra effet quand tu le désactiveras.',youDefaultName:'Toi',backToFriends:'Retour aux amis',profileNotFound:'Profil introuvable.',noBadgeUnlocked:'Aucun badge débloqué pour l\u2019instant.',kmPerWeek:'km/sem.',daysStreak:'Jours de suite',kmTotalLab:'km au total',tonnageKgLab:'Tonnage kg',
+    requestSent:'Demande envoyée',friendProfileTitle:'Profil',removeLab:'Retirer',lvlDot:'Niv.',kmThisWeekShort:'{0} km cette semaine',lastWeekKm:'Semaine dernière : {0} km',minimizeLab:'Réduire',bdayTitle:'Joyeux anniversaire, {0} !',bdayAge:'{0} ans aujourd’hui',bdayWish:'toute l’équipe IKORUN te souhaite une belle journée',bdayOffBtn:'Mes couleurs',bdayOnBtn:'Remettre la fête',feteLab:'Jours spéciaux',feteDesc:'Ton anniversaire, le jour J de ta course, un record battu, le Ramadan, l’Aïd, Noël, le Nouvel an et Halloween : ces jours-là, l’app se met en fête avec toi.',fetePreviewLab:'Aperçu',fetePreviewEnd:'Terminer l’aperçu',fete_bday:'Anniversaire',fete_race:'Jour J',fete_record:'Record',fete_ramadan:'Ramadan',fete_eidFitr:'Aïd el-Fitr',fete_eidAdha:'Aïd el-Adha',fete_xmas:'Noël',fete_newyear:'Nouvel an',fete_halloween:'Halloween',feteRaceTitle:'C’est le jour J !',feteRaceSub:'{0} : tout ton entraînement mène à aujourd’hui. Respire, pars prudent, finis fort.',feteRaceSubPlain:'Tout ton entraînement mène à aujourd’hui. Respire, pars prudent, finis fort.',feteRecordTitle:'Nouveau record !',feteRecordSub:'{0} — bravo, tu progresses. Savoure !',feteRecordSubPlain:'Bravo, tu progresses. Savoure !',feteEidTitle:'Aïd Moubarak, {0} !',feteEidAdhaSub:'Saha Aïdkoum ! Belle fête à toi et à tes proches.',feteEidFitrSub:'Saha Aïdkoum ! Après le Ramadan, reprends l’entraînement en douceur.',feteRamadanTitle:'Ramadan Moubarak !',feteRamadanSub:'Premier jour du mois sacré. Entraîne-toi plutôt après la rupture du jeûne, et bois bien le soir.',feteXmasTitle:'Joyeux Noël, {0} !',feteXmasSub:'Une sortie tranquille, puis au chaud. Bonnes fêtes !',feteNyeTitle:'Bon réveillon !',feteNyeSub:'Dernier jour de {0} : bravo pour tous ces kilomètres.',feteNyTitle:'Bonne année {0} !',feteNySub:'Nouvelle année, nouveaux records. On y va ?',feteHalloweenTitle:'Joyeux Halloween !',feteHalloweenSub:'Des araignées rôdent… cours plus vite qu’elles !',recLongestRun:'Plus longue sortie : {0} km',recRunTime:'{0} en {1}',matLab:'Matière',glassClay:'Pâte à modeler',glassHintClay:'Pâte à modeler : surfaces mates et gonflées, lumière douce dans la matière, et tout s’écrase puis rebondit sous le doigt comme une pâte molle.',accentClay:'Pâte à modeler',colorFamSpecial:'Spéciaux',clayOn:'Couleur et matière « pâte à modeler » appliquées',accentOcean:'Océan',accentViolet:'Améthyste',accentLavender:'Lavande',accentPink:'Framboise',accentSakura:'Sakura',accentMint:'Menthe',accentTeal:'Lagon',accentOrange:'Ambre',accentMono:'Mono',colorFamCool:'Bleus et violets',colorFamWarm:'Roses et chauds',colorFamNature:'Nature',colorFamNeutral:'Neutres',liveAlreadyRunning:'Une séance est déjà en cours. Termine-la ou annule-la avant d’en commencer une autre.',backToSessionLab:'Revenir à la séance',islandNext:'Ensuite : {0}',islandEndsAt:'Fin à {0}',islandPaused:'En pause',islandSets:'{0}/{1} séries',glassEasyNote:'Le mode simplifié garde un affichage net, sans effet verre : ce réglage reprendra effet quand tu le désactiveras.',youDefaultName:'Toi',backToFriends:'Retour aux amis',profileNotFound:'Profil introuvable.',noBadgeUnlocked:'Aucun badge débloqué pour l\u2019instant.',kmPerWeek:'km/sem.',daysStreak:'Jours de suite',kmTotalLab:'km au total',tonnageKgLab:'Tonnage kg',
     addPerf:'Ajouter une performance',addChronosHint:'Ajoute tes chronos : ils alimentent ton VDOT et ton plan.',
     bestPerf:'Meilleure perf',avgHR:'FC moy',maxHRshort:'max',perfHistoryTitle:'Historique des performances',
     chooseDistance:'Choisis la distance',otherDist:'Autre',customDistance:'Distance personnalisée',
@@ -2647,7 +2647,7 @@ const I18N={
     loadingLab:'Loading…',friendsLoadError:'Couldn\'t load your friends. Check your connection.',retryBtn:'Retry',
     resumeBtn:'Resume',discardBtn:'Discard',
     alreadyLinked:'already linked',addBtn:'Add',searchError:'Search error',alreadySentOrFriend:'Already sent or already friends',
-    requestSent:'Request sent',friendProfileTitle:'Profile',removeLab:'Remove',lvlDot:'Lvl.',kmThisWeekShort:'{0} km this week',lastWeekKm:'Last week: {0} km',minimizeLab:'Minimize',bdayTitle:'Happy birthday, {0}!',bdayAge:'{0} today',bdayWish:'the whole IKORUN team wishes you a great day',bdayOffBtn:'My colors',bdayOnBtn:'Bring back the party',bdayThemeLab:'Birthday theme',bdayThemeDesc:'On your birthday, the app celebrates: colors, confetti and a little tune.',matLab:'Material',glassClay:'Modeling clay',glassHintClay:'Modeling clay: soft, puffy matte surfaces with light inside the material — everything squishes and bounces back under your finger like soft dough.',accentClay:'Modeling clay',colorFamSpecial:'Specials',clayOn:'“Modeling clay” color and material applied',accentOcean:'Ocean',accentViolet:'Amethyst',accentLavender:'Lavender',accentPink:'Raspberry',accentSakura:'Sakura',accentMint:'Mint',accentTeal:'Lagoon',accentOrange:'Amber',accentMono:'Mono',colorFamCool:'Blues & purples',colorFamWarm:'Pinks & warm',colorFamNature:'Nature',colorFamNeutral:'Neutrals',liveAlreadyRunning:'A session is already running. Finish or cancel it before starting another one.',backToSessionLab:'Back to session',islandNext:'Next: {0}',islandEndsAt:'Ends at {0}',islandPaused:'Paused',islandSets:'{0}/{1} sets',glassEasyNote:'Simplified mode keeps a clean display with no glass effect: this setting applies again once you turn it off.',youDefaultName:'You',backToFriends:'Back to friends',profileNotFound:'Profile not found.',noBadgeUnlocked:'No badge unlocked yet.',kmPerWeek:'km/wk',daysStreak:'Day streak',kmTotalLab:'total km',tonnageKgLab:'Volume kg',
+    requestSent:'Request sent',friendProfileTitle:'Profile',removeLab:'Remove',lvlDot:'Lvl.',kmThisWeekShort:'{0} km this week',lastWeekKm:'Last week: {0} km',minimizeLab:'Minimize',bdayTitle:'Happy birthday, {0}!',bdayAge:'{0} today',bdayWish:'the whole IKORUN team wishes you a great day',bdayOffBtn:'My colors',bdayOnBtn:'Bring back the party',feteLab:'Special days',feteDesc:'Your birthday, race day, a new record, Ramadan, Eid, Christmas, New Year and Halloween: on those days, the app celebrates with you.',fetePreviewLab:'Preview',fetePreviewEnd:'End preview',fete_bday:'Birthday',fete_race:'Race day',fete_record:'Record',fete_ramadan:'Ramadan',fete_eidFitr:'Eid al-Fitr',fete_eidAdha:'Eid al-Adha',fete_xmas:'Christmas',fete_newyear:'New Year',fete_halloween:'Halloween',feteRaceTitle:'It’s race day!',feteRaceSub:'{0}: all your training leads to today. Breathe, start easy, finish strong.',feteRaceSubPlain:'All your training leads to today. Breathe, start easy, finish strong.',feteRecordTitle:'New record!',feteRecordSub:'{0} — well done, you’re getting better. Enjoy it!',feteRecordSubPlain:'Well done, you’re getting better. Enjoy it!',feteEidTitle:'Eid Mubarak, {0}!',feteEidAdhaSub:'Saha Aïdkoum! A happy Eid to you and your loved ones.',feteEidFitrSub:'Saha Aïdkoum! After Ramadan, ease back into training.',feteRamadanTitle:'Ramadan Mubarak!',feteRamadanSub:'First day of the holy month. Train after iftar rather than before, and drink well in the evening.',feteXmasTitle:'Merry Christmas, {0}!',feteXmasSub:'An easy run, then somewhere warm. Happy holidays!',feteNyeTitle:'Happy New Year’s Eve!',feteNyeSub:'Last day of {0}: well done for all those kilometres.',feteNyTitle:'Happy New Year {0}!',feteNySub:'New year, new records. Shall we?',feteHalloweenTitle:'Happy Halloween!',feteHalloweenSub:'Spiders are on the prowl… run faster than them!',recLongestRun:'Longest run: {0} km',recRunTime:'{0} in {1}',matLab:'Material',glassClay:'Modeling clay',glassHintClay:'Modeling clay: soft, puffy matte surfaces with light inside the material — everything squishes and bounces back under your finger like soft dough.',accentClay:'Modeling clay',colorFamSpecial:'Specials',clayOn:'“Modeling clay” color and material applied',accentOcean:'Ocean',accentViolet:'Amethyst',accentLavender:'Lavender',accentPink:'Raspberry',accentSakura:'Sakura',accentMint:'Mint',accentTeal:'Lagoon',accentOrange:'Amber',accentMono:'Mono',colorFamCool:'Blues & purples',colorFamWarm:'Pinks & warm',colorFamNature:'Nature',colorFamNeutral:'Neutrals',liveAlreadyRunning:'A session is already running. Finish or cancel it before starting another one.',backToSessionLab:'Back to session',islandNext:'Next: {0}',islandEndsAt:'Ends at {0}',islandPaused:'Paused',islandSets:'{0}/{1} sets',glassEasyNote:'Simplified mode keeps a clean display with no glass effect: this setting applies again once you turn it off.',youDefaultName:'You',backToFriends:'Back to friends',profileNotFound:'Profile not found.',noBadgeUnlocked:'No badge unlocked yet.',kmPerWeek:'km/wk',daysStreak:'Day streak',kmTotalLab:'total km',tonnageKgLab:'Volume kg',
     addPerf:'Add a performance',addChronosHint:'Add your times: they power your VDOT and your plan.',
     bestPerf:'Best performance',avgHR:'avg HR',maxHRshort:'max',perfHistoryTitle:'Performance history',
     chooseDistance:'Choose the distance',otherDist:'Other',customDistance:'Custom distance',
@@ -3233,7 +3233,7 @@ const I18N={
     loadingLab:'جارٍ التحميل…',friendsLoadError:'تعذّر تحميل أصدقائك. تحقّق من اتصالك.',retryBtn:'إعادة المحاولة',
     resumeBtn:'استئناف',discardBtn:'التخلي',
     alreadyLinked:'مرتبط بالفعل',addBtn:'إضافة',searchError:'خطأ في البحث',alreadySentOrFriend:'تم الإرسال بالفعل أو صديق بالفعل',
-    requestSent:'تم إرسال الطلب',friendProfileTitle:'الملف الشخصي',removeLab:'إزالة',lvlDot:'مستوى',kmThisWeekShort:'{0} كم هذا الأسبوع',lastWeekKm:'الأسبوع الماضي: {0} كم',minimizeLab:'تصغير',bdayTitle:'عيد ميلاد سعيد يا {0}!',bdayAge:'{0} سنة اليوم',bdayWish:'فريق IKORUN كله يتمنى لك يومًا جميلًا',bdayOffBtn:'ألواني',bdayOnBtn:'أعد الاحتفال',bdayThemeLab:'مظهر عيد الميلاد',bdayThemeDesc:'في يوم عيد ميلادك تحتفل التطبيقة: ألوان وقصاصات ولحن صغير.',matLab:'الخامة',glassClay:'صلصال',glassHintClay:'صلصال: أسطح مطفأة ومنتفخة بإضاءة ناعمة داخل الخامة، وكل شيء ينضغط ثم يرتد تحت إصبعك كعجينة لينة.',accentClay:'صلصال',colorFamSpecial:'خاصة',clayOn:'تم تطبيق لون وخامة «الصلصال»',accentOcean:'محيط',accentViolet:'جمشت',accentLavender:'خزامى',accentPink:'توت',accentSakura:'ساكورا',accentMint:'نعناع',accentTeal:'بحيرة',accentOrange:'كهرمان',accentMono:'أحادي',colorFamCool:'أزرق وبنفسجي',colorFamWarm:'وردي ودافئ',colorFamNature:'طبيعة',colorFamNeutral:'محايدة',liveAlreadyRunning:'هناك حصة جارية بالفعل. أنهِها أو ألغِها قبل بدء حصة أخرى.',backToSessionLab:'العودة إلى الحصة',islandNext:'التالي: {0}',islandEndsAt:'ينتهي عند {0}',islandPaused:'متوقف مؤقتًا',islandSets:'{0}/{1} مجموعات',glassEasyNote:'الوضع المبسّط يُبقي العرض واضحًا دون تأثير الزجاج: يعود هذا الإعداد للعمل عند إيقافه.',youDefaultName:'أنت',backToFriends:'العودة إلى الأصدقاء',profileNotFound:'الملف غير موجود.',noBadgeUnlocked:'لا يوجد وسام مفتوح بعد.',kmPerWeek:'كم/أسبوع',daysStreak:'أيام متتالية',kmTotalLab:'كم إجمالية',tonnageKgLab:'الحمولة كغ',
+    requestSent:'تم إرسال الطلب',friendProfileTitle:'الملف الشخصي',removeLab:'إزالة',lvlDot:'مستوى',kmThisWeekShort:'{0} كم هذا الأسبوع',lastWeekKm:'الأسبوع الماضي: {0} كم',minimizeLab:'تصغير',bdayTitle:'عيد ميلاد سعيد يا {0}!',bdayAge:'{0} سنة اليوم',bdayWish:'فريق IKORUN كله يتمنى لك يومًا جميلًا',bdayOffBtn:'ألواني',bdayOnBtn:'أعد الاحتفال',feteLab:'الأيام الخاصة',feteDesc:'عيد ميلادك، يوم سباقك، رقم قياسي جديد، رمضان، العيد، الكريسماس، رأس السنة والهالوين: في هذه الأيام تحتفل التطبيقة معك.',fetePreviewLab:'معاينة',fetePreviewEnd:'إنهاء المعاينة',fete_bday:'عيد الميلاد',fete_race:'يوم السباق',fete_record:'رقم قياسي',fete_ramadan:'رمضان',fete_eidFitr:'عيد الفطر',fete_eidAdha:'عيد الأضحى',fete_xmas:'الكريسماس',fete_newyear:'رأس السنة',fete_halloween:'الهالوين',feteRaceTitle:'إنه اليوم الموعود!',feteRaceSub:'{0}: كل تدريبك يقود إلى هذا اليوم. تنفّس، انطلق بهدوء وأنهِ بقوة.',feteRaceSubPlain:'كل تدريبك يقود إلى هذا اليوم. تنفّس، انطلق بهدوء وأنهِ بقوة.',feteRecordTitle:'رقم قياسي جديد!',feteRecordSub:'{0} — أحسنت، أنت تتقدّم. استمتع باللحظة!',feteRecordSubPlain:'أحسنت، أنت تتقدّم. استمتع باللحظة!',feteEidTitle:'عيد مبارك يا {0}!',feteEidAdhaSub:'صحّا عيدكم! عيد سعيد لك ولأحبّائك.',feteEidFitrSub:'صحّا عيدكم! بعد رمضان، عُد إلى التدريب بهدوء.',feteRamadanTitle:'رمضان مبارك!',feteRamadanSub:'أول يوم من الشهر الفضيل. تدرّب بعد الإفطار بدل ما قبله، واشرب جيدًا في المساء.',feteXmasTitle:'عيد ميلاد مجيد يا {0}!',feteXmasSub:'خرجة هادئة ثم إلى الدفء. أعياد سعيدة!',feteNyeTitle:'سهرة رأس سنة سعيدة!',feteNyeSub:'آخر يوم من {0}: برافو على كل هذه الكيلومترات.',feteNyTitle:'سنة سعيدة {0}!',feteNySub:'سنة جديدة، أرقام قياسية جديدة. هيا بنا؟',feteHalloweenTitle:'هالوين سعيد!',feteHalloweenSub:'العناكب تتجوّل… اركض أسرع منها!',recLongestRun:'أطول خرجة: {0} كم',recRunTime:'{0} في {1}',matLab:'الخامة',glassClay:'صلصال',glassHintClay:'صلصال: أسطح مطفأة ومنتفخة بإضاءة ناعمة داخل الخامة، وكل شيء ينضغط ثم يرتد تحت إصبعك كعجينة لينة.',accentClay:'صلصال',colorFamSpecial:'خاصة',clayOn:'تم تطبيق لون وخامة «الصلصال»',accentOcean:'محيط',accentViolet:'جمشت',accentLavender:'خزامى',accentPink:'توت',accentSakura:'ساكورا',accentMint:'نعناع',accentTeal:'بحيرة',accentOrange:'كهرمان',accentMono:'أحادي',colorFamCool:'أزرق وبنفسجي',colorFamWarm:'وردي ودافئ',colorFamNature:'طبيعة',colorFamNeutral:'محايدة',liveAlreadyRunning:'هناك حصة جارية بالفعل. أنهِها أو ألغِها قبل بدء حصة أخرى.',backToSessionLab:'العودة إلى الحصة',islandNext:'التالي: {0}',islandEndsAt:'ينتهي عند {0}',islandPaused:'متوقف مؤقتًا',islandSets:'{0}/{1} مجموعات',glassEasyNote:'الوضع المبسّط يُبقي العرض واضحًا دون تأثير الزجاج: يعود هذا الإعداد للعمل عند إيقافه.',youDefaultName:'أنت',backToFriends:'العودة إلى الأصدقاء',profileNotFound:'الملف غير موجود.',noBadgeUnlocked:'لا يوجد وسام مفتوح بعد.',kmPerWeek:'كم/أسبوع',daysStreak:'أيام متتالية',kmTotalLab:'كم إجمالية',tonnageKgLab:'الحمولة كغ',
     addPerf:'إضافة أداء',addChronosHint:'أضف أوقاتك: تُستخدم لحساب VDOT وخطتك.',
     bestPerf:'أفضل أداء',avgHR:'متوسط النبض',maxHRshort:'الأقصى',perfHistoryTitle:'سجل الأداء',
     chooseDistance:'اختر المسافة',otherDist:'أخرى',customDistance:'مسافة مخصصة',
@@ -4793,6 +4793,22 @@ function sfx(name){
     case 'notif': _mallet(N.A5,0.5,0.12,0,{wet:0.12}); _mallet(N.E5,0.7,0.12,0.12,{wet:0.14}); break;
     // Anniversaire : « Joyeux anniversaire » (sol sol la sol do si), en kalimba.
     case 'bday': [[N.G4,0,.35],[N.G4,.3,.2],[N.A4,.45,.45],[N.G4,.85,.45],[N.C5,1.25,.45],[493.88,1.65,1]].forEach(([f,d,l])=>_mallet(f,l+0.3,0.15,d,{wet:0.18,ratio:3.5,hard:1})); break;
+    // Jours spéciaux (V3.5.0) : une courte mélodie par fête, en kalimba.
+    case 'fete_xmas': // « Vive le vent » (mi mi mi, mi mi mi, mi sol do ré mi)
+      [[N.E5,0,.2],[N.E5,.22,.2],[N.E5,.44,.4],[N.E5,.9,.2],[N.E5,1.12,.2],[N.E5,1.34,.4],[N.E5,1.8,.2],[N.G5,2.02,.2],[N.C5,2.24,.3],[N.D5,2.56,.12],[N.E5,2.72,.9]]
+        .forEach(([f,d,l])=>_mallet(f,l+0.3,0.13,d,{wet:0.2,ratio:3.5,hard:1})); break;
+    case 'fete_halloween': // quatre notes qui descendent dans l'ombre, et un grave qui traîne
+      [[N.A4,0,.5],[415.3,.34,.5],[392,.68,.5],[369.99,1.02,1.1]].forEach(([f,d,l])=>_mallet(f,l+0.4,0.14,d,{wet:0.34,hard:0.6}));
+      _mallet(110,1.8,0.16,1.02,{wet:0.3,hard:0.5}); break;
+    case 'fete_ramadan': case 'fete_eidFitr': case 'fete_eidAdha': // couleur hijaz : ré, mi bémol, fa dièse, sol, la
+      [[N.D5,0,.3],[622.25,.24,.3],[739.99,.48,.3],[N.G5,.72,.3],[N.A5,.96,.5],[N.G5,1.36,.3],[739.99,1.6,.9]].forEach(([f,d,l])=>_mallet(f,l+0.3,0.13,d,{wet:0.24,ratio:3.5,hard:0.9})); break;
+    case 'fete_newyear': // arpège qui monte, et une pluie d'étincelles
+      [N.C5,N.E5,N.G5,N.C6,N.E6].forEach((f,i)=>_mallet(f,i===4?1.2:0.45,0.13,i*0.09,{wet:0.2,ratio:3.5,hard:1}));
+      for(let i=0;i<4;i++) _drop(1600+i*300,2800+i*300,0.05,0.03,0.55+i*0.09,{wet:0.24}); break;
+    case 'fete_record': // fanfare : sol do mi sol… do
+      [[N.G4,0,.18],[N.C5,.16,.18],[N.E5,.32,.18],[N.G5,.48,.5],[N.E5,.9,.16],[N.G5,1.04,.16],[N.C6,1.2,1]].forEach(([f,d,l])=>_mallet(f,l+0.3,0.15,d,{wet:0.16,hard:1.6})); break;
+    case 'fete_race': // départ : trois appels, puis la note qui lance
+      [0,.42,.84].forEach(d=>_mallet(N.G5,0.28,0.15,d,{wet:0.08,hard:2})); _mallet(N.C6,1.1,0.17,1.3,{wet:0.16,hard:2}); break;
     // Minuteur : trois pulsations nettes — fonctionnel, il doit s'entendre.
     case 'timer': for(let i=0;i<3;i++) _mallet(N.A5,0.3,0.18,i*0.26,{wet:0.06,hard:2.2}); break;
   }
@@ -4999,7 +5015,7 @@ function checkDayRollover(){
   if(_lastDayKey===null){ _lastDayKey=tk; return; } // 1er appel : initApp vient de tout faire
   if(_lastDayKey===tk) return;
   _lastDayKey=tk;
-  try{ applyTheme(); celebrateBday(); }catch(e){}
+  try{ applyTheme(); celebrateFete(); }catch(e){}
   try{ getDailyGoals(); }catch(e){ console.error('[IKORUN] rollover getDailyGoals',e); }
   try{ refreshXP(); }catch(e){ console.error('[IKORUN] rollover refreshXP',e); }
   try{ checkMissedSessions(); }catch(e){ console.error('[IKORUN] rollover checkMissedSessions',e); }
@@ -5033,11 +5049,11 @@ document.addEventListener('click',e=>{ const b=e.target.closest('.btn'); if(b) r
 })();
 
 /* ---------- CONFETTI ---------- */
-function burst(){
+function burst(colors){
   if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const c=$('#confetti'), ctx=c.getContext('2d');
   c.width=innerWidth; c.height=innerHeight;
-  const cols=['#3D7FFF','#F2B84B','#33D399','#FF5C6C','#9FD8FF','#A98CF0'];
+  const cols=(Array.isArray(colors)&&colors.length)?colors:['#3D7FFF','#F2B84B','#33D399','#FF5C6C','#9FD8FF','#A98CF0'];
   let parts=[];
   for(let i=0;i<120;i++) parts.push({x:innerWidth/2,y:innerHeight/3,vx:(Math.random()-.5)*16,vy:(Math.random()-1)*16,
     s:4+Math.random()*6,c:cols[i%cols.length],r:Math.random()*6,vr:(Math.random()-.5)*.4,life:1});
@@ -6036,7 +6052,7 @@ function initApp(){
   _lastDayKey=todayKey(); // repere pour la detection de changement de jour (checkDayRollover)
   refreshXP();
   nav('home');
-  celebrateBday(); // jour d'anniversaire : confettis et mélodie, une fois par an
+  celebrateFete(); // jour spécial : confettis et mélodie à la première ouverture de la journée
   scheduleMotionSettle(1400);
   // Reprise automatique d'une séance muscu interrompue
   setTimeout(maybeResumeLive,600);
@@ -6779,7 +6795,9 @@ function applyTheme(){
   document.documentElement.setAttribute('data-accent',P.theme||'blue');
   document.documentElement.classList.toggle('easy-mode',!!P.easyMode);
   document.documentElement.setAttribute('data-glass',P.glass||'std'); // matière : flat / std / max / clay
-  document.documentElement.toggleAttribute('data-bday', typeof bdayThemeOn==='function' && bdayThemeOn());
+  { const k=(typeof feteOn==='function' && feteOn())?feteToday():null;
+    if(k) document.documentElement.setAttribute('data-fete',k); else document.documentElement.removeAttribute('data-fete');
+    if(document.body) feteSync(); }
   if(typeof ikhCompact==='function') ikhCompact();
   const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.content=(P.easyMode?(mode==='light'?'#FFFFFF':'#000000'):(mode==='light'?'#F2F4F8':'#0A0D12'));
   // Miroir en clair (mode/accent/easyMode ne sont pas des données sensibles) pour que
@@ -8841,7 +8859,7 @@ function renderHome(){
   // Pas de grande illustration ici : le logo IKORUN est déjà en tête de la bannière (27/09).
   html+='<div class="ikh ikh-home">'+homeHdr+
     '<div class="hv7-greet"><h1>'+t('greet')+' '+escHtml(first||t('you'))+'</h1><p>'+sub+'</p></div></div>';
-  html+=bdayCardHTML();
+  html+=feteCardHTML();
   html+=notifPermBubbleHTML();
   html+=homePrayerCardHTML();
 
@@ -8934,7 +8952,7 @@ function renderHomeSimple(ps,sessW,sessTarget,kmW,first){
   '</div>';
   h+=homeStreakBadge();
   h+='<div class="ik-greet"><h1>'+t('greet')+' '+escHtml(first||t('you'))+'</h1></div>';
-  h+=bdayCardHTML();
+  h+=feteCardHTML();
   h+=notifPermBubbleHTML();
   h+=homePrayerCardHTML();
 
@@ -9494,7 +9512,9 @@ function submitDebrief(){
       planSessionId:debriefCtx.planSessionId||null, repsLog
     };
     const idx=debriefCtx.sessRef?SESS.findIndex(s=>s.sessRef===debriefCtx.sessRef):-1;
+    const longest=SESS.reduce((m,s,i)=>i===idx?m:Math.max(m,+s.km||0),0);
     if(idx>=0) SESS[idx]=real; else SESS.push(real);
+    if(real.date===todayKey() && longest>=3 && real.km>longest) feteRecord(tp('recLongestRun',Math.round(real.km*10)/10));
     DB.save('sessions',SESS);
     refreshXP({animate:true});
     const analysis=coachAnalyze(entry);
@@ -10650,10 +10670,11 @@ function finishLive(){
   const totalReps=LIVE.state.reduce((a,st)=>a+(st.log||[]).reduce((b,lg,j)=>b+(st.sets[j]?(+lg.reps||0):0),0),0);
   const xpBefore=(XP&&XP.total)||0;
   // PR : compare au meilleur tonnage par exercice (records charge)
-  const prs=[];
+  const prs=[]; let beaten='';
   LIVE.state.forEach((st,i)=>{ if(st.sets.some(Boolean)){ const name=LIVE.prog.ex[i].name;
-    const prev=MUSCU_PR[name]||0; if(st.weight>prev){ MUSCU_PR[name]=st.weight; prs.push(name+' : '+st.weight+'kg'); } }});
+    const prev=MUSCU_PR[name]||0; if(st.weight>prev){ MUSCU_PR[name]=st.weight; prs.push(name+' : '+st.weight+'kg'); if(prev>0 && !beaten) beaten=name+' · '+st.weight+' kg'; } }});
   DB.save('muscu_pr',MUSCU_PR);
+  if(beaten) feteRecord(beaten); // un record battu (pas une première charge) : journée en fête
   // progression vs séance précédente du même programme
   const prevSess=MSESS.filter(s=>s.progName===LIVE.prog.name).slice(-1)[0];
   const prevTon=prevSess?prevSess.tonnage:0;
@@ -12312,12 +12333,219 @@ function timerToggle(){
 }
 function resetTimer(){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; stopAlarm(); stopBgActivity(); timer.left=timer.total=timer.m*60+timer.s||300; renderTimerIfVisible(); ikIslandKick(); }
 
-/* ---------- ANNIVERSAIRE (V3.4.0) ----------
-   Le jour J (date de naissance du profil ; un 29 février se fête le 28 les années non
-   bissextiles), l'app se met en fête : couleurs rose et or, confettis qui tombent
-   doucement en fond, une carte de vœux sur l'Accueil, et à la première ouverture de la
-   journée un feu de confettis sur « Joyeux anniversaire » au marimba. « Revenir à mes
-   couleurs » coupe la fête pour la journée ; Profil › Apparence la désactive pour de bon. */
+/* ---------- JOURS SPÉCIAUX (V3.5.0) ----------
+   Certains jours, l'app se met en fête : l'anniversaire, le jour J de la course, un record
+   battu (même à l'entraînement), le premier jour du Ramadan, les deux Aïds, Noël, le Nouvel
+   an et Halloween. Chaque fête a ses couleurs (html[data-fete]), sa carte sur l'Accueil, des
+   personnages dessinés posés sur la barre du bas et, de temps en temps, une petite scène qui
+   traverse l'écran : moutons, sapins qui sautillent, araignées, chauves-souris, ballons, feux
+   d'artifice… « Mes couleurs » coupe la fête pour la journée ; Profil › Apparence › Jours
+   spéciaux la désactive pour de bon et permet de prévisualiser chacune.
+   Anniversaire : date de naissance du profil (un 29 février se fête le 28 les années non
+   bissextiles). Ramadan et Aïds : calendrier hégirien Umm al-Qura du téléphone — l'annonce
+   officielle, après l'observation du croissant, peut le décaler d'un jour. */
+// Dessins des fêtes : SVG à plat, sans id ni dégradé SVG — plusieurs copies peuvent vivre
+// dans la page et disparaître sans casser les autres.
+function fxStar(cx,cy,R,r){ let d=''; for(let k=0;k<10;k++){ const a=(-90+k*36)*Math.PI/180, q=k%2?r:R; d+=(k?'L':'M')+(cx+q*Math.cos(a)).toFixed(1)+' '+(cy+q*Math.sin(a)).toFixed(1); } return d+'Z'; }
+const FX_ART={
+  tree(face){
+    const tier=(ax,ay,rx,by,n,w)=>{ const lx=2*ax-rx, seg=(rx-lx)/n; let d='M'+ax+' '+ay+' L'+rx+' '+by; for(let i=1;i<=n;i++) d+=' A'+(seg/2)+' '+w+' 0 0 1 '+(rx-seg*i).toFixed(1)+' '+by; return d+' Z'; };
+    const t1=tier(32,30,58,68,4,5), t2=tier(32,16,52,48,3,4.2), t3=tier(32,6,45,29,2,3.4);
+    return '<svg viewBox="0 0 64 84" aria-hidden="true">'+
+      '<rect x="27.5" y="64" width="9" height="14" rx="2.5" fill="#8B5A2B"/><rect x="32" y="64" width="4.5" height="14" rx="2" fill="#6E4420"/>'+
+      '<path d="'+t1+'" fill="#2E9E4F" stroke="#2E9E4F" stroke-width="2" stroke-linejoin="round"/>'+
+      '<path d="M31 37 L13 64 L18.5 64 L31 43 Z" fill="#5CCB6E" opacity=".75"/>'+
+      '<path d="'+t2+'" transform="translate(0 3)" fill="#1E7A3B"/>'+
+      '<path d="'+t2+'" fill="#35B057" stroke="#35B057" stroke-width="2" stroke-linejoin="round"/>'+
+      '<path d="M31 22 L17 45 L21.5 45 L31 28 Z" fill="#6FD680" opacity=".7"/>'+
+      '<path d="'+t3+'" transform="translate(0 2.6)" fill="#1E7A3B"/>'+
+      '<path d="'+t3+'" fill="#3FBF62" stroke="#3FBF62" stroke-width="2" stroke-linejoin="round"/>'+
+      '<path d="M18 57 Q32 66 47 55" fill="none" stroke="#FFE08A" stroke-width="1.3" stroke-linecap="round" opacity=".9"/>'+
+      '<g class="fx-blink"><circle cx="12.5" cy="64" r="2.4" fill="#4DB8FF"/><circle cx="51.5" cy="64" r="2.4" fill="#FF4D6D"/>'+
+      '<circle cx="23" cy="42" r="2.3" fill="#FFD23F"/><circle cx="41.5" cy="41" r="2.3" fill="#FF4D6D"/><circle cx="36" cy="24" r="1.9" fill="#4DB8FF"/><circle cx="27" cy="25" r="1.9" fill="#FF4D6D"/></g>'+
+      '<g fill="#fff" opacity=".8"><circle cx="11.8" cy="63.2" r=".7"/><circle cx="50.8" cy="63.2" r=".7"/><circle cx="22.3" cy="41.2" r=".7"/><circle cx="40.8" cy="40.2" r=".7"/></g>'+
+      (face?'<g class="fx-eyes"><ellipse cx="26.5" cy="56.5" rx="1.9" ry="2.4" fill="#0F2A18"/><ellipse cx="37.5" cy="56.5" rx="1.9" ry="2.4" fill="#0F2A18"/>'+
+        '<circle cx="27.1" cy="55.7" r=".75" fill="#fff"/><circle cx="38.1" cy="55.7" r=".75" fill="#fff"/></g>'+
+        '<path d="M29 60.6 Q32 63.4 35 60.6" fill="none" stroke="#0F2A18" stroke-width="1.4" stroke-linecap="round"/>'+
+        '<ellipse cx="22.6" cy="60" rx="2.4" ry="1.4" fill="#FF6F91" opacity=".75"/><ellipse cx="41.4" cy="60" rx="2.4" ry="1.4" fill="#FF6F91" opacity=".75"/>':'')+
+      '<path class="fx-tw" d="'+fxStar(32,6,7.2,3.1)+'" fill="#FFD84D" stroke="#F5A300" stroke-width="1.2" stroke-linejoin="round"/>'+
+      '</svg>';
+  },
+  sheep(bell){
+    const wool=[[22,31,10],[31,24,11],[43,22,11.5],[54,27,10.5],[56,37,9],[45,39,10.5],[33,39,10.5],[22,38,8.5],[15,31,7]];
+    const circ=(r0,fill)=>wool.map(([x,y,r])=>'<circle cx="'+x+'" cy="'+y+'" r="'+(r+r0)+'"/>').join('');
+    return '<svg viewBox="0 0 84 62" aria-hidden="true">'+
+      '<g class="fx-leg-a" fill="#3A2E2A"><rect x="21" y="40" width="5.2" height="16" rx="2.6"/><rect x="47" y="40" width="5.2" height="16" rx="2.6"/></g>'+
+      '<g class="fx-leg-b" fill="#2C2320"><rect x="29" y="40" width="5.2" height="15" rx="2.6"/><rect x="55" y="40" width="5.2" height="15" rx="2.6"/></g>'+
+      '<g fill="#D8D1C6">'+circ(1.8)+'<circle cx="9.5" cy="30" r="5.4"/></g>'+
+      '<g fill="#FFFFFF">'+circ(0)+'<circle cx="9.5" cy="30" r="3.8"/></g>'+
+      '<g fill="#EFE9DF"><circle cx="30" cy="44" r="5"/><circle cx="44" cy="45" r="5"/><circle cx="55" cy="42" r="4"/></g>'+
+      '<g fill="#fff" opacity=".9"><circle cx="27" cy="20" r="3"/><circle cx="41" cy="16" r="3.2"/></g>'+
+      '<ellipse cx="60" cy="21" rx="5.6" ry="2.6" transform="rotate(-28 60 21)" fill="#3A2E2A"/>'+
+      '<ellipse cx="68.5" cy="30.5" rx="9.2" ry="10.4" fill="#4A3B35"/>'+
+      '<ellipse cx="77" cy="22" rx="5.2" ry="2.5" transform="rotate(28 77 22)" fill="#4A3B35"/>'+
+      '<g fill="#D8D1C6"><circle cx="64" cy="20.5" r="4.6"/><circle cx="69" cy="19" r="4.6"/><circle cx="73.5" cy="21" r="4"/></g>'+
+      '<g fill="#fff"><circle cx="64" cy="20.5" r="3.4"/><circle cx="69" cy="19" r="3.5"/><circle cx="73.5" cy="21" r="3"/></g>'+
+      '<ellipse cx="70.5" cy="36.5" rx="5.4" ry="3.8" fill="#6B5750"/>'+
+      '<g class="fx-eyes"><ellipse cx="66" cy="29" rx="2.7" ry="3.1" fill="#fff"/><ellipse cx="72.6" cy="29" rx="2.5" ry="2.9" fill="#fff"/>'+
+      '<circle cx="66.9" cy="29.6" r="1.4" fill="#1A1210"/><circle cx="73.4" cy="29.6" r="1.3" fill="#1A1210"/>'+
+      '<circle cx="67.4" cy="28.9" r=".5" fill="#fff"/><circle cx="73.9" cy="28.9" r=".5" fill="#fff"/></g>'+
+      '<path d="M68.2 37.4 Q70.5 39.4 72.8 37.4" fill="none" stroke="#2A1E1A" stroke-width="1.2" stroke-linecap="round"/>'+
+      '<ellipse cx="62.6" cy="34" rx="1.9" ry="1.2" fill="#FF8FA8" opacity=".85"/>'+
+      (bell?'<path d="M58 39 Q63 42 67 39" fill="none" stroke="#D7263D" stroke-width="2" stroke-linecap="round"/><circle cx="62.6" cy="43" r="2.6" fill="#FFD23F" stroke="#C9951F" stroke-width=".8"/>':'')+
+      '</svg>';
+  },
+  spider(){
+    const L=[['M25 21 L14 11 L5 17'],['M24 24 L11 19 L2 27'],['M24 27 L11 30 L4 41'],['M25 30 L15 39 L10 49']];
+    const mir=d=>d.replace(/(\d+(\.\d+)?) (\d+(\.\d+)?)/g,(m,x,_,y)=>(60-+x)+' '+y);
+    return '<svg viewBox="0 0 60 52" aria-hidden="true">'+
+      '<g fill="none" stroke-linecap="round" stroke-linejoin="round">'+
+      '<g class="fx-leg-a">'+L.map(d=>'<path d="'+d+'" stroke="#8C8CA8" stroke-opacity=".38" stroke-width="4.4"/><path d="'+d+'" stroke="#15151B" stroke-width="2.6"/>').join('')+'</g>'+
+      '<g class="fx-leg-b">'+L.map(d=>'<path d="'+mir(d[0])+'" stroke="#8C8CA8" stroke-opacity=".38" stroke-width="4.4"/><path d="'+mir(d[0])+'" stroke="#15151B" stroke-width="2.6"/>').join('')+'</g></g>'+
+      '<ellipse cx="30" cy="32" rx="9.5" ry="11" fill="#1B1B22" stroke="#8C8CA8" stroke-opacity=".4" stroke-width="1.4"/>'+
+      '<path d="M27.4 28 L32.6 28 L30 31.8 Z M30 31.8 L27.4 35.6 L32.6 35.6 Z" fill="#E0263A"/>'+
+      '<circle cx="30" cy="19" r="7" fill="#23232C" stroke="#8C8CA8" stroke-opacity=".4" stroke-width="1.4"/>'+
+      '<g class="fx-eyes"><circle cx="27.2" cy="17.6" r="2.3" fill="#FF3B3B"/><circle cx="32.8" cy="17.6" r="2.3" fill="#FF3B3B"/>'+
+      '<circle cx="25" cy="21" r="1.2" fill="#FF3B3B"/><circle cx="35" cy="21" r="1.2" fill="#FF3B3B"/>'+
+      '<circle cx="26.6" cy="16.9" r=".7" fill="#fff"/><circle cx="32.2" cy="16.9" r=".7" fill="#fff"/></g>'+
+      '<path d="M28 24 L28.8 27 L29.6 24 Z M30.4 24 L31.2 27 L32 24 Z" fill="#F4F0E8"/>'+
+      '<g fill="#fff" opacity=".12"><ellipse cx="26.5" cy="27" rx="2.2" ry="4"/></g>'+
+      '</svg>';
+  },
+  bat(){
+    return '<svg viewBox="0 0 64 34" aria-hidden="true">'+
+      '<path class="fx-wl" d="M28 15 C22 6 12 4 2 8 C6.5 10.5 7.5 13.5 6.5 18 C10.5 15.5 13.5 16.5 14.5 21 C17.5 17.5 20.5 17.5 22.5 22 C23.5 18.5 25.5 17.5 28 19 Z" fill="#2A1E36" stroke="#B89CFF" stroke-opacity=".45" stroke-width="1.2"/>'+
+      '<path class="fx-wr" d="M36 15 C42 6 52 4 62 8 C57.5 10.5 56.5 13.5 57.5 18 C53.5 15.5 50.5 16.5 49.5 21 C46.5 17.5 43.5 17.5 41.5 22 C40.5 18.5 38.5 17.5 36 19 Z" fill="#2A1E36" stroke="#B89CFF" stroke-opacity=".45" stroke-width="1.2"/>'+
+      '<path d="M28.2 12 L27.4 4.5 L31 9.5 Z M35.8 12 L36.6 4.5 L33 9.5 Z" fill="#2A1E36"/>'+
+      '<ellipse cx="32" cy="17" rx="5.2" ry="7.6" fill="#33253F" stroke="#B89CFF" stroke-opacity=".45" stroke-width="1.2"/>'+
+      '<circle cx="30" cy="14.5" r="1.4" fill="#FF4040"/><circle cx="34" cy="14.5" r="1.4" fill="#FF4040"/>'+
+      '<path d="M30.4 20 L31.1 22.2 L31.8 20 Z M32.2 20 L32.9 22.2 L33.6 20 Z" fill="#fff"/>'+
+      '</svg>';
+  },
+  pumpkin(){
+    return '<svg viewBox="0 0 60 56" aria-hidden="true">'+
+      '<path d="M28 12 Q26.5 4 33 2.5 L34.2 5.4 Q30.6 6.6 31.6 12.5 Z" fill="#4E7A2A"/>'+
+      '<path d="M32 7 Q39 3 42 8" fill="none" stroke="#6AA33A" stroke-width="1.8" stroke-linecap="round"/>'+
+      '<g fill="#E26A0A"><ellipse cx="16" cy="33" rx="12.5" ry="17.5"/><ellipse cx="44" cy="33" rx="12.5" ry="17.5"/></g>'+
+      '<g fill="#F7821B"><ellipse cx="23.5" cy="32.5" rx="11.5" ry="19.5"/><ellipse cx="36.5" cy="32.5" rx="11.5" ry="19.5"/></g>'+
+      '<ellipse cx="30" cy="32.5" rx="10" ry="20" fill="#FF9A2E"/>'+
+      '<ellipse cx="22" cy="21" rx="3" ry="6" transform="rotate(20 22 21)" fill="#FFC27A" opacity=".55"/>'+
+      '<g class="fx-glow" fill="#FFD23F" stroke="#8A3A00" stroke-width="1" stroke-linejoin="round">'+
+      '<path d="M18.5 28 L26.5 28 L22.5 20.5 Z"/><path d="M33.5 28 L41.5 28 L37.5 20.5 Z"/><path d="M27.8 33 L32.2 33 L30 29.6 Z"/>'+
+      '<path d="M15.5 37 Q30 50 44.5 37 L41 39.2 L38 36.2 L34.5 40.4 L30 37 L25.5 40.4 L22 36.2 L19 39.2 Z"/></g>'+
+      '</svg>';
+  },
+  ghost(){
+    return '<svg viewBox="0 0 52 62" aria-hidden="true">'+
+      '<path d="M26 3 C11.5 3 6 15 6 28 L6 51 Q9.3 46.5 12.6 51 Q15.9 55.5 19.2 51 Q22.6 46.5 26 51 Q29.4 55.5 32.8 51 Q36.1 46.5 39.4 51 Q42.7 55.5 46 51 L46 28 C46 15 40.5 3 26 3 Z" fill="#F3F0FF" stroke="#B9B0E0" stroke-width="1.4" opacity=".95"/>'+
+      '<path d="M6.5 30 Q-1 34 2 40 Q5 36 7 37" fill="#F3F0FF" stroke="#B9B0E0" stroke-width="1.2"/><path d="M45.5 30 Q53 34 50 40 Q47 36 45 37" fill="#F3F0FF" stroke="#B9B0E0" stroke-width="1.2"/>'+
+      '<path d="M26 3 C11.5 3 6 15 6 28 L6 34 C9 22 15 9 26 8 Z" fill="#fff" opacity=".7"/>'+
+      '<ellipse cx="19" cy="25" rx="3.8" ry="5.4" fill="#1B1030"/><ellipse cx="33" cy="25" rx="3.8" ry="5.4" fill="#1B1030"/>'+
+      '<ellipse cx="26" cy="38" rx="4.2" ry="6" fill="#1B1030"/>'+
+      '<ellipse cx="26" cy="40" rx="2.6" ry="3" fill="#6B2A4A"/>'+
+      '</svg>';
+  },
+  lantern(){
+    return '<svg viewBox="0 0 40 72" aria-hidden="true">'+
+      '<circle cx="20" cy="5" r="3.2" fill="none" stroke="#E0B040" stroke-width="1.6"/>'+
+      '<path d="M20 8 L20 11" stroke="#E0B040" stroke-width="1.6"/>'+
+      '<path d="M9.5 20 Q10 11 20 10 Q30 11 30.5 20 Z" fill="#E8B83A"/>'+
+      '<path d="M12 18 Q13 13 18 12" fill="none" stroke="#FFE7A3" stroke-width="1.4" stroke-linecap="round" opacity=".8"/>'+
+      '<rect x="8.5" y="19" width="23" height="3.4" rx="1.2" fill="#C9951F"/>'+
+      '<path d="M10 22.4 L30 22.4 L34 37 L30 52 L10 52 L6 37 Z" fill="#FFB547"/>'+
+      '<path class="fx-glow" d="M13 24 L27 24 L30.5 37 L27 50 L13 50 L9.5 37 Z" fill="#FFF1B8"/>'+
+      '<path d="M10 22.4 L10 52 M30 22.4 L30 52" stroke="none"/>'+
+      '<path d="M15.5 22.4 L14 37 L15.5 52 M24.5 22.4 L26 37 L24.5 52 M6 37 L34 37" fill="none" stroke="#B8841A" stroke-width="1.3"/>'+
+      '<path d="M10 22.4 L6 37 L10 52 M30 22.4 L34 37 L30 52" fill="none" stroke="#C9951F" stroke-width="1.8" stroke-linejoin="round"/>'+
+      '<path d="M16.2 26 L15 36 L25 36 L23.8 26 Z" fill="#FF7A59" opacity=".35"/><path d="M15 38 L16.2 48 L23.8 48 L25 38 Z" fill="#3FB6A8" opacity=".3"/>'+
+      '<path d="M9 52 L31 52 L27 58 L13 58 Z" fill="#E8B83A"/><path d="M16 58 L24 58 L20 64 Z" fill="#C9951F"/><circle cx="20" cy="66" r="1.9" fill="#E0B040"/>'+
+      '<g fill="#FFF3C4"><circle cx="13" cy="20.7" r=".8"/><circle cx="17.7" cy="20.7" r=".8"/><circle cx="22.3" cy="20.7" r=".8"/><circle cx="27" cy="20.7" r=".8"/></g>'+
+      '</svg>';
+  },
+  crescent(){
+    return '<svg viewBox="0 0 60 60" aria-hidden="true">'+
+      '<path d="M32.6 8.2 A22 22 0 1 0 49.9 39.3 A18 18 0 1 1 32.6 8.2 Z" fill="#FFD76A"/>'+
+      '<path d="M22 12 A20 20 0 0 0 14 40" fill="none" stroke="#FFF1B8" stroke-width="2" stroke-linecap="round" opacity=".7"/>'+
+      '<path class="fx-tw" d="'+fxStar(47,22,6.5,2.7)+'" fill="#FFE9A0"/>'+
+      '</svg>';
+  },
+  balloon(c,d){
+    return '<svg viewBox="0 0 40 92" aria-hidden="true">'+
+      '<path d="M20 53 C15.5 60 24.5 66 19 74 C14.5 81 22.5 85 20 92" fill="none" stroke="currentColor" stroke-width="1.1" opacity=".55"/>'+
+      '<path d="M20 4 C31 4 36 14 36 24 C36 37 27 47 20 49 C13 47 4 37 4 24 C4 14 9 4 20 4 Z" fill="'+c+'"/>'+
+      '<path d="M20 49 C27 47 36 37 36 24 C36 32 30 43 20 46 Z" fill="'+d+'" opacity=".55"/>'+
+      '<path d="M17 49 L23 49 L20 53.4 Z" fill="'+d+'"/>'+
+      '<ellipse cx="13" cy="17" rx="3.4" ry="6.2" transform="rotate(-22 13 17)" fill="#fff" opacity=".5"/><circle cx="10.8" cy="26.5" r="1.4" fill="#fff" opacity=".4"/>'+
+      '</svg>';
+  },
+  gift(c,r){
+    return '<svg viewBox="0 0 46 46" aria-hidden="true">'+
+      '<rect x="5" y="19" width="36" height="25" rx="3.5" fill="'+c+'"/>'+
+      '<rect x="5" y="19" width="36" height="6" fill="#000" opacity=".12"/>'+
+      '<rect x="3" y="13" width="40" height="8.5" rx="2.5" fill="'+c+'"/><rect x="3" y="13" width="40" height="3" rx="1.5" fill="#fff" opacity=".25"/>'+
+      '<rect x="20" y="13" width="6" height="31" fill="'+r+'"/>'+
+      '<path d="M23 12.5 C17 4 9 6 11.5 11 C13 13.5 19 13.5 23 12.5 Z M23 12.5 C29 4 37 6 34.5 11 C33 13.5 27 13.5 23 12.5 Z" fill="'+r+'"/>'+
+      '<path d="M23 12.5 C19 8 14 7.5 13.6 10" fill="none" stroke="#000" stroke-width="1" opacity=".18"/>'+
+      '<circle cx="23" cy="12.6" r="3" fill="'+r+'"/><circle cx="22.2" cy="11.8" r=".9" fill="#fff" opacity=".6"/>'+
+      '</svg>';
+  },
+  cake(){
+    const fl=(x,b)=>{ const t=b-8.6; return '<g class="fx-flame"><path d="M'+x+' '+t+' C'+(x+3.1)+' '+(t+4)+' '+(x+3.1)+' '+(t+7.4)+' '+x+' '+(b-.2)+' C'+(x-3.1)+' '+(t+7.4)+' '+(x-3.1)+' '+(t+4)+' '+x+' '+t+' Z" fill="#FFB020"/>'+
+      '<path d="M'+x+' '+(t+3.4)+' C'+(x+1.6)+' '+(t+5.4)+' '+(x+1.6)+' '+(t+7.2)+' '+x+' '+(b-.8)+' C'+(x-1.6)+' '+(t+7.2)+' '+(x-1.6)+' '+(t+5.4)+' '+x+' '+(t+3.4)+' Z" fill="#FFF3B0"/></g>'; };
+    return '<svg viewBox="0 0 64 64" aria-hidden="true">'+
+      '<ellipse cx="32" cy="57.5" rx="27" ry="4.2" fill="#fff" opacity=".35"/>'+
+      '<rect x="9" y="38" width="46" height="18" rx="5" fill="#FF8FB8"/><rect x="9" y="47" width="46" height="9" rx="4" fill="#E86A9A"/>'+
+      '<path d="M9 43 Q9 37.5 14.5 37.5 L49.5 37.5 Q55 37.5 55 43 L55 44.5 Q52 48.5 49 44.5 Q46 49.5 42 44.5 Q38 50.5 34 44.5 Q30 49.5 26 44.5 Q22 49.5 18 44.5 Q14 48.5 11.5 44.5 Q9.5 46 9 44.5 Z" fill="#FFF7FB"/>'+
+      '<rect x="17" y="23" width="30" height="16" rx="4.5" fill="#B98CFF"/>'+
+      '<path d="M17 27.5 Q17 23 21.5 23 L42.5 23 Q47 23 47 27.5 L47 28.5 Q44.5 32 42 28.5 Q39.5 32.5 36.5 28.5 Q33.5 33 30.5 28.5 Q27.5 32.5 24.5 28.5 Q21.5 32 19.5 28.5 Q18 30 17 28.5 Z" fill="#FFF7FB"/>'+
+      '<rect x="23.4" y="12.5" width="3.6" height="10.6" rx="1.2" fill="#7FD1FF"/><rect x="30.2" y="11" width="3.6" height="12.1" rx="1.2" fill="#FFE066"/><rect x="37" y="12.5" width="3.6" height="10.6" rx="1.2" fill="#7FE3B0"/>'+
+      '<path d="M23.4 16 L27 14.4 M23.4 20 L27 18.4 M30.2 15 L33.8 13.4 M30.2 19 L33.8 17.4 M37 16 L40.6 14.4 M37 20 L40.6 18.4" stroke="#fff" stroke-width="1.1" opacity=".75"/>'+
+      fl(25.2,12.5)+fl(32,11)+fl(38.8,12.5)+
+      '<g fill="#fff"><rect x="14" y="50" width="3.4" height="1.4" rx=".7" transform="rotate(-20 15.7 50.7)"/><rect x="26" y="52" width="3.4" height="1.4" rx=".7" transform="rotate(25 27.7 52.7)" fill="#FFE066"/><rect x="40" y="50.5" width="3.4" height="1.4" rx=".7" transform="rotate(-35 41.7 51.2)" fill="#7FD1FF"/><rect x="47" y="52.5" width="3.4" height="1.4" rx=".7" transform="rotate(15 48.7 53.2)"/>'+
+      '<rect x="22" y="33.5" width="3" height="1.3" rx=".6" transform="rotate(30 23.5 34.1)" fill="#FFE066"/><rect x="35" y="34.5" width="3" height="1.3" rx=".6" transform="rotate(-25 36.5 35.1)"/></g>'+
+      '</svg>';
+  },
+  trophy(){
+    return '<svg viewBox="0 0 60 64" aria-hidden="true">'+
+      '<path d="M17 13 Q6 12 7.5 21 Q9 29 19 29" fill="none" stroke="#E6A91F" stroke-width="4" stroke-linecap="round"/>'+
+      '<path d="M43 13 Q54 12 52.5 21 Q51 29 41 29" fill="none" stroke="#E6A91F" stroke-width="4" stroke-linecap="round"/>'+
+      '<path d="M15 7 L45 7 L43 26 Q41 39 30 41 Q19 39 17 26 Z" fill="#FFC83D"/>'+
+      '<path d="M30 7 L45 7 L43 26 Q41 39 30 41 Z" fill="#F0AE1E"/>'+
+      '<path d="M21 11 Q20.5 25 25 33" fill="none" stroke="#FFF1B8" stroke-width="2.6" stroke-linecap="round" opacity=".85"/>'+
+      '<rect x="26.5" y="40" width="7" height="8" fill="#E6A91F"/>'+
+      '<rect x="18" y="47" width="24" height="7" rx="2" fill="#8A5A1E"/><rect x="15.5" y="53" width="29" height="6" rx="2" fill="#6E4515"/>'+
+      '<rect x="24" y="49" width="12" height="3" rx="1" fill="#FFC83D" opacity=".85"/>'+
+      '<path class="fx-tw" d="'+fxStar(30,21,6.4,2.7)+'" fill="#FFF3B8"/>'+
+      '</svg>';
+  },
+  firework(){
+    const C=['#FFD76A','#FF7AB6','#7FE3FF','#FFFFFF'];
+    let d=''; for(let i=0;i<12;i++){ const a=i*Math.PI/6, c=C[i%4], x1=32+7*Math.cos(a), y1=30+7*Math.sin(a), x2=32+19*Math.cos(a), y2=30+19*Math.sin(a);
+      d+='<path d="M'+x1.toFixed(1)+' '+y1.toFixed(1)+' L'+x2.toFixed(1)+' '+y2.toFixed(1)+'" stroke="'+c+'" stroke-width="2.6" stroke-linecap="round"/><circle cx="'+(32+24*Math.cos(a)).toFixed(1)+'" cy="'+(30+24*Math.sin(a)).toFixed(1)+'" r="1.8" fill="'+c+'"/>'; }
+    let e=''; for(let i=0;i<8;i++){ const a=i*Math.PI/4+.4; e+='<path d="M'+(52+3*Math.cos(a)).toFixed(1)+' '+(12+3*Math.sin(a)).toFixed(1)+' L'+(52+8*Math.cos(a)).toFixed(1)+' '+(12+8*Math.sin(a)).toFixed(1)+'" stroke="#FFD76A" stroke-width="1.6" stroke-linecap="round"/>'; }
+    return '<svg viewBox="0 0 64 64" aria-hidden="true"><g class="fx-tw">'+d+'</g>'+e+'<circle cx="32" cy="30" r="3.4" fill="#fff"/><path d="M32 62 Q30 50 32 40" fill="none" stroke="#FFD76A" stroke-width="1.4" stroke-dasharray="2 3" opacity=".7"/></svg>';
+  },
+  cobweb(){
+    const R=[16,30,46,62], A=[90,112.5,135,157.5,180].map(a=>a*Math.PI/180), pt=(r,a)=>[70+r*Math.cos(a),r*Math.sin(a)];
+    let d=A.map(a=>{ const [x,y]=pt(70,a); return 'M70 0 L'+x.toFixed(1)+' '+y.toFixed(1); }).join(' ');
+    R.forEach(r=>{ for(let i=0;i<A.length-1;i++){ const [x1,y1]=pt(r,A[i]), [x2,y2]=pt(r,A[i+1]), [cx,cy]=pt(r*.8,(A[i]+A[i+1])/2); d+=(i?' ':' M'+x1.toFixed(1)+' '+y1.toFixed(1))+' Q'+cx.toFixed(1)+' '+cy.toFixed(1)+' '+x2.toFixed(1)+' '+y2.toFixed(1); } });
+    return '<svg viewBox="0 0 70 70" aria-hidden="true"><path d="'+d+'" fill="none" stroke="#fff" stroke-width=".9" opacity=".42"/></svg>';
+  },
+  bunting(){
+    const C=['#FF5FA2','#FFC94D','#7FD1FF','#B98CFF','#7FE3B0'], P0=[-5,3], P1=[180,26], P2=[365,3];
+    const at=t=>[(1-t)*(1-t)*P0[0]+2*(1-t)*t*P1[0]+t*t*P2[0],(1-t)*(1-t)*P0[1]+2*(1-t)*t*P1[1]+t*t*P2[1]];
+    let f=''; for(let i=0;i<14;i++){ const t=.04+i*.071, [x,y]=at(t), [x2,y2]=at(t+.03), a=Math.atan2(y2-y,x2-x)*180/Math.PI;
+      f+='<path d="M-8 0 L8 0 L0 15 Z" transform="translate('+x.toFixed(1)+' '+(y+.5).toFixed(1)+') rotate('+a.toFixed(1)+')" fill="'+C[i%5]+'"/>'; }
+    return '<svg viewBox="0 0 360 44" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><path d="M-5 3 Q180 26 365 3" fill="none" stroke="#fff" stroke-width="1.2" opacity=".6"/>'+f+'</svg>';
+  },
+  flag(){
+    let sq=''; for(let i=0;i<6;i++) for(let j=0;j<4;j++) if((i+j)%2===0) sq+='<rect x="'+(8+i*6)+'" y="'+(6+j*6)+'" width="6" height="6"/>';
+    return '<svg viewBox="0 0 48 60" aria-hidden="true">'+
+      '<rect x="4" y="3" width="3.2" height="55" rx="1.6" fill="#C9D1DC"/><circle cx="5.6" cy="3.6" r="2.6" fill="#FFD23F"/>'+
+      '<g class="fx-wave"><rect x="8" y="6" width="36" height="24" fill="#fff"/><g fill="#15151B">'+sq+'</g></g>'+
+      '</svg>';
+  }
+};
 function isBirthdayToday(){
   if(!P || !P.bday) return false;
   const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(P.bday)); if(!m) return false;
@@ -12325,24 +12553,213 @@ function isBirthdayToday(){
   if(mo===2 && d===29 && !((y%4===0 && y%100!==0) || y%400===0)) d=28;
   return now.getMonth()+1===mo && now.getDate()===d;
 }
-function bdayThemeOn(){ return isBirthdayToday() && P.bdayTheme!==false && P.bdayOff!==todayKey(); }
-function bdayCardHTML(){
-  if(!isBirthdayToday() || P.bdayTheme===false) return '';
-  const first=escHtml((P.name||'').split(' ')[0]||t('you')), on=bdayThemeOn(), a=age();
-  return '<div class="bday-card" role="status"><i class="bday-cake" aria-hidden="true">'+ICN('cake',26)+'</i>'+
-    '<div class="bday-txt"><b>'+tp('bdayTitle',first)+'</b><span>'+(typeof a==='number'?tp('bdayAge',a)+' · ':'')+t('bdayWish')+'</span></div>'+
-    '<button type="button" class="bday-btn" onclick="event.stopPropagation();toggleBdayToday()">'+t(on?'bdayOffBtn':'bdayOnBtn')+'</button></div>';
+// Date hégirienne du jour (calendrier Umm al-Qura du téléphone, sinon islamique civil).
+// Un appareil qui ne connaît aucun calendrier islamique répond en grégorien : on le
+// détecte (resolvedOptions) plutôt que de prendre un mois grégorien pour un mois hégirien.
+let _hijriMemo=null;
+function hijriToday(){
+  const tk=todayKey(); if(_hijriMemo && _hijriMemo.tk===tk) return _hijriMemo.v;
+  let v=null;
+  for(const cal of ['islamic-umalqura','islamic-civil','islamic']){
+    try{
+      const f=new Intl.DateTimeFormat('en-u-ca-'+cal+'-nu-latn',{day:'numeric',month:'numeric',year:'numeric'});
+      if(!/^islamic/.test(f.resolvedOptions().calendar||'')) continue;
+      const o={}; f.formatToParts(new Date()).forEach(p=>{ o[p.type]=p.value; });
+      const m=parseInt(o.month,10), d=parseInt(o.day,10);
+      if(m>=1 && m<=12 && d>=1 && d<=30){ v={m,d}; break; }
+    }catch(e){}
+  }
+  _hijriMemo={tk,v}; return v;
 }
-function toggleBdayToday(){
-  P.bdayOff=bdayThemeOn()?todayKey():null; saveAll(); applyTheme(); renderHome();
-  if(bdayThemeOn()) celebrateBday(true);
+const FETE_KEYS=['bday','race','record','ramadan','eidFitr','eidAdha','xmas','newyear','halloween'];
+let _fetePreview=null;
+try{ const q=new URLSearchParams(location.search).get('fete'); if(FETE_KEYS.includes(q)) _fetePreview=q; }catch(e){}
+function feteEnabled(){ return P && (P.fetes!=null ? P.fetes!==false : P.bdayTheme!==false); }
+// La fête du jour, la plus personnelle d'abord.
+function feteToday(){
+  if(_fetePreview) return _fetePreview;
+  if(!P) return null;
+  const now=new Date(), tk=todayKey(), md=(now.getMonth()+1)*100+now.getDate(), h=hijriToday();
+  if(isBirthdayToday()) return 'bday';
+  if(P.compDate===tk) return 'race';
+  if(h && h.m===12 && (h.d===10 || h.d===11)) return 'eidAdha';
+  if(h && h.m===10 && (h.d===1 || h.d===2)) return 'eidFitr';
+  if(PREFS && PREFS.recDay && PREFS.recDay.d===tk) return 'record';
+  if(h && h.m===9 && h.d===1) return 'ramadan';
+  if(md===1224 || md===1225) return 'xmas';
+  if(md===1231 || md===101) return 'newyear';
+  if(md===1031) return 'halloween';
+  return null;
 }
-function celebrateBday(force){
-  if(!bdayThemeOn()) return;
-  const k='ik_bday_'+new Date().getFullYear();
-  try{ if(!force && localStorage.getItem(k)) return; localStorage.setItem(k,'1'); }catch(e){}
-  setTimeout(()=>{ try{ if(!ikMotionOff()) burst(); sfx('bday'); if(navigator.vibrate) navigator.vibrate([30,60,30,60,80]); }catch(e){} },700);
+function feteOn(){ const k=feteToday(); return !!k && (!!_fetePreview || (feteEnabled() && P.feteOff!==todayKey())); }
+function bdayThemeOn(){ return feteOn() && feteToday()==='bday'; }
+// Un record battu aujourd'hui, même à l'entraînement, met la journée en fête.
+function feteRecord(txt){
+  try{
+    PREFS.recDay={d:todayKey(),txt:String(txt||'').slice(0,80)}; DB.save('prefs',PREFS);
+    applyTheme(); celebrateFete();
+  }catch(e){}
 }
+const FETE_BURST={bday:['#FF5FA2','#FFC94D','#B98CFF','#7FD1FF','#FFFFFF'],race:null,record:['#FFD76A','#FFC83D','#FFF1B8','#FF9A3D'],
+  ramadan:['#FFD76A','#FFF1B8','#9FB4FF'],eidFitr:['#2FD08A','#FFD76A','#FFFFFF'],eidAdha:['#2FD08A','#FFD76A','#FFFFFF'],
+  xmas:['#FF4D6D','#2FBF62','#FFD23F','#FFFFFF'],newyear:['#FFD76A','#FF7AB6','#7FE3FF','#FFFFFF'],halloween:['#FF8A1F','#A970FF','#3DFF8A']};
+function feteCardHTML(){
+  const k=feteToday(); if(!k) return '';
+  if(!_fetePreview && !feteEnabled()) return '';
+  const on=feteOn(), first=escHtml((P.name||'').split(' ')[0]||t('you')), y=new Date().getFullYear();
+  let title='', sub='', art='', deco='';
+  if(k==='bday'){ const a=age(); title=tp('bdayTitle',first); sub=(typeof a==='number'?tp('bdayAge',a)+' · ':'')+t('bdayWish'); art=FX_ART.cake();
+    deco='<i class="fc-bunt">'+FX_ART.bunting()+'</i><i class="fc-bal b1">'+FX_ART.balloon('#FFC94D','#D99A06')+'</i><i class="fc-bal b2">'+FX_ART.balloon('#7FD1FF','#3C9BD6')+'</i>'; }
+  else if(k==='race'){ const r=P.objRace||P.goal||''; title=t('feteRaceTitle'); sub=r?tp('feteRaceSub',escHtml(r)):t('feteRaceSubPlain'); art=FX_ART.flag(); deco='<i class="fc-check"></i>'; }
+  else if(k==='record'){ const r=(PREFS.recDay&&PREFS.recDay.txt)||''; title=t('feteRecordTitle'); sub=r?tp('feteRecordSub',escHtml(r)):t('feteRecordSubPlain'); art=FX_ART.trophy(); deco='<i class="fc-rays"></i>'; }
+  else if(k==='eidFitr'||k==='eidAdha'){ title=tp('feteEidTitle',first); sub=t(k==='eidAdha'?'feteEidAdhaSub':'feteEidFitrSub'); art=FX_ART.sheep(true); deco='<i class="fc-moon">'+FX_ART.crescent()+'</i><i class="fc-stars"></i>'; }
+  else if(k==='ramadan'){ title=t('feteRamadanTitle'); sub=t('feteRamadanSub'); art=FX_ART.lantern(); deco='<i class="fc-moon">'+FX_ART.crescent()+'</i><i class="fc-stars"></i>'; }
+  else if(k==='xmas'){ title=tp('feteXmasTitle',first); sub=t('feteXmasSub'); art=FX_ART.tree(true); deco='<i class="fc-snow"></i><i class="fc-tree t1">'+FX_ART.tree(false)+'</i><i class="fc-tree t2">'+FX_ART.tree(false)+'</i>'; }
+  else if(k==='newyear'){ const eve=new Date().getMonth()===11; title=eve?t('feteNyeTitle'):tp('feteNyTitle',y); sub=eve?tp('feteNyeSub',y):t('feteNySub'); art=FX_ART.firework(); deco='<i class="fc-stars"></i>'; }
+  else if(k==='halloween'){ title=t('feteHalloweenTitle'); sub=t('feteHalloweenSub'); art=FX_ART.pumpkin(); deco='<i class="fc-web">'+FX_ART.cobweb()+'</i><i class="fc-spider"><b></b>'+FX_ART.spider()+'</i>'; }
+  const btn=_fetePreview?t('fetePreviewEnd'):t(on?'bdayOffBtn':'bdayOnBtn');
+  return '<div class="fete-card fc-'+k+(on?'':' off')+'" role="status"><div class="fc-deco" aria-hidden="true">'+deco+'</div>'+
+    '<div class="fc-art" aria-hidden="true">'+art+'</div>'+
+    '<div class="fc-txt"><b>'+title+'</b><span>'+sub+'</span>'+
+    '<button type="button" class="fc-btn" onclick="event.stopPropagation();toggleFeteToday()">'+btn+'</button></div></div>';
+}
+function bdayCardHTML(){ return feteCardHTML(); }
+function toggleFeteToday(){
+  if(_fetePreview){ _fetePreview=null; applyTheme(); renderHome(); return; }
+  P.feteOff=feteOn()?todayKey():null; saveAll(); applyTheme(); renderHome();
+  if(feteOn()) celebrateFete(true);
+}
+function toggleBdayToday(){ toggleFeteToday(); }
+// Première ouverture de la journée : un feu de confettis aux couleurs de la fête et sa mélodie.
+function celebrateFete(force){
+  if(!feteOn()) return;
+  const k=feteToday(), key='ik_fete_'+k+'_'+todayKey();
+  try{ if(!force && localStorage.getItem(key)) return; localStorage.setItem(key,'1'); }catch(e){}
+  setTimeout(()=>{ try{ if(!ikMotionOff()) burst(FETE_BURST[k]||undefined); sfx(k==='bday'?'bday':'fete_'+k); if(navigator.vibrate) navigator.vibrate([30,60,30,60,80]); }catch(e){} },700);
+}
+function celebrateBday(force){ celebrateFete(force); }
+// Aperçu depuis Profil › Apparence : la fête s'applique jusqu'au prochain lancement.
+function feteTry(k){
+  if(!FETE_KEYS.includes(k)) return;
+  _fetePreview=k; applyTheme();
+  document.querySelectorAll('.ov.on').forEach(o=>closeOv(o.id));
+  nav('home'); celebrateFete(true);
+}
+
+/* Le calque des fêtes : personnages posés sur la barre du bas, et de temps en temps une
+   scène qui passe. Un seul calque fixe, sans interaction ; chaque personnage est animé
+   par l'API Web Animations (transform et opacity : le compositeur s'en charge) puis
+   retiré. Rien ne tourne quand l'app est en arrière-plan, qu'une fenêtre est ouverte ou
+   que les animations sont réduites. */
+let _feteKey=null, _feteT=0, _feteEl=null;
+const fxIt=(svg,w,cls)=>'<i class="fx-it'+(cls?' '+cls:'')+'" style="width:'+w+'px">'+svg+'</i>';
+const FETE_FX={
+  bday:{every:[9000,16000],acts:['balloons','balloons','fireworks'],
+    l:()=>fxIt(FX_ART.gift('#B98CFF','#FFD23F'),42)+fxIt(FX_ART.gift('#FF5FA2','#FFFFFF'),28),
+    r:()=>fxIt(FX_ART.balloon('#7FD1FF','#3C9BD6'),22,'fx-sway')+fxIt(FX_ART.gift('#FFC94D','#FF5FA2'),36)},
+  race:{every:[16000,26000],acts:['fireworks'],l:()=>fxIt(FX_ART.flag(),32),r:()=>fxIt(FX_ART.flag(),32,'flip')},
+  record:{every:[11000,19000],acts:['stars','fireworks'],l:()=>'',r:()=>fxIt(FX_ART.trophy(),40)},
+  ramadan:{every:[11000,19000],acts:['lanternRise','lanternRise','shootingStar'],l:()=>fxIt(FX_ART.lantern(),26)+fxIt(FX_ART.lantern(),19),r:()=>fxIt(FX_ART.lantern(),26)},
+  eidFitr:{every:[9000,16000],acts:['sheepWalk','sheepWalk','sheepHop','lanternRise'],l:()=>fxIt(FX_ART.sheep(true),60),r:()=>fxIt(FX_ART.lantern(),26)},
+  eidAdha:{every:[8000,15000],acts:['sheepWalk','sheepWalk','sheepHop'],l:()=>fxIt(FX_ART.sheep(true),60),r:()=>fxIt(FX_ART.sheep(false),52,'flip')},
+  xmas:{every:[9000,16000],acts:['treeHop','treeHop','shootingStar'],
+    l:()=>fxIt(FX_ART.tree(true),50)+fxIt(FX_ART.tree(false),34),
+    r:()=>fxIt(FX_ART.gift('#FF4D6D','#FFFFFF'),28)+fxIt(FX_ART.tree(false),38)+fxIt(FX_ART.tree(true),46)},
+  newyear:{every:[5000,10000],acts:['fireworks'],l:()=>'',r:()=>''},
+  halloween:{every:[6000,12000],acts:['spiderDrop','spiderDrop','spiderRun','bats','ghost','eyes'],
+    l:()=>fxIt(FX_ART.pumpkin(),46)+fxIt(FX_ART.pumpkin(),30),r:()=>fxIt(FX_ART.pumpkin(),40)}
+};
+function feteLayer(){
+  if(!_feteEl){ _feteEl=document.createElement('div'); _feteEl.id='ikFete'; _feteEl.setAttribute('aria-hidden','true'); document.body.appendChild(_feteEl); }
+  return _feteEl;
+}
+function feteSync(){
+  const k=feteOn()?feteToday():null;
+  if(k===_feteKey && (k || !_feteEl)) return;
+  _feteKey=k; clearTimeout(_feteT);
+  if(!k){ if(_feteEl){ _feteEl.remove(); _feteEl=null; } return; }
+  const L=feteLayer(), D=FETE_FX[k], n=document.getElementById('nav');
+  if(n && n.offsetHeight) L.style.setProperty('--navh',n.offsetHeight+'px');
+  L.dataset.k=k; L.innerHTML='<div class="fx-gnd l">'+D.l()+'</div><div class="fx-gnd r">'+D.r()+'</div>';
+  feteSchedule(1800);
+}
+function feteSchedule(ms){ clearTimeout(_feteT); _feteT=setTimeout(feteTick,ms); }
+function feteTick(){
+  const D=_feteKey && FETE_FX[_feteKey]; if(!D || !_feteEl) return;
+  if(!document.hidden && !ikMotionOff() && !document.querySelector('.ov.on') && _feteEl.querySelectorAll('.fx').length<4){
+    try{ FX_ACTS[D.acts[(Math.random()*D.acts.length)|0]](_feteEl); }catch(e){}
+  }
+  feteSchedule(D.every[0]+Math.random()*(D.every[1]-D.every[0]));
+}
+// Mesures dans le repère du calque (pixels CSS, zoom compris) ; « sol » = haut de la barre
+// du bas, ou de l'îlot quand il est posé dessus, ou le bas de l'écran si la barre est rentrée.
+function fxBox(L){
+  const k=uiRectFactor(), lr=L.getBoundingClientRect(), W=lr.width/k, H=lr.height/k;
+  const isl=document.body.classList.contains('isl-low') && document.querySelector('#ikIsland.on');
+  const n=isl || document.getElementById('nav');
+  let g=H-8;
+  if(n && !(n.id==='nav' && n.classList.contains('nav-hidden'))){ const r=n.getBoundingClientRect(); if(r.height) g=(r.top-lr.top)/k+5; }
+  return {W,H,g};
+}
+function fxAdd(L,cls,html,css){ const e=document.createElement('div'); e.className='fx '+cls; e.innerHTML=html; e.style.cssText=css||''; L.appendChild(e); return e; }
+function fxRun(e,frames,opt){
+  let a; try{ a=e.animate(frames,Object.assign({fill:'both'},opt)); }catch(err){ e.remove(); return; }
+  a.onfinish=a.oncancel=()=>e.remove();
+}
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const FX_ACTS={
+  balloons(L){ const {W,H}=fxBox(L), C=[['#FF5FA2','#C23A78'],['#FFC94D','#D99A06'],['#7FD1FF','#3C9BD6'],['#B98CFF','#7E55D6'],['#7FE3B0','#2FA878']];
+    const n=2+((Math.random()*2)|0);
+    for(let i=0;i<n;i++){ const [c,d]=C[(Math.random()*C.length)|0], w=rnd(28,42), x=rnd(8,W-w-8);
+      const e=fxAdd(L,'fx-rise','<i class="fx-sway">'+FX_ART.balloon(c,d)+'</i>','left:'+x+'px;top:'+H+'px;width:'+w+'px');
+      fxRun(e,[{transform:'translate3d(0,0,0)'},{transform:'translate3d('+rnd(-30,30)+'px,'+(-H-w*2.6)+'px,0)'}],{duration:rnd(7000,9500),delay:i*700,easing:'cubic-bezier(.3,.15,.6,1)'}); } },
+  fireworks(L){ const {W,H}=fxBox(L), C=FETE_BURST[_feteKey]||['var(--e)','var(--e2)','#FFFFFF'], n=1+((Math.random()*3)|0);
+    for(let b=0;b<n;b++){ const x=rnd(W*.15,W*.85), y=rnd(H*.12,H*.42), R=rnd(46,78), col=C[(Math.random()*C.length)|0];
+      let h='<b></b>'; for(let i=0;i<14;i++) h+='<i style="color:'+(i%3?col:C[(i+b)%C.length])+'"></i>';
+      const e=fxAdd(L,'fx-fw',h,'left:'+x+'px;top:'+y+'px'), d=b*450;
+      e.querySelectorAll('i').forEach((p,i)=>{ const a=i*360/14+rnd(-6,6);
+        p.animate([{transform:'rotate('+a+'deg) translateY(0) scale(1)',opacity:1},{transform:'rotate('+a+'deg) translateY('+(-R)+'px) scale(.9)',opacity:1,offset:.55},{transform:'rotate('+a+'deg) translateY('+(-R-14)+'px) scale(.3)',opacity:0}],{duration:1300,delay:d,easing:'cubic-bezier(.12,.75,.3,1)',fill:'both'}); });
+      fxRun(e.querySelector('b'),[{transform:'scale(.2)',opacity:1},{transform:'scale(1.6)',opacity:0}],{duration:500,delay:d,easing:'ease-out'});
+      setTimeout(()=>e.remove(),1500+d); } },
+  stars(L){ const {W,g}=fxBox(L);
+    for(let i=0;i<6;i++){ const w=rnd(10,18), x=rnd(W*.55,W-30);
+      const e=fxAdd(L,'fx-star','<svg viewBox="0 0 20 20"><path d="'+fxStar(10,10,9.5,4)+'" fill="#FFD76A"/></svg>','left:'+x+'px;top:'+(g-40)+'px;width:'+w+'px');
+      fxRun(e,[{transform:'translate3d(0,0,0) rotate(0) scale(.4)',opacity:0},{opacity:1,offset:.2},{transform:'translate3d('+rnd(-60,20)+'px,'+(-rnd(160,300))+'px,0) rotate('+rnd(-120,120)+'deg) scale(1)',opacity:0}],{duration:rnd(2200,3200),delay:i*180,easing:'cubic-bezier(.2,.6,.4,1)'}); } },
+  shootingStar(L){ const {W,H}=fxBox(L), x=rnd(W*.5,W*1.05), y=rnd(H*.04,H*.24), dx=-rnd(W*.55,W*.8), dy=rnd(90,170), a=Math.atan2(dy,dx)*180/Math.PI;
+    const e=fxAdd(L,'fx-shoot','','left:'+x+'px;top:'+y+'px');
+    fxRun(e,[{transform:'translate3d(0,0,0) rotate('+a+'deg) scaleX(.2)',opacity:0},{opacity:1,offset:.15},{transform:'translate3d('+dx+'px,'+dy+'px,0) rotate('+a+'deg) scaleX(1)',opacity:0}],{duration:1400,easing:'cubic-bezier(.3,.4,.6,1)'}); },
+  lanternRise(L){ const {W,H}=fxBox(L), w=rnd(20,28), x=rnd(W*.12,W*.88-w);
+    const e=fxAdd(L,'fx-rise','<i class="fx-sway">'+FX_ART.lantern()+'</i>','left:'+x+'px;top:'+H+'px;width:'+w+'px');
+    fxRun(e,[{transform:'translate3d(0,0,0)',opacity:0},{opacity:1,offset:.12},{opacity:.95,offset:.75},{transform:'translate3d('+rnd(-40,40)+'px,'+(-H*.95)+'px,0)',opacity:0}],{duration:rnd(9000,12000),easing:'cubic-bezier(.35,.2,.55,1)'}); },
+  _walk(L,svg,w,ratio,cls,n,speed){ const {W,g}=fxBox(L), rtl=Math.random()<.5, h=w*ratio;
+    for(let i=0;i<n;i++){ const ww=w-i*7, hh=ww*ratio;
+      const e=fxAdd(L,'fx-walker'+(rtl?' rtl':''),'<i class="'+cls+'" style="animation-delay:-'+(i*.23)+'s">'+svg+'</i>','left:0;top:'+(g-hh+6)+'px;width:'+ww+'px');
+      const x0=rtl?W+12:-ww-12, x1=rtl?-ww-12:W+12;
+      fxRun(e,[{transform:'translate3d('+x0+'px,0,0)'},{transform:'translate3d('+x1+'px,0,0)'}],{duration:(W+2*ww+24)/speed*1000,delay:i*rnd(700,1100),easing:'linear'}); }
+    return h; },
+  sheepWalk(L){ this._walk(L,FX_ART.sheep(true),rnd(52,62),62/84,'fx-bob',Math.random()<.4?3:1,52); },
+  sheepHop(L){ this._walk(L,FX_ART.sheep(true),56,62/84,'fx-hop',1,70); },
+  treeHop(L){ const n=Math.random()<.45?3:1; this._walk(L,FX_ART.tree(true),rnd(40,48),84/64,'fx-hop',n,62); },
+  spiderDrop(L){ const {W,H}=fxBox(L), w=rnd(34,46), x=rnd(W*.08,W*.85-w), y=rnd(H*.2,H*.5);
+    const e=fxAdd(L,'fx-drop','<b class="fx-thread"></b><i class="fx-spin">'+FX_ART.spider()+'</i>','left:'+x+'px;top:0;width:'+w+'px');
+    fxRun(e,[{transform:'translate3d(0,-70px,0)'},{transform:'translate3d(0,'+(y+10)+'px,0)',offset:.22,easing:'cubic-bezier(.3,1.5,.6,1)'},{transform:'translate3d(0,'+y+'px,0)',offset:.3},
+      {transform:'translate3d(0,'+(y-18)+'px,0)',offset:.5},{transform:'translate3d(0,'+(y+4)+'px,0)',offset:.6},{transform:'translate3d(0,'+y+'px,0)',offset:.74,easing:'cubic-bezier(.5,0,.8,.4)'},{transform:'translate3d(0,-90px,0)'}],{duration:rnd(7000,9000)}); },
+  spiderRun(L){ const {W,H}=fxBox(L), w=rnd(40,52), rtl=Math.random()<.5, y0=rnd(H*.25,H*.7), y1=y0+rnd(-120,120), x0=rtl?W+60:-60, x1=rtl?-60:W+60;
+    const a=Math.atan2(y1-y0,x1-x0)*180/Math.PI+90, mx=(x0+x1)/2, my=(y0+y1)/2;
+    const e=fxAdd(L,'fx-run','<i>'+FX_ART.spider()+'</i>','left:'+(-w/2)+'px;top:'+(-w/2)+'px;width:'+w+'px');
+    fxRun(e,[{transform:'translate3d('+x0+'px,'+y0+'px,0) rotate('+a+'deg)'},{transform:'translate3d('+mx+'px,'+my+'px,0) rotate('+a+'deg)',offset:.4},
+      {transform:'translate3d('+mx+'px,'+my+'px,0) rotate('+(a+14)+'deg)',offset:.62},{transform:'translate3d('+x1+'px,'+y1+'px,0) rotate('+a+'deg)'}],{duration:rnd(3400,4400),easing:'linear'}); },
+  bats(L){ const {W,H}=fxBox(L), rtl=Math.random()<.5, y=rnd(H*.1,H*.35), n=2+((Math.random()*3)|0);
+    for(let i=0;i<n;i++){ const w=rnd(34,50), yy=y+rnd(-40,50), x0=rtl?W+40:-w-40, x1=rtl?-w-40:W+40;
+      const e=fxAdd(L,'fx-bat'+(rtl?' rtl':''),'<i class="fx-flap" style="animation-delay:-'+rnd(0,1)+'s">'+FX_ART.bat()+'</i>','left:0;top:'+yy+'px;width:'+w+'px');
+      fxRun(e,[{transform:'translate3d('+x0+'px,0,0)'},{transform:'translate3d('+((x0+x1)/2)+'px,'+rnd(-60,60)+'px,0)'},{transform:'translate3d('+x1+'px,'+rnd(-40,40)+'px,0)'}],{duration:rnd(3600,5000),delay:i*rnd(150,400),easing:'ease-in-out'}); } },
+  ghost(L){ const {W,H}=fxBox(L), w=rnd(46,60), rtl=Math.random()<.5, y=rnd(H*.25,H*.55), x0=rtl?W+20:-w-20, x1=rtl?-w-20:W+20;
+    const e=fxAdd(L,'fx-ghost','<i class="fx-float">'+FX_ART.ghost()+'</i>','left:0;top:'+y+'px;width:'+w+'px');
+    fxRun(e,[{transform:'translate3d('+x0+'px,0,0)',opacity:0},{opacity:.92,offset:.15},{transform:'translate3d('+((x0+x1)/2)+'px,-40px,0) scale(1.15)',opacity:.92,offset:.5},{opacity:.92,offset:.85},{transform:'translate3d('+x1+'px,10px,0)',opacity:0}],{duration:rnd(6500,8500),easing:'ease-in-out'}); },
+  eyes(L){ const {W,H}=fxBox(L), x=rnd(W*.1,W*.8), y=rnd(H*.3,H*.72);
+    const e=fxAdd(L,'fx-eyes2','<i></i><i></i>','left:'+x+'px;top:'+y+'px');
+    fxRun(e,[{opacity:0,transform:'scale(.8)'},{opacity:1,transform:'scale(1)',offset:.15},{opacity:1,transform:'scale(1)',offset:.8},{opacity:0,transform:'scale(1.1)'}],{duration:3000,easing:'ease-out'}); }
+};
 /* ---------- ÎLOT D'ACTIVITÉ (V3.4.0) ----------
    Une séance, un repos, un chrono, un minuteur ou un Pomodoro en cours restent visibles
    partout, dans une capsule posée au-dessus de la barre du bas : on continue d'utiliser
@@ -13143,8 +13560,9 @@ function pfAppearanceHTML(){
      '<div class="glass-demo" aria-hidden="true"><div class="glass-demo-card card"><div class="glass-demo-t">IKORUN</div><div class="glass-demo-s">'+t(cm[1])+'</div></div></div>'+
      '<div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5">'+t(cm[2])+'</div>'+
      (g==='max'?'<button class="btn ghost" style="margin-top:12px" onclick="askGlassTilt()">'+ICN('bolt',16)+' '+t(P.glassTilt?'glassTiltActive':'glassTiltBtn')+'</button>':'');
-  s+='<div class="row" style="justify-content:space-between;align-items:center;gap:12px;margin-top:20px"><div><div style="font-weight:700;font-size:14px">'+t('bdayThemeLab')+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4">'+t('bdayThemeDesc')+'</div></div>'+
-     '<div class="toggle'+(P.bdayTheme!==false?' on':'')+'" onclick="P.bdayTheme=(P.bdayTheme===false);saveAll();applyTheme();refreshPfSheet()"></div></div>';
+  s+='<div class="row" style="justify-content:space-between;align-items:center;gap:12px;margin-top:20px"><div><div style="font-weight:700;font-size:14px">'+t('feteLab')+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4">'+t('feteDesc')+'</div></div>'+
+     '<div class="toggle'+(feteEnabled()?' on':'')+'" onclick="P.fetes=!feteEnabled();saveAll();applyTheme();refreshPfSheet()"></div></div>'+
+     '<div class="fete-try"><span>'+t('fetePreviewLab')+'</span><div class="pills sub">'+FETE_KEYS.map(k=>'<div class="pill" role="button" onclick="feteTry(\''+k+'\')">'+t('fete_'+k)+'</div>').join('')+'</div></div>';
   s+='<div class="lab" style="margin:22px 0 10px">'+t('animationsLab')+'</div>'+
      '<button class="btn ghost" onclick="closeOv(\'ovProg\');setTimeout(()=>{ if(window.ikIntro) ikIntro(\'full\'); },260)">'+t('introReplayBtn')+'</button>';
   return s;
@@ -13419,7 +13837,7 @@ function cleanImportedProfile(src){
     if(src[k]==null || src[k]==='') return;
     const n=Number(src[k]); if(Number.isFinite(n)) o[k]=n;
   });
-  ['easyMode','bdayTheme','notif','prayerNotif','sounds','notifPromptDismissed','setupDone'].forEach(k=>{
+  ['easyMode','bdayTheme','fetes','notif','prayerNotif','sounds','notifPromptDismissed','setupDone'].forEach(k=>{
     if(typeof src[k]==='boolean') o[k]=src[k];
   });
   const STR={name:40,username:20,bio:160,city:60,goal:80,compDate:10,bday:10,objRace:40,objTime:12,
@@ -13533,7 +13951,9 @@ function saveRecord(){
 function commitRecord(form){
   const rcDate=form.date;
   const time=fmtTime(recTmp.timeS);
+  const prevBest=RECORDS.filter(r=>r.dist===recTmp.dist).reduce((m,r)=>{ const s=parseTime(r.time); return s>0&&s<m?s:m; },Infinity);
   RECORDS.push({dist:recTmp.dist,meters:recTmp.meters,time,date:rcDate,place:form.place,feel:form.feel,competition:!!recTmp.competition});
+  if(rcDate===todayKey() && prevBest<Infinity && recTmp.timeS<prevBest) setTimeout(()=>feteRecord(tp('recRunTime',recTmp.dist,time)),900);
   if(recTmp.dist==='5000 m')P.pb5k=time; if(recTmp.dist==='3000 m')P.pb3k=time; if(recTmp.dist==='1500 m')P.pb1500=time; if(recTmp.dist==='10 km')P.pb10k=time;
   P.vdot=computeVDOTfromRecords();
   saveAll(); refreshXP({animate:true}); openRecords(); toast(recTmp.competition?t('perfAddedComp'):t('perfAdded')); burst();

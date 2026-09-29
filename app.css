@@ -3671,64 +3671,194 @@ html[data-mode="light"][data-accent="clay"] body::before{
 .mat-ico.clay{border-radius:14px;background:var(--grad-btn);box-shadow:inset 3px 4px 6px -2px rgba(255,255,255,.55),inset -4px -5px 8px -3px rgba(0,0,0,.4),0 6px 10px -5px rgba(var(--e-rgb),.7);}
 
 /* ===================================================================
-   ANNIVERSAIRE (V3.4.0) — html[data-bday], posé par applyTheme le jour J seulement.
-   La couleur choisie cède la place à un rose et or de fête ; des confettis ronds
-   tombent lentement derrière le contenu (un motif qui glisse d'une tuile : transform
-   seul, en boucle parfaite) ; l'Accueil affiche la carte de vœux (.bday-card).
+   JOURS SPÉCIAUX (V3.5.0) — html[data-fete="…"], posé par applyTheme ces jours-là :
+   bday, race, record, ramadan, eidFitr, eidAdha, xmas, newyear, halloween.
+   1. couleurs de la fête (l'accent choisi revient le lendemain) ;
+   2. carte sur l'Accueil (.fete-card), un fond sombre à elle, lisible en clair comme en sombre ;
+   3. calque #ikFete : personnages posés sur la barre du bas, scènes qui passent (voir app.js).
+   Tout bouge en transform/opacity ; rien en mode simplifié ni avec « réduire les animations ».
    =================================================================== */
-html[data-bday]{
-  --e:#FF4FA0; --e2:#FFC94D; --e-rgb:255,79,160; --e2-rgb:255,201,77;
-  --grad-btn:linear-gradient(135deg,#D6246F,#C2410C 55%,#B45309);
-  --accent-ink:#FFFFFF; --accent-ink-shadow:0 1px 2px rgba(0,0,0,.45);
-}
-html[data-bday][data-mode="light"]{--e:#C2186B; --e2:#8A5A00; --e-rgb:194,24,107; --e2-rgb:138,90,0;
-  --grad-btn:linear-gradient(135deg,#D6246F,#C2410C 55%,#B45309);}
-/* le jaune et le mono sombres écrivent en noir sur leurs boutons : pas sur ceux de la fête */
-html[data-bday][data-mode][data-accent] :is(.btn:not(.ghost),.hv7-act.main){color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45);}
-html[data-bday] body::before{
-  background:
-    radial-gradient(38% 28% at 12% 8%,rgba(255,79,160,.38),transparent 70%),
-    radial-gradient(34% 26% at 90% 20%,rgba(255,201,77,.3),transparent 70%),
-    radial-gradient(36% 28% at 16% 70%,rgba(140,110,255,.26),transparent 72%),
-    radial-gradient(34% 26% at 86% 90%,rgba(60,210,230,.22),transparent 72%),
-    var(--bg) !important;}
-html[data-bday][data-mode="light"] body::before{
-  background:
-    radial-gradient(38% 28% at 12% 8%,rgba(255,79,160,.22),transparent 70%),
-    radial-gradient(34% 26% at 90% 20%,rgba(255,201,77,.24),transparent 70%),
-    radial-gradient(36% 28% at 16% 70%,rgba(140,110,255,.16),transparent 72%),
-    radial-gradient(34% 26% at 86% 90%,rgba(60,210,230,.16),transparent 72%),
-    var(--bg) !important;}
-html[data-bday] body::after{inset:-160px 0 0 0;opacity:.55;mix-blend-mode:normal;
+html[data-fete="bday"][data-mode]{--e:#FF5FA2;--e2:#FFC94D;--e-rgb:255,95,162;--e2-rgb:255,201,77;--grad-btn:linear-gradient(135deg,#E23A86,#9B4DE0);}
+html[data-fete="bday"][data-mode="light"]{--e:#C2186B;--e2:#8A5A00;--e-rgb:194,24,107;--e2-rgb:138,90,0;}
+html[data-fete="record"][data-mode]{--e:#FFC83D;--e2:#FF9A3D;--e-rgb:255,200,61;--e2-rgb:255,154,61;--grad-btn:linear-gradient(135deg,#D99A06,#A86B00);}
+html[data-fete="record"][data-mode="light"]{--e:#8A5A00;--e2:#A33D00;--e-rgb:138,90,0;--e2-rgb:163,61,0;}
+html[data-fete="ramadan"][data-mode]{--e:#F2C14E;--e2:#8C9CFF;--e-rgb:242,193,78;--e2-rgb:140,156,255;--grad-btn:linear-gradient(135deg,#B8860B,#7A4E0B);}
+html[data-fete="ramadan"][data-mode="light"]{--e:#8A5E00;--e2:#3F4FD6;--e-rgb:138,94,0;--e2-rgb:63,79,214;}
+html:is([data-fete="eidFitr"],[data-fete="eidAdha"])[data-mode]{--e:#2FD08A;--e2:#F2C14E;--e-rgb:47,208,138;--e2-rgb:242,193,78;--grad-btn:linear-gradient(135deg,#12A26A,#0B6E4D);}
+html:is([data-fete="eidFitr"],[data-fete="eidAdha"])[data-mode="light"]{--e:#0B7A50;--e2:#8A5E00;--e-rgb:11,122,80;--e2-rgb:138,94,0;}
+html[data-fete="xmas"][data-mode]{--e:#FF4D5E;--e2:#3DDC84;--e-rgb:255,77,94;--e2-rgb:61,220,132;--grad-btn:linear-gradient(135deg,#D7263D,#9E1A2C);}
+html[data-fete="xmas"][data-mode="light"]{--e:#C8102E;--e2:#1B7F3B;--e-rgb:200,16,46;--e2-rgb:27,127,59;}
+html[data-fete="newyear"][data-mode]{--e:#F5C542;--e2:#9FB4FF;--e-rgb:245,197,66;--e2-rgb:159,180,255;--grad-btn:linear-gradient(135deg,#C99A2E,#7E5E14);}
+html[data-fete="newyear"][data-mode="light"]{--e:#8A6400;--e2:#3F55C8;--e-rgb:138,100,0;--e2-rgb:63,85,200;}
+html[data-fete="halloween"][data-mode]{--e:#FF8A1F;--e2:#A970FF;--e-rgb:255,138,31;--e2-rgb:169,112,255;--grad-btn:linear-gradient(135deg,#E8590C,#9A3412);}
+html[data-fete="halloween"][data-mode="light"]{--e:#C2410C;--e2:#6D28D9;--e-rgb:194,65,12;--e2-rgb:109,40,217;}
+/* le jaune et le mono sombres écrivent en noir sur leurs boutons : pas ceux des fêtes */
+html[data-fete]:not([data-fete="race"])[data-mode][data-accent] :is(.btn:not(.ghost),.hv7-act.main){color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45);}
+html[data-fete]:not([data-fete="race"]){--accent-ink:#FFFFFF;--accent-ink-shadow:0 1px 2px rgba(0,0,0,.45);}
+/* Halloween : nuit violette, lueur de citrouille en bas */
+html[data-fete="halloween"][data-mode] body::before{background:
+  radial-gradient(70% 40% at 12% 100%,rgba(255,120,20,.3),transparent 70%),
+  radial-gradient(80% 45% at 92% 0%,rgba(140,70,255,.32),transparent 70%),
+  radial-gradient(130% 90% at 50% 45%,transparent 55%,rgba(0,0,0,.5)),var(--bg) !important;}
+html[data-fete="halloween"][data-mode="light"] body::before{background:
+  radial-gradient(70% 40% at 12% 100%,rgba(255,120,20,.16),transparent 70%),
+  radial-gradient(80% 45% at 92% 0%,rgba(140,70,255,.14),transparent 70%),var(--bg) !important;}
+/* ciel derrière le contenu : neige à Noël, étoiles qui scintillent au Ramadan, à l'Aïd et au Nouvel an
+   (une tuile qui glisse ou qui respire : transform/opacity d'un seul calque) */
+html[data-fete="xmas"][data-mode] body::after{inset:-240px 0 0 0;opacity:.5;mix-blend-mode:normal;filter:none;
   background-image:
-    radial-gradient(circle at 12px 18px,#FF4FA0 0 3px,transparent 3.5px),
-    radial-gradient(circle at 74px 40px,#FFC94D 0 2.5px,transparent 3px),
-    radial-gradient(circle at 128px 12px,#8C6EFF 0 3px,transparent 3.5px),
-    radial-gradient(circle at 42px 96px,#3CD2E6 0 2.5px,transparent 3px),
-    radial-gradient(circle at 108px 118px,#FF8A3D 0 3px,transparent 3.5px),
-    radial-gradient(circle at 150px 76px,#4FE39B 0 2px,transparent 2.5px);
-  background-size:160px 160px;animation:bdayFall 16s linear infinite;will-change:transform;}
-html[data-bday][data-mode="light"] body::after{opacity:.45;}
-@keyframes bdayFall{from{transform:translateY(0);}to{transform:translateY(160px);}}
-@media (prefers-reduced-motion: reduce){ html[data-bday] body::after{animation:none;} }
-html.easy-mode[data-bday] body::after{animation:none;}
-/* carte de vœux */
-.bday-card{position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;margin:0 0 12px;padding:14px 14px 14px 12px;border-radius:22px;color:#fff;
-  background:linear-gradient(120deg,#D6246F,#C2410C 55%,#B45309);box-shadow:0 16px 30px -14px rgba(214,36,111,.7),inset 0 1px 0 rgba(255,255,255,.28);}
-.bday-card::after{content:'';position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(circle at 18% 20%,rgba(255,255,255,.35) 0 2px,transparent 2.5px) 0 0/34px 30px,
-             radial-gradient(circle at 70% 60%,rgba(255,230,140,.5) 0 1.5px,transparent 2px) 0 0/28px 26px;opacity:.7;}
-.bday-cake{width:46px;height:46px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  background:rgba(255,255,255,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.35);animation:bdayBob 2.4s ease-in-out infinite;}
-@keyframes bdayBob{0%,100%{transform:translateY(0) rotate(-4deg);}50%{transform:translateY(-3px) rotate(4deg);}}
-.bday-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;position:relative;z-index:1;}
-.bday-txt b{font-weight:800;font-size:15px;line-height:1.2;letter-spacing:-.1px;}
-.bday-txt span{font-size:11.5px;opacity:.92;line-height:1.35;font-weight:600;}
-.bday-btn{position:relative;z-index:1;flex:none;border:0;border-radius:999px;padding:8px 12px;font:800 11.5px 'Inter',system-ui,sans-serif;color:#fff;
-  background:rgba(255,255,255,.2);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35);cursor:pointer;}
-.bday-btn:active{transform:scale(.94);}
-@media (prefers-reduced-motion: reduce){ .bday-cake{animation:none;} }
-html.easy-mode .bday-cake{animation:none;}
+    radial-gradient(circle at 22px 30px,rgba(255,255,255,.95) 0 2.2px,rgba(255,255,255,0) 3.6px),radial-gradient(circle at 96px 84px,rgba(255,255,255,.95) 0 1.4px,rgba(255,255,255,0) 2.8px),
+    radial-gradient(circle at 160px 22px,rgba(255,255,255,.95) 0 2.6px,rgba(255,255,255,0) 4.0px),radial-gradient(circle at 58px 158px,rgba(255,255,255,.95) 0 1.7px,rgba(255,255,255,0) 3.1px),
+    radial-gradient(circle at 184px 134px,rgba(255,255,255,.95) 0 1.2px,rgba(255,255,255,0) 2.6px),radial-gradient(circle at 126px 196px,rgba(255,255,255,.95) 0 2.1px,rgba(255,255,255,0) 3.5px),
+    radial-gradient(circle at 12px 212px,rgba(255,255,255,.95) 0 1.3px,rgba(255,255,255,0) 2.7px);
+  background-size:240px 240px;animation:fxSnow 16s linear infinite;will-change:transform;}
+html[data-fete="xmas"][data-mode="light"] body::after{opacity:.45;filter:brightness(.72) sepia(.3) hue-rotate(170deg) saturate(2.2);}
+@keyframes fxSnow{from{transform:translateY(0);}to{transform:translateY(240px);}}
+html:is([data-fete="ramadan"],[data-fete="eidFitr"],[data-fete="eidAdha"],[data-fete="newyear"])[data-mode] body::after{inset:0;opacity:.8;mix-blend-mode:normal;filter:none;
+  background-image:
+    radial-gradient(circle at 30px 40px,#FFE9A0 0 1.3px,transparent 1.9px),radial-gradient(circle at 150px 20px,#fff 0 1px,transparent 1.6px),
+    radial-gradient(circle at 110px 120px,#FFE9A0 0 1.6px,transparent 2.2px),radial-gradient(circle at 200px 90px,#fff 0 .9px,transparent 1.5px),
+    radial-gradient(circle at 60px 190px,#fff 0 1.2px,transparent 1.8px),radial-gradient(circle at 180px 210px,#FFE9A0 0 1px,transparent 1.6px);
+  background-size:230px 230px;-webkit-mask:linear-gradient(180deg,#000 0,#000 45%,transparent 85%);mask:linear-gradient(180deg,#000 0,#000 45%,transparent 85%);
+  animation:fxTwinkle 3.2s ease-in-out infinite alternate;}
+html:is([data-fete="ramadan"],[data-fete="eidFitr"],[data-fete="eidAdha"],[data-fete="newyear"])[data-mode="light"] body::after{opacity:.5;filter:brightness(.55) sepia(1) saturate(3);}
+@keyframes fxTwinkle{from{opacity:.35;}to{opacity:.85;}}
+
+/* ---------- carte de l'Accueil ---------- */
+.fete-card{position:relative;overflow:hidden;isolation:isolate;display:flex;align-items:center;gap:14px;margin:0 0 12px;padding:16px 16px 16px 14px;min-height:112px;
+  border-radius:24px;color:#fff;background:var(--fc-bg);
+  box-shadow:0 18px 34px -18px var(--fc-glow),inset 0 1px 0 rgba(255,255,255,.24),inset 0 0 0 1px rgba(255,255,255,.07);}
+.fete-card::before{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,0) 44%),radial-gradient(120% 90% at 0% 100%,rgba(0,0,0,.22),transparent 60%);}
+.fete-card.off{filter:saturate(.55) brightness(.9);}
+.fc-deco{position:absolute;inset:0;z-index:0;pointer-events:none;}
+.fc-deco > i{position:absolute;display:block;}
+.fc-deco svg,.fc-art svg{display:block;width:100%;height:auto;overflow:visible;}
+.fc-art{position:relative;z-index:1;flex:none;width:78px;height:78px;border-radius:24px;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.11);box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -10px 18px -10px rgba(0,0,0,.35),0 10px 20px -12px rgba(0,0,0,.6);}
+.fc-art > svg{width:62px;animation:fcBob 3.2s ease-in-out infinite;}
+@keyframes fcBob{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-3px) rotate(3deg);}}
+.fc-txt{position:relative;z-index:1;flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:4px;}
+.fc-txt b{font-family:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:700;font-size:16px;line-height:1.22;letter-spacing:-.25px;text-shadow:0 1px 10px rgba(0,0,0,.25);}
+.fc-txt span{font-size:12px;line-height:1.42;font-weight:600;color:rgba(255,255,255,.88);}
+.fc-btn{margin-top:6px;border:0;border-radius:999px;padding:7px 13px;font:800 11.5px 'Inter',system-ui,sans-serif;color:#fff;cursor:pointer;
+  background:rgba(255,255,255,.16);box-shadow:inset 0 0 0 1px rgba(255,255,255,.3),inset 0 1px 0 rgba(255,255,255,.3);}
+.fc-btn:active{transform:scale(.94);}
+html[dir="rtl"] .fete-card{padding:16px 14px 16px 16px;}
+/* chaque fête, son décor */
+.fc-bday{--fc-bg:radial-gradient(90% 90% at 100% 0%,rgba(255,201,77,.34),transparent 55%),linear-gradient(135deg,#3A0E4F 0%,#7B1B6A 52%,#D23C7E 100%);--fc-glow:rgba(210,60,126,.8);padding-top:24px;}
+.fc-bunt{left:-4px;right:-4px;top:-2px;height:34px;}
+.fc-bunt svg{height:34px;}
+.fc-bal{width:17px;right:16px;bottom:8px;opacity:.9;animation:fcFloat 4s ease-in-out infinite;}
+.fc-bal.b2{width:13px;right:38px;bottom:2px;animation-delay:-1.6s;opacity:.75;}
+@keyframes fcFloat{0%,100%{transform:translateY(0) rotate(-4deg);}50%{transform:translateY(-6px) rotate(4deg);}}
+.fc-race{--fc-bg:radial-gradient(80% 90% at 0% 0%,rgba(var(--e-rgb),.45),transparent 60%),linear-gradient(150deg,#0E1624,#18263F 60%,#22365A);--fc-glow:rgba(var(--e-rgb),.6);}
+.fc-check{left:0;right:0;bottom:0;height:8px;opacity:.5;background:repeating-conic-gradient(#fff 0 25%,transparent 0 50%) 0 0/8px 8px;}
+.fc-record{--fc-bg:radial-gradient(90% 90% at 12% 30%,rgba(255,214,90,.42),transparent 60%),linear-gradient(150deg,#2B1B00,#5E3D00 55%,#9A6500);--fc-glow:rgba(217,154,6,.75);}
+.fc-rays{left:-10%;top:-60%;width:120%;aspect-ratio:1;opacity:.18;border-radius:50%;
+  background:repeating-conic-gradient(from 0deg,#FFE9A0 0 6deg,transparent 6deg 18deg);animation:fcSpin 40s linear infinite;
+  -webkit-mask:radial-gradient(closest-side,#000 20%,transparent);mask:radial-gradient(closest-side,#000 20%,transparent);}
+@keyframes fcSpin{to{transform:rotate(360deg);}}
+.fc-eidFitr,.fc-eidAdha{--fc-bg:radial-gradient(70% 80% at 100% 0%,rgba(242,193,78,.3),transparent 60%),linear-gradient(150deg,#053A2E,#0A5E47 55%,#12906A);--fc-glow:rgba(18,144,106,.75);}
+.fc-ramadan{--fc-bg:radial-gradient(70% 80% at 100% 0%,rgba(242,193,78,.28),transparent 60%),linear-gradient(160deg,#0A0F2E,#1A2266 58%,#34308A);--fc-glow:rgba(70,70,190,.75);}
+.fc-moon{width:34px;right:12px;top:10px;opacity:.95;}
+:is(.fc-eidFitr,.fc-eidAdha,.fc-ramadan) .fc-txt b{padding-inline-end:34px;}
+.fc-halloween .fc-txt b{padding-inline-end:30px;}
+.fc-stars{inset:0;opacity:.75;background:
+  radial-gradient(circle at 18% 22%,#FFE9A0 0 1.2px,transparent 1.8px),radial-gradient(circle at 62% 14%,#fff 0 1px,transparent 1.6px),
+  radial-gradient(circle at 78% 70%,#FFE9A0 0 1.3px,transparent 1.9px),radial-gradient(circle at 44% 84%,#fff 0 .9px,transparent 1.5px),
+  radial-gradient(circle at 90% 40%,#fff 0 1px,transparent 1.6px);animation:fxTwinkle 2.6s ease-in-out infinite alternate;}
+.fc-xmas{--fc-bg:radial-gradient(90% 80% at 0% 0%,rgba(255,255,255,.12),transparent 60%),linear-gradient(150deg,#0B3A26 0%,#11593A 55%,#1E7A45 100%);--fc-glow:rgba(30,122,69,.75);}
+.fc-snow{inset:0;opacity:.7;background:
+  radial-gradient(circle at 10% 20%,#fff 0 1.6px,transparent 2.2px),radial-gradient(circle at 34% 70%,#fff 0 1.1px,transparent 1.7px),
+  radial-gradient(circle at 58% 18%,#fff 0 1.3px,transparent 1.9px),radial-gradient(circle at 80% 58%,#fff 0 1.8px,transparent 2.4px),
+  radial-gradient(circle at 92% 18%,#fff 0 1px,transparent 1.6px),radial-gradient(circle at 70% 88%,#fff 0 1.2px,transparent 1.8px);}
+.fc-tree{bottom:-6px;opacity:.5;}
+.fc-tree.t1{width:34px;right:10px;} .fc-tree.t2{width:24px;right:40px;bottom:-8px;opacity:.35;}
+.fc-newyear{--fc-bg:radial-gradient(80% 80% at 100% 0%,rgba(245,197,66,.3),transparent 60%),linear-gradient(160deg,#0A0E26,#1B2156 60%,#3A2E7A);--fc-glow:rgba(90,80,200,.7);}
+.fc-halloween{--fc-bg:radial-gradient(80% 70% at 88% 100%,rgba(255,138,31,.42),transparent 62%),linear-gradient(160deg,#120A1F,#2A1142 55%,#4B1A57);--fc-glow:rgba(160,60,200,.7);}
+.fc-web{width:64px;right:-2px;top:-2px;}
+.fc-spider{width:20px;right:20px;top:0;animation:fcSpider 3.6s ease-in-out infinite;}
+.fc-spider b{position:absolute;left:50%;bottom:70%;width:1px;height:60px;background:rgba(255,255,255,.5);}
+.fc-spider svg{transform:rotate(180deg);}
+@keyframes fcSpider{0%,100%{transform:translateY(4px);}50%{transform:translateY(12px);}}
+html[dir="rtl"] :is(.fc-moon,.fc-web,.fc-spider,.fc-tree,.fc-bal){right:auto;left:10px;}
+html[dir="rtl"] .fc-web{left:-2px;transform:scaleX(-1);}
+html[dir="rtl"] .fc-spider{left:20px;} html[dir="rtl"] .fc-tree.t2,html[dir="rtl"] .fc-bal.b2{left:40px;}
+html.easy-mode .fete-card{min-height:0;}
+.fete-try{margin-top:12px;}
+.fete-try > span{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;}
+html.easy-mode .fete-card *,.fete-card.off *{animation:none !important;}
+
+/* ---------- micro-animations des dessins (SVG) ---------- */
+.fx-tw{transform-box:fill-box;transform-origin:50% 50%;animation:fxTw 2.4s ease-in-out infinite;}
+@keyframes fxTw{0%,100%{transform:scale(1) rotate(0);opacity:1;}50%{transform:scale(.8) rotate(16deg);opacity:.8;}}
+.fx-blink{animation:fxBlink 1.8s ease-in-out infinite;}
+@keyframes fxBlink{0%,100%{opacity:1;}50%{opacity:.55;}}
+.fx-eyes{transform-box:fill-box;transform-origin:50% 50%;animation:fxEyes 4.4s infinite;}
+@keyframes fxEyes{0%,45%,51%,100%{transform:scaleY(1);}48%{transform:scaleY(.12);}}
+.fx-glow{animation:fxGlow 2.2s ease-in-out infinite;}
+@keyframes fxGlow{0%,100%{opacity:1;}30%{opacity:.78;}55%{opacity:.95;}70%{opacity:.7;}}
+.fx-flame{transform-box:fill-box;transform-origin:50% 100%;animation:fxFlame .9s ease-in-out infinite alternate;}
+.fx-flame:nth-of-type(2n){animation-duration:.7s;animation-delay:-.3s;}
+@keyframes fxFlame{from{transform:scale(1,1) rotate(-4deg);}to{transform:scale(.86,1.12) rotate(4deg);}}
+.fx-wave{transform-box:fill-box;transform-origin:0 50%;animation:fxWave 1.4s ease-in-out infinite alternate;}
+@keyframes fxWave{from{transform:skewY(-6deg) scaleX(.96);}to{transform:skewY(5deg) scaleX(1);}}
+
+/* ---------- calque des fêtes ---------- */
+#ikFete{position:fixed;inset:0;z-index:9990;pointer-events:none;overflow:hidden;contain:layout paint;--navh:62px;}
+#ikFete .fx{position:absolute;left:0;top:0;will-change:transform;}
+#ikFete i{display:block;}
+#ikFete svg{display:block;width:100%;height:auto;overflow:visible;}
+html.easy-mode #ikFete{display:none;}
+@media (prefers-reduced-motion: reduce){ #ikFete *,.fete-card *{animation:none !important;} }
+/* personnages posés sur la barre du bas ; ils descendent avec elle et s'effacent sous l'îlot */
+.fx-gnd{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 5px + var(--navh));display:flex;align-items:flex-end;gap:1px;
+  transition:transform .38s var(--ease-spring,cubic-bezier(.3,1.3,.5,1)),opacity .3s ease;}
+.fx-gnd.l{left:max(20px,env(safe-area-inset-left));} .fx-gnd.r{right:max(20px,env(safe-area-inset-right));}
+.fx-gnd .fx-it{flex:none;filter:drop-shadow(0 6px 6px rgba(0,0,0,.28));}
+.fx-gnd .fx-it.flip svg,.fx-walker.rtl svg,.fx-bat.rtl svg{transform:scaleX(-1);}
+#nav.nav-hidden ~ #ikFete .fx-gnd{transform:translateY(calc(var(--navh) - 2px));}
+body.isl-on.isl-low #ikFete .fx-gnd{opacity:0;transform:translateY(14px);}
+.fx-sway{transform-origin:50% 100%;animation:fxSway 2.8s ease-in-out infinite alternate;}
+@keyframes fxSway{from{transform:rotate(-6deg);}to{transform:rotate(6deg);}}
+/* marcheurs : le corps sautille, les pattes vont et viennent */
+.fx-bob{animation:fxBob .46s ease-in-out infinite alternate;}
+@keyframes fxBob{from{transform:translateY(0);}to{transform:translateY(-3px);}}
+.fx-hop{transform-origin:50% 100%;animation:fxHop 1.15s cubic-bezier(.3,0,.4,1) infinite;}
+@keyframes fxHop{0%,100%{transform:translateY(0) scale(1,1);}14%{transform:translateY(0) scale(1.1,.88);}46%{transform:translateY(-26px) scale(.94,1.07);}78%{transform:translateY(0) scale(1.08,.92);}88%{transform:translateY(0) scale(.98,1.02);}}
+.fx-walker .fx-leg-a,.fx-walker .fx-leg-b{transform-box:fill-box;transform-origin:50% 0;animation:fxLeg .46s ease-in-out infinite alternate;}
+.fx-walker .fx-leg-b{animation-direction:alternate-reverse;}
+@keyframes fxLeg{from{transform:rotate(-12deg);}to{transform:rotate(12deg);}}
+/* araignées */
+.fx-thread{position:absolute;left:50%;bottom:62%;width:1px;height:200vh;margin-left:-.5px;background:rgba(255,255,255,.5);}
+html[data-mode="light"] .fx-thread,html[data-mode="light"] .fc-spider b{background:rgba(30,30,40,.4);}
+.fx-drop .fx-spin svg{transform:rotate(180deg);}
+.fx-drop .fx-leg-a,.fx-drop .fx-leg-b,.fx-run .fx-leg-a,.fx-run .fx-leg-b{transform-box:fill-box;animation:fxLegS .7s ease-in-out infinite alternate;}
+.fx-drop .fx-leg-a,.fx-run .fx-leg-a{transform-origin:100% 40%;} .fx-drop .fx-leg-b,.fx-run .fx-leg-b{transform-origin:0 40%;animation-direction:alternate-reverse;}
+.fx-run .fx-leg-a,.fx-run .fx-leg-b{animation-duration:.11s;}
+@keyframes fxLegS{from{transform:rotate(-7deg);}to{transform:rotate(7deg);}}
+/* chauves-souris */
+.fx-flap{animation:fxBob .3s ease-in-out infinite alternate;}
+.fx-wl,.fx-wr{transform-box:fill-box;animation:fxFlapL .2s ease-in-out infinite alternate;}
+.fx-wl{transform-origin:100% 40%;} .fx-wr{transform-origin:0 40%;animation-name:fxFlapR;}
+@keyframes fxFlapL{from{transform:rotate(-24deg) scaleY(.9);}to{transform:rotate(18deg) scaleY(1);}}
+@keyframes fxFlapR{from{transform:rotate(24deg) scaleY(.9);}to{transform:rotate(-18deg) scaleY(1);}}
+.fx-float{animation:fxFloat 1.7s ease-in-out infinite alternate;}
+@keyframes fxFloat{from{transform:translateY(-6px) rotate(-3deg);}to{transform:translateY(8px) rotate(3deg);}}
+/* yeux dans le noir */
+.fx-eyes2{display:flex;gap:9px;}
+.fx-eyes2 i{width:13px;height:8px;border-radius:50%;background:#FFE14D;box-shadow:0 0 10px 3px rgba(255,190,40,.75);animation:fxEyes 1.3s .5s 2 both;}
+.fx-eyes2 i:first-child{clip-path:polygon(0 42%,100% 0,100% 100%,0 100%);} .fx-eyes2 i:last-child{clip-path:polygon(0 0,100% 42%,100% 100%,0 100%);}
+/* feux d'artifice, étoiles, étoile filante */
+.fx-fw{width:0;height:0;}
+.fx-fw i{position:absolute;left:-2px;top:-7px;width:4px;height:14px;border-radius:3px;background:currentColor;box-shadow:0 0 8px currentColor;}
+.fx-fw b{position:absolute;left:-22px;top:-22px;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle,#fff,rgba(255,255,255,0) 62%);}
+.fx-star{filter:drop-shadow(0 0 4px rgba(255,210,90,.8));}
+.fx-shoot{width:120px;height:2px;margin-top:-1px;border-radius:2px;transform-origin:100% 50%;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,248,220,.95));}
+.fx-shoot::after{content:'';position:absolute;right:-3px;top:-3px;width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 12px 4px rgba(255,236,170,.85);}
+html[data-mode="light"] .fx-shoot{background:linear-gradient(90deg,rgba(200,150,30,0),rgba(200,150,30,.9));}
+html[data-mode="light"] .fx-shoot::after{background:#E0A82E;}
 /* silhouettes des cartes de programmes : images (voir anatomyImg) */
 .mus-body .mus-fig{width:50%;height:auto;display:block;pointer-events:none;-webkit-user-select:none;user-select:none;}
 
