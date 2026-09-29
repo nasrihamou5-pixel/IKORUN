@@ -3884,3 +3884,32 @@ html[data-mode="light"] .fx-shoot::after{background:#E0A82E;}
 #ikIsland.bub .isl-mini .isl-ring{width:40px;height:40px;}
 .isl-mt{display:none;font-size:10.5px;font-weight:700;letter-spacing:-.3px;color:#fff;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;}
 #ikIsland.bub .isl-mt{display:block;}
+
+/* MOLETTES LIBRES (V3.5.0) — thème et matière. Le curseur est une molette crantée (stries
+   verticales, relief) ; la piste montre ce qu'on parcourt. Les crans sont doux : la molette
+   s'y pose d'elle-même, avec une petite vibration. */
+.iks{position:relative;padding:2px 0 0;}
+.iks input[type="range"]{-webkit-appearance:none;appearance:none;display:block;width:100%;height:46px;margin:0;background:transparent;cursor:pointer;touch-action:pan-y;}
+.iks input[type="range"]:focus{outline:none;}
+.iks input[type="range"]::-webkit-slider-runnable-track{height:16px;border-radius:999px;background:var(--iks-track);box-shadow:inset 0 1px 3px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.08),0 1px 0 rgba(255,255,255,.06);}
+.iks input[type="range"]::-moz-range-track{height:16px;border-radius:999px;background:var(--iks-track);}
+.iks input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:30px;height:38px;margin-top:-11px;border-radius:11px;border:0;
+  background:repeating-linear-gradient(90deg,rgba(0,0,0,.2) 0 1.2px,rgba(255,255,255,0) 1.2px 3.6px),linear-gradient(90deg,#9aa2ad,#f4f6f9 32%,#ffffff 50%,#e4e8ed 68%,#8d95a0);
+  box-shadow:0 8px 16px -6px rgba(0,0,0,.6),0 2px 4px -1px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.9),inset 0 -2px 3px rgba(0,0,0,.25);transition:transform .15s var(--ease-spring,ease);}
+.iks input[type="range"]::-moz-range-thumb{width:30px;height:38px;border-radius:11px;border:0;background:linear-gradient(90deg,#9aa2ad,#fff 50%,#8d95a0);}
+.iks input[type="range"]:active::-webkit-slider-thumb{transform:scale(1.08,1.04);}
+.iks-lum{--iks-track:linear-gradient(90deg,#05070a 0%,#262c36 49.4%,rgba(var(--e-rgb),.9) 49.6%,rgba(var(--e-rgb),.9) 50.4%,#c9ced6 50.6%,#f7f9fc 100%);}
+.iks-ends{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:2px;font-size:12px;color:var(--muted);font-weight:600;}
+.iks-ends span{display:inline-flex;align-items:center;gap:5px;}
+.iks-ends b{font-size:12.5px;font-weight:800;color:var(--snow);text-align:center;}
+.iks-mat{--iks-track:linear-gradient(90deg,rgba(var(--e-rgb),.95) 0%,rgba(var(--e-rgb),.55) 14%,#59606b 33.3%,rgba(150,190,255,.5) 58%,rgba(210,230,255,.75) 66.6%,#ff7ad9 84%,#7fe3ff 100%);}
+.iks-ticks{position:relative;height:58px;margin-top:4px;}
+.iks-tick{position:absolute;top:0;inset-inline-start:calc(15px + (100% - 30px) * var(--i) / 3);transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:5px;
+  border:0;background:none;padding:0;cursor:pointer;font:700 11px 'Inter',system-ui,sans-serif;color:var(--muted);width:76px;text-align:center;line-height:1.15;}
+html[dir="rtl"] .iks-tick{transform:translateX(50%);}
+.iks-tick:first-child{inset-inline-start:0;transform:none;align-items:flex-start;text-align:start;}
+.iks-tick:last-child{inset-inline-start:auto;inset-inline-end:0;transform:none;align-items:flex-end;text-align:end;}
+.iks-tick .mat-ico{width:26px;height:26px;border-radius:9px;flex:none;}
+.iks-tick.on{color:var(--snow);}
+.iks-tick.on .mat-ico{box-shadow:0 0 0 2px var(--e),0 0 12px rgba(var(--e-rgb),.5);}
+html[data-mode="light"] .iks input[type="range"]::-webkit-slider-runnable-track{box-shadow:inset 0 1px 3px rgba(20,30,50,.3),inset 0 0 0 1px rgba(20,30,50,.08);}
