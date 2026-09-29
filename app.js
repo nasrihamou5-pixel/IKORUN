@@ -5409,21 +5409,27 @@ function glassJellyOn(){ return glassMax() || glassClay(); }
     el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls);
     clearTimeout(el._jt); el._jt=setTimeout(()=>el.classList.remove(cls),620);
   },{passive:true});
-  // reflets vivants : inclinaison si autorisée, sinon défilement
-  let raf=0, tx=0, ty=0, lastTilt=0;
-  const push=()=>{ raf=0; const h=document.documentElement; h.style.setProperty('--tilt-x',tx.toFixed(3)); h.style.setProperty('--tilt-y',ty.toFixed(3)); };
+  /* REFLETS VIVANTS (V3.5.0) : un seul calque de lumière (#ikGlare), posé au-dessus de la
+     page, qui glisse avec l'inclinaison du téléphone (si autorisée) ou le défilement.
+     Avant, --tilt-x/--tilt-y étaient réécrits sur <html> à chaque image : toute la page
+     recalculait son style (≈ 2 000 éléments) et le défilement en Maximal tombait à
+     13-24 images/s — l'« effet 2 Hz ». On ne touche plus qu'au transform d'un calque. */
+  let raf=0, tx=0, ty=0, lastTilt=0, gl=null;
+  const glare=()=>{ if(!gl){ gl=document.createElement('div'); gl.id='ikGlare'; gl.setAttribute('aria-hidden','true'); gl.innerHTML='<i></i><b></b>'; document.body.appendChild(gl); } return gl; };
+  const push=()=>{ raf=0; glare().style.transform='translate3d('+(tx*30).toFixed(2)+'%,'+(ty*24).toFixed(2)+'%,0) rotate('+(tx*9).toFixed(2)+'deg)'; };
   const ask=()=>{ if(!raf) raf=requestAnimationFrame(push); };
   window.addEventListener('deviceorientation',e=>{
     if(!glassMax() || e.gamma==null) return;
-    const nx=Math.max(-1,Math.min(1,e.gamma/30)), ny=Math.max(-1,Math.min(1,((e.beta||45)-45)/30));
-    if(Math.abs(nx-tx)<.02 && Math.abs(ny-ty)<.02) return;
+    const nx=Math.max(-1,Math.min(1,e.gamma/25)), ny=Math.max(-1,Math.min(1,((e.beta||45)-45)/25));
+    if(Math.abs(nx-tx)<.01 && Math.abs(ny-ty)<.01) return;
     tx=nx; ty=ny; lastTilt=Date.now(); ask();
   });
   const sc=document.getElementById('scroll');
   if(sc) sc.addEventListener('scroll',()=>{
     if(!glassMax() || Date.now()-lastTilt<3000) return; // l'inclinaison a la priorité
-    const v=Math.sin(sc.scrollTop/260); ty=v; tx=v*.4; ask();
+    const v=Math.sin(sc.scrollTop/300); ty=v*.8; tx=v*.45; ask();
   },{passive:true});
+  glare();
 })();
 /* ---------- TRAIT LUMINEUX VIVANT (V3.3.0) ----------
    Chaque trait (sous la bannière, au-dessus ou derrière les titres de section) se déploie
@@ -9779,12 +9785,36 @@ function progLastDone(p){
   return n===0?t('today'):tp('daysAgoShort',n);
 }
 // Double silhouette compacte (face + dos) pour une carte de programme.
+/* Silhouettes des cartes de programmes (V3.5.0) : en image, plus en SVG dans la page.
+   Chaque carte portait deux silhouettes d'environ 130 tracés — 1 600 tracés et 390 Ko de
+   géométrie pour six cartes, redessinés pendant le défilement : l'onglet Musculation
+   saccadait. Une <img> est dessinée une seule fois puis simplement déplacée. Les couleurs
+   (variables CSS, que l'image ne voit pas) sont résolues au moment de la construire ; le
+   cache se renouvelle donc tout seul quand le thème change. */
+const _figCache=new Map();
+function anatomyImg(zoneInfo,PARTS,viewBox){
+  const cs=getComputedStyle(document.documentElement);
+  const col=v=>{ const m=/^var\((--[\w-]+)\)$/.exec(v); return m?(cs.getPropertyValue(m[1]).trim()||'#888'):v; };
+  const zoneMap={}; zoneInfo.zones.forEach(z=>{ zoneMap[z.key]=z.strength; });
+  const base=col('var(--s3)'), hair=col('var(--card2)')||base, pri=col(ANATOMY_STRENGTH_COLOR.primary), sec=col(ANATOMY_STRENGTH_COLOR.secondary);
+  const key=viewBox+'|'+base+hair+pri+sec+'|'+Object.keys(zoneMap).sort().map(k=>k+zoneMap[k]).join(',');
+  let url=_figCache.get(key);
+  if(!url){
+    let out='';
+    Object.keys(PARTS).forEach(slug=>{
+      const z=zoneMap[slug], fill=slug==='hair'?hair:(z==='primary'?pri:z==='secondary'?sec:base), op=z==='primary'?0.95:(z==='secondary'?0.8:1);
+      PARTS[slug].forEach(d=>{ out+='<path d="'+d+'" fill="'+fill+'" opacity="'+op+'"/>'; });
+    });
+    url='data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="'+viewBox+'">'+out+'</svg>');
+    if(_figCache.size>60) _figCache.clear();
+    _figCache.set(key,url);
+  }
+  const vb=viewBox.split(/\s+/).map(Number);
+  return '<img class="mus-fig" src="'+url+'" alt="" decoding="async" draggable="false" style="aspect-ratio:'+vb[2]+'/'+vb[3]+'">';
+}
 function progBodyMini(p){
   const zi=progZones(p);
-  return '<div class="mus-body">'+
-    bodyPartsSVGView(zi,BODY_PARTS_FRONT,ANATOMY_VB_FRONT)+
-    bodyPartsSVGView(zi,BODY_PARTS_BACK,ANATOMY_VB_BACK)+
-  '</div>';
+  return '<div class="mus-body">'+anatomyImg(zi,BODY_PARTS_FRONT,ANATOMY_VB_FRONT)+anatomyImg(zi,BODY_PARTS_BACK,ANATOMY_VB_BACK)+'</div>';
 }
 function muscuCardHTML(p,opts){
   opts=opts||{};

@@ -3074,7 +3074,10 @@ html.easy-mode #toast{background:var(--s1);border:2px solid var(--e);box-shadow:
    mais Safari le recalculait à chaque image du défilement — jusqu'à 13 à la fois sur
    l'accueil. Gardé là où du contenu passe vraiment dessous : barre de titre compacte,
    barre du bas, fenêtres, toasts. */
-html:not([data-glass="max"]) #scroll *:not(.topbar){-webkit-backdrop-filter:none;backdrop-filter:none;} /* rendu en mode Maximal */
+/* V3.5.0 : en Maximal aussi. Derrière les cartes qui défilent il n'y a que le fond de
+   halos, déjà flou : le flou de 34 px y était invisible mais le défilement tombait à
+   13-24 images/s (Profil, Stats, Musculation). Les surfaces fixes gardent le vrai verre. */
+#scroll *:not(.topbar){-webkit-backdrop-filter:none;backdrop-filter:none;}
 /* GESTES (v107) — glisser depuis le bord gauche ferme la page plein écran de l'app ;
    sans ceci, Chrome/Android (et IKORUN ouvert dans un onglet) faisait « page précédente »
    et sortait de l'app. */
@@ -3259,16 +3262,18 @@ html[data-glass="max"] :is(.card,.grp-card,.kchart-card,.kduo-card,.list-row,.fa
 /* boutons « gelée » (Maximal) */
 .ik-jelly{animation:ikJelly .55s cubic-bezier(.2,.8,.3,1.2);}
 @keyframes ikJelly{0%{transform:scale(1);}22%{transform:scale(1.09,.88);}48%{transform:scale(.95,1.07);}72%{transform:scale(1.02,.98);}100%{transform:scale(1);}}
-/* reflets vivants (Maximal) : ils suivent l'inclinaison du téléphone, ou le défilement */
-html[data-glass="max"]{
-  --lg-spec:linear-gradient(calc(135deg + var(--tilt-x,0) * 28deg),rgba(255,255,255,.26) calc(var(--tilt-y,0) * 14%),rgba(255,255,255,.07) calc(26% + var(--tilt-y,0) * 14%),transparent calc(44% + var(--tilt-y,0) * 14%)),
-    radial-gradient(120% 70% at calc(12% + var(--tilt-x,0) * 40%) calc(-14% + var(--tilt-y,0) * 22%),rgba(255,255,255,.32),transparent 52%),
-    radial-gradient(90% 60% at 100% 120%,rgba(var(--e2-rgb),.24),transparent 60%);
-}
-html[data-glass="max"][data-mode="light"]{
-  --lg-spec:linear-gradient(calc(135deg + var(--tilt-x,0) * 28deg),rgba(255,255,255,.9) calc(var(--tilt-y,0) * 14%),rgba(255,255,255,.2) calc(26% + var(--tilt-y,0) * 14%),transparent calc(44% + var(--tilt-y,0) * 14%)),
-    radial-gradient(90% 60% at 100% 120%,rgba(var(--e-rgb),.16),transparent 60%);
-}
+/* reflets vivants (Maximal, V3.5.0) : un calque de lumière unique au-dessus de la page
+   (#ikGlare, voir app.js) — une bande diagonale et un éclat, qui glissent avec
+   l'inclinaison ou le défilement. Seul son transform change : rien à recalculer ailleurs. */
+#ikGlare{position:fixed;inset:-35%;z-index:9998;pointer-events:none;display:none;will-change:transform;transition:transform .12s linear;}
+html[data-glass="max"] #ikGlare{display:block;}
+#ikGlare i,#ikGlare b{position:absolute;inset:0;}
+#ikGlare i{background:linear-gradient(118deg,transparent 41%,rgba(255,255,255,.07) 46%,rgba(255,255,255,.16) 49.5%,rgba(255,255,255,.07) 53%,transparent 58%),
+  linear-gradient(118deg,transparent 60%,rgba(255,255,255,.05) 62.5%,transparent 65%);}
+#ikGlare b{background:radial-gradient(22% 16% at 34% 30%,rgba(255,255,255,.13),transparent 70%);}
+html[data-mode="light"] #ikGlare i{background:linear-gradient(118deg,transparent 41%,rgba(255,255,255,.22) 46%,rgba(255,255,255,.45) 49.5%,rgba(255,255,255,.22) 53%,transparent 58%);}
+html[data-mode="light"] #ikGlare b{background:radial-gradient(22% 16% at 34% 30%,rgba(255,255,255,.35),transparent 70%);}
+html.easy-mode #ikGlare{display:none !important;}
 @media (prefers-reduced-motion: reduce){ #nav-pill.liquid{transform:none;} .ik-jelly{animation:none;} .ik-touchlight{display:none;} }
 
 /* ===================================================================
@@ -3709,3 +3714,5 @@ html.easy-mode[data-bday] body::after{animation:none;}
 .bday-btn:active{transform:scale(.94);}
 @media (prefers-reduced-motion: reduce){ .bday-cake{animation:none;} }
 html.easy-mode .bday-cake{animation:none;}
+/* silhouettes des cartes de programmes : images (voir anatomyImg) */
+.mus-body .mus-fig{width:50%;height:auto;display:block;pointer-events:none;-webkit-user-select:none;user-select:none;}
