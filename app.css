@@ -168,15 +168,8 @@ html[data-accent="carbon"]{
   --bg-rgb:4,4,4; --s1-rgb:13,14,16; --s2-rgb:21,22,25; --s3-rgb:31,32,35;
   --sh-e:0 8px 24px -6px rgba(195,201,209,.45),0 2px 8px -2px rgba(195,201,209,.28);
   --glass-border:rgba(220,224,229,.22); --glass-border-soft:rgba(220,224,229,.09);
-  /* tressage twill 2×2 (deux nappes croisées à haut contraste) + filet chromé qui balaie la carte */
-  --glass-shine:
-    linear-gradient(112deg,rgba(255,255,255,.20) 6%,rgba(255,255,255,.03) 18%,transparent 34%),
-    repeating-linear-gradient(45deg,rgba(255,255,255,.07) 0 2px,rgba(0,0,0,.62) 2px 4px,rgba(255,255,255,.03) 4px 6px,rgba(0,0,0,.5) 6px 8px),
-    repeating-linear-gradient(-45deg,rgba(255,255,255,.04) 0 2px,rgba(0,0,0,.46) 2px 4px,transparent 4px 6px,rgba(0,0,0,.3) 6px 8px);
-  --chrome-base:
-    repeating-linear-gradient(45deg,rgba(255,255,255,.06) 0 2px,rgba(0,0,0,.65) 2px 4px,rgba(255,255,255,.02) 4px 6px,rgba(0,0,0,.5) 6px 8px),
-    repeating-linear-gradient(-45deg,rgba(255,255,255,.03) 0 2px,rgba(0,0,0,.5) 2px 4px,transparent 4px 6px,rgba(0,0,0,.32) 6px 8px),
-    linear-gradient(165deg,#34373c 0%,#17181b 38%,#060607 62%,#212327 100%);
+  --glass-shine:linear-gradient(112deg,rgba(255,255,255,.18) 6%,rgba(255,255,255,.03) 18%,transparent 34%);
+  --chrome-base:linear-gradient(165deg,#34373c 0%,#17181b 38%,#060607 62%,#212327 100%);
   --chrome-border:rgba(216,221,227,.32);
   --chrome-edge:linear-gradient(180deg,rgba(230,234,238,.6),rgba(230,234,238,0) 30%);
   --chrome-sheen:linear-gradient(100deg,transparent 24%,rgba(230,234,238,.7) 46%,rgba(230,234,238,.08) 55%,transparent 72%);
@@ -187,27 +180,33 @@ html[data-mode="light"][data-accent="carbon"]{
   /* chrome/argent quasi blanc du dark mode invisible sur fond clair → acier brossé foncé, lisible */
   --e:#43474E; --e2:#22252A; --e-rgb:67,71,78; --e2-rgb:34,37,42;
   --sh-e:0 8px 22px -6px rgba(67,71,78,.3),0 2px 6px -2px rgba(67,71,78,.2);
-  /* le tressage sombre du dark mode écraserait le texte sur fond clair → reflet chromé doux, sans nappes noires */
-  --glass-shine:
-    linear-gradient(112deg,rgba(255,255,255,.55) 6%,rgba(255,255,255,.1) 20%,transparent 38%),
-    repeating-linear-gradient(45deg,rgba(20,22,26,.05) 0 2px,transparent 2px 6px),
-    repeating-linear-gradient(-45deg,rgba(20,22,26,.04) 0 2px,transparent 2px 6px);
+  --glass-shine:linear-gradient(112deg,rgba(255,255,255,.55) 6%,rgba(255,255,255,.1) 20%,transparent 38%);
 }
-html[data-accent="carbon"] body::before{
-  background:
-    radial-gradient(140% 60% at 50% -6%, rgba(var(--e-rgb),.14), transparent 58%),
-    radial-gradient(90% 50% at 82% 4%, rgba(var(--e2-rgb),.07), transparent 60%),
-    radial-gradient(80% 45% at 8% 96%, rgba(var(--e-rgb),.05), transparent 62%),
-    var(--bg);
-}
-html[data-accent="carbon"] body::after{
-  opacity:.4; mix-blend-mode:overlay;
-  background-image:
-    repeating-linear-gradient(45deg, rgba(255,255,255,.5) 0 2px, rgba(0,0,0,.6) 2px 4px),
-    repeating-linear-gradient(-45deg, rgba(255,255,255,.32) 0 2px, rgba(0,0,0,.4) 2px 4px);
-  background-size:6px 6px,6px 6px;
-}
-html[data-mode="light"][data-accent="carbon"] body::after{opacity:.05;}
+/* PLAQUE DE CARBONE (V3.5.0) — html[data-carbon="twill|forged"], posé par carbonApply :
+   deux tuiles calculées au canevas (lumière à 0° et à 90°) fondues l'une dans l'autre selon
+   le défilement ou l'inclinaison, un vernis qui glisse par-dessus, puis une vignette. */
+#ikCarbon{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:#07080a;}
+#ikCarbon i{position:absolute;inset:0;background-image:var(--cf-a,none);background-size:var(--cf-sz,28px) var(--cf-sz,28px);}
+#ikCarbon i.b{background-image:var(--cf-b,none);opacity:.5;will-change:opacity;}
+#ikCarbon b{position:absolute;inset:-30%;will-change:transform;
+  background:linear-gradient(118deg,transparent 30%,rgba(255,255,255,.035) 40%,rgba(255,255,255,.1) 47%,rgba(255,255,255,.16) 50%,rgba(255,255,255,.06) 54%,transparent 64%),
+    radial-gradient(38% 26% at 28% 30%,rgba(255,255,255,.07),transparent 70%);}
+html[data-carbon] body::before{background:#07080a;}
+html[data-carbon] body::after{inset:0;opacity:1;mix-blend-mode:normal;background-size:auto;
+  background-image:radial-gradient(130% 75% at 50% 0%,rgba(0,0,0,0) 35%,rgba(0,0,0,.55) 100%),linear-gradient(180deg,rgba(0,0,0,.16),rgba(0,0,0,.42));}
+/* en clair : carbone argent (fibre aluminisée), vernis plus brillant */
+html[data-carbon][data-mode="light"] #ikCarbon{background:#c9ced4;}
+html[data-carbon][data-mode="light"] #ikCarbon b{background:linear-gradient(118deg,transparent 30%,rgba(255,255,255,.25) 44%,rgba(255,255,255,.55) 50%,rgba(255,255,255,.2) 56%,transparent 68%);}
+html[data-carbon][data-mode="light"] body::before{background:#c9ced4;}
+html[data-carbon][data-mode="light"] body::after{background-image:radial-gradient(130% 75% at 50% 0%,rgba(255,255,255,.22) 30%,rgba(236,239,242,.66) 100%),linear-gradient(180deg,rgba(255,255,255,.42),rgba(255,255,255,.3));}
+/* cartes : verre fumé posé sur la plaque, vernis net en haut, arête chromée */
+html[data-carbon]{--lg-fill:rgba(6,7,9,.58);
+  --lg-spec:linear-gradient(180deg,rgba(255,255,255,.09) 0,rgba(255,255,255,.025) 22%,transparent 42%),radial-gradient(120% 70% at 12% -20%,rgba(255,255,255,.12),transparent 55%);
+  --lg-rim:inset 0 0 0 1px rgba(220,226,232,.12),inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(0,0,0,.4);
+  --chrome-base:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,0) 42%,rgba(0,0,0,.34)),var(--cf-a,none) 0 0/var(--cf-sz,28px) var(--cf-sz,28px),#0a0b0d;}
+html[data-carbon][data-mode="light"]{--lg-fill:rgba(255,255,255,.68);
+  --lg-spec:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.3) 30%,transparent 52%);
+  --lg-rim:inset 0 0 0 1px rgba(255,255,255,.75),inset 0 1px 0 #fff,0 0 0 1px rgba(20,30,50,.08);}
 html[data-accent="carbon"] .card,html[data-accent="carbon"] #s-outils .card,
 html[data-accent="carbon"] .grp-card,html[data-accent="carbon"] .chrome-box,
 html[data-accent="carbon"] .chrome-sbox,html[data-accent="carbon"] .chrome-chip,
@@ -237,6 +236,9 @@ html[data-accent="carbon"] .accent-dot.on{box-shadow:var(--sh-sm),0 0 0 1px rgba
 .accent-dot[data-a="green"]{background:linear-gradient(135deg,#A6D687,#5E9339);}
 .accent-dot[data-a="brown"]{background:linear-gradient(135deg,#DDA873,#98602E);}
 .accent-dot[data-a="yellow"]{background:linear-gradient(135deg,#FFDD75,#D9A518);}
+.accent-dot[data-a="forged"]{background:
+    linear-gradient(115deg,transparent 32%,rgba(255,255,255,.8) 48%,transparent 62%),
+    conic-gradient(from 30deg at 40% 60%,#15171a,#5c6168,#101113,#3c4046,#0b0c0d,#6e737a,#1b1d20,#15171a);}
 .accent-dot[data-a="carbon"]{background:
     linear-gradient(115deg,transparent 32%,rgba(255,255,255,.95) 48%,transparent 64%),
     repeating-linear-gradient(45deg,#2b2d31 0 2px,#050506 2px 4px),
@@ -3141,6 +3143,9 @@ html[data-glass="max"][data-mode="light"]{
   --lg-rim:inset 0 0 0 1px rgba(255,255,255,.9),inset 0 1.5px 0 #fff,0 0 0 1px rgba(20,30,50,.06),inset 1px 0 0 rgba(var(--e2-rgb),.3),inset 0 -1px 0 rgba(var(--e-rgb),.24);
   --lg-blur:blur(34px) saturate(210%);
 }
+/* carbone en Maximal : le verre reste assez fumé pour que le tressage ne brouille pas le texte */
+html[data-carbon][data-glass="max"]{--lg-fill:rgba(6,7,9,.4);}
+html[data-carbon][data-glass="max"][data-mode="light"]{--lg-fill:rgba(255,255,255,.52);}
 /* en Maximal, même les petites surfaces (tuiles, lignes, séances) sont en verre flouté */
 html[data-glass="max"] :is(.ktile,.sbox,.chrome-sbox,.favtile,.hv7-ktile,.sess:not(.today),.list-row,.exg-card,.mus-card,.goal-item,.wheel,.fr-req-card,.seg-ctrl,.hv7-icon-btn,.hv7-people,.tb-gear){
   -webkit-backdrop-filter:var(--lg-blur);backdrop-filter:var(--lg-blur);}

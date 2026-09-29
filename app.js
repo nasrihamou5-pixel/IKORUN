@@ -2223,7 +2223,7 @@ const I18N={
     customizeVolumeLabel:'Ajuster le volume',customizeSkipBtn:'Passer cette séance en repos',customizeResetBtn:'Réinitialiser',
     customizeMovedToast:'Séance déplacée',customizeSkippedToast:'Séance passée en repos',customizeResetToast:'Séance réinitialisée',
     resumeSessionConfirm:'Une séance « {0} » était en cours ({1} min). Reprendre ?',sessionColonName:'Séance : {0}',
-    accentBlue:'Bleu',accentRed:'Rouge',accentGreen:'Vert militaire',accentBrown:'Marron boisé',accentYellow:'Jaune',accentCarbon:'Fibre de carbone',
+    accentBlue:'Bleu',accentRed:'Rouge',accentGreen:'Vert militaire',accentBrown:'Marron boisé',accentYellow:'Jaune',accentCarbon:'Fibre de carbone',accentForged:'Carbone forgé',
     colorApplied:'Couleur appliquée',easyModeOn:'Mode simplifié activé',easyModeOff:'Mode simplifié désactivé',
     profileIncompleteAddTime:'Profil incomplet : ajoute un chrono dans tes records',chooseCompDate:'Choisis une date de compétition',raceDateTooSoon:'Choisis une date de course à au moins 7 jours — une date passée ou trop proche ne laisse pas assez de temps pour préparer un plan.',planStartsOn:'Ton plan démarre le {0} : il couvre les 28 semaines avant la course.',planSafetyAdjustedToast:'Plan sécurisé : progression limitée à +10 % par semaine et récupération respectée.',planSafetyMigratedToast:'Ton plan a été ajusté : progression de charge plus sûre, sans séances dures enchaînées.',planSafetyHint:'Pour limiter le risque de blessure, IKORUN augmente ton volume de 10 % par semaine au maximum et allège une semaine sur quatre.',debriefTitle:'Bilan de séance',modeLightLab:'Clair',modeDarkLab:'Sombre',glassLab:'Effet verre (Liquid Glass)',glassFlat:'Sobre',glassStd:'Liquid Glass',glassMax:'Maximal',glassHintFlat:'Surfaces pleines, sans transparence : le plus rapide et le plus économe en batterie.',glassHintStd:'Le verre IKORUN : reflets, bords lumineux, transparence dosée. Le bon équilibre.',glassHintMax:'Effet maximal : verre très transparent et flou sur tout l’écran, reflets renforcés, fond vivant qui bouge sous le verre. Consomme un peu plus de batterie.',restGoToast:'C’est reparti !',glassTiltBtn:'Reflets selon l’inclinaison du téléphone',glassTiltActive:'Reflets selon l’inclinaison : activés',glassTiltOn:'Les reflets suivent maintenant l’inclinaison du téléphone',glassTiltOff:'Pas d’accès aux mouvements : les reflets suivent le défilement',offlineStartToast:'Mode hors ligne : tout fonctionne, tes modifications partiront au retour d’Internet.',offlineReadyToast:'IKORUN est prête à fonctionner hors ligne',raceDateInvalid:'Date de course invalide : choisis-la à au moins 7 jours.',bdayInvalid:'Date de naissance invalide.',sessionKmRequired:'Indique la distance de la séance (en km).',paceFormatInvalid:'Allure invalide : écris-la au format min:ss (ex. 5:30).',addSessionBtn:'Ajouter la séance',psTitleLab:'Titre',psTitlePh:'Footing du matin',typeVMA:'VMA',typeFractionne:'Fractionné',typeTest:'Test',persoFollowingDesc:'Ton accueil et ton bilan utilisent ce plan. Le plan IKORUN continue de s’ajuster en arrière-plan selon ce que tu fais ici.',persoFollowDesc:'Ton accueil affichera les séances de ce plan au lieu du plan généré. Tu peux revenir au plan IKORUN quand tu veux.',persoStopBtn:'Arrêter',persoFollowBtn:'Suivre',persoNoSession:'Aucune séance. Ajoute ta première !',typeLab:'Type',psHowLab:'Comment veux-tu saisir cette séance ?',psModeSimple:'Simple (km + allure)',psModeReps:'Par répétition (temps de chaque)',psPaceLab:'Allure /km',psRepDistLab:'Distance par répétition',psAddRepBtn:'Ajouter une répétition',psDescLab:'Description (optionnel)',psDescPh:'Détails de la séance...',psNewSessionTitle:'Nouvelle séance',psRepShort:'Rép.',chooseAtLeastOneDay:'Choisis au moins un jour',profileValuesInvalid:'Valeur hors limites : taille 100-250 cm, poids 25-250 kg, FC max 120-230, FC repos 30-120 (sous la FC max), km/sem 0-250.',
     planGenerated:'Plan « {0} » généré : {1} sem, {2} séances',raceGeneric:'course',
@@ -2809,7 +2809,7 @@ const I18N={
     customizeVolumeLabel:'Adjust volume',customizeSkipBtn:'Turn into a rest day',customizeResetBtn:'Reset',
     customizeMovedToast:'Session moved',customizeSkippedToast:'Session turned into rest',customizeResetToast:'Session reset',
     resumeSessionConfirm:'A "{0}" session was in progress ({1} min). Resume?',sessionColonName:'Session: {0}',
-    accentBlue:'Blue',accentRed:'Red',accentGreen:'Military green',accentBrown:'Woodland brown',accentYellow:'Yellow',accentCarbon:'Carbon fiber',
+    accentBlue:'Blue',accentRed:'Red',accentGreen:'Military green',accentBrown:'Woodland brown',accentYellow:'Yellow',accentCarbon:'Carbon fiber',accentForged:'Forged carbon',
     colorApplied:'Color applied',easyModeOn:'Simplified mode enabled',easyModeOff:'Simplified mode disabled',
     profileIncompleteAddTime:'Incomplete profile: add a time in your records',chooseCompDate:'Choose a race date',raceDateTooSoon:'Choose a race date at least 7 days away — a past or too-close date doesn’t leave enough time to build a plan.',planStartsOn:'Your plan starts on {0}: it covers the 28 weeks before the race.',planSafetyAdjustedToast:'Plan secured: load increases capped at +10% per week, with proper recovery.',planSafetyMigratedToast:'Your plan was adjusted: safer load progression, no back-to-back hard sessions.',planSafetyHint:'To limit injury risk, IKORUN raises your volume by 10% per week at most and lightens one week in four.',debriefTitle:'Session review',modeLightLab:'Light',modeDarkLab:'Dark',glassLab:'Glass effect (Liquid Glass)',glassFlat:'Plain',glassStd:'Liquid Glass',glassMax:'Maximum',glassHintFlat:'Solid surfaces, no transparency: the fastest and most battery-friendly.',glassHintStd:'IKORUN glass: reflections, glowing edges, measured transparency. The right balance.',glassHintMax:'Maximum effect: very transparent, blurred glass across the whole screen, stronger reflections, a living background moving under the glass. Uses a little more battery.',restGoToast:'Back at it!',glassTiltBtn:'Reflections follow phone tilt',glassTiltActive:'Tilt reflections: on',glassTiltOn:'Reflections now follow your phone’s tilt',glassTiltOff:'No motion access: reflections follow scrolling',offlineStartToast:'Offline mode: everything works, your changes will sync once you’re back online.',offlineReadyToast:'IKORUN is ready to work offline',raceDateInvalid:'Invalid race date: pick one at least 7 days away.',bdayInvalid:'Invalid date of birth.',sessionKmRequired:'Enter the session distance (km).',paceFormatInvalid:'Invalid pace: use the min:ss format (e.g. 5:30).',addSessionBtn:'Add session',psTitleLab:'Title',psTitlePh:'Morning run',typeVMA:'VO₂max',typeFractionne:'Intervals',typeTest:'Test',persoFollowingDesc:'Your home screen and review use this plan. The IKORUN plan keeps adjusting in the background based on what you do here.',persoFollowDesc:'Your home screen will show this plan\'s sessions instead of the generated plan. You can switch back to the IKORUN plan anytime.',persoStopBtn:'Stop',persoFollowBtn:'Follow',persoNoSession:'No session yet. Add your first one!',typeLab:'Type',psHowLab:'How do you want to enter this session?',psModeSimple:'Simple (km + pace)',psModeReps:'By repetition (time of each)',psPaceLab:'Pace /km',psRepDistLab:'Distance per repetition',psAddRepBtn:'Add a repetition',psDescLab:'Description (optional)',psDescPh:'Session details...',psNewSessionTitle:'New session',psRepShort:'Rep.',chooseAtLeastOneDay:'Choose at least one day',profileValuesInvalid:'Value out of range: height 100-250 cm, weight 25-250 kg, max HR 120-230, resting HR 30-120 (below max HR), km/week 0-250.',
     planGenerated:'"{0}" plan generated: {1} wk, {2} sessions',raceGeneric:'race',
@@ -3395,7 +3395,7 @@ const I18N={
     customizeVolumeLabel:'تعديل الحجم',customizeSkipBtn:'تحويلها إلى يوم راحة',customizeResetBtn:'إعادة التعيين',
     customizeMovedToast:'تم نقل الحصة',customizeSkippedToast:'تم تحويل الحصة إلى راحة',customizeResetToast:'تمت إعادة تعيين الحصة',
     resumeSessionConfirm:'كانت حصة « {0} » جارية ({1} د). المتابعة؟',sessionColonName:'حصة: {0}',
-    accentBlue:'أزرق',accentRed:'أحمر',accentGreen:'أخضر عسكري',accentBrown:'بني خشبي',accentYellow:'أصفر',accentCarbon:'ألياف الكربون',
+    accentBlue:'أزرق',accentRed:'أحمر',accentGreen:'أخضر عسكري',accentBrown:'بني خشبي',accentYellow:'أصفر',accentCarbon:'ألياف الكربون',accentForged:'كربون مطروق',
     colorApplied:'تم تطبيق اللون',easyModeOn:'تم تفعيل الوضع المبسّط',easyModeOff:'تم إلغاء الوضع المبسّط',
     profileIncompleteAddTime:'الملف غير مكتمل: أضف زمنًا في أرقامك القياسية',chooseCompDate:'اختر تاريخ المنافسة',raceDateTooSoon:'اختر تاريخ سباق بعد 7 أيام على الأقل — تاريخ ماضٍ أو قريب جدًا لا يترك وقتًا كافيًا لبناء خطة.',planStartsOn:'تبدأ خطتك يوم {0}: تغطي الأسابيع الـ28 التي تسبق السباق.',planSafetyAdjustedToast:'خطة آمنة: زيادة الحمل محدودة بـ 10% أسبوعيًا مع احترام الاستشفاء.',planSafetyMigratedToast:'تم تعديل خطتك: تدرّج أكثر أمانًا في الحمل، دون حصص صعبة متتالية.',planSafetyHint:'للحدّ من خطر الإصابة، يرفع IKORUN حجمك بـ 10% أسبوعيًا كحد أقصى ويخفّف أسبوعًا من كل أربعة.',debriefTitle:'حصيلة الحصة',modeLightLab:'فاتح',modeDarkLab:'داكن',glassLab:'تأثير الزجاج (Liquid Glass)',glassFlat:'بسيط',glassStd:'Liquid Glass',glassMax:'أقصى',glassHintFlat:'أسطح مصمتة بلا شفافية: الأسرع والأوفر للبطارية.',glassHintStd:'زجاج IKORUN: انعكاسات وحواف مضيئة وشفافية معتدلة. التوازن المثالي.',glassHintMax:'أقصى تأثير: زجاج شفاف جدًا وضبابي على كامل الشاشة، انعكاسات أقوى وخلفية حية تتحرك تحت الزجاج. يستهلك بطارية أكثر قليلًا.',restGoToast:'هيا نعود!',glassTiltBtn:'انعكاسات حسب ميل الهاتف',glassTiltActive:'انعكاسات حسب الميل: مفعّلة',glassTiltOn:'الانعكاسات تتبع ميل الهاتف الآن',glassTiltOff:'لا وصول للحركة: الانعكاسات تتبع التمرير',offlineStartToast:'وضع عدم الاتصال: كل شيء يعمل، وستُزامَن تعديلاتك عند عودة الإنترنت.',offlineReadyToast:'IKORUN جاهز للعمل دون اتصال',raceDateInvalid:'تاريخ سباق غير صالح: اختره بعد 7 أيام على الأقل.',bdayInvalid:'تاريخ ميلاد غير صالح.',sessionKmRequired:'أدخل مسافة الحصة (كم).',paceFormatInvalid:'وتيرة غير صالحة: اكتبها بصيغة د:ث (مثال 5:30).',addSessionBtn:'إضافة الحصة',psTitleLab:'العنوان',psTitlePh:'جري الصباح',typeVMA:'VO₂max',typeFractionne:'تمارين متقطعة',typeTest:'اختبار',persoFollowingDesc:'تستخدم الشاشة الرئيسية والحصيلة هذه الخطة. تواصل خطة IKORUN التكيّف في الخلفية حسب ما تفعله هنا.',persoFollowDesc:'ستعرض شاشتك الرئيسية حصص هذه الخطة بدل الخطة المُولَّدة. يمكنك العودة إلى خطة IKORUN متى شئت.',persoStopBtn:'إيقاف',persoFollowBtn:'متابعة',persoNoSession:'لا توجد حصص بعد. أضف حصتك الأولى!',typeLab:'النوع',psHowLab:'كيف تريد إدخال هذه الحصة؟',psModeSimple:'بسيط (كم + وتيرة)',psModeReps:'حسب التكرار (زمن كل تكرار)',psPaceLab:'الوتيرة /كم',psRepDistLab:'مسافة كل تكرار',psAddRepBtn:'إضافة تكرار',psDescLab:'الوصف (اختياري)',psDescPh:'تفاصيل الحصة...',psNewSessionTitle:'حصة جديدة',psRepShort:'تكرار',chooseAtLeastOneDay:'اختر يومًا واحدًا على الأقل',profileValuesInvalid:'قيمة خارج الحدود: الطول 100-250 سم، الوزن 25-250 كغ، النبض الأقصى 120-230، نبض الراحة 30-120 (أقل من الأقصى)، كم/أسبوع 0-250.',
     planGenerated:'تم إنشاء خطة « {0} »: {1} أسبوع، {2} حصة',raceGeneric:'سباق',
@@ -5430,20 +5430,24 @@ function glassJellyOn(){ return glassMax() || glassClay(); }
      Avant, --tilt-x/--tilt-y étaient réécrits sur <html> à chaque image : toute la page
      recalculait son style (≈ 2 000 éléments) et le défilement en Maximal tombait à
      13-24 images/s — l'« effet 2 Hz ». On ne touche plus qu'au transform d'un calque. */
-  let raf=0, tx=0, ty=0, lastTilt=0, gl=null;
+  let raf=0, tx=0, ty=0, cf=.5, lastTilt=0, gl=null;
   const glare=()=>{ if(!gl){ gl=document.createElement('div'); gl.id='ikGlare'; gl.setAttribute('aria-hidden','true'); gl.innerHTML='<i></i><b></b>'; document.body.appendChild(gl); } return gl; };
-  const push=()=>{ raf=0; glare().style.transform='translate3d('+(tx*30).toFixed(2)+'%,'+(ty*24).toFixed(2)+'%,0) rotate('+(tx*9).toFixed(2)+'deg)'; };
+  // Carbone (V3.5.0) : la 2e tuile (lumière à 90°) apparaît plus ou moins, le vernis glisse.
+  const carbon=()=>!ikMotionOff() && document.getElementById('ikCarbon');
+  const push=()=>{ raf=0;
+    if(glassMax()) glare().style.transform='translate3d('+(tx*30).toFixed(2)+'%,'+(ty*24).toFixed(2)+'%,0) rotate('+(tx*9).toFixed(2)+'deg)';
+    const c=carbon(); if(c){ c.children[1].style.opacity=cf.toFixed(3); c.children[2].style.transform='translate3d('+(tx*26).toFixed(2)+'%,'+(ty*22).toFixed(2)+'%,0)'; } };
   const ask=()=>{ if(!raf) raf=requestAnimationFrame(push); };
   window.addEventListener('deviceorientation',e=>{
-    if(!glassMax() || e.gamma==null) return;
+    if(!(glassMax()||carbon()) || e.gamma==null) return;
     const nx=Math.max(-1,Math.min(1,e.gamma/25)), ny=Math.max(-1,Math.min(1,((e.beta||45)-45)/25));
     if(Math.abs(nx-tx)<.01 && Math.abs(ny-ty)<.01) return;
-    tx=nx; ty=ny; lastTilt=Date.now(); ask();
+    tx=nx; ty=ny; cf=.5+.5*Math.sin(nx*1.4+ny*.6); lastTilt=Date.now(); ask();
   });
   const sc=document.getElementById('scroll');
   if(sc) sc.addEventListener('scroll',()=>{
-    if(!glassMax() || Date.now()-lastTilt<3000) return; // l'inclinaison a la priorité
-    const v=Math.sin(sc.scrollTop/300); ty=v*.8; tx=v*.45; ask();
+    if(!(glassMax()||carbon()) || Date.now()-lastTilt<3000) return; // l'inclinaison a la priorité
+    const v=Math.sin(sc.scrollTop/300); ty=v*.8; tx=v*.45; cf=.5+.5*Math.sin(sc.scrollTop/210); ask();
   },{passive:true});
   glare();
 })();
@@ -6792,18 +6796,98 @@ function effectiveMode(){ return P.mode==='light' ? 'light' : 'dark'; }
 function applyTheme(){
   const mode=effectiveMode();
   document.documentElement.setAttribute('data-mode',mode);
-  document.documentElement.setAttribute('data-accent',P.theme||'blue');
+  const acc=P.theme==='forged'?'carbon':(P.theme||'blue'); // le carbone forgé partage les couleurs du carbone
+  document.documentElement.setAttribute('data-accent',acc);
   document.documentElement.classList.toggle('easy-mode',!!P.easyMode);
   document.documentElement.setAttribute('data-glass',P.glass||'std'); // matière : flat / std / max / clay
   { const k=(typeof feteOn==='function' && feteOn())?feteToday():null;
     if(k) document.documentElement.setAttribute('data-fete',k); else document.documentElement.removeAttribute('data-fete');
     if(document.body) feteSync(); }
+  if(document.body && typeof carbonApply==='function') carbonApply();
   if(typeof ikhCompact==='function') ikhCompact();
   const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.content=(P.easyMode?(mode==='light'?'#FFFFFF':'#000000'):(mode==='light'?'#F2F4F8':'#0A0D12'));
   // Miroir en clair (mode/accent/easyMode ne sont pas des données sensibles) pour que
   // le script tout en haut de <head> puisse réappliquer le thème avant le premier
   // paint au prochain chargement, sans attendre le déchiffrement async du profil.
-  try{ localStorage.setItem('ik_theme_prefs', JSON.stringify({mode, accent:P.theme||'blue', easyMode:!!P.easyMode, glass:P.glass||'std'})); }catch(e){}
+  try{ localStorage.setItem('ik_theme_prefs', JSON.stringify({mode, accent:acc, easyMode:!!P.easyMode, glass:P.glass||'std'})); }catch(e){}
+}
+/* ---------- FIBRE DE CARBONE (V3.5.0) ----------
+   L'ancien « carbone » n'était qu'une trame de 6 px presque invisible : on voyait du mono.
+   Le vrai : une plaque de carbone tressé (sergé 2×2) ou forgé, calculée une fois sur un
+   canevas (une tuile sans raccord), posée en fond fixe sous un vernis. Les cartes sont du
+   verre fumé par-dessus. Comme une vraie pièce, le tressage ne brille pas partout pareil :
+   les mèches parallèles à la lumière s'allument, les autres restent sombres. Deux versions
+   de la tuile (lumière à 0° et à 90°) se fondent l'une dans l'autre au défilement ou selon
+   l'inclinaison du téléphone : le reflet « bascule » d'une mèche à l'autre. En clair, la
+   plaque devient du carbone argent (fibre aluminisée). */
+function carbonRng(seed){ let s=seed>>>0||1; return ()=>((s=Math.imul(s^s>>>15,1|s)+0x6D2B79F5|0,((s^s>>>7)>>>0)%100000)/100000); }
+function carbonTwill(phi,light,s,tow){
+  const cs=Math.round(tow*s), T=cs*4, cv=document.createElement('canvas'); cv.width=cv.height=T;
+  const ctx=cv.getContext('2d'), img=ctx.createImageData(T,T), d=img.data, R=carbonRng(7);
+  // bruit de fibres : une valeur par ligne de pixels, dans le sens des mèches
+  const nH=new Float32Array(T), nV=new Float32Array(T); for(let i=0;i<T;i++){ nH[i]=R()*2-1; nV[i]=R()*2-1; }
+  const lum=a=>Math.pow(Math.abs(Math.cos(a)),1.6);
+  const pH=lum(phi), pV=lum(phi-Math.PI/2);
+  const base=light?192:8, lo=light?208:30, hi=light?246:100;
+  const sm=t=>t<=0?0:t>=1?1:t*t*(3-2*t);
+  for(let py=0;py<T;py++) for(let px=0;px<T;px++){
+    const cx=(px/cs)|0, cy=(py/cs)|0, lx=(px%cs+.5)/cs, ly=(py%cs+.5)/cs, m=(cx+cy)&3, vert=m<2;
+    const u=vert?lx:ly, v=vert?(m===0?ly*.5:.5+ly*.5):(m===2?lx*.5:.5+lx*.5);
+    const prof=.25+.75*Math.pow(Math.sin(Math.PI*u),.9), end=.42+.58*sm(v/.24)*sm((1-v)/.24);
+    const fib=vert?nV[px]:nH[py], peak=lo+(hi-lo)*(vert?pV:pH);
+    // la mèche : bombée (profil), assombrie là où elle plonge sous la voisine (end), striée par les fibres
+    let g=base+(peak-base)*prof*end*(1+fib*.2)+fib*(light?6:6);
+    // reflet fin et net au sommet de la mèche (le vernis)
+    g+=(light?8:18)*Math.pow(Math.max(0,1-Math.abs(u-.42)*3.2),2)*end*(.35+.65*(vert?pV:pH));
+    g=Math.max(0,Math.min(255,g));
+    const k=(py*T+px)*4; d[k]=g*.97; d[k+1]=g*.985; d[k+2]=Math.min(255,g*1.05+(light?0:2)); d[k+3]=255;
+  }
+  ctx.putImageData(img,0,0); return cv;
+}
+function carbonForged(phi,light,s,size){
+  const T=Math.round(size*s), cv=document.createElement('canvas'); cv.width=cv.height=T;
+  const ctx=cv.getContext('2d'), R=carbonRng(11);
+  ctx.fillStyle=light?'#bfc4ca':'#0c0d0f'; ctx.fillRect(0,0,T,T);
+  ctx.lineCap='butt'; ctx.lineJoin='round';
+  const lum=a=>Math.pow(Math.abs(Math.cos(a)),2), N=Math.round(330*(size/150)*(size/150));
+  const col=c=>{ c=Math.max(0,Math.min(255,c)); return 'rgb('+(c*.97|0)+','+(c*.985|0)+','+(Math.min(255,c*1.05)|0)+')'; };
+  for(let i=0;i<N;i++){
+    // un éclat = un bout de mèche coupé, écrasé et plié au moulage : une bande courbe à bouts francs,
+    // striée dans sa longueur ; son éclat dépend de son orientation face à la lumière
+    const x=R()*T, y=R()*T, a=R()*Math.PI*2, L=(14+Math.pow(R(),1.2)*40)*s, W=(5+Math.pow(R(),1.4)*12)*s, k=(R()-.5)*.42;
+    const dx=Math.cos(a), dy=Math.sin(a), nx=-dy, ny=dx, b=lum(a-phi);
+    const c0=light?(182+b*62):(18+b*72)+(R()-.5)*10;
+    const curve=(o,w,c,al)=>{ ctx.globalAlpha=al; ctx.strokeStyle=c; ctx.lineWidth=w; ctx.beginPath();
+      ctx.moveTo(-dx*L/2+nx*o,-dy*L/2+ny*o); ctx.quadraticCurveTo(nx*(k*L+o),ny*(k*L+o),dx*L/2+nx*o,dy*L/2+ny*o); ctx.stroke(); };
+    for(const ox of [-T,0,T]) for(const oy of [-T,0,T]){
+      const X=x+ox, Y=y+oy; if(X<-L||X>T+L||Y<-L||Y>T+L) continue;
+      ctx.save(); ctx.translate(X,Y);
+      curve(0,W+1.2*s,light?'rgba(110,116,124,.28)':'rgba(0,0,0,.4)',1);
+      curve(0,W,col(c0),1);
+      const n=Math.max(3,Math.round(W/(1.4*s)));
+      for(let j=0;j<n;j++){ const o=(j+.5)/n*W-W/2, e=1-Math.pow(Math.abs(o)/(W/2),2); curve(o,W/n*.9,col(c0*(.86+.2*e)+(R()-.5)*(light?10:10)),.8); }
+      ctx.restore();
+    }
+  }
+  ctx.globalAlpha=1; return cv;
+}
+const _cfCache={};
+function carbonKind(){ return !P ? null : P.theme==='carbon' ? 'twill' : P.theme==='forged' ? 'forged' : null; }
+function carbonApply(){
+  const root=document.documentElement, k=(P && !P.easyMode)?carbonKind():null;
+  let L=document.getElementById('ikCarbon');
+  if(!k){ root.removeAttribute('data-carbon'); if(L) L.remove(); return; }
+  const light=effectiveMode()==='light', s=Math.min(3,Math.max(2,Math.round(window.devicePixelRatio||2))), key=k+(light?'L':'D')+s;
+  if(!_cfCache[key]){
+    try{
+      const tw=k==='twill', mk=phi=>'url("'+(tw?carbonTwill(phi,light,s,7).toDataURL('image/png'):carbonForged(phi,light,2,150).toDataURL('image/jpeg',.88))+'")';
+      _cfCache[key]={a:mk(0),b:mk(Math.PI/2),sz:tw?'28px':'150px'};
+    }catch(e){ root.removeAttribute('data-carbon'); return; }
+  }
+  const C=_cfCache[key];
+  if(root.dataset.cfKey!==key){ root.style.setProperty('--cf-a',C.a); root.style.setProperty('--cf-b',C.b); root.style.setProperty('--cf-sz',C.sz); root.dataset.cfKey=key; }
+  root.setAttribute('data-carbon',k);
+  if(!L){ L=document.createElement('div'); L.id='ikCarbon'; L.setAttribute('aria-hidden','true'); L.innerHTML='<i class="a"></i><i class="b"></i><b></b>'; document.body.insertBefore(L,document.body.firstChild); }
 }
 /* Couleurs de l'app (V3.4.0 : quinze, rangées en familles de variantes). Chacune a son
    fond teinté en sombre et son accent assombri en clair : voir app.css, « COULEURS ». */
@@ -6811,7 +6895,7 @@ const ACCENTS=[
   {key:'blue',name:'accentBlue',fam:'cool'},{key:'ocean',name:'accentOcean',fam:'cool'},{key:'violet',name:'accentViolet',fam:'cool'},{key:'lavender',name:'accentLavender',fam:'cool'},
   {key:'pink',name:'accentPink',fam:'warm'},{key:'sakura',name:'accentSakura',fam:'warm'},{key:'red',name:'accentRed',fam:'warm'},{key:'orange',name:'accentOrange',fam:'warm'},{key:'yellow',name:'accentYellow',fam:'warm'},
   {key:'green',name:'accentGreen',fam:'nature'},{key:'mint',name:'accentMint',fam:'nature'},{key:'teal',name:'accentTeal',fam:'nature'},{key:'brown',name:'accentBrown',fam:'nature'},
-  {key:'carbon',name:'accentCarbon',fam:'neutral'},{key:'mono',name:'accentMono',fam:'neutral'},
+  {key:'carbon',name:'accentCarbon',fam:'neutral'},{key:'forged',name:'accentForged',fam:'neutral'},{key:'mono',name:'accentMono',fam:'neutral'},
   {key:'clay',name:'accentClay',fam:'special'}];
 const ACCENT_FAMS=[['cool','colorFamCool'],['warm','colorFamWarm'],['nature','colorFamNature'],['neutral','colorFamNeutral'],['special','colorFamSpecial']];
 function accentName(k){ const a=ACCENTS.find(x=>x.key===k); return a?t(a.name):t('accentBlue'); }
@@ -13559,7 +13643,7 @@ function pfAppearanceHTML(){
      '<div class="mat-grid">'+MATS.map(([k,l])=>'<div class="mat-sw'+(g===k?' on':'')+'" role="button" onclick="setGlass(\''+k+'\')"><i class="mat-ico '+k+'"></i><b>'+t(l)+'</b></div>').join('')+'</div>'+
      '<div class="glass-demo" aria-hidden="true"><div class="glass-demo-card card"><div class="glass-demo-t">IKORUN</div><div class="glass-demo-s">'+t(cm[1])+'</div></div></div>'+
      '<div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5">'+t(cm[2])+'</div>'+
-     (g==='max'?'<button class="btn ghost" style="margin-top:12px" onclick="askGlassTilt()">'+ICN('bolt',16)+' '+t(P.glassTilt?'glassTiltActive':'glassTiltBtn')+'</button>':'');
+     ((g==='max'||carbonKind())?'<button class="btn ghost" style="margin-top:12px" onclick="askGlassTilt()">'+ICN('bolt',16)+' '+t(P.glassTilt?'glassTiltActive':'glassTiltBtn')+'</button>':'');
   s+='<div class="row" style="justify-content:space-between;align-items:center;gap:12px;margin-top:20px"><div><div style="font-weight:700;font-size:14px">'+t('feteLab')+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4">'+t('feteDesc')+'</div></div>'+
      '<div class="toggle'+(feteEnabled()?' on':'')+'" onclick="P.fetes=!feteEnabled();saveAll();applyTheme();refreshPfSheet()"></div></div>'+
      '<div class="fete-try"><span>'+t('fetePreviewLab')+'</span><div class="pills sub">'+FETE_KEYS.map(k=>'<div class="pill" role="button" onclick="feteTry(\''+k+'\')">'+t('fete_'+k)+'</div>').join('')+'</div></div>';

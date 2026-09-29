@@ -569,6 +569,32 @@
     });
   }
 
+  /* ======================= 7d. MATIÈRES (V3.5.0) ========================= */
+  function testMatieres(){
+    var c='7d. Matières';
+    // La tuile de carbone doit être un vrai tressage : sans raccord (période de 4 mèches)
+    // et contrastée (mèches allumées et éteintes), pas un aplat.
+    essaie(c,'le tressage de carbone est contrasté et sans raccord',function(){
+      var cv=carbonTwill(0,false,2,7), x=cv.getContext('2d'), d=x.getImageData(0,0,cv.width,cv.height).data, mn=255, mx=0;
+      for(var i=0;i<d.length;i+=4){ if(d[i+1]<mn) mn=d[i+1]; if(d[i+1]>mx) mx=d[i+1]; }
+      if(cv.width!==56) throw new Error('taille '+cv.width);
+      if(mx-mn<50) throw new Error('trop plat ('+mn+'–'+mx+')');
+      return 'niveaux '+mn+'–'+mx;
+    });
+    essaie(c,'le carbone et le carbone forgé posent leur plaque, les autres couleurs non',function(){
+      var av=P.theme, avE=P.easyMode;
+      try{
+        P.easyMode=false; P.theme='carbon'; applyTheme();
+        if(document.documentElement.dataset.carbon!=='twill' || !document.getElementById('ikCarbon')) throw new Error('plaque absente (carbone)');
+        P.theme='forged'; applyTheme();
+        if(document.documentElement.dataset.carbon!=='forged' || document.documentElement.dataset.accent!=='carbon') throw new Error('carbone forgé mal appliqué');
+        P.theme='blue'; applyTheme();
+        if(document.getElementById('ikCarbon') || document.documentElement.dataset.carbon) throw new Error('plaque restée en bleu');
+        return 'ok';
+      } finally { P.theme=av; P.easyMode=avE; applyTheme(); }
+    });
+  }
+
   /* ======================= 8. SON ======================================== */
   function testSon(){
     var c='8. Son';
@@ -664,6 +690,7 @@
     testGardeFou();
     testModeSimple();
     testIlotEtFete();
+    testMatieres();
     Promise.resolve(testI18nUsage())
       .then(function(){ return testHorsLigne(); })
       .then(function(){ return testSon(); })
