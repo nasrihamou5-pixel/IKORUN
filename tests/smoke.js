@@ -567,6 +567,24 @@
         return FETE_KEYS.length+' fêtes, '+n+' scènes';
       } finally { _fetePreview=avP; PREFS.recDay=avR; applyTheme(); }
     });
+    // Les jours spéciaux se découvrent le jour même : ni l'aperçu, ni le paramètre
+    // d'URL ne doivent fonctionner pour un compte normal — seulement pour le compte
+    // de développement (nasrihamou5@gmail.com).
+    essaie(c,'l\'aperçu des jours spéciaux est réservé au compte de développement',function(){
+      var avE=window.currentUserEmail, avP=_fetePreview;
+      try{
+        window.currentUserEmail='quelquun.d.autre@example.com';
+        if(feteDevMode()) throw new Error('compte normal reconnu comme développeur');
+        _fetePreview=null; feteTry('xmas');
+        if(_fetePreview!==null) throw new Error('feteTry a fonctionné pour un compte normal');
+        if(typeof pfAppearanceHTML==='function' && pfAppearanceHTML().indexOf('fete-try')>=0) throw new Error('la pastille d\'aperçu reste visible');
+        window.currentUserEmail='nasrihamou5@gmail.com';
+        if(!feteDevMode()) throw new Error('le compte de développement n\'est pas reconnu');
+        feteTry('xmas');
+        if(_fetePreview!=='xmas') throw new Error('feteTry ne fonctionne plus pour le compte de développement');
+        return 'ok';
+      } finally { window.currentUserEmail=avE; _fetePreview=avP; applyTheme(); }
+    });
   }
 
   /* ======================= 7d. MATIÈRES (V3.5.0) ========================= */
