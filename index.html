@@ -99,7 +99,7 @@
 <!-- téléchargés dès maintenant, exécutés après la première image (voir bas de page) -->
 <link rel="preload" as="script" href="vendor/supabase.js?v=1">
 <link rel="preload" as="script" href="vendor/sb-init.js?v=3">
-<link rel="preload" as="script" href="app.js?v=116">
+<link rel="preload" as="script" href="app.js?v=117">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
@@ -111,7 +111,7 @@
      sont servis par le site lui-même, mis en cache par le service worker (cache d'abord,
      comme les images) et chaque famille a une pile de secours système. Aucune requête vers
      Google : plus rapide (pas de connexion à deux domaines tiers) et plus sobre côté RGPD. -->
-<link rel="stylesheet" href="app.css?v=23">
+<link rel="stylesheet" href="app.css?v=24">
 </head>
 <body>
 <script>
@@ -363,8 +363,8 @@
      ne persiste RIEN : elle photographie l'état, teste, restaure. -->
 <script>
 (function(){
-  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=3', 'app.js?v=116'];
-  if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=10');
+  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=3', 'app.js?v=117'];
+  if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=11');
   var lance = false;
   function charge(){
     if (lance) return; lance = true;

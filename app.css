@@ -3808,8 +3808,8 @@ html[dir="rtl"] :is(.fc-moon,.fc-web,.fc-spider,.fc-tree,.fc-bal){right:auto;lef
 html[dir="rtl"] .fc-web{left:-2px;transform:scaleX(-1);}
 html[dir="rtl"] .fc-spider{left:20px;} html[dir="rtl"] .fc-tree.t2,html[dir="rtl"] .fc-bal.b2{left:40px;}
 html.easy-mode .fete-card{min-height:0;}
-.fete-try{margin-top:12px;}
-.fete-try > span{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;}
+.fete-try,.fete-hij{margin-top:12px;}
+.fete-try > span,.fete-hij > span{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;}
 html.easy-mode .fete-card *,.fete-card.off *{animation:none !important;}
 
 /* ---------- micro-animations des dessins (SVG) ---------- */
@@ -3926,7 +3926,64 @@ html[data-mode="light"] .fx-shoot::after{background:#E0A82E;}
 html[dir="rtl"] .iks-tick{transform:translateX(50%);}
 .iks-tick:first-child{inset-inline-start:0;transform:none;align-items:flex-start;text-align:start;}
 .iks-tick:last-child{inset-inline-start:auto;inset-inline-end:0;transform:none;align-items:flex-end;text-align:end;}
+html[dir="rtl"] .iks-tick:is(:first-child,:last-child){transform:none;}
 .iks-tick .mat-ico{width:26px;height:26px;border-radius:9px;flex:none;}
 .iks-tick.on{color:var(--snow);}
 .iks-tick.on .mat-ico{box-shadow:0 0 0 2px var(--e),0 0 12px rgba(var(--e-rgb),.5);}
 html[data-mode="light"] .iks input[type="range"]::-webkit-slider-runnable-track{box-shadow:inset 0 1px 3px rgba(20,30,50,.3),inset 0 0 0 1px rgba(20,30,50,.08);}
+
+/* ===================================================================
+   TOUS LES TÉLÉPHONES (V3.5.4)
+   Un téléphone n'est pas toujours large de 375 px : iPhone SE 1re génération
+   et « Zoom de l'affichage » d'iOS = 320 px ; sous Android, agrandir la police
+   ou l'affichage zoome la page et ramène la largeur utile à 280, voire 256 px.
+   À ces largeurs, l'en-tête de l'accueil, les grilles à 3 colonnes (trophées,
+   tuiles de stats), les boutons côte à côte et les grands titres débordaient.
+   =================================================================== */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+/* Safari (hors appli installée) : 100vh = écran SANS ses barres d'outils, le bas
+   de la page passait dessous. dvh suit la hauteur réellement visible. */
+@supports (height:100dvh){
+  body{min-height:100dvh;}
+  #scroll{height:100dvh;}
+}
+/* Une grille en 1fr ne rétrécit pas sous la largeur de son contenu : minmax(0,1fr) */
+.bd-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+.krow3{grid-template-columns:repeat(3,minmax(0,1fr));}
+.bd-cell,.ktile,.hv7-ktile,.pb-card{min-width:0;}
+.ktile-val,.ktile-lab,.hv7-ktile-val,.pb-time{overflow-wrap:anywhere;}
+.bd-name{overflow-wrap:break-word;hyphens:auto;}
+.row>.btn{min-width:0;}
+@media (max-width:360px){
+  .hv7-header-right{gap:6px;}
+  .hv7-people,.hv7-icon-btn{width:34px;height:34px;}
+  .hv7-people svg,.hv7-icon-btn svg{width:17px;height:17px;}
+}
+@media (max-width:340px){
+  .hv7-header-left,.hv7-header-right{min-width:0;}
+  .hv7-header-right{gap:4px;}
+  .hv7-people,.hv7-icon-btn{width:31px;height:31px;}
+  .hv7-people svg,.hv7-icon-btn svg{width:16px;height:16px;}
+  .ikh .ikh-title,.ikh:not(.ikh-dark) .ikh-title{font-size:clamp(16px,6.6vw,21px);max-width:70%;}
+  .ikh-home .hv7-greet h1{font-size:clamp(17px,6.6vw,22px);}
+  .bd-grid{gap:8px;}
+  .bd-icon{width:min(64px,19vw);height:min(64px,19vw);border-radius:16px;}
+  .krow3{gap:6px;}
+  .ktile{padding:10px 8px;}
+  .btn{padding-inline:12px;}
+  #nav{width:calc(100% - 16px);}
+  .nb span{font-size:8.5px;letter-spacing:0;}
+}
+@media (max-width:300px){
+  .hv7-logo span{display:none;}
+  .bd-grid,.krow3{gap:5px;}
+  .bd-cell{padding:8px 2px;}
+  .ktile{padding:9px 6px;}
+  .nb span{font-size:7.5px;}
+  .pill{white-space:normal;}
+  .btn{font-size:13px;padding-inline:8px;}
+  .bd-name{font-size:10.5px;}
+}
+/* Mode simplifié : le zoom 1,16 ramenait un écran de 320 px à 276 px utiles. */
+@media (max-width:370px){ html.easy-mode{zoom:1.08;} }
+@media (max-width:330px){ html.easy-mode{zoom:1;} }
