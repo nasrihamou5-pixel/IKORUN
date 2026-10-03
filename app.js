@@ -1094,10 +1094,10 @@ function renderFriends(){
   if(friendsTab==='profile'){ $('#friendsBody').innerHTML=renderFriendProfileHTML(); return; }
   if(friendsTab==='club'){ renderClubTab(); return; }
 
-  let h='<div class="fr-tabs">'+
-    '<div class="fr-tab '+(friendsTab==='list'?'on':'')+'" onclick="switchSocialTab(\'list\')">'+t('tabFriendsList')+'</div>'+
-    '<div class="fr-tab '+(friendsTab==='rank'?'on':'')+'" onclick="switchSocialTab(\'rank\')">'+t('tabRank')+'</div>'+
-    '<div class="fr-tab '+(friendsTab==='club'?'on':'')+'" onclick="switchSocialTab(\'club\')">'+t('tabClub')+'</div>'+
+  let h='<div class="seg-ctrl" data-seg="social">'+
+    '<div class="seg-btn '+(friendsTab==='list'?'on':'')+'" onclick="switchSocialTab(\'list\')">'+t('tabFriendsList')+'</div>'+
+    '<div class="seg-btn '+(friendsTab==='rank'?'on':'')+'" onclick="switchSocialTab(\'rank\')">'+t('tabRank')+'</div>'+
+    '<div class="seg-btn '+(friendsTab==='club'?'on':'')+'" onclick="switchSocialTab(\'club\')">'+t('tabClub')+'</div>'+
   '</div>';
 
   if(!window.supabaseClient || !window.currentUserId){
@@ -1331,10 +1331,10 @@ function switchActiveClub(id){
 }
 function renderClubTab(){
   if(!$('#friendsBody')) return; // même raison que renderFriends : écran refermé pendant le chargement
-  let h='<div class="fr-tabs">'+
-    '<div class="fr-tab '+(friendsTab==='list'?'on':'')+'" onclick="switchSocialTab(\'list\')">'+t('tabFriendsList')+'</div>'+
-    '<div class="fr-tab '+(friendsTab==='rank'?'on':'')+'" onclick="switchSocialTab(\'rank\')">'+t('tabRank')+'</div>'+
-    '<div class="fr-tab on" onclick="switchSocialTab(\'club\')">'+t('tabClub')+'</div>'+
+  let h='<div class="seg-ctrl" data-seg="social">'+
+    '<div class="seg-btn '+(friendsTab==='list'?'on':'')+'" onclick="switchSocialTab(\'list\')">'+t('tabFriendsList')+'</div>'+
+    '<div class="seg-btn '+(friendsTab==='rank'?'on':'')+'" onclick="switchSocialTab(\'rank\')">'+t('tabRank')+'</div>'+
+    '<div class="seg-btn on" onclick="switchSocialTab(\'club\')">'+t('tabClub')+'</div>'+
   '</div>';
   if(!window.supabaseClient || !window.currentUserId){
     h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('lock',36,'currentColor')+'</div><div style="font-size:13px">'+t('loginToAddFriends')+'</div></div></div>';
@@ -1439,7 +1439,7 @@ async function toggleClubAdmin(userId, makeAdmin){
    simple et plus prévisible qu'une synchronisation continue. */
 function buildGeneratedSnapshot(){
   if(!PLAN) return null;
-  return {type:'generated', sourceId:null, name:trRace(P.objRace)||t('planIkorunPill'),
+  return {type:'generated', sourceId:null, name:raceLabel()||t('planIkorunPill'),
     sessions:PLAN.sessions.filter(s=>s.km>0).map(s=>({date:s.date,title:s.title,type:s.type,km:s.km,pace:s.pace})).slice(0,200),
     weeks:PLAN.weeks};
 }
@@ -1512,7 +1512,7 @@ function renderClubPlanSetupHTML(){
   '</div>';
   if(tt.source==='generated'){
     if(!PLAN) h+='<div class="tip" style="margin-top:10px">'+t('clubPlanNoGeneratedYet')+'</div>';
-    else h+='<div class="card" style="padding:12px;margin-top:8px"><div style="font-weight:700">'+escHtml(trRace(P.objRace)||'')+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+tp('clubPlanSessionsCount',PLAN.sessions.filter(s=>s.km>0).length)+'</div></div>';
+    else h+='<div class="card" style="padding:12px;margin-top:8px"><div style="font-weight:700">'+escHtml(raceLabel()||'')+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">'+tp('clubPlanSessionsCount',PLAN.sessions.filter(s=>s.km>0).length)+'</div></div>';
   } else if(tt.source==='custom'){
     if(!runPlans.length) h+='<div class="tip" style="margin-top:10px">'+t('clubPlanNoCustomYet')+'</div>';
     else h+='<div class="pills" style="flex-wrap:wrap">'+runPlans.map(p=>'<div class="pill '+(tt.customId===p.id?'on':'')+'" onclick="clubPlanTmp.customId=\''+p.id+'\';renderClubTab()">'+escHtml(p.name)+'</div>').join('')+'</div>';
@@ -2424,7 +2424,7 @@ const I18N={
     sleepCyclesTitle:'Cycles de sommeil',sleepHoursPerNightLabel:'Heures de sommeil / nuit',
     sleepInsufficient:'Insuffisant — récupération compromise',sleepOptimal:'Optimal pour un athlète',sleepPlenty:'Beaucoup — écoute ton corps',
     speedLabel:'Vitesse',timeHMSLabel:'Temps (h : mm : ss)',
-    configurePlanTitle:'Configurer mon plan',courseProfileLabel:'Profil du parcours',generateMyPlanBtn:'Générer mon plan',
+    psSitLab:'Ta situation',psSitCont:'En prépa',psSitRep:'Je reprends',psSitOther:'Autre',psLvlLab:'Ton niveau',lvlDeb:'Débutant',lvlInt:'Intermédiaire',lvlConf:'Confirmé',psRecLab:'Tes derniers chronos',psRecEdit:'Mettre à jour',psRecNone:'aucun pour l’instant',psGapLab:'Ta dernière sortie remonte à',gapLt1:'– 1 mois',gap13:'1–3 mois',gap36:'3–6 mois',gapGt6:'+ 6 mois',psRepHint:'Le plan repart en douceur et remonte petit à petit.',psOtherHint:'Pas de souci : IKORUN se cale sur tes chronos et ton historique.',psDistLab:'Distance exacte',psDateIn:'Dans {0} semaines',psDateSoon:'Trop proche : il faut au moins une semaine de préparation',psTimeLab:'Chrono visé',psTimePace:'soit {0} /km',psTimePred:'prédiction actuelle {0}',psVolume:'Volume réglé par IKORUN : {0} → {1} km par semaine. Jamais plus de +10 % d’une semaine à l’autre, une semaine allégée sur quatre.',psSessLab:'Les séances de ton plan',psSessHint:'Touche une séance pour savoir à quoi elle sert.',st_VMAc:'Répétitions courtes (200 à 400 m) très rapides, à ta vitesse maximale aérobie, avec récupération. Développe ta vitesse et la puissance de ton cœur.',st_VMAl:'Répétitions de 800 à 1 200 m juste sous ta VMA. Tu apprends à tenir une allure rapide plus longtemps.',st_INTERVAL:'Alternance d’efforts soutenus et de récupérations, de durées variées. Travaille le rythme et la capacité à relancer.',st_TEMPO:'Course continue « confortablement dure », 20 à 40 min. Améliore ton endurance à allure rapide.',st_SEUIL:'Blocs à l’allure que tu tiendrais environ une heure, avec de courtes récupérations. Repousse le moment où les jambes brûlent.',st_EF:'Footing facile où tu peux parler sans souffler. La base de tout : 70 à 80 % de ton entraînement.',st_LONG:'La plus longue sortie de la semaine, en endurance. Habitue ton corps à durer et à économiser son énergie.',st_DBLSEUIL:'Deux séances au seuil le même jour (matin et soir), à volume modéré. Beaucoup de travail utile sans trop de fatigue.',st_FARTLEK:'« Jeu de vitesse » : des accélérations libres pendant un footing, au feeling. Varié et ludique.',st_COTES:'Montées courtes et dynamiques, retour en trottinant. Renforce les jambes et la foulée, sans les chocs de la piste.',st_VO2:'Efforts de 3 à 5 min très durs, proches de ton maximum. Augmente ta consommation maximale d’oxygène.',st_SPE:'Portions à l’allure exacte de ta course objectif. Ton corps mémorise le rythme du jour J.',st_RECUP:'Footing très lent et court, ou marche. Aide à récupérer sans rester immobile.',configurePlanTitle:'Configurer mon plan',courseProfileLabel:'Profil du parcours',generateMyPlanBtn:'Générer mon plan',
     planSetupSimpleHint:'On s’occupe du reste (rythme, distances, séances) et on ajuste tout au fil de tes séances.',
     maxKmWeekLabel:'Km/sem maxi (pic)',minKmWeekLabel:'Km/sem mini',preferredSessionsLabel:'Séances préférées (le coach les privilégiera)',
     preparedRaceLabel:'Course préparée',raceDateLabel:'Date de la course',targetTimeOptionalLabel:'Chrono visé (optionnel)',
@@ -3010,7 +3010,7 @@ const I18N={
     sleepCyclesTitle:'Sleep cycles',sleepHoursPerNightLabel:'Hours of sleep / night',
     sleepInsufficient:'Insufficient — recovery compromised',sleepOptimal:'Optimal for an athlete',sleepPlenty:'A lot — listen to your body',
     speedLabel:'Speed',timeHMSLabel:'Time (h : mm : ss)',
-    configurePlanTitle:'Configure my plan',courseProfileLabel:'Course profile',generateMyPlanBtn:'Generate my plan',
+    psSitLab:'Your situation',psSitCont:'In training',psSitRep:'Coming back',psSitOther:'Other',psLvlLab:'Your level',lvlDeb:'Beginner',lvlInt:'Intermediate',lvlConf:'Advanced',psRecLab:'Your latest times',psRecEdit:'Update',psRecNone:'none yet',psGapLab:'Your last run was',gapLt1:'< 1 month',gap13:'1–3 months',gap36:'3–6 months',gapGt6:'6+ months',psRepHint:'The plan starts gently and builds up little by little.',psOtherHint:'No problem: IKORUN adapts to your times and history.',psDistLab:'Exact distance',psDateIn:'In {0} weeks',psDateSoon:'Too soon: you need at least one week of training',psTimeLab:'Target time',psTimePace:'that is {0} /km',psTimePred:'current prediction {0}',psVolume:'Volume set by IKORUN: {0} → {1} km per week. Never more than +10% from one week to the next, one easier week out of four.',psSessLab:'The sessions in your plan',psSessHint:'Tap a session to see what it is for.',st_VMAc:'Short, very fast reps (200 to 400 m) at your maximal aerobic speed, with recovery. Builds speed and heart power.',st_VMAl:'800 to 1,200 m reps just below your MAS. Teaches you to hold a fast pace for longer.',st_INTERVAL:'Hard efforts and recoveries of varied lengths. Works rhythm and the ability to surge.',st_TEMPO:'Continuous “comfortably hard” running, 20 to 40 min. Improves endurance at a fast pace.',st_SEUIL:'Blocks at the pace you could hold for about an hour, with short recoveries. Pushes back the moment your legs burn.',st_EF:'Easy running where you can talk without gasping. The foundation: 70 to 80% of your training.',st_LONG:'The longest run of the week, at an easy pace. Teaches your body to last and save energy.',st_DBLSEUIL:'Two threshold sessions on the same day (morning and evening), at moderate volume. Lots of useful work without too much fatigue.',st_FARTLEK:'“Speed play”: free surges during an easy run, by feel. Varied and fun.',st_COTES:'Short, punchy climbs, jogging back down. Strengthens legs and stride without the pounding of the track.',st_VO2:'Very hard 3 to 5 min efforts, close to your maximum. Raises your maximal oxygen uptake.',st_SPE:'Sections at the exact pace of your goal race. Your body memorises race-day rhythm.',st_RECUP:'A very slow, short jog or a walk. Helps you recover without sitting still.',configurePlanTitle:'Configure my plan',courseProfileLabel:'Course profile',generateMyPlanBtn:'Generate my plan',
     planSetupSimpleHint:'We handle the rest (pace, distances, sessions) and adjust everything as you go.',
     maxKmWeekLabel:'Max km/week (peak)',minKmWeekLabel:'Min km/week',preferredSessionsLabel:'Preferred sessions (the coach will favor these)',
     preparedRaceLabel:'Race you\u2019re preparing for',raceDateLabel:'Race date',targetTimeOptionalLabel:'Target time (optional)',
@@ -3599,7 +3599,7 @@ const I18N={
     sleepCyclesTitle:'دورات النوم',sleepHoursPerNightLabel:'ساعات النوم / الليلة',
     sleepInsufficient:'غير كافٍ — التعافي مُعرَّض للخطر',sleepOptimal:'مثالي للرياضي',sleepPlenty:'كثير — استمع لجسدك',
     speedLabel:'السرعة',timeHMSLabel:'الزمن (س : د : ث)',
-    configurePlanTitle:'إعداد خطتي',courseProfileLabel:'طبيعة المسار',generateMyPlanBtn:'أنشئ خطتي',
+    psSitLab:'وضعك',psSitCont:'في تحضير',psSitRep:'أعود بعد توقف',psSitOther:'أخرى',psLvlLab:'مستواك',lvlDeb:'مبتدئ',lvlInt:'متوسط',lvlConf:'متقدم',psRecLab:'آخر أوقاتك',psRecEdit:'تحديث',psRecNone:'لا شيء بعد',psGapLab:'آخر جري لك كان منذ',gapLt1:'أقل من شهر',gap13:'1–3 أشهر',gap36:'3–6 أشهر',gapGt6:'أكثر من 6 أشهر',psRepHint:'تبدأ الخطة بهدوء وترتفع شيئًا فشيئًا.',psOtherHint:'لا مشكلة: يتكيف IKORUN مع أوقاتك وسجلّك.',psDistLab:'المسافة بالضبط',psDateIn:'بعد {0} أسابيع',psDateSoon:'قريب جدًا: تحتاج أسبوعًا من التحضير على الأقل',psTimeLab:'الوقت المستهدف',psTimePace:'أي {0} /كم',psTimePred:'التوقع الحالي {0}',psVolume:'الحجم يضبطه IKORUN: {0} ← {1} كم في الأسبوع. لا أكثر من +10% من أسبوع لآخر، وأسبوع أخف من كل أربعة.',psSessLab:'حصص خطتك',psSessHint:'المس حصة لتعرف فائدتها.',st_VMAc:'تكرارات قصيرة (200 إلى 400 م) سريعة جدًا بسرعتك الهوائية القصوى، مع استرجاع. تطوّر السرعة وقوة القلب.',st_VMAl:'تكرارات من 800 إلى 1200 م تحت سرعتك القصوى بقليل. تتعلم الحفاظ على وتيرة سريعة مدة أطول.',st_INTERVAL:'تناوب بين جهود قوية واسترجاع بمدد مختلفة. يعمل على الإيقاع والقدرة على التسريع.',st_TEMPO:'جري متواصل «صعب بشكل مريح» من 20 إلى 40 دقيقة. يحسّن التحمل بوتيرة سريعة.',st_SEUIL:'كتل بالوتيرة التي تحافظ عليها نحو ساعة، مع استرجاع قصير. يؤخر لحظة احتراق الساقين.',st_EF:'جري سهل تستطيع فيه الكلام دون لهاث. الأساس: 70 إلى 80% من تدريبك.',st_LONG:'أطول جري في الأسبوع بوتيرة سهلة. يعوّد جسمك على المدة وتوفير الطاقة.',st_DBLSEUIL:'حصتان عند العتبة في اليوم نفسه (صباحًا ومساءً) بحجم معتدل. عمل مفيد كثير دون تعب زائد.',st_FARTLEK:'«لعب السرعة»: تسارعات حرة أثناء جري سهل حسب الإحساس. متنوع وممتع.',st_COTES:'صعود قصير وحيوي، والنزول بالهرولة. يقوّي الساقين والخطوة دون صدمات المضمار.',st_VO2:'جهود صعبة جدًا من 3 إلى 5 دقائق قريبة من حدك الأقصى. ترفع استهلاكك الأقصى للأكسجين.',st_SPE:'مقاطع بالوتيرة الدقيقة لسباقك المستهدف. يحفظ جسمك إيقاع يوم السباق.',st_RECUP:'جري بطيء جدًا وقصير، أو مشي. يساعد على الاسترجاع دون جمود.',configurePlanTitle:'إعداد خطتي',courseProfileLabel:'طبيعة المسار',generateMyPlanBtn:'أنشئ خطتي',
     planSetupSimpleHint:'نتكفّل بالباقي (الوتيرة، المسافات، الحصص) ونعدّل كل شيء تدريجيًا مع تقدّمك.',
     maxKmWeekLabel:'أقصى كم/أسبوع (الذروة)',minKmWeekLabel:'أدنى كم/أسبوع',preferredSessionsLabel:'الحصص المفضلة (سيفضلها المدرب)',
     preparedRaceLabel:'السباق الذي تستعد له',raceDateLabel:'تاريخ السباق',targetTimeOptionalLabel:'الزمن المستهدف (اختياري)',
@@ -4445,7 +4445,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='3.5.5';
+const APP_VERSION='3.6.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -4494,7 +4494,8 @@ function ikContentRoot(el){
   return r;
 }
 function ikCascade(root,skip){
-  const kids=[...root.children].filter(c=>ikFlow(c) && !(skip && c.matches(skip))).slice(0,14);
+  // Les sélecteurs (.seg-ctrl) ne réapparaissent pas : seule leur pastille glisse (V3.6.0).
+  const kids=[...root.children].filter(c=>ikFlow(c) && !c.matches('.seg-ctrl,.seg-row') && !(skip && c.matches(skip))).slice(0,14);
   kids.forEach(c=>c.classList.remove('ik-in'));
   void root.offsetWidth;
   kids.forEach((c,i)=>{
@@ -4607,6 +4608,109 @@ window.addEventListener('ik-intro-end',()=>{
   const s=document.body.dataset.scr, scr=s&&document.getElementById('s-'+s);
   if(scr && scr.classList.contains('on')) ikPlay(scr,{force:true});
 });
+/* ---------- SÉLECTEURS GLISSANTS (V3.6.0) ----------
+   Chaque .seg-ctrl reçoit une pastille (.seg-thumb) posée sous le choix actif. Les
+   écrans sont redessinés à chaque changement d'onglet : on retient donc la dernière
+   position de chaque sélecteur (clé = data-seg, sinon écran + libellés) et la nouvelle
+   pastille part de l'ancienne place pour glisser jusqu'au nouveau choix. Le contenu
+   placé sous le sélecteur arrive dans le même sens. On peut aussi tirer la pastille. */
+const _segPos=new Map();
+function segBtns(seg){ return [...seg.children].filter(b=>b.classList.contains('seg-btn') && !b.classList.contains('seg-thumb')); }
+function segKey(seg){
+  if(seg.dataset.seg) return seg.dataset.seg;
+  const host=seg.closest('[id]');
+  return (host?host.id:'')+'|'+segBtns(seg).map(b=>b.textContent.trim()).join('|');
+}
+function segSlideContent(seg,dir){
+  if(ikMotionOff()) return;
+  const anchor=seg.parentElement && seg.parentElement.classList.contains('seg-row')?seg.parentElement:seg;
+  let el=anchor.nextElementSibling, n=0;
+  const dist=seg.classList.contains('sub')?18:30;
+  while(el && n<14){
+    if(!el.classList.contains('seg-ctrl') && el.offsetParent!==null){
+      try{ el.animate([{transform:'translateX('+(dir*dist)+'px)',opacity:0},{transform:'none',opacity:1}],{duration:320,delay:n*18,easing:'cubic-bezier(.16,1,.3,1)',fill:'backwards'}); }catch(e){}
+      n++;
+    }
+    el=el.nextElementSibling;
+  }
+}
+function segSync(){
+  document.querySelectorAll('.seg-ctrl').forEach(seg=>{
+    if(seg.offsetParent===null || seg.classList.contains('seg-drag')) return;
+    const on=segBtns(seg).find(b=>b.classList.contains('on'));
+    let th=seg.querySelector(':scope>.seg-thumb'), fresh=false;
+    if(!on){ if(th) th.style.opacity='0'; return; }
+    if(!th){
+      th=document.createElement('i'); th.className='seg-btn on seg-thumb'; th.setAttribute('aria-hidden','true');
+      seg.prepend(th); seg.classList.add('has-thumb'); fresh=true;
+    }
+    const x=on.offsetLeft, w=on.offsetWidth; if(!w) return;
+    if(!fresh && th._x===x && th._w===w && th.style.opacity!=='0') return;
+    const key=segKey(seg), prev=_segPos.get(key);
+    if(fresh){
+      th.style.transition='none';
+      if(prev && (prev.x!==x || prev.w!==w)){
+        th.style.width=prev.w+'px'; th.style.transform='translateX('+prev.x+'px)';
+        void th.offsetWidth; th.style.transition='';
+        if(prev.i!==segBtns(seg).indexOf(on)) segSlideContent(seg,segBtns(seg).indexOf(on)>prev.i?1:-1);
+      } else { th.style.width=w+'px'; th.style.transform='translateX('+x+'px)'; void th.offsetWidth; th.style.transition=''; }
+    }
+    th.style.opacity='';
+    th.style.width=w+'px'; th.style.transform='translateX('+x+'px)'; th._x=x; th._w=w;
+    _segPos.set(key,{x,w,i:segBtns(seg).indexOf(on)});
+  });
+}
+let _segRaf=0;
+function segSchedule(){ if(_segRaf) return; _segRaf=requestAnimationFrame(()=>{ _segRaf=0; try{ segSync(); }catch(e){} }); }
+(function(){
+  const touches=n=>n.nodeType===1 && (n.classList.contains('seg-ctrl') || n.classList.contains('seg-btn') || (n.firstElementChild && n.querySelector('.seg-ctrl')));
+  new MutationObserver(ms=>{
+    for(const m of ms){
+      if(m.type==='attributes'){ if(m.target.classList && m.target.classList.contains('seg-btn')){ segSchedule(); return; } continue; }
+      for(const n of m.addedNodes) if(touches(n)){ segSchedule(); return; }
+    }
+  }).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
+  addEventListener('resize',segSchedule);
+  try{ document.fonts && document.fonts.ready.then(segSchedule); }catch(e){}
+  // Tirer la pastille au doigt : au relâcher, le choix le plus proche est pris.
+  let drag=null;
+  document.addEventListener('pointerdown',e=>{
+    const seg=e.target.closest && e.target.closest('.seg-ctrl.has-thumb'); if(!seg) return;
+    const th=seg.querySelector(':scope>.seg-thumb'); if(!th) return;
+    drag={seg,th,x0:e.clientX,y0:e.clientY,tx:th._x||0,moved:false,id:e.pointerId,orig:segBtns(seg).find(b=>b.classList.contains('on'))};
+  },{passive:true});
+  document.addEventListener('pointermove',e=>{
+    if(!drag || e.pointerId!==drag.id) return;
+    const z=uiZoomFactor(), dx=(e.clientX-drag.x0)/z;
+    if(!drag.moved){ if(Math.abs(e.clientY-drag.y0)>12 && Math.abs(e.clientY-drag.y0)>Math.abs(e.clientX-drag.x0)){ drag=null; return; } if(Math.abs(dx)<7) return; drag.moved=true; drag.seg.classList.add('seg-drag'); }
+    const bs=segBtns(drag.seg), first=bs[0], last=bs[bs.length-1];
+    const lo=first.offsetLeft, hi=last.offsetLeft+last.offsetWidth-(drag.th._w||0);
+    const nx=Math.max(lo,Math.min(hi,drag.tx+dx));
+    drag.th.style.transform='translateX('+nx+'px)';
+    // le libellé sous la pastille prend l'aspect « choisi » pendant le glissé
+    const cx=nx+(drag.th._w||0)/2; let near=null, bd=1e9;
+    bs.forEach(b=>{ const dd=Math.abs(b.offsetLeft+b.offsetWidth/2-cx); if(dd<bd){ bd=dd; near=b; } });
+    if(near && !near.classList.contains('on')){ bs.forEach(b=>b.classList.toggle('on',b===near)); haptic(); }
+  },{passive:true});
+  const fin=e=>{
+    if(!drag || (e && e.pointerId!==drag.id)) return;
+    const d=drag; drag=null;
+    if(!d.moved) return;
+    d.seg.classList.remove('seg-drag');
+    const m=/translateX\((-?[\d.]+)px\)/.exec(d.th.style.transform||''), cx=(m?+m[1]:d.tx)+(d.th._w||0)/2;
+    let best=null, bd=1e9;
+    segBtns(d.seg).forEach(b=>{ const c=b.offsetLeft+b.offsetWidth/2, dd=Math.abs(c-cx); if(dd<bd){ bd=dd; best=b; } });
+    // le « clic » qui suit le glissé ne doit pas sélectionner le bouton sous le doigt
+    const swallow=ev=>{ if(!ev.isTrusted) return; ev.stopPropagation(); ev.preventDefault(); document.removeEventListener('click',swallow,{capture:true}); };
+    document.addEventListener('click',swallow,{capture:true});
+    setTimeout(()=>document.removeEventListener('click',swallow,{capture:true}),400);
+    segBtns(d.seg).forEach(b=>b.classList.toggle('on',b===d.orig));
+    if(best && best!==d.orig) setTimeout(()=>best.click(),0);
+    else { d.th.style.transform='translateX('+(d.th._x||0)+'px)'; }
+  };
+  document.addEventListener('pointerup',fin,{passive:true});
+  document.addEventListener('pointercancel',fin,{passive:true});
+})();
 // Signature d'une vue (début du rendu, chiffres ignorés) : sert de clé à ikFirst —
 // une mise à jour des données garde la même, un autre outil / onglet en a une autre.
 function ikSig(html){ return String(html).slice(0,600).replace(/\d+([.,]\d+)?/g,'#'); }
@@ -7552,8 +7656,8 @@ const PLAN_SESSTYPE_KEYS=['EF','RECUP','LONG','TEMPO','TEMPO_SPE','SEUIL','DBLSE
 function planSessTitle(s){
   const bt=s&&s.baseType; if(!bt) return s?s.title:'';
   if(bt==='LONG'||bt==='LONG_COURT') return t('sessTitle_LONG')+(s.phaseKey==='SPE'?t('progressiveSuffix'):'');
-  if(bt==='COURSE') return t('sessTitle_COURSE')+' — '+(trRace(P.objRace)||t('competitionDefault'));
-  if(bt==='SPE'||bt==='SPE_COURT') return t('sessTitle_SPE')+(P.objRace?' '+trRace(P.objRace):'');
+  if(bt==='COURSE') return t('sessTitle_COURSE')+' — '+(raceLabel()||t('competitionDefault'));
+  if(bt==='SPE'||bt==='SPE_COURT') return t('sessTitle_SPE')+(P.objRace?' '+raceLabel():'');
   if(PLAN_SESSTYPE_KEYS.includes(bt)) return t('sessTitle_'+bt);
   return s.title;
 }
@@ -7664,7 +7768,7 @@ function liveDetail(s){
   }catch(e){ return s.detail; }
 }
 const PROFILE_TR={en:{'Plate':'Flat','Vallonnée':'Hilly','Montagne':'Mountain'},ar:{'Plate':'مستوٍ','Vallonnée':'متموّج','Montagne':'جبلي'}};
-function trProfile(p){ if(!p) return p; const l=curLang(); if(l==='fr'||!PROFILE_TR[l]) return p; return PROFILE_TR[l][p]||p; }
+function trProfile(p){ if(!p) return p; const l=curLang(); if(l==='fr') return ({'Plate':'Plat','Vallonnée':'Vallonné'})[p]||p; if(!PROFILE_TR[l]) return p; return PROFILE_TR[l][p]||p; }
 const GOAL_TR={
   en:{'Finir':'Finish','Record personnel':'Personal best','Qualification':'Qualify','Podium':'Podium','Victoire':'Win'},
   ar:{'Finir':'الإنهاء','Record personnel':'رقم شخصي','Qualification':'التأهل','Podium':'منصة التتويج','Victoire':'الفوز'}
@@ -8163,6 +8267,7 @@ function generatePlan(){
   };
   const HARD=['VMAc','VMAl','VO2','INTERVAL','DBLSEUIL','SEUIL','SPE','SPE_COURT','TEMPO_SPE','TEMPO','PROGRESSIF','FARTLEK','COTES','LONG','LONG_COURT'];
   const isEasyT=t=>t==='EF'||t==='RECUP', isLongT=t=>t==='LONG'||t==='LONG_COURT';
+  const repriseWeeks=({lt1:1,m1_3:2,m3_6:3,gt6:4})[P.planGap]||0;
   let lastWkKm=kmMin, prevLoadTarget=null;
   for(let w=1;w<=weeks;w++){
     const ph=phaseByWeek[w];
@@ -8185,7 +8290,13 @@ function generatePlan(){
     // fixe, si bien qu'avec le même nombre de séances la décharge n'allégeait rien.
     let qualityCount=days.length>=5?(ph.key==='AERO'?2:ph.key==='PG'?1:3):(days.length>=4?2:1);
     if(isDeload) qualityCount=Math.max(1,qualityCount-1);
-    const weekPlan=composeWeek(ph,days.length,qualityCount,isDeload,pick,rng,liked,w===weeks);
+    // Reprise après un arrêt (Configurer mon plan, V3.6.0) : les premières semaines ne
+    // sont que de l'endurance facile — ni qualité ni sortie longue, dont les minimums
+    // (8 km, échauffement compris) dépassaient à eux seuls le volume de reprise.
+    const reprise=P.planSituation==='reprise' && w<=repriseWeeks && w<weeks;
+    if(reprise) qualityCount=0;
+    let weekPlan=composeWeek(ph,days.length,qualityCount,isDeload,pick,rng,liked,w===weeks);
+    if(reprise) weekPlan=weekPlan.map(x=>x==='LONG'||x==='LONG_COURT'?'EF':x);
     const assigned=assignWeek(days,weekPlan);
     const slots=[];
     days.forEach((dow,di)=>{
@@ -8258,7 +8369,7 @@ function generatePlan(){
   PLAN={ created:todayKey(), vdot, weeks, seed, sessions, goal, race:P.objRace||'5 km', kmMax, nDays:days.length, wkKm:wkTargets };
   const safetyFixes=planSafetyPass(PLAN,{kmMax,useHistory:true});
   DB.save('run_plan',PLAN);
-  toast(''+tp('planGenerated',(trRace(P.objRace)||t('raceGeneric')),weeks,PLAN.sessions.length));
+  toast(''+tp('planGenerated',(raceLabel()||t('raceGeneric')),weeks,PLAN.sessions.length));
   if(safetyFixes) setTimeout(()=>toast(t('planSafetyAdjustedToast')),2600);
   // Course à plus de 28 semaines : le plan commence plus tard qu'aujourd'hui, il
   // faut le dire, sinon l'écran Sport paraît vide sans explication.
@@ -8266,7 +8377,7 @@ function generatePlan(){
     setTimeout(()=>toast(tp('planStartsOn',fmtDate(sessions[0].date))),safetyFixes?5200:2600);
   burst(); renderSport();
 }
-function raceMeters(){ const m={'5 km':5000,'10 km':10000,'Semi-marathon':21097,'Marathon':42195,'Trail':21097,'Cross':8000,'Ultra':50000}; return m[P.objRace]||5000; }
+function raceMeters(){ return raceMetersOf(P.objRace,P.objRaceKm); }
 // Plafond de la sortie longue selon l'objectif de course — évite les sorties à 30-40 km
 // quand on prépare un 3000 m, et évite de plafonner à 18 km quand on prépare un semi/marathon.
 function longRunCapKm(){
@@ -8295,64 +8406,143 @@ function inferRaceFromGoal(){
   if(/\b5\s*(k|km)\b|5000/.test(g)) return '5 km';
   return null;
 }
+/* ---------- CONFIGURER MON PLAN (V3.6.0) ----------
+   Formulaire allégé : rien n'est tapé au clavier. Situation (en prépa / reprise /
+   autre), course (molette de distance exacte pour « Autre »), date à la molette
+   (jour · mois · année), profil, objectif Finir ou Record (chrono visé à la molette),
+   jours. Le volume (km/semaine) n'est plus demandé : le générateur le déduit du niveau,
+   de l'historique, de la reprise et de la distance. Les types de séances ne se
+   choisissent plus : ils s'expliquent au toucher. */
+const PS_RACES=['5 km','10 km','Semi-marathon','Marathon','Ultra','Trail','Cross','Autre'];
+const RACE_M={'5 km':5000,'10 km':10000,'Semi-marathon':21097,'Marathon':42195,'Trail':21097,'Cross':8000,'Ultra':50000};
+function raceMetersOf(race,km){ return race==='Autre' && +km>0 ? Math.round(+km*1000) : (RACE_M[race]||5000); }
+function raceLabel(){ return P && P.objRace==='Autre' && +P.objRaceKm>0 ? fmtKmShort(+P.objRaceKm)+' km' : trRace(P && P.objRace); }
+function fmtKmShort(k){ return (Math.round(k*10)/10).toLocaleString(localeCode(),{maximumFractionDigits:1}); }
+function psDefaultDate(){ const d=new Date(); d.setDate(d.getDate()+84); return dateKey(d); }
 function openPlanSetup(){
-  // Le CTA menait à un formulaire complet (course, date, profil, jours, km/sem,
-  // 12 types de séances) pour finir sur un toast "profil incomplet" une fois
-  // "Générer mon plan" cliqué. L'info doit arriver AVANT le formulaire, pas après.
   if(!getUserVDOT()){ toast(t('profileIncompleteAddTime')); openRecords(); return; }
+  const goal=P.objGoal==='Finir'?'Finir':'Record personnel';
   setupTmp={
-    objRace:P.objRace||inferRaceFromGoal()||'5 km', compDate:P.compDate||'', objProfile:P.objProfile||'Plate',
-    objGoal:P.objGoal||'Record personnel', objTime:P.objTime||'',
-    days:[...(P.days||[1,3,5,6])], kmWeekMin:P.kmWeekMin||P.kmWeek||35, kmWeekMax:P.kmWeekMax||Math.round((P.kmWeek||35)*1.6),
-    likedTypes:[...((PREFS.likedTypes)||[])]
+    situation:P.planSituation||'autre', level:P.planLevel||(getUserVDOT()<38?'deb':getUserVDOT()<50?'int':'conf'), gap:P.planGap||'m1_3',
+    objRace:PS_RACES.includes(P.objRace)?P.objRace:(inferRaceFromGoal()||'5 km'), raceKm:+P.objRaceKm||15,
+    compDate:(P.compDate && P.compDate>=minRaceDate())?P.compDate:psDefaultDate(), objProfile:['Plate','Vallonnée','Montagne'].includes(P.objProfile)?P.objProfile:'Plate',
+    objGoal:goal, timeS:parseTime(P.objTime)||0, days:[...(P.days||[1,3,5,6])], info:null
   };
-  renderPlanSetup(); $('#ovProgTitle').textContent=t('configurePlanTitle'); openOv('ovProg');
+  if(!setupTmp.timeS) setupTmp.timeS=psPredicted(setupTmp);
+  openOv('ovProg'); $('#ovProgTitle').textContent=t('configurePlanTitle');
+  renderPlanSetup();
+}
+function psPredicted(s){ const v=getUserVDOT(); return v?predictTime(v,raceMetersOf(s.objRace,s.raceKm)):0; }
+function planAutoVolume(s){
+  const vd=getUserVDOT()||40;
+  const lvl=s.situation==='continue'?s.level:(vd<38?'deb':vd<50?'int':'conf');
+  const base={deb:18,int:32,conf:50}[lvl]||30;
+  const km=raceMetersOf(s.objRace,s.raceKm)/1000, mult=km<=5?.85:km<=10?1:km<=21.2?1.25:km<=42.3?1.55:1.75;
+  const recent=recentWeeklyKm(), ref=base*mult;
+  let min, max;
+  if(s.situation==='reprise'){ min=ref*({lt1:.75,m1_3:.55,m3_6:.4,gt6:.3}[s.gap]||.5); max=ref*1.15; }
+  else { const cur=recent||(s.situation==='continue'?+P.kmWeek||0:0); min=cur>0?cur:ref*.8; max=Math.max(min*1.4,ref*(s.situation==='continue'?1.5:1.4)); }
+  min=Math.round(Math.min(160,Math.max(8,min))); max=Math.round(Math.min(180,Math.max(min+4,max)));
+  return {min,max};
+}
+function psSeg(key,cur,opts,attr){
+  return '<div class="seg-ctrl sub" data-seg="'+key+'">'+opts.map(o=>'<div class="seg-btn'+(cur===o[0]?' on':'')+'" onclick="setupTmp.'+attr+'=\''+o[0]+'\';renderPlanSetup()">'+o[1]+'</div>').join('')+'</div>';
+}
+function psDateParts(s){ const p=String(s.compDate||psDefaultDate()).split('-').map(Number); return {y:p[0],m:p[1],d:p[2]}; }
+function psDateHTML(s){
+  const {y,m,d}=psDateParts(s), y0=new Date().getFullYear(), dim=new Date(y,m,0).getDate();
+  const months=Array.from({length:12},(_,i)=>new Date(2024,i,1).toLocaleDateString(localeCode(),{month:'short'}).replace('.',''));
+  const days=Math.round((new Date(y,m-1,d)-new Date(new Date().toDateString()))/864e5);
+  const hint=s.compDate<minRaceDate()?'<span style="color:var(--warn)">'+t('psDateSoon')+'</span>':tp('psDateIn',Math.max(1,Math.round(days/7)));
+  return '<div class="wheels ps-wheels">'+wheel('PS.d',1,dim,Math.min(d,dim))+wheel('PS.mo',1,12,m,months)+wheel('PS.y',y0,y0+2,Math.min(y0+2,Math.max(y0,y)))+'</div><div class="ps-whint" id="psDateHint">'+hint+'</div>';
+}
+function psTimeHTML(s){
+  const v=s.timeS||0, h=Math.floor(v/3600), mi=Math.floor(v%3600/60), se=v%60, m=raceMetersOf(s.objRace,s.raceKm), pr=psPredicted(s);
+  return '<div class="wheels ps-wheels">'+wheel('PS.th',0,9,h,1)+'<span class="wheel-sep">:</span>'+wheel('PS.tm',0,59,mi)+'<span class="wheel-sep">:</span>'+wheel('PS.ts',0,59,se)+'</div>'+
+    '<div class="ps-whint" id="psTimeHint">'+(v?tp('psTimePace',fmtSplit(Math.round(v/(m/1000)))):'')+(pr?' · '+tp('psTimePred',fmtTime(pr)):'')+'</div>';
+}
+function psSituationHTML(s){
+  let h='<div class="ps-sit"><div class="ps-sit-lab">'+t('psSitLab')+'</div>'+
+    psSeg('psSit',s.situation,[['continue',t('psSitCont')],['reprise',t('psSitRep')],['autre',t('psSitOther')]],'situation');
+  if(s.situation==='continue'){
+    const recs=[...(RECORDS||[])].filter(r=>r&&r.time).sort((a,b)=>(a.meters||0)-(b.meters||0)).slice(0,4);
+    h+='<div class="ps-sub-lab">'+t('psLvlLab')+'</div>'+psSeg('psLvl',s.level,[['deb',t('lvlDeb')],['int',t('lvlInt')],['conf',t('lvlConf')]],'level');
+    h+='<div class="ps-recs"><span>'+t('psRecLab')+' : '+(recs.length?recs.map(r=>escHtml(r.dist)+' <b>'+escHtml(r.time)+'</b>').join(' · '):t('psRecNone'))+'</span><a role="button" onclick="openRecords()">'+t('psRecEdit')+'</a></div>';
+  } else if(s.situation==='reprise'){
+    h+='<div class="ps-sub-lab">'+t('psGapLab')+'</div>'+psSeg('psGap',s.gap,[['lt1',t('gapLt1')],['m1_3',t('gap13')],['m3_6',t('gap36')],['gt6',t('gapGt6')]],'gap');
+    h+='<div class="ps-whint">'+t('psRepHint')+'</div>';
+  } else h+='<div class="ps-whint">'+t('psOtherHint')+'</div>';
+  return h+'</div>';
+}
+function psSessionsHTML(s){
+  let h='<div class="field"><label>'+t('psSessLab')+'</label><div class="ps-whint" style="text-align:start;margin:0 0 8px">'+t('psSessHint')+'</div><div class="pills ps-info">'+
+    LIKED_TYPES.map(lt=>'<div class="pill'+(s.info===lt?' on':'')+'" role="button" onclick="setupTmp.info=setupTmp.info===\''+lt.replace(/'/g,"\\'")+'\'?null:\''+lt.replace(/'/g,"\\'")+'\';renderPlanSetup()">'+trLikedType(lt)+'</div>').join('')+'</div>';
+  if(s.info){ const k='st_'+(likedToType(s.info)||''); h+='<div class="tip ps-explain"><b>'+trLikedType(s.info)+'</b><br>'+t(k)+'</div>'; }
+  return h+'</div>';
 }
 function renderPlanSetup(){
-  if(P.easyMode) return renderPlanSetupSimple();
-  const s=setupTmp;
+  const s=setupTmp, easy=!!P.easyMode;
   const dn=[0,1,2,3,4,5,6].map(d=>new Date(2023,0,1+d).toLocaleDateString(localeCode(),{weekday:'short'}));
-  let h='<div class="field"><label>'+t('preparedRaceLabel')+'</label><select class="inp" onchange="setupTmp.objRace=this.value">'+['5 km','10 km','Semi-marathon','Marathon','Ultra','Trail','Cross','Autre'].map(r=>'<option value="'+r+'" '+(s.objRace===r?'selected':'')+'>'+trRace(r)+'</option>').join('')+'</select></div>';
-  h+='<div class="field"><label>'+t('raceDateLabel')+'</label><input class="inp" type="date" min="'+minRaceDate()+'" value="'+s.compDate+'" onchange="setupTmp.compDate=this.value"></div>';
-  h+='<div class="field"><label>'+t('courseProfileLabel')+'</label><div class="pills">'+['Plate','Vallonnée','Montagne'].map(p=>'<div class="pill '+(s.objProfile===p?'on':'')+'" onclick="setupTmp.objProfile=\''+p+'\';renderPlanSetup()">'+trProfile(p)+'</div>').join('')+'</div></div>';
-  h+='<div class="field"><label>'+t('objectiveCap')+'</label><div class="pills">'+['Finir','Record personnel','Qualification','Podium','Victoire'].map(o=>'<div class="pill '+(s.objGoal===o?'on':'')+'" onclick="setupTmp.objGoal=\''+o+'\';renderPlanSetup()">'+trGoal(o)+'</div>').join('')+'</div></div>';
-  h+='<div class="field"><label>'+t('targetTimeOptionalLabel')+'</label><input class="inp" value="'+escHtml(s.objTime||'')+'" oninput="setupTmp.objTime=this.value" placeholder="ex: 18:30"></div>';
+  let h=easy?'':psSituationHTML(s);
+  h+='<div class="field"><label>'+t('preparedRaceLabel')+'</label><select class="inp" onchange="setupTmp.objRace=this.value;setupTmp.timeS=psPredicted(setupTmp);renderPlanSetup()">'+PS_RACES.map(r=>'<option value="'+r+'" '+(s.objRace===r?'selected':'')+'>'+trRace(r)+'</option>').join('')+'</select></div>';
+  if(s.objRace==='Autre'){
+    const ki=Math.floor(s.raceKm), kd=Math.round((s.raceKm-ki)*10)%10;
+    h+='<div class="field"><label>'+t('psDistLab')+'</label><div class="wheels ps-wheels">'+wheel('PS.km',1,250,Math.min(250,Math.max(1,ki)),1)+'<span class="wheel-sep">,</span>'+wheel('PS.kmd',0,9,kd,1)+'<span class="wheel-sep ps-unit">km</span></div></div>';
+  }
+  h+='<div class="field"><label>'+t('raceDateLabel')+'</label>'+psDateHTML(s)+'</div>';
+  if(!easy) h+='<div class="field"><label>'+t('courseProfileLabel')+'</label><div class="pills">'+['Plate','Vallonnée','Montagne'].map(p=>'<div class="pill '+(s.objProfile===p?'on':'')+'" onclick="setupTmp.objProfile=\''+p+'\';renderPlanSetup()">'+trProfile(p)+'</div>').join('')+'</div></div>';
+  h+='<div class="field"><label>'+t('objectiveCap')+'</label><div class="pills">'+['Finir','Record personnel'].map(o=>'<div class="pill '+(s.objGoal===o?'on':'')+'" onclick="setupTmp.objGoal=\''+o+'\';renderPlanSetup()">'+trGoal(o)+'</div>').join('')+'</div></div>';
+  if(s.objGoal==='Record personnel') h+='<div class="field"><label>'+t('psTimeLab')+'</label>'+psTimeHTML(s)+'</div>';
   h+='<div class="field"><label>'+t('trainingDaysLabel')+'</label><div class="pills">'+[1,2,3,4,5,6,0].map(d=>'<div class="pill '+(s.days.includes(d)?'on':'')+'" onclick="toggleSetupDay('+d+')">'+dn[d]+'</div>').join('')+'</div></div>';
-  h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>'+t('minKmWeekLabel')+'</label><input class="inp" type="number" value="'+s.kmWeekMin+'" oninput="setupTmp.kmWeekMin=+this.value"></div><div class="field" style="flex:1"><label>'+t('maxKmWeekLabel')+'</label><input class="inp" type="number" value="'+s.kmWeekMax+'" oninput="setupTmp.kmWeekMax=+this.value"></div></div>';
-  h+='<p class="ps-hint">'+t('planSafetyHint')+'</p>';
-  h+='<div class="field"><label>'+t('preferredSessionsLabel')+'</label><div class="pills">'+LIKED_TYPES.map(lt=>'<div class="pill '+(s.likedTypes.includes(lt)?'on':'')+'" onclick="toggleLiked(\''+lt.replace(/'/g,"\\'")+'\')">'+trLikedType(lt)+'</div>').join('')+'</div></div>';
+  const vol=planAutoVolume(s);
+  h+='<p class="ps-hint" id="psVol">'+tp('psVolume',vol.min,vol.max)+'</p>';
+  if(!easy) h+=psSessionsHTML(s);
   h+='<button class="btn" onclick="confirmPlanSetup()">'+t('generateMyPlanBtn')+'</button>';
   $('#progBody').innerHTML=h;
+  setTimeout(attachWheels,30);
 }
-// Version allégée du formulaire de plan pour le mode simplifié : ne garde que les champs indispensables,
-// le reste (profil du parcours, temps cible, km/semaine, types de séances préférés) est déduit automatiquement.
-function renderPlanSetupSimple(){
-  const s=setupTmp;
-  const dn=[0,1,2,3,4,5,6].map(d=>new Date(2023,0,1+d).toLocaleDateString(localeCode(),{weekday:'short'}));
-  let h='<div class="field"><label>'+t('preparedRaceLabel')+'</label><select class="inp" onchange="setupTmp.objRace=this.value">'+['5 km','10 km','Semi-marathon','Marathon','Ultra','Trail','Cross','Autre'].map(r=>'<option value="'+r+'" '+(s.objRace===r?'selected':'')+'>'+trRace(r)+'</option>').join('')+'</select></div>';
-  h+='<div class="field"><label>'+t('raceDateLabel')+'</label><input class="inp" type="date" min="'+minRaceDate()+'" value="'+s.compDate+'" onchange="setupTmp.compDate=this.value"></div>';
-  h+='<div class="field"><label>'+t('objectiveCap')+'</label><div class="pills">'+['Finir','Record personnel','Podium'].map(o=>'<div class="pill '+(s.objGoal===o?'on':'')+'" onclick="setupTmp.objGoal=\''+o+'\';renderPlanSetup()">'+trGoal(o)+'</div>').join('')+'</div></div>';
-  h+='<div class="field"><label>'+t('trainingDaysLabel')+'</label><div class="pills">'+[1,2,3,4,5,6,0].map(d=>'<div class="pill '+(s.days.includes(d)?'on':'')+'" onclick="toggleSetupDay('+d+')">'+dn[d]+'</div>').join('')+'</div></div>';
-  h+='<p class="ps-hint">'+t('planSetupSimpleHint')+'</p>';
-  h+='<button class="btn" onclick="confirmPlanSetup()">'+t('generateMyPlanBtn')+'</button>';
-  $('#progBody').innerHTML=h;
+function psWheel(key,val){
+  const s=setupTmp; if(!s) return;
+  if(key==='PS.km'||key==='PS.kmd'){
+    const ki=Math.floor(s.raceKm), kd=Math.round((s.raceKm-ki)*10)%10;
+    s.raceKm=key==='PS.km'?val+kd/10:ki+val/10; s.raceKm=Math.max(1,Math.round(s.raceKm*10)/10);
+  } else if(key==='PS.d'||key==='PS.mo'||key==='PS.y'){
+    let {y,m,d}=psDateParts(s);
+    if(key==='PS.d') d=val; else if(key==='PS.mo') m=val; else y=val;
+    const dim=new Date(y,m,0).getDate();
+    d=Math.min(d,dim);
+    s.compDate=y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    // Le mois compte 28 à 31 jours : la molette des jours n'est refaite que si sa
+    // longueur change (la refaire à chaque fois relancerait son défilement, en boucle).
+    const dw=document.querySelector('.wheel[data-key="PS.d"]');
+    if(dw && dw.querySelectorAll('.wi').length!==dim){
+      const tmp=document.createElement('div'); tmp.innerHTML=wheel('PS.d',1,dim,d);
+      dw.replaceWith(tmp.firstChild); setTimeout(attachWheels,30);
+    }
+  } else if(key==='PS.th'||key==='PS.tm'||key==='PS.ts'){
+    const v=s.timeS||0, h=Math.floor(v/3600), mi=Math.floor(v%3600/60), se=v%60;
+    s.timeS=(key==='PS.th'?val:h)*3600+(key==='PS.tm'?val:mi)*60+(key==='PS.ts'?val:se);
+  }
+  // indications sous les molettes, sans redessiner le formulaire (les molettes resteraient figées)
+  const dh=document.getElementById('psDateHint');
+  if(dh){ const {y,m,d}=psDateParts(s); const days=Math.round((new Date(y,m-1,d)-new Date(new Date().toDateString()))/864e5);
+    dh.innerHTML=s.compDate<minRaceDate()?'<span style="color:var(--warn)">'+t('psDateSoon')+'</span>':tp('psDateIn',Math.max(1,Math.round(days/7))); }
+  const th=document.getElementById('psTimeHint');
+  if(th){ const m=raceMetersOf(s.objRace,s.raceKm), pr=psPredicted(s); th.innerHTML=(s.timeS?tp('psTimePace',fmtSplit(Math.round(s.timeS/(m/1000)))):'')+(pr?' · '+tp('psTimePred',fmtTime(pr)):''); }
+  const pv=document.getElementById('psVol'); if(pv){ const vol=planAutoVolume(s); pv.innerHTML=tp('psVolume',vol.min,vol.max); }
 }
 function toggleSetupDay(d){ const i=setupTmp.days.indexOf(d); if(i>=0)setupTmp.days.splice(i,1); else setupTmp.days.push(d); renderPlanSetup(); }
-function toggleLiked(t){ const i=setupTmp.likedTypes.indexOf(t); if(i>=0)setupTmp.likedTypes.splice(i,1); else setupTmp.likedTypes.push(t); renderPlanSetup(); }
 function confirmPlanSetup(){
   const s=setupTmp;
   if(!s.compDate){ toast(t('chooseCompDate')); return; }
+  if(s.compDate<minRaceDate()){ toast(t('psDateSoon')); return; }
   if(!s.days.length){ toast(t('chooseAtLeastOneDay')); return; }
-  // Saisie libre : un minimum plus grand que le maximum (ou vide, ou absurde) donnait
-  // un plan incohérent sans prévenir. On remet les bornes dans l'ordre et dans une
-  // plage réaliste (5-200 km/sem), comme le reste des champs du profil.
-  let mn=+s.kmWeekMin||0, mx=+s.kmWeekMax||0;
-  if(!(mn>0)) mn=P.kmWeek||20;
-  if(!(mx>0)) mx=Math.round(mn*1.6);
-  if(mn>mx) [mn,mx]=[mx,mn];
-  s.kmWeekMin=Math.min(200,Math.max(5,Math.round(mn))); s.kmWeekMax=Math.min(200,Math.max(s.kmWeekMin,Math.round(mx)));
-  Object.assign(P,{objRace:s.objRace,compDate:s.compDate,objProfile:s.objProfile,objGoal:s.objGoal,objTime:s.objTime,days:s.days.sort((a,b)=>a-b),kmWeekMin:s.kmWeekMin,kmWeekMax:s.kmWeekMax});
-  PREFS.likedTypes=s.likedTypes;
+  const vol=planAutoVolume(s);
+  const tS=s.objGoal==='Record personnel'?Math.round(s.timeS||0):0;
+  Object.assign(P,{objRace:s.objRace,objRaceKm:s.objRace==='Autre'?s.raceKm:null,compDate:s.compDate,objProfile:s.objProfile,objGoal:s.objGoal,
+    objTime:tS>0?fmtTime(tS):'',days:s.days.sort((a,b)=>a-b),kmWeekMin:vol.min,kmWeekMax:vol.max,
+    planSituation:s.situation,planLevel:s.level,planGap:s.gap});
+  PREFS.likedTypes=[]; // le générateur compose seul ses séances
   saveAll(); closeOv('ovProg'); generatePlan();
 }
 // Compose la liste des types pour la semaine (variée, cohérente)
@@ -8507,7 +8697,7 @@ function buildSessionV2(type,o){
       const n=type==='SPE_COURT'?vary(3,4):vary(4,6), dist=1000, recSecEach=90, recN=Math.max(0,n-1);
       const mainKm=n*dist/1000, recKm=distKmFromTime(recN*recSecEach,pace.RC);
       km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*splitSecFromPace(pace.SPE,dist)/60+recN*recSecEach/60+CD_MIN);
-      p=S(pace.SPE); rpe=8; label=t('sessLabel_SPE'); title=t('sessTitle_SPE')+(P.objRace?' '+trRace(P.objRace):'');
+      p=S(pace.SPE); rpe=8; label=t('sessLabel_SPE'); title=t('sessTitle_SPE')+(P.objRace?' '+raceLabel():'');
       series={reps:n,dist,paceSecPerKm:pace.SPE,recoverySec:recSecEach,recoveryLabel:t('recovLabel_90sTrot')};
       d={objectif:tp('bs_spe_objectif',goal),warmup:WU,body:tp('bs_spe_body',repsText(n,dist,pace.SPE)),paces:tp('bs_spe_paces',S(pace.SPE)),recovery:t('recovLabel_90sTrot'),cooldown:CD,tips:[t('bs_spe_tip1')],mistakes:[t('bs_spe_mistake1')],why:t('bs_spe_why')};
       break; }
@@ -8538,7 +8728,7 @@ function buildSessionV2(type,o){
         genParams={lignesN}; }
       break;
     case 'COURSE':
-      const m=raceMeters(); km=Math.round(m/1000); p=S(predictTime(vdot,m)/(m/1000)); rpe=10; label=t('sessLabel_COURSE'); title=t('sessTitle_COURSE')+' — '+(trRace(P.objRace)||t('competitionDefault'));
+      const m=raceMeters(); km=Math.round(m/1000); p=S(predictTime(vdot,m)/(m/1000)); rpe=10; label=t('sessLabel_COURSE'); title=t('sessTitle_COURSE')+' — '+(raceLabel()||t('competitionDefault'));
       d={objectif:tp('bs_course_objectif',(P.objTime||goal)),warmup:t('bs_course_warmup'),body:tp('bs_course_body',km,S(predictTime(vdot,m)/(m/1000))),paces:tp('bs_course_paces',S(predictTime(vdot,m)/(m/1000))),recovery:'—',cooldown:t('bs_course_cooldown'),tips:[t('bs_course_tip1'),t('bs_course_tip2')],mistakes:[t('bs_course_mistake1')],why:t('bs_course_why')};
       break;
     default:
@@ -8859,7 +9049,7 @@ function homeGoalCard(){
   }
   return '<div class="card goal-card stag" style="animation-delay:.1s" onclick="sportTab=\'run\';runSub=\'ia\';sportView=\'list\';nav(\'sport\')">'+
     '<div class="goal-top">'+
-      '<div><div class="goal-lab">'+t('objectiveCap')+'</div><div class="goal-race">'+escHtml(trRace(P.objRace)||P.goal||t('yourNextRaceDefault'))+(P.objTime?' — sub '+escHtml(P.objTime):'')+'</div>'+
+      '<div><div class="goal-lab">'+t('objectiveCap')+'</div><div class="goal-race">'+escHtml(raceLabel()||P.goal||t('yourNextRaceDefault'))+(P.objTime?' — sub '+escHtml(P.objTime):'')+'</div>'+
       '<div class="goal-target">'+tp('raceOn',fmtDate(P.compDate))+'</div></div>'+
       '<div class="goal-count"><div class="n">'+daysLeft+'</div><div class="u">'+t('daysLab')+'</div></div>'+
     '</div>'+
@@ -9131,7 +9321,7 @@ function planHeroHTML(){
   const vdotDelta=Math.round((curVdot-PLAN.vdot)*10)/10;
 
   let h='<div class="sp-plan">';
-  h+='<div class="sp-plan-top"><div><div class="sp-race">'+escHtml(trRace(P.objRace)||t('courseDefault'))+'</div>'+
+  h+='<div class="sp-plan-top"><div><div class="sp-race">'+escHtml(raceLabel()||t('courseDefault'))+'</div>'+
     '<div class="sp-race-sub">'+(P.objTime?escHtml(P.objTime)+' · ':'')+fmtDate(P.compDate)+'</div></div>'+
     '<div class="sp-days"><b>'+daysLeft+'</b><span>'+t('daysLab')+'</span></div></div>';
   h+='<div class="sp-rail">'+rail+'</div>';
@@ -9259,7 +9449,7 @@ function renderRunningSimple(){
   const daysLeft=Math.max(0,Math.round((comp-today)/86400000));
   let h='<div class="card" style="text-align:center;padding:18px">'+
     '<div class="lab" style="margin-bottom:4px">'+tp('weekOf',curSess.week,PLAN.weeks)+'</div>'+
-    '<div class="man" style="font-weight:800;font-size:20px">'+escHtml(trRace(P.objRace)||t('courseDefault'))+'</div>'+
+    '<div class="man" style="font-weight:800;font-size:20px">'+escHtml(raceLabel()||t('courseDefault'))+'</div>'+
     '<div style="font-size:13px;color:var(--muted);margin-top:4px">'+t('objectiveCap')+' · J-'+daysLeft+'</div>'+
   '</div>';
   h+='<div class="hv7-sec-lab" style="margin:16px 0 10px">'+t('thisWeek')+'</div>';
@@ -9747,7 +9937,7 @@ function openRunSheet(id){
   // EN-TÊTE — badge type, titre, sous-titre semaine/objectif
   h+='<div class="rs-badge" style="background:color-mix(in srgb,'+col+' 13%,transparent);color:'+col+'">'+escHtml(planSessLabel(s)||'')+'</div>';
   h+='<div class="rs-title">'+planSessTitle(s)+(s.customized?' <span class="chrome-chip" style="font-size:10px;vertical-align:middle">'+t('customizedTag')+'</span>':'')+'</div>';
-  h+='<span class="rs-sub">'+(PLAN.weekLabel?PLAN.weekLabel:t('weekLabelWithNum')+' '+s.week)+' · '+(trRace(P.objRace)||t('objectiveWord'))+'</span>';
+  h+='<span class="rs-sub">'+(PLAN.weekLabel?PLAN.weekLabel:t('weekLabelWithNum')+' '+s.week)+' · '+(raceLabel()||t('objectiveWord'))+'</span>';
 
   // 3 STATS
   if(s.km){
@@ -11119,7 +11309,7 @@ function statsBilan(){
   let h=bodyInfoCard();
 
   // ONGLETS PÉRIODE — segmented control façon Kalo
-  h+='<div class="seg-ctrl sub">'+
+  h+='<div class="seg-ctrl sub" data-seg="bilanPer">'+
     ['week','month','3m','year'].map(p=>'<div class="seg-btn'+(per===p?' on':'')+'" onclick="bilanPeriod=\''+p+'\';renderStats()">'+periodTabLabel(p)+'</div>').join('')+
   '</div>';
 
@@ -11262,7 +11452,7 @@ function statsMuscu(){
   const cnt=periodSessM.length, prevCnt=prevSessM.length;
   const mins=periodSessM.reduce((a,s)=>a+(s.duration||0),0);
 
-  h+='<div class="seg-ctrl sub">'+
+  h+='<div class="seg-ctrl sub" data-seg="muscuPer">'+
     ['week','month','3m','year'].map(p=>'<div class="seg-btn'+(per===p?' on':'')+'" onclick="muscuBilanPeriod=\''+p+'\';renderStats()">'+periodTabLabel(p)+'</div>').join('')+
   '</div>';
 
@@ -12226,8 +12416,9 @@ function renderCalc(){
   if(calc.lastResult) renderCalcResult();
 }
 function wheel(key,min,max,sel,pad){
-  let h='<div class="wheel" data-key="'+key+'" data-min="'+min+'"><div class="wheel-pad"></div>';
-  for(let i=min;i<=max;i++) h+='<div class="wi '+(i===sel?'sel':'')+'">'+String(i).padStart(pad||2,'0')+'</div>';
+  const labels=Array.isArray(pad)?pad:null;
+  let h='<div class="wheel'+(labels?' txt':'')+'" data-key="'+key+'" data-min="'+min+'"><div class="wheel-pad"></div>';
+  for(let i=min;i<=max;i++) h+='<div class="wi '+(i===sel?'sel':'')+'">'+(labels?escHtml(labels[i-min]):String(i).padStart(pad||2,'0'))+'</div>';
   h+='<div class="wheel-pad"></div></div>';
   return h;
 }
@@ -12445,7 +12636,7 @@ function fmtMS(s){ return String(Math.floor(s/60)).padStart(2,'0')+':'+String(Ma
 function setTimer(s){ timer.total=timer.left=s; timer.m=Math.floor(s/60); timer.s=s%60; if(timer.running){clearInterval(timer.iv);timer.running=false;} renderTimer(); }
 // wheel sync for timer
 const _origSetWheel=setWheelVal;
-setWheelVal=function(key,val){ if(key.indexOf('DB.')===0){ debriefWheel(key,val); return; } if(key==='TM'){timer.m=val;timer.total=timer.left=timer.m*60+timer.s;} else if(key==='TS'){timer.s=val;timer.total=timer.left=timer.m*60+timer.s;} else _origSetWheel(key,val); };
+setWheelVal=function(key,val){ if(key.indexOf('DB.')===0){ debriefWheel(key,val); return; } if(key.indexOf('PS.')===0){ psWheel(key,val); return; } if(key==='TM'){timer.m=val;timer.total=timer.left=timer.m*60+timer.s;} else if(key==='TS'){timer.s=val;timer.total=timer.left=timer.m*60+timer.s;} else _origSetWheel(key,val); };
 function addTimer(s){ timer.left+=s; timer.total=Math.max(timer.total,timer.left); const n=$('#tmNum'); if(n)n.textContent=fmtMS(timer.left); }
 function timerToggle(){
   stopAlarm();
@@ -13324,7 +13515,7 @@ function renderProfile(){
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('scale',20,'currentColor')+'</div><div class="lr-title">'+t('heightWeight')+'</div><div class="lr-val">'+escHtml(P.height||'—')+' cm · '+escHtml(P.weight||'—')+' kg</div></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('calendar',20,'currentColor')+'</div><div class="lr-title">'+t('age')+'</div><div class="lr-val">'+age()+' '+(curLang()==='en'?'yo':curLang()==='ar'?'سنة':'ans')+'</div></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('chart',20,'currentColor')+'</div><div class="lr-title">VDOT</div><div class="lr-val">'+(getUserVDOT()?fmt1(getUserVDOT()):'—')+'</div></div>'+
-    '<div class="grp-row" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\';renderSport()"><div class="lr-icon">'+ICN('target',20,'currentColor')+'</div><div class="lr-title">'+t('objective')+'</div><div class="lr-val">'+escHtml(trRace(P.objRace)||P.goal||t('noObjective'))+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\';renderSport()"><div class="lr-icon">'+ICN('target',20,'currentColor')+'</div><div class="lr-title">'+t('objective')+'</div><div class="lr-val">'+escHtml(raceLabel()||P.goal||t('noObjective'))+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
   // ===== PROGRESSION — badges intégrés directement au profil =====
   { const unlocked=unlockedBadges(); const recent=[...unlocked].sort((a,b)=>b.date<a.date?-1:1).slice(0,5).map(u=>BADGE_TIERS.find(b=>b.key===u.key)).filter(Boolean);
@@ -14115,7 +14306,7 @@ function cleanImportedDeep(v,depth){
 }
 function cleanImportedProfile(src){
   const o={};
-  ['height','weight','hrMax','hrRest','kmWeek','kmWeekMin','kmWeekMax','soundVol','vdot','joinedAt','lum','mat'].forEach(k=>{
+  ['height','weight','hrMax','hrRest','kmWeek','kmWeekMin','kmWeekMax','soundVol','vdot','joinedAt','lum','mat','hijriAdj','objRaceKm'].forEach(k=>{
     if(src[k]==null || src[k]==='') return;
     const n=Number(src[k]); if(Number.isFinite(n)) o[k]=n;
   });
@@ -14124,7 +14315,7 @@ function cleanImportedProfile(src){
   });
   const STR={name:40,username:20,bio:160,city:60,goal:80,compDate:10,bday:10,objRace:40,objTime:12,
     t5k:12,t3k:12,t10k:12,t1500:12,pb5k:12,pb3k:12,pb10k:12,pb1500:12,lang:2,mode:10,theme:20,glass:8,
-    sex:10,objGoal:40,objProfile:40,followPerso:40};
+    sex:10,objGoal:40,objProfile:40,followPerso:40,planSituation:10,planLevel:6,planGap:6};
   Object.keys(STR).forEach(k=>{ if(typeof src[k]==='string') o[k]=stripHtmlChars(src[k]).slice(0,STR[k]); });
   if(Array.isArray(src.days)) o.days=src.days.filter(x=>Number.isInteger(x)&&x>=0&&x<=6).slice(0,7);
   if(typeof src.photo==='string' && safePhotoUrl(src.photo)) o.photo=src.photo;

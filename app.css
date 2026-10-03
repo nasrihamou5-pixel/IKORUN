@@ -3954,3 +3954,47 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 .db-sum{text-align:center;font-size:13.5px;font-weight:700;color:var(--snow);margin:12px 0 16px;padding:10px 12px;border-radius:12px;
   background:rgba(var(--e-rgb),.1);box-shadow:inset 0 0 0 1px rgba(var(--e-rgb),.3);}
 @media (max-width:340px){ .db-two{gap:4px;} .db-two .wheel .wi{font-size:17px;} .db-two .wheel .wi.sel{font-size:21px;} }
+
+/* ===================================================================
+   SÉLECTEURS GLISSANTS (V3.6.0)
+   Les onglets (Course / Musculation, Plan IKORUN / Mon plan, Bilan · Course ·
+   Muscu · Trophées, Semaine · Mois…, années, filtres des badges) ressemblaient à
+   des boutons qui ouvrent une page. Une pastille unique glisse maintenant d'un
+   choix à l'autre (et se tire au doigt). Elle porte les classes .seg-btn.on : elle
+   reprend donc l'aspect du choix actif dans chaque thème et chaque matière.
+   =================================================================== */
+.seg-ctrl{position:relative;touch-action:pan-y;}
+.seg-ctrl>.seg-btn{position:relative;z-index:1;}
+.seg-ctrl>.seg-thumb{position:absolute;z-index:0;top:4px;bottom:4px;left:0;width:0;padding:0;margin:0;flex:none;pointer-events:none;
+  transition:transform .44s cubic-bezier(.3,1.22,.4,1),width .44s cubic-bezier(.3,1.22,.4,1),opacity .2s ease;will-change:transform,width;}
+.seg-ctrl.sub>.seg-thumb{top:3px;bottom:3px;}
+.seg-ctrl>.seg-thumb::before{display:none;}
+/* :not(#_) : poids d'un identifiant, pour passer devant html[data-mode] :is(.seg-btn.on,…,#tbAvatar) */
+html .seg-ctrl.has-thumb>.seg-btn:not(.seg-thumb):not(#_){background:transparent !important;background-image:none !important;box-shadow:none !important;border-color:transparent !important;}
+.seg-ctrl{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+.seg-ctrl.has-thumb>.seg-btn:not(.seg-thumb){transition:color .25s ease,transform .15s var(--ease-spring);}
+.seg-ctrl.seg-drag>.seg-thumb{transition:none;}
+.seg-ctrl.seg-drag>.seg-btn:not(.seg-thumb){transform:none !important;}
+@media (prefers-reduced-motion: reduce){ .seg-ctrl>.seg-thumb{transition:none;} }
+
+/* ===================================================================
+   CONFIGURER MON PLAN (V3.6.0)
+   =================================================================== */
+.ps-sit{margin:-2px 0 18px;padding:10px 12px 12px;border-radius:16px;background:rgba(var(--e-rgb),.05);box-shadow:inset 0 0 0 1px var(--hair);}
+.ps-sit-lab,.ps-sub-lab{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:0 0 6px 2px;}
+.ps-sub-lab{margin-top:10px;}
+.ps-sit .seg-ctrl{margin-bottom:0;}
+.ps-recs{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted);margin-top:10px;line-height:1.45;}
+.ps-recs b{color:var(--snow);}
+.ps-recs a{flex:none;color:var(--e2);font-weight:700;cursor:pointer;}
+.ps-whint{text-align:center;font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45;}
+.ps-wheels{gap:6px;}
+.wheel.txt{width:78px;}
+.wheel.txt .wi{font-family:inherit;font-size:15px;text-transform:capitalize;}
+.wheel.txt .wi.sel{font-size:17px;}
+.wheel-sep.ps-unit{font-size:15px;color:var(--muted);margin-inline-start:4px;}
+.ps-info .pill{font-size:12px;}
+/* séances à découvrir (pas à choisir) : simple contour, l'explication s'ouvre dessous */
+html .ps-info .pill:not(.on):not(#_){background:transparent !important;background-image:none !important;box-shadow:inset 0 0 0 1px var(--hair2) !important;color:var(--muted) !important;text-shadow:none !important;}
+.ps-explain{margin-top:10px;font-size:12.5px;line-height:1.5;}
+@media (max-width:340px){ .ps-wheels .wheel{width:54px;} .wheel.txt{width:68px;} .ps-recs{flex-direction:column;align-items:flex-start;} }
