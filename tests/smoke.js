@@ -710,6 +710,48 @@
     });
   }
 
+  /* ======================= 7g. SÉLECTEURS ET PLAN (V3.6.0) ================= */
+  function testSelecteursEtPlan(){
+    var c='7g. Sélecteurs et plan';
+    // Chaque sélecteur visible reçoit sa pastille, posée sous le choix actif.
+    essaie(c,'les sélecteurs ont une pastille sous le choix actif',function(){
+      var avant=sportTab, n=0;
+      try{
+        nav('sport'); segSync();
+        var segs=[].slice.call(document.querySelectorAll('#s-sport .seg-ctrl')).filter(function(s){ return s.offsetParent; });
+        if(!segs.length) throw new Error('aucun sélecteur dans Sport');
+        segs.forEach(function(s){
+          var th=s.querySelector('.seg-thumb'), on=segBtns(s).filter(function(b){ return b.classList.contains('on'); })[0];
+          if(!th || !on) throw new Error('pastille absente : '+s.textContent.slice(0,30));
+          if(th._x!==on.offsetLeft || th._w!==on.offsetWidth) throw new Error('pastille mal placée');
+          n++;
+        });
+        return n+' sélecteurs';
+      } finally { sportTab=avant; }
+    });
+    // Configurer mon plan : plus rien à taper, km/semaine calculés, « Autre » = distance exacte.
+    essaie(c,'configurer mon plan : molettes, volume automatique, distance exacte',function(){
+      var avO=window.openOv, avP=JSON.stringify({objRace:P.objRace,objRaceKm:P.objRaceKm,vdot:P.vdot}), avS=setupTmp;
+      window.openOv=function(){};
+      try{
+        if(!getUserVDOT()) P.vdot=45; // profil neuf : un niveau plausible, restauré ensuite
+        if(!getUserVDOT()) return 'pas de VDOT : non testé';
+        openPlanSetup();
+        if(document.querySelector('#progBody input[type="number"],#progBody input[type="date"]')) throw new Error('un champ à taper reste affiché');
+        setupTmp.objRace='Autre'; setupTmp.raceKm=15; psWheel('PS.kmd',5);
+        if(setupTmp.raceKm!==15.5) throw new Error('distance '+setupTmp.raceKm);
+        if(raceMetersOf('Autre',15.5)!==15500) throw new Error('mètres « Autre »');
+        setupTmp.compDate='2027-01-31'; psWheel('PS.mo',2);
+        if(setupTmp.compDate!=='2027-02-28') throw new Error('31 → février : '+setupTmp.compDate);
+        var v1=planAutoVolume({situation:'reprise',gap:'gt6',objRace:'10 km'}), v2=planAutoVolume({situation:'reprise',gap:'lt1',objRace:'10 km'});
+        if(!(v1.min<v2.min)) throw new Error('reprise après 6 mois pas plus douce : '+v1.min+' / '+v2.min);
+        if(!(v1.min>=8 && v1.max>v1.min)) throw new Error('bornes '+JSON.stringify(v1));
+        if(trProfile('Plate')!=='Plat' && curLang()==='fr') throw new Error('« Plate » au lieu de « Plat »');
+        return 'reprise '+v1.min+'→'+v1.max+' km/sem';
+      } finally { window.openOv=avO; Object.assign(P,JSON.parse(avP)); setupTmp=avS; try{ closeOv('ovProg'); }catch(e){} }
+    });
+  }
+
   /* ======================= 8. SON ======================================== */
   function testSon(){
     var c='8. Son';
@@ -808,6 +850,7 @@
     testMatieres();
     testPetitsEcrans();
     testBilanMolette();
+    testSelecteursEtPlan();
     Promise.resolve(testI18nUsage())
       .then(function(){ return testHorsLigne(); })
       .then(function(){ return testSon(); })

@@ -102,7 +102,7 @@
 <!-- téléchargés dès maintenant, exécutés après la première image (voir bas de page) -->
 <link rel="preload" as="script" href="vendor/supabase.js?v=1">
 <link rel="preload" as="script" href="vendor/sb-init.js?v=3">
-<link rel="preload" as="script" href="app.js?v=118">
+<link rel="preload" as="script" href="app.js?v=119">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
@@ -191,9 +191,9 @@ html[data-mode="light"] .iki-word{color:#10141B;}
   #ikIntro *,#ikIntro{animation:none!important;}
 }
 </style>
-<link rel="preload" as="style" href="app.css?v=26">
-<link rel="stylesheet" id="ikCss" href="app.css?v=26" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="app.css?v=26"></noscript>
+<link rel="preload" as="style" href="app.css?v=27">
+<link rel="stylesheet" id="ikCss" href="app.css?v=27" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="app.css?v=27"></noscript>
 </head>
 <body>
 <script>
@@ -453,8 +453,8 @@ html[data-mode="light"] .iki-word{color:#10141B;}
      ne persiste RIEN : elle photographie l'état, teste, restaure. -->
 <script>
 (function(){
-  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=3', 'app.js?v=118'];
-  if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=12');
+  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=3', 'app.js?v=119'];
+  if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=13');
   var lance = false;
   function charge(){
     if (lance) return; lance = true;
