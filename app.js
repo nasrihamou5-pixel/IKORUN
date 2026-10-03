@@ -2391,7 +2391,7 @@ const I18N={
     coach_tip_nutrition:'Mange des glucides + protéines dans les 30 min après l\u2019effort.',
     coach_tip_sleep:'Vise 8h de sommeil cette nuit, écran coupé 1h avant.',
     constructiveCriticismTitle:'Critiques constructives',dayNutritionLabel:'Alimentation du jour',
-    debriefIntro:'Réponds honnêtement : le moteur IKORUN va analyser ta séance.',
+    dbIntro:'Fais tourner les molettes seulement si ta séance a différé du plan : tout est déjà réglé sur ce qui était prévu.',dbRepOf:'Passage {0} / {1} · {2} m',dbPrev:'Précédent',dbNext:'Suivant',dbDistLab:'Distance',dbDurLab:'Durée totale',dbHourMin:'h · min',dbSumReps:'{0} km · {1} d’effort · {2} /km',dbSumRun:'Allure moyenne : {0} /km',dbSumEmpty:'Règle la distance et la durée',debriefIntro:'Réponds honnêtement : le moteur IKORUN va analyser ta séance.',
     distanceKmLabel:'Distance (km)',distanceKmOptionalLabel:'Distance (km, optionnel)',
     durationMinLabel:'Durée (min)',durationMinOptionalLabel:'Durée (min, optionnel)',
     elevationGainLabel:'Dénivelé D+ (m, optionnel)',fatigueLabel:'Fatigue',freeCommentLabel:'Commentaire libre',
@@ -2977,7 +2977,7 @@ const I18N={
     coach_tip_nutrition:'Eat carbs + protein within 30 min after the effort.',
     coach_tip_sleep:'Aim for 8h of sleep tonight, screens off 1h before.',
     constructiveCriticismTitle:'Constructive feedback',dayNutritionLabel:'Today\u2019s nutrition',
-    debriefIntro:'Answer honestly: the IKORUN engine will analyze your session.',
+    dbIntro:'Only turn the wheels if your session differed from the plan: everything is already set to what was planned.',dbRepOf:'Rep {0} / {1} · {2} m',dbPrev:'Previous',dbNext:'Next',dbDistLab:'Distance',dbDurLab:'Total time',dbHourMin:'h · min',dbSumReps:'{0} km · {1} of work · {2} /km',dbSumRun:'Average pace: {0} /km',dbSumEmpty:'Set the distance and time',debriefIntro:'Answer honestly: the IKORUN engine will analyze your session.',
     distanceKmLabel:'Distance (km)',distanceKmOptionalLabel:'Distance (km, optional)',
     durationMinLabel:'Duration (min)',durationMinOptionalLabel:'Duration (min, optional)',
     elevationGainLabel:'Elevation gain (m, optional)',fatigueLabel:'Fatigue',freeCommentLabel:'Free comment',
@@ -3564,7 +3564,7 @@ const I18N={
     coach_tip_nutrition:'تناول الكربوهيدرات والبروتين خلال 30 دقيقة بعد المجهود.',
     coach_tip_sleep:'استهدف 8 ساعات نوم الليلة، وأغلق الشاشات قبلها بساعة.',
     constructiveCriticismTitle:'ملاحظات بنّاءة',dayNutritionLabel:'تغذية اليوم',
-    debriefIntro:'أجب بصدق: سيحلل محرك IKORUN حصتك.',
+    dbIntro:'أدر العجلات فقط إذا اختلفت حصتك عن الخطة: كل شيء مضبوط مسبقًا على ما كان مقررًا.',dbRepOf:'التكرار {0} / {1} · {2} م',dbPrev:'السابق',dbNext:'التالي',dbDistLab:'المسافة',dbDurLab:'المدة الكاملة',dbHourMin:'سا · د',dbSumReps:'{0} كم · {1} من الجهد · {2} /كم',dbSumRun:'متوسط الوتيرة: {0} /كم',dbSumEmpty:'اضبط المسافة والمدة',debriefIntro:'أجب بصدق: سيحلل محرك IKORUN حصتك.',
     distanceKmLabel:'المسافة (كم)',distanceKmOptionalLabel:'المسافة (كم، اختياري)',
     durationMinLabel:'المدة (دقيقة)',durationMinOptionalLabel:'المدة (دقيقة، اختياري)',
     elevationGainLabel:'فرق الارتفاع الصاعد (م، اختياري)',fatigueLabel:'التعب',freeCommentLabel:'تعليق حر',
@@ -4445,7 +4445,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='3.5.4';
+const APP_VERSION='3.5.5';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -5703,7 +5703,13 @@ function scheduleMotionSettle(delay){
   clearTimeout(window._motionSettleT);
   window._motionSettleT=setTimeout(()=>{ document.documentElement.classList.add('motion-settled'); }, delay||1400);
 }
+// L'intro (index.html) attend ce signal pour se retirer : premier écran dessiné.
+function ikSignalReady(){
+  if(window.__ikReady) return;
+  requestAnimationFrame(()=>setTimeout(()=>{ window.__ikReady=true; try{ window.dispatchEvent(new Event('ik-ready')); }catch(e){} },0));
+}
 function hideAppSkeleton(){
+  setTimeout(ikSignalReady,0); // après boot()/l'écran de connexion, qui suivent cet appel
   const el=document.getElementById('appSkeleton'); if(!el) return;
   el.classList.add('out');
   setTimeout(()=>{ el.remove(); },420);
@@ -6822,7 +6828,10 @@ function applyTheme(){
   // Miroir en clair (mode/accent/easyMode ne sont pas des données sensibles) pour que
   // le script tout en haut de <head> puisse réappliquer le thème avant le premier
   // paint au prochain chargement, sans attendre le déchiffrement async du profil.
-  try{ localStorage.setItem('ik_theme_prefs', JSON.stringify({mode, accent:acc, easyMode:!!P.easyMode, glass:P.glass||'std'})); }catch(e){}
+  // + les couleurs de l'intro, qui s'affiche avant app.css (voir <style id="ikiCss">)
+  try{ const cs=getComputedStyle(document.documentElement), v=n=>cs.getPropertyValue(n).trim();
+    localStorage.setItem('ik_theme_prefs', JSON.stringify({mode, accent:acc, easyMode:!!P.easyMode, glass:P.glass||'std',
+      iki:{e:v('--e'),e2:v('--e2'),er:v('--e-rgb'),bg:v('--bg'),mu:v('--muted')}})); }catch(e){}
 }
 /* ---------- FIBRE DE CARBONE (V3.5.0) ----------
    L'ancien « carbone » n'était qu'une trame de 6 px presque invisible : on voyait du mono.
@@ -9491,102 +9500,124 @@ function sharePlan(id){
 }
 
 /* ---------- QUESTIONNAIRE POST-SÉANCE + ANALYSE MOTEUR IKORUN ---------- */
-let debriefData=null, debriefCtx=null, debriefReps=[], debriefExpanded=false;
+let debriefData=null, debriefCtx=null, debriefReps=[], debriefExpanded=false, debriefRepSel=0;
+/* V3.5.5 — bilan simplifié, tout à la molette. Plus de champs durée / distance / allure
+   à taper : sur un fractionné, une molette par passage (pré-réglée sur le temps cible,
+   on ne touche que ceux qui ont différé) ; sur une sortie, une molette pour les km et
+   une pour la durée totale. La durée et l'allure moyenne en découlent toutes seules,
+   et le respect de l'allure n'est plus demandé : il se déduit de l'allure prévue. */
 function openSessionDebrief(ctx){
   debriefCtx=ctx;
-  debriefExpanded=false;
-  debriefData={ done:true, duration:ctx.duration||'', distance:ctx.km||'', pace:ctx.pace||'', deniv:ctx.deniv||'',
+  debriefExpanded=false; debriefRepSel=0;
+  debriefData={ done:true, duration:+ctx.duration||0, distance:+ctx.km||0, pace:ctx.pace||'', deniv:ctx.deniv||'',
     rpe:5, pain:'Aucune', paceAdherence:null, fatigue:3, weather:'sunny', feel:3, sleep:3, nutrition:3, note:'' };
-  // Si la seance prevue est une serie de repetitions (400, 1000, pyramide simple...),
-  // on propose une ligne par repetition : temps reel ou bouton rapide "Respecte"
-  // qui remplit tout seul avec le temps de passage cible.
   const sr=ctx.series;
-  debriefReps=(sr&&sr.reps&&sr.dist)?Array.from({length:sr.reps},(_,i)=>({
-    n:i+1, dist:sr.dist, target:Math.round(splitSecFromPace(sr.paceSecPerKm,sr.dist)), timeS:null, respected:null
-  })):[];
-  renderDebrief();
+  debriefReps=(sr&&sr.reps&&sr.dist)?Array.from({length:sr.reps},(_,i)=>{
+    const target=Math.round(splitSecFromPace(sr.paceSecPerKm,sr.dist));
+    return { n:i+1, dist:sr.dist, target, timeS:target, respected:true };
+  }):[];
+  if(debriefReps.length) syncDebriefFromReps(); else debriefAutoPace();
   openOv('ovProg'); $('#ovProgTitle').textContent=t('debriefTitle');
+  renderDebrief();
 }
-function pickDebriefRepTime(i){
-  const r=debriefReps[i];
-  pickTime('Temps · '+r.dist+' m (cible '+fmtSplit(r.target)+')', r.timeS!=null?r.timeS:r.target, v=>{
-    r.timeS=v; r.respected=v<=Math.round(r.target*1.06);
-    syncDebriefFromReps(); renderDebrief();
-  }, false);
-}
-function quickRespectDebriefRep(i){
-  const r=debriefReps[i];
-  r.timeS=r.target; r.respected=true;
-  syncDebriefFromReps(); renderDebrief();
-}
+function debriefRepOk(r){ return r.timeS<=Math.round(r.target*1.06); }
 function syncDebriefFromReps(){
-  const done=debriefReps.filter(r=>r.timeS!=null);
-  if(!done.length) return;
-  const totKm=done.length*debriefReps[0].dist/1000;
-  const totSec=done.reduce((a,r)=>a+r.timeS,0);
+  if(!debriefReps.length) return;
+  const totKm=debriefReps.length*debriefReps[0].dist/1000;
+  const totSec=debriefReps.reduce((a,r)=>a+r.timeS,0);
+  debriefReps.forEach(r=>{ r.respected=debriefRepOk(r); });
   debriefData.distance=+totKm.toFixed(2);
-  debriefData.duration=Math.round(totSec/60);
+  debriefData.duration=Math.max(1,Math.round(totSec/60));
   debriefData.pace=fmtSplit(Math.round(totSec/totKm));
 }
-/* L'allure moyenne restait celle PRÉVUE par le plan même quand l'athlète corrigeait
-   durée et distance (88 min pour 10,5 km enregistrés à 7:17/km au lieu de 8:23) :
-   l'analyse et les stats travaillaient donc sur une allure fausse (audit 24/09).
-   Elle suit maintenant durée/distance, tant que l'athlète ne l'a pas tapée lui-même. */
 function debriefAutoPace(){
-  const d=debriefData; if(!d || d._paceManual) return;
-  const dur=+d.duration, km=+d.distance; if(!(dur>0 && km>0)) return;
-  d.pace=fmtSplit(Math.round(dur*60/km));
-  const el=document.getElementById('db_pace'); if(el) el.value=d.pace;
+  const d=debriefData; if(!d) return;
+  const dur=+d.duration, km=+d.distance;
+  d.pace=(dur>0 && km>0)?fmtSplit(Math.round(dur*60/km)):'';
+}
+// Allure réelle comparée à l'allure prévue (remplace la question « as-tu respecté l'allure ? »).
+function debriefAdherence(){
+  const spk=v=>{ const m=/^(\d+):(\d{2})/.exec(String(v||'')); return m?(+m[1])*60+(+m[2]):0; };
+  const real=spk(debriefData.pace), plan=spk(debriefCtx&&debriefCtx.pace);
+  if(!real || !plan || debriefReps.length) return null;
+  const k=real/plan;
+  return k<.97?'faster':k<=1.04?'asPlanned':k<=1.12?'slower':'muchSlower';
+}
+function dbRepChips(){
+  return debriefReps.map((r,i)=>'<button type="button" class="db-rep'+(i===debriefRepSel?' on':'')+(r.respected?' ok':' slow')+'" onclick="debriefPickRep('+i+')"><b>'+r.n+'</b><span>'+fmtSplit(r.timeS)+'</span></button>').join('');
+}
+function dbRepWheels(){
+  const r=debriefReps[debriefRepSel], mmax=Math.max(9,Math.ceil(r.target/60)*2);
+  return '<div class="db-wlab">'+tp('dbRepOf',r.n,debriefReps.length,r.dist)+' · '+tp('targetColon',fmtSplit(r.target))+'</div>'+
+    '<div class="wheels">'+wheel('DB.rep.m',0,mmax,Math.min(mmax,Math.floor(r.timeS/60)))+'<span class="wheel-sep">:</span>'+wheel('DB.rep.s',0,59,r.timeS%60)+'</div>';
+}
+function dbSummary(){
+  const d=debriefData;
+  if(debriefReps.length){
+    const ok=debriefReps.filter(r=>r.respected).length;
+    return tp('dbSumReps',fmt1(d.distance),fmtDurMin(d.duration),d.pace)+' · <b style="color:'+(ok===debriefReps.length?'var(--ok)':'var(--warn)')+'">'+tp('respectedCount',ok,debriefReps.length)+'</b>';
+  }
+  return d.pace?tp('dbSumRun',d.pace):t('dbSumEmpty');
+}
+function fmtDurMin(min){ min=Math.round(+min||0); const h=Math.floor(min/60); return h?h+' h '+String(min%60).padStart(2,'0'):min+' min'; }
+function debriefRefresh(){
+  const s=document.getElementById('dbSum'); if(s) s.innerHTML=dbSummary();
+  const c=document.getElementById('dbRepChips'); if(c) c.innerHTML=dbRepChips();
+}
+function debriefPickRep(i){
+  debriefRepSel=Math.max(0,Math.min(debriefReps.length-1,i));
+  const w=document.getElementById('dbRepW'); if(w){ w.innerHTML=dbRepWheels(); setTimeout(attachWheels,30); }
+  debriefRefresh();
+  const on=document.querySelector('#dbRepChips .db-rep.on'); if(on) on.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+}
+function debriefWheel(key,val){
+  const d=debriefData;
+  if(key==='DB.rep.m'||key==='DB.rep.s'){
+    const r=debriefReps[debriefRepSel]; if(!r) return;
+    r.timeS=key==='DB.rep.m'?val*60+r.timeS%60:Math.floor(r.timeS/60)*60+val;
+    syncDebriefFromReps();
+  } else if(key==='DB.km.i'||key==='DB.km.d'){
+    const i=Math.floor(+d.distance||0), dec=Math.round(((+d.distance||0)-i)*10);
+    d.distance=key==='DB.km.i'?val+dec/10:i+val/10; debriefAutoPace();
+  } else if(key==='DB.dur.h'||key==='DB.dur.m'){
+    const dur=+d.duration||0;
+    d.duration=key==='DB.dur.h'?val*60+dur%60:Math.floor(dur/60)*60+val; debriefAutoPace();
+  }
+  debriefRefresh();
 }
 function renderDebrief(){
   const d=debriefData;
   const scale=(key,label,icons)=>'<div class="field"><label>'+label+'</label><div class="pills">'+icons.map((ic,i)=>'<div class="pill '+(d[key]===i+1?'on':'')+'" onclick="debriefData.'+key+'='+(i+1)+';renderDebrief()">'+ic+'</div>').join('')+'</div></div>';
-  let h='<div class="tip" style="margin-bottom:14px">&#128203; '+t('debriefIntro')+'</div>';
+  let h='<div class="tip" style="margin-bottom:14px">'+t('dbIntro')+'</div>';
   if(debriefReps.length){
-    const doneCount=debriefReps.filter(r=>r.respected===true).length;
-    h+='<div class="chrome-box"><div class="cb-head">\U0001f3c3 '+tp('repByRepSummary',debriefReps.length,debriefReps[0].dist)+' <span style="margin-left:auto;font-weight:600;color:var(--e2)">'+tp('respectedCount',doneCount,debriefReps.length)+'</span></div>';
-    debriefReps.forEach((r,i)=>{
-      const st=r.respected===true?'border-color:rgba(51,211,153,.4);background:linear-gradient(rgba(51,211,153,.08),rgba(51,211,153,.08)),var(--lg-fill)':r.respected===false?'border-color:rgba(255,92,108,.35);background:linear-gradient(rgba(255,92,108,.07),rgba(255,92,108,.07)),var(--lg-fill)':'';
-      h+='<div class="row" style="align-items:center;gap:8px;border:1px solid var(--hair);border-radius:12px;padding:8px 10px;margin-bottom:6px;'+st+'">'
-        +'<div style="flex:1"><div style="font-weight:700;font-size:13px">'+tp('repNumDist',r.n,r.dist)+'</div><div style="font-size:11px;color:var(--muted)">'+tp('targetColon',fmtSplit(r.target))+'</div></div>'
-        +'<div style="font-weight:700;font-family:\'JetBrains Mono\',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;min-width:44px;text-align:right">'+(r.timeS!=null?fmtSplit(r.timeS):'—')+'</div>'
-        +'<button class="btn ghost sm" style="width:auto;padding:6px 10px" onclick="pickDebriefRepTime('+i+')">\u23f1</button>'
-        +'<button class="btn ghost sm" style="width:auto;padding:6px 10px;color:var(--ok)" onclick="quickRespectDebriefRep('+i+')">\u2713</button>'
-        +'</div>';
-    });
-    h+='<div style="font-size:11px;color:var(--muted);margin-top:2px">'+t('repLegendLine')+'</div></div>';
+    h+='<div class="chrome-box db-box"><div class="cb-head">'+ICN('timer',15)+' '+tp('repByRepSummary',debriefReps.length,debriefReps[0].dist)+'</div>'+
+      '<div class="db-reps" id="dbRepChips">'+dbRepChips()+'</div>'+
+      '<div id="dbRepW">'+dbRepWheels()+'</div>'+
+      '<div class="row db-nav"><button type="button" class="btn ghost sm" onclick="debriefPickRep(debriefRepSel-1)">‹ '+t('dbPrev')+'</button><button type="button" class="btn ghost sm" onclick="debriefPickRep(debriefRepSel+1)">'+t('dbNext')+' ›</button></div></div>';
+  } else {
+    const km=+d.distance||0, ki=Math.min(99,Math.floor(km)), kd=Math.round((km-Math.floor(km))*10)%10, dur=Math.round(+d.duration||0);
+    h+='<div class="chrome-box db-box"><div class="db-two">'+
+      '<div><div class="db-wlab">'+t('dbDistLab')+'</div><div class="wheels">'+wheel('DB.km.i',0,99,ki,1)+'<span class="wheel-sep">,</span>'+wheel('DB.km.d',0,9,kd,1)+'</div><div class="db-unit">km</div></div>'+
+      '<div><div class="db-wlab">'+t('dbDurLab')+'</div><div class="wheels">'+wheel('DB.dur.h',0,9,Math.min(9,Math.floor(dur/60)),1)+'<span class="wheel-sep">h</span>'+wheel('DB.dur.m',0,59,dur%60)+'</div><div class="db-unit">'+t('dbHourMin')+'</div></div>'+
+      '</div></div>';
   }
-  h+='<div class="row" style="gap:10px"><div class="field" style="flex:1"><label>'+t('durationMinLabel')+'</label><input class="inp" type="number" max="1440" value="'+(d.duration||'')+'" oninput="debriefData.duration=Math.min(1440,+this.value||0);debriefAutoPace()"></div><div class="field" style="flex:1"><label>'+t('distanceKmLabel')+'</label><input class="inp" type="number" value="'+(d.distance||'')+'" oninput="debriefData.distance=+this.value;debriefAutoPace()"></div></div>';
-  h+='<div class="field"><label>'+t('avgPaceKmLabel')+'</label><input class="inp" id="db_pace" value="'+escHtml(d.pace||'')+'" oninput="debriefData.pace=this.value;debriefData._paceManual=true" placeholder="4:30"></div>';
-  h+='<div class="field"><label>'+t('rpeFeltLabel')+' '+d.rpe+'/10</label><input type="range" min="1" max="10" value="'+d.rpe+'" style="width:100%" oninput="debriefData.rpe=+this.value;renderDebrief()"></div>';
-  h+='<div class="field"><label>'+t('painLabel')+'</label><div class="pills">'+['Aucune','Légères','Gênantes','Importantes'].map(p=>'<div class="pill '+(d.pain===p?'on':'')+'" onclick="debriefData.pain=\''+p+'\';renderDebrief()">'+trPain(p)+'</div>').join('')+'</div></div>';
-  // Séance à répétitions : le respect de l'allure est déjà saisi ligne par ligne
-  // plus haut (bouton temps réel / "respecté"), donc redemander une adhérence
-  // globale ferait doublon.
-  if(!debriefReps.length){
-    h+='<div class="field"><label>'+t('paceAdherenceLabel')+'</label><div class="pills">'+
-      // Icônes du jeu IKORUN (les émojis ⚡✅🐢🥵 étaient les derniers de l'interface,
-      // rendus différemment selon le téléphone et hors du style de l'app).
-      [['faster','bolt',t('paceFasterOpt')],['asPlanned','check',t('paceAsPlannedOpt')],['slower','timer',t('paceSlowerOpt')],['muchSlower','warning',t('paceMuchSlowerOpt')]]
-      .map(o=>'<div class="pill '+(d.paceAdherence===o[0]?'on':'')+'" onclick="debriefData.paceAdherence=\''+o[0]+'\';renderDebrief()"><span style="display:inline-flex;vertical-align:-2px;margin-inline-end:6px">'+ICN(o[1],14)+'</span>'+o[2]+'</div>').join('')
-    +'</div></div>';
-  }
-  // Le bilan avait 10 champs affichés d'un bloc — signalé comme trop chargé. Ce qui
-  // sert le plus souvent (chiffres, effort, douleur, allure) reste immédiatement
-  // visible ; le reste se replie ici, toujours prérempli avec des valeurs par
-  // défaut sensées donc jamais bloquant si on ne l'ouvre pas.
+  h+='<div class="db-sum" id="dbSum">'+dbSummary()+'</div>';
+  h+='<div class="field"><label>'+t('rpeFeltLabel')+' <b id="dbRpe">'+d.rpe+'</b>/10</label><input type="range" min="1" max="10" value="'+d.rpe+'" style="width:100%" oninput="debriefData.rpe=+this.value;document.getElementById(\'dbRpe\').textContent=this.value"></div>';
+  h+='<div class="field"><label>'+t('painLabel')+'</label><div class="pills db-pain">'+['Aucune','Légères','Gênantes','Importantes'].map(p=>'<div class="pill '+(d.pain===p?'on':'')+'" onclick="debriefData.pain=\''+p+'\';this.parentNode.querySelectorAll(\'.pill\').forEach(e=>e.classList.toggle(\'on\',e===this))">'+trPain(p)+'</div>').join('')+'</div></div>';
+  // Le reste (dénivelé, sommeil, météo…) reste replié et prérempli : jamais bloquant.
   h+='<div style="text-align:center;color:var(--e2);font-weight:700;font-size:12.5px;cursor:pointer;margin:14px 0" onclick="debriefExpanded=!debriefExpanded;renderDebrief()">'+(debriefExpanded?t('lessDetailsBtn'):t('moreDetailsBtn'))+'</div>';
   if(debriefExpanded){
   h+='<div class="field"><label>'+t('elevationGainLabel')+'</label><input class="inp" type="number" value="'+(d.deniv||'')+'" oninput="debriefData.deniv=+this.value" placeholder="0"></div>';
-  h+=scale('fatigue',t('fatigueLabel'),['\ud83d\ude00','\ud83d\ude42','\ud83d\ude10','\ud83d\ude13','\ud83d\ude35']);
-  h+=scale('feel',t('sensationsLabel'),['\ud83d\ude23','\ud83d\ude15','\ud83d\ude10','\ud83d\ude0a','\ud83e\udd29']);
-  h+=scale('sleep',t('nightSleepLabel'),['\ud83d\ude34','\ud83d\ude2a','\ud83d\ude10','\ud83d\ude42','\ud83d\udca4']);
-  h+=scale('nutrition',t('dayNutritionLabel'),['\ud83c\udf54','\ud83d\ude10','\ud83d\ude42','\ud83e\udd57','\ud83d\udcaa']);
+  h+=scale('fatigue',t('fatigueLabel'),['😀','🙂','😐','😓','😵']);
+  h+=scale('feel',t('sensationsLabel'),['😣','😕','😐','😊','🤩']);
+  h+=scale('sleep',t('nightSleepLabel'),['😴','😪','😐','🙂','💤']);
+  h+=scale('nutrition',t('dayNutritionLabel'),['🍔','😐','🙂','🥗','💪']);
   h+='<div class="field"><label>'+t('weatherLabel')+'</label><div class="pills">'+['sunny','cloudy','rain','wind','hot','cold'].map(w=>'<div class="pill '+(d.weather===w?'on':'')+'" onclick="debriefData.weather=\''+w+'\';renderDebrief()">'+ICN(w==='sunny'?'sun':w==='cloudy'?'moon':w==='rain'?'rain':w==='wind'?'wind':w==='hot'?'fire':'snow',18)+'</div>').join('')+'</div></div>';
   h+='<div class="field"><label>'+t('freeCommentLabel')+'</label><textarea class="inp" rows="2" oninput="debriefData.note=this.value" placeholder="'+t('howDidYouFeelPlaceholder')+'">'+escHtml(d.note||'')+'</textarea></div>';
   }
-  h+='<button class="btn" onclick="submitDebrief()">\ud83e\udde0 '+t('analyzeSessionBtn')+'</button>';
+  h+='<button class="btn" onclick="submitDebrief()">🧠 '+t('analyzeSessionBtn')+'</button>';
   $('#progBody').innerHTML=h;
+  setTimeout(attachWheels,30);
 }
 function submitDebrief(){
   // Le bouton "Analyser ma séance" ne doit JAMAIS rester silencieux en cas
@@ -9597,9 +9628,9 @@ function submitDebrief(){
     if(!debriefCtx){ toast(t('genericErrorRetry')); return; }
     const guard=sessionGuard(+debriefData.distance||0,+debriefData.duration||0,debriefCtx.date);
     if(!guard.ok){ toast(guard.msg); return; }
+    debriefData.paceAdherence=debriefAdherence();
     const repsLog=debriefReps.length?debriefReps.map(r=>({n:r.n,dist:r.dist,target:r.target,timeS:r.timeS,respected:r.respected})):null;
     const entry={...debriefData,date:debriefCtx.date,title:debriefCtx.title,type:debriefCtx.type,plannedRpe:debriefCtx.plannedRpe,repsLog,ts:Date.now()};
-    delete entry._paceManual; // marqueur d'interface, pas une donnée de séance
     SESSLOG.push(entry); DB.save('sesslog',SESSLOG);
     // Historique réel (stats, XP, charge, semaine...) : on remplace l'entrée provisoire
     // (valeurs du plan) par les valeurs REELLES saisies dans le bilan. On ne pousse
@@ -12194,9 +12225,9 @@ function renderCalc(){
   attachWheels();
   if(calc.lastResult) renderCalcResult();
 }
-function wheel(key,min,max,sel){
+function wheel(key,min,max,sel,pad){
   let h='<div class="wheel" data-key="'+key+'" data-min="'+min+'"><div class="wheel-pad"></div>';
-  for(let i=min;i<=max;i++) h+='<div class="wi '+(i===sel?'sel':'')+'">'+String(i).padStart(2,'0')+'</div>';
+  for(let i=min;i<=max;i++) h+='<div class="wi '+(i===sel?'sel':'')+'">'+String(i).padStart(pad||2,'0')+'</div>';
   h+='<div class="wheel-pad"></div></div>';
   return h;
 }
@@ -12204,10 +12235,15 @@ function attachWheels(){
   $$('.wheel').forEach(w=>{
     const key=w.dataset.key, min=+w.dataset.min;
     const sel=w.querySelector('.wi.sel');
-    if(sel){ setTimeout(()=>{ w.scrollTop=sel.offsetTop-40; },30); }
+    if(sel){ setTimeout(()=>{ w.scrollTop=sel.offsetTop-(w.clientHeight-40)/2; },30); }
     let t;
+    // Valeur = l'élément au centre de la fenêtre. round(scrollTop/40) donnait celle d'en
+    // dessous (marge haute de 80 px pour 120 px de haut) : réglé sur 05, le minuteur
+    // partait de 6:00 dès que la molette avait bougé d'un pixel.
     w.onscroll=()=>{ clearTimeout(t); t=setTimeout(()=>{
-      const idx=Math.round(w.scrollTop/40); const val=min+idx;
+      const pad=w.firstElementChild?w.firstElementChild.offsetHeight:80;
+      const n=w.querySelectorAll('.wi').length;
+      const idx=Math.max(0,Math.min(n-1,Math.round((w.scrollTop+w.clientHeight/2-pad-20)/40))); const val=min+idx;
       w.querySelectorAll('.wi').forEach((wi,i)=>wi.classList.toggle('sel',i===idx));
       setWheelVal(key,val);
     },120); };
@@ -12409,7 +12445,7 @@ function fmtMS(s){ return String(Math.floor(s/60)).padStart(2,'0')+':'+String(Ma
 function setTimer(s){ timer.total=timer.left=s; timer.m=Math.floor(s/60); timer.s=s%60; if(timer.running){clearInterval(timer.iv);timer.running=false;} renderTimer(); }
 // wheel sync for timer
 const _origSetWheel=setWheelVal;
-setWheelVal=function(key,val){ if(key==='TM'){timer.m=val;timer.total=timer.left=timer.m*60+timer.s;} else if(key==='TS'){timer.s=val;timer.total=timer.left=timer.m*60+timer.s;} else _origSetWheel(key,val); };
+setWheelVal=function(key,val){ if(key.indexOf('DB.')===0){ debriefWheel(key,val); return; } if(key==='TM'){timer.m=val;timer.total=timer.left=timer.m*60+timer.s;} else if(key==='TS'){timer.s=val;timer.total=timer.left=timer.m*60+timer.s;} else _origSetWheel(key,val); };
 function addTimer(s){ timer.left+=s; timer.total=Math.max(timer.total,timer.left); const n=$('#tmNum'); if(n)n.textContent=fmtMS(timer.left); }
 function timerToggle(){
   stopAlarm();
