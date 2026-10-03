@@ -15,6 +15,9 @@
       if(tp.accent) document.documentElement.setAttribute('data-accent', tp.accent);
       if(tp.easyMode) document.documentElement.classList.add('easy-mode');
       if(tp.glass) document.documentElement.setAttribute('data-glass', tp.glass);
+      // couleurs de l'intro (voir <style id="ikiCss">), le temps qu'app.css se charge
+      if(tp.iki) ['e','e2','er','bg','mu'].forEach(function(k){ var v=tp.iki[k];
+        if(typeof v==='string' && /^[#\w\s,.()%-]{1,48}$/.test(v)) document.documentElement.style.setProperty('--iki-'+k, v); });
     }
   }catch(e){}
   window.__rawEntryUrl = location.href;
@@ -99,7 +102,7 @@
 <!-- téléchargés dès maintenant, exécutés après la première image (voir bas de page) -->
 <link rel="preload" as="script" href="vendor/supabase.js?v=1">
 <link rel="preload" as="script" href="vendor/sb-init.js?v=3">
-<link rel="preload" as="script" href="app.js?v=117">
+<link rel="preload" as="script" href="app.js?v=118">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
@@ -111,7 +114,86 @@
      sont servis par le site lui-même, mis en cache par le service worker (cache d'abord,
      comme les images) et chaque famille a une pile de secours système. Aucune requête vers
      Google : plus rapide (pas de connexion à deux domaines tiers) et plus sobre côté RGPD. -->
-<link rel="stylesheet" href="app.css?v=24">
+<!-- INTRO (V3.5.5) : son style est ici et non dans app.css, et app.css ne bloque plus
+     la première image (media="print" puis "all" une fois chargée). Avant, rien ne
+     s'affichait tant que les 325 Ko d'app.css n'étaient pas lus : un écran noir en plus
+     avant l'intro. Les couleurs viennent du dernier thème (--iki-*, posées tout en haut
+     de <head>), sinon du bleu par défaut ; app.css les remplace dès qu'elle est là.
+     L'intro couvre tout l'écran : le reste de la page, pas encore mis en forme, est dessous. -->
+<style id="ikiCss">
+/* polices du premier écran (déplacées d'app.css, préchargées plus haut) */
+@font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(fonts/inter-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;}
+@font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(fonts/inter-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+@font-face{font-family:'Unbounded';font-style:normal;font-weight:500 800;font-display:swap;src:url(fonts/unbounded-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;}
+@font-face{font-family:'Unbounded';font-style:normal;font-weight:500 800;font-display:swap;src:url(fonts/unbounded-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+html,body{margin:0;background:var(--bg,var(--iki-bg,#07090D));}
+#ikIntro{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;}
+#ikIntro{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;overflow:hidden;
+  background:radial-gradient(70% 50% at 50% 46%,rgba(var(--e-rgb,var(--iki-er,79,141,255)),.18),transparent 70%),var(--bg,var(--iki-bg,#07090D));
+  --k:1;--iki-w1:#FFFFFF;--iki-w2:#B9C4D6;transition:opacity .5s ease;-webkit-tap-highlight-color:transparent;}
+html[data-mode="light"] #ikIntro{--iki-w1:#3A4458;--iki-w2:#10141B;}
+#ikIntro.mini{--k:.6;}
+#ikIntro.out{opacity:0;pointer-events:none;}
+#ikIntro.out{transition:opacity .6s ease;}
+.iki-stage{position:relative;display:flex;flex-direction:column;align-items:center;transition:transform .5s cubic-bezier(.16,1,.3,1);}
+#ikIntro.out .iki-stage{transform:scale(.93) translateY(-12px);}
+.iki-trail{position:absolute;left:50%;top:50%;width:110vmax;height:110vmax;margin:-55vmax 0 0 -55vmax;transform:rotate(-19deg);pointer-events:none;}
+.iki-trail i{position:absolute;left:0;top:50%;height:2px;width:55%;border-radius:2px;
+  background:linear-gradient(90deg,transparent,rgba(var(--e-rgb,var(--iki-er,79,141,255)),.9) 70%,#fff);box-shadow:0 0 18px rgba(var(--e-rgb,var(--iki-er,79,141,255)),.8);
+  transform:translateX(-100%);animation:ikiTrail calc(var(--k)*820ms) 0ms cubic-bezier(.35,.1,.3,1) both;}
+.iki-trail i+i{top:calc(50% + 26px);height:1px;width:34%;opacity:.6;animation-delay:calc(var(--k)*110ms);}
+@keyframes ikiTrail{from{transform:translateX(-100%);}to{transform:translateX(200%);}}
+/* Chaque lame est son propre <svg> animé en transform/opacity : Chrome l'anime hors du fil
+   principal, donc sans saccade pendant qu'app.js s'exécute en parallèle (26/09). */
+.iki-mark{position:relative;width:148px;height:115px;animation:ikiImpact calc(var(--k)*560ms) calc(var(--k)*820ms) ease-out both;}
+.iki-mark::before{content:'';position:absolute;inset:-34px;border-radius:50%;background:radial-gradient(circle,rgba(var(--e-rgb,var(--iki-er,79,141,255)),.38),transparent 66%);
+  opacity:0;animation:ikiGlow calc(var(--k)*800ms) calc(var(--k)*780ms) ease-out both;}
+@keyframes ikiGlow{0%{opacity:0;}30%{opacity:1;}100%{opacity:.55;}}
+.iki-mark svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;will-change:transform,opacity;}
+@keyframes ikiImpact{0%{transform:scale(1);}30%{transform:scale(1.07);}100%{transform:none;}}
+.iki-mark polygon{stroke-linejoin:round;stroke-width:12;}
+.iki-b2{animation:ikiBladeB calc(var(--k)*720ms) 0ms cubic-bezier(.16,1,.3,1) both;}
+.iki-b1{animation:ikiBladeW calc(var(--k)*720ms) calc(var(--k)*170ms) cubic-bezier(.16,1,.3,1) both;}
+.iki-g2{animation:ikiGhostB calc(var(--k)*720ms) calc(var(--k)*40ms) cubic-bezier(.16,1,.3,1) both;}
+.iki-g1{animation:ikiGhostW calc(var(--k)*720ms) calc(var(--k)*210ms) cubic-bezier(.16,1,.3,1) both;}
+@keyframes ikiBladeB{0%{opacity:.55;transform:translate(-106px,37px) skewX(22deg) scaleX(1.3);}35%{opacity:1;}80%{transform:translate(3px,-1px) skewX(-3deg);}100%{opacity:1;transform:none;}}
+@keyframes ikiBladeW{0%{opacity:.55;transform:translate(106px,-37px) skewX(22deg) scaleX(1.3);}35%{opacity:1;}80%{transform:translate(-3px,1px) skewX(-3deg);}100%{opacity:1;transform:none;}}
+@keyframes ikiGhostB{0%{opacity:0;transform:translate(-122px,42px) scaleX(1.5);}40%{opacity:.45;}100%{opacity:0;transform:translate(-11px,4px);}}
+@keyframes ikiGhostW{0%{opacity:0;transform:translate(122px,-42px) scaleX(1.5);}40%{opacity:.45;}100%{opacity:0;transform:translate(11px,-4px);}}
+.iki-ring{position:absolute;left:50%;top:58px;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;border:2px solid rgba(var(--e-rgb,var(--iki-er,79,141,255)),.85);
+  opacity:0;animation:ikiRing calc(var(--k)*800ms) calc(var(--k)*840ms) ease-out both;pointer-events:none;}
+@keyframes ikiRing{0%{opacity:0;transform:scale(.3);}8%{opacity:.9;}100%{opacity:0;transform:scale(2.6);}}
+.iki-word{display:flex;margin-top:22px;font-family:'Unbounded',system-ui,sans-serif;font-weight:800;font-size:30px;line-height:1;color:#fff;
+  letter-spacing:.14em;}
+html[data-mode="light"] .iki-word{color:#10141B;}
+.iki-word span{display:block;will-change:transform,opacity;animation:ikiLetter calc(var(--k)*560ms) cubic-bezier(.16,1,.3,1) both;}
+.iki-word span.r{color:var(--e,var(--iki-e,#4F8DFF));}
+.iki-word span:nth-child(1){animation-delay:calc(var(--k)*920ms);}
+.iki-word span:nth-child(2){animation-delay:calc(var(--k)*990ms);}
+.iki-word span:nth-child(3){animation-delay:calc(var(--k)*1060ms);}
+.iki-word span:nth-child(4){animation-delay:calc(var(--k)*1160ms);animation-name:ikiLetterRun;}
+.iki-word span:nth-child(5){animation-delay:calc(var(--k)*1230ms);animation-name:ikiLetterRun;}
+.iki-word span:nth-child(6){animation-delay:calc(var(--k)*1300ms);animation-name:ikiLetterRun;}
+@keyframes ikiLetter{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
+@keyframes ikiLetterRun{from{opacity:0;transform:translateX(34px) skewX(-18deg);}to{opacity:1;transform:none;}}
+.iki-line{width:150px;height:2px;margin-top:16px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--e,var(--iki-e,#4F8DFF)),transparent);
+  animation:ikiFill calc(var(--k)*560ms) calc(var(--k)*1640ms) cubic-bezier(.16,1,.3,1) both;transform-origin:50% 50%;}
+.iki-tag{margin-top:12px;font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--muted,var(--iki-mu,#97A0B2));animation:ikiLetter calc(var(--k)*600ms) calc(var(--k)*1790ms) cubic-bezier(.16,1,.3,1) both;}
+/* Logo composé, app pas encore prête : il « respire » au lieu de rester figé
+   (sinon l'intro s'arrêtait à heure fixe sur le squelette sombre). */
+#ikIntro.wait .iki-mark::before{animation:ikiBreath 1.9s ease-in-out infinite;}
+#ikIntro.wait .iki-ring{animation:ikiRing 1.9s .2s ease-out infinite;}
+#ikIntro.wait .iki-line{animation:ikiPulse 1.9s ease-in-out infinite;}
+@keyframes ikiBreath{0%,100%{opacity:.55;transform:scale(1);}50%{opacity:1;transform:scale(1.14);}}
+@keyframes ikiPulse{0%,100%{opacity:1;transform:none;}50%{opacity:.4;transform:scaleX(.82);}}
+@keyframes ikiFill{from{transform:scaleX(0);}to{transform:none;}}
+@media (prefers-reduced-motion: reduce){
+  #ikIntro *,#ikIntro{animation:none!important;}
+}
+</style>
+<link rel="preload" as="style" href="app.css?v=26">
+<link rel="stylesheet" id="ikCss" href="app.css?v=26" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="app.css?v=26"></noscript>
 </head>
 <body>
 <script>
@@ -132,21 +214,29 @@
     el.innerHTML='<div class="iki-trail"><i></i><i></i></div><div class="iki-stage">'+
       '<svg width="0" height="0" style="position:absolute"><defs>'+
       '<linearGradient id="ikiW" x1="0" y1="1" x2="1" y2="0"><stop offset="0" style="stop-color:var(--iki-w2)"/><stop offset="1" style="stop-color:var(--iki-w1)"/></linearGradient>'+
-      '<linearGradient id="ikiB" x1="0" y1="1" x2="1" y2="0"><stop offset="0" style="stop-color:var(--e)"/><stop offset="1" style="stop-color:var(--e2)"/></linearGradient></defs></svg>'+
+      '<linearGradient id="ikiB" x1="0" y1="1" x2="1" y2="0"><stop offset="0" style="stop-color:var(--e,var(--iki-e,#4F8DFF))"/><stop offset="1" style="stop-color:var(--e2,var(--iki-e2,#6FA0FF))"/></linearGradient></defs></svg>'+
       '<div class="iki-mark">'+blade('iki-g2',B,'ikiB')+blade('iki-g1',W,'ikiW')+blade('iki-b2',B,'ikiB')+blade('iki-b1',W,'ikiW')+'</div>'+
       '<div class="iki-ring"></div>'+
       '<div class="iki-word"><span>I</span><span>K</span><span>O</span><span class="r">R</span><span class="r">U</span><span class="r">N</span></div>'+
       '<div class="iki-line"></div><div class="iki-tag">Elite Athletic Intelligence</div></div>';
     document.body.appendChild(el);
-    var done=false;
+    // V3.5.5 : l'intro ne s'arrête plus à heure fixe. Elle dure au moins le temps de se
+    // composer, puis attend que l'app soit vraiment prête (événement 'ik-ready', envoyé
+    // par app.js une fois le premier écran dessiné) en « respirant » (.wait) — au lieu de
+    // laisser place au squelette sombre. Plafond de 7 s, et un appui la passe toujours.
+    var done=false, t0=Date.now(), comp=reduce?0:(mode==='full'?2450:1500), minT=reduce?650:(mode==='full'?3300:1900);
+    var tWait=setTimeout(function(){ el.classList.add('wait'); }, comp);
+    function tryEnd(){ if(window.__ikReady && Date.now()-t0>=minT) end(false); }
+    window.addEventListener('ik-ready',function(){ setTimeout(tryEnd, Math.max(0, minT-(Date.now()-t0))); });
+    var cap=setTimeout(function(){ end(false); }, 7000);
     function end(fast){
-      if(done) return; done=true; clearTimeout(timer);
+      if(done) return; done=true; clearTimeout(timer); clearTimeout(tWait); clearTimeout(cap);
       if(fast) el.style.transition='opacity .25s ease';
       el.classList.add('out');
       try{ window.dispatchEvent(new Event('ik-intro-end')); }catch(e){} // app.js rejoue l'entrée de l'écran révélé
-      setTimeout(function(){ el.remove(); }, fast?280:540);
+      setTimeout(function(){ el.remove(); }, fast?280:640);
     }
-    var timer=setTimeout(function(){ end(false); }, reduce?650:(mode==='full'?2700:950));
+    var timer=setTimeout(tryEnd, minT);
     el.addEventListener('pointerdown',function(){ end(true); });
   }
   window.ikIntro=ikIntro;
@@ -363,8 +453,8 @@
      ne persiste RIEN : elle photographie l'état, teste, restaure. -->
 <script>
 (function(){
-  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=3', 'app.js?v=117'];
-  if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=11');
+  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=3', 'app.js?v=118'];
+  if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=12');
   var lance = false;
   function charge(){
     if (lance) return; lance = true;
@@ -374,8 +464,18 @@
       document.body.appendChild(el);
     });
   }
-  requestAnimationFrame(function(){ setTimeout(charge, 0); });
-  setTimeout(charge, 1000); // filet : page ouverte en arrière-plan (aucune image produite)
+  // app.js dessine l'interface : il attend qu'app.css soit appliquée (elle ne bloque plus
+  // la première image, voir <style id="ikiCss">). Filet de 4 s si elle n'arrivait pas.
+  function apresCss(){
+    var l=document.getElementById('ikCss');
+    if(!l || (l.media==='all' && l.sheet)) return charge();
+    l.addEventListener('load',function(){ l.media='all'; charge(); });
+    l.addEventListener('error',charge);
+    setTimeout(function(){ l.media='all'; charge(); }, 4000);
+  }
+  // double rAF : le 1er rappel précède la 1re image, le 2e la suit
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){ setTimeout(apresCss, 0); }); });
+  setTimeout(apresCss, 1000); // filet : page ouverte en arrière-plan (aucune image produite)
 })();
 </script>
 </body>

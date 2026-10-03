@@ -661,6 +661,55 @@
     });
   }
 
+  /* ======================= 7f. BILAN À LA MOLETTE, INTRO (V3.5.5) ========== */
+  function testBilanMolette(){
+    var c='7f. Bilan et intro';
+    // Fractionné : une molette par passage, pré-réglée sur la cible ; durée et allure en découlent.
+    essaie(c,'fractionné : les passages donnent durée, distance et allure',function(){
+      var avO=window.openOv; window.openOv=function(){};
+      try{
+        openSessionDebrief({date:todayKey(),title:'Test',km:8,pace:'4:30',type:'VMA',duration:40,series:{reps:4,dist:400,paceSecPerKm:225}});
+        if(debriefReps.length!==4 || debriefReps[0].timeS!==90) throw new Error('passages mal pré-réglés '+JSON.stringify(debriefReps[0]));
+        debriefRepSel=2; debriefWheel('DB.rep.s',40); // 1:30 → 1:40
+        if(debriefReps[2].timeS!==100 || debriefReps[2].respected) throw new Error('passage 3 : '+JSON.stringify(debriefReps[2]));
+        if(debriefData.distance!==1.6 || debriefData.duration!==6) throw new Error('total '+debriefData.distance+' km '+debriefData.duration+' min');
+        if(debriefData.pace!=='3:51') throw new Error('allure '+debriefData.pace);
+        if(document.querySelector('#progBody input.inp[type="number"]')) throw new Error('un champ à taper reste affiché');
+        return '4 × 400 m → '+debriefData.pace+' /km';
+      } finally { window.openOv=avO; debriefCtx=null; try{ closeOv('ovProg'); }catch(e){} }
+    });
+    essaie(c,'sortie : km + durée à la molette, respect de l\'allure déduit',function(){
+      var avO=window.openOv; window.openOv=function(){};
+      try{
+        openSessionDebrief({date:todayKey(),title:'Test',km:10,pace:'5:30',type:'Long',duration:55});
+        debriefWheel('DB.km.i',12); debriefWheel('DB.km.d',5); debriefWheel('DB.dur.h',1); debriefWheel('DB.dur.m',2);
+        if(debriefData.distance!==12.5 || debriefData.duration!==62) throw new Error(debriefData.distance+' km '+debriefData.duration+' min');
+        if(debriefData.pace!=='4:58') throw new Error('allure '+debriefData.pace);
+        if(debriefAdherence()!=='faster') throw new Error('respect de l\'allure : '+debriefAdherence());
+        return '12,5 km en 1 h 02';
+      } finally { window.openOv=avO; debriefCtx=null; try{ closeOv('ovProg'); }catch(e){} }
+    });
+    // La molette retient la valeur affichée au centre (réglé sur 05, le minuteur partait de 6:00).
+    essaie(c,'une molette retient la valeur affichée au centre',function(){
+      var box=document.createElement('div'); box.style.cssText='position:fixed;left:0;top:0;visibility:hidden';
+      box.innerHTML='<div class="wheels">'+wheel('ZZ',0,59,5)+'</div>'; document.body.appendChild(box);
+      try{
+        var w=box.querySelector('.wheel'), sel=w.querySelector('.wi.sel');
+        w.scrollTop=sel.offsetTop-(w.clientHeight-40)/2;
+        var pad=w.firstElementChild.offsetHeight, idx=Math.round((w.scrollTop+w.clientHeight/2-pad-20)/40);
+        if(idx!==5) throw new Error('lu '+idx+' pour 05 affiché');
+        return 'ok';
+      } finally { box.remove(); }
+    });
+    // L'intro ne s'arrête plus à heure fixe : elle attend le signal de l'app.
+    essaie(c,'l\'intro attend que l\'app soit prête',function(){
+      if(!window.__ikReady) throw new Error('signal « app prête » jamais envoyé');
+      if(!document.getElementById('ikiCss')) throw new Error('style de l\'intro absent d\'index.html');
+      var l=document.getElementById('ikCss'); if(!l || l.media!=='all') throw new Error('app.css pas appliquée : '+(l&&l.media));
+      return 'ok';
+    });
+  }
+
   /* ======================= 8. SON ======================================== */
   function testSon(){
     var c='8. Son';
@@ -758,6 +807,7 @@
     testIlotEtFete();
     testMatieres();
     testPetitsEcrans();
+    testBilanMolette();
     Promise.resolve(testI18nUsage())
       .then(function(){ return testHorsLigne(); })
       .then(function(){ return testSon(); })
