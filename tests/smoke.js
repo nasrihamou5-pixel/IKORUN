@@ -538,6 +538,30 @@
       if(!(h.m>=1&&h.m<=12&&h.d>=1&&h.d<=30)) throw new Error('date incohérente '+JSON.stringify(h));
       return h.d+'/'+h.m;
     });
+    // Table Umm al-Qura embarquée : indépendante du navigateur (Safari/iOS n'a pas
+    // toujours les calendriers islamiques d'Intl, et aucune fête musulmane n'y apparaissait).
+    essaie(c,'la table hégirienne donne les bonnes dates sans Intl',function(){
+      if(typeof hijriOf!=='function') throw new Error('fonction absente');
+      var cas=[['2027-02-08',1448,9,1],['2027-03-09',1448,10,1],['2027-05-16',1448,12,10],['2027-06-06',1449,1,1],['2027-08-14',1449,3,12],['2023-07-19',1445,1,1],['2026-10-03',1448,4,22]];
+      var D=Intl.DateTimeFormat;
+      try{
+        Intl.DateTimeFormat=function(){ throw new Error('Intl coupé'); };
+        cas.forEach(function(x){ var p=x[0].split('-'), h=hijriOf(new Date(+p[0],+p[1]-1,+p[2],12));
+          if(!h || h.y!==x[1] || h.m!==x[2] || h.d!==x[3]) throw new Error(x[0]+' → '+JSON.stringify(h)); });
+      } finally { Intl.DateTimeFormat=D; }
+      return cas.length+' dates';
+    });
+    essaie(c,'le décalage d\'un jour (annonce du pays) est appliqué',function(){
+      var av=P.hijriAdj, d=new Date(); d.setHours(12,0,0,0);
+      try{
+        var ref=hijriOf(d); d.setDate(d.getDate()-1); var veille=hijriOf(d);
+        P.hijriAdj=-1; var h=hijriToday();
+        if(JSON.stringify(h)!==JSON.stringify(veille)) throw new Error('−1 jour ignoré');
+        P.hijriAdj=0; if(JSON.stringify(hijriToday())!==JSON.stringify(ref)) throw new Error('retour à 0 ignoré');
+        P.hijriAdj=7; if(hijriAdj()!==0) throw new Error('valeur hors bornes acceptée');
+        return 'ok';
+      } finally { P.hijriAdj=av; _hijriMemo=null; }
+    });
     // L'anniversaire passe avant les autres fêtes ; « Mes couleurs » la coupe pour la journée.
     essaie(c,'la fête du jour est reconnue et se coupe pour la journée',function(){
       var avB=P.bday, avO=P.feteOff, avF=P.fetes, avP=_fetePreview, d=new Date();
@@ -610,6 +634,30 @@
         if(document.getElementById('ikCarbon') || document.documentElement.dataset.carbon) throw new Error('plaque restée en bleu');
         return 'ok';
       } finally { P.theme=av; P.easyMode=avE; applyTheme(); }
+    });
+  }
+
+  /* ======================= 7e. PETITS ÉCRANS (V3.5.4) ===================== */
+  // Android avec police agrandie ou iPhone en « Zoom de l'affichage » : 256 à 320 px
+  // utiles. Une grille en 1fr ne rétrécit pas sous son contenu et débordait à droite.
+  function testPetitsEcrans(){
+    var c='7e. Petits écrans';
+    essaie(c,'les grilles à 3 colonnes tiennent dans 200 px',function(){
+      var box=document.createElement('div'); box.style.cssText='position:fixed;left:0;top:0;width:200px;visibility:hidden';
+      box.innerHTML='<div class="bd-grid">'+[1,2,3].map(function(){ return '<div class="bd-cell"><div class="bd-icon"></div><div class="bd-name">Première course</div></div>'; }).join('')+'</div>'+
+        '<div class="krow3">'+[1,2,3].map(function(){ return '<div class="ktile"><div class="ktile-val">32,0 km</div></div>'; }).join('')+'</div>';
+      document.body.appendChild(box);
+      try{
+        var R=box.getBoundingClientRect().right, trop=[];
+        box.querySelectorAll('.bd-cell,.ktile').forEach(function(e){ if(e.getBoundingClientRect().right>R+1) trop.push(e.className); });
+        if(trop.length) throw new Error('débordent : '+trop.join(', '));
+        return 'ok';
+      } finally { box.remove(); }
+    });
+    essaie(c,'la page ne défile jamais de côté',function(){
+      var se=document.scrollingElement;
+      if(se.scrollWidth>innerWidth+1) throw new Error('largeur '+se.scrollWidth+' > '+innerWidth);
+      return innerWidth+' px';
     });
   }
 
@@ -709,6 +757,7 @@
     testModeSimple();
     testIlotEtFete();
     testMatieres();
+    testPetitsEcrans();
     Promise.resolve(testI18nUsage())
       .then(function(){ return testHorsLigne(); })
       .then(function(){ return testSon(); })
