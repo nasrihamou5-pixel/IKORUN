@@ -2219,7 +2219,7 @@ const I18N={
     notifBlockedTip:'Notifications bloquées — active-les dans les réglages de ton téléphone pour cette app.',
     notifUnsupportedToast:'Notifications non disponibles sur cet appareil',
     prayerNotifLabel:'Rappels de prière',socialNotifLabel:'Records de mes amis',socialNotifDesc:'Une notification quand un ami ou un membre de ton club améliore son VDOT. Tes propres progrès de VDOT leur sont annoncés de la même façon — jamais tes chronos ni tes séances.',socialNotifOnToast:'Tu seras prévenu des records de tes amis',
-    customizedTag:'Personnalisée',customizeSessionBtn:'Personnaliser cette séance',customizeMoveLabel:'Déplacer à un autre jour',
+    cmRecovTrot:'{0} trot',cmDayLab:'Jour',cmFree:'libre',cmContentLab:'Contenu',cmReps:'Répétitions',cmRepDist:'Distance de chaque répétition',cmRecov:'Récupération',cmHills:'Montées',cmHillsSub:'30 à 45 s d’effort chacune',cmSurges:'Accélérations',cmSurgesSub:'1 min vite, 1 min tranquille',cmTempo:'Bloc tempo',cmTempoSub:'à {0} /km',cmDistSub:'à {0} /km',cmWeekWarn:'Ta semaine passe à {0} km au lieu de {1}. Au-delà de +10 %, le risque de blessure augmente.',cmFixed:'Cette séance a une structure fixe : tu peux la déplacer ou la passer en repos.',customizedTag:'Personnalisée',customizeSessionBtn:'Modifier cette séance',customizeMoveLabel:'Déplacer à un autre jour',
     customizeVolumeLabel:'Ajuster le volume',customizeSkipBtn:'Passer cette séance en repos',customizeResetBtn:'Réinitialiser',
     customizeMovedToast:'Séance déplacée',customizeSkippedToast:'Séance passée en repos',customizeResetToast:'Séance réinitialisée',
     resumeSessionConfirm:'Une séance « {0} » était en cours ({1} min). Reprendre ?',sessionColonName:'Séance : {0}',
@@ -2391,7 +2391,7 @@ const I18N={
     coach_tip_nutrition:'Mange des glucides + protéines dans les 30 min après l\u2019effort.',
     coach_tip_sleep:'Vise 8h de sommeil cette nuit, écran coupé 1h avant.',
     constructiveCriticismTitle:'Critiques constructives',dayNutritionLabel:'Alimentation du jour',
-    dbIntro:'Fais tourner les molettes seulement si ta séance a différé du plan : tout est déjà réglé sur ce qui était prévu.',dbRepOf:'Passage {0} / {1} · {2} m',dbPrev:'Précédent',dbNext:'Suivant',dbDistLab:'Distance',dbDurLab:'Durée totale',dbHourMin:'h · min',dbSumReps:'{0} km · {1} d’effort · {2} /km',dbSumRun:'Allure moyenne : {0} /km',dbSumEmpty:'Règle la distance et la durée',debriefIntro:'Réponds honnêtement : le moteur IKORUN va analyser ta séance.',
+    dbTileWork:'Effort',dbTileWorkTime:'Temps d’effort',dbTilePace:'Allure',dbEffortLab:'Effort ressenti',rpeL1:'Très facile',rpeL3:'Facile',rpeL5:'Modéré',rpeL7:'Difficile',rpeL9:'Très difficile',rpeL10:'Maximal',caVerdictOk:'Séance réussie',caVerdictMid:'Bonne séance, un point à surveiller',caVerdictWarn:'Séance à surveiller',dbIntro:'Tout est réglé sur ce qui était prévu : ne touche que ce qui a changé.',dbRepOf:'Passage {0} / {1} · {2} m',dbPrev:'Précédent',dbNext:'Suivant',dbDistLab:'Distance',dbDurLab:'Durée totale',dbHourMin:'h · min',dbSumReps:'{0} km · {1} d’effort · {2} /km',dbSumRun:'Allure moyenne : {0} /km',dbSumEmpty:'Règle la distance et la durée',debriefIntro:'Réponds honnêtement : le moteur IKORUN va analyser ta séance.',
     distanceKmLabel:'Distance (km)',distanceKmOptionalLabel:'Distance (km, optionnel)',
     durationMinLabel:'Durée (min)',durationMinOptionalLabel:'Durée (min, optionnel)',
     elevationGainLabel:'Dénivelé D+ (m, optionnel)',fatigueLabel:'Fatigue',freeCommentLabel:'Commentaire libre',
@@ -2424,7 +2424,7 @@ const I18N={
     sleepCyclesTitle:'Cycles de sommeil',sleepHoursPerNightLabel:'Heures de sommeil / nuit',
     sleepInsufficient:'Insuffisant — récupération compromise',sleepOptimal:'Optimal pour un athlète',sleepPlenty:'Beaucoup — écoute ton corps',
     speedLabel:'Vitesse',timeHMSLabel:'Temps (h : mm : ss)',
-    psSitLab:'Ta situation',psSitCont:'En prépa',psSitRep:'Je reprends',psSitOther:'Autre',psLvlLab:'Ton niveau',lvlDeb:'Débutant',lvlInt:'Intermédiaire',lvlConf:'Confirmé',psRecLab:'Tes derniers chronos',psRecEdit:'Mettre à jour',psRecNone:'aucun pour l’instant',psGapLab:'Ta dernière sortie remonte à',gapLt1:'– 1 mois',gap13:'1–3 mois',gap36:'3–6 mois',gapGt6:'+ 6 mois',psRepHint:'Le plan repart en douceur et remonte petit à petit.',psOtherHint:'Pas de souci : IKORUN se cale sur tes chronos et ton historique.',psDistLab:'Distance exacte',psDateIn:'Dans {0} semaines',psDateSoon:'Trop proche : il faut au moins une semaine de préparation',psTimeLab:'Chrono visé',psTimePace:'soit {0} /km',psTimePred:'prédiction actuelle {0}',psVolume:'Volume réglé par IKORUN : {0} → {1} km par semaine. Jamais plus de +10 % d’une semaine à l’autre, une semaine allégée sur quatre.',psSessLab:'Les séances de ton plan',psSessHint:'Touche une séance pour savoir à quoi elle sert.',st_VMAc:'Répétitions courtes (200 à 400 m) très rapides, à ta vitesse maximale aérobie, avec récupération. Développe ta vitesse et la puissance de ton cœur.',st_VMAl:'Répétitions de 800 à 1 200 m juste sous ta VMA. Tu apprends à tenir une allure rapide plus longtemps.',st_INTERVAL:'Alternance d’efforts soutenus et de récupérations, de durées variées. Travaille le rythme et la capacité à relancer.',st_TEMPO:'Course continue « confortablement dure », 20 à 40 min. Améliore ton endurance à allure rapide.',st_SEUIL:'Blocs à l’allure que tu tiendrais environ une heure, avec de courtes récupérations. Repousse le moment où les jambes brûlent.',st_EF:'Footing facile où tu peux parler sans souffler. La base de tout : 70 à 80 % de ton entraînement.',st_LONG:'La plus longue sortie de la semaine, en endurance. Habitue ton corps à durer et à économiser son énergie.',st_DBLSEUIL:'Deux séances au seuil le même jour (matin et soir), à volume modéré. Beaucoup de travail utile sans trop de fatigue.',st_FARTLEK:'« Jeu de vitesse » : des accélérations libres pendant un footing, au feeling. Varié et ludique.',st_COTES:'Montées courtes et dynamiques, retour en trottinant. Renforce les jambes et la foulée, sans les chocs de la piste.',st_VO2:'Efforts de 3 à 5 min très durs, proches de ton maximum. Augmente ta consommation maximale d’oxygène.',st_SPE:'Portions à l’allure exacte de ta course objectif. Ton corps mémorise le rythme du jour J.',st_RECUP:'Footing très lent et court, ou marche. Aide à récupérer sans rester immobile.',configurePlanTitle:'Configurer mon plan',courseProfileLabel:'Profil du parcours',generateMyPlanBtn:'Générer mon plan',
+    psCardRace:'Ta course',psCardWeek:'Ta semaine',psFinishHint:'Objectif : franchir la ligne en forme, sans chrono imposé.',psDaysPerWeek:'{0} j/sem',psCardGoal:'Ton objectif',psSitLab:'Ta situation',psSitCont:'En prépa',psSitRep:'Je reprends',psSitOther:'Autre',psLvlLab:'Ton niveau',lvlDeb:'Débutant',lvlInt:'Intermédiaire',lvlConf:'Confirmé',psRecLab:'Tes derniers chronos',psRecEdit:'Mettre à jour',psRecNone:'aucun pour l’instant',psGapLab:'Ta dernière sortie remonte à',gapLt1:'– 1 mois',gap13:'1–3 mois',gap36:'3–6 mois',gapGt6:'+ 6 mois',psRepHint:'Le plan repart en douceur et remonte petit à petit.',psOtherHint:'Pas de souci : IKORUN se cale sur tes chronos et ton historique.',psDistLab:'Distance exacte',psDateIn:'Dans {0} semaines',psDateSoon:'Trop proche : il faut au moins une semaine de préparation',psTimeLab:'Chrono visé',psTimePace:'soit {0} /km',psTimePred:'prédiction actuelle {0}',psVolume:'IKORUN règle ton volume : {0} → {1} km/sem, +10 % max d’une semaine à l’autre, une semaine allégée sur quatre.',psSessLab:'Les séances de ton plan',psSessHint:'Touche une séance pour savoir à quoi elle sert.',st_VMAc:'Répétitions courtes (200 à 400 m) très rapides, à ta vitesse maximale aérobie, avec récupération. Développe ta vitesse et la puissance de ton cœur.',st_VMAl:'Répétitions de 800 à 1 200 m juste sous ta VMA. Tu apprends à tenir une allure rapide plus longtemps.',st_INTERVAL:'Alternance d’efforts soutenus et de récupérations, de durées variées. Travaille le rythme et la capacité à relancer.',st_TEMPO:'Course continue « confortablement dure », 20 à 40 min. Améliore ton endurance à allure rapide.',st_SEUIL:'Blocs à l’allure que tu tiendrais environ une heure, avec de courtes récupérations. Repousse le moment où les jambes brûlent.',st_EF:'Footing facile où tu peux parler sans souffler. La base de tout : 70 à 80 % de ton entraînement.',st_LONG:'La plus longue sortie de la semaine, en endurance. Habitue ton corps à durer et à économiser son énergie.',st_DBLSEUIL:'Deux séances au seuil le même jour (matin et soir), à volume modéré. Beaucoup de travail utile sans trop de fatigue.',st_FARTLEK:'« Jeu de vitesse » : des accélérations libres pendant un footing, au feeling. Varié et ludique.',st_COTES:'Montées courtes et dynamiques, retour en trottinant. Renforce les jambes et la foulée, sans les chocs de la piste.',st_VO2:'Efforts de 3 à 5 min très durs, proches de ton maximum. Augmente ta consommation maximale d’oxygène.',st_SPE:'Portions à l’allure exacte de ta course objectif. Ton corps mémorise le rythme du jour J.',st_RECUP:'Footing très lent et court, ou marche. Aide à récupérer sans rester immobile.',configurePlanTitle:'Configurer mon plan',courseProfileLabel:'Profil du parcours',generateMyPlanBtn:'Générer mon plan',
     planSetupSimpleHint:'On s’occupe du reste (rythme, distances, séances) et on ajuste tout au fil de tes séances.',
     maxKmWeekLabel:'Km/sem maxi (pic)',minKmWeekLabel:'Km/sem mini',preferredSessionsLabel:'Séances préférées (le coach les privilégiera)',
     preparedRaceLabel:'Course préparée',raceDateLabel:'Date de la course',targetTimeOptionalLabel:'Chrono visé (optionnel)',
@@ -2805,7 +2805,7 @@ const I18N={
     notifBlockedTip:'Notifications blocked — enable them in your phone settings for this app.',
     notifUnsupportedToast:'Notifications not available on this device',
     prayerNotifLabel:'Prayer reminders',socialNotifLabel:'My friends’ records',socialNotifDesc:'A notification when a friend or a member of your club improves their VDOT. Your own VDOT progress is shared with them the same way — never your times or your sessions.',socialNotifOnToast:'You’ll be notified of your friends’ records',
-    customizedTag:'Customized',customizeSessionBtn:'Customize this session',customizeMoveLabel:'Move to another day',
+    cmRecovTrot:'{0} jog',cmDayLab:'Day',cmFree:'free',cmContentLab:'Content',cmReps:'Reps',cmRepDist:'Distance of each rep',cmRecov:'Recovery',cmHills:'Hill reps',cmHillsSub:'30 to 45 s of effort each',cmSurges:'Surges',cmSurgesSub:'1 min fast, 1 min easy',cmTempo:'Tempo block',cmTempoSub:'at {0} /km',cmDistSub:'at {0} /km',cmWeekWarn:'Your week goes up to {0} km instead of {1}. Beyond +10%, injury risk rises.',cmFixed:'This session has a fixed structure: you can move it or turn it into rest.',customizedTag:'Customized',customizeSessionBtn:'Edit this session',customizeMoveLabel:'Move to another day',
     customizeVolumeLabel:'Adjust volume',customizeSkipBtn:'Turn into a rest day',customizeResetBtn:'Reset',
     customizeMovedToast:'Session moved',customizeSkippedToast:'Session turned into rest',customizeResetToast:'Session reset',
     resumeSessionConfirm:'A "{0}" session was in progress ({1} min). Resume?',sessionColonName:'Session: {0}',
@@ -2977,7 +2977,7 @@ const I18N={
     coach_tip_nutrition:'Eat carbs + protein within 30 min after the effort.',
     coach_tip_sleep:'Aim for 8h of sleep tonight, screens off 1h before.',
     constructiveCriticismTitle:'Constructive feedback',dayNutritionLabel:'Today\u2019s nutrition',
-    dbIntro:'Only turn the wheels if your session differed from the plan: everything is already set to what was planned.',dbRepOf:'Rep {0} / {1} · {2} m',dbPrev:'Previous',dbNext:'Next',dbDistLab:'Distance',dbDurLab:'Total time',dbHourMin:'h · min',dbSumReps:'{0} km · {1} of work · {2} /km',dbSumRun:'Average pace: {0} /km',dbSumEmpty:'Set the distance and time',debriefIntro:'Answer honestly: the IKORUN engine will analyze your session.',
+    dbTileWork:'Work',dbTileWorkTime:'Work time',dbTilePace:'Pace',dbEffortLab:'Perceived effort',rpeL1:'Very easy',rpeL3:'Easy',rpeL5:'Moderate',rpeL7:'Hard',rpeL9:'Very hard',rpeL10:'All out',caVerdictOk:'Great session',caVerdictMid:'Good session, one thing to watch',caVerdictWarn:'Session to keep an eye on',dbIntro:'Everything is set to what was planned: only change what was different.',dbRepOf:'Rep {0} / {1} · {2} m',dbPrev:'Previous',dbNext:'Next',dbDistLab:'Distance',dbDurLab:'Total time',dbHourMin:'h · min',dbSumReps:'{0} km · {1} of work · {2} /km',dbSumRun:'Average pace: {0} /km',dbSumEmpty:'Set the distance and time',debriefIntro:'Answer honestly: the IKORUN engine will analyze your session.',
     distanceKmLabel:'Distance (km)',distanceKmOptionalLabel:'Distance (km, optional)',
     durationMinLabel:'Duration (min)',durationMinOptionalLabel:'Duration (min, optional)',
     elevationGainLabel:'Elevation gain (m, optional)',fatigueLabel:'Fatigue',freeCommentLabel:'Free comment',
@@ -3010,7 +3010,7 @@ const I18N={
     sleepCyclesTitle:'Sleep cycles',sleepHoursPerNightLabel:'Hours of sleep / night',
     sleepInsufficient:'Insufficient — recovery compromised',sleepOptimal:'Optimal for an athlete',sleepPlenty:'A lot — listen to your body',
     speedLabel:'Speed',timeHMSLabel:'Time (h : mm : ss)',
-    psSitLab:'Your situation',psSitCont:'In training',psSitRep:'Coming back',psSitOther:'Other',psLvlLab:'Your level',lvlDeb:'Beginner',lvlInt:'Intermediate',lvlConf:'Advanced',psRecLab:'Your latest times',psRecEdit:'Update',psRecNone:'none yet',psGapLab:'Your last run was',gapLt1:'< 1 month',gap13:'1–3 months',gap36:'3–6 months',gapGt6:'6+ months',psRepHint:'The plan starts gently and builds up little by little.',psOtherHint:'No problem: IKORUN adapts to your times and history.',psDistLab:'Exact distance',psDateIn:'In {0} weeks',psDateSoon:'Too soon: you need at least one week of training',psTimeLab:'Target time',psTimePace:'that is {0} /km',psTimePred:'current prediction {0}',psVolume:'Volume set by IKORUN: {0} → {1} km per week. Never more than +10% from one week to the next, one easier week out of four.',psSessLab:'The sessions in your plan',psSessHint:'Tap a session to see what it is for.',st_VMAc:'Short, very fast reps (200 to 400 m) at your maximal aerobic speed, with recovery. Builds speed and heart power.',st_VMAl:'800 to 1,200 m reps just below your MAS. Teaches you to hold a fast pace for longer.',st_INTERVAL:'Hard efforts and recoveries of varied lengths. Works rhythm and the ability to surge.',st_TEMPO:'Continuous “comfortably hard” running, 20 to 40 min. Improves endurance at a fast pace.',st_SEUIL:'Blocks at the pace you could hold for about an hour, with short recoveries. Pushes back the moment your legs burn.',st_EF:'Easy running where you can talk without gasping. The foundation: 70 to 80% of your training.',st_LONG:'The longest run of the week, at an easy pace. Teaches your body to last and save energy.',st_DBLSEUIL:'Two threshold sessions on the same day (morning and evening), at moderate volume. Lots of useful work without too much fatigue.',st_FARTLEK:'“Speed play”: free surges during an easy run, by feel. Varied and fun.',st_COTES:'Short, punchy climbs, jogging back down. Strengthens legs and stride without the pounding of the track.',st_VO2:'Very hard 3 to 5 min efforts, close to your maximum. Raises your maximal oxygen uptake.',st_SPE:'Sections at the exact pace of your goal race. Your body memorises race-day rhythm.',st_RECUP:'A very slow, short jog or a walk. Helps you recover without sitting still.',configurePlanTitle:'Configure my plan',courseProfileLabel:'Course profile',generateMyPlanBtn:'Generate my plan',
+    psCardRace:'Your race',psCardWeek:'Your week',psFinishHint:'Goal: cross the line feeling good, no set time.',psDaysPerWeek:'{0} days/wk',psCardGoal:'Your goal',psSitLab:'Your situation',psSitCont:'In training',psSitRep:'Coming back',psSitOther:'Other',psLvlLab:'Your level',lvlDeb:'Beginner',lvlInt:'Intermediate',lvlConf:'Advanced',psRecLab:'Your latest times',psRecEdit:'Update',psRecNone:'none yet',psGapLab:'Your last run was',gapLt1:'< 1 month',gap13:'1–3 months',gap36:'3–6 months',gapGt6:'6+ months',psRepHint:'The plan starts gently and builds up little by little.',psOtherHint:'No problem: IKORUN adapts to your times and history.',psDistLab:'Exact distance',psDateIn:'In {0} weeks',psDateSoon:'Too soon: you need at least one week of training',psTimeLab:'Target time',psTimePace:'that is {0} /km',psTimePred:'current prediction {0}',psVolume:'IKORUN sets your volume: {0} → {1} km/wk, +10% max week to week, one easier week out of four.',psSessLab:'The sessions in your plan',psSessHint:'Tap a session to see what it is for.',st_VMAc:'Short, very fast reps (200 to 400 m) at your maximal aerobic speed, with recovery. Builds speed and heart power.',st_VMAl:'800 to 1,200 m reps just below your MAS. Teaches you to hold a fast pace for longer.',st_INTERVAL:'Hard efforts and recoveries of varied lengths. Works rhythm and the ability to surge.',st_TEMPO:'Continuous “comfortably hard” running, 20 to 40 min. Improves endurance at a fast pace.',st_SEUIL:'Blocks at the pace you could hold for about an hour, with short recoveries. Pushes back the moment your legs burn.',st_EF:'Easy running where you can talk without gasping. The foundation: 70 to 80% of your training.',st_LONG:'The longest run of the week, at an easy pace. Teaches your body to last and save energy.',st_DBLSEUIL:'Two threshold sessions on the same day (morning and evening), at moderate volume. Lots of useful work without too much fatigue.',st_FARTLEK:'“Speed play”: free surges during an easy run, by feel. Varied and fun.',st_COTES:'Short, punchy climbs, jogging back down. Strengthens legs and stride without the pounding of the track.',st_VO2:'Very hard 3 to 5 min efforts, close to your maximum. Raises your maximal oxygen uptake.',st_SPE:'Sections at the exact pace of your goal race. Your body memorises race-day rhythm.',st_RECUP:'A very slow, short jog or a walk. Helps you recover without sitting still.',configurePlanTitle:'Configure my plan',courseProfileLabel:'Course profile',generateMyPlanBtn:'Generate my plan',
     planSetupSimpleHint:'We handle the rest (pace, distances, sessions) and adjust everything as you go.',
     maxKmWeekLabel:'Max km/week (peak)',minKmWeekLabel:'Min km/week',preferredSessionsLabel:'Preferred sessions (the coach will favor these)',
     preparedRaceLabel:'Race you\u2019re preparing for',raceDateLabel:'Race date',targetTimeOptionalLabel:'Target time (optional)',
@@ -3391,7 +3391,7 @@ const I18N={
     notifBlockedTip:'الإشعارات محظورة — فعّلها من إعدادات هاتفك لهذا التطبيق.',
     notifUnsupportedToast:'الإشعارات غير متوفرة على هذا الجهاز',
     prayerNotifLabel:'تذكيرات الصلاة',socialNotifLabel:'أرقام أصدقائي القياسية',socialNotifDesc:'إشعار عندما يحسّن صديق أو عضو في ناديك مؤشر VDOT لديه. ويُعلَن تقدّمك أنت في VDOT لهم بالطريقة نفسها — دون أزمنتك أو حصصك أبدًا.',socialNotifOnToast:'سيتم إعلامك بأرقام أصدقائك القياسية',
-    customizedTag:'مخصّصة',customizeSessionBtn:'تخصيص هذه الحصة',customizeMoveLabel:'نقل إلى يوم آخر',
+    cmRecovTrot:'{0} هرولة',cmDayLab:'اليوم',cmFree:'فارغ',cmContentLab:'المحتوى',cmReps:'التكرارات',cmRepDist:'مسافة كل تكرار',cmRecov:'الاسترجاع',cmHills:'الصعود',cmHillsSub:'من 30 إلى 45 ث جهد لكل واحدة',cmSurges:'التسارعات',cmSurgesSub:'دقيقة سريعة ودقيقة هادئة',cmTempo:'كتلة التيمبو',cmTempoSub:'بوتيرة {0} /كم',cmDistSub:'بوتيرة {0} /كم',cmWeekWarn:'يصبح أسبوعك {0} كم بدل {1}. بعد +10% يرتفع خطر الإصابة.',cmFixed:'لهذه الحصة بنية ثابتة: يمكنك نقلها أو جعلها راحة.',customizedTag:'مخصّصة',customizeSessionBtn:'تعديل هذه الحصة',customizeMoveLabel:'نقل إلى يوم آخر',
     customizeVolumeLabel:'تعديل الحجم',customizeSkipBtn:'تحويلها إلى يوم راحة',customizeResetBtn:'إعادة التعيين',
     customizeMovedToast:'تم نقل الحصة',customizeSkippedToast:'تم تحويل الحصة إلى راحة',customizeResetToast:'تمت إعادة تعيين الحصة',
     resumeSessionConfirm:'كانت حصة « {0} » جارية ({1} د). المتابعة؟',sessionColonName:'حصة: {0}',
@@ -3564,7 +3564,7 @@ const I18N={
     coach_tip_nutrition:'تناول الكربوهيدرات والبروتين خلال 30 دقيقة بعد المجهود.',
     coach_tip_sleep:'استهدف 8 ساعات نوم الليلة، وأغلق الشاشات قبلها بساعة.',
     constructiveCriticismTitle:'ملاحظات بنّاءة',dayNutritionLabel:'تغذية اليوم',
-    dbIntro:'أدر العجلات فقط إذا اختلفت حصتك عن الخطة: كل شيء مضبوط مسبقًا على ما كان مقررًا.',dbRepOf:'التكرار {0} / {1} · {2} م',dbPrev:'السابق',dbNext:'التالي',dbDistLab:'المسافة',dbDurLab:'المدة الكاملة',dbHourMin:'سا · د',dbSumReps:'{0} كم · {1} من الجهد · {2} /كم',dbSumRun:'متوسط الوتيرة: {0} /كم',dbSumEmpty:'اضبط المسافة والمدة',debriefIntro:'أجب بصدق: سيحلل محرك IKORUN حصتك.',
+    dbTileWork:'الجهد',dbTileWorkTime:'زمن الجهد',dbTilePace:'الوتيرة',dbEffortLab:'الجهد المحسوس',rpeL1:'سهل جدًا',rpeL3:'سهل',rpeL5:'معتدل',rpeL7:'صعب',rpeL9:'صعب جدًا',rpeL10:'أقصى جهد',caVerdictOk:'حصة ناجحة',caVerdictMid:'حصة جيدة، نقطة تستحق الانتباه',caVerdictWarn:'حصة تستحق المتابعة',dbIntro:'كل شيء مضبوط على ما كان مقررًا: غيّر فقط ما اختلف.',dbRepOf:'التكرار {0} / {1} · {2} م',dbPrev:'السابق',dbNext:'التالي',dbDistLab:'المسافة',dbDurLab:'المدة الكاملة',dbHourMin:'سا · د',dbSumReps:'{0} كم · {1} من الجهد · {2} /كم',dbSumRun:'متوسط الوتيرة: {0} /كم',dbSumEmpty:'اضبط المسافة والمدة',debriefIntro:'أجب بصدق: سيحلل محرك IKORUN حصتك.',
     distanceKmLabel:'المسافة (كم)',distanceKmOptionalLabel:'المسافة (كم، اختياري)',
     durationMinLabel:'المدة (دقيقة)',durationMinOptionalLabel:'المدة (دقيقة، اختياري)',
     elevationGainLabel:'فرق الارتفاع الصاعد (م، اختياري)',fatigueLabel:'التعب',freeCommentLabel:'تعليق حر',
@@ -3599,7 +3599,7 @@ const I18N={
     sleepCyclesTitle:'دورات النوم',sleepHoursPerNightLabel:'ساعات النوم / الليلة',
     sleepInsufficient:'غير كافٍ — التعافي مُعرَّض للخطر',sleepOptimal:'مثالي للرياضي',sleepPlenty:'كثير — استمع لجسدك',
     speedLabel:'السرعة',timeHMSLabel:'الزمن (س : د : ث)',
-    psSitLab:'وضعك',psSitCont:'في تحضير',psSitRep:'أعود بعد توقف',psSitOther:'أخرى',psLvlLab:'مستواك',lvlDeb:'مبتدئ',lvlInt:'متوسط',lvlConf:'متقدم',psRecLab:'آخر أوقاتك',psRecEdit:'تحديث',psRecNone:'لا شيء بعد',psGapLab:'آخر جري لك كان منذ',gapLt1:'أقل من شهر',gap13:'1–3 أشهر',gap36:'3–6 أشهر',gapGt6:'أكثر من 6 أشهر',psRepHint:'تبدأ الخطة بهدوء وترتفع شيئًا فشيئًا.',psOtherHint:'لا مشكلة: يتكيف IKORUN مع أوقاتك وسجلّك.',psDistLab:'المسافة بالضبط',psDateIn:'بعد {0} أسابيع',psDateSoon:'قريب جدًا: تحتاج أسبوعًا من التحضير على الأقل',psTimeLab:'الوقت المستهدف',psTimePace:'أي {0} /كم',psTimePred:'التوقع الحالي {0}',psVolume:'الحجم يضبطه IKORUN: {0} ← {1} كم في الأسبوع. لا أكثر من +10% من أسبوع لآخر، وأسبوع أخف من كل أربعة.',psSessLab:'حصص خطتك',psSessHint:'المس حصة لتعرف فائدتها.',st_VMAc:'تكرارات قصيرة (200 إلى 400 م) سريعة جدًا بسرعتك الهوائية القصوى، مع استرجاع. تطوّر السرعة وقوة القلب.',st_VMAl:'تكرارات من 800 إلى 1200 م تحت سرعتك القصوى بقليل. تتعلم الحفاظ على وتيرة سريعة مدة أطول.',st_INTERVAL:'تناوب بين جهود قوية واسترجاع بمدد مختلفة. يعمل على الإيقاع والقدرة على التسريع.',st_TEMPO:'جري متواصل «صعب بشكل مريح» من 20 إلى 40 دقيقة. يحسّن التحمل بوتيرة سريعة.',st_SEUIL:'كتل بالوتيرة التي تحافظ عليها نحو ساعة، مع استرجاع قصير. يؤخر لحظة احتراق الساقين.',st_EF:'جري سهل تستطيع فيه الكلام دون لهاث. الأساس: 70 إلى 80% من تدريبك.',st_LONG:'أطول جري في الأسبوع بوتيرة سهلة. يعوّد جسمك على المدة وتوفير الطاقة.',st_DBLSEUIL:'حصتان عند العتبة في اليوم نفسه (صباحًا ومساءً) بحجم معتدل. عمل مفيد كثير دون تعب زائد.',st_FARTLEK:'«لعب السرعة»: تسارعات حرة أثناء جري سهل حسب الإحساس. متنوع وممتع.',st_COTES:'صعود قصير وحيوي، والنزول بالهرولة. يقوّي الساقين والخطوة دون صدمات المضمار.',st_VO2:'جهود صعبة جدًا من 3 إلى 5 دقائق قريبة من حدك الأقصى. ترفع استهلاكك الأقصى للأكسجين.',st_SPE:'مقاطع بالوتيرة الدقيقة لسباقك المستهدف. يحفظ جسمك إيقاع يوم السباق.',st_RECUP:'جري بطيء جدًا وقصير، أو مشي. يساعد على الاسترجاع دون جمود.',configurePlanTitle:'إعداد خطتي',courseProfileLabel:'طبيعة المسار',generateMyPlanBtn:'أنشئ خطتي',
+    psCardRace:'سباقك',psCardWeek:'أسبوعك',psFinishHint:'الهدف: عبور خط الوصول بحالة جيدة، دون وقت محدد.',psDaysPerWeek:'{0} أيام/أسبوع',psCardGoal:'هدفك',psSitLab:'وضعك',psSitCont:'في تحضير',psSitRep:'أعود بعد توقف',psSitOther:'أخرى',psLvlLab:'مستواك',lvlDeb:'مبتدئ',lvlInt:'متوسط',lvlConf:'متقدم',psRecLab:'آخر أوقاتك',psRecEdit:'تحديث',psRecNone:'لا شيء بعد',psGapLab:'آخر جري لك كان منذ',gapLt1:'أقل من شهر',gap13:'1–3 أشهر',gap36:'3–6 أشهر',gapGt6:'أكثر من 6 أشهر',psRepHint:'تبدأ الخطة بهدوء وترتفع شيئًا فشيئًا.',psOtherHint:'لا مشكلة: يتكيف IKORUN مع أوقاتك وسجلّك.',psDistLab:'المسافة بالضبط',psDateIn:'بعد {0} أسابيع',psDateSoon:'قريب جدًا: تحتاج أسبوعًا من التحضير على الأقل',psTimeLab:'الوقت المستهدف',psTimePace:'أي {0} /كم',psTimePred:'التوقع الحالي {0}',psVolume:'الحجم يضبطه IKORUN: {0} ← {1} كم في الأسبوع. لا أكثر من +10% من أسبوع لآخر، وأسبوع أخف من كل أربعة.',psSessLab:'حصص خطتك',psSessHint:'المس حصة لتعرف فائدتها.',st_VMAc:'تكرارات قصيرة (200 إلى 400 م) سريعة جدًا بسرعتك الهوائية القصوى، مع استرجاع. تطوّر السرعة وقوة القلب.',st_VMAl:'تكرارات من 800 إلى 1200 م تحت سرعتك القصوى بقليل. تتعلم الحفاظ على وتيرة سريعة مدة أطول.',st_INTERVAL:'تناوب بين جهود قوية واسترجاع بمدد مختلفة. يعمل على الإيقاع والقدرة على التسريع.',st_TEMPO:'جري متواصل «صعب بشكل مريح» من 20 إلى 40 دقيقة. يحسّن التحمل بوتيرة سريعة.',st_SEUIL:'كتل بالوتيرة التي تحافظ عليها نحو ساعة، مع استرجاع قصير. يؤخر لحظة احتراق الساقين.',st_EF:'جري سهل تستطيع فيه الكلام دون لهاث. الأساس: 70 إلى 80% من تدريبك.',st_LONG:'أطول جري في الأسبوع بوتيرة سهلة. يعوّد جسمك على المدة وتوفير الطاقة.',st_DBLSEUIL:'حصتان عند العتبة في اليوم نفسه (صباحًا ومساءً) بحجم معتدل. عمل مفيد كثير دون تعب زائد.',st_FARTLEK:'«لعب السرعة»: تسارعات حرة أثناء جري سهل حسب الإحساس. متنوع وممتع.',st_COTES:'صعود قصير وحيوي، والنزول بالهرولة. يقوّي الساقين والخطوة دون صدمات المضمار.',st_VO2:'جهود صعبة جدًا من 3 إلى 5 دقائق قريبة من حدك الأقصى. ترفع استهلاكك الأقصى للأكسجين.',st_SPE:'مقاطع بالوتيرة الدقيقة لسباقك المستهدف. يحفظ جسمك إيقاع يوم السباق.',st_RECUP:'جري بطيء جدًا وقصير، أو مشي. يساعد على الاسترجاع دون جمود.',configurePlanTitle:'إعداد خطتي',courseProfileLabel:'طبيعة المسار',generateMyPlanBtn:'أنشئ خطتي',
     planSetupSimpleHint:'نتكفّل بالباقي (الوتيرة، المسافات، الحصص) ونعدّل كل شيء تدريجيًا مع تقدّمك.',
     maxKmWeekLabel:'أقصى كم/أسبوع (الذروة)',minKmWeekLabel:'أدنى كم/أسبوع',preferredSessionsLabel:'الحصص المفضلة (سيفضلها المدرب)',
     preparedRaceLabel:'السباق الذي تستعد له',raceDateLabel:'تاريخ السباق',targetTimeOptionalLabel:'الزمن المستهدف (اختياري)',
@@ -4445,7 +4445,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='3.6.0';
+const APP_VERSION='3.7.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -7764,6 +7764,11 @@ function liveDetail(s){
         d={objectif:t('bs_default_objectif'),warmup:'-',body:tp('bs_default_body',s.km),paces:S(pace.EF)+'/km',recovery:'-',cooldown:'-',tips:[],mistakes:[],why:t('bs_default_why')};
     }
     if(s.deload && s.km>0){ d.objectif=tp('deloadPrefixTemplate',d.objectif); }
+    if(s.series && s.series.recCustom && s.series.recoveryLabel){ // récup réglée dans « Modifier la séance »
+      const was=s.origSnapshot && s.origSnapshot.series && s.origSnapshot.series.recoveryLabel;
+      if(was && d.body) d.body=String(d.body).split(was).join(s.series.recoveryLabel);
+      d.recovery=s.series.recoveryLabel;
+    }
     return d;
   }catch(e){ return s.detail; }
 }
@@ -8458,7 +8463,7 @@ function psDateHTML(s){
 }
 function psTimeHTML(s){
   const v=s.timeS||0, h=Math.floor(v/3600), mi=Math.floor(v%3600/60), se=v%60, m=raceMetersOf(s.objRace,s.raceKm), pr=psPredicted(s);
-  return '<div class="wheels ps-wheels">'+wheel('PS.th',0,9,h,1)+'<span class="wheel-sep">:</span>'+wheel('PS.tm',0,59,mi)+'<span class="wheel-sep">:</span>'+wheel('PS.ts',0,59,se)+'</div>'+
+  return '<div class="wheels ps-wheels">'+wheel('PS.th',0,9,h,1)+'<span class="wheel-sep u">h</span>'+wheel('PS.tm',0,59,mi)+'<span class="wheel-sep u">min</span>'+wheel('PS.ts',0,59,se)+'<span class="wheel-sep u">s</span></div>'+
     '<div class="ps-whint" id="psTimeHint">'+(v?tp('psTimePace',fmtSplit(Math.round(v/(m/1000)))):'')+(pr?' · '+tp('psTimePred',fmtTime(pr)):'')+'</div>';
 }
 function psSituationHTML(s){
@@ -8475,29 +8480,44 @@ function psSituationHTML(s){
   return h+'</div>';
 }
 function psSessionsHTML(s){
-  let h='<div class="field"><label>'+t('psSessLab')+'</label><div class="ps-whint" style="text-align:start;margin:0 0 8px">'+t('psSessHint')+'</div><div class="pills ps-info">'+
+  let h='<button type="button" class="ps-fold'+(s.sessOpen?' open':'')+'" onclick="setupTmp.sessOpen=!setupTmp.sessOpen;renderPlanSetup()"><span>'+ICN('bulb',15)+' '+t('psSessLab')+'</span>'+ICN('chevronR',16)+'</button>';
+  if(!s.sessOpen) return h;
+  h+='<div class="ps-fold-body"><div class="ps-whint" style="text-align:start;margin:0 0 8px">'+t('psSessHint')+'</div><div class="pills ps-info">'+
     LIKED_TYPES.map(lt=>'<div class="pill'+(s.info===lt?' on':'')+'" role="button" onclick="setupTmp.info=setupTmp.info===\''+lt.replace(/'/g,"\\'")+'\'?null:\''+lt.replace(/'/g,"\\'")+'\';renderPlanSetup()">'+trLikedType(lt)+'</div>').join('')+'</div>';
   if(s.info){ const k='st_'+(likedToType(s.info)||''); h+='<div class="tip ps-explain"><b>'+trLikedType(s.info)+'</b><br>'+t(k)+'</div>'; }
   return h+'</div>';
 }
+function psRaceName(s){ return s.objRace==='Autre'?fmtKmShort(s.raceKm)+' km':trRace(s.objRace); }
+function psSummary(s){
+  const {y,m,d}=psDateParts(s), dt=new Date(y,m-1,d).toLocaleDateString(localeCode(),{day:'numeric',month:'short',year:'numeric'});
+  return '<b>'+escHtml(psRaceName(s))+'</b> · '+dt+' · '+tp('psDaysPerWeek',s.days.length)+(s.objGoal==='Record personnel'&&s.timeS?' · '+fmtTime(s.timeS):'');
+}
 function renderPlanSetup(){
   const s=setupTmp, easy=!!P.easyMode;
-  const dn=[0,1,2,3,4,5,6].map(d=>new Date(2023,0,1+d).toLocaleDateString(localeCode(),{weekday:'short'}));
+  const dn=[0,1,2,3,4,5,6].map(d=>new Date(2023,0,1+d).toLocaleDateString(localeCode(),{weekday:'short'}).replace('.',''));
+  const card=(icon,title,body)=>'<div class="ps-card"><div class="ps-card-h">'+ICN(icon,15)+' '+title+'</div>'+body+'</div>';
   let h=easy?'':psSituationHTML(s);
-  h+='<div class="field"><label>'+t('preparedRaceLabel')+'</label><select class="inp" onchange="setupTmp.objRace=this.value;setupTmp.timeS=psPredicted(setupTmp);renderPlanSetup()">'+PS_RACES.map(r=>'<option value="'+r+'" '+(s.objRace===r?'selected':'')+'>'+trRace(r)+'</option>').join('')+'</select></div>';
+  // 1. La course
+  let c='<label class="ps-row"><span>'+t('preparedRaceLabel')+'</span><select class="ps-select" onchange="setupTmp.objRace=this.value;setupTmp.timeS=psPredicted(setupTmp);renderPlanSetup()">'+PS_RACES.map(r=>'<option value="'+r+'" '+(s.objRace===r?'selected':'')+'>'+trRace(r)+'</option>').join('')+'</select></label>';
   if(s.objRace==='Autre'){
     const ki=Math.floor(s.raceKm), kd=Math.round((s.raceKm-ki)*10)%10;
-    h+='<div class="field"><label>'+t('psDistLab')+'</label><div class="wheels ps-wheels">'+wheel('PS.km',1,250,Math.min(250,Math.max(1,ki)),1)+'<span class="wheel-sep">,</span>'+wheel('PS.kmd',0,9,kd,1)+'<span class="wheel-sep ps-unit">km</span></div></div>';
+    c+='<div class="ps-lab">'+t('psDistLab')+'</div><div class="wheels">'+wheel('PS.km',1,250,Math.min(250,Math.max(1,ki)),1)+'<span class="wheel-sep">,</span>'+wheel('PS.kmd',0,9,kd,1)+'<span class="wheel-sep u">km</span></div>';
   }
-  h+='<div class="field"><label>'+t('raceDateLabel')+'</label>'+psDateHTML(s)+'</div>';
-  if(!easy) h+='<div class="field"><label>'+t('courseProfileLabel')+'</label><div class="pills">'+['Plate','Vallonnée','Montagne'].map(p=>'<div class="pill '+(s.objProfile===p?'on':'')+'" onclick="setupTmp.objProfile=\''+p+'\';renderPlanSetup()">'+trProfile(p)+'</div>').join('')+'</div></div>';
-  h+='<div class="field"><label>'+t('objectiveCap')+'</label><div class="pills">'+['Finir','Record personnel'].map(o=>'<div class="pill '+(s.objGoal===o?'on':'')+'" onclick="setupTmp.objGoal=\''+o+'\';renderPlanSetup()">'+trGoal(o)+'</div>').join('')+'</div></div>';
-  if(s.objGoal==='Record personnel') h+='<div class="field"><label>'+t('psTimeLab')+'</label>'+psTimeHTML(s)+'</div>';
-  h+='<div class="field"><label>'+t('trainingDaysLabel')+'</label><div class="pills">'+[1,2,3,4,5,6,0].map(d=>'<div class="pill '+(s.days.includes(d)?'on':'')+'" onclick="toggleSetupDay('+d+')">'+dn[d]+'</div>').join('')+'</div></div>';
+  c+='<div class="ps-lab">'+t('raceDateLabel')+'</div>'+psDateHTML(s);
+  if(!easy) c+='<div class="ps-lab">'+t('courseProfileLabel')+'</div>'+psSeg('psProf',s.objProfile,['Plate','Vallonnée','Montagne'].map(p=>[p,trProfile(p)]),'objProfile');
+  h+=card('flag',t('psCardRace'),c);
+  // 2. L'objectif
+  c=psSeg('psGoal',s.objGoal,[['Finir',trGoal('Finir')],['Record personnel',trGoal('Record personnel')]],'objGoal');
+  if(s.objGoal==='Record personnel') c+='<div class="ps-lab">'+t('psTimeLab')+'</div>'+psTimeHTML(s);
+  else c+='<div class="ps-whint">'+t('psFinishHint')+'</div>';
+  h+=card('target',t('psCardGoal'),c);
+  // 3. La semaine
   const vol=planAutoVolume(s);
-  h+='<p class="ps-hint" id="psVol">'+tp('psVolume',vol.min,vol.max)+'</p>';
+  c='<div class="ps-lab">'+t('trainingDaysLabel')+'</div><div class="ps-days">'+[1,2,3,4,5,6,0].map(d=>'<button type="button" class="ps-day'+(s.days.includes(d)?' on':'')+'" aria-pressed="'+s.days.includes(d)+'" onclick="toggleSetupDay('+d+')">'+dn[d]+'</button>').join('')+'</div>'+
+    '<div class="ps-vol" id="psVol">'+ICN('shield',14)+'<span>'+tp('psVolume',vol.min,vol.max)+'</span></div>';
+  h+=card('calendar',t('psCardWeek'),c);
   if(!easy) h+=psSessionsHTML(s);
-  h+='<button class="btn" onclick="confirmPlanSetup()">'+t('generateMyPlanBtn')+'</button>';
+  h+='<div class="ik-cta-bar"><div class="ps-sum" id="psSum">'+psSummary(s)+'</div><button class="btn" onclick="confirmPlanSetup()">'+t('generateMyPlanBtn')+'</button></div>';
   $('#progBody').innerHTML=h;
   setTimeout(attachWheels,30);
 }
@@ -8529,7 +8549,8 @@ function psWheel(key,val){
     dh.innerHTML=s.compDate<minRaceDate()?'<span style="color:var(--warn)">'+t('psDateSoon')+'</span>':tp('psDateIn',Math.max(1,Math.round(days/7))); }
   const th=document.getElementById('psTimeHint');
   if(th){ const m=raceMetersOf(s.objRace,s.raceKm), pr=psPredicted(s); th.innerHTML=(s.timeS?tp('psTimePace',fmtSplit(Math.round(s.timeS/(m/1000)))):'')+(pr?' · '+tp('psTimePred',fmtTime(pr)):''); }
-  const pv=document.getElementById('psVol'); if(pv){ const vol=planAutoVolume(s); pv.innerHTML=tp('psVolume',vol.min,vol.max); }
+  const pv=document.querySelector('#psVol span'); if(pv){ const vol=planAutoVolume(s); pv.innerHTML=tp('psVolume',vol.min,vol.max); }
+  const ps=document.getElementById('psSum'); if(ps) ps.innerHTML=psSummary(s);
 }
 function toggleSetupDay(d){ const i=setupTmp.days.indexOf(d); if(i>=0)setupTmp.days.splice(i,1); else setupTmp.days.push(d); renderPlanSetup(); }
 function confirmPlanSetup(){
@@ -9739,15 +9760,20 @@ function dbRepChips(){
 function dbRepWheels(){
   const r=debriefReps[debriefRepSel], mmax=Math.max(9,Math.ceil(r.target/60)*2);
   return '<div class="db-wlab">'+tp('dbRepOf',r.n,debriefReps.length,r.dist)+' · '+tp('targetColon',fmtSplit(r.target))+'</div>'+
-    '<div class="wheels">'+wheel('DB.rep.m',0,mmax,Math.min(mmax,Math.floor(r.timeS/60)))+'<span class="wheel-sep">:</span>'+wheel('DB.rep.s',0,59,r.timeS%60)+'</div>';
+    '<div class="db-repnav"><button type="button" class="db-arrow" aria-label="'+t('dbPrev')+'" onclick="debriefPickRep(debriefRepSel-1)"'+(debriefRepSel?'':' disabled')+'>'+ICN('chevronR',18).replace('<path','<path transform="rotate(180 12 12)"')+'</button>'+
+    '<div class="wheels">'+wheel('DB.rep.m',0,mmax,Math.min(mmax,Math.floor(r.timeS/60)),1)+'<span class="wheel-sep">:</span>'+wheel('DB.rep.s',0,59,r.timeS%60)+'</div>'+
+    '<button type="button" class="db-arrow" aria-label="'+t('dbNext')+'" onclick="debriefPickRep(debriefRepSel+1)"'+(debriefRepSel<debriefReps.length-1?'':' disabled')+'>'+ICN('chevronR',18)+'</button></div>';
 }
+// Trois tuiles : ce que la séance a donné, recalculé à chaque cran de molette.
 function dbSummary(){
-  const d=debriefData;
-  if(debriefReps.length){
-    const ok=debriefReps.filter(r=>r.respected).length;
-    return tp('dbSumReps',fmt1(d.distance),fmtDurMin(d.duration),d.pace)+' · <b style="color:'+(ok===debriefReps.length?'var(--ok)':'var(--warn)')+'">'+tp('respectedCount',ok,debriefReps.length)+'</b>';
-  }
-  return d.pace?tp('dbSumRun',d.pace):t('dbSumEmpty');
+  const d=debriefData, reps=debriefReps.length;
+  const tile=(v,l)=>'<div class="db-tile"><b>'+v+'</b><span>'+l+'</span></div>';
+  let h=tile(fmt1(d.distance||0)+' <small>km</small>',reps?t('dbTileWork'):t('dbDistLab'))+
+    tile(fmtDurMin(d.duration),reps?t('dbTileWorkTime'):t('dbDurLab'))+
+    tile((d.pace||'—')+' <small>/km</small>',t('dbTilePace'));
+  if(reps){ const ok=debriefReps.filter(r=>r.respected).length;
+    h+='<div class="db-okchip'+(ok===reps?' all':'')+'">'+ICN(ok===reps?'check':'timer',13)+' '+tp('respectedCount',ok,reps)+'</div>'; }
+  return h;
 }
 function fmtDurMin(min){ min=Math.round(+min||0); const h=Math.floor(min/60); return h?h+' h '+String(min%60).padStart(2,'0'):min+' min'; }
 function debriefRefresh(){
@@ -9775,29 +9801,34 @@ function debriefWheel(key,val){
   }
   debriefRefresh();
 }
+const RPE_LAB=[null,'rpeL1','rpeL1','rpeL3','rpeL3','rpeL5','rpeL5','rpeL7','rpeL7','rpeL9','rpeL10'];
+function dbRpeHTML(v){
+  return '<div class="db-rpe" role="radiogroup">'+Array.from({length:10},(_,i)=>i+1).map(n=>'<button type="button" class="db-rpe-b'+(n===v?' on':'')+(n<=v?' fill':'')+'" style="--h:'+Math.round(140-n*13)+'" role="radio" aria-checked="'+(n===v)+'" onclick="debriefSetRpe('+n+')">'+n+'</button>').join('')+'</div>'+
+    '<div class="db-rpe-lab" id="dbRpeLab">'+t(RPE_LAB[v])+'</div>';
+}
+function debriefSetRpe(n){ debriefData.rpe=n; const w=document.getElementById('dbRpeW'); if(w) w.innerHTML=dbRpeHTML(n); haptic(); }
 function renderDebrief(){
   const d=debriefData;
   const scale=(key,label,icons)=>'<div class="field"><label>'+label+'</label><div class="pills">'+icons.map((ic,i)=>'<div class="pill '+(d[key]===i+1?'on':'')+'" onclick="debriefData.'+key+'='+(i+1)+';renderDebrief()">'+ic+'</div>').join('')+'</div></div>';
-  let h='<div class="tip" style="margin-bottom:14px">'+t('dbIntro')+'</div>';
+  let h='<p class="db-lead">'+t('dbIntro')+'</p>';
+  h+='<div class="db-sum" id="dbSum">'+dbSummary()+'</div>';
   if(debriefReps.length){
-    h+='<div class="chrome-box db-box"><div class="cb-head">'+ICN('timer',15)+' '+tp('repByRepSummary',debriefReps.length,debriefReps[0].dist)+'</div>'+
+    h+='<div class="db-card"><div class="db-card-h">'+ICN('timer',15)+' '+tp('repByRepSummary',debriefReps.length,debriefReps[0].dist)+'</div>'+
       '<div class="db-reps" id="dbRepChips">'+dbRepChips()+'</div>'+
-      '<div id="dbRepW">'+dbRepWheels()+'</div>'+
-      '<div class="row db-nav"><button type="button" class="btn ghost sm" onclick="debriefPickRep(debriefRepSel-1)">‹ '+t('dbPrev')+'</button><button type="button" class="btn ghost sm" onclick="debriefPickRep(debriefRepSel+1)">'+t('dbNext')+' ›</button></div></div>';
+      '<div id="dbRepW">'+dbRepWheels()+'</div></div>';
   } else {
     const km=+d.distance||0, ki=Math.min(99,Math.floor(km)), kd=Math.round((km-Math.floor(km))*10)%10, dur=Math.round(+d.duration||0);
-    h+='<div class="chrome-box db-box"><div class="db-two">'+
-      '<div><div class="db-wlab">'+t('dbDistLab')+'</div><div class="wheels">'+wheel('DB.km.i',0,99,ki,1)+'<span class="wheel-sep">,</span>'+wheel('DB.km.d',0,9,kd,1)+'</div><div class="db-unit">km</div></div>'+
-      '<div><div class="db-wlab">'+t('dbDurLab')+'</div><div class="wheels">'+wheel('DB.dur.h',0,9,Math.min(9,Math.floor(dur/60)),1)+'<span class="wheel-sep">h</span>'+wheel('DB.dur.m',0,59,dur%60)+'</div><div class="db-unit">'+t('dbHourMin')+'</div></div>'+
+    h+='<div class="db-card"><div class="db-two">'+
+      '<div><div class="db-wlab">'+t('dbDistLab')+'</div><div class="wheels">'+wheel('DB.km.i',0,99,ki,1)+'<span class="wheel-sep">,</span>'+wheel('DB.km.d',0,9,kd,1)+'<span class="wheel-sep u">km</span></div></div>'+
+      '<div><div class="db-wlab">'+t('dbDurLab')+'</div><div class="wheels">'+wheel('DB.dur.h',0,9,Math.min(9,Math.floor(dur/60)),1)+'<span class="wheel-sep u">h</span>'+wheel('DB.dur.m',0,59,dur%60)+'<span class="wheel-sep u">min</span></div></div>'+
       '</div></div>';
   }
-  h+='<div class="db-sum" id="dbSum">'+dbSummary()+'</div>';
-  h+='<div class="field"><label>'+t('rpeFeltLabel')+' <b id="dbRpe">'+d.rpe+'</b>/10</label><input type="range" min="1" max="10" value="'+d.rpe+'" style="width:100%" oninput="debriefData.rpe=+this.value;document.getElementById(\'dbRpe\').textContent=this.value"></div>';
-  h+='<div class="field"><label>'+t('painLabel')+'</label><div class="pills db-pain">'+['Aucune','Légères','Gênantes','Importantes'].map(p=>'<div class="pill '+(d.pain===p?'on':'')+'" onclick="debriefData.pain=\''+p+'\';this.parentNode.querySelectorAll(\'.pill\').forEach(e=>e.classList.toggle(\'on\',e===this))">'+trPain(p)+'</div>').join('')+'</div></div>';
+  h+='<div class="db-sec">'+t('dbEffortLab')+'</div><div id="dbRpeW">'+dbRpeHTML(d.rpe)+'</div>';
+  h+='<div class="db-sec">'+t('painLabel')+'</div><div class="seg-ctrl sub" data-seg="dbPain">'+['Aucune','Légères','Gênantes','Importantes'].map(p=>'<div class="seg-btn'+(d.pain===p?' on':'')+'" onclick="debriefData.pain=\''+p+'\';this.parentNode.querySelectorAll(\'.seg-btn\').forEach(e=>e.classList.toggle(\'on\',e===this))">'+trPain(p)+'</div>').join('')+'</div>';
   // Le reste (dénivelé, sommeil, météo…) reste replié et prérempli : jamais bloquant.
-  h+='<div style="text-align:center;color:var(--e2);font-weight:700;font-size:12.5px;cursor:pointer;margin:14px 0" onclick="debriefExpanded=!debriefExpanded;renderDebrief()">'+(debriefExpanded?t('lessDetailsBtn'):t('moreDetailsBtn'))+'</div>';
+  h+='<button type="button" class="db-more" onclick="debriefExpanded=!debriefExpanded;renderDebrief()">'+(debriefExpanded?t('lessDetailsBtn'):t('moreDetailsBtn'))+'</button>';
   if(debriefExpanded){
-  h+='<div class="field"><label>'+t('elevationGainLabel')+'</label><input class="inp" type="number" value="'+(d.deniv||'')+'" oninput="debriefData.deniv=+this.value" placeholder="0"></div>';
+  h+='<div class="field"><label>'+t('elevationGainLabel')+'</label><input class="inp" type="number" inputmode="numeric" value="'+(d.deniv||'')+'" oninput="debriefData.deniv=+this.value" placeholder="0"></div>';
   h+=scale('fatigue',t('fatigueLabel'),['😀','🙂','😐','😓','😵']);
   h+=scale('feel',t('sensationsLabel'),['😣','😕','😐','😊','🤩']);
   h+=scale('sleep',t('nightSleepLabel'),['😴','😪','😐','🙂','💤']);
@@ -9805,7 +9836,7 @@ function renderDebrief(){
   h+='<div class="field"><label>'+t('weatherLabel')+'</label><div class="pills">'+['sunny','cloudy','rain','wind','hot','cold'].map(w=>'<div class="pill '+(d.weather===w?'on':'')+'" onclick="debriefData.weather=\''+w+'\';renderDebrief()">'+ICN(w==='sunny'?'sun':w==='cloudy'?'moon':w==='rain'?'rain':w==='wind'?'wind':w==='hot'?'fire':'snow',18)+'</div>').join('')+'</div></div>';
   h+='<div class="field"><label>'+t('freeCommentLabel')+'</label><textarea class="inp" rows="2" oninput="debriefData.note=this.value" placeholder="'+t('howDidYouFeelPlaceholder')+'">'+escHtml(d.note||'')+'</textarea></div>';
   }
-  h+='<button class="btn" onclick="submitDebrief()">🧠 '+t('analyzeSessionBtn')+'</button>';
+  h+='<div class="ik-cta-bar"><button class="btn" onclick="submitDebrief()">'+ICN('brain',18)+' '+t('analyzeSessionBtn')+'</button></div>';
   $('#progBody').innerHTML=h;
   setTimeout(attachWheels,30);
 }
@@ -9889,16 +9920,22 @@ function coachAnalyze(e){
   const motiv=t(motivKeys[Math.floor(Math.random()*4)]);
   return {pos,errs,tips,adjust,motiv,e};
 }
+// V3.7.0 : verdict en tête, chiffres de la séance, puis des listes compactes (une
+// ligne par point, icône en tête) au lieu d'une pile de grands encadrés colorés.
 function renderCoachAnalysis(a){
-  let h='<div style="text-align:center;margin-bottom:14px"><div style="display:flex;justify-content:center">'+ICN('brain',40,'var(--e)')+'</div><div class="man" style="font-weight:800;font-size:20px">'+t('coachAnalysisTitle')+'</div><div style="font-size:12px;color:var(--muted)">'+a.e.title+'</div></div>';
-  const blk=(icon,title,items,color)=>items.length?'<div class="card-t" style="margin-top:14px;'+(color?'color:'+color:'')+'">'+icon+' '+title+'</div>'+items.map(x=>'<div class="tip" style="margin-bottom:6px;'+(color?'border-color:color-mix(in srgb,'+color+' 30%,transparent);background:color-mix(in srgb,'+color+' 10%,transparent)':'')+'">'+x+'</div>').join(''):'';
-  h+=blk(ICN('check',15,'var(--ok)'),t('positivePointsTitle'),a.pos,'var(--ok)');
-  h+=blk(ICN('warning',15,'var(--warn)'),t('constructiveCriticismTitle'),a.errs,'var(--warn)');
-  h+=blk(ICN('bulb',15,'var(--e)'),t('adviceLabel'),a.tips,'');
-  h+=blk(ICN('gear',15,'var(--e)'),t('upcomingAdjustmentsTitle'),a.adjust,'var(--e)');
-  h+='<div style="background:var(--ed);box-shadow:inset 0 0 0 1px rgba(var(--e-rgb),.45);border-radius:14px;padding:14px;margin-top:16px;text-align:center"><div style="font-style:italic;font-size:15px">"'+a.motiv+'"</div></div>';
-  h+='<button class="btn" style="margin-top:16px" onclick="closeOv(\'ovProg\');renderSport();nav(\'home\')">'+t('notedCoachBtn')+'</button>';
+  const e=a.e, bad=a.errs.length, tone=bad>=2?'warn':bad?'mid':'ok';
+  let h='<div class="ca-hero ca-'+tone+'"><div class="ca-ic">'+ICN(tone==='ok'?'check':'warning',22)+'</div><div><b>'+t(tone==='ok'?'caVerdictOk':tone==='mid'?'caVerdictMid':'caVerdictWarn')+'</b><span>'+escHtml(e.title||'')+'</span></div></div>';
+  if(+e.distance>0) h+='<div class="db-sum ca-sum"><div class="db-tile"><b>'+fmt1(e.distance)+' <small>km</small></b><span>'+t('dbDistLab')+'</span></div><div class="db-tile"><b>'+fmtDurMin(e.duration)+'</b><span>'+t('dbDurLab')+'</span></div><div class="db-tile"><b>'+escHtml(e.pace||'—')+' <small>/km</small></b><span>'+t('dbTilePace')+'</span></div></div>';
+  h+='<div class="ca-rpe"><span>'+t('dbEffortLab')+'</span><b style="--h:'+Math.round(140-(+e.rpe||5)*13)+'">'+(+e.rpe||5)+'/10 · '+t(RPE_LAB[+e.rpe||5])+'</b></div>';
+  const list=(icon,cls,title,items)=>items.length?'<div class="ca-block"><div class="ca-h '+cls+'">'+ICN(icon,15)+' '+title+'</div><ul class="ca-list">'+items.map(x=>'<li>'+x+'</li>').join('')+'</ul></div>':'';
+  h+=list('gear','e',t('upcomingAdjustmentsTitle'),a.adjust);
+  h+=list('check','ok',t('positivePointsTitle'),a.pos);
+  h+=list('warning','warn',t('constructiveCriticismTitle'),a.errs);
+  h+=list('bulb','e',t('adviceLabel'),a.tips);
+  h+='<blockquote class="ca-quote">'+a.motiv+'</blockquote>';
+  h+='<div class="ik-cta-bar"><button class="btn" onclick="closeOv(\'ovProg\');renderSport();nav(\'home\')">'+t('notedCoachBtn')+'</button></div>';
   $('#progBody').innerHTML=h; $('#ovProgTitle').textContent=t('ikorunAnalysisTitle');
+  const sc=$('#progBody').closest('.ov-body-scroll'); if(sc) sc.scrollTop=0;
 }
 
 /* ---------- RUN SHEET ---------- */
@@ -10033,42 +10070,128 @@ function markRunDone(){
    s.origSnapshot garde les valeurs d'origine pour permettre "Réinitialiser"
    tant que la séance n'est pas encore faite. */
 let planCustomId=null;
-function backupPlanSession(s){ if(!s.origSnapshot) s.origSnapshot={date:s.date,km:s.km,duration:s.duration,type:s.type,baseType:s.baseType,title:s.title,pace:s.pace,desc:s.desc,series:s.series||null}; }
+function backupPlanSession(s){ if(!s.origSnapshot) s.origSnapshot={date:s.date,km:s.km,duration:s.duration,type:s.type,baseType:s.baseType,title:s.title,pace:s.pace,desc:s.desc,series:s.series?JSON.parse(JSON.stringify(s.series)):null,genParams:s.genParams?Object.assign({},s.genParams):null}; }
 function openPlanCustomize(id){
   const s=PLAN.sessions.find(x=>x.id===id); if(!s||s.done||s.date<todayKey()) return;
   planCustomId=id;
   renderPlanCustomizeHTML();
 }
+/* V3.7.0 — « Modifier la séance » sans pourcentages. Les ±10/20 % ne disaient rien de
+   concret : on règle maintenant ce que l'on court (répétitions, distance de chaque
+   répétition, récupération, durée du bloc tempo, km d'un footing ou d'une sortie
+   longue), avec un aperçu en direct. Le jour se choisit sur la semaine entière : un jour
+   libre reçoit la séance, un jour pris l'échange. Les durées et distances sont
+   recalculées avec les mêmes formules que le générateur (buildSessionV2). */
+const CM_REP_DISTS=[200,300,400,500,600,800,1000,1200,1500,2000,3000];
+function cmKind(s){
+  const bt=s.baseType;
+  if(s.series && s.series.reps && s.series.dist && ['SEUIL','VMAc','VMAl','VO2','SPE','SPE_COURT','TEMPO_SPE'].includes(bt)) return 'reps';
+  if(bt==='COTES' && s.series && s.series.reps) return 'hills';
+  if(bt==='FARTLEK' && s.genParams && s.genParams.n) return 'fartlek';
+  if(bt==='TEMPO' && s.genParams && s.genParams.tmin) return 'tempo';
+  if(s.km>0 && ['EF','RECUP','LONG','LONG_COURT','PROGRESSIF','LIGNES'].includes(bt)) return 'dist';
+  return 'none';
+}
+function cmPaces(){
+  const v=PLAN.vdot||getUserVDOT()||45;
+  return { EF:paceFromPct(v,.70), RC:paceFromPct(v,.66), TEMPO:paceFromPct(v,.83), SEUIL:paceFromPct(v,.88),
+    SPE:predictTime(v,raceMeters())/(raceMeters()/1000), VMAl:repPace(v,1000), VMAc:repPace(v,300) };
+}
+function cmRecLabel(sec){ const m=Math.floor(sec/60), r=sec%60; return tp('cmRecovTrot',m?(m+' min'+(r?' '+String(r).padStart(2,'0'):'')):r+' s'); }
+// Recalcule km / durée / allure après un réglage (mêmes formules que buildSessionV2).
+function cmRebuild(s){
+  const k=cmKind(s), pc=cmPaces(), WU=17.5, CD=12.5, r1=x=>Math.round(x*10)/10;
+  const wu=distKmFromTime(WU*60,pc.EF), cd=distKmFromTime(CD*60,pc.RC);
+  if(k==='reps'){
+    const sr=s.series, n=sr.reps, dist=sr.dist, rec=sr.recoverySec||60, bt=s.baseType;
+    const p=bt==='VMAc'?pc.VMAc:(bt==='VMAl'||bt==='VO2')?pc.VMAl:bt==='SEUIL'?pc.SEUIL:pc.SPE;
+    sr.paceSecPerKm=p;
+    s.km=r1(wu+n*dist/1000+distKmFromTime(Math.max(0,n-1)*rec,pc.RC)+cd);
+    s.duration=Math.round(WU+n*splitSecFromPace(p,dist)/60+Math.max(0,n-1)*rec/60+CD);
+  } else if(k==='hills'){
+    const n=s.series.reps, e=37.5;
+    s.km=r1(wu+distKmFromTime(n*e,pc.SEUIL)+distKmFromTime(n*e,pc.RC)+cd); s.duration=Math.round(WU+2*n*e/60+CD);
+  } else if(k==='fartlek'){
+    const n=s.genParams.n;
+    s.km=r1(distKmFromTime(15*60,pc.EF)+n*(distKmFromTime(60,pc.VMAl)+distKmFromTime(60,pc.EF))+cd); s.duration=Math.round(15+n*2+CD);
+  } else if(k==='tempo'){
+    const tm=s.genParams.tmin;
+    s.km=r1(wu+distKmFromTime(tm*60,pc.TEMPO)+cd); s.duration=Math.round(WU+tm+CD);
+  } else if(k==='dist'){
+    s.duration=Math.round(s.km*(parseTime(s.pace)||300)/60);
+  }
+  s.customized=true;
+}
+function cmSet(field,val){
+  const s=PLAN.sessions.find(x=>x.id===planCustomId); if(!s) return;
+  backupPlanSession(s);
+  const o=s.origSnapshot, k=cmKind(s);
+  if(field==='reps'){ const max=Math.min(30,Math.max(4,(o.series&&o.series.reps||6)*2)); s.series.reps=Math.max(2,Math.min(max,val)); }
+  else if(field==='dist'){ if(CM_REP_DISTS.includes(val)) s.series.dist=val; }
+  else if(field==='rec'){ s.series.recoverySec=Math.max(15,Math.min(300,val)); s.series.recCustom=true; s.series.recoveryLabel=cmRecLabel(s.series.recoverySec); }
+  else if(field==='hills'){ s.series.reps=Math.max(4,Math.min(20,val)); }
+  else if(field==='surges'){ s.genParams.n=Math.max(4,Math.min(20,val)); }
+  else if(field==='tmin'){ s.genParams.tmin=Math.max(10,Math.min(50,val)); }
+  else if(field==='km'){ const max=Math.min(longRunCapKm(),Math.max(o.km*1.6,o.km+5)); s.km=Math.max(2,Math.min(max,Math.round(val*2)/2)); }
+  if(k!=='none') cmRebuild(s);
+  haptic(); saveAll(); renderPlanCustomizeHTML(); renderSport();
+}
+function cmMoveTo(dk){
+  const s=PLAN.sessions.find(x=>x.id===planCustomId); if(!s || dk===s.date) return;
+  const other=PLAN.sessions.find(x=>x.date===dk && x.id!==s.id);
+  if(other){ if(other.done) return; return swapPlanSession(s.id,other.id); }
+  backupPlanSession(s); s.date=dk; s.customized=true;
+  saveAll(); toast(t('customizeMovedToast')); renderPlanCustomizeHTML(); renderSport();
+}
+function cmStepper(label,disp,unit,field,minus,plus,sub){
+  return '<div class="cm-step"><div class="cm-step-l"><b>'+label+'</b>'+(sub?'<span>'+sub+'</span>':'')+'</div><div class="cm-step-c">'+
+    '<button type="button" aria-label="−" onclick="cmSet(\''+field+'\','+minus+')">−</button><output>'+disp+(unit?'<small>'+unit+'</small>':'')+'</output>'+
+    '<button type="button" aria-label="+" onclick="cmSet(\''+field+'\','+plus+')">+</button></div></div>';
+}
 function renderPlanCustomizeHTML(){
   const s=PLAN.sessions.find(x=>x.id===planCustomId); if(!s) return;
-  let h='<div class="row" style="margin-bottom:14px;cursor:pointer" onclick="openRunSheet('+s.id+')">'+ICN('chevronR',16).replace('<path','<path transform="rotate(180 12 12)"')+' <span style="font-weight:700;margin-left:4px">'+t('backLab')+'</span></div>';
-  h+='<div class="rs-title" style="margin-bottom:14px">'+t('customizeSessionBtn')+'</div>';
-
-  const weekMates=PLAN.sessions.filter(x=>x.week===s.week && x.id!==s.id && !x.done && x.date>=todayKey());
-  if(weekMates.length){
-    h+='<div class="sec-lab">'+t('customizeMoveLabel')+'</div>';
-    h+='<div class="pills" style="flex-wrap:wrap;margin-bottom:16px">'+weekMates.map(x=>{
-      const dn=new Date(x.date+'T00:00:00').toLocaleDateString(localeCode(),{weekday:'short'});
-      const label=(!x.km||x.type==='Repos')?t('restTag'):escHtml(planSessLabel(x));
-      return '<div class="pill" onclick="swapPlanSession('+s.id+','+x.id+')">'+dn+' · '+label+'</div>';
-    }).join('')+'</div>';
+  const k=cmKind(s), col=baseTypeColor(s.baseType), tk=todayKey(), raceK=P.compDate||'9999';
+  let h='<button type="button" class="cm-back" onclick="openRunSheet('+s.id+')">'+ICN('chevronR',16).replace('<path','<path transform="rotate(180 12 12)"')+' '+t('backLab')+'</button>';
+  // aperçu en direct
+  h+='<div class="cm-hero"><div class="rs-badge" style="background:color-mix(in srgb,'+col+' 13%,transparent);color:'+col+'">'+escHtml(planSessLabel(s)||'')+'</div>'+
+    '<div class="cm-title">'+planSessTitle(s)+(s.customized?' <span class="chrome-chip" style="font-size:10px;vertical-align:middle">'+t('customizedTag')+'</span>':'')+'</div>';
+  if(s.km>0) h+='<div class="db-sum cm-sum"><div class="db-tile"><b>'+hKm(s.km)+' <small>km</small></b><span>'+t('dbDistLab')+'</span></div><div class="db-tile"><b>'+fmtDurMin(s.duration)+'</b><span>'+t('dbDurLab')+'</span></div><div class="db-tile"><b>'+escHtml(s.pace||'—')+' <small>/km</small></b><span>'+t('dbTilePace')+'</span></div></div>';
+  if(k==='reps') h+='<div class="cm-structure">'+repsText(s.series.reps,s.series.dist,s.series.paceSecPerKm)+' · '+escHtml(s.series.recoveryLabel||'')+'</div>';
+  h+='</div>';
+  // le jour : la semaine entière
+  const mon=new Date(s.date+'T00:00:00'); mon.setDate(mon.getDate()-((mon.getDay()+6)%7));
+  h+='<div class="db-sec">'+t('cmDayLab')+'</div><div class="cm-days">';
+  for(let i=0;i<7;i++){
+    const d=new Date(mon); d.setDate(mon.getDate()+i); const dk=dateKey(d);
+    const o=PLAN.sessions.find(x=>x.date===dk), cur=dk===s.date, off=dk<tk || dk>=raceK || (o&&o.done);
+    const lab=cur?'':(o?((!o.km||o.type==='Repos')?t('restTag'):planSessLabel(o)):t('cmFree'));
+    h+='<button type="button" class="cm-day'+(cur?' on':'')+(o&&!cur?' busy':'')+'"'+(off&&!cur?' disabled':'')+' onclick="cmMoveTo(\''+dk+'\')"><b>'+d.toLocaleDateString(localeCode(),{weekday:'short'}).replace('.','')+'</b><i>'+d.getDate()+'</i><span>'+escHtml(lab||'')+'</span></button>';
   }
-
-  if(s.km>0){
-    h+='<div class="sec-lab">'+t('customizeVolumeLabel')+'</div>';
-    h+='<div class="row" style="margin-bottom:16px;gap:6px">'+
-      '<button class="btn ghost sm" onclick="adjustPlanSessionKm(-0.2)">-20%</button>'+
-      '<button class="btn ghost sm" onclick="adjustPlanSessionKm(-0.1)">-10%</button>'+
-      '<div style="font-weight:800;font-size:16px;padding:0 6px">'+hKm(s.km)+' km</div>'+
-      '<button class="btn ghost sm" onclick="adjustPlanSessionKm(0.1)">+10%</button>'+
-      '<button class="btn ghost sm" onclick="adjustPlanSessionKm(0.2)">+20%</button></div>';
-  }
-
-  if(s.type!=='Repos') h+='<button class="btn ghost sm" style="margin-bottom:10px;color:var(--bad)" onclick="skipPlanSession('+s.id+')">'+t('customizeSkipBtn')+'</button>';
-
-  if(s.origSnapshot) h+='<button class="btn ghost sm" style="color:var(--muted)" onclick="resetPlanSessionCustom('+s.id+')">'+t('customizeResetBtn')+'</button>';
-
+  h+='</div>';
+  // le contenu
+  if(k!=='none'){
+    h+='<div class="db-sec">'+t('cmContentLab')+'</div><div class="cm-card">';
+    if(k==='reps'){
+      h+=cmStepper(t('cmReps'),s.series.reps,'','reps',s.series.reps-1,s.series.reps+1);
+      h+='<div class="cm-step-l" style="margin:12px 2px 8px"><b>'+t('cmRepDist')+'</b></div><div class="cm-chips">'+CM_REP_DISTS.map(m=>'<button type="button" class="cm-chip'+(m===s.series.dist?' on':'')+'" onclick="cmSet(\'dist\','+m+')">'+(m>=1000?(m/1000).toLocaleString(localeCode())+' km':m+' m')+'</button>').join('')+'</div>';
+      const rec=s.series.recoverySec||60;
+      h+=cmStepper(t('cmRecov'),rec>=60?(Math.floor(rec/60)+':'+String(rec%60).padStart(2,'0')):rec,rec>=60?'min':'s','rec',rec-15,rec+15);
+    } else if(k==='hills') h+=cmStepper(t('cmHills'),s.series.reps,'','hills',s.series.reps-1,s.series.reps+1,t('cmHillsSub'));
+    else if(k==='fartlek') h+=cmStepper(t('cmSurges'),s.genParams.n,'','surges',s.genParams.n-1,s.genParams.n+1,t('cmSurgesSub'));
+    else if(k==='tempo') h+=cmStepper(t('cmTempo'),s.genParams.tmin,'min','tmin',s.genParams.tmin-5,s.genParams.tmin+5,tp('cmTempoSub',s.pace));
+    else if(k==='dist') h+=cmStepper(t('dbDistLab'),hKm(s.km),'km','km',s.km-.5,s.km+.5,tp('cmDistSub',s.pace));
+    h+='</div>';
+    // la semaine reste sous contrôle : on prévient au-delà de +10 % de la semaine prévue
+    const wk=PLAN.sessions.filter(x=>x.week===s.week), now=wk.reduce((a,x)=>a+(+x.km||0),0);
+    const orig=wk.reduce((a,x)=>a+(+(x.origSnapshot?x.origSnapshot.km:x.km)||0),0);
+    if(orig>0 && now>orig*1.1) h+='<div class="cm-warn">'+ICN('warning',14)+'<span>'+tp('cmWeekWarn',hKm(Math.round(now*10)/10),hKm(Math.round(orig*10)/10))+'</span></div>';
+  } else if(s.km>0) h+='<div class="ps-whint" style="text-align:start;margin-top:14px">'+t('cmFixed')+'</div>';
+  h+='<div class="cm-actions">';
+  if(s.type!=='Repos') h+='<button type="button" class="cm-act bad" onclick="skipPlanSession('+s.id+')">'+ICN('moon',15)+' '+t('customizeSkipBtn')+'</button>';
+  if(s.origSnapshot) h+='<button type="button" class="cm-act" onclick="resetPlanSessionCustom('+s.id+')">'+ICN('refresh',15)+' '+t('customizeResetBtn')+'</button>';
+  h+='</div>';
   $('#sheetBody').innerHTML=h;
+  const on=document.querySelector('#sheetBody .cm-chip.on'); if(on){ const box=on.parentElement; box.scrollLeft=on.offsetLeft-(box.clientWidth-on.offsetWidth)/2; }
 }
 function swapPlanSession(idA,idB){
   const a=PLAN.sessions.find(x=>x.id===idA), b=PLAN.sessions.find(x=>x.id===idB); if(!a||!b) return;
@@ -10076,14 +10199,6 @@ function swapPlanSession(idA,idB){
   const d=a.date; a.date=b.date; b.date=d;
   a.customized=true; b.customized=true;
   saveAll(); toast(t('customizeMovedToast')); renderPlanCustomizeHTML(); renderSport();
-}
-function adjustPlanSessionKm(deltaPct){
-  const s=PLAN.sessions.find(x=>x.id===planCustomId); if(!s||!s.km) return;
-  backupPlanSession(s);
-  const secPerKm=parseTime(s.pace)||300;
-  const km=Math.max(2,Math.round(s.km*(1+deltaPct)*2)/2);
-  s.km=km; s.duration=Math.round(km*secPerKm/60); s.customized=true;
-  saveAll(); renderPlanCustomizeHTML(); renderSport();
 }
 function skipPlanSession(id){
   const s=PLAN.sessions.find(x=>x.id===id); if(!s) return;
@@ -12426,7 +12541,8 @@ function attachWheels(){
   $$('.wheel').forEach(w=>{
     const key=w.dataset.key, min=+w.dataset.min;
     const sel=w.querySelector('.wi.sel');
-    if(sel){ setTimeout(()=>{ w.scrollTop=sel.offsetTop-(w.clientHeight-40)/2; },30); }
+    const ih=()=>{ const it=w.querySelector('.wi'); return (it&&it.offsetHeight)||40; }; // 36 px (V3.7.0), 40 avant
+    if(sel){ setTimeout(()=>{ w.scrollTop=sel.offsetTop-(w.clientHeight-ih())/2; },30); }
     let t;
     // Valeur = l'élément au centre de la fenêtre. round(scrollTop/40) donnait celle d'en
     // dessous (marge haute de 80 px pour 120 px de haut) : réglé sur 05, le minuteur
@@ -12434,7 +12550,7 @@ function attachWheels(){
     w.onscroll=()=>{ clearTimeout(t); t=setTimeout(()=>{
       const pad=w.firstElementChild?w.firstElementChild.offsetHeight:80;
       const n=w.querySelectorAll('.wi').length;
-      const idx=Math.max(0,Math.min(n-1,Math.round((w.scrollTop+w.clientHeight/2-pad-20)/40))); const val=min+idx;
+      const h=ih(), idx=Math.max(0,Math.min(n-1,Math.round((w.scrollTop+w.clientHeight/2-pad-h/2)/h))); const val=min+idx;
       w.querySelectorAll('.wi').forEach((wi,i)=>wi.classList.toggle('sel',i===idx));
       setWheelVal(key,val);
     },120); };
