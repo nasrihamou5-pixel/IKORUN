@@ -694,9 +694,9 @@
       var box=document.createElement('div'); box.style.cssText='position:fixed;left:0;top:0;visibility:hidden';
       box.innerHTML='<div class="wheels">'+wheel('ZZ',0,59,5)+'</div>'; document.body.appendChild(box);
       try{
-        var w=box.querySelector('.wheel'), sel=w.querySelector('.wi.sel');
-        w.scrollTop=sel.offsetTop-(w.clientHeight-40)/2;
-        var pad=w.firstElementChild.offsetHeight, idx=Math.round((w.scrollTop+w.clientHeight/2-pad-20)/40);
+        var w=box.querySelector('.wheel'), sel=w.querySelector('.wi.sel'), ih=sel.offsetHeight||40;
+        w.scrollTop=sel.offsetTop-(w.clientHeight-ih)/2;
+        var pad=w.firstElementChild.offsetHeight, idx=Math.round((w.scrollTop+w.clientHeight/2-pad-ih/2)/ih);
         if(idx!==5) throw new Error('lu '+idx+' pour 05 affiché');
         return 'ok';
       } finally { box.remove(); }
@@ -749,6 +749,43 @@
         if(trProfile('Plate')!=='Plat' && curLang()==='fr') throw new Error('« Plate » au lieu de « Plat »');
         return 'reprise '+v1.min+'→'+v1.max+' km/sem';
       } finally { window.openOv=avO; Object.assign(P,JSON.parse(avP)); setupTmp=avS; try{ closeOv('ovProg'); }catch(e){} }
+    });
+  }
+
+  /* ======================= 7h. MODIFIER UNE SÉANCE (V3.7.0) ============== */
+  function testModifierSeance(){
+    var c='7h. Modifier une séance';
+    essaie(c,'réglages concrets : répétitions, distance, récup, déplacement, réinitialisation',function(){
+      var planAvant=PLAN, demain=new Date(); demain.setDate(demain.getDate()+1);
+      // profil de test sans plan : une semaine synthétique, restaurée à la fin
+      if(!PLAN || !PLAN.sessions || !PLAN.sessions.some(function(x){ return cmKind(x)==='reps' && !x.done && x.date>=todayKey(); }))
+        PLAN={vdot:45,sessions:[{id:9001,week:1,date:dateKey(demain),type:'Seuil',baseType:'SEUIL',title:'Seuil',km:10,duration:52,pace:'4:30',rpe:7,
+          series:{reps:5,dist:1000,paceSecPerKm:270,recoverySec:60,recoveryLabel:t('recovLabel_1minTrot')},done:false}]};
+      var s=PLAN.sessions.filter(function(x){ return cmKind(x)==='reps' && !x.done && x.date>=todayKey(); })[0];
+      var avant=JSON.stringify(PLAN.sessions), avSave=window.saveAll, avSport=window.renderSport, avSheet=document.getElementById('sheetBody').innerHTML;
+      window.saveAll=function(){}; window.renderSport=function(){};
+      try{
+        planCustomId=s.id; renderPlanCustomizeHTML();
+        if(/[+-]\s?\d+\s?%/.test(document.getElementById('sheetBody').textContent)) throw new Error('des pourcentages restent affichés');
+        var km0=s.km, n0=s.series.reps;
+        cmSet('reps',n0+1); if(s.series.reps!==n0+1 || !(s.km>km0)) throw new Error('répétition en plus sans effet');
+        cmSet('dist',400); if(s.series.dist!==400 || (liveDetail(s).body||'').indexOf('400')<0) throw new Error('distance de répétition');
+        cmSet('rec',(s.series.recoverySec||60)+15); if(liveDetail(s).recovery!==s.series.recoveryLabel) throw new Error('récupération non reportée');
+        resetPlanSessionCustom(s.id);
+        if(s.series.reps!==n0 || s.km!==km0 || s.customized) throw new Error('réinitialisation incomplète');
+        var dups=0, seen={}; PLAN.sessions.forEach(function(x){ if(seen[x.date]) dups++; seen[x.date]=1; });
+        if(dups) throw new Error(dups+' jours en double');
+        return n0+' → '+(n0+1)+' rép., puis réinitialisée';
+      } finally { PLAN.sessions=JSON.parse(avant); PLAN=planAvant; window.saveAll=avSave; window.renderSport=avSport; document.getElementById('sheetBody').innerHTML=avSheet; planCustomId=null; }
+    });
+    essaie(c,'l\'analyse du coach affiche un verdict et les chiffres',function(){
+      var html=document.getElementById('progBody').innerHTML, tit=document.getElementById('ovProgTitle').textContent;
+      try{
+        renderCoachAnalysis(coachAnalyze({done:true,title:'Test',type:'EF',distance:10,duration:55,pace:'5:30',rpe:4,pain:'Aucune',fatigue:3,feel:4,sleep:3,nutrition:3,weather:'sunny',plannedRpe:4}));
+        var b=document.getElementById('progBody');
+        if(!b.querySelector('.ca-hero') || !b.querySelector('.db-tile')) throw new Error('verdict ou chiffres absents');
+        return 'ok';
+      } finally { document.getElementById('progBody').innerHTML=html; document.getElementById('ovProgTitle').textContent=tit; }
     });
   }
 
@@ -851,6 +888,7 @@
     testPetitsEcrans();
     testBilanMolette();
     testSelecteursEtPlan();
+    testModifierSeance();
     Promise.resolve(testI18nUsage())
       .then(function(){ return testHorsLigne(); })
       .then(function(){ return testSon(); })
