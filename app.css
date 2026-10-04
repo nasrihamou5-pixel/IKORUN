@@ -3060,16 +3060,13 @@ html[data-accent="carbon"] .ov.ov-push .ov-head::after{background:var(--grad-btn
 @keyframes ikPtrPulse{50%{transform:scale(.72);opacity:.55;}}
 
 /* ===================================================================
-   EFFET VERRE — 3 NIVEAUX (V3.3.0, Profil › Apparence)
-   flat : surfaces pleines (rapide, économe) · std : le verre IKORUN (défaut)
-   max  : effet maximal — verre très transparent flouté partout (y compris les cartes
+   EFFET VERRE — 2 MATIÈRES (V3.3.0, Profil › Apparence ; Guimauve, Papier et Épure
+   retirées en V3.9.0)
+   std : le verre IKORUN, Liquid Glass (défaut)
+   max : Ultime, effet maximal — verre très transparent flouté partout (y compris les cartes
    qui défilent), reflets et bord lumineux renforcés, fond d'ambiance vif qui dérive
    lentement sous le verre (transform seul : animé par le GPU, pas de repeinture).
    =================================================================== */
-html[data-glass="flat"]{--lg-blur:none;--lg-spec:linear-gradient(transparent,transparent);--lg-body:linear-gradient(transparent,transparent);--lg-fill:var(--s1);}
-html[data-glass="flat"][data-mode="light"]{--lg-fill:#fff;}
-html[data-glass="flat"] *{-webkit-backdrop-filter:none !important;backdrop-filter:none !important;}
-
 html[data-glass="max"]{
   --lg-fill:rgba(var(--s1-rgb),.16);
   --lg-body:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.03) 55%,rgba(255,255,255,.08));
@@ -3121,7 +3118,6 @@ html.easy-mode[data-glass="max"] body::before{animation:none;inset:0;}
   background:radial-gradient(40% 70% at 20% 30%,rgba(var(--e-rgb),.9),transparent 70%),radial-gradient(35% 60% at 80% 70%,rgba(var(--e2-rgb),.8),transparent 70%),var(--bg);}
 .glass-demo-card.card{position:absolute;inset:14px 38px;margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
   -webkit-backdrop-filter:var(--lg-blur) !important;backdrop-filter:var(--lg-blur) !important;}
-html[data-glass="flat"] .glass-demo-card.card{-webkit-backdrop-filter:none !important;backdrop-filter:none !important;}
 .glass-demo-t{font-family:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:800;font-size:15px;letter-spacing:2px;color:var(--snow);}
 .glass-demo-s{font-size:11px;font-weight:600;color:var(--muted);}
 
@@ -3495,85 +3491,6 @@ html[data-mode="light"] #ovLive{background:rgba(120,130,150,.42);}
 html[data-mode] #ovLive .ov-card{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--lg-spec),var(--bg);}
 #ovLive .ov-card{will-change:transform;contain:layout paint;}
 
-/* ===================================================================
-   MATIÈRE « PÂTE À MODELER » (V3.4.0) — Profil › Apparence › Matière
-   Tout paraît modelé dans une pâte mate et gonflée : pas de verre ni de flou, une
-   lumière douce en haut à gauche et une ombre DANS la matière en bas à droite (les
-   deux ombres intérieures de --lg-rim), des coins très arrondis, une ombre portée
-   épaisse. Au toucher, ça s'écrase puis rebondit comme une pâte molle (.ik-jelly /
-   .ik-clay, voir glassJellyOn dans app.js), et le fond est fait de grosses gouttes
-   colorées qui dérivent lentement (transform seul : rien à recalculer).
-   =================================================================== */
-html[data-glass="clay"]{
-  --lg-fill:rgb(var(--s2-rgb));
-  --lg-body:linear-gradient(160deg,rgba(255,255,255,.07),rgba(0,0,0,.12));
-  --lg-spec:radial-gradient(90% 70% at 22% 6%,rgba(255,255,255,.11),transparent 62%);
-  --lg-rim:inset 3px 4px 9px -3px rgba(255,255,255,.14),inset -6px -8px 14px -6px rgba(0,0,0,.6);
-  --lg-drop:0 18px 30px -14px rgba(0,0,0,.72),0 5px 12px -5px rgba(0,0,0,.5);
-  --lg-drop-sm:0 10px 18px -9px rgba(0,0,0,.62),0 3px 6px -3px rgba(0,0,0,.4);
-  --lg-blur:none;
-  --lg-ctl:rgb(var(--s3-rgb));
-  --lg-spec-sm:radial-gradient(90% 80% at 24% 8%,rgba(255,255,255,.13),transparent 62%);
-  --lg-well:rgba(0,0,0,.3);
-  --lg-well-rim:inset 3px 5px 9px rgba(0,0,0,.55),inset -2px -3px 6px rgba(255,255,255,.05);
-  --lg-tint-rim:inset 2px 3px 7px -2px rgba(255,255,255,.42),inset -4px -6px 10px -4px rgba(0,0,0,.4);
-  --lg-sheet:rgb(var(--bg-rgb));
-  --r-md:24px; --r-lg:28px; --r-sm:20px;
-}
-html[data-glass="clay"][data-mode="light"]{
-  --lg-fill:#FFFFFF;
-  --lg-body:linear-gradient(160deg,rgba(255,255,255,.9),rgba(var(--e-rgb),.05));
-  --lg-spec:radial-gradient(90% 70% at 22% 6%,#fff,transparent 62%);
-  --lg-rim:inset 4px 5px 10px -3px #fff,inset -7px -9px 16px -7px rgba(var(--e-rgb),.26);
-  --lg-drop:0 20px 32px -16px rgba(var(--e-rgb),.34),0 5px 12px -5px rgba(30,40,60,.12);
-  --lg-drop-sm:0 12px 20px -12px rgba(var(--e-rgb),.3),0 3px 6px -3px rgba(30,40,60,.08);
-  --lg-ctl:#FFFFFF;
-  --lg-well:rgba(var(--e-rgb),.07);
-  --lg-well-rim:inset 3px 5px 9px rgba(var(--e-rgb),.18),inset -3px -4px 7px rgba(255,255,255,.95);
-  --lg-sheet:rgb(var(--bg-rgb));
-}
-html[data-glass="clay"] *{-webkit-backdrop-filter:none !important;backdrop-filter:none !important;}
-html[data-glass="clay"] :is(.card,.grp-card,.kchart-card,.chrome-box,.kduo-card,.cv-card){border-radius:26px;}
-html[data-glass="clay"] :is(.ktile,.sbox,.chrome-sbox,.favtile,.hv7-ktile,.sess,.list-row,.exg-card,.mus-card,.goal-item,.fr-req-card){border-radius:20px;}
-html[data-glass="clay"] :is(.hv7-day,.sp-plan,.hv7-score){border-radius:30px;}
-html[data-glass="clay"] .btn{border-radius:20px;box-shadow:var(--lg-tint-rim),0 12px 20px -10px rgba(var(--e-rgb),.6),0 3px 6px -2px rgba(0,0,0,.3) !important;}
-html[data-glass="clay"] .btn.ghost{box-shadow:var(--lg-rim),var(--lg-drop-sm) !important;}
-html[data-glass="clay"] :is(.pill,.seg-btn,.chbtn,.x,.tb-gear,.hv7-icon-btn,.hv7-people,.live-ic){box-shadow:var(--lg-rim),var(--lg-drop-sm) !important;}
-html[data-glass="clay"] :is(.seg-btn.on,.pill.on,.hv7-act.main,.fr-tab.on){box-shadow:var(--lg-tint-rim),0 8px 14px -8px rgba(var(--e-rgb),.7) !important;}
-/* barre du bas : un boudin de pâte ; la pastille, une goutte gonflée */
-html[data-glass="clay"] #nav{background:var(--lg-spec),var(--lg-body),var(--lg-fill) !important;border-color:transparent !important;border-radius:30px;
-  box-shadow:var(--lg-rim),var(--lg-drop) !important;}
-html[data-glass="clay"] #nav-pill{border-radius:22px;background:var(--fill-accent) !important;border:0 !important;
-  box-shadow:var(--lg-tint-rim),0 8px 16px -8px rgba(var(--e-rgb),.75) !important;}
-html[data-glass="clay"] .nb.on{color:var(--accent-ink);}
-html[data-glass="clay"] .nb.on::after{display:none;}
-/* interrupteurs : une bille de pâte dans un creux */
-html[data-glass="clay"] .toggle{box-shadow:var(--lg-well-rim) !important;}
-html[data-glass="clay"] .toggle::after{box-shadow:inset 2px 3px 5px -1px rgba(255,255,255,.7),inset -3px -4px 6px -2px rgba(0,0,0,.28),0 3px 6px -2px rgba(0,0,0,.4) !important;}
-/* appui : la pâte s'écrase (le rebond vient de .ik-jelly / .ik-clay au relâcher) */
-html[data-glass="clay"] :is(.btn,.hv7-act,.pill,.seg-btn,.chbtn,.x,.setcheck,.favtile,.tb-gear,.hv7-icon-btn,.accent-dot,.acc-sw,.mat-sw):active{transform:scale(.94,.9) !important;transition:transform .09s ease-out !important;}
-html[data-glass="clay"] :is(.card[onclick],.hv7-day,.sess,.list-row,.mus-card,.grp-row,.stat-card):active{transform:scale(.975,.96) !important;transition:transform .09s ease-out !important;}
-.ik-clay{animation:ikClay .6s cubic-bezier(.2,.8,.3,1.2);}
-@keyframes ikClay{0%{transform:scale(.975,.96);}30%{transform:scale(1.018,.985);}55%{transform:scale(.992,1.012);}78%{transform:scale(1.004,.998);}100%{transform:none;}}
-/* le fond : de grosses gouttes de pâte colorée qui dérivent */
-html[data-glass="clay"] body::before{inset:-16%;
-  background:
-    radial-gradient(34% 26% at 14% 12%,rgba(var(--e-rgb),.34),transparent 71%),
-    radial-gradient(30% 24% at 86% 26%,rgba(var(--e2-rgb),.26),transparent 71%),
-    radial-gradient(36% 28% at 22% 66%,rgba(var(--e2-rgb),.2),transparent 72%),
-    radial-gradient(32% 26% at 80% 88%,rgba(var(--e-rgb),.24),transparent 72%),
-    var(--bg);
-  animation:ikGlassDrift 26s ease-in-out infinite alternate;will-change:transform;}
-html[data-glass="clay"][data-mode="light"] body::before{
-  background:
-    radial-gradient(34% 26% at 14% 12%,rgba(var(--e-rgb),.2),transparent 71%),
-    radial-gradient(30% 24% at 86% 26%,rgba(var(--e2-rgb),.14),transparent 71%),
-    radial-gradient(36% 28% at 22% 66%,rgba(var(--e2-rgb),.12),transparent 72%),
-    radial-gradient(32% 26% at 80% 88%,rgba(var(--e-rgb),.15),transparent 72%),
-    var(--bg);}
-@media (prefers-reduced-motion: reduce){ html[data-glass="clay"] body::before{animation:none;} }
-html.easy-mode[data-glass="clay"] body::before{animation:none;inset:0;}
-
 /* COULEUR « PÂTE À MODELER » : corail tendre, et un fond de pâte multicolore
    (corail, lilas, menthe, beurre), comme une boîte de pâtes à modeler ouverte. */
 html[data-accent="clay"]{
@@ -3607,17 +3524,15 @@ html[data-mode="light"][data-accent="clay"] body::before{
 .accent-dot[data-a="clay"]{background:conic-gradient(from 200deg,#FF8E72,#FFD678,#6EDCB4,#BEA0FF,#FF8E72);
   box-shadow:inset 2px 3px 5px -1px rgba(255,255,255,.6),inset -3px -4px 6px -2px rgba(0,0,0,.3),var(--sh-sm);}
 
-/* Sélecteur de matière : quatre échantillons qui imitent chacun sa matière */
+/* Sélecteur de matière : un échantillon qui imite chaque matière */
 .mat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .mat-sw{display:flex;align-items:center;gap:10px;padding:12px;border-radius:18px;cursor:pointer;background:var(--s1);border:1.5px solid var(--hair);
   transition:transform .18s var(--ease-spring),border-color .2s ease;}
 .mat-sw.on{border-color:var(--e);box-shadow:0 0 0 3px rgba(var(--e-rgb),.18);}
 .mat-sw b{font-size:13px;font-weight:800;line-height:1.2;}
 .mat-ico{width:34px;height:34px;flex:none;border-radius:11px;}
-.mat-ico.flat{background:rgb(var(--s3-rgb));}
 .mat-ico.std{background:radial-gradient(130% 80% at 10% -18%,rgba(255,255,255,.55),transparent 55%),linear-gradient(160deg,rgba(var(--e-rgb),.45),rgba(var(--e2-rgb),.15));box-shadow:inset 0 0 0 1px rgba(255,255,255,.35);}
 .mat-ico.max{background:linear-gradient(135deg,rgba(255,255,255,.8),transparent 40%),conic-gradient(from 90deg,rgba(var(--e-rgb),.9),rgba(255,120,200,.6),rgba(120,220,255,.7),rgba(var(--e2-rgb),.9));box-shadow:inset 0 0 0 1px rgba(255,255,255,.5);}
-.mat-ico.clay{border-radius:14px;background:var(--grad-btn);box-shadow:inset 3px 4px 6px -2px rgba(255,255,255,.55),inset -4px -5px 8px -3px rgba(0,0,0,.4),0 6px 10px -5px rgba(var(--e-rgb),.7);}
 
 /* ===================================================================
    JOURS SPÉCIAUX (V3.5.0) — html[data-fete="…"], posé par applyTheme ces jours-là :
@@ -4146,287 +4061,3 @@ html[data-mode="light"] .ca-rpe b{color:hsl(var(--h) 70% 36%);}
 [dir="rtl"] .ca-list li{padding:5px 16px 5px 0;} [dir="rtl"] .ca-list li::before{left:auto;right:3px;}
 .ca-quote{margin:14px 4px 0;padding:0 0 0 12px;border-left:3px solid var(--e);font-style:italic;font-size:13.5px;line-height:1.5;color:var(--muted);}
 [dir="rtl"] .ca-quote{padding:0 12px 0 0;border-left:0;border-right:3px solid var(--e);}
-
-/* ===================================================================
-   MATIÈRE « ÉPURE » (ex-« Sobre », V3.8.0)
-   Le Sobre n'était que le Liquid Glass sans flou : mêmes cartes grises, même lueur
-   d'accent, mêmes espacements. L'Épure a sa propre écriture, éditoriale :
-   - fond uni, sans halo ni dérive ; cartes sans remplissage, cernées d'un trait fin ;
-   - aucune ombre ni lueur ; coins plus vifs (10 à 14 px) ;
-   - la sélection (onglets, pastilles, onglet actif de la barre) en noir et blanc
-     inversé ; la couleur d'accent est réservée à l'action principale, en aplat ;
-   - grosses icônes sans bulle, chiffres plus grands, plus d'air entre les blocs ;
-   - barre du bas ancrée au bord de l'écran, l'onglet actif marqué d'un trait.
-   =================================================================== */
-html[data-glass="flat"]{
-  --ep-line:rgba(255,255,255,.15); --ep-line2:rgba(255,255,255,.28); --ep-well:rgba(255,255,255,.04); --ep-ink:#F6F7F9; --ep-paper:#000;
-  --lg-fill:rgba(0,0,0,0); --lg-body:linear-gradient(transparent,transparent); --lg-spec:linear-gradient(transparent,transparent);
-  --lg-rim:inset 0 0 0 1px var(--ep-line); --lg-drop:0 0 0 0 rgba(0,0,0,0); --lg-drop-sm:0 0 0 0 rgba(0,0,0,0); --lg-blur:none;
-  --lg-ctl:rgba(0,0,0,0); --lg-spec-sm:linear-gradient(transparent,transparent);
-  --lg-well:var(--ep-well); --lg-well-rim:inset 0 0 0 1px var(--ep-line); --lg-tint-rim:inset 0 0 0 0 rgba(0,0,0,0); --lg-sheet:var(--bg);
-  --r-md:12px; --r-lg:14px; --r-sm:10px;
-  --sh-e:0 0 0 0 rgba(0,0,0,0); --sh-accent-sm:0 0 0 0 rgba(0,0,0,0); --float-sm:none;
-  --ik-line:linear-gradient(90deg,var(--ep-line),var(--ep-line)); --ik-line-glow:none;
-}
-html[data-glass="flat"][data-mode="light"]{
-  --ep-line:rgba(10,12,16,.13); --ep-line2:rgba(10,12,16,.3); --ep-well:rgba(10,12,16,.035); --ep-ink:#0A0B0D; --ep-paper:#fff;
-}
-/* fond : un aplat, rien ne bouge derrière */
-html[data-glass="flat"] body::before{background:var(--bg) !important;animation:none !important;inset:0 !important;}
-html[data-glass="flat"][data-mode="light"] body::before{background:#fff !important;background:color-mix(in srgb,var(--bg) 25%,#fff) !important;}
-html[data-glass="flat"] :is(.hv7-bg,.ik-streak,.ikh-fx::after){display:none !important;}
-html[data-glass="flat"] *{text-shadow:none !important;}
-/* surfaces : un trait, pas de matière */
-html[data-glass="flat"][data-mode] :is(.card,.grp-card,.kchart-card,.chrome-box,.kduo-card,.cv-card,.hv7-score,.hv7-day,.sp-plan,.ktile,.sbox,.chrome-sbox,.favtile,.hv7-ktile,.sess,.list-row,.exg-card,.mus-card,.goal-item,.fr-req-card,.pb-card,.db-tile,.db-card,.ps-card,.cm-card,.ca-block,.ik-prayer-card){
-  background:transparent !important;box-shadow:inset 0 0 0 1px var(--ep-line) !important;border-color:transparent !important;}
-html[data-glass="flat"][data-mode] :is(.hv7-day:not([onclick^="openPrayerFromHome"]),.sp-plan){box-shadow:inset 0 0 0 1.5px var(--ep-line2) !important;}
-html[data-glass="flat"][data-mode] .sess.today{box-shadow:inset 3px 0 0 var(--e),inset 0 0 0 1px var(--ep-line2) !important;}
-html[data-glass="flat"] :is(.hv7-day,.sp-plan){border-radius:14px !important;}
-html[data-glass="flat"] :is(.hv7-ktile,.pb-card,.ktile,.sbox,.db-tile){border-radius:10px !important;}
-/* chiffres et titres : plus grands, plus nets */
-html[data-glass="flat"] .hv7-ktile-val{font-size:23px;letter-spacing:-.6px;}
-html[data-glass="flat"] .pb-time{font-size:22px;letter-spacing:-.6px;}
-html[data-glass="flat"] .hv7-day-title{font-size:24px;letter-spacing:-.6px;}
-html[data-glass="flat"] :is(.hv7-ktile-lab,.pb-dist){letter-spacing:1.2px;}
-html[data-glass="flat"] .hv7-krow3{gap:10px;margin-bottom:12px;}
-html[data-glass="flat"] .pb-row{gap:10px;}
-html[data-glass="flat"] .hv7-day{margin-bottom:22px;}
-/* titres de section : à l'encre, avec un filet */
-html[data-glass="flat"] :is(.hv7-sec-lab,.sec-lab){color:var(--ep-ink) !important;letter-spacing:1.6px;margin-top:16px;}
-html[data-glass="flat"] :is(.hv7-sec-lab,.sec-lab)::before{background:var(--ep-line) !important;box-shadow:none !important;height:1px !important;}
-html[data-glass="flat"] .hv7-sec-lab .see{color:var(--e2);}
-/* action principale : un aplat d'accent ; actions secondaires : un trait */
-html[data-glass="flat"][data-mode] :is(.btn:not(.ghost):not(.danger),.hv7-act.main,.promo-cta,.rs-cta,.rl-ctrl.main){background:var(--e) !important;box-shadow:none !important;border-radius:10px !important;}
-html[data-glass="flat"][data-accent="yellow"][data-mode] :is(.btn:not(.ghost):not(.danger),.hv7-act.main){color:#1A1500 !important;}
-html[data-glass="flat"][data-mode] .btn.danger{box-shadow:none !important;border-radius:10px !important;}
-html[data-glass="flat"][data-mode] :is(.btn.ghost,.hv7-act.ghost,.sp-acts button:not(.lnk),.chbtn,.pill:not(.on),.cv-unit:not(.on),.stepper button,.addperf,.reason-tile,.setcheck:not(.on),.cm-chip:not(.on),.db-rep,.db-rpe-b:not(.fill),.ps-day:not(.on),.cm-day:not(.on)){
-  background:transparent !important;box-shadow:inset 0 0 0 1px var(--ep-line) !important;}
-html[data-glass="flat"] :is(.btn,.hv7-act){border-radius:10px !important;}
-html[data-glass="flat"] :is(.pill,.cm-chip){border-radius:8px !important;}
-/* le choix actif : encre inversée (blanc sur noir, noir sur blanc) */
-html[data-glass="flat"][data-mode] :is(.seg-btn.on,.pill.on,.fr-tab.on,.cm-chip.on,.ps-day.on,.cm-day.on,.cal-cell.today,.cv-unit.on):not(#_){
-  background:var(--ep-ink) !important;color:var(--ep-paper) !important;box-shadow:none !important;}
-html[data-glass="flat"][data-mode] .cm-day.on i{color:var(--ep-paper);}
-html[data-glass="flat"][data-mode] :is(.seg-ctrl,.seg-ctrl.sub,.fr-tabs){background:transparent !important;box-shadow:inset 0 0 0 1px var(--ep-line) !important;border-radius:10px;}
-html[data-glass="flat"] .seg-ctrl>.seg-thumb{border-radius:7px;}
-html[data-glass="flat"] .seg-btn{border-radius:7px;}
-html[data-glass="flat"][data-mode] .seg-ctrl.has-thumb>.seg-btn.on:not(.seg-thumb){color:var(--ep-paper) !important;}
-html[data-glass="flat"][data-mode] .toggle.on{background:var(--ep-ink) !important;box-shadow:none !important;}
-html[data-glass="flat"][data-mode] .toggle.on::after{background:var(--ep-paper) !important;}
-/* creux : un trait */
-html[data-glass="flat"][data-mode] :is(.inp,.li-field,.chrome-chip,.setcell,.mtag,.rs-sub,.wheels,.ps-select){background:transparent !important;box-shadow:inset 0 0 0 1px var(--ep-line) !important;}
-html[data-glass="flat"] .wheels::before{background:transparent;box-shadow:inset 0 0 0 1.5px var(--ep-ink);}
-/* grosses icônes, sans bulle */
-html[data-glass="flat"][data-mode] :is(.hv7-icon-btn,.hv7-people,.tb-gear:not(#tbAvatar),.ik-bell,.ik-people){background:transparent !important;box-shadow:none !important;border-color:transparent !important;}
-html[data-glass="flat"] :is(.hv7-icon-btn,.hv7-people) svg{width:23px;height:23px;stroke-width:1.8;}
-html[data-glass="flat"][data-mode] :is(.x,.live-ic,.mini-ic,.pf-edit,.cv-swap,.rl-ctrl:not(.main),.db-arrow){background:transparent !important;box-shadow:inset 0 0 0 1px var(--ep-line) !important;}
-html[data-glass="flat"][data-mode] .lr-icon{background:transparent !important;box-shadow:none !important;color:var(--ep-ink) !important;}
-html[data-glass="flat"] .lr-icon svg{width:22px;height:22px;}
-/* barre du bas : ancrée au bord, l'onglet actif à l'encre, marqué d'un trait */
-html[data-glass="flat"][data-mode] #nav{bottom:0 !important;width:100% !important;max-width:430px !important;border-radius:0 !important;
-  background:var(--bg) !important;-webkit-backdrop-filter:none !important;backdrop-filter:none !important;
-  box-shadow:inset 0 1px 0 var(--ep-line) !important;border:0 !important;padding-bottom:env(safe-area-inset-bottom) !important;}
-html[data-glass="flat"][data-mode="light"] #nav{background:#fff !important;}
-html[data-glass="flat"][data-mode] #nav-pill{top:0 !important;height:2px !important;border-radius:0 0 2px 2px !important;background:var(--ep-ink) !important;box-shadow:none !important;border:0 !important;-webkit-backdrop-filter:none !important;backdrop-filter:none !important;transform:none !important;}
-html[data-glass="flat"] #nav-pill::after{display:none;}
-html[data-glass="flat"] .nb{color:var(--muted);}
-html[data-glass="flat"] :is(.nb.on,.nb.on-alt){color:var(--ep-ink) !important;}
-html[data-glass="flat"] .nb.on::after{display:none;}
-html[data-glass="flat"] .nb svg{width:23px;height:23px;stroke-width:1.9;}
-/* fenêtres : une feuille unie, un filet en haut */
-html[data-glass="flat"][data-mode] .ov-card{background:var(--bg) !important;-webkit-backdrop-filter:none !important;backdrop-filter:none !important;box-shadow:inset 0 1px 0 var(--ep-line) !important;}
-html[data-glass="flat"][data-mode="light"] .ov-card{background:#fff !important;}
-html[data-glass="flat"][data-mode] .ov.ov-push .ov-card{background:var(--bg) !important;box-shadow:none !important;}
-html[data-glass="flat"][data-mode="light"] .ov.ov-push .ov-card{background:#fff !important;}
-html[data-glass="flat"] .ik-cta-bar{background:linear-gradient(to top,var(--bg) 70%,transparent);}
-html[data-glass="flat"][data-mode="light"] .ik-cta-bar{background:linear-gradient(to top,#fff 70%,rgba(255,255,255,0));}
-
-/* ===================================================================
-   MATIÈRE « GUIMAUVE » (ex-« Pâte à modeler », V3.8.0)
-   La pâte se distinguait à peine du verre (des coins un peu plus ronds). La Guimauve
-   assume un style moelleux et joueur :
-   - la pâte prend la teinte de l'accent ; les tuiles (chiffres du jour, records,
-     tuiles de bilan…) sont chacune d'une couleur pastel différente — corail, lilas,
-     menthe, beurre — comme une boîte de bonbons ;
-   - tout est plus gros et plus rond : icônes de 22 à 25 px dans des bulles colorées,
-     coins de 22 à 32 px, plus d'espace entre et dans les blocs ;
-   - boutons « jouet » : une tranche en relief sous chaque bouton, qui s'enfonce au
-     toucher ; titres de section en lettres rondes, sans capitales.
-   =================================================================== */
-html[data-glass="clay"]{
-  --gm-a:255,138,112; --gm-b:178,150,255; --gm-c:92,212,168; --gm-d:255,200,96;
-  --lg-body:linear-gradient(160deg,rgba(var(--e-rgb),.17),rgba(var(--e-rgb),.05) 58%,rgba(0,0,0,.16));
-  --r-md:26px; --r-lg:32px; --r-sm:22px;
-}
-html[data-glass="clay"][data-mode="light"]{
-  --lg-body:linear-gradient(160deg,rgba(255,255,255,.96),rgba(var(--e-rgb),.1));
-}
-/* le fond : des gouttes de bonbon, plus grosses et de toutes les couleurs */
-html[data-glass="clay"]:not([data-accent="clay"]) body::before{
-  background:
-    radial-gradient(38% 28% at 12% 10%,rgba(var(--gm-a),.3),transparent 70%),
-    radial-gradient(34% 26% at 88% 24%,rgba(var(--gm-b),.28),transparent 70%),
-    radial-gradient(40% 30% at 18% 64%,rgba(var(--gm-c),.2),transparent 72%),
-    radial-gradient(36% 28% at 84% 86%,rgba(var(--gm-d),.22),transparent 72%),
-    var(--bg) !important;}
-html[data-glass="clay"][data-mode="light"]:not([data-accent="clay"]) body::before{
-  background:
-    radial-gradient(38% 28% at 12% 10%,rgba(var(--gm-a),.22),transparent 70%),
-    radial-gradient(34% 26% at 88% 24%,rgba(var(--gm-b),.2),transparent 70%),
-    radial-gradient(40% 30% at 18% 64%,rgba(var(--gm-c),.16),transparent 72%),
-    radial-gradient(36% 28% at 84% 86%,rgba(var(--gm-d),.2),transparent 72%),
-    var(--bg) !important;}
-/* tuiles pastel : une couleur par tuile, dans l'ordre corail · lilas · menthe · beurre */
-html[data-glass="clay"][data-mode] :is(.hv7-krow3>.hv7-ktile,.pb-row>.pb-card,.db-sum>.db-tile,.krow3>.ktile,.kgrid>.ktile){
-  --gm:var(--gm-a);
-  background:radial-gradient(90% 70% at 22% 6%,rgba(255,255,255,.2),transparent 62%),linear-gradient(160deg,rgba(var(--gm),.44),rgba(var(--gm),.2)),rgb(var(--s2-rgb)) !important;
-  box-shadow:inset 3px 4px 9px -3px rgba(255,255,255,.22),inset -6px -8px 14px -6px rgba(0,0,0,.45),0 12px 20px -12px rgba(var(--gm),.55) !important;}
-html[data-glass="clay"][data-mode="light"] :is(.hv7-krow3>.hv7-ktile,.pb-row>.pb-card,.db-sum>.db-tile,.krow3>.ktile,.kgrid>.ktile){
-  background:radial-gradient(90% 70% at 22% 6%,#fff,transparent 62%),linear-gradient(160deg,rgba(var(--gm),.36),rgba(var(--gm),.16)),#fff !important;
-  box-shadow:inset 4px 5px 10px -3px #fff,inset -7px -9px 16px -7px rgba(var(--gm),.45),0 14px 22px -14px rgba(var(--gm),.6) !important;}
-html[data-glass="clay"] :is(.hv7-krow3>.hv7-ktile,.pb-row>.pb-card,.db-sum>.db-tile,.krow3>.ktile,.kgrid>.ktile):nth-child(4n+2){--gm:var(--gm-b);}
-html[data-glass="clay"] :is(.hv7-krow3>.hv7-ktile,.pb-row>.pb-card,.db-sum>.db-tile,.krow3>.ktile,.kgrid>.ktile):nth-child(4n+3){--gm:var(--gm-c);}
-html[data-glass="clay"] :is(.hv7-krow3>.hv7-ktile,.pb-row>.pb-card,.db-sum>.db-tile,.krow3>.ktile,.kgrid>.ktile):nth-child(4n+4){--gm:var(--gm-d);}
-html[data-glass="clay"] :is(.hv7-krow3>.hv7-ktile,.pb-row>.pb-card,.db-sum>.db-tile){border-radius:24px !important;}
-html[data-glass="clay"][data-mode="light"] :is(.hv7-ktile-lab,.pb-dist,.db-tile span){color:rgba(20,24,32,.62) !important;}
-html[data-glass="clay"] .hv7-ktile-val{font-size:22px;}
-html[data-glass="clay"] .pb-time{font-size:21px;}
-html[data-glass="clay"] .pb-card .pb-pace{color:inherit;opacity:.7;}
-/* plus d'air */
-html[data-glass="clay"] .hv7-krow3{gap:10px;margin-bottom:12px;}
-html[data-glass="clay"] .pb-row{gap:10px;}
-html[data-glass="clay"] .hv7-day{padding:22px;margin-bottom:22px;border-radius:32px !important;}
-html[data-glass="clay"] .hv7-ktile{padding:15px 10px;}
-html[data-glass="clay"] .pb-card{padding:16px 10px;}
-/* titres de section : lettres rondes, sans capitales */
-html[data-glass="clay"] :is(.hv7-sec-lab,.sec-lab){font-family:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;text-transform:none;letter-spacing:-.1px;font-size:14px;font-weight:800;color:var(--snow) !important;margin-top:18px;}
-html[data-glass="clay"] :is(.hv7-sec-lab,.sec-lab)::before{display:none;}
-html[data-glass="clay"] .hv7-sec-lab .see{font-family:'Inter',system-ui,sans-serif;font-size:12px;}
-/* grosses icônes dans des bulles colorées */
-html[data-glass="clay"] :is(.hv7-icon-btn,.hv7-people){width:44px;height:44px;}
-html[data-glass="clay"] :is(.hv7-icon-btn,.hv7-people) svg{width:21px;height:21px;}
-html[data-glass="clay"][data-mode] .hv7-header-right>:nth-child(4n+1):not(#_){background:linear-gradient(160deg,rgba(var(--gm-a),.5),rgba(var(--gm-a),.26)) !important;}
-html[data-glass="clay"][data-mode] .hv7-header-right>:nth-child(4n+2):not(#_){background:linear-gradient(160deg,rgba(var(--gm-b),.5),rgba(var(--gm-b),.26)) !important;}
-html[data-glass="clay"][data-mode] .hv7-header-right>:nth-child(4n+3):not(#_){background:linear-gradient(160deg,rgba(var(--gm-c),.5),rgba(var(--gm-c),.26)) !important;}
-html[data-glass="clay"][data-mode] .hv7-header-right>:nth-child(4n+4):not(#_){background:linear-gradient(160deg,rgba(var(--gm-d),.5),rgba(var(--gm-d),.26)) !important;}
-html[data-glass="clay"][data-mode] .lr-icon{width:38px;height:38px;border-radius:14px;color:var(--snow) !important;
-  background:linear-gradient(160deg,rgba(var(--gm-a),.5),rgba(var(--gm-a),.25)) !important;box-shadow:inset 2px 3px 6px -2px rgba(255,255,255,.4),inset -3px -4px 7px -3px rgba(0,0,0,.3) !important;}
-html[data-glass="clay"] .grp-row:nth-child(4n+2) .lr-icon{background:linear-gradient(160deg,rgba(var(--gm-b),.5),rgba(var(--gm-b),.25)) !important;}
-html[data-glass="clay"] .grp-row:nth-child(4n+3) .lr-icon{background:linear-gradient(160deg,rgba(var(--gm-c),.5),rgba(var(--gm-c),.25)) !important;}
-html[data-glass="clay"] .grp-row:nth-child(4n+4) .lr-icon{background:linear-gradient(160deg,rgba(var(--gm-d),.55),rgba(var(--gm-d),.28)) !important;}
-html[data-glass="clay"] .lr-icon svg{width:21px;height:21px;}
-/* boutons « jouet » : une tranche en relief, qui s'enfonce au toucher */
-html[data-glass="clay"][data-mode] :is(.btn:not(.ghost):not(.danger),.hv7-act.main,.rs-cta,.promo-cta){
-  box-shadow:inset 2px 3px 6px -2px rgba(255,255,255,.5),inset -3px -4px 8px -4px rgba(0,0,0,.3),0 5px 0 color-mix(in srgb,var(--e) 55%,#000),0 12px 18px -10px rgba(var(--e-rgb),.7) !important;
-  border-radius:22px !important;}
-html[data-glass="clay"][data-mode] :is(.btn.ghost,.hv7-act.ghost){box-shadow:var(--lg-rim),0 5px 0 rgba(0,0,0,.32),0 10px 16px -10px rgba(0,0,0,.5) !important;border-radius:22px !important;}
-html[data-glass="clay"][data-mode="light"] :is(.btn.ghost,.hv7-act.ghost){box-shadow:var(--lg-rim),0 5px 0 rgba(var(--e-rgb),.18),0 10px 16px -10px rgba(var(--e-rgb),.35) !important;}
-html[data-glass="clay"] :is(.btn,.hv7-act):active{transform:translateY(4px) scale(.98,.96) !important;}
-html[data-glass="clay"][data-mode] :is(.btn:not(.ghost):not(.danger),.hv7-act.main):active{box-shadow:inset 2px 3px 6px -2px rgba(255,255,255,.5),inset -3px -4px 8px -4px rgba(0,0,0,.3),0 1px 0 color-mix(in srgb,var(--e) 55%,#000) !important;}
-html[data-glass="clay"] .hv7-act{padding:14px 8px;}
-/* sélecteurs : plus épais, pastille gonflée */
-html[data-glass="clay"] .seg-ctrl:not(.sub){padding:5px;border-radius:24px !important;}
-html[data-glass="clay"] .seg-ctrl:not(.sub)>.seg-btn{padding:11px 0;font-size:12.5px;border-radius:20px;}
-html[data-glass="clay"] .seg-ctrl>.seg-thumb{border-radius:20px;}
-/* barre du bas : un gros boudin de pâte, icônes plus grandes */
-html[data-glass="clay"] #nav{border-radius:34px !important;padding:8px 6px;}
-html[data-glass="clay"] .nb svg{width:25px;height:25px;}
-html[data-glass="clay"] #nav-pill{border-radius:26px !important;}
-
-/* ===================================================================
-   MATIÈRE « PAPIER » (V3.8.0) — 2e cran de la molette
-   Des feuilles mates et chaudes posées les unes sur les autres : papier crème grainé
-   (ardoise chaude en sombre), encre sépia, ombres de feuille courtes, coins coupés
-   nets (6 à 10 px). Titres et grands chiffres à empattements, titres de section en
-   italique, et le choix surligné comme au marqueur. Ni verre, ni lueur.
-   =================================================================== */
-html[data-glass="paper"]{
-  --pp-grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .42 0 0 0 0 .32 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  --pp-serif:ui-serif,'New York','Iowan Old Style',Georgia,'Times New Roman',serif;
-  --bg:#171513; --s1:#211E1B; --s2:#2A2622; --s3:#35302B; --bg-rgb:23,21,19; --s1-rgb:33,30,27; --s2-rgb:42,38,34; --s3-rgb:53,48,43;
-  --hair:#36302A; --hair2:#463F37; --snow:#EFE7DA; --muted:#AA9E8F; --dim:#8C8174;
-  --pp-ink:#EFE7DA; --pp-shadow:0 1px 0 rgba(255,255,255,.035) inset,0 10px 18px -10px rgba(0,0,0,.75),0 2px 4px -2px rgba(0,0,0,.5);
-  --lg-fill:rgb(33,30,27); --lg-body:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 40%); --lg-spec:var(--pp-grain);
-  --lg-rim:inset 0 0 0 1px rgba(255,240,220,.05); --lg-drop:0 10px 18px -10px rgba(0,0,0,.75),0 2px 4px -2px rgba(0,0,0,.5); --lg-drop-sm:0 6px 12px -8px rgba(0,0,0,.7),0 1px 3px -1px rgba(0,0,0,.45);
-  --lg-blur:none; --lg-ctl:rgb(42,38,34); --lg-spec-sm:var(--pp-grain);
-  --lg-well:rgba(0,0,0,.22); --lg-well-rim:inset 0 1px 3px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,240,220,.04);
-  --lg-tint-rim:inset 0 0 0 0 rgba(0,0,0,0); --lg-sheet:rgb(26,24,21);
-  --r-md:9px; --r-lg:11px; --r-sm:7px;
-  --sh-e:0 3px 0 rgba(0,0,0,.35); --sh-accent-sm:none; --float-sm:none;
-  --ik-line:linear-gradient(90deg,rgba(255,240,220,.12),rgba(255,240,220,.12)); --ik-line-glow:none;
-  --pp-mark:rgba(var(--e-rgb),.42);
-}
-html[data-glass="paper"][data-mode="light"]{
-  --bg:#F2ECE1; --s1:#FBF8F2; --s2:#EFE8DB; --s3:#E6DCCB; --bg-rgb:242,236,225; --s1-rgb:251,248,242; --s2-rgb:239,232,219; --s3-rgb:230,220,203;
-  --hair:#E2D7C5; --hair2:#D3C4AD; --snow:#2A241F; --muted:#76695B; --dim:#968a7c;
-  --pp-ink:#2A241F; --pp-shadow:0 1px 1px rgba(70,50,25,.08),0 8px 16px -10px rgba(70,50,25,.3);
-  --lg-fill:rgb(251,248,242); --lg-body:linear-gradient(180deg,rgba(255,255,255,.6),rgba(255,255,255,0) 40%);
-  --lg-rim:inset 0 0 0 1px rgba(90,70,40,.06); --lg-drop:0 1px 1px rgba(70,50,25,.08),0 9px 16px -10px rgba(70,50,25,.32); --lg-drop-sm:0 1px 1px rgba(70,50,25,.07),0 5px 10px -7px rgba(70,50,25,.3);
-  --lg-ctl:rgb(251,248,242); --lg-well:rgba(90,70,40,.06); --lg-well-rim:inset 0 1px 2px rgba(90,70,40,.14),inset 0 0 0 1px rgba(90,70,40,.05);
-  --lg-sheet:rgb(246,241,233); --sh-e:0 3px 0 rgba(70,50,25,.18);
-  --pp-mark:rgba(var(--e-rgb),.3);
-}
-html[data-glass="paper"] *{-webkit-backdrop-filter:none !important;backdrop-filter:none !important;text-shadow:none !important;}
-/* la table : papier grainé, sans dérive */
-html[data-glass="paper"] body::before{background:var(--pp-grain),radial-gradient(120% 80% at 50% 0%,rgba(255,240,220,.04),transparent 60%),var(--bg) !important;animation:none !important;inset:0 !important;}
-html[data-glass="paper"][data-mode="light"] body::before{background:var(--pp-grain),radial-gradient(120% 80% at 50% 0%,#fff 0%,transparent 60%),var(--bg) !important;}
-html[data-glass="paper"] :is(.hv7-bg,.ik-streak){display:none !important;}
-/* feuilles : posées, avec une ombre courte */
-html[data-glass="paper"][data-mode] :is(.card,.grp-card,.kchart-card,.chrome-box,.kduo-card,.cv-card,.hv7-score,.hv7-day,.sp-plan,.ktile,.sbox,.chrome-sbox,.favtile,.hv7-ktile,.sess,.list-row,.exg-card,.mus-card,.goal-item,.fr-req-card,.pb-card,.db-tile,.db-card,.ps-card,.cm-card,.ca-block,.ik-prayer-card){
-  background:var(--pp-grain),var(--lg-body),var(--lg-fill) !important;box-shadow:var(--lg-rim),var(--lg-drop) !important;border-color:transparent !important;}
-html[data-glass="paper"][data-mode] :is(.ktile,.sbox,.hv7-ktile,.sess,.list-row,.pb-card,.db-tile){box-shadow:var(--lg-rim),var(--lg-drop-sm) !important;}
-html[data-glass="paper"] :is(.hv7-day,.sp-plan){border-radius:11px !important;}
-html[data-glass="paper"][data-mode] :is(.hv7-day:not([onclick^="openPrayerFromHome"]),.sp-plan){box-shadow:inset 4px 0 0 var(--e),var(--lg-rim),var(--lg-drop) !important;}
-html[data-glass="paper"][data-mode] .sess.today{box-shadow:inset 3px 0 0 var(--e),var(--lg-rim),var(--lg-drop-sm) !important;}
-/* l'encre : titres et grands chiffres à empattements */
-html[data-glass="paper"] :is(.hv7-greet h1,.ikh-title,.hv7-day-title,.rs-title,.cm-title,.sp-race,.man,.hv7-ktile-val,.pb-time,.ktile-val,.db-tile b,.ca-hero b,.ov-head h2,.kchart-big,.big-num){
-  font-family:var(--pp-serif) !important;font-weight:700 !important;letter-spacing:-.2px !important;}
-html[data-glass="paper"] .hv7-greet h1{font-size:27px !important;}
-html[data-glass="paper"] .hv7-day-title{font-size:25px;}
-html[data-glass="paper"] .hv7-ktile-val{font-size:24px;}
-html[data-glass="paper"] .pb-time{font-size:23px;}
-/* titres de section : italique, avec un filet fin */
-html[data-glass="paper"] :is(.hv7-sec-lab,.sec-lab){font-family:var(--pp-serif);font-style:italic;text-transform:none;letter-spacing:0;font-size:16px;font-weight:600;color:var(--pp-ink) !important;margin-top:18px;}
-html[data-glass="paper"] :is(.hv7-sec-lab,.sec-lab)::before{background:var(--hair2) !important;box-shadow:none !important;height:1px !important;}
-html[data-glass="paper"] .hv7-sec-lab .see{font-family:'Inter',system-ui,sans-serif;font-style:normal;font-size:12px;}
-html[data-glass="paper"] .hv7-krow3{gap:10px;margin-bottom:12px;}
-html[data-glass="paper"] .pb-row{gap:10px;}
-/* le choix : surligné au marqueur */
-html[data-glass="paper"][data-mode] :is(.pill.on,.cm-chip.on,.cv-unit.on,.ps-day.on,.cm-day.on,.cal-cell.today):not(#_){
-  background:linear-gradient(transparent 52%,var(--pp-mark) 52%,var(--pp-mark) 88%,transparent 88%),var(--lg-fill) !important;color:var(--pp-ink) !important;box-shadow:var(--lg-rim),var(--lg-drop-sm) !important;}
-html[data-glass="paper"][data-mode] .cm-day.on i{color:var(--pp-ink);}
-html[data-glass="paper"][data-mode] :is(.seg-ctrl,.seg-ctrl.sub,.fr-tabs){background:var(--lg-well) !important;box-shadow:var(--lg-well-rim) !important;border-radius:9px;}
-html[data-glass="paper"][data-mode] .seg-btn.on:not(#_){background:var(--pp-grain),var(--lg-fill) !important;box-shadow:var(--lg-rim),0 2px 5px -1px rgba(0,0,0,.35) !important;color:var(--pp-ink) !important;}
-html[data-glass="paper"][data-mode] .seg-ctrl.has-thumb>.seg-btn.on:not(.seg-thumb){color:var(--pp-ink) !important;
-  background:linear-gradient(transparent 58%,var(--pp-mark) 58%,var(--pp-mark) 86%,transparent 86%) !important;background-size:70% 100% !important;background-repeat:no-repeat !important;background-position:50% 0 !important;}
-html[data-glass="paper"] :is(.seg-ctrl>.seg-thumb,.seg-btn){border-radius:6px;}
-/* boutons : l'action principale en aplat d'accent, posée ; les autres, des feuilles */
-html[data-glass="paper"][data-mode] :is(.btn:not(.ghost):not(.danger),.hv7-act.main,.promo-cta,.rs-cta,.rl-ctrl.main){background:var(--e) !important;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),var(--sh-e),0 8px 14px -10px rgba(0,0,0,.6) !important;}
-html[data-glass="paper"][data-mode] :is(.btn.ghost,.hv7-act.ghost,.sp-acts button:not(.lnk),.chbtn,.pill:not(.on),.cv-unit:not(.on),.stepper button,.reason-tile,.setcheck:not(.on),.cm-chip:not(.on),.db-rep,.ps-day:not(.on),.cm-day:not(.on),.db-rpe-b:not(.fill)){
-  background:var(--pp-grain),var(--lg-ctl) !important;box-shadow:var(--lg-rim),var(--lg-drop-sm) !important;}
-html[data-glass="paper"] :is(.btn,.hv7-act){border-radius:8px !important;}
-html[data-glass="paper"] :is(.pill,.cm-chip){border-radius:6px !important;}
-html[data-glass="paper"] :is(.btn,.hv7-act,.pill,.seg-btn):active{transform:translateY(1px) !important;}
-/* icônes : un tampon à l'encre, sans bulle */
-html[data-glass="paper"][data-mode] :is(.hv7-icon-btn,.hv7-people,.tb-gear:not(#tbAvatar)):not(#_){background:transparent !important;box-shadow:inset 0 0 0 1.5px var(--hair2) !important;color:var(--pp-ink) !important;}
-html[data-glass="paper"] :is(.hv7-icon-btn,.hv7-people) svg{width:20px;height:20px;}
-html[data-glass="paper"][data-mode] .lr-icon{background:transparent !important;box-shadow:inset 0 0 0 1.5px var(--hair2) !important;color:var(--pp-ink) !important;border-radius:50% !important;}
-/* barre du bas : une bande de papier, l'onglet actif surligné */
-html[data-glass="paper"][data-mode] #nav{background:var(--pp-grain),var(--lg-fill) !important;box-shadow:var(--lg-rim),var(--lg-drop) !important;border:0 !important;border-radius:12px !important;}
-html[data-glass="paper"][data-mode] #nav-pill{top:auto !important;bottom:15px !important;height:9px !important;border-radius:3px !important;background:var(--pp-mark) !important;box-shadow:none !important;border:0 !important;transform:skewX(-8deg) !important;}
-html[data-glass="paper"] #nav-pill::after{display:none;}
-html[data-glass="paper"] .nb{color:var(--muted);}
-html[data-glass="paper"] :is(.nb.on,.nb.on-alt){color:var(--pp-ink) !important;}
-html[data-glass="paper"] .nb.on::after{display:none;}
-/* fenêtres : une feuille posée sur la table */
-html[data-glass="paper"][data-mode] .ov-card{background:var(--pp-grain),var(--lg-sheet) !important;box-shadow:0 -10px 30px -12px rgba(0,0,0,.5) !important;}
-html[data-glass="paper"][data-mode] .ov.ov-push .ov-card{background:var(--pp-grain),var(--bg) !important;}
-html[data-glass="paper"] .ik-cta-bar{background:linear-gradient(to top,var(--bg) 70%,transparent);}
-html[data-glass="paper"][data-mode] :is(.inp,.li-field,.chrome-chip,.setcell,.ps-select,.wheels){background:var(--lg-well) !important;box-shadow:var(--lg-well-rim) !important;}
-html[data-glass="paper"] .wheels::before{background:var(--pp-mark);box-shadow:none;opacity:.55;}
-/* icône de la molette Matière : une feuille cornée */
-.mat-ico.paper{border-radius:5px;background:linear-gradient(225deg,#D9CDB8 0 14%,transparent 14%),linear-gradient(160deg,#FBF6EC,#E9DFCC);box-shadow:0 3px 6px -2px rgba(60,40,20,.45),inset 0 0 0 1px rgba(90,70,40,.12);}
-.mat-ico.flat{background:transparent;box-shadow:inset 0 0 0 1.5px var(--snow);}
-/* Papier : tous les titres et grands chiffres (là où le reste de l'app prend Unbounded) passent à l'empattement */
-html[data-glass="paper"] :is(.bd-cell .bd-name,.bt-n,.ca-hero b,.card-t,.ch-title,.chbtn,.chrome-box .cb-head,.chrome-sbox .v,.cm-title,.cv-val,.db-tile b,.ds-n,.ev-tile .ev-title,.ev-title,.exg-name,.fc-txt b,.hr-val,.hstat-v,.hv7-day-targets b,.hv7-day-title,.hv7-greet h1,.hv7-ktile-val,.ik-greet h1,.ik-hero-big .n,.ik-hero-mid-txt .v,.ikh-home .hv7-greet h1,.ikh-login .login-brand,.ikh-ob-big .login-brand,.ikh-title,.kalo-head h2,.kchart-val,.kduo-val,.kinsights-head,.ktile-val,.list-row .lr-title,.login-h1,.lvl-n,.man,.mus-name,.next-title,.ob-mode-t,.ob-step h1,.ov-head h2,.perfcard .pcv.empty,.phase-head,.prog-stats-c .v,.pstat .v,.rk-name,.rl-title,.rs-stat .v,.rs-target-v,.rs-title,.sbox .v,.sec-head h3,.sp-days b,.sp-metrics b,.sp-race,.tb-title,.tg-val,.week-ring-v){font-family:var(--pp-serif) !important;letter-spacing:-.2px;}
-.mat-ico.clay{background:radial-gradient(70% 60% at 30% 25%,rgba(255,255,255,.6),transparent 60%),linear-gradient(135deg,#FF8A70,#B296FF 52%,#5CD4A8);box-shadow:inset 3px 4px 6px -2px rgba(255,255,255,.55),inset -4px -5px 8px -3px rgba(0,0,0,.25),0 6px 10px -5px rgba(178,150,255,.7);}

@@ -635,18 +635,30 @@
         return 'ok';
       } finally { P.theme=av; P.easyMode=avE; applyTheme(); }
     });
-    // V3.8.0 : 5 matières (Guimauve, Papier, Épure, Liquid Glass, Maximal) ; un réglage
-    // enregistré sur l'ancienne échelle à 4 crans est recalé sur la bonne matière.
-    essaie(c,'5 matières, ancienne échelle recalée',function(){
+    // V3.9.0 : deux matières seulement (Liquid Glass, Ultime). Guimauve, Papier et Épure sont
+    // retirées : un réglage enregistré sur une ancienne échelle revient au Liquid Glass, ou
+    // garde l'Ultime (et l'entre-deux) s'il y était.
+    essaie(c,'2 matières, anciens réglages recalés',function(){
       var av={mat:P.mat,matV:P.matV,glass:P.glass,easy:P.easyMode};
       try{
-        if(MAT_ANCHORS.join()!=='clay,paper,flat,std,max') throw new Error('ordre '+MAT_ANCHORS.join());
-        P.matV=undefined; P.mat=1; P.glass='flat'; if(matNearest(matValue())!=='flat') throw new Error('ancien « Sobre » mal recalé : '+P.mat);
+        if(MAT_ANCHORS.join()!=='std,max') throw new Error('matières '+MAT_ANCHORS.join());
+        P.matV=2; P.mat=0; P.glass='clay'; if(matNearest(matValue())!=='std' || P.glass!=='std') throw new Error('Guimauve mal recalée : '+P.mat+' '+P.glass);
+        P.matV=2; P.mat=1; P.glass='paper'; if(matNearest(matValue())!=='std' || P.glass!=='std') throw new Error('Papier mal recalé : '+P.mat+' '+P.glass);
+        P.matV=2; P.mat=2; P.glass='flat'; if(matNearest(matValue())!=='std' || P.glass!=='std') throw new Error('Épure mal recalée : '+P.mat+' '+P.glass);
+        P.matV=2; P.mat=4; P.glass='max'; if(matNearest(matValue())!=='max' || P.glass!=='max') throw new Error('Maximal (V3.8.0) mal recalé : '+P.mat);
+        P.matV=2; P.mat=3.5; P.glass='max'; if(Math.abs(matValue()-.5)>.001) throw new Error('entre-deux mal recalé : '+P.mat);
+        P.matV=undefined; P.mat=1; P.glass='flat'; if(matNearest(matValue())!=='std' || P.glass!=='std') throw new Error('ancien « Sobre » mal recalé : '+P.mat);
         P.matV=undefined; P.mat=3; P.glass='max'; if(matNearest(matValue())!=='max') throw new Error('ancien « Maximal » mal recalé : '+P.mat);
         P.easyMode=false;
         MAT_ANCHORS.forEach(function(k,i){ P.mat=i; P.glass=k; applyTheme();
           if(document.documentElement.getAttribute('data-glass')!==k) throw new Error(k+' non appliquée'); });
-        if(t('glassClay')==='Pâte à modeler' || t('glassFlat')==='Sobre') throw new Error('anciens noms');
+        P.glass='clay'; applyTheme();
+        if(document.documentElement.getAttribute('data-glass')!=='std') throw new Error('matière retirée encore appliquée');
+        if(/P\.glass\s*=\s*'clay'/.test(String(setAccent))) throw new Error('la couleur Guimauve impose encore sa matière');
+        ['glassClay','glassPaper','glassFlat','clayOn'].forEach(function(k){ if(k in I18N.fr || k in I18N.en || k in I18N.ar) throw new Error('texte restant : '+k); });
+        var css=document.getElementById('ikCss'), restes=0;
+        if(css && css.sheet) [].forEach.call(css.sheet.cssRules,function(r){ if(/data-glass="(clay|paper|flat)"/.test(r.cssText||'')) restes++; });
+        if(restes) throw new Error(restes+' règles CSS de matières retirées');
         return MAT_ANCHORS.map(function(k){ return t(MAT_LABS[k][0]); }).join(' · ');
       } finally { P.mat=av.mat; P.matV=av.matV; P.glass=av.glass; P.easyMode=av.easy; applyTheme(); }
     });
