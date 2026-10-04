@@ -635,13 +635,13 @@
         return 'ok';
       } finally { P.theme=av; P.easyMode=avE; applyTheme(); }
     });
-    // V3.9.0 : deux matières seulement (Liquid Glass, Ultime). Guimauve, Papier et Épure sont
-    // retirées : un réglage enregistré sur une ancienne échelle revient au Liquid Glass, ou
-    // garde l'Ultime (et l'entre-deux) s'il y était.
-    essaie(c,'2 matières, anciens réglages recalés',function(){
+    // V3.9.0 : Guimauve, Papier et Épure sont retirées : un réglage enregistré sur une
+    // ancienne échelle revient au Liquid Glass, ou garde l'Ultime (et l'entre-deux) s'il y était.
+    // V3.10.0 : 3e cran, le Covering.
+    essaie(c,'matières, anciens réglages recalés',function(){
       var av={mat:P.mat,matV:P.matV,glass:P.glass,easy:P.easyMode};
       try{
-        if(MAT_ANCHORS.join()!=='std,max') throw new Error('matières '+MAT_ANCHORS.join());
+        if(MAT_ANCHORS.join()!=='std,max,wrap') throw new Error('matières '+MAT_ANCHORS.join());
         P.matV=2; P.mat=0; P.glass='clay'; if(matNearest(matValue())!=='std' || P.glass!=='std') throw new Error('Guimauve mal recalée : '+P.mat+' '+P.glass);
         P.matV=2; P.mat=1; P.glass='paper'; if(matNearest(matValue())!=='std' || P.glass!=='std') throw new Error('Papier mal recalé : '+P.mat+' '+P.glass);
         P.matV=2; P.mat=2; P.glass='flat'; if(matNearest(matValue())!=='std' || P.glass!=='std') throw new Error('Épure mal recalée : '+P.mat+' '+P.glass);
@@ -661,6 +661,32 @@
         if(restes) throw new Error(restes+' règles CSS de matières retirées');
         return MAT_ANCHORS.map(function(k){ return t(MAT_LABS[k][0]); }).join(' · ');
       } finally { P.mat=av.mat; P.matV=av.matV; P.glass=av.glass; P.easyMode=av.easy; applyTheme(); }
+    });
+    // V3.10.0 : Covering — la teinte du film remplace la couleur de l'app, avec une seule
+    // couleur d'accent assortie ; la couleur choisie hors Covering revient ensuite.
+    essaie(c,'Covering : teintes, couleurs assorties, retour à la couleur choisie',function(){
+      var av={mat:P.mat,matV:P.matV,glass:P.glass,easy:P.easyMode,theme:P.theme,wrap:P.wrap}, h=document.documentElement;
+      try{
+        P.easyMode=false; P.theme='violet'; P.glass='wrap'; P.mat=2; P.wrap='nardo'; applyTheme();
+        if(h.getAttribute('data-glass')!=='wrap' || h.dataset.wrap!=='nardo' || h.dataset.accent!=='wrap') throw new Error('Covering non appliqué : '+h.getAttribute('data-glass')+' '+h.dataset.wrap+' '+h.dataset.accent);
+        var e=getComputedStyle(h).getPropertyValue('--e').trim().toUpperCase();
+        if(e!=='#F2C200') throw new Error('Gris Nardo sans ses étriers jaunes : '+e);
+        var html=pfColorHTML();
+        if(html.indexOf('setWrap(')<0 || html.indexOf('setAccent(')>=0) throw new Error('le menu Couleurs propose encore les couleurs');
+        if(WRAPS.length<8 || WRAPS.some(function(w){ return !t(w.name) || t(w.name)===w.name || !t(w.det) || t(w.det)===w.det; })) throw new Error('teinte sans nom');
+        setWrap('militaire'); if(h.dataset.wrap!=='militaire') throw new Error('changement de teinte ignoré');
+        if(document.getElementById('ikCarbon')) throw new Error('plaque carbone sous le Covering');
+        P.wrap='inconnue'; applyTheme(); if(h.dataset.wrap!=='noir') throw new Error('teinte inconnue non recalée');
+        var tp=JSON.parse(localStorage.getItem('ik_theme_prefs')||'{}'); if(tp.glass!=='wrap' || tp.wrap!=='noir') throw new Error('démarrage rapide sans le Covering');
+        P.easyMode=true; applyTheme();
+        if(h.getAttribute('data-glass')==='wrap' || h.dataset.accent!=='violet') throw new Error('mode simplifié : la couleur choisie ne revient pas');
+        P.easyMode=false; P.glass='std'; P.mat=0; applyTheme();
+        if(h.dataset.wrap || h.dataset.accent!=='violet' || pfColorHTML().indexOf('setAccent(')<0) throw new Error('retour au Liquid Glass sans la couleur choisie');
+        // molette : de l'Ultime au Covering, d'un cran à l'autre (pas de mélange verre / film)
+        var el={value:'160'}; matInput(el); if(P.glass!=='wrap' || P.mat!==2) throw new Error('molette : Covering non atteint '+P.mat);
+        el.value='130'; matInput(el); if(P.glass!=='max' || P.mat!==1) throw new Error('molette : retour à l’Ultime raté '+P.mat);
+        return WRAPS.map(function(w){ return t(w.name); }).join(' · ');
+      } finally { P.mat=av.mat; P.matV=av.matV; P.glass=av.glass; P.easyMode=av.easy; P.theme=av.theme; P.wrap=av.wrap; applyTheme(); }
     });
   }
 
