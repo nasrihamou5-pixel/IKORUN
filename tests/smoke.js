@@ -670,11 +670,13 @@
         P.easyMode=false; P.theme='violet'; P.glass='wrap'; P.mat=2; P.wrap='nardo'; applyTheme();
         if(h.getAttribute('data-glass')!=='wrap' || h.dataset.wrap!=='nardo' || h.dataset.accent!=='wrap') throw new Error('Covering non appliqué : '+h.getAttribute('data-glass')+' '+h.dataset.wrap+' '+h.dataset.accent);
         var e=getComputedStyle(h).getPropertyValue('--e').trim().toUpperCase();
-        if(e!=='#F2C200') throw new Error('Gris Nardo sans ses étriers jaunes : '+e);
+        if(e!=='#E0312B') throw new Error('Gris Nardo sans ses étriers rouges : '+e);
         var html=pfColorHTML();
         if(html.indexOf('setWrap(')<0 || html.indexOf('setAccent(')>=0) throw new Error('le menu Couleurs propose encore les couleurs');
         if(WRAPS.length<8 || WRAPS.some(function(w){ return !t(w.name) || t(w.name)===w.name || !t(w.det) || t(w.det)===w.det; })) throw new Error('teinte sans nom');
-        setWrap('militaire'); if(h.dataset.wrap!=='militaire') throw new Error('changement de teinte ignoré');
+        setWrap('nuit'); if(h.dataset.wrap!=='nuit') throw new Error('changement de teinte ignoré');
+        P.wrap='militaire'; applyTheme(); if(h.dataset.wrap!=='noir' || P.wrap!=='noir') throw new Error('ancienne teinte verte non recalée');
+        P.wrap='craie'; applyTheme(); if(h.dataset.wrap!=='nardo') throw new Error('ancienne teinte craie non recalée');
         if(document.getElementById('ikCarbon')) throw new Error('plaque carbone sous le Covering');
         P.wrap='inconnue'; applyTheme(); if(h.dataset.wrap!=='noir') throw new Error('teinte inconnue non recalée');
         var tp=JSON.parse(localStorage.getItem('ik_theme_prefs')||'{}'); if(tp.glass!=='wrap' || tp.wrap!=='noir') throw new Error('démarrage rapide sans le Covering');
