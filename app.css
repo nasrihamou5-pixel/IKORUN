@@ -3912,6 +3912,8 @@ html.easy-mode[data-glass="wrap"] #ikGlare{display:none !important;}
 .wrap-sw.mini::after{right:2px;bottom:2px;width:5px;height:5px;box-shadow:0 0 0 1px #0B0B0C;}
 .acc-sw small{display:block;font-size:10px;font-weight:600;color:var(--muted);margin-top:-3px;text-align:center;}
 .acc-grid.wrap-grid{grid-template-columns:repeat(2,1fr);}
+/* nombre impair de teintes : la dernière prend toute la largeur plutôt que de rester seule à gauche */
+.acc-grid.wrap-grid .acc-sw:last-child:nth-child(odd){grid-column:1/-1;}
 .wrap-note{font-size:12px;color:var(--muted);line-height:1.5;margin:-4px 2px 14px;}
 /* teintes Covering : une teinte = un film + une seule couleur d'étriers (générées, contrastes vérifiés).
    V3.10.2 : quatre teintes, toutes sur le modèle du Noir Satiné rouge — un film profond et UNE couleur vive qui brille */
@@ -3965,6 +3967,18 @@ html[data-glass="wrap"][data-wrap="anthracite"][data-mode="light"]:not(#_){
   --grad-btn:linear-gradient(180deg,#4692ED,#2881EB 52%,#1C5AA4);--accent-ink:#FFFFFF;--accent-ink-shadow:0 1px 1px rgba(0,0,0,.35);
 }
 .wrap-sw[data-w="anthracite"]{--sw-film:#2E3135;--sw-hi:#494C4F;--sw-lo:#25272A;--sw-acc:#2B8CFF;}
+html[data-glass="wrap"][data-wrap="nuit"]:not(#_){
+  --w-base:#172338;--w-hi:#354052;--w-lo:#121C2D;--w-rgb:23,35,56;
+  --w-ink:#F3F4F6;--w-ink2:rgba(243,244,246,.76);--w-ink3:rgba(243,244,246,.6);--w-e2:#F05A10;
+  --w-sheen:0.11;--w-emb:0 1px 0 rgba(0,0,0,.32);--w-gap:rgba(0,0,0,.85);--w-dark-ink:0;
+  --e:#F05A10;--e-rgb:240,90,16;--e2:#F4834C;--e2-rgb:244,131,76;
+  --grad-btn:linear-gradient(180deg,#F27131,#F05A10 52%,#A83F0B);--accent-ink:#FFFFFF;--accent-ink-shadow:0 1px 1px rgba(0,0,0,.35);
+}
+html[data-glass="wrap"][data-wrap="nuit"][data-mode="light"]:not(#_){
+  --e:#DD530F;--e-rgb:221,83,15;--e2:#A83F0B;--e2-rgb:168,63,11;
+  --grad-btn:linear-gradient(180deg,#E26B30,#DD530F 52%,#9B3A0A);--accent-ink:#FFFFFF;--accent-ink-shadow:0 1px 1px rgba(0,0,0,.35);
+}
+.wrap-sw[data-w="nuit"]{--sw-film:#172338;--sw-hi:#354052;--sw-lo:#121C2D;--sw-acc:#F05A10;}
 
 /* ===================================================================
    FICHE APPARENCE (V3.10.2) — couleur et matière réunies sur une seule fiche :

@@ -676,10 +676,11 @@
         if(e!=='#FFC400') throw new Error('Noir Mat sans ses étriers jaunes : '+e);
         var html=pfColorHTML();
         if(html.indexOf('setWrap(')<0 || html.indexOf('setAccent(')>=0) throw new Error('le menu Couleurs propose encore les couleurs');
-        if(WRAPS.length!==4 || WRAPS.some(function(w){ return !t(w.name) || t(w.name)===w.name || !t(w.det) || t(w.det)===w.det; })) throw new Error('teinte sans nom');
+        if(WRAPS.length!==5 || WRAPS.some(function(w){ return !t(w.name) || t(w.name)===w.name || !t(w.det) || t(w.det)===w.det; })) throw new Error('teinte sans nom');
         setWrap('anthracite'); if(h.dataset.wrap!=='anthracite') throw new Error('changement de teinte ignoré');
         P.wrap='militaire'; applyTheme(); if(h.dataset.wrap!=='noir' || P.wrap!=='noir') throw new Error('ancienne teinte verte non recalée');
-        P.wrap='nuit'; applyTheme(); if(h.dataset.wrap!=='anthracite') throw new Error('ancienne teinte bleu nuit non recalée');
+        P.wrap='nuit'; applyTheme(); if(h.dataset.wrap!=='nuit') throw new Error('le Bleu nuit est revenu mais n\'est pas appliqué');
+        P.wrap='glacier'; applyTheme(); if(h.dataset.wrap!=='anthracite') throw new Error('ancienne teinte blanc glacier non recalée');
         P.wrap='bordeaux'; applyTheme(); if(h.dataset.wrap!=='mat') throw new Error('ancienne teinte bordeaux non recalée');
         if(document.getElementById('ikCarbon')) throw new Error('plaque carbone sous le Covering');
         P.wrap='inconnue'; applyTheme(); if(h.dataset.wrap!=='noir') throw new Error('teinte inconnue non recalée');
