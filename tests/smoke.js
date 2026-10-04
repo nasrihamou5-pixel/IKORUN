@@ -635,6 +635,21 @@
         return 'ok';
       } finally { P.theme=av; P.easyMode=avE; applyTheme(); }
     });
+    // V3.8.0 : 5 matières (Guimauve, Papier, Épure, Liquid Glass, Maximal) ; un réglage
+    // enregistré sur l'ancienne échelle à 4 crans est recalé sur la bonne matière.
+    essaie(c,'5 matières, ancienne échelle recalée',function(){
+      var av={mat:P.mat,matV:P.matV,glass:P.glass,easy:P.easyMode};
+      try{
+        if(MAT_ANCHORS.join()!=='clay,paper,flat,std,max') throw new Error('ordre '+MAT_ANCHORS.join());
+        P.matV=undefined; P.mat=1; P.glass='flat'; if(matNearest(matValue())!=='flat') throw new Error('ancien « Sobre » mal recalé : '+P.mat);
+        P.matV=undefined; P.mat=3; P.glass='max'; if(matNearest(matValue())!=='max') throw new Error('ancien « Maximal » mal recalé : '+P.mat);
+        P.easyMode=false;
+        MAT_ANCHORS.forEach(function(k,i){ P.mat=i; P.glass=k; applyTheme();
+          if(document.documentElement.getAttribute('data-glass')!==k) throw new Error(k+' non appliquée'); });
+        if(t('glassClay')==='Pâte à modeler' || t('glassFlat')==='Sobre') throw new Error('anciens noms');
+        return MAT_ANCHORS.map(function(k){ return t(MAT_LABS[k][0]); }).join(' · ');
+      } finally { P.mat=av.mat; P.matV=av.matV; P.glass=av.glass; P.easyMode=av.easy; applyTheme(); }
+    });
   }
 
   /* ======================= 7e. PETITS ÉCRANS (V3.5.4) ===================== */
