@@ -269,6 +269,9 @@
       if(JSON.stringify(d).indexOf('<')>=0 || d.c.d.indexOf('"')>=0) return false;
       var p=cleanImportedProfile({height:'<img>',weight:'72',pendingEmail:'a@b.c',inconnu:1,name:'A<b>'});
       if('height' in p || 'pendingEmail' in p || 'inconnu' in p || p.weight!==72 || p.name!=='Ab') return false;
+      // un identifiant finit dans un onclick="openPerso('…')" : ni apostrophe ni parenthèse
+      var cu=cleanImportedDeep([{id:"x');alert(1);('",progId:"p'+1",name:"L'allure"}]);
+      if(cu[0].id!=='xalert1' || cu[0].progId!=='p1' || cu[0].name!=="L'allure") return false;
       return true;
     });
     essaie(c,'la course visée est déduite de l\'objectif',function(){
@@ -703,8 +706,12 @@
         if(pfAppearanceHTML().indexOf('setWrap(')<0) throw new Error('teintes de film absentes de la fiche');
         var src=String(renderProfile);
         if(src.indexOf("openProfileSection(\\'color\\')")>=0) throw new Error('le Profil garde une ligne Couleur séparée');
-        if(src.indexOf("t('styleLab')")<0) throw new Error('ligne « Couleur et matière » absente du Profil');
-        return t('styleLab');
+        if(src.indexOf("openProfileSection(\\'appearance\\')")<0) throw new Error('ligne Apparence absente du Profil');
+        // V3.10.3 : plus de doublons dans le Profil
+        ["openProfileSection(\\'data\\')","openProfileSection(\\'terms\\')","openProfileSection(\\'privacy\\')","t('manageProfile')","nav(\\'stats\\')"].forEach(function(k){
+          if(src.indexOf(k)>=0) throw new Error('doublon encore dans le Profil : '+k); });
+        if(pfSectionHTML('legal').indexOf('seg-ctrl')<0 || pfSectionHTML('account').indexOf('exportData()')<0) throw new Error('fiches fusionnées incomplètes');
+        return t('appearance')+' · '+t('accountDataLab')+' · '+t('legalLab');
       } finally { P.glass=av.glass; P.mat=av.mat; P.easyMode=av.easy; applyTheme(); }
     });
   }

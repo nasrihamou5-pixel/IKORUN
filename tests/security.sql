@@ -74,6 +74,9 @@ order by p.proname;
 --    (ikorun_try_num, ikorun_level_from_xp…) apparaissent normalement en
 --    `anon` ailleurs — elles ne touchent aucune table et ne sont pas un
 --    risque ; ce bloc les exclut expressément.
+--    (Le 04/10 : ikorun_trigger_cron y apparaissait — n'importe qui pouvait
+--    relancer les envois push via /rest/v1/rpc. EXECUTE retiré à public, anon
+--    et authenticated : seul pg_cron, qui tourne en postgres, l'appelle.)
 select rp.routine_name, rp.grantee
 from information_schema.routine_privileges rp
 join pg_proc p on p.proname = rp.routine_name

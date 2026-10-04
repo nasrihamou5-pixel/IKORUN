@@ -1257,7 +1257,7 @@ function renderFriendProfileHTML(){
   '</div>';
   h+='<div class="stat-quatro" style="margin-top:8px">'+
     '<div class="card stat-card"><div class="stat-ic">'+ICN('chart',14)+'</div><div class="stat-v">'+(f.total_km||0)+'</div><div class="stat-l">'+t('kmTotalLab')+'</div></div>'+
-    '<div class="card stat-card"><div class="stat-ic">'+ICN('chart',14)+'</div><div class="stat-v">'+((f.total_tonnage||0).toLocaleString(localeCode()))+'</div><div class="stat-l">'+t('tonnageKgLab')+'</div></div>'+
+    '<div class="card stat-card"><div class="stat-ic">'+ICN('chart',14)+'</div><div class="stat-v">'+(ikNum((f.total_tonnage||0),'i'))+'</div><div class="stat-l">'+t('tonnageKgLab')+'</div></div>'+
   '</div>';
   h+='<div style="margin-top:12px">'+friendBadgesHTML(f)+'</div>';
   return h;
@@ -1467,7 +1467,7 @@ function clubPlanHTML(c){
   }
   const mu=c.meetup;
   if(mu && ((mu.mode==='text'&&mu.text) || (mu.mode==='slot'&&(mu.place||mu.time)))){
-    const dn=[0,1,2,3,4,5,6].map(d=>new Date(2023,0,1+d).toLocaleDateString(localeCode(),{weekday:'long'}));
+    const dn=[0,1,2,3,4,5,6].map(d=>ikDate(new Date(2023,0,1+d),'{weekday:long}',{weekday:'long'}));
     // c.meetup/c.shared_plan viennent d'un JSONB écrit par le propriétaire du club :
     // rien ne garantit le type ni les bornes. Un mu.day hors 0-6 faisait planter tout
     // le rendu de l'onglet Club pour CHAQUE membre (dn[99] -> undefined[0]), et une
@@ -1525,7 +1525,7 @@ function renderClubPlanSetupHTML(){
     '<div class="pill '+(tt.meetupMode==='text'?'on':'')+'" onclick="clubPlanTmp.meetupMode=\'text\';renderClubTab()">'+t('clubMeetupModeText')+'</div>'+
   '</div>';
   if(tt.meetupMode==='slot'){
-    const dn=[0,1,2,3,4,5,6].map(d=>new Date(2023,0,1+d).toLocaleDateString(localeCode(),{weekday:'short'}));
+    const dn=[0,1,2,3,4,5,6].map(d=>ikDate(new Date(2023,0,1+d),'{weekday:short}',{weekday:'short'}));
     h+='<div class="field"><label>'+t('trainingDaysLabel')+'</label><div class="pills">'+[1,2,3,4,5,6,0].map(d=>'<div class="pill '+(tt.day===d?'on':'')+'" onclick="clubPlanTmp.day='+d+';renderClubTab()">'+dn[d]+'</div>').join('')+'</div></div>';
     h+='<div class="field"><label>'+t('clubMeetupTimeLabel')+'</label><input class="inp" type="time" value="'+escHtml(tt.time)+'" oninput="clubPlanTmp.time=this.value"></div>';
     h+='<div class="field"><label>'+t('clubMeetupPlaceLabel')+'</label><input class="inp" maxlength="120" value="'+escHtml(tt.place)+'" oninput="clubPlanTmp.place=this.value" placeholder="'+t('clubMeetupPlacePh')+'"></div>';
@@ -1934,21 +1934,21 @@ const I18N={
     nav_home:'Accueil',nav_sport:'Sport',nav_stats:'Stats',nav_outils:'Outils',nav_profil:'Profil',
     home:'Accueil',sport:'Sport',stats:'Statistiques',outils:'Outils',profil:'Profil',
     sub_sport:'Course & Musculation',sub_stats:'Tes données réelles',sub_outils:'Calculs & timers',
-    save:'Sauver',cancel:'Annuler',add:'Ajouter',edit:'Modifier',delete:'Supprimer',close:'Fermer',validate:'Valider',back:'Retour',seeAll:'Voir tout',
-    running:'Course',muscu:'Musculation',coachIA:'Plan IKORUN',myPlan:'Plan personnel',
-    perfHistory:'Historique des performances',editInfos:'Modifier mes informations',
-    objective:'Objectif',appearance:'Apparence',accentColor:'Couleur d\u2019accent',language:'Langue',
+    save:'Sauver',cancel:'Annuler',add:'Ajouter',edit:'Modifier',delete:'Supprimer',close:'Fermer',validate:'Valider',back:'Retour',
+    running:'Course',muscu:'Musculation',
+    editInfos:'Modifier mes informations',
+    objective:'Objectif',appearance:'Apparence',language:'Langue',
     notifsApp:'Notifications & app',trainReminders:'Rappels d\u2019entraînement',sounds:'Sons & vibrations',
-    dataPrivacy:'Données & confidentialité',exportData:'Exporter mes données (JSON)',importData:'Importer des données',resetApp:'Réinitialiser l\u2019application',
-    photo:'Photo',bio:'Biographie',addPhoto:'Ajouter une photo',changePhoto:'Changer',removePhoto:'Supprimer',
+    exportData:'Exporter mes données (JSON)',importData:'Importer des données',resetApp:'Réinitialiser l\u2019application',
+    bio:'Biographie',
     height:'Taille',weight:'Poids',age:'Âge',level:'Niveau',logout:'Déconnexion',
-    levelGuide:'Comment choisir mon niveau ?',xpProgress:'Progression XP',coach:'Coach',
-    todayGoals:'Objectifs du jour',weekLoad:'Charge de la semaine',sessions:'séances',form:'forme',
+    coach:'Coach',
+    sessions:'séances',form:'forme',
     quipTime:'On chasse le {0} ?',quipGoal:'On avance vers : {0} ?',quipDefault:'Prêt à dépasser tes limites aujourd\u2019hui ?',
-    weekLoadTitle:'Charge hebdomadaire',levelXp:'Niveau {0} — {1} XP',xpBeforeLevel:'+{0} XP avant niveau {1}',
-    sessionsCap:'Séances',tonnageKg:'Tonnage kg',formCap:'Forme',nextSession:'PROCHAINE SÉANCE',today:'Aujourd\u2019hui',
+    
+    sessionsCap:'Séances',today:'Aujourd\u2019hui',
     homeQuipNoData:'Continue sur ta lancée.',homeQuipUp:'+{0}% vs semaine dernière. Rythme tenu.',homeQuipDown:'-{0}% vs semaine dernière.',homeQuipStable:'Charge stable vs semaine dernière.',
-    restDay:'Jour de repos',noSessionToday:'Aucune séance planifiée aujourd\u2019hui',recordsPerso:'Records perso',
+    restDay:'Jour de repos',noSessionToday:'Aucune séance planifiée aujourd\u2019hui',
     iDidIt:'Je l\u2019ai faite',notDone:'Pas faite',nextLab:'Ensuite',dayPlusShort:'J+{0}',rpeShort:'RPE',kmWeekShort:'km sem.',sessionsLab:'séances',
     syncSlowToast:'Synchronisation lente — l\u2019app démarre, tes données arrivent',syncFailedLocalToast:'Synchronisation impossible — tu travailles sur tes données locales',syncCloudErrorToast:'Erreur de synchronisation avec le cloud',
     doneTag:'Faite',
@@ -1957,17 +1957,17 @@ const I18N={
     googleStandaloneTitle:'Google et l\u2019app install\u00e9e',googleUseGuestBtn:'Continuer en tant qu\u2019invit\u00e9',googleOpenSafariBtn:'Ouvrir dans Safari',googleStandaloneHint:'Indisponible depuis l\u2019app install\u00e9e',
     declineBtn:'Refuser',saveLabel:'Enregistrer',renameLab:'Renommer',favoriteLab:'Favori',
     langLab:'Langue',obModeTitle:'Ton affichage',obModeIntro:'Deux façons de voir IKORUN — change d\u2019avis à tout moment dans Profil.',obModeFullT:'Complet',obModeFullD:'Toutes les stats, tous les détails de chaque séance, l\u2019anatomie musculaire, les graphiques. Pour creuser.',obModeSimpleT:'Simplifié',obModeSimpleD:'Une carte, l\u2019essentiel : la séance du jour et un bouton. Rien d\u2019autre à l\u2019écran. Pour aller droit au but.',obModeSuggestion:'Suggestion selon ton âge : {0}. Choisis librement.',chooseModeLab:'Choisis un affichage pour continuer',
-    trackingLab:'Suivi',appearanceLab:'Apparence',animationsLab:'Animations',updateReadyLab:'Nouvelle version d\u2019IKORUN prête',updateNowBtn:'Mettre à jour',plannedThisWeek:'prévus cette sem.',badgeStartLvl:'Dès le départ',trophiesInYear:'{0} en {1}',introReplayBtn:'Revoir l\u2019animation d\u2019ouverture',
+    trackingLab:'Suivi',updateReadyLab:'Nouvelle version d\u2019IKORUN prête',updateNowBtn:'Mettre à jour',plannedThisWeek:'prévus cette sem.',badgeStartLvl:'Dès le départ',trophiesInYear:'{0} en {1}',introReplayBtn:'Revoir l\u2019animation d\u2019ouverture',
     sendFeedbackLab:'Envoyer un commentaire',feedbackNoAddressToast:'Adresse de contact pas encore configurée — réessaie après la prochaine mise à jour.',feedbackTitle:'Ton avis',feedbackIntro:'Une idée, un bug, un truc qui te gêne dans l\u2019app ? Écris-le ici, ça part directement dans ta boîte mail.',feedbackPh:'Écris ton commentaire...',feedbackEmptyToast:'Écris quelque chose avant d\u2019envoyer',feedbackSentToast:'Ton appli mail s\u2019est ouverte, il ne reste qu\u2019à envoyer',feedbackSignature:'Compte : {0} · Langue : {1}',
     sendBtn:'Envoyer',
     playLab:'Démarrer',
     cvCat_dist:'Distance',cvCat_pace:'Allure',cvCat_weight:'Poids',cvTapToEdit:'Touche pour modifier',
     googleStandaloneBody:'Sur iPhone, quand IKORUN est ouvert depuis l\u2019ic\u00f4ne de l\u2019\u00e9cran d\u2019accueil, la connexion Google part dans Safari et n\u2019en revient pas : elle r\u00e9ussit, mais dans Safari, pas ici. Continue en tant qu\u2019invit\u00e9 dans l\u2019app, ou ouvre IKORUN dans Safari pour utiliser Google.',
-    progression:'Progression',planOfDay:'PLAN DU JOUR',planIkorunDesc:'Plans d\u2019entraînement conçus par des coaches',
-    myPlanDesc:'Crée ton propre plan sur mesure',todayCap:'AUJOURD\u2019HUI',tapToStart:'Voir le détail',
-    goalCap:'OBJECTIF',courseDefault:'Course',goalTimeColon:'Objectif : {0} · ',raceOn:'Course le {0}',raceDay:'Jour de course',
-    currentVdot:'VDOT actuel',currentPhase:'Phase actuelle',thisWeek:'Cette semaine',weekOf:'Semaine {0}/{1}',
-    weeklyLoad:'Charge hebdo',regenConfirm:'Régénérer un nouveau plan ? Tes séances faites restent dans tes stats.',
+    progression:'Progression',
+    todayCap:'AUJOURD\u2019HUI',tapToStart:'Voir le détail',
+    courseDefault:'Course',raceOn:'Course le {0}',
+    thisWeek:'Cette semaine',weekOf:'Semaine {0}/{1}',
+    regenConfirm:'Régénérer un nouveau plan ? Tes séances faites restent dans tes stats.',
     regenBtn:'Régénérer / reconfigurer',planIkorunPill:'Plan IKORUN',myPlanPill:'Plan personnel',
     planIkorunTitle:'Plan IKORUN — moteur scientifique',
     planIkorunDescLong:'Génère un plan périodisé sur-mesure (méthode norvégienne + VDOT/Daniels) basé sur ton VDOT ({0}), ton objectif, tes préférences et ta date de course. Le plan se réajuste automatiquement si tu rates une séance.',vdotToBeCalculated:'à calculer',
@@ -1978,10 +1978,10 @@ const I18N={
     sessionsCount:{one:'{0} séance · {1} terminée',other:'{0} séances · {1} terminées'},followedTag:'Suivi',duplicate:'Dupliquer',share:'Partager',
     planNamePrompt:'Nom du plan :',myPersoPlanDefault:'Mon plan perso',
     you:'toi',dowShort:'L,M,M,J,V,S,D',greet:'Salut',
-    weekPhaseLabel:'Semaine {0} · {1}',thresholdPaceShort:'Allure seuil',vsLastWeekShort:'vs sem. dernière',
-    nextSessionMeta:'Prochaine séance · {0}',newWeekTag:'Nouvelle semaine',thisWeekCap:'Cette semaine',
-    totalTime:'Temps total',remainingCap:'Restant',sessionsRemainingVal:'{0} séances',objectiveReached:'Objectif atteint',
-    untilEndWeek:'d\u2019ici dimanche',sessionsDoneShort:'{0} séances',planOfWeek:'Plan de la semaine',
+    weekPhaseLabel:'Semaine {0} · {1}',
+    nextSessionMeta:'Prochaine séance · {0}',
+    totalTime:'Temps total',sessionsRemainingVal:'{0} séances',
+    sessionsDoneShort:'{0} séances',
     streakDaysShort:{one:'{0} jour de série',other:'{0} jours de série'},seePlan:'Voir le plan',
     streakPRSuffix:' — record perso',
     // --- Outils ---
@@ -2004,11 +2004,11 @@ const I18N={
     athleteDefault:'Athlète',addBioPrompt:'Ajoute une biographie',heightWeight:'Taille / poids',
     noObjective:'Aucun',noBadgeYet:'Aucun badge obtenu pour l\u2019instant — ta première séance te rapprochera du badge Initié.',
     seeAllProgress:'{0} / {1} · Voir tout',nextBadgeLab:'Prochain badge · {0}',
-    account:'Compte',friendsRanking:'Amis & Classement',manageProfile:'Gérer le profil',passwordSecurity:'Mot de passe & sécurité',
-    notConnected:'Non connecté',notifLabel:'Notifications',preferences:'Préférences',historyRecords:'Historique & records',
-    statistics:'Statistiques',theme:'Thème',appColor:'Couleur de l\u2019app',simplifiedMode:'Mode simplifié',
+    account:'Compte',friendsRanking:'Amis & Classement',manageProfile:'Gérer le profil',
+    notConnected:'Non connecté',notifLabel:'Notifications',historyRecords:'Historique & records',
+    theme:'Thème',appColor:'Couleur de l\u2019app',simplifiedMode:'Mode simplifié',
     simplifiedModeDesc:'4 onglets, écrans allégés, textes plus grands — l\u2019essentiel seulement',
-    support:'Support',helpCenter:'Centre d\u2019aide',
+    support:'Support',
     yourSpace:'Ton espace',settings:'Réglages',badgesLabel:'Badges',homePBLabel:'Tes records',toolsCalc:'Outils & calculateurs',editMyProfile:'Modifier mon profil',
     // --- Stats ---
     tabBilan:'Bilan',tabRun:'Course',tabMuscu:'Muscu',tabTrophies:'Trophées',
@@ -2023,13 +2023,13 @@ const I18N={
     kmPerSession:'KM / SÉANCE',sessionTypesLabel:'TYPES DE SÉANCE',bestDayLab:'MEILLEUR JOUR',bestWeekLab:'MEILLEURE SEMAINE',bestMonthLab:'MEILLEUR MOIS',
     detailByType:'Détail par type',last13Weeks:'13 dernières semaines',lessLabel:'Moins',moreLabel:'Plus',vsPrevShort:'vs préc.',
     typeMuscu:'Muscu',typeAutre:'Autre',insightsTitle:'Analyses',
-    quickTimer:'Minuteur',lvlShort:'NIV.',
+    quickTimer:'Minuteur',
     vdotReal:'VDOT réel',sessionsRun:'Séances run',kmTotal:'km totaux',paceZones:'Zones d\u2019allure',
     predictions:'Prédictions',formFatigue:'Forme / Fatigue',personalRecords:'Records personnels',
     chronic:'Chronique',acute:'Aiguë',tonnageLab:'Tonnage',prPerSession:'Meilleure séance',totalSets:'Séries validées',
     startFirstMuscu:'Lance ta première séance de muscu !',lastSessions:'Dernières séances',
     tomorrow:'Demain',noUpcomingSession:'Aucune séance planifiée prochainement.',addSession:'Ajouter une séance',
-    showRestPlan:'Afficher le reste du plan · {0} semaines',calendarTitle:'Calendrier',calendarSub:'Planifie ta progression',
+    calendarTitle:'Calendrier',calendarSub:'Planifie ta progression',
     friendsTitle:'Amis & Classement',tabFriendsList:'Amis',tabRank:'Classement',
     clubTitle:'Mes clubs',tabClub:'Mes clubs',myClubLab:'Mes clubs',clubAddAnotherBtn:'Rejoindre ou créer un autre club',clubMaxReachedToast:'Tu as atteint la limite de 5 clubs.',
     noClubYet:'Pas encore de club',noClubYetDesc:'Rejoins le club de ton équipe avec un code, ou crée le tien pour rassembler tes coéquipiers.',
@@ -2061,7 +2061,7 @@ const I18N={
     loadingLab:'Chargement…',friendsLoadError:'Impossible de charger tes amis. Vérifie ta connexion.',retryBtn:'Réessayer',
     resumeBtn:'Reprendre',discardBtn:'Abandonner',
     alreadyLinked:'déjà lié',addBtn:'Ajouter',searchError:'Erreur de recherche',alreadySentOrFriend:'Déjà envoyé ou déjà ami',
-    requestSent:'Demande envoyée',friendProfileTitle:'Profil',removeLab:'Retirer',lvlDot:'Niv.',kmThisWeekShort:'{0} km cette semaine',lastWeekKm:'Semaine dernière : {0} km',minimizeLab:'Réduire',bdayTitle:'Joyeux anniversaire, {0} !',bdayAge:'{0} ans aujourd’hui',bdayWish:'toute l’équipe IKORUN te souhaite une belle journée',bdayOffBtn:'Mes couleurs',bdayOnBtn:'Remettre la fête',feteLab:'Jours spéciaux',feteDesc:'Ton anniversaire, le jour J de ta course, un record battu, le Ramadan, la Nuit du Destin, le Mawlid, l’Achoura, le Nouvel an musulman, l’Isra wal Mi’raj, l’Aïd, Noël, le Nouvel an, Halloween et la Journée du sport : ces jours-là, l’app se met en fête avec toi.',hijriAdjLab:'Fêtes musulmanes',hijriAdjDesc:'Calendrier Umm al-Qura. Si ton pays annonce les fêtes un jour plus tôt ou plus tard (observation de la lune), décale-les ici.',hijriAdjEarly:'1 jour plus tôt',hijriAdjStd:'Umm al-Qura',hijriAdjLate:'1 jour plus tard',fetePreviewLab:'Aperçu',fetePreviewEnd:'Terminer l’aperçu',fete_bday:'Anniversaire',fete_race:'Jour J',fete_record:'Record',fete_ramadan:'Ramadan',fete_eidFitr:'Aïd el-Fitr',fete_eidAdha:'Aïd el-Adha',fete_xmas:'Noël',fete_newyear:'Nouvel an',fete_halloween:'Halloween',feteRaceTitle:'C’est le jour J !',feteRaceSub:'{0} : tout ton entraînement mène à aujourd’hui. Respire, pars prudent, finis fort.',feteRaceSubPlain:'Tout ton entraînement mène à aujourd’hui. Respire, pars prudent, finis fort.',feteRecordTitle:'Nouveau record !',feteRecordSub:'{0} — bravo, tu progresses. Savoure !',feteRecordSubPlain:'Bravo, tu progresses. Savoure !',feteEidTitle:'Aïd Moubarak, {0} !',feteEidAdhaSub:'Saha Aïdkoum ! Belle fête à toi et à tes proches.',feteEidFitrSub:'Saha Aïdkoum ! Après le Ramadan, reprends l’entraînement en douceur.',feteRamadanTitle:'Ramadan Moubarak !',feteRamadanSub:'Premier jour du mois sacré. Entraîne-toi plutôt après la rupture du jeûne, et bois bien le soir.',feteXmasTitle:'Joyeux Noël, {0} !',feteXmasSub:'Une sortie tranquille, puis au chaud. Bonnes fêtes !',feteNyeTitle:'Bon réveillon !',feteNyeSub:'Dernier jour de {0} : bravo pour tous ces kilomètres.',feteNyTitle:'Bonne année {0} !',feteNySub:'Nouvelle année, nouveaux records. On y va ?',feteHalloweenTitle:'Joyeux Halloween !',feteHalloweenSub:'Des araignées rôdent… cours plus vite qu’elles !',fete_muharram:'Nouvel an musulman',fete_achoura:'Achoura',fete_mawlid:'Mawlid',fete_qadr:'Nuit du Destin',fete_isra:'Isra wal Mi’raj',fete_sportDay:'Journée du sport',feteMuharramTitle:'Nouvel an musulman moubarak !',feteMuharramSub:'Nous entrons dans l’an {0} de l’hégire.',feteMuharramSubPlain:'Une nouvelle année hégirienne commence.',feteAchouraTitle:'Achoura Moubarak !',feteAchouraSub:'Un jour de partage et de jeûne recommandé — pense à tes proches.',feteMawlidTitle:'Mawlid Ennabaoui Moubarak !',feteMawlidSub:'Anniversaire de la naissance du Prophète ﷺ — une journée de lumière et de rappel.',feteQadrTitle:'Nuit du Destin',feteQadrSub:'Elle vaut mieux que mille mois — une pensée, une prière, un moment pour toi.',feteIsraTitle:'Isra wal Mi’raj',feteIsraSub:'Le voyage nocturne du Prophète ﷺ vers les cieux — une nuit à retenir.',feteSportTitle:'Journée internationale du sport',feteSportSub:'Le sport rassemble et rend meilleur — profite de ta séance aujourd’hui !',recLongestRun:'Plus longue sortie : {0} km',recRunTime:'{0} en {1}',matLab:'Matière',accentClay:'Guimauve',colorFamSpecial:'Spéciaux',accentOcean:'Océan',accentViolet:'Améthyste',accentLavender:'Lavande',accentPink:'Framboise',accentSakura:'Sakura',accentMint:'Menthe',accentTeal:'Lagon',accentOrange:'Ambre',accentMono:'Mono',colorFamCool:'Bleus et violets',colorFamWarm:'Roses et chauds',colorFamNature:'Nature',colorFamNeutral:'Neutres',liveAlreadyRunning:'Une séance est déjà en cours. Termine-la ou annule-la avant d’en commencer une autre.',backToSessionLab:'Revenir à la séance',islandNext:'Ensuite : {0}',islandEndsAt:'Fin à {0}',islandPaused:'En pause',islandSets:'{0}/{1} séries',glassEasyNote:'Le mode simplifié garde un affichage net, sans effet verre : ce réglage reprendra effet quand tu le désactiveras.',youDefaultName:'Toi',backToFriends:'Retour aux amis',profileNotFound:'Profil introuvable.',noBadgeUnlocked:'Aucun badge débloqué pour l\u2019instant.',kmPerWeek:'km/sem.',daysStreak:'Jours de suite',kmTotalLab:'km au total',tonnageKgLab:'Tonnage kg',
+    requestSent:'Demande envoyée',friendProfileTitle:'Profil',removeLab:'Retirer',lvlDot:'Niv.',kmThisWeekShort:'{0} km cette semaine',lastWeekKm:'Semaine dernière : {0} km',minimizeLab:'Réduire',bdayTitle:'Joyeux anniversaire, {0} !',bdayAge:'{0} ans aujourd’hui',bdayWish:'toute l’équipe IKORUN te souhaite une belle journée',bdayOffBtn:'Mes couleurs',bdayOnBtn:'Remettre la fête',feteLab:'Jours spéciaux',feteDesc:'Ton anniversaire, le jour J de ta course, un record battu, le Ramadan, la Nuit du Destin, le Mawlid, l’Achoura, le Nouvel an musulman, l’Isra wal Mi’raj, l’Aïd, Noël, le Nouvel an, Halloween et la Journée du sport : ces jours-là, l’app se met en fête avec toi.',hijriAdjLab:'Fêtes musulmanes',hijriAdjDesc:'Calendrier Umm al-Qura. Si ton pays annonce les fêtes un jour plus tôt ou plus tard (observation de la lune), décale-les ici.',hijriAdjEarly:'1 jour plus tôt',hijriAdjStd:'Umm al-Qura',hijriAdjLate:'1 jour plus tard',fetePreviewLab:'Aperçu',fetePreviewEnd:'Terminer l’aperçu',fete_bday:'Anniversaire',fete_race:'Jour J',fete_record:'Record',fete_ramadan:'Ramadan',fete_eidFitr:'Aïd el-Fitr',fete_eidAdha:'Aïd el-Adha',fete_xmas:'Noël',fete_newyear:'Nouvel an',fete_halloween:'Halloween',feteRaceTitle:'C’est le jour J !',feteRaceSub:'{0} : tout ton entraînement mène à aujourd’hui. Respire, pars prudent, finis fort.',feteRaceSubPlain:'Tout ton entraînement mène à aujourd’hui. Respire, pars prudent, finis fort.',feteRecordTitle:'Nouveau record !',feteRecordSub:'{0} — bravo, tu progresses. Savoure !',feteRecordSubPlain:'Bravo, tu progresses. Savoure !',feteEidTitle:'Aïd Moubarak, {0} !',feteEidAdhaSub:'Saha Aïdkoum ! Belle fête à toi et à tes proches.',feteEidFitrSub:'Saha Aïdkoum ! Après le Ramadan, reprends l’entraînement en douceur.',feteRamadanTitle:'Ramadan Moubarak !',feteRamadanSub:'Premier jour du mois sacré. Entraîne-toi plutôt après la rupture du jeûne, et bois bien le soir.',feteXmasTitle:'Joyeux Noël, {0} !',feteXmasSub:'Une sortie tranquille, puis au chaud. Bonnes fêtes !',feteNyeTitle:'Bon réveillon !',feteNyeSub:'Dernier jour de {0} : bravo pour tous ces kilomètres.',feteNyTitle:'Bonne année {0} !',feteNySub:'Nouvelle année, nouveaux records. On y va ?',feteHalloweenTitle:'Joyeux Halloween !',feteHalloweenSub:'Des araignées rôdent… cours plus vite qu’elles !',fete_muharram:'Nouvel an musulman',fete_achoura:'Achoura',fete_mawlid:'Mawlid',fete_qadr:'Nuit du Destin',fete_isra:'Isra wal Mi’raj',fete_sportDay:'Journée du sport',feteMuharramTitle:'Nouvel an musulman moubarak !',feteMuharramSub:'Nous entrons dans l’an {0} de l’hégire.',feteMuharramSubPlain:'Une nouvelle année hégirienne commence.',feteAchouraTitle:'Achoura Moubarak !',feteAchouraSub:'Un jour de partage et de jeûne recommandé — pense à tes proches.',feteMawlidTitle:'Mawlid Ennabaoui Moubarak !',feteMawlidSub:'Anniversaire de la naissance du Prophète ﷺ — une journée de lumière et de rappel.',feteQadrTitle:'Nuit du Destin',feteQadrSub:'Elle vaut mieux que mille mois — une pensée, une prière, un moment pour toi.',feteIsraTitle:'Isra wal Mi’raj',feteIsraSub:'Le voyage nocturne du Prophète ﷺ vers les cieux — une nuit à retenir.',feteSportTitle:'Journée internationale du sport',feteSportSub:'Le sport rassemble et rend meilleur — profite de ta séance aujourd’hui !',recLongestRun:'Plus longue sortie : {0} km',recRunTime:'{0} en {1}',matLab:'Matière',accentOcean:'Océan',accentViolet:'Améthyste',accentLavender:'Lavande',accentPink:'Framboise',accentSakura:'Sakura',accentMint:'Menthe',accentTeal:'Lagon',accentOrange:'Ambre',accentMono:'Mono',colorFamCool:'Bleus et violets',colorFamWarm:'Roses et chauds',colorFamNature:'Nature',colorFamNeutral:'Neutres',liveAlreadyRunning:'Une séance est déjà en cours. Termine-la ou annule-la avant d’en commencer une autre.',backToSessionLab:'Revenir à la séance',islandNext:'Ensuite : {0}',islandEndsAt:'Fin à {0}',islandPaused:'En pause',islandSets:'{0}/{1} séries',glassEasyNote:'Le mode simplifié garde un affichage net, sans effet verre : ce réglage reprendra effet quand tu le désactiveras.',youDefaultName:'Toi',backToFriends:'Retour aux amis',profileNotFound:'Profil introuvable.',noBadgeUnlocked:'Aucun badge débloqué pour l\u2019instant.',kmPerWeek:'km/sem.',daysStreak:'Jours de suite',kmTotalLab:'km au total',tonnageKgLab:'Tonnage kg',
     addPerf:'Ajouter une performance',addChronosHint:'Ajoute tes chronos : ils alimentent ton VDOT et ton plan.',
     bestPerf:'Meilleure perf',avgHR:'FC moy',maxHRshort:'max',perfHistoryTitle:'Historique des performances',
     chooseDistance:'Choisis la distance',otherDist:'Autre',customDistance:'Distance personnalisée',
@@ -2071,7 +2071,7 @@ const I18N={
     perfAddedComp:'Performance ajoutée · +XP compétition',perfAdded:'Performance ajoutée',
     editProfileTitle:'Modifier le profil',usernameLab:'Nom d\u2019utilisateur',usernameHint:'Utilisé par tes amis pour te retrouver',
     firstNameLab:'Prénom',cityLab:'Ville',birthDateLab:'Date de naissance',heightCmLab:'Taille (cm)',weightKgLab:'Poids (kg)',
-    kmWeekLab:'Km / semaine',compDateLab:'Date compétition',coachLab:'Coach',saveBtn:'Sauver',
+    kmWeekLab:'Km / semaine',compDateLab:'Date compétition',saveBtn:'Sauver',
     filterAll:'Tous',filterObtained:'Obtenus',filterLocked:'Verrouillés',badgesObtainedCount:'{0} / {1} badges obtenus',
     badgeDetailTitle:'Détails du badge',tierOf:'Palier {0} sur {1}',newBadgeUnlocked:'NOUVEAU BADGE DÉBLOQUÉ',
     tapToContinue:'Touche pour continuer',seeDetails:'Voir les détails',tapToClose:'Touche pour fermer',previewLocked:'APERÇU · VERROUILLÉ',
@@ -2095,7 +2095,7 @@ const I18N={
     hydraTip:'Bois régulièrement par petites gorgées. Surveille la couleur de ton urine.',
     basalMetabolism:'Métabolisme basal (kcal/j)',needsByActivity:'Besoins selon activité',
     actSedentary:'Sédentaire',actLight:'Léger',actModerate:'Modéré',actIntense:'Intense',actAthlete:'Athlète',
-    valueField:'Valeur',fromField:'De',toField:'Vers',
+    fromField:'De',toField:'Vers',
     quickNotesTitle:'Notes rapides',notesPlaceholder:'Écris ici... (sauvegarde automatique)',autoSaveLocal:'Sauvegarde automatique en local.',
     lapBtn:'Tour',stopBtn:'Stop',resetBtn2:'Reset',bestLap:'Meilleur tour',slowestLap:'Plus lent',avgLap:'Moyenne',lapsLab:'Tours',
     exportBtn:'Exporter',fastTag:'rapide',slowTag:'lent',lapsCopied:'Tours copiés',
@@ -2111,12 +2111,12 @@ const I18N={
     levelReq:'Niveau *',howChooseLab:'Comment choisir ?',
     lvlBeginner:'Débutant',lvlIntermediate:'Intermédiaire',lvlAdvanced:'Confirmé',lvlVeryAdvanced:'Très avancé',lvlElite:'Élite',
     obGoalTitle:'Ton objectif',obGoalIntro:'Ce qui te fait courir.',goalReq:'Objectif *',goalPh:'Ex : passer sous 20:00 au 5 km',
-    compDateReq:'Date de compétition *',coachOptional:'Coach — optionnel',coachPh:'Nom de ton coach',
+    compDateReq:'Date de compétition *',
     obPerfTitle:'Tes performances',obPerfIntro:'Ajoute tes meilleurs chronos. Au moins un est requis.',
     perfNote:'Tes chronos calculent ton <b>VDOT</b> (ta « cylindrée ») et toutes tes <b>allures d\u2019entraînement</b>. Donne au moins un chrono récent et fiable. Choisis la distance puis le temps avec les roues.',
     addAnotherPerf:'Ajouter une autre performance',backLab:'Retour',continueLab:'Continuer',
-    paramsTitle:'Paramètres',libTitle:'Bibliothèque',configureTitle:'Configurer',programTitle:'Programme',sessionTitle:'Séance',
-    newProgramTitle:'Nouveau programme',homeDefault:'Accueil',chooseLab:'Choisir',validateLab2:'Valider',
+    paramsTitle:'Paramètres',libTitle:'Bibliothèque',configureTitle:'Configurer',sessionTitle:'Séance',
+    newProgramTitle:'Nouveau programme',chooseLab:'Choisir',validateLab2:'Valider',
     understoodLab:'Compris',howChooseLevelTitle:'Comment choisir mon niveau ?',
     lvlBeginnerDesc:'Tu cours depuis moins d\u2019un an. Tu t\u2019entraînes occasionnellement et tu découvres encore les bases.',
     lvlIntermediateDesc:'Tu cours régulièrement, participes parfois à des compétitions et maîtrises les principaux types de séances.',
@@ -2125,11 +2125,11 @@ const I18N={
     lvlEliteDesc:'Athlète de haut niveau : performances nationales/internationales, entraînement quotidien à très gros volume.',
     checkingLab:'Vérification…',
     fillRequiredFields:'Remplis les champs requis',chooseUsernameLab:'Choisis un nom d\u2019utilisateur',usernameUnavailable:'Ce nom d\u2019utilisateur n\u2019est pas disponible',
-    quickProfileEnabled:'Profil rapide activé — mode simplifié activé',chooseLevelLab:'Choisis un niveau',goalDateRequired:'Objectif et date requis',addAtLeastOnePerf:'Ajoute au moins une performance',
+    chooseLevelLab:'Choisis un niveau',goalDateRequired:'Objectif et date requis',addAtLeastOnePerf:'Ajoute au moins une performance',
     finishLab:'Terminer',distanceLab2:'Distance',timeForLab:'Temps · {0}',chooseWord:'Choisir',
     usernameTakenMeanwhile:'Pseudo pris entre-temps, modifie-le dans Profil',
     liveFinishBtn:'Terminer',durationLab:'Durée',volumeLab:'Volume',setsLab:'Séries',deleteLab2:'Supprimer',
-    exerciseDoneLab:'Terminé',setsDoneCount:'{0}/{1} séries faites',restTimerLab:'Minuteur de repos : {0}',disabledLab:'Désactivé',
+    exerciseDoneLab:'Terminé',setsDoneCount:'{0}/{1} séries faites',restTimerLab:'Minuteur de repos : {0}',
     setCol:'Set',prevCol:'Précédent',kgCol:'Kg',repsCol:'Reps',addSetBtn:'Ajouter une série',
     addExerciseBtn:'Ajouter un exercice',cancelSessionBtn:'Annuler la séance',
     restSeconds:'Repos (secondes)',minOneSetRemain:'Il doit rester au moins une série',changeRestLab:'Modifier le repos',
@@ -2174,7 +2174,7 @@ const I18N={
     bdg_legende_name:'Légende',bdg_legende_desc:'Devenu une référence.',
     tierBronze:'Bronze',tierArgent:'Argent',tierOr:'Or',tierPlatine:'Platine',tierDiamant:'Diamant',tierMaitre:'Maître',tierLegende:'Légende',
     medalCatSeances:'Séances',medalCatRegularite:'Régularité',medalCatDistance:'Distance',
-    daysLab:'jours',continueUnlockBadges:'Continue pour débloquer tes badges',    ach_premiere_name:'Première course',ach_premiere_desc:'Termine la course que tu préparais.',
+    daysLab:'jours',    ach_premiere_name:'Première course',ach_premiere_desc:'Termine la course que tu préparais.',
     ach_cinqk_name:'5K',ach_cinqk_desc:'Cours plus de 5 km d\u2019une traite.',
     ach_dixk_name:'10K',ach_dixk_desc:'Cours plus de 10 km d\u2019une traite.',
     ach_serie_name:'Série',ach_serie_desc:'Tiens un mois de régularité (30 jours d\u2019affilée).',
@@ -2201,7 +2201,7 @@ const I18N={
     confirmFinalIrreversible:'Dernière confirmation : es-tu vraiment sûr(e) ? Cette action est irréversible.',deleteAccountFailed:'La suppression a échoué côté serveur — ton compte existe toujours. Vérifie ta connexion et réessaie.',
     genericErrorRetry:'Erreur, réessaie',
     confirmRemoveFriend:'Retirer cet ami ?',
-    connectFirst:'Connecte-toi d\u2019abord',copiedClipboard:'Copié dans le presse-papier',
+    
     usernameFormatHint:'3 à 20 caractères : lettres, chiffres, _',checkingEllipsis:'Vérification…',
     available:'Disponible',alreadyTaken:'Déjà pris',
     alarmDefaultTitle:'Alarme',timeUpMsg:'Le temps est écoulé !',timeUpTitle:'Temps écoulé !',
@@ -2219,19 +2219,19 @@ const I18N={
     notifBlockedTip:'Notifications bloquées — active-les dans les réglages de ton téléphone pour cette app.',
     notifUnsupportedToast:'Notifications non disponibles sur cet appareil',
     prayerNotifLabel:'Rappels de prière',socialNotifLabel:'Records de mes amis',socialNotifDesc:'Une notification quand un ami ou un membre de ton club améliore son VDOT. Tes propres progrès de VDOT leur sont annoncés de la même façon — jamais tes chronos ni tes séances.',socialNotifOnToast:'Tu seras prévenu des records de tes amis',
-    cmRecovTrot:'{0} trot',cmDayLab:'Jour',cmFree:'libre',cmContentLab:'Contenu',cmReps:'Répétitions',cmRepDist:'Distance de chaque répétition',cmRecov:'Récupération',cmHills:'Montées',cmHillsSub:'30 à 45 s d’effort chacune',cmSurges:'Accélérations',cmSurgesSub:'1 min vite, 1 min tranquille',cmTempo:'Bloc tempo',cmTempoSub:'à {0} /km',cmDistSub:'à {0} /km',cmWeekWarn:'Ta semaine passe à {0} km au lieu de {1}. Au-delà de +10 %, le risque de blessure augmente.',cmFixed:'Cette séance a une structure fixe : tu peux la déplacer ou la passer en repos.',customizedTag:'Personnalisée',customizeSessionBtn:'Modifier cette séance',customizeMoveLabel:'Déplacer à un autre jour',
-    customizeVolumeLabel:'Ajuster le volume',customizeSkipBtn:'Passer cette séance en repos',customizeResetBtn:'Réinitialiser',
+    cmRecovTrot:'{0} trot',cmDayLab:'Jour',cmFree:'libre',cmContentLab:'Contenu',cmReps:'Répétitions',cmRepDist:'Distance de chaque répétition',cmRecov:'Récupération',cmHills:'Montées',cmHillsSub:'30 à 45 s d’effort chacune',cmSurges:'Accélérations',cmSurgesSub:'1 min vite, 1 min tranquille',cmTempo:'Bloc tempo',cmTempoSub:'à {0} /km',cmDistSub:'à {0} /km',cmWeekWarn:'Ta semaine passe à {0} km au lieu de {1}. Au-delà de +10 %, le risque de blessure augmente.',cmFixed:'Cette séance a une structure fixe : tu peux la déplacer ou la passer en repos.',customizedTag:'Personnalisée',customizeSessionBtn:'Modifier cette séance',
+    customizeSkipBtn:'Passer cette séance en repos',customizeResetBtn:'Réinitialiser',
     customizeMovedToast:'Séance déplacée',customizeSkippedToast:'Séance passée en repos',customizeResetToast:'Séance réinitialisée',
     resumeSessionConfirm:'Une séance « {0} » était en cours ({1} min). Reprendre ?',sessionColonName:'Séance : {0}',
     accentBlue:'Bleu',accentRed:'Rouge',accentGreen:'Vert militaire',accentBrown:'Marron boisé',accentYellow:'Jaune',accentCarbon:'Fibre de carbone',accentForged:'Carbone forgé',lumSoftDark:'Sombre adouci',lumSoftLight:'Clair adouci',matBetween:'Entre {0} et {1}',matFreeHint:'Molette libre : chaque cran est une matière, et tout l’entre-deux est à toi.',
     colorApplied:'Couleur appliquée',easyModeOn:'Mode simplifié activé',easyModeOff:'Mode simplifié désactivé',
-    profileIncompleteAddTime:'Profil incomplet : ajoute un chrono dans tes records',chooseCompDate:'Choisis une date de compétition',raceDateTooSoon:'Choisis une date de course à au moins 7 jours — une date passée ou trop proche ne laisse pas assez de temps pour préparer un plan.',planStartsOn:'Ton plan démarre le {0} : il couvre les 28 semaines avant la course.',planSafetyAdjustedToast:'Plan sécurisé : progression limitée à +10 % par semaine et récupération respectée.',planSafetyMigratedToast:'Ton plan a été ajusté : progression de charge plus sûre, sans séances dures enchaînées.',planSafetyHint:'Pour limiter le risque de blessure, IKORUN augmente ton volume de 10 % par semaine au maximum et allège une semaine sur quatre.',debriefTitle:'Bilan de séance',modeLightLab:'Clair',modeDarkLab:'Sombre',glassLab:'Effet verre (Liquid Glass)',glassStd:'Liquid Glass',glassMax:'Maximal',glassHintStd:'Le verre IKORUN : reflets, bords lumineux, transparence dosée. Le bon équilibre.',glassHintMax:'Effet maximal : verre très transparent et flou sur tout l’écran, reflets renforcés, fond vivant qui bouge sous le verre. Consomme un peu plus de batterie.',glassWrap:'Covering',glassHintWrap:'Covering : la carrosserie en film mat, les détails en noir brillant et une seule couleur d’étriers, comme une vraie configuration de voiture.',wrapNoir:'Noir Satiné',styleLab:'Couleur et matière',wrapShadeLab:'Teinte du film',optionsLab:'Options',wrapColorsNote:'Chaque teinte vient avec sa couleur d’étriers, assortie.',wrapMat:'Noir Mat',wrapStealth:'Noir Intégral',wrapAnthracite:'Gris Anthracite',wrapTrimSilver:'Finitions argent',wrapCalRed:'Étriers rouges',wrapCalBlue:'Étriers bleus',wrapCalYellow:'Étriers jaunes',restGoToast:'C’est reparti !',glassTiltBtn:'Reflets selon l’inclinaison du téléphone',glassTiltActive:'Reflets selon l’inclinaison : activés',glassTiltOn:'Les reflets suivent maintenant l’inclinaison du téléphone',glassTiltOff:'Pas d’accès aux mouvements : les reflets suivent le défilement',offlineStartToast:'Mode hors ligne : tout fonctionne, tes modifications partiront au retour d’Internet.',offlineReadyToast:'IKORUN est prête à fonctionner hors ligne',raceDateInvalid:'Date de course invalide : choisis-la à au moins 7 jours.',bdayInvalid:'Date de naissance invalide.',sessionKmRequired:'Indique la distance de la séance (en km).',paceFormatInvalid:'Allure invalide : écris-la au format min:ss (ex. 5:30).',addSessionBtn:'Ajouter la séance',psTitleLab:'Titre',psTitlePh:'Footing du matin',typeVMA:'VMA',typeFractionne:'Fractionné',typeTest:'Test',persoFollowingDesc:'Ton accueil et ton bilan utilisent ce plan. Le plan IKORUN continue de s’ajuster en arrière-plan selon ce que tu fais ici.',persoFollowDesc:'Ton accueil affichera les séances de ce plan au lieu du plan généré. Tu peux revenir au plan IKORUN quand tu veux.',persoStopBtn:'Arrêter',persoFollowBtn:'Suivre',persoNoSession:'Aucune séance. Ajoute ta première !',typeLab:'Type',psHowLab:'Comment veux-tu saisir cette séance ?',psModeSimple:'Simple (km + allure)',psModeReps:'Par répétition (temps de chaque)',psPaceLab:'Allure /km',psRepDistLab:'Distance par répétition',psAddRepBtn:'Ajouter une répétition',psDescLab:'Description (optionnel)',psDescPh:'Détails de la séance...',psNewSessionTitle:'Nouvelle séance',psRepShort:'Rép.',chooseAtLeastOneDay:'Choisis au moins un jour',profileValuesInvalid:'Valeur hors limites : taille 100-250 cm, poids 25-250 kg, FC max 120-230, FC repos 30-120 (sous la FC max), km/sem 0-250.',
+    profileIncompleteAddTime:'Profil incomplet : ajoute un chrono dans tes records',chooseCompDate:'Choisis une date de compétition',raceDateTooSoon:'Choisis une date de course à au moins 7 jours — une date passée ou trop proche ne laisse pas assez de temps pour préparer un plan.',planStartsOn:'Ton plan démarre le {0} : il couvre les 28 semaines avant la course.',planSafetyAdjustedToast:'Plan sécurisé : progression limitée à +10 % par semaine et récupération respectée.',planSafetyMigratedToast:'Ton plan a été ajusté : progression de charge plus sûre, sans séances dures enchaînées.',debriefTitle:'Bilan de séance',modeLightLab:'Clair',modeDarkLab:'Sombre',glassStd:'Liquid Glass',glassMax:'Maximal',glassHintStd:'Le verre IKORUN : reflets, bords lumineux, transparence dosée. Le bon équilibre.',glassHintMax:'Effet maximal : verre très transparent et flou sur tout l’écran, reflets renforcés, fond vivant qui bouge sous le verre. Consomme un peu plus de batterie.',glassWrap:'Covering',glassHintWrap:'Covering : la carrosserie en film mat, les détails en noir brillant et une seule couleur d’étriers, comme une vraie configuration de voiture.',wrapNoir:'Noir Satiné',prefsLab:'Préférences',accountHelpLab:'Compte et aide',accountDataLab:'Compte et données',legalLab:'Conditions et confidentialité',dataLab:'Mes données',wrapShadeLab:'Teinte du film',optionsLab:'Options',wrapColorsNote:'Chaque teinte vient avec sa couleur d’étriers, assortie.',wrapMat:'Noir Mat',wrapStealth:'Noir Intégral',wrapAnthracite:'Gris Anthracite',wrapTrimSilver:'Finitions argent',wrapCalRed:'Étriers rouges',wrapCalBlue:'Étriers bleus',wrapCalYellow:'Étriers jaunes',restGoToast:'C’est reparti !',glassTiltBtn:'Reflets selon l’inclinaison du téléphone',glassTiltActive:'Reflets selon l’inclinaison : activés',glassTiltOn:'Les reflets suivent maintenant l’inclinaison du téléphone',glassTiltOff:'Pas d’accès aux mouvements : les reflets suivent le défilement',offlineStartToast:'Mode hors ligne : tout fonctionne, tes modifications partiront au retour d’Internet.',offlineReadyToast:'IKORUN est prête à fonctionner hors ligne',raceDateInvalid:'Date de course invalide : choisis-la à au moins 7 jours.',bdayInvalid:'Date de naissance invalide.',sessionKmRequired:'Indique la distance de la séance (en km).',paceFormatInvalid:'Allure invalide : écris-la au format min:ss (ex. 5:30).',addSessionBtn:'Ajouter la séance',psTitleLab:'Titre',psTitlePh:'Footing du matin',typeVMA:'VMA',typeFractionne:'Fractionné',typeTest:'Test',persoFollowingDesc:'Ton accueil et ton bilan utilisent ce plan. Le plan IKORUN continue de s’ajuster en arrière-plan selon ce que tu fais ici.',persoFollowDesc:'Ton accueil affichera les séances de ce plan au lieu du plan généré. Tu peux revenir au plan IKORUN quand tu veux.',persoStopBtn:'Arrêter',persoFollowBtn:'Suivre',persoNoSession:'Aucune séance. Ajoute ta première !',typeLab:'Type',psHowLab:'Comment veux-tu saisir cette séance ?',psModeSimple:'Simple (km + allure)',psModeReps:'Par répétition (temps de chaque)',psPaceLab:'Allure /km',psRepDistLab:'Distance par répétition',psAddRepBtn:'Ajouter une répétition',psDescLab:'Description (optionnel)',psDescPh:'Détails de la séance...',psNewSessionTitle:'Nouvelle séance',psRepShort:'Rép.',chooseAtLeastOneDay:'Choisis au moins un jour',profileValuesInvalid:'Valeur hors limites : taille 100-250 cm, poids 25-250 kg, FC max 120-230, FC repos 30-120 (sous la FC max), km/sem 0-250.',
     planGenerated:'Plan « {0} » généré : {1} sem, {2} séances',raceGeneric:'course',
     followingPersoPlan:'Tu suis maintenant ce plan perso',backToIkorunPlan:'Retour au plan IKORUN',
     namePromptLabel:'Nom :',copySuffix:'(copie)',confirmDeletePlan:'Supprimer ce plan ?',
     addAtLeastOneRepTime:'Ajoute au moins un temps de répétition',sessionAdded:'Séance ajoutée',
     myPlanColon:'Mon plan : {0}',shareNotSupported:'Partage non supporté',confirmDeleteProgram:'Supprimer ce programme ?',
-    routineTitle:'Routine',exercisesCount:{one:'{0} exercice',other:'{0} exercices'},exercisesCap:'Exercices',setsCap:'Séries',estDurationCap:'Durée est.',
+    routineTitle:'Routine',exercisesCount:{one:'{0} exercice',other:'{0} exercices'},setsCap:'Séries',estDurationCap:'Durée est.',
     setsRepsLine:'{0} séries · {1} reps',addExercise:'Ajouter un exercice',startWorkout:'Commencer l\u2019entraînement',
     defaultProgramsNotEditable:'Les programmes par défaut ne sont pas modifiables',
     heightCmTitle:'Taille (cm)',weightKgTitle:'Poids (kg)',heightSaved:'Taille enregistrée',weightSaved:'Poids enregistré',
@@ -2239,7 +2239,7 @@ const I18N={
     photoUpdated:'Photo mise à jour',photoRemoved:'Photo supprimée',bioPromptLabel:'Ta biographie :',
     usernameInvalid:'Pseudo invalide (3-20, lettres/chiffres/_)',usernameNotAvailable:'Ce pseudo n\u2019est pas disponible',
     usernameJustTaken:'Ce pseudo vient d\u2019être pris, choisis-en un autre',usernameUpdated:'Pseudo mis à jour',
-    profileUpdated:'Profil mis à jour',localDataOnly:'Données locales uniquement',exportGenerated:'Export généré',
+    profileUpdated:'Profil mis à jour',exportGenerated:'Export généré',
     confirmClearAll:'Tout effacer ? Cette action est irréversible.',confirmClearAllFinal:'Vraiment sûr ? Toutes tes données seront perdues.',
     offlineSinceDays:'Hors ligne depuis {0} j — pense à te reconnecter',dataSynced:'Données synchronisées',
     connectionRestored:'Connexion rétablie · synchronisation…',offlineModeAvailable:'Mode hors ligne — tout reste accessible',
@@ -2363,7 +2363,7 @@ const I18N={
     targetPaceLabel:'Allure cible',targetSplitLabel:'Temps de passage cible',warmupLabel:'Échauffement',
     weekLabelWithNum:'Semaine',whySessionLabel:'Pourquoi cette séance ?',zone2FCmaxLine:'Zone 2 · 70% FCmax · {0}/km',
     analyzeSessionBtn:'Analyser ma séance',autoLightenedFlag:'Séance allégée automatiquement (raison : {0} le {1}).',
-    avgPaceKmLabel:'Allure moyenne /km',coachAnalysisTitle:'Analyse du Coach',
+    
     coach_adj_continue:'Continue comme prévu, ton plan est bien calibré.',
     coach_motiv1:'Une séance de plus dans les jambes — c’est la régularité qui construit la forme, pas les exploits isolés.',
     coach_motiv2:'Tu as fait le plus dur : y aller. Le reste, ton corps s’en charge pendant la récupération.',
@@ -2391,7 +2391,7 @@ const I18N={
     coach_tip_nutrition:'Mange des glucides + protéines dans les 30 min après l\u2019effort.',
     coach_tip_sleep:'Vise 8h de sommeil cette nuit, écran coupé 1h avant.',
     constructiveCriticismTitle:'Critiques constructives',dayNutritionLabel:'Alimentation du jour',
-    dbTileWork:'Effort',dbTileWorkTime:'Temps d’effort',dbTilePace:'Allure',dbEffortLab:'Effort ressenti',rpeL1:'Très facile',rpeL3:'Facile',rpeL5:'Modéré',rpeL7:'Difficile',rpeL9:'Très difficile',rpeL10:'Maximal',caVerdictOk:'Séance réussie',caVerdictMid:'Bonne séance, un point à surveiller',caVerdictWarn:'Séance à surveiller',dbIntro:'Tout est réglé sur ce qui était prévu : ne touche que ce qui a changé.',dbRepOf:'Passage {0} / {1} · {2} m',dbPrev:'Précédent',dbNext:'Suivant',dbDistLab:'Distance',dbDurLab:'Durée totale',dbHourMin:'h · min',dbSumReps:'{0} km · {1} d’effort · {2} /km',dbSumRun:'Allure moyenne : {0} /km',dbSumEmpty:'Règle la distance et la durée',debriefIntro:'Réponds honnêtement : le moteur IKORUN va analyser ta séance.',
+    dbTileWork:'Effort',dbTileWorkTime:'Temps d’effort',dbTilePace:'Allure',dbEffortLab:'Effort ressenti',rpeL1:'Très facile',rpeL3:'Facile',rpeL5:'Modéré',rpeL7:'Difficile',rpeL9:'Très difficile',rpeL10:'Maximal',caVerdictOk:'Séance réussie',caVerdictMid:'Bonne séance, un point à surveiller',caVerdictWarn:'Séance à surveiller',dbIntro:'Tout est réglé sur ce qui était prévu : ne touche que ce qui a changé.',dbRepOf:'Passage {0} / {1} · {2} m',dbPrev:'Précédent',dbNext:'Suivant',dbDistLab:'Distance',dbDurLab:'Durée totale',
     distanceKmLabel:'Distance (km)',distanceKmOptionalLabel:'Distance (km, optionnel)',
     durationMinLabel:'Durée (min)',durationMinOptionalLabel:'Durée (min, optionnel)',
     elevationGainLabel:'Dénivelé D+ (m, optionnel)',fatigueLabel:'Fatigue',freeCommentLabel:'Commentaire libre',
@@ -2404,12 +2404,12 @@ const I18N={
     missedSessionTitle:'Séance manquée',nightSleepLabel:'Sommeil de la nuit',
     note_cardioAlreadyCounted:'charge cardio déjà comptabilisée, plan inchangé',
     note_explosiveCaution:'vigilance sur ta prochaine séance explosive',note_nextHardLightened:'prochaine séance dure allégée',
-    notedCoachBtn:'C\u2019est noté, Coach !',notesOptionalLabel:'Notes (optionnel)',paceKmLabel:'Allure /km',painLabel:'Douleurs',paceAdherenceLabel:'Allure respectée ?',paceFasterOpt:'Plus rapide',paceAsPlannedOpt:'Comme prévu',paceSlowerOpt:'Un peu plus lent',paceMuchSlowerOpt:'Beaucoup plus lent',moreDetailsBtn:'Plus de détails ↓',lessDetailsBtn:'Moins de détails ↑',
+    notedCoachBtn:'C\u2019est noté, Coach !',notesOptionalLabel:'Notes (optionnel)',paceKmLabel:'Allure /km',painLabel:'Douleurs',moreDetailsBtn:'Plus de détails ↓',lessDetailsBtn:'Moins de détails ↑',
     planUpdatedWeekReason:'Plan mis à jour pour la semaine — {0}',positivePointsTitle:'Points positifs',
     recentMissesReducedMsg:'3 séances ratées récemment : volume des prochaines semaines réduit de 15%',
     repByRepSummary:'Bilan par répétition — {0} × {1} m',
-    repLegendLine:'= saisir le temps réel · ✓ = "j\u2019ai respecté l\u2019allure" (remplit automatiquement avec le temps cible)',
-    repNumDist:'Rép. {0} · {1} m',replacementMuscuTitle:'Remplacement — {0}',replacementRunTitle:'Course de remplacement',
+    
+    replacementMuscuTitle:'Remplacement — {0}',replacementRunTitle:'Course de remplacement',
     respectedCount:'{0}/{1} respectées',rpeFeltLabel:'RPE — difficulté ressentie :',sensationsLabel:'Sensations',
     sessionNotedToast:'Séance notée',sessionTypeLabel:'Type de séance',targetColon:'Cible {0}',
     upcomingAdjustmentsTitle:'Ajustements à venir',weatherLabel:'Météo',
@@ -2425,9 +2425,9 @@ const I18N={
     sleepInsufficient:'Insuffisant — récupération compromise',sleepOptimal:'Optimal pour un athlète',sleepPlenty:'Beaucoup — écoute ton corps',
     speedLabel:'Vitesse',timeHMSLabel:'Temps (h : mm : ss)',
     psCardRace:'Ta course',psCardWeek:'Ta semaine',psFinishHint:'Objectif : franchir la ligne en forme, sans chrono imposé.',psDaysPerWeek:'{0} j/sem',psCardGoal:'Ton objectif',psSitLab:'Ta situation',psSitCont:'En prépa',psSitRep:'Je reprends',psSitOther:'Autre',psLvlLab:'Ton niveau',lvlDeb:'Débutant',lvlInt:'Intermédiaire',lvlConf:'Confirmé',psRecLab:'Tes derniers chronos',psRecEdit:'Mettre à jour',psRecNone:'aucun pour l’instant',psGapLab:'Ta dernière sortie remonte à',gapLt1:'– 1 mois',gap13:'1–3 mois',gap36:'3–6 mois',gapGt6:'+ 6 mois',psRepHint:'Le plan repart en douceur et remonte petit à petit.',psOtherHint:'Pas de souci : IKORUN se cale sur tes chronos et ton historique.',psDistLab:'Distance exacte',psDateIn:'Dans {0} semaines',psDateSoon:'Trop proche : il faut au moins une semaine de préparation',psTimeLab:'Chrono visé',psTimePace:'soit {0} /km',psTimePred:'prédiction actuelle {0}',psVolume:'IKORUN règle ton volume : {0} → {1} km/sem, +10 % max d’une semaine à l’autre, une semaine allégée sur quatre.',psSessLab:'Les séances de ton plan',psSessHint:'Touche une séance pour savoir à quoi elle sert.',st_VMAc:'Répétitions courtes (200 à 400 m) très rapides, à ta vitesse maximale aérobie, avec récupération. Développe ta vitesse et la puissance de ton cœur.',st_VMAl:'Répétitions de 800 à 1 200 m juste sous ta VMA. Tu apprends à tenir une allure rapide plus longtemps.',st_INTERVAL:'Alternance d’efforts soutenus et de récupérations, de durées variées. Travaille le rythme et la capacité à relancer.',st_TEMPO:'Course continue « confortablement dure », 20 à 40 min. Améliore ton endurance à allure rapide.',st_SEUIL:'Blocs à l’allure que tu tiendrais environ une heure, avec de courtes récupérations. Repousse le moment où les jambes brûlent.',st_EF:'Footing facile où tu peux parler sans souffler. La base de tout : 70 à 80 % de ton entraînement.',st_LONG:'La plus longue sortie de la semaine, en endurance. Habitue ton corps à durer et à économiser son énergie.',st_DBLSEUIL:'Deux séances au seuil le même jour (matin et soir), à volume modéré. Beaucoup de travail utile sans trop de fatigue.',st_FARTLEK:'« Jeu de vitesse » : des accélérations libres pendant un footing, au feeling. Varié et ludique.',st_COTES:'Montées courtes et dynamiques, retour en trottinant. Renforce les jambes et la foulée, sans les chocs de la piste.',st_VO2:'Efforts de 3 à 5 min très durs, proches de ton maximum. Augmente ta consommation maximale d’oxygène.',st_SPE:'Portions à l’allure exacte de ta course objectif. Ton corps mémorise le rythme du jour J.',st_RECUP:'Footing très lent et court, ou marche. Aide à récupérer sans rester immobile.',configurePlanTitle:'Configurer mon plan',courseProfileLabel:'Profil du parcours',generateMyPlanBtn:'Générer mon plan',
-    planSetupSimpleHint:'On s’occupe du reste (rythme, distances, séances) et on ajuste tout au fil de tes séances.',
-    maxKmWeekLabel:'Km/sem maxi (pic)',minKmWeekLabel:'Km/sem mini',preferredSessionsLabel:'Séances préférées (le coach les privilégiera)',
-    preparedRaceLabel:'Course préparée',raceDateLabel:'Date de la course',targetTimeOptionalLabel:'Chrono visé (optionnel)',
+    
+    minKmWeekLabel:'Km/sem mini',
+    preparedRaceLabel:'Course préparée',raceDateLabel:'Date de la course',
     trainingDaysLabel:'Jours d\u2019entraînement',yourNextRaceDefault:'Ta prochaine course',
     guardFutureDate:'Impossible d\u2019enregistrer une séance à une date future.',guardFutureRecord:'Impossible d\u2019enregistrer une performance à une date future.',guardRecordImpossible:'Ce temps impliquerait un VDOT de {0}, au-delà des meilleurs athlètes du monde. Vérifie ton temps.',recordBigJumpConfirm:'Grosse progression : ton niveau passerait de {0} à {1} de VDOT, et tes allures d\u2019entraînement accéléreraient d\u2019autant. C\u2019est bien une vraie performance récente ?',
     sessionNotYetLabel:'Cette séance n\u2019a pas encore eu lieu',guardFutureSession:'Impossible de valider une séance qui n\u2019a pas encore eu lieu',
@@ -2436,9 +2436,9 @@ const I18N={
     guardRecordTooFast:'Cette performance impliquerait un VDOT de {0}, trop éloigné de ton niveau actuel. Vérifie ton temps.',
     guardStorageTooBig:'Cette donnée est trop volumineuse et n\u2019a pas été synchronisée dans le cloud.',
     loginWelcomeTitle:'Bienvenue',loginSubConnect:'Connecte-toi pour sauvegarder ta progression, tes séances et tes records — synchronisés sur tous tes appareils.',
-    signupTitle:'Créer un compte',signupSub:'Rejoins IKORUN pour sauvegarder ta progression et la retrouver sur tous tes appareils.',
+    signupTitle:'Créer un compte',
     forgotTitle:'Mot de passe oublié',forgotSub:'Indique ton email, on t\u2019envoie un lien pour le réinitialiser.',
-    emailLabel:'Email',passwordLabel:'Mot de passe',confirmPasswordLabel:'Confirmer le mot de passe',
+    emailLabel:'Email',passwordLabel:'Mot de passe',
     emailPlaceholder:'ton@email.com',
     loginBtnLabel:'Se connecter',signupBtnLabel:'Créer mon compte',sendResetLinkBtn:'Envoyer le lien',
     forgotPasswordLink:'Mot de passe oublié ?',noAccountLink:'Pas de compte ? Créer un compte',
@@ -2453,7 +2453,7 @@ const I18N={
     termsOfUseLab:'Conditions d’utilisation',privacyPolicyLab:'Politique de confidentialité',
     sessionPausedLab:'Séance en pause',createBtn:'Créer',libraryLab:'Bibliothèque',
     defaultProgramsLab:'Programmes par défaut',myCreationsLab:'Mes créations',
-    exSetsSummary:'{0} exercices · {1} séries',exosShort:'{0} exos',
+    
     loadKgLab:'Charge (kg)',restLab2:'Repos',personalNotesLab:'Notes personnelles (optionnel)',notesPh:'ex : bien serrer les omoplates',
     levelUpTitle:'NIVEAU SUPÉRIEUR',
     syncedCloudLab:'Synchronisé sur le cloud',addAccountBtn:'Ajouter un compte',dangerZoneLab:'Zone de danger',
@@ -2469,9 +2469,9 @@ const I18N={
     weeksLab:'Semaines',projectionLab:'Projection',
     hrMaxLab:'FC max (bpm)',hrRestLab:'FC repos (bpm)',hrZonesLab:'Zones cardiaques (Karvonen)',
     hrZ1:'Z1 Récupération',hrZ2:'Z2 Endurance',hrZ3:'Z3 Tempo',hrZ4:'Z4 Seuil',hrZ5:'Z5 VO2max',
-    restTimesLab:'Temps de repos recommandés',supersetLab:'Superset',pomoFocus:'Focus',pomoBreak:'Pause',pomodorosDoneLab:'Pomodoros complétés : {0}',
+    restTimesLab:'Temps de repos recommandés',pomoFocus:'Focus',pomoBreak:'Pause',pomodorosDoneLab:'Pomodoros complétés : {0}',
     fillEmailPasswordToast:'Remplis email et mot de passe.',invalidEmailToast:'Adresse email invalide.',
-    passwordTooShortToast:'Mot de passe trop court (8 caractères min).',passwordsMismatchToast:'Les mots de passe ne correspondent pas.',
+    passwordTooShortToast:'Mot de passe trop court (8 caractères min).',
     passwordTooCommonToast:'Ce mot de passe est trop courant : il figure dans les listes utilisées pour forcer les comptes. Choisis-en un autre.',passwordContainsEmailToast:'Ton mot de passe contient ton adresse email — trop facile à deviner. Choisis-en un autre.',
     resendConfirmLink:'Je n’ai pas reçu l’email de confirmation',fillEmailFirstToast:'Écris d’abord ton adresse email ci-dessus.',confirmResentToast:'Email de confirmation renvoyé. Pense à regarder dans les spams.',
     showPasswordLink:'Afficher le mot de passe',hidePasswordLink:'Masquer le mot de passe',
@@ -2491,13 +2491,13 @@ const I18N={
     guestLinkUnavailableWarn:'Ton compte invité ne peut pas être rattaché à Google pour l’instant.\n\nSe connecter avec Google créerait un compte séparé : tes séances, tes records et tes mesures resteraient sur le compte invité, sans aucun moyen d’y revenir.\n\nExporte tes données avant toute chose — tu pourras les réimporter dans le nouveau compte.',
     exportBeforeBtn:'Exporter mes données',
     pendingEmailNoPwDesc:'Ton compte fonctionne et tes données sont sauvegardées. Confirme cette adresse depuis l’email reçu, puis choisis ton mot de passe avec « Mot de passe oublié ? » sur l’écran de connexion. C’est ce qui te permettra de te reconnecter depuis un autre appareil. Regarde aussi dans tes spams.',
-    wrongCredentialsToast:'Email ou mot de passe incorrect — et si tu viens de créer ton compte, valide d’abord l’email de confirmation.',emailRateLimitToast:'Trop de demandes d’email d’affilée. Attends quelques minutes avant de réessayer.',sessionExpiredToast:'Session expirée, reconnecte-toi. Tes données restent sur cet appareil.',sessionLostDuringActivity:'Ton activité en cours continue et reste enregistrée sur cet appareil.',storageBlockedToast:'Ton navigateur bloque le stockage : l’app fonctionne, mais rien ne sera conservé en quittant.',storageFullToast:'Mémoire de l’appareil pleine : tes dernières données n’ont pas pu être enregistrées. Exporte tes données depuis Profil > Données.',swInactiveTip:'Le composant hors-ligne de l’app n’est pas actif sur cet appareil : les notifications ne peuvent pas fonctionner. Recharge la page, et vérifie que le stockage de site n’est pas bloqué.',emailAlreadyUsedToast:'Un compte existe déjà avec cet email.',
-    authGenericErrorToast:'Une erreur est survenue. Réessaie.',checkEmailConfirmToast:'Compte créé ✓ Vérifie ta boîte mail pour confirmer ton adresse.',
+    wrongCredentialsToast:'Email ou mot de passe incorrect — et si tu viens de créer ton compte, valide d’abord l’email de confirmation.',emailRateLimitToast:'Trop de demandes d’email d’affilée. Attends quelques minutes avant de réessayer.',sessionExpiredToast:'Session expirée, reconnecte-toi. Tes données restent sur cet appareil.',sessionLostDuringActivity:'Ton activité en cours continue et reste enregistrée sur cet appareil.',storageBlockedToast:'Ton navigateur bloque le stockage : l’app fonctionne, mais rien ne sera conservé en quittant.',storageFullToast:'Mémoire de l’appareil pleine : tes dernières données n’ont pas pu être enregistrées. Exporte tes données depuis Profil > Compte et données.',swInactiveTip:'Le composant hors-ligne de l’app n’est pas actif sur cet appareil : les notifications ne peuvent pas fonctionner. Recharge la page, et vérifie que le stockage de site n’est pas bloqué.',
+    authGenericErrorToast:'Une erreur est survenue. Réessaie.',
     authTimeoutToast:'La connexion prend trop de temps. Vérifie ta connexion internet et réessaie.',
     resetLinkSentToast:'Lien envoyé ✓ Vérifie ta boîte mail.',loggingInToast:'Connexion…',creatingAccountToast:'Création du compte…',sendingResetToast:'Envoi du lien…',
     continueAsGuestLink:'Continuer en tant qu\'invité',guestConnectingToast:'Connexion en tant qu\'invité…',guestDisabledToast:'Le mode invité n\'est pas encore activé. Réessaie plus tard ou crée un compte.',
     guestModeTitle:'Mode invité',guestModeLabel:'Mode invité',guestModeDesc:'Tes données sont liées à cet appareil. Si tu te déconnectes ou changes de téléphone, tu risques de les perdre. Ajoute un email pour les protéger.',
-    guestSaveAccountBtn:'Sauvegarder mon compte',guestUpgradeSentToast:'Vérifie ta boîte mail pour confirmer. Tu pourras ensuite te connecter avec cet email (utilise « mot de passe oublié » pour en choisir un).',guestUpgradeEmailUsedToast:'Cet email est déjà utilisé par un autre compte.',
+    guestSaveAccountBtn:'Sauvegarder mon compte',guestUpgradeEmailUsedToast:'Cet email est déjà utilisé par un autre compte.',
     guestUpgradeMaybeSentToast:'La réponse n\'est pas arrivée, mais la demande a peut-être quand même réussi. Vérifie ta boîte mail (et les spams) avant de réessayer.',
     tourSkip:'Passer',tourStartBtn:'Commencer',tourNextBtn:'Suivant',tourFinalBtn:'Créer mon plan',replayTourBtn:'Revoir le tutoriel',
     tour_welcome_t:'Bienvenue {0} 👋',tour_welcome_d:'IKORUN n’est pas un GPS ni un podomètre : c’est un carnet d’entraînement intelligent qui génère ton plan et l’ajuste selon ce que tu lui dis. 8 étapes, une minute.',
@@ -2520,21 +2520,21 @@ const I18N={
     nav_home:'Home',nav_sport:'Sport',nav_stats:'Stats',nav_outils:'Tools',nav_profil:'Profile',
     home:'Home',sport:'Sport',stats:'Statistics',outils:'Tools',profil:'Profile',
     sub_sport:'Running & Strength',sub_stats:'Your real data',sub_outils:'Calculators & timers',
-    save:'Save',cancel:'Cancel',add:'Add',edit:'Edit',delete:'Delete',close:'Close',validate:'Confirm',back:'Back',seeAll:'See all',
-    running:'Running',muscu:'Strength',coachIA:'AI Coach',myPlan:'Custom plan',
-    perfHistory:'Performance history',editInfos:'Edit my information',
-    objective:'Goal',appearance:'Appearance',accentColor:'Accent color',language:'Language',
+    save:'Save',cancel:'Cancel',add:'Add',edit:'Edit',delete:'Delete',close:'Close',validate:'Confirm',back:'Back',
+    running:'Running',muscu:'Strength',
+    editInfos:'Edit my information',
+    objective:'Goal',appearance:'Appearance',language:'Language',
     notifsApp:'Notifications & app',trainReminders:'Training reminders',sounds:'Sounds & vibration',
-    dataPrivacy:'Data & privacy',exportData:'Export my data (JSON)',importData:'Import data',resetApp:'Reset the app',
-    photo:'Photo',bio:'Biography',addPhoto:'Add a photo',changePhoto:'Change',removePhoto:'Remove',
+    exportData:'Export my data (JSON)',importData:'Import data',resetApp:'Reset the app',
+    bio:'Biography',
     height:'Height',weight:'Weight',age:'Age',level:'Level',logout:'Log out',
-    levelGuide:'How to choose my level?',xpProgress:'XP progress',coach:'Coach',
-    todayGoals:'Today\u2019s goals',weekLoad:'Weekly load',sessions:'sessions',form:'form',
+    coach:'Coach',
+    sessions:'sessions',form:'form',
     quipTime:'Chasing that {0}?',quipGoal:'Working toward: {0}?',quipDefault:'Ready to push your limits today?',
-    weekLoadTitle:'Weekly load',levelXp:'Level {0} — {1} XP',xpBeforeLevel:'+{0} XP before level {1}',
-    sessionsCap:'Sessions',tonnageKg:'Volume kg',formCap:'Form',nextSession:'NEXT SESSION',today:'Today',
+    
+    sessionsCap:'Sessions',today:'Today',
     homeQuipNoData:'Keep up the momentum.',homeQuipUp:'+{0}% vs last week. Pace kept up.',homeQuipDown:'-{0}% vs last week.',homeQuipStable:'Steady load vs last week.',
-    restDay:'Rest day',noSessionToday:'No session planned today',recordsPerso:'Personal records',
+    restDay:'Rest day',noSessionToday:'No session planned today',
     iDidIt:'I did it',notDone:'Not done',nextLab:'Next up',dayPlusShort:'D+{0}',rpeShort:'RPE',kmWeekShort:'km wk.',sessionsLab:'sessions',
     syncSlowToast:'Sync is slow — the app is starting, your data is on its way',syncFailedLocalToast:'Sync unavailable — working from your local data',syncCloudErrorToast:'Cloud sync error',
     doneTag:'Done',
@@ -2543,17 +2543,17 @@ const I18N={
     googleStandaloneTitle:'Google and the installed app',googleUseGuestBtn:'Continue as guest',googleOpenSafariBtn:'Open in Safari',googleStandaloneHint:'Unavailable from the installed app',
     declineBtn:'Decline',saveLabel:'Save',renameLab:'Rename',favoriteLab:'Favourite',
     langLab:'Language',obModeTitle:'Your display',obModeIntro:'Two ways to see IKORUN \u2014 change your mind anytime in Profile.',obModeFullT:'Full',obModeFullD:'All the stats, every session detail, muscle anatomy, charts. For digging in.',obModeSimpleT:'Simplified',obModeSimpleD:'One card, the essentials: today\u2019s session and a button. Nothing else on screen. For going straight to it.',obModeSuggestion:'Suggestion based on your age: {0}. Choose freely.',chooseModeLab:'Choose a display to continue',
-    trackingLab:'Tracking',appearanceLab:'Appearance',animationsLab:'Animations',updateReadyLab:'New IKORUN version ready',updateNowBtn:'Update',plannedThisWeek:'planned this wk',badgeStartLvl:'From the start',trophiesInYear:'{0} in {1}',introReplayBtn:'Replay the opening animation',
+    trackingLab:'Tracking',updateReadyLab:'New IKORUN version ready',updateNowBtn:'Update',plannedThisWeek:'planned this wk',badgeStartLvl:'From the start',trophiesInYear:'{0} in {1}',introReplayBtn:'Replay the opening animation',
     sendFeedbackLab:'Send feedback',feedbackNoAddressToast:'Contact address not set up yet — try again after the next update.',feedbackTitle:'Your feedback',feedbackIntro:'An idea, a bug, something bothering you in the app? Write it here, it goes straight to your mail app.',feedbackPh:'Write your feedback...',feedbackEmptyToast:'Write something before sending',feedbackSentToast:'Your mail app just opened, all that\u2019s left is to hit send',feedbackSignature:'Account: {0} · Language: {1}',
     sendBtn:'Send',
     playLab:'Start',
     cvCat_dist:'Distance',cvCat_pace:'Pace',cvCat_weight:'Weight',cvTapToEdit:'Tap to edit',
     googleStandaloneBody:'On iPhone, when IKORUN is opened from the home-screen icon, Google sign-in leaves for Safari and never comes back: it succeeds, but in Safari, not here. Continue as a guest inside the app, or open IKORUN in Safari to use Google.',
-    progression:'Progress',planOfDay:'PLAN OF THE DAY',planIkorunDesc:'Training plans designed by coaches',
-    myPlanDesc:'Build your own custom plan',todayCap:'TODAY',tapToStart:'View details',
-    goalCap:'GOAL',courseDefault:'Race',goalTimeColon:'Goal: {0} · ',raceOn:'Race on {0}',raceDay:'Race day',
-    currentVdot:'Current VDOT',currentPhase:'Current phase',thisWeek:'This week',weekOf:'Week {0}/{1}',
-    weeklyLoad:'Weekly load',regenConfirm:'Regenerate a new plan? Completed sessions stay in your stats.',
+    progression:'Progress',
+    todayCap:'TODAY',tapToStart:'View details',
+    courseDefault:'Race',raceOn:'Race on {0}',
+    thisWeek:'This week',weekOf:'Week {0}/{1}',
+    regenConfirm:'Regenerate a new plan? Completed sessions stay in your stats.',
     regenBtn:'Regenerate / reconfigure',planIkorunPill:'IKORUN Plan',myPlanPill:'Custom plan',
     planIkorunTitle:'IKORUN Plan — scientific engine',
     planIkorunDescLong:'Generates a custom periodized plan (Norwegian method + VDOT/Daniels) based on your VDOT ({0}), goal, preferences and race date. The plan auto-adjusts if you miss a session.',vdotToBeCalculated:'to be calculated',
@@ -2564,10 +2564,10 @@ const I18N={
     sessionsCount:{one:'{0} session · {1} done',other:'{0} sessions · {1} done'},followedTag:'Following',duplicate:'Duplicate',share:'Share',
     planNamePrompt:'Plan name:',myPersoPlanDefault:'My custom plan',
     you:'there',dowShort:'M,T,W,T,F,S,S',greet:'Hi',
-    weekPhaseLabel:'Week {0} · {1}',thresholdPaceShort:'Threshold pace',vsLastWeekShort:'vs last week',
-    nextSessionMeta:'Next session · {0}',newWeekTag:'New week',thisWeekCap:'This week',
-    totalTime:'Total time',remainingCap:'Remaining',sessionsRemainingVal:'{0} sessions',objectiveReached:'Goal reached',
-    untilEndWeek:'by Sunday',sessionsDoneShort:'{0} sessions',planOfWeek:'Week plan',
+    weekPhaseLabel:'Week {0} · {1}',
+    nextSessionMeta:'Next session · {0}',
+    totalTime:'Total time',sessionsRemainingVal:'{0} sessions',
+    sessionsDoneShort:'{0} sessions',
     streakDaysShort:'{0}-day streak',seePlan:'View plan',
     streakPRSuffix:' — new best',
     // --- Tools ---
@@ -2590,11 +2590,11 @@ const I18N={
     athleteDefault:'Athlete',addBioPrompt:'Add a bio',heightWeight:'Height / weight',
     noObjective:'None',noBadgeYet:'No badge earned yet — your first session will bring you closer to the Initiate badge.',
     seeAllProgress:'{0} / {1} · See all',nextBadgeLab:'Next badge · {0}',
-    account:'Account',friendsRanking:'Friends & Leaderboard',manageProfile:'Manage profile',passwordSecurity:'Password & security',
-    notConnected:'Not signed in',notifLabel:'Notifications',preferences:'Preferences',historyRecords:'History & records',
-    statistics:'Statistics',theme:'Theme',appColor:'App color',simplifiedMode:'Simplified mode',
+    account:'Account',friendsRanking:'Friends & Leaderboard',manageProfile:'Manage profile',
+    notConnected:'Not signed in',notifLabel:'Notifications',historyRecords:'History & records',
+    theme:'Theme',appColor:'App color',simplifiedMode:'Simplified mode',
     simplifiedModeDesc:'4 tabs, lighter screens, bigger text — the essentials only',
-    support:'Support',helpCenter:'Help center',
+    support:'Support',
     yourSpace:'Your space',settings:'Settings',badgesLabel:'Badges',homePBLabel:'Your PBs',toolsCalc:'Tools & calculators',editMyProfile:'Edit my profile',
     // --- Stats ---
     tabBilan:'Overview',tabRun:'Running',tabMuscu:'Strength',tabTrophies:'Trophies',
@@ -2609,13 +2609,13 @@ const I18N={
     kmPerSession:'KM / SESSION',sessionTypesLabel:'SESSION TYPES',bestDayLab:'BEST DAY',bestWeekLab:'BEST WEEK',bestMonthLab:'BEST MONTH',
     detailByType:'Breakdown by type',last13Weeks:'Last 13 weeks',lessLabel:'Less',moreLabel:'More',vsPrevShort:'vs prev.',
     typeMuscu:'Strength',typeAutre:'Other',insightsTitle:'Insights',
-    quickTimer:'Timer',lvlShort:'LVL',
+    quickTimer:'Timer',
     vdotReal:'Actual VDOT',sessionsRun:'Run sessions',kmTotal:'Total km',paceZones:'Pace zones',
     predictions:'Predictions',formFatigue:'Form / Fatigue',personalRecords:'Personal records',
     chronic:'Chronic',acute:'Acute',tonnageLab:'Volume',prPerSession:'Best session',totalSets:'Sets completed',
     startFirstMuscu:'Start your first strength session!',lastSessions:'Recent sessions',
     tomorrow:'Tomorrow',noUpcomingSession:'No upcoming session planned.',addSession:'Add a session',
-    showRestPlan:'Show the rest of the plan · {0} weeks',calendarTitle:'Calendar',calendarSub:'Plan your progress',
+    calendarTitle:'Calendar',calendarSub:'Plan your progress',
     friendsTitle:'Friends & Leaderboard',tabFriendsList:'Friends',tabRank:'Leaderboard',
     clubTitle:'My clubs',tabClub:'My clubs',myClubLab:'My clubs',clubAddAnotherBtn:'Join or create another club',clubMaxReachedToast:'You\'ve reached the 5-club limit.',
     noClubYet:'No club yet',noClubYetDesc:'Join your team’s club with a code, or create your own to bring your teammates together.',
@@ -2647,7 +2647,7 @@ const I18N={
     loadingLab:'Loading…',friendsLoadError:'Couldn\'t load your friends. Check your connection.',retryBtn:'Retry',
     resumeBtn:'Resume',discardBtn:'Discard',
     alreadyLinked:'already linked',addBtn:'Add',searchError:'Search error',alreadySentOrFriend:'Already sent or already friends',
-    requestSent:'Request sent',friendProfileTitle:'Profile',removeLab:'Remove',lvlDot:'Lvl.',kmThisWeekShort:'{0} km this week',lastWeekKm:'Last week: {0} km',minimizeLab:'Minimize',bdayTitle:'Happy birthday, {0}!',bdayAge:'{0} today',bdayWish:'the whole IKORUN team wishes you a great day',bdayOffBtn:'My colors',bdayOnBtn:'Bring back the party',feteLab:'Special days',feteDesc:'Your birthday, race day, a new record, Ramadan, the Night of Decree, Mawlid, Ashura, the Islamic New Year, Isra & Mi’raj, Eid, Christmas, New Year, Halloween and Sport Day: on those days, the app celebrates with you.',hijriAdjLab:'Muslim holidays',hijriAdjDesc:'Umm al-Qura calendar. If your country announces holidays a day earlier or later (moon sighting), shift them here.',hijriAdjEarly:'A day earlier',hijriAdjStd:'Umm al-Qura',hijriAdjLate:'A day later',fetePreviewLab:'Preview',fetePreviewEnd:'End preview',fete_bday:'Birthday',fete_race:'Race day',fete_record:'Record',fete_ramadan:'Ramadan',fete_eidFitr:'Eid al-Fitr',fete_eidAdha:'Eid al-Adha',fete_xmas:'Christmas',fete_newyear:'New Year',fete_halloween:'Halloween',feteRaceTitle:'It’s race day!',feteRaceSub:'{0}: all your training leads to today. Breathe, start easy, finish strong.',feteRaceSubPlain:'All your training leads to today. Breathe, start easy, finish strong.',feteRecordTitle:'New record!',feteRecordSub:'{0} — well done, you’re getting better. Enjoy it!',feteRecordSubPlain:'Well done, you’re getting better. Enjoy it!',feteEidTitle:'Eid Mubarak, {0}!',feteEidAdhaSub:'Saha Aïdkoum! A happy Eid to you and your loved ones.',feteEidFitrSub:'Saha Aïdkoum! After Ramadan, ease back into training.',feteRamadanTitle:'Ramadan Mubarak!',feteRamadanSub:'First day of the holy month. Train after iftar rather than before, and drink well in the evening.',feteXmasTitle:'Merry Christmas, {0}!',feteXmasSub:'An easy run, then somewhere warm. Happy holidays!',feteNyeTitle:'Happy New Year’s Eve!',feteNyeSub:'Last day of {0}: well done for all those kilometres.',feteNyTitle:'Happy New Year {0}!',feteNySub:'New year, new records. Shall we?',feteHalloweenTitle:'Happy Halloween!',feteHalloweenSub:'Spiders are on the prowl… run faster than them!',fete_muharram:'Islamic New Year',fete_achoura:'Ashura',fete_mawlid:'Mawlid',fete_qadr:'Night of Decree',fete_isra:'Isra & Mi’raj',fete_sportDay:'Sport Day',feteMuharramTitle:'Happy Islamic New Year!',feteMuharramSub:'We’re entering year {0} of the Hijra.',feteMuharramSubPlain:'A new Hijri year begins.',feteAchouraTitle:'Happy Ashura!',feteAchouraSub:'A day of sharing and recommended fasting — think of your loved ones.',feteMawlidTitle:'Happy Mawlid!',feteMawlidSub:'The Prophet’s ﷺ birthday — a day of light and remembrance.',feteQadrTitle:'Night of Decree',feteQadrSub:'Better than a thousand months — a thought, a prayer, a moment for you.',feteIsraTitle:'Isra & Mi’raj',feteIsraSub:'The Prophet’s ﷺ night journey to the heavens — a night to remember.',feteSportTitle:'International Sport Day',feteSportSub:'Sport brings people together and makes you better — enjoy your session today!',recLongestRun:'Longest run: {0} km',recRunTime:'{0} in {1}',matLab:'Material',accentClay:'Marshmallow',colorFamSpecial:'Specials',accentOcean:'Ocean',accentViolet:'Amethyst',accentLavender:'Lavender',accentPink:'Raspberry',accentSakura:'Sakura',accentMint:'Mint',accentTeal:'Lagoon',accentOrange:'Amber',accentMono:'Mono',colorFamCool:'Blues & purples',colorFamWarm:'Pinks & warm',colorFamNature:'Nature',colorFamNeutral:'Neutrals',liveAlreadyRunning:'A session is already running. Finish or cancel it before starting another one.',backToSessionLab:'Back to session',islandNext:'Next: {0}',islandEndsAt:'Ends at {0}',islandPaused:'Paused',islandSets:'{0}/{1} sets',glassEasyNote:'Simplified mode keeps a clean display with no glass effect: this setting applies again once you turn it off.',youDefaultName:'You',backToFriends:'Back to friends',profileNotFound:'Profile not found.',noBadgeUnlocked:'No badge unlocked yet.',kmPerWeek:'km/wk',daysStreak:'Day streak',kmTotalLab:'total km',tonnageKgLab:'Volume kg',
+    requestSent:'Request sent',friendProfileTitle:'Profile',removeLab:'Remove',lvlDot:'Lvl.',kmThisWeekShort:'{0} km this week',lastWeekKm:'Last week: {0} km',minimizeLab:'Minimize',bdayTitle:'Happy birthday, {0}!',bdayAge:'{0} today',bdayWish:'the whole IKORUN team wishes you a great day',bdayOffBtn:'My colors',bdayOnBtn:'Bring back the party',feteLab:'Special days',feteDesc:'Your birthday, race day, a new record, Ramadan, the Night of Decree, Mawlid, Ashura, the Islamic New Year, Isra & Mi’raj, Eid, Christmas, New Year, Halloween and Sport Day: on those days, the app celebrates with you.',hijriAdjLab:'Muslim holidays',hijriAdjDesc:'Umm al-Qura calendar. If your country announces holidays a day earlier or later (moon sighting), shift them here.',hijriAdjEarly:'A day earlier',hijriAdjStd:'Umm al-Qura',hijriAdjLate:'A day later',fetePreviewLab:'Preview',fetePreviewEnd:'End preview',fete_bday:'Birthday',fete_race:'Race day',fete_record:'Record',fete_ramadan:'Ramadan',fete_eidFitr:'Eid al-Fitr',fete_eidAdha:'Eid al-Adha',fete_xmas:'Christmas',fete_newyear:'New Year',fete_halloween:'Halloween',feteRaceTitle:'It’s race day!',feteRaceSub:'{0}: all your training leads to today. Breathe, start easy, finish strong.',feteRaceSubPlain:'All your training leads to today. Breathe, start easy, finish strong.',feteRecordTitle:'New record!',feteRecordSub:'{0} — well done, you’re getting better. Enjoy it!',feteRecordSubPlain:'Well done, you’re getting better. Enjoy it!',feteEidTitle:'Eid Mubarak, {0}!',feteEidAdhaSub:'Saha Aïdkoum! A happy Eid to you and your loved ones.',feteEidFitrSub:'Saha Aïdkoum! After Ramadan, ease back into training.',feteRamadanTitle:'Ramadan Mubarak!',feteRamadanSub:'First day of the holy month. Train after iftar rather than before, and drink well in the evening.',feteXmasTitle:'Merry Christmas, {0}!',feteXmasSub:'An easy run, then somewhere warm. Happy holidays!',feteNyeTitle:'Happy New Year’s Eve!',feteNyeSub:'Last day of {0}: well done for all those kilometres.',feteNyTitle:'Happy New Year {0}!',feteNySub:'New year, new records. Shall we?',feteHalloweenTitle:'Happy Halloween!',feteHalloweenSub:'Spiders are on the prowl… run faster than them!',fete_muharram:'Islamic New Year',fete_achoura:'Ashura',fete_mawlid:'Mawlid',fete_qadr:'Night of Decree',fete_isra:'Isra & Mi’raj',fete_sportDay:'Sport Day',feteMuharramTitle:'Happy Islamic New Year!',feteMuharramSub:'We’re entering year {0} of the Hijra.',feteMuharramSubPlain:'A new Hijri year begins.',feteAchouraTitle:'Happy Ashura!',feteAchouraSub:'A day of sharing and recommended fasting — think of your loved ones.',feteMawlidTitle:'Happy Mawlid!',feteMawlidSub:'The Prophet’s ﷺ birthday — a day of light and remembrance.',feteQadrTitle:'Night of Decree',feteQadrSub:'Better than a thousand months — a thought, a prayer, a moment for you.',feteIsraTitle:'Isra & Mi’raj',feteIsraSub:'The Prophet’s ﷺ night journey to the heavens — a night to remember.',feteSportTitle:'International Sport Day',feteSportSub:'Sport brings people together and makes you better — enjoy your session today!',recLongestRun:'Longest run: {0} km',recRunTime:'{0} in {1}',matLab:'Material',accentOcean:'Ocean',accentViolet:'Amethyst',accentLavender:'Lavender',accentPink:'Raspberry',accentSakura:'Sakura',accentMint:'Mint',accentTeal:'Lagoon',accentOrange:'Amber',accentMono:'Mono',colorFamCool:'Blues & purples',colorFamWarm:'Pinks & warm',colorFamNature:'Nature',colorFamNeutral:'Neutrals',liveAlreadyRunning:'A session is already running. Finish or cancel it before starting another one.',backToSessionLab:'Back to session',islandNext:'Next: {0}',islandEndsAt:'Ends at {0}',islandPaused:'Paused',islandSets:'{0}/{1} sets',glassEasyNote:'Simplified mode keeps a clean display with no glass effect: this setting applies again once you turn it off.',youDefaultName:'You',backToFriends:'Back to friends',profileNotFound:'Profile not found.',noBadgeUnlocked:'No badge unlocked yet.',kmPerWeek:'km/wk',daysStreak:'Day streak',kmTotalLab:'total km',tonnageKgLab:'Volume kg',
     addPerf:'Add a performance',addChronosHint:'Add your times: they power your VDOT and your plan.',
     bestPerf:'Best performance',avgHR:'avg HR',maxHRshort:'max',perfHistoryTitle:'Performance history',
     chooseDistance:'Choose the distance',otherDist:'Other',customDistance:'Custom distance',
@@ -2657,7 +2657,7 @@ const I18N={
     perfAddedComp:'Performance added · +XP competition',perfAdded:'Performance added',
     editProfileTitle:'Edit profile',usernameLab:'Username',usernameHint:'Used by your friends to find you',
     firstNameLab:'First name',cityLab:'City',birthDateLab:'Date of birth',heightCmLab:'Height (cm)',weightKgLab:'Weight (kg)',
-    kmWeekLab:'Km / week',compDateLab:'Race date',coachLab:'Coach',saveBtn:'Save',
+    kmWeekLab:'Km / week',compDateLab:'Race date',saveBtn:'Save',
     filterAll:'All',filterObtained:'Earned',filterLocked:'Locked',badgesObtainedCount:'{0} / {1} badges earned',
     badgeDetailTitle:'Badge details',tierOf:'Tier {0} of {1}',newBadgeUnlocked:'NEW BADGE UNLOCKED',
     tapToContinue:'Tap to continue',seeDetails:'See details',tapToClose:'Tap to close',previewLocked:'PREVIEW · LOCKED',
@@ -2681,7 +2681,7 @@ const I18N={
     hydraTip:'Drink regularly in small sips. Watch the color of your urine.',
     basalMetabolism:'Basal metabolism (kcal/day)',needsByActivity:'Needs by activity level',
     actSedentary:'Sedentary',actLight:'Light',actModerate:'Moderate',actIntense:'Intense',actAthlete:'Athlete',
-    valueField:'Value',fromField:'From',toField:'To',
+    fromField:'From',toField:'To',
     quickNotesTitle:'Quick notes',notesPlaceholder:'Write here... (auto-saved)',autoSaveLocal:'Auto-saved locally.',
     lapBtn:'Lap',stopBtn:'Stop',resetBtn2:'Reset',bestLap:'Best lap',slowestLap:'Slowest',avgLap:'Average',lapsLab:'Laps',
     exportBtn:'Export',fastTag:'fast',slowTag:'slow',lapsCopied:'Laps copied',
@@ -2697,12 +2697,12 @@ const I18N={
     levelReq:'Level *',howChooseLab:'How to choose?',
     lvlBeginner:'Beginner',lvlIntermediate:'Intermediate',lvlAdvanced:'Advanced',lvlVeryAdvanced:'Very advanced',lvlElite:'Elite',
     obGoalTitle:'Your goal',obGoalIntro:'What keeps you running.',goalReq:'Goal *',goalPh:'E.g.: break 20:00 on the 5K',
-    compDateReq:'Race date *',coachOptional:'Coach — optional',coachPh:'Your coach\u2019s name',
+    compDateReq:'Race date *',
     obPerfTitle:'Your performances',obPerfIntro:'Add your best times. At least one is required.',
     perfNote:'Your times calculate your <b>VDOT</b> (your "engine size") and all your <b>training paces</b>. Give at least one recent, reliable time. Choose the distance then the time with the wheels.',
     addAnotherPerf:'Add another performance',backLab:'Back',continueLab:'Continue',
-    paramsTitle:'Settings',libTitle:'Library',configureTitle:'Configure',programTitle:'Program',sessionTitle:'Session',
-    newProgramTitle:'New program',homeDefault:'Home',chooseLab:'Choose',validateLab2:'Confirm',
+    paramsTitle:'Settings',libTitle:'Library',configureTitle:'Configure',sessionTitle:'Session',
+    newProgramTitle:'New program',chooseLab:'Choose',validateLab2:'Confirm',
     understoodLab:'Got it',howChooseLevelTitle:'How to choose my level?',
     lvlBeginnerDesc:'You\u2019ve been running for less than a year. You train occasionally and are still learning the basics.',
     lvlIntermediateDesc:'You run regularly, sometimes compete, and know the main session types.',
@@ -2711,11 +2711,11 @@ const I18N={
     lvlEliteDesc:'High-level athlete: national/international performances, daily high-volume training.',
     checkingLab:'Checking…',
     fillRequiredFields:'Fill in the required fields',chooseUsernameLab:'Choose a username',usernameUnavailable:'This username is not available',
-    quickProfileEnabled:'Quick profile enabled — simplified mode enabled',chooseLevelLab:'Choose a level',goalDateRequired:'Goal and date required',addAtLeastOnePerf:'Add at least one performance',
+    chooseLevelLab:'Choose a level',goalDateRequired:'Goal and date required',addAtLeastOnePerf:'Add at least one performance',
     finishLab:'Finish',distanceLab2:'Distance',timeForLab:'Time · {0}',chooseWord:'Choose',
     usernameTakenMeanwhile:'Username taken meanwhile, change it in Profile',
     liveFinishBtn:'Finish',durationLab:'Duration',volumeLab:'Volume',setsLab:'Sets',deleteLab2:'Delete',
-    exerciseDoneLab:'Done',setsDoneCount:'{0}/{1} sets done',restTimerLab:'Rest timer: {0}',disabledLab:'Off',
+    exerciseDoneLab:'Done',setsDoneCount:'{0}/{1} sets done',restTimerLab:'Rest timer: {0}',
     setCol:'Set',prevCol:'Previous',kgCol:'Kg',repsCol:'Reps',addSetBtn:'Add a set',
     addExerciseBtn:'Add an exercise',cancelSessionBtn:'Cancel session',
     restSeconds:'Rest (seconds)',minOneSetRemain:'At least one set must remain',changeRestLab:'Change rest time',
@@ -2760,7 +2760,7 @@ const I18N={
     bdg_legende_name:'Legend',bdg_legende_desc:'A reference in your own right.',
     tierBronze:'Bronze',tierArgent:'Silver',tierOr:'Gold',tierPlatine:'Platinum',tierDiamant:'Diamond',tierMaitre:'Master',tierLegende:'Legend',
     medalCatSeances:'Sessions',medalCatRegularite:'Consistency',medalCatDistance:'Distance',
-    daysLab:'days',continueUnlockBadges:'Keep going to unlock your badges',    ach_premiere_name:'First Race',ach_premiere_desc:'Finish the race you were preparing for.',
+    daysLab:'days',    ach_premiere_name:'First Race',ach_premiere_desc:'Finish the race you were preparing for.',
     ach_cinqk_name:'5K',ach_cinqk_desc:'Run more than 5 km in one go.',
     ach_dixk_name:'10K',ach_dixk_desc:'Run more than 10 km in one go.',
     ach_serie_name:'Streak',ach_serie_desc:'Keep a month of consistency (30 days in a row).',
@@ -2787,7 +2787,7 @@ const I18N={
     confirmFinalIrreversible:'Final confirmation: are you really sure? This action is irreversible.',deleteAccountFailed:'Deletion failed on the server — your account still exists. Check your connection and try again.',
     genericErrorRetry:'Error, try again',
     confirmRemoveFriend:'Remove this friend?',
-    connectFirst:'Sign in first',copiedClipboard:'Copied to clipboard',
+    
     usernameFormatHint:'3 to 20 characters: letters, numbers, _',checkingEllipsis:'Checking…',
     available:'Available',alreadyTaken:'Already taken',
     alarmDefaultTitle:'Alarm',timeUpMsg:'Time\u2019s up!',timeUpTitle:'Time\u2019s up!',
@@ -2805,19 +2805,19 @@ const I18N={
     notifBlockedTip:'Notifications blocked — enable them in your phone settings for this app.',
     notifUnsupportedToast:'Notifications not available on this device',
     prayerNotifLabel:'Prayer reminders',socialNotifLabel:'My friends’ records',socialNotifDesc:'A notification when a friend or a member of your club improves their VDOT. Your own VDOT progress is shared with them the same way — never your times or your sessions.',socialNotifOnToast:'You’ll be notified of your friends’ records',
-    cmRecovTrot:'{0} jog',cmDayLab:'Day',cmFree:'free',cmContentLab:'Content',cmReps:'Reps',cmRepDist:'Distance of each rep',cmRecov:'Recovery',cmHills:'Hill reps',cmHillsSub:'30 to 45 s of effort each',cmSurges:'Surges',cmSurgesSub:'1 min fast, 1 min easy',cmTempo:'Tempo block',cmTempoSub:'at {0} /km',cmDistSub:'at {0} /km',cmWeekWarn:'Your week goes up to {0} km instead of {1}. Beyond +10%, injury risk rises.',cmFixed:'This session has a fixed structure: you can move it or turn it into rest.',customizedTag:'Customized',customizeSessionBtn:'Edit this session',customizeMoveLabel:'Move to another day',
-    customizeVolumeLabel:'Adjust volume',customizeSkipBtn:'Turn into a rest day',customizeResetBtn:'Reset',
+    cmRecovTrot:'{0} jog',cmDayLab:'Day',cmFree:'free',cmContentLab:'Content',cmReps:'Reps',cmRepDist:'Distance of each rep',cmRecov:'Recovery',cmHills:'Hill reps',cmHillsSub:'30 to 45 s of effort each',cmSurges:'Surges',cmSurgesSub:'1 min fast, 1 min easy',cmTempo:'Tempo block',cmTempoSub:'at {0} /km',cmDistSub:'at {0} /km',cmWeekWarn:'Your week goes up to {0} km instead of {1}. Beyond +10%, injury risk rises.',cmFixed:'This session has a fixed structure: you can move it or turn it into rest.',customizedTag:'Customized',customizeSessionBtn:'Edit this session',
+    customizeSkipBtn:'Turn into a rest day',customizeResetBtn:'Reset',
     customizeMovedToast:'Session moved',customizeSkippedToast:'Session turned into rest',customizeResetToast:'Session reset',
     resumeSessionConfirm:'A "{0}" session was in progress ({1} min). Resume?',sessionColonName:'Session: {0}',
     accentBlue:'Blue',accentRed:'Red',accentGreen:'Military green',accentBrown:'Woodland brown',accentYellow:'Yellow',accentCarbon:'Carbon fiber',accentForged:'Forged carbon',lumSoftDark:'Soft dark',lumSoftLight:'Soft light',matBetween:'Between {0} and {1}',matFreeHint:'Free wheel: each notch is a material, and everything in between is yours.',
     colorApplied:'Color applied',easyModeOn:'Simplified mode enabled',easyModeOff:'Simplified mode disabled',
-    profileIncompleteAddTime:'Incomplete profile: add a time in your records',chooseCompDate:'Choose a race date',raceDateTooSoon:'Choose a race date at least 7 days away — a past or too-close date doesn’t leave enough time to build a plan.',planStartsOn:'Your plan starts on {0}: it covers the 28 weeks before the race.',planSafetyAdjustedToast:'Plan secured: load increases capped at +10% per week, with proper recovery.',planSafetyMigratedToast:'Your plan was adjusted: safer load progression, no back-to-back hard sessions.',planSafetyHint:'To limit injury risk, IKORUN raises your volume by 10% per week at most and lightens one week in four.',debriefTitle:'Session review',modeLightLab:'Light',modeDarkLab:'Dark',glassLab:'Glass effect (Liquid Glass)',glassStd:'Liquid Glass',glassMax:'Maximum',glassHintStd:'IKORUN glass: reflections, glowing edges, measured transparency. The right balance.',glassHintMax:'Maximum effect: very transparent, blurred glass across the whole screen, stronger reflections, a living background moving under the glass. Uses a little more battery.',glassWrap:'Wrap',glassHintWrap:'Wrap: bodywork in matte film, gloss-black trim and a single caliper colour, like a real car spec.',wrapNoir:'Satin Black',styleLab:'Colour & material',wrapShadeLab:'Film shade',optionsLab:'Options',wrapColorsNote:'Each shade comes with its matching caliper colour.',wrapMat:'Matte Black',wrapStealth:'Full Black',wrapAnthracite:'Anthracite Grey',wrapTrimSilver:'Silver trim',wrapCalRed:'Red calipers',wrapCalBlue:'Blue calipers',wrapCalYellow:'Yellow calipers',restGoToast:'Back at it!',glassTiltBtn:'Reflections follow phone tilt',glassTiltActive:'Tilt reflections: on',glassTiltOn:'Reflections now follow your phone’s tilt',glassTiltOff:'No motion access: reflections follow scrolling',offlineStartToast:'Offline mode: everything works, your changes will sync once you’re back online.',offlineReadyToast:'IKORUN is ready to work offline',raceDateInvalid:'Invalid race date: pick one at least 7 days away.',bdayInvalid:'Invalid date of birth.',sessionKmRequired:'Enter the session distance (km).',paceFormatInvalid:'Invalid pace: use the min:ss format (e.g. 5:30).',addSessionBtn:'Add session',psTitleLab:'Title',psTitlePh:'Morning run',typeVMA:'VO₂max',typeFractionne:'Intervals',typeTest:'Test',persoFollowingDesc:'Your home screen and review use this plan. The IKORUN plan keeps adjusting in the background based on what you do here.',persoFollowDesc:'Your home screen will show this plan\'s sessions instead of the generated plan. You can switch back to the IKORUN plan anytime.',persoStopBtn:'Stop',persoFollowBtn:'Follow',persoNoSession:'No session yet. Add your first one!',typeLab:'Type',psHowLab:'How do you want to enter this session?',psModeSimple:'Simple (km + pace)',psModeReps:'By repetition (time of each)',psPaceLab:'Pace /km',psRepDistLab:'Distance per repetition',psAddRepBtn:'Add a repetition',psDescLab:'Description (optional)',psDescPh:'Session details...',psNewSessionTitle:'New session',psRepShort:'Rep.',chooseAtLeastOneDay:'Choose at least one day',profileValuesInvalid:'Value out of range: height 100-250 cm, weight 25-250 kg, max HR 120-230, resting HR 30-120 (below max HR), km/week 0-250.',
+    profileIncompleteAddTime:'Incomplete profile: add a time in your records',chooseCompDate:'Choose a race date',raceDateTooSoon:'Choose a race date at least 7 days away — a past or too-close date doesn’t leave enough time to build a plan.',planStartsOn:'Your plan starts on {0}: it covers the 28 weeks before the race.',planSafetyAdjustedToast:'Plan secured: load increases capped at +10% per week, with proper recovery.',planSafetyMigratedToast:'Your plan was adjusted: safer load progression, no back-to-back hard sessions.',debriefTitle:'Session review',modeLightLab:'Light',modeDarkLab:'Dark',glassStd:'Liquid Glass',glassMax:'Maximum',glassHintStd:'IKORUN glass: reflections, glowing edges, measured transparency. The right balance.',glassHintMax:'Maximum effect: very transparent, blurred glass across the whole screen, stronger reflections, a living background moving under the glass. Uses a little more battery.',glassWrap:'Wrap',glassHintWrap:'Wrap: bodywork in matte film, gloss-black trim and a single caliper colour, like a real car spec.',wrapNoir:'Satin Black',prefsLab:'Preferences',accountHelpLab:'Account & help',accountDataLab:'Account & data',legalLab:'Terms & privacy',dataLab:'My data',wrapShadeLab:'Film shade',optionsLab:'Options',wrapColorsNote:'Each shade comes with its matching caliper colour.',wrapMat:'Matte Black',wrapStealth:'Full Black',wrapAnthracite:'Anthracite Grey',wrapTrimSilver:'Silver trim',wrapCalRed:'Red calipers',wrapCalBlue:'Blue calipers',wrapCalYellow:'Yellow calipers',restGoToast:'Back at it!',glassTiltBtn:'Reflections follow phone tilt',glassTiltActive:'Tilt reflections: on',glassTiltOn:'Reflections now follow your phone’s tilt',glassTiltOff:'No motion access: reflections follow scrolling',offlineStartToast:'Offline mode: everything works, your changes will sync once you’re back online.',offlineReadyToast:'IKORUN is ready to work offline',raceDateInvalid:'Invalid race date: pick one at least 7 days away.',bdayInvalid:'Invalid date of birth.',sessionKmRequired:'Enter the session distance (km).',paceFormatInvalid:'Invalid pace: use the min:ss format (e.g. 5:30).',addSessionBtn:'Add session',psTitleLab:'Title',psTitlePh:'Morning run',typeVMA:'VO₂max',typeFractionne:'Intervals',typeTest:'Test',persoFollowingDesc:'Your home screen and review use this plan. The IKORUN plan keeps adjusting in the background based on what you do here.',persoFollowDesc:'Your home screen will show this plan\'s sessions instead of the generated plan. You can switch back to the IKORUN plan anytime.',persoStopBtn:'Stop',persoFollowBtn:'Follow',persoNoSession:'No session yet. Add your first one!',typeLab:'Type',psHowLab:'How do you want to enter this session?',psModeSimple:'Simple (km + pace)',psModeReps:'By repetition (time of each)',psPaceLab:'Pace /km',psRepDistLab:'Distance per repetition',psAddRepBtn:'Add a repetition',psDescLab:'Description (optional)',psDescPh:'Session details...',psNewSessionTitle:'New session',psRepShort:'Rep.',chooseAtLeastOneDay:'Choose at least one day',profileValuesInvalid:'Value out of range: height 100-250 cm, weight 25-250 kg, max HR 120-230, resting HR 30-120 (below max HR), km/week 0-250.',
     planGenerated:'"{0}" plan generated: {1} wk, {2} sessions',raceGeneric:'race',
     followingPersoPlan:'You\u2019re now following this custom plan',backToIkorunPlan:'Back to IKORUN plan',
     namePromptLabel:'Name:',copySuffix:'(copy)',confirmDeletePlan:'Delete this plan?',
     addAtLeastOneRepTime:'Add at least one rep time',sessionAdded:'Session added',
     myPlanColon:'My plan: {0}',shareNotSupported:'Sharing not supported',confirmDeleteProgram:'Delete this program?',
-    routineTitle:'Routine',exercisesCount:{one:'{0} exercise',other:'{0} exercises'},exercisesCap:'Exercises',setsCap:'Sets',estDurationCap:'Est. duration',
+    routineTitle:'Routine',exercisesCount:{one:'{0} exercise',other:'{0} exercises'},setsCap:'Sets',estDurationCap:'Est. duration',
     setsRepsLine:'{0} sets · {1} reps',addExercise:'Add an exercise',startWorkout:'Start workout',
     defaultProgramsNotEditable:'Default programs can\u2019t be edited',
     heightCmTitle:'Height (cm)',weightKgTitle:'Weight (kg)',heightSaved:'Height saved',weightSaved:'Weight saved',
@@ -2825,7 +2825,7 @@ const I18N={
     photoUpdated:'Photo updated',photoRemoved:'Photo removed',bioPromptLabel:'Your bio:',
     usernameInvalid:'Invalid username (3-20, letters/numbers/_)',usernameNotAvailable:'This username isn\u2019t available',
     usernameJustTaken:'This username was just taken, pick another one',usernameUpdated:'Username updated',
-    profileUpdated:'Profile updated',localDataOnly:'Local data only',exportGenerated:'Export generated',
+    profileUpdated:'Profile updated',exportGenerated:'Export generated',
     confirmClearAll:'Clear everything? This action is irreversible.',confirmClearAllFinal:'Really sure? All your data will be lost.',
     offlineSinceDays:{one:'Offline for {0} day — remember to reconnect',other:'Offline for {0} days — remember to reconnect'},dataSynced:'Data synced',
     connectionRestored:'Connection restored · syncing…',offlineModeAvailable:'Offline mode — everything stays accessible',
@@ -2949,7 +2949,7 @@ const I18N={
     targetPaceLabel:'Target pace',targetSplitLabel:'Target split time',warmupLabel:'Warm-up',
     weekLabelWithNum:'Week',whySessionLabel:'Why this session?',zone2FCmaxLine:'Zone 2 · 70% max HR · {0}/km',
     analyzeSessionBtn:'Analyze my session',autoLightenedFlag:'Session automatically lightened (reason: {0} on {1}).',
-    avgPaceKmLabel:'Average pace /km',coachAnalysisTitle:'Coach Analysis',
+    
     coach_adj_continue:'Keep going as planned, your plan is well calibrated.',
     coach_motiv1:'One more session in the legs — fitness is built by consistency, not by one-off heroics.',
     coach_motiv2:'You did the hard part: showing up. Your body handles the rest during recovery.',
@@ -2977,7 +2977,7 @@ const I18N={
     coach_tip_nutrition:'Eat carbs + protein within 30 min after the effort.',
     coach_tip_sleep:'Aim for 8h of sleep tonight, screens off 1h before.',
     constructiveCriticismTitle:'Constructive feedback',dayNutritionLabel:'Today\u2019s nutrition',
-    dbTileWork:'Work',dbTileWorkTime:'Work time',dbTilePace:'Pace',dbEffortLab:'Perceived effort',rpeL1:'Very easy',rpeL3:'Easy',rpeL5:'Moderate',rpeL7:'Hard',rpeL9:'Very hard',rpeL10:'All out',caVerdictOk:'Great session',caVerdictMid:'Good session, one thing to watch',caVerdictWarn:'Session to keep an eye on',dbIntro:'Everything is set to what was planned: only change what was different.',dbRepOf:'Rep {0} / {1} · {2} m',dbPrev:'Previous',dbNext:'Next',dbDistLab:'Distance',dbDurLab:'Total time',dbHourMin:'h · min',dbSumReps:'{0} km · {1} of work · {2} /km',dbSumRun:'Average pace: {0} /km',dbSumEmpty:'Set the distance and time',debriefIntro:'Answer honestly: the IKORUN engine will analyze your session.',
+    dbTileWork:'Work',dbTileWorkTime:'Work time',dbTilePace:'Pace',dbEffortLab:'Perceived effort',rpeL1:'Very easy',rpeL3:'Easy',rpeL5:'Moderate',rpeL7:'Hard',rpeL9:'Very hard',rpeL10:'All out',caVerdictOk:'Great session',caVerdictMid:'Good session, one thing to watch',caVerdictWarn:'Session to keep an eye on',dbIntro:'Everything is set to what was planned: only change what was different.',dbRepOf:'Rep {0} / {1} · {2} m',dbPrev:'Previous',dbNext:'Next',dbDistLab:'Distance',dbDurLab:'Total time',
     distanceKmLabel:'Distance (km)',distanceKmOptionalLabel:'Distance (km, optional)',
     durationMinLabel:'Duration (min)',durationMinOptionalLabel:'Duration (min, optional)',
     elevationGainLabel:'Elevation gain (m, optional)',fatigueLabel:'Fatigue',freeCommentLabel:'Free comment',
@@ -2990,12 +2990,12 @@ const I18N={
     missedSessionTitle:'Missed session',nightSleepLabel:'Night\u2019s sleep',
     note_cardioAlreadyCounted:'cardio load already accounted for, plan unchanged',
     note_explosiveCaution:'caution advised for your next explosive session',note_nextHardLightened:'next hard session lightened',
-    notedCoachBtn:'Got it, Coach!',notesOptionalLabel:'Notes (optional)',paceKmLabel:'Pace /km',painLabel:'Pain',paceAdherenceLabel:'Did you hold the pace?',paceFasterOpt:'Faster',paceAsPlannedOpt:'As planned',paceSlowerOpt:'A bit slower',paceMuchSlowerOpt:'Much slower',moreDetailsBtn:'More details ↓',lessDetailsBtn:'Less details ↑',
+    notedCoachBtn:'Got it, Coach!',notesOptionalLabel:'Notes (optional)',paceKmLabel:'Pace /km',painLabel:'Pain',moreDetailsBtn:'More details ↓',lessDetailsBtn:'Less details ↑',
     planUpdatedWeekReason:'Plan updated for the week — {0}',positivePointsTitle:'Positive points',
     recentMissesReducedMsg:'3 recent missed sessions: upcoming weeks\u2019 volume reduced by 15%',
     repByRepSummary:'Rep-by-rep summary — {0} × {1} m',
-    repLegendLine:'= enter actual time · ✓ = "I held the pace" (auto-fills with the target time)',
-    repNumDist:'Rep {0} · {1} m',replacementMuscuTitle:'Replacement — {0}',replacementRunTitle:'Replacement run',
+    
+    replacementMuscuTitle:'Replacement — {0}',replacementRunTitle:'Replacement run',
     respectedCount:'{0}/{1} on target',rpeFeltLabel:'RPE — perceived difficulty:',sensationsLabel:'Feel',
     sessionNotedToast:'Session logged',sessionTypeLabel:'Session type',targetColon:'Target {0}',
     upcomingAdjustmentsTitle:'Upcoming adjustments',weatherLabel:'Weather',
@@ -3011,9 +3011,9 @@ const I18N={
     sleepInsufficient:'Insufficient — recovery compromised',sleepOptimal:'Optimal for an athlete',sleepPlenty:'A lot — listen to your body',
     speedLabel:'Speed',timeHMSLabel:'Time (h : mm : ss)',
     psCardRace:'Your race',psCardWeek:'Your week',psFinishHint:'Goal: cross the line feeling good, no set time.',psDaysPerWeek:'{0} days/wk',psCardGoal:'Your goal',psSitLab:'Your situation',psSitCont:'In training',psSitRep:'Coming back',psSitOther:'Other',psLvlLab:'Your level',lvlDeb:'Beginner',lvlInt:'Intermediate',lvlConf:'Advanced',psRecLab:'Your latest times',psRecEdit:'Update',psRecNone:'none yet',psGapLab:'Your last run was',gapLt1:'< 1 month',gap13:'1–3 months',gap36:'3–6 months',gapGt6:'6+ months',psRepHint:'The plan starts gently and builds up little by little.',psOtherHint:'No problem: IKORUN adapts to your times and history.',psDistLab:'Exact distance',psDateIn:'In {0} weeks',psDateSoon:'Too soon: you need at least one week of training',psTimeLab:'Target time',psTimePace:'that is {0} /km',psTimePred:'current prediction {0}',psVolume:'IKORUN sets your volume: {0} → {1} km/wk, +10% max week to week, one easier week out of four.',psSessLab:'The sessions in your plan',psSessHint:'Tap a session to see what it is for.',st_VMAc:'Short, very fast reps (200 to 400 m) at your maximal aerobic speed, with recovery. Builds speed and heart power.',st_VMAl:'800 to 1,200 m reps just below your MAS. Teaches you to hold a fast pace for longer.',st_INTERVAL:'Hard efforts and recoveries of varied lengths. Works rhythm and the ability to surge.',st_TEMPO:'Continuous “comfortably hard” running, 20 to 40 min. Improves endurance at a fast pace.',st_SEUIL:'Blocks at the pace you could hold for about an hour, with short recoveries. Pushes back the moment your legs burn.',st_EF:'Easy running where you can talk without gasping. The foundation: 70 to 80% of your training.',st_LONG:'The longest run of the week, at an easy pace. Teaches your body to last and save energy.',st_DBLSEUIL:'Two threshold sessions on the same day (morning and evening), at moderate volume. Lots of useful work without too much fatigue.',st_FARTLEK:'“Speed play”: free surges during an easy run, by feel. Varied and fun.',st_COTES:'Short, punchy climbs, jogging back down. Strengthens legs and stride without the pounding of the track.',st_VO2:'Very hard 3 to 5 min efforts, close to your maximum. Raises your maximal oxygen uptake.',st_SPE:'Sections at the exact pace of your goal race. Your body memorises race-day rhythm.',st_RECUP:'A very slow, short jog or a walk. Helps you recover without sitting still.',configurePlanTitle:'Configure my plan',courseProfileLabel:'Course profile',generateMyPlanBtn:'Generate my plan',
-    planSetupSimpleHint:'We handle the rest (pace, distances, sessions) and adjust everything as you go.',
-    maxKmWeekLabel:'Max km/week (peak)',minKmWeekLabel:'Min km/week',preferredSessionsLabel:'Preferred sessions (the coach will favor these)',
-    preparedRaceLabel:'Race you\u2019re preparing for',raceDateLabel:'Race date',targetTimeOptionalLabel:'Target time (optional)',
+    
+    minKmWeekLabel:'Min km/week',
+    preparedRaceLabel:'Race you\u2019re preparing for',raceDateLabel:'Race date',
     trainingDaysLabel:'Training days',yourNextRaceDefault:'Your next race',
     guardFutureDate:'You can\u2019t log a session with a future date.',guardFutureRecord:'You can\u2019t log a performance with a future date.',guardRecordImpossible:'This time would imply a VDOT of {0}, beyond the world\u2019s best athletes. Check your time.',recordBigJumpConfirm:'Big jump: your level would go from VDOT {0} to {1}, and your training paces would speed up accordingly. Is this a genuine recent performance?',
     sessionNotYetLabel:'This session hasn\u2019t happened yet',guardFutureSession:'You can\u2019t complete a session that hasn\u2019t happened yet',
@@ -3022,9 +3022,9 @@ const I18N={
     guardRecordTooFast:'This performance would imply a VDOT of {0}, too far from your current level. Check your time.',
     guardStorageTooBig:'This data is too large and wasn\u2019t synced to the cloud.',
     loginWelcomeTitle:'Welcome',loginSubConnect:'Sign in to save your progress, sessions and records — synced across all your devices.',
-    signupTitle:'Create an account',signupSub:'Join IKORUN to save your progress and find it on all your devices.',
+    signupTitle:'Create an account',
     forgotTitle:'Forgot password',forgotSub:'Enter your email, we\u2019ll send you a reset link.',
-    emailLabel:'Email',passwordLabel:'Password',confirmPasswordLabel:'Confirm password',
+    emailLabel:'Email',passwordLabel:'Password',
     emailPlaceholder:'your@email.com',
     loginBtnLabel:'Sign in',signupBtnLabel:'Create my account',sendResetLinkBtn:'Send link',
     forgotPasswordLink:'Forgot password?',noAccountLink:'No account? Create one',
@@ -3039,7 +3039,7 @@ const I18N={
     termsOfUseLab:'Terms of use',privacyPolicyLab:'Privacy policy',
     sessionPausedLab:'Session paused',createBtn:'Create',libraryLab:'Library',
     defaultProgramsLab:'Default programs',myCreationsLab:'My creations',
-    exSetsSummary:'{0} exercises · {1} sets',exosShort:'{0} exercises',
+    
     loadKgLab:'Load (kg)',restLab2:'Rest',personalNotesLab:'Personal notes (optional)',notesPh:'e.g. squeeze the shoulder blades',
     levelUpTitle:'LEVEL UP',
     syncedCloudLab:'Synced to the cloud',addAccountBtn:'Add an account',dangerZoneLab:'Danger zone',
@@ -3055,9 +3055,9 @@ const I18N={
     weeksLab:'Weeks',projectionLab:'Projection',
     hrMaxLab:'Max HR (bpm)',hrRestLab:'Resting HR (bpm)',hrZonesLab:'Heart rate zones (Karvonen)',
     hrZ1:'Z1 Recovery',hrZ2:'Z2 Endurance',hrZ3:'Z3 Tempo',hrZ4:'Z4 Threshold',hrZ5:'Z5 VO2max',
-    restTimesLab:'Recommended rest times',supersetLab:'Superset',pomoFocus:'Focus',pomoBreak:'Break',pomodorosDoneLab:'Pomodoros completed: {0}',
+    restTimesLab:'Recommended rest times',pomoFocus:'Focus',pomoBreak:'Break',pomodorosDoneLab:'Pomodoros completed: {0}',
     fillEmailPasswordToast:'Fill in email and password.',invalidEmailToast:'Invalid email address.',
-    passwordTooShortToast:'Password too short (8 characters min).',passwordsMismatchToast:'Passwords don\u2019t match.',
+    passwordTooShortToast:'Password too short (8 characters min).',
     passwordTooCommonToast:'That password is too common \u2014 it appears in the lists used to break into accounts. Pick another one.',passwordContainsEmailToast:'Your password contains your email address \u2014 too easy to guess. Pick another one.',
     resendConfirmLink:'I didn\u2019t get the confirmation email',fillEmailFirstToast:'Type your email address above first.',confirmResentToast:'Confirmation email sent again. Remember to check your spam folder.',
     showPasswordLink:'Show password',hidePasswordLink:'Hide password',
@@ -3077,13 +3077,13 @@ const I18N={
     guestLinkUnavailableWarn:'Your guest account can’t be linked to Google right now.\n\nSigning in with Google would create a separate account: your sessions, records and measurements would stay on the guest account, with no way back to it.\n\nExport your data first — you’ll be able to import it into the new account.',
     exportBeforeBtn:'Export my data',
     pendingEmailNoPwDesc:'Your account works and your data is saved. Confirm this address from the email you received, then pick your password with “Forgot password?” on the sign-in screen. That’s what lets you sign in from another device. Check your spam folder too.',
-    wrongCredentialsToast:'Wrong email or password — and if you just created your account, confirm your email first.',emailRateLimitToast:'Too many email requests in a row. Wait a few minutes before trying again.',sessionExpiredToast:'Session expired, please sign in again. Your data stays on this device.',sessionLostDuringActivity:'Your ongoing activity keeps running and stays saved on this device.',storageBlockedToast:'Your browser blocks storage: the app works, but nothing will be kept when you leave.',storageFullToast:'Device storage is full: your latest data could not be saved. Export your data from Profile > Data.',swInactiveTip:'The app’s offline component is not active on this device: notifications cannot work. Reload the page and check that site storage is not blocked.',emailAlreadyUsedToast:'An account already exists with this email.',
-    authGenericErrorToast:'Something went wrong. Try again.',checkEmailConfirmToast:'Account created ✓ Check your inbox to confirm your email.',
+    wrongCredentialsToast:'Wrong email or password — and if you just created your account, confirm your email first.',emailRateLimitToast:'Too many email requests in a row. Wait a few minutes before trying again.',sessionExpiredToast:'Session expired, please sign in again. Your data stays on this device.',sessionLostDuringActivity:'Your ongoing activity keeps running and stays saved on this device.',storageBlockedToast:'Your browser blocks storage: the app works, but nothing will be kept when you leave.',storageFullToast:'Device storage is full: your latest data could not be saved. Export your data from Profile > Account & data.',swInactiveTip:'The app’s offline component is not active on this device: notifications cannot work. Reload the page and check that site storage is not blocked.',
+    authGenericErrorToast:'Something went wrong. Try again.',
     authTimeoutToast:'This is taking too long. Check your internet connection and try again.',
     resetLinkSentToast:'Link sent ✓ Check your inbox.',loggingInToast:'Signing in…',creatingAccountToast:'Creating account…',sendingResetToast:'Sending link…',
     continueAsGuestLink:'Continue as guest',guestConnectingToast:'Signing in as guest…',guestDisabledToast:'Guest mode isn\'t enabled yet. Try again later or create an account.',
     guestModeTitle:'Guest mode',guestModeLabel:'Guest mode',guestModeDesc:'Your data is tied to this device. If you sign out or switch phones, you could lose it. Add an email to protect it.',
-    guestSaveAccountBtn:'Save my account',guestUpgradeSentToast:'Check your inbox to confirm. You can then sign in with this email anytime (use "forgot password" to set one).',guestUpgradeEmailUsedToast:'This email is already used by another account.',
+    guestSaveAccountBtn:'Save my account',guestUpgradeEmailUsedToast:'This email is already used by another account.',
     guestUpgradeMaybeSentToast:'The reply never arrived, but the request may have gone through anyway. Check your inbox (and spam) before retrying.',
     tourSkip:'Skip',tourStartBtn:'Let\'s go',tourNextBtn:'Next',tourFinalBtn:'Create my plan',replayTourBtn:'Replay the tutorial',
     tour_welcome_t:'Welcome {0} 👋',tour_welcome_d:'IKORUN isn’t a GPS or a pedometer: it’s a smart training log that generates your plan and adjusts it based on what you tell it. 8 steps, one minute.',
@@ -3106,21 +3106,21 @@ const I18N={
     nav_home:'الرئيسية',nav_sport:'رياضة',nav_stats:'إحصائيات',nav_outils:'أدوات',nav_profil:'الملف',
     home:'الرئيسية',sport:'الرياضة',stats:'الإحصائيات',outils:'الأدوات',profil:'الملف الشخصي',
     sub_sport:'الجري وكمال الأجسام',sub_stats:'بياناتك الحقيقية',sub_outils:'حاسبات ومؤقتات',
-    save:'حفظ',cancel:'إلغاء',add:'إضافة',edit:'تعديل',delete:'حذف',close:'إغلاق',validate:'تأكيد',back:'رجوع',seeAll:'عرض الكل',
-    running:'الجري',muscu:'كمال الأجسام',coachIA:'مدرب ذكي',myPlan:'خطة شخصية',
-    perfHistory:'سجل الإنجازات',editInfos:'تعديل معلوماتي',
-    objective:'الهدف',appearance:'المظهر',accentColor:'لون التمييز',language:'اللغة',
+    save:'حفظ',cancel:'إلغاء',add:'إضافة',edit:'تعديل',delete:'حذف',close:'إغلاق',validate:'تأكيد',back:'رجوع',
+    running:'الجري',muscu:'كمال الأجسام',
+    editInfos:'تعديل معلوماتي',
+    objective:'الهدف',appearance:'المظهر',language:'اللغة',
     notifsApp:'الإشعارات والتطبيق',trainReminders:'تذكيرات التدريب',sounds:'الأصوات والاهتزاز',
-    dataPrivacy:'البيانات والخصوصية',exportData:'تصدير بياناتي (JSON)',importData:'استيراد البيانات',resetApp:'إعادة ضبط التطبيق',
-    photo:'الصورة',bio:'نبذة',addPhoto:'إضافة صورة',changePhoto:'تغيير',removePhoto:'حذف',
+    exportData:'تصدير بياناتي (JSON)',importData:'استيراد البيانات',resetApp:'إعادة ضبط التطبيق',
+    bio:'نبذة',
     height:'الطول',weight:'الوزن',age:'العمر',level:'المستوى',logout:'تسجيل الخروج',
-    levelGuide:'كيف أختار مستواي؟',xpProgress:'تقدم النقاط',coach:'المدرب',
-    todayGoals:'أهداف اليوم',weekLoad:'حمل الأسبوع',sessions:'حصص',form:'اللياقة',
+    coach:'المدرب',
+    sessions:'حصص',form:'اللياقة',
     quipTime:'نلاحق {0}؟',quipGoal:'نتقدم نحو: {0}؟',quipDefault:'مستعد لتجاوز حدودك اليوم؟',
-    weekLoadTitle:'الحمل الأسبوعي',levelXp:'المستوى {0} — {1} نقطة خبرة',xpBeforeLevel:'+{0} نقطة قبل المستوى {1}',
-    sessionsCap:'الحصص',tonnageKg:'الحمولة كغ',formCap:'اللياقة',nextSession:'الحصة القادمة',today:'اليوم',
+    
+    sessionsCap:'الحصص',today:'اليوم',
     homeQuipNoData:'واصل على نفس الوتيرة.',homeQuipUp:'+{0}٪ مقارنة بالأسبوع الماضي. حافظت على الوتيرة.',homeQuipDown:'-{0}٪ مقارنة بالأسبوع الماضي.',homeQuipStable:'حمل تدريبي ثابت مقارنة بالأسبوع الماضي.',
-    restDay:'يوم راحة',noSessionToday:'لا توجد حصة مخططة اليوم',recordsPerso:'الأرقام الشخصية',
+    restDay:'يوم راحة',noSessionToday:'لا توجد حصة مخططة اليوم',
     iDidIt:'أنجزتها',notDone:'لم أنجزها',nextLab:'التالي',dayPlusShort:'+{0} ي',rpeShort:'RPE',kmWeekShort:'كم/أسبوع',sessionsLab:'حصص',
     syncSlowToast:'المزامنة بطيئة — التطبيق يبدأ وبياناتك في الطريق',syncFailedLocalToast:'تعذّرت المزامنة — أنت تعمل على بياناتك المحلية',syncCloudErrorToast:'خطأ في المزامنة مع السحابة',
     doneTag:'تمّت',
@@ -3129,17 +3129,17 @@ const I18N={
     googleStandaloneTitle:'Google والتطبيق المثبّت',googleUseGuestBtn:'المتابعة كضيف',googleOpenSafariBtn:'الفتح في Safari',googleStandaloneHint:'غير متاح من التطبيق المثبّت',
     declineBtn:'رفض',saveLabel:'حفظ',renameLab:'إعادة تسمية',favoriteLab:'مفضّل',
     langLab:'اللغة',obModeTitle:'طريقة العرض',obModeIntro:'طريقتان لرؤية IKORUN — غيّر رأيك في أي وقت من الملف الشخصي.',obModeFullT:'كامل',obModeFullD:'كل الإحصائيات، تفاصيل كل حصة، تشريح العضلات، الرسوم البيانية. للتعمّق.',obModeSimpleT:'مبسّط',obModeSimpleD:'بطاقة واحدة، الأساسيات: حصة اليوم وزر واحد. لا شيء آخر على الشاشة. للذهاب مباشرة إلى الهدف.',obModeSuggestion:'اقتراح حسب عمرك: {0}. اختر بحرية.',chooseModeLab:'اختر طريقة عرض للمتابعة',
-    trackingLab:'المتابعة',appearanceLab:'المظهر',animationsLab:'الرسوم المتحركة',updateReadyLab:'نسخة جديدة من IKORUN جاهزة',updateNowBtn:'تحديث',plannedThisWeek:'مخطط هذا الأسبوع',badgeStartLvl:'منذ البداية',trophiesInYear:'{0} في {1}',introReplayBtn:'إعادة عرض الرسوم الافتتاحية',
+    trackingLab:'المتابعة',updateReadyLab:'نسخة جديدة من IKORUN جاهزة',updateNowBtn:'تحديث',plannedThisWeek:'مخطط هذا الأسبوع',badgeStartLvl:'منذ البداية',trophiesInYear:'{0} في {1}',introReplayBtn:'إعادة عرض الرسوم الافتتاحية',
     sendFeedbackLab:'إرسال تعليق',feedbackNoAddressToast:'لم يتم إعداد عنوان التواصل بعد — أعد المحاولة بعد التحديث القادم.',feedbackTitle:'رأيك',feedbackIntro:'فكرة، خلل، أو شيء يزعجك في التطبيق؟ اكتبه هنا، سيُفتح مباشرة في تطبيق بريدك.',feedbackPh:'اكتب تعليقك...',feedbackEmptyToast:'اكتب شيئًا قبل الإرسال',feedbackSentToast:'فُتح تطبيق البريد لديك، لم يبقَ سوى الضغط على إرسال',feedbackSignature:'الحساب: {0} · اللغة: {1}',
     sendBtn:'إرسال',
     playLab:'ابدأ',
     cvCat_dist:'المسافة',cvCat_pace:'الوتيرة',cvCat_weight:'الوزن',cvTapToEdit:'اضغط للتعديل',
     googleStandaloneBody:'على iPhone، عند فتح IKORUN من أيقونة الشاشة الرئيسية، يغادر تسجيل الدخول عبر Google إلى Safari ولا يعود: ينجح، لكن داخل Safari وليس هنا. تابع كضيف داخل التطبيق، أو افتح IKORUN في Safari لاستخدام Google.',
-    progression:'التقدم',planOfDay:'خطة اليوم',planIkorunDesc:'خطط تدريبية صممها مدربون',
-    myPlanDesc:'أنشئ خطتك الخاصة',todayCap:'اليوم',tapToStart:'عرض التفاصيل',
-    goalCap:'الهدف',courseDefault:'سباق',goalTimeColon:'الهدف: {0} · ',raceOn:'السباق يوم {0}',raceDay:'يوم السباق',
-    currentVdot:'VDOT الحالي',currentPhase:'المرحلة الحالية',thisWeek:'هذا الأسبوع',weekOf:'الأسبوع {0}/{1}',
-    weeklyLoad:'الحمل الأسبوعي',regenConfirm:'إعادة توليد خطة جديدة؟ الحصص المنجزة تبقى في إحصائياتك.',
+    progression:'التقدم',
+    todayCap:'اليوم',tapToStart:'عرض التفاصيل',
+    courseDefault:'سباق',raceOn:'السباق يوم {0}',
+    thisWeek:'هذا الأسبوع',weekOf:'الأسبوع {0}/{1}',
+    regenConfirm:'إعادة توليد خطة جديدة؟ الحصص المنجزة تبقى في إحصائياتك.',
     regenBtn:'إعادة التوليد / الإعداد',planIkorunPill:'خطة IKORUN',myPlanPill:'خطة شخصية',
     planIkorunTitle:'خطة IKORUN — محرك علمي',
     planIkorunDescLong:'يولّد خطة مرحلية مخصصة (الطريقة النرويجية + VDOT/Daniels) بناءً على VDOT الخاص بك ({0})، هدفك، تفضيلاتك وتاريخ سباقك. تتعدل الخطة تلقائيًا إذا فاتتك حصة.',vdotToBeCalculated:'قيد الحساب',
@@ -3150,10 +3150,10 @@ const I18N={
     sessionsCount:{zero:'{0} حصة · {1} منجزة',one:'حصة واحدة · {1} منجزة',two:'حصتان · {1} منجزة',few:'{0} حصص · {1} منجزة',many:'{0} حصة · {1} منجزة',other:'{0} حصة · {1} منجزة'},followedTag:'متابَعة',duplicate:'نسخ',share:'مشاركة',
     planNamePrompt:'اسم الخطة:',myPersoPlanDefault:'خطتي الشخصية',
     you:'أنت',dowShort:'ن,ث,ر,خ,ج,س,ح',greet:'مرحبا',
-    weekPhaseLabel:'الأسبوع {0} · {1}',thresholdPaceShort:'وتيرة العتبة',vsLastWeekShort:'مقابل الأسبوع الماضي',
-    nextSessionMeta:'الحصة القادمة · {0}',newWeekTag:'أسبوع جديد',thisWeekCap:'هذا الأسبوع',
-    totalTime:'الوقت الإجمالي',remainingCap:'المتبقي',sessionsRemainingVal:'{0} حصص',objectiveReached:'تم بلوغ الهدف',
-    untilEndWeek:'حتى الأحد',sessionsDoneShort:'{0} حصص',planOfWeek:'خطة الأسبوع',
+    weekPhaseLabel:'الأسبوع {0} · {1}',
+    nextSessionMeta:'الحصة القادمة · {0}',
+    totalTime:'الوقت الإجمالي',sessionsRemainingVal:'{0} حصص',
+    sessionsDoneShort:'{0} حصص',
     streakDaysShort:{zero:'سلسلة {0} يوم',one:'سلسلة يوم واحد',two:'سلسلة يومين',few:'سلسلة {0} أيام',many:'سلسلة {0} يومًا',other:'سلسلة {0} يوم'},seePlan:'عرض الخطة',
     streakPRSuffix:' — رقم قياسي جديد',
     // --- الأدوات ---
@@ -3176,11 +3176,11 @@ const I18N={
     athleteDefault:'رياضي',addBioPrompt:'أضف نبذة',heightWeight:'الطول / الوزن',
     noObjective:'لا يوجد',noBadgeYet:'لم تحصل على أي وسام بعد — حصتك الأولى ستقربك من وسام المبتدئ.',
     seeAllProgress:'{0} / {1} · عرض الكل',nextBadgeLab:'الوسام القادم · {0}',
-    account:'الحساب',friendsRanking:'الأصدقاء والترتيب',manageProfile:'إدارة الملف الشخصي',passwordSecurity:'كلمة المرور والأمان',
-    notConnected:'غير متصل',notifLabel:'الإشعارات',preferences:'التفضيلات',historyRecords:'السجل والأرقام',
-    statistics:'الإحصائيات',theme:'المظهر',appColor:'لون التطبيق',simplifiedMode:'الوضع المبسّط',
+    account:'الحساب',friendsRanking:'الأصدقاء والترتيب',manageProfile:'إدارة الملف الشخصي',
+    notConnected:'غير متصل',notifLabel:'الإشعارات',historyRecords:'السجل والأرقام',
+    theme:'المظهر',appColor:'لون التطبيق',simplifiedMode:'الوضع المبسّط',
     simplifiedModeDesc:'4 تبويبات، شاشات أخف، نص أكبر — الأساسيات فقط',
-    support:'الدعم',helpCenter:'مركز المساعدة',
+    support:'الدعم',
     yourSpace:'مساحتك',settings:'الإعدادات',badgesLabel:'الأوسمة',homePBLabel:'أرقامك القياسية',toolsCalc:'الأدوات والحاسبات',editMyProfile:'تعديل ملفي الشخصي',
     // --- الإحصائيات ---
     tabBilan:'الحصيلة',tabRun:'الجري',tabMuscu:'كمال الأجسام',tabTrophies:'الأوسمة',
@@ -3195,13 +3195,13 @@ const I18N={
     kmPerSession:'كم / حصة',sessionTypesLabel:'أنواع الحصص',bestDayLab:'أفضل يوم',bestWeekLab:'أفضل أسبوع',bestMonthLab:'أفضل شهر',
     detailByType:'التفاصيل حسب النوع',last13Weeks:'آخر 13 أسبوعًا',lessLabel:'أقل',moreLabel:'أكثر',vsPrevShort:'مقارنة بالسابق',
     typeMuscu:'كمال أجسام',typeAutre:'آخر',insightsTitle:'إحصاءات',
-    quickTimer:'المؤقت',lvlShort:'مستوى',
+    quickTimer:'المؤقت',
     vdotReal:'VDOT الحقيقي',sessionsRun:'حصص الجري',kmTotal:'كم إجمالية',paceZones:'مناطق الوتيرة',
     predictions:'توقعات',formFatigue:'اللياقة / التعب',personalRecords:'الأرقام الشخصية',
     chronic:'مزمن',acute:'حاد',tonnageLab:'الحمولة',prPerSession:'أفضل حصة',totalSets:'المجموعات المنجزة',
     startFirstMuscu:'ابدأ أول حصة كمال أجسام لك!',lastSessions:'آخر الحصص',
     tomorrow:'غدًا',noUpcomingSession:'لا توجد حصة مخططة قريبًا.',addSession:'إضافة حصة',
-    showRestPlan:'عرض بقية الخطة · {0} أسابيع',calendarTitle:'التقويم',calendarSub:'خطط لتقدمك',
+    calendarTitle:'التقويم',calendarSub:'خطط لتقدمك',
     friendsTitle:'الأصدقاء والترتيب',tabFriendsList:'الأصدقاء',tabRank:'الترتيب',
     clubTitle:'أنديتي',tabClub:'أنديتي',myClubLab:'أنديتي',clubAddAnotherBtn:'الانضمام إلى نادٍ آخر أو إنشاؤه',clubMaxReachedToast:'لقد وصلت إلى الحد الأقصى وهو 5 أندية.',
     noClubYet:'لا نادي بعد',noClubYetDesc:'انضم إلى نادي فريقك باستخدام رمز، أو أنشئ ناديك الخاص لتجميع زملائك.',
@@ -3233,7 +3233,7 @@ const I18N={
     loadingLab:'جارٍ التحميل…',friendsLoadError:'تعذّر تحميل أصدقائك. تحقّق من اتصالك.',retryBtn:'إعادة المحاولة',
     resumeBtn:'استئناف',discardBtn:'التخلي',
     alreadyLinked:'مرتبط بالفعل',addBtn:'إضافة',searchError:'خطأ في البحث',alreadySentOrFriend:'تم الإرسال بالفعل أو صديق بالفعل',
-    requestSent:'تم إرسال الطلب',friendProfileTitle:'الملف الشخصي',removeLab:'إزالة',lvlDot:'مستوى',kmThisWeekShort:'{0} كم هذا الأسبوع',lastWeekKm:'الأسبوع الماضي: {0} كم',minimizeLab:'تصغير',bdayTitle:'عيد ميلاد سعيد يا {0}!',bdayAge:'{0} سنة اليوم',bdayWish:'فريق IKORUN كله يتمنى لك يومًا جميلًا',bdayOffBtn:'ألواني',bdayOnBtn:'أعد الاحتفال',feteLab:'الأيام الخاصة',feteDesc:'عيد ميلادك، يوم سباقك، رقم قياسي جديد، رمضان، ليلة القدر، المولد النبوي، عاشوراء، رأس السنة الهجرية، الإسراء والمعراج، العيد، الكريسماس، رأس السنة، الهالوين، ويوم الرياضة: في هذه الأيام تحتفل التطبيقة معك.',hijriAdjLab:'الأعياد الإسلامية',hijriAdjDesc:'تقويم أم القرى. إذا أعلن بلدك الأعياد قبل يوم أو بعد يوم (رؤية الهلال)، عدّلها هنا.',hijriAdjEarly:'قبل يوم',hijriAdjStd:'أم القرى',hijriAdjLate:'بعد يوم',fetePreviewLab:'معاينة',fetePreviewEnd:'إنهاء المعاينة',fete_bday:'عيد الميلاد',fete_race:'يوم السباق',fete_record:'رقم قياسي',fete_ramadan:'رمضان',fete_eidFitr:'عيد الفطر',fete_eidAdha:'عيد الأضحى',fete_xmas:'الكريسماس',fete_newyear:'رأس السنة',fete_halloween:'الهالوين',feteRaceTitle:'إنه اليوم الموعود!',feteRaceSub:'{0}: كل تدريبك يقود إلى هذا اليوم. تنفّس، انطلق بهدوء وأنهِ بقوة.',feteRaceSubPlain:'كل تدريبك يقود إلى هذا اليوم. تنفّس، انطلق بهدوء وأنهِ بقوة.',feteRecordTitle:'رقم قياسي جديد!',feteRecordSub:'{0} — أحسنت، أنت تتقدّم. استمتع باللحظة!',feteRecordSubPlain:'أحسنت، أنت تتقدّم. استمتع باللحظة!',feteEidTitle:'عيد مبارك يا {0}!',feteEidAdhaSub:'صحّا عيدكم! عيد سعيد لك ولأحبّائك.',feteEidFitrSub:'صحّا عيدكم! بعد رمضان، عُد إلى التدريب بهدوء.',feteRamadanTitle:'رمضان مبارك!',feteRamadanSub:'أول يوم من الشهر الفضيل. تدرّب بعد الإفطار بدل ما قبله، واشرب جيدًا في المساء.',feteXmasTitle:'عيد ميلاد مجيد يا {0}!',feteXmasSub:'خرجة هادئة ثم إلى الدفء. أعياد سعيدة!',feteNyeTitle:'سهرة رأس سنة سعيدة!',feteNyeSub:'آخر يوم من {0}: برافو على كل هذه الكيلومترات.',feteNyTitle:'سنة سعيدة {0}!',feteNySub:'سنة جديدة، أرقام قياسية جديدة. هيا بنا؟',feteHalloweenTitle:'هالوين سعيد!',feteHalloweenSub:'العناكب تتجوّل… اركض أسرع منها!',fete_muharram:'رأس السنة الهجرية',fete_achoura:'عاشوراء',fete_mawlid:'المولد النبوي',fete_qadr:'ليلة القدر',fete_isra:'الإسراء والمعراج',fete_sportDay:'يوم الرياضة',feteMuharramTitle:'كل عام هجري وأنت بخير!',feteMuharramSub:'ندخل السنة {0} الهجرية.',feteMuharramSubPlain:'سنة هجرية جديدة تبدأ.',feteAchouraTitle:'عاشوراء مبارك!',feteAchouraSub:'يوم للتقاسم والصيام المستحب — فكّر في أحبائك.',feteMawlidTitle:'المولد النبوي الشريف مبارك!',feteMawlidSub:'ذكرى ميلاد النبي ﷺ — يوم نور وذكر.',feteQadrTitle:'ليلة القدر',feteQadrSub:'خير من ألف شهر — لحظة، دعاء، ووقت لنفسك.',feteIsraTitle:'الإسراء والمعراج',feteIsraSub:'رحلة النبي ﷺ الليلية إلى السماء — ليلة تُذكر.',feteSportTitle:'اليوم العالمي للرياضة',feteSportSub:'الرياضة تجمع وتجعلك أفضل — استمتع بحصتك اليوم!',recLongestRun:'أطول خرجة: {0} كم',recRunTime:'{0} في {1}',matLab:'الخامة',accentClay:'مارشميلو',colorFamSpecial:'خاصة',accentOcean:'محيط',accentViolet:'جمشت',accentLavender:'خزامى',accentPink:'توت',accentSakura:'ساكورا',accentMint:'نعناع',accentTeal:'بحيرة',accentOrange:'كهرمان',accentMono:'أحادي',colorFamCool:'أزرق وبنفسجي',colorFamWarm:'وردي ودافئ',colorFamNature:'طبيعة',colorFamNeutral:'محايدة',liveAlreadyRunning:'هناك حصة جارية بالفعل. أنهِها أو ألغِها قبل بدء حصة أخرى.',backToSessionLab:'العودة إلى الحصة',islandNext:'التالي: {0}',islandEndsAt:'ينتهي عند {0}',islandPaused:'متوقف مؤقتًا',islandSets:'{0}/{1} مجموعات',glassEasyNote:'الوضع المبسّط يُبقي العرض واضحًا دون تأثير الزجاج: يعود هذا الإعداد للعمل عند إيقافه.',youDefaultName:'أنت',backToFriends:'العودة إلى الأصدقاء',profileNotFound:'الملف غير موجود.',noBadgeUnlocked:'لا يوجد وسام مفتوح بعد.',kmPerWeek:'كم/أسبوع',daysStreak:'أيام متتالية',kmTotalLab:'كم إجمالية',tonnageKgLab:'الحمولة كغ',
+    requestSent:'تم إرسال الطلب',friendProfileTitle:'الملف الشخصي',removeLab:'إزالة',lvlDot:'مستوى',kmThisWeekShort:'{0} كم هذا الأسبوع',lastWeekKm:'الأسبوع الماضي: {0} كم',minimizeLab:'تصغير',bdayTitle:'عيد ميلاد سعيد يا {0}!',bdayAge:'{0} سنة اليوم',bdayWish:'فريق IKORUN كله يتمنى لك يومًا جميلًا',bdayOffBtn:'ألواني',bdayOnBtn:'أعد الاحتفال',feteLab:'الأيام الخاصة',feteDesc:'عيد ميلادك، يوم سباقك، رقم قياسي جديد، رمضان، ليلة القدر، المولد النبوي، عاشوراء، رأس السنة الهجرية، الإسراء والمعراج، العيد، الكريسماس، رأس السنة، الهالوين، ويوم الرياضة: في هذه الأيام تحتفل التطبيقة معك.',hijriAdjLab:'الأعياد الإسلامية',hijriAdjDesc:'تقويم أم القرى. إذا أعلن بلدك الأعياد قبل يوم أو بعد يوم (رؤية الهلال)، عدّلها هنا.',hijriAdjEarly:'قبل يوم',hijriAdjStd:'أم القرى',hijriAdjLate:'بعد يوم',fetePreviewLab:'معاينة',fetePreviewEnd:'إنهاء المعاينة',fete_bday:'عيد الميلاد',fete_race:'يوم السباق',fete_record:'رقم قياسي',fete_ramadan:'رمضان',fete_eidFitr:'عيد الفطر',fete_eidAdha:'عيد الأضحى',fete_xmas:'الكريسماس',fete_newyear:'رأس السنة',fete_halloween:'الهالوين',feteRaceTitle:'إنه اليوم الموعود!',feteRaceSub:'{0}: كل تدريبك يقود إلى هذا اليوم. تنفّس، انطلق بهدوء وأنهِ بقوة.',feteRaceSubPlain:'كل تدريبك يقود إلى هذا اليوم. تنفّس، انطلق بهدوء وأنهِ بقوة.',feteRecordTitle:'رقم قياسي جديد!',feteRecordSub:'{0} — أحسنت، أنت تتقدّم. استمتع باللحظة!',feteRecordSubPlain:'أحسنت، أنت تتقدّم. استمتع باللحظة!',feteEidTitle:'عيد مبارك يا {0}!',feteEidAdhaSub:'صحّا عيدكم! عيد سعيد لك ولأحبّائك.',feteEidFitrSub:'صحّا عيدكم! بعد رمضان، عُد إلى التدريب بهدوء.',feteRamadanTitle:'رمضان مبارك!',feteRamadanSub:'أول يوم من الشهر الفضيل. تدرّب بعد الإفطار بدل ما قبله، واشرب جيدًا في المساء.',feteXmasTitle:'عيد ميلاد مجيد يا {0}!',feteXmasSub:'خرجة هادئة ثم إلى الدفء. أعياد سعيدة!',feteNyeTitle:'سهرة رأس سنة سعيدة!',feteNyeSub:'آخر يوم من {0}: برافو على كل هذه الكيلومترات.',feteNyTitle:'سنة سعيدة {0}!',feteNySub:'سنة جديدة، أرقام قياسية جديدة. هيا بنا؟',feteHalloweenTitle:'هالوين سعيد!',feteHalloweenSub:'العناكب تتجوّل… اركض أسرع منها!',fete_muharram:'رأس السنة الهجرية',fete_achoura:'عاشوراء',fete_mawlid:'المولد النبوي',fete_qadr:'ليلة القدر',fete_isra:'الإسراء والمعراج',fete_sportDay:'يوم الرياضة',feteMuharramTitle:'كل عام هجري وأنت بخير!',feteMuharramSub:'ندخل السنة {0} الهجرية.',feteMuharramSubPlain:'سنة هجرية جديدة تبدأ.',feteAchouraTitle:'عاشوراء مبارك!',feteAchouraSub:'يوم للتقاسم والصيام المستحب — فكّر في أحبائك.',feteMawlidTitle:'المولد النبوي الشريف مبارك!',feteMawlidSub:'ذكرى ميلاد النبي ﷺ — يوم نور وذكر.',feteQadrTitle:'ليلة القدر',feteQadrSub:'خير من ألف شهر — لحظة، دعاء، ووقت لنفسك.',feteIsraTitle:'الإسراء والمعراج',feteIsraSub:'رحلة النبي ﷺ الليلية إلى السماء — ليلة تُذكر.',feteSportTitle:'اليوم العالمي للرياضة',feteSportSub:'الرياضة تجمع وتجعلك أفضل — استمتع بحصتك اليوم!',recLongestRun:'أطول خرجة: {0} كم',recRunTime:'{0} في {1}',matLab:'الخامة',accentOcean:'محيط',accentViolet:'جمشت',accentLavender:'خزامى',accentPink:'توت',accentSakura:'ساكورا',accentMint:'نعناع',accentTeal:'بحيرة',accentOrange:'كهرمان',accentMono:'أحادي',colorFamCool:'أزرق وبنفسجي',colorFamWarm:'وردي ودافئ',colorFamNature:'طبيعة',colorFamNeutral:'محايدة',liveAlreadyRunning:'هناك حصة جارية بالفعل. أنهِها أو ألغِها قبل بدء حصة أخرى.',backToSessionLab:'العودة إلى الحصة',islandNext:'التالي: {0}',islandEndsAt:'ينتهي عند {0}',islandPaused:'متوقف مؤقتًا',islandSets:'{0}/{1} مجموعات',glassEasyNote:'الوضع المبسّط يُبقي العرض واضحًا دون تأثير الزجاج: يعود هذا الإعداد للعمل عند إيقافه.',youDefaultName:'أنت',backToFriends:'العودة إلى الأصدقاء',profileNotFound:'الملف غير موجود.',noBadgeUnlocked:'لا يوجد وسام مفتوح بعد.',kmPerWeek:'كم/أسبوع',daysStreak:'أيام متتالية',kmTotalLab:'كم إجمالية',tonnageKgLab:'الحمولة كغ',
     addPerf:'إضافة أداء',addChronosHint:'أضف أوقاتك: تُستخدم لحساب VDOT وخطتك.',
     bestPerf:'أفضل أداء',avgHR:'متوسط النبض',maxHRshort:'الأقصى',perfHistoryTitle:'سجل الأداء',
     chooseDistance:'اختر المسافة',otherDist:'أخرى',customDistance:'مسافة مخصصة',
@@ -3243,7 +3243,7 @@ const I18N={
     perfAddedComp:'تمت إضافة الأداء · +XP مسابقة',perfAdded:'تمت إضافة الأداء',
     editProfileTitle:'تعديل الملف الشخصي',usernameLab:'اسم المستخدم',usernameHint:'يُستخدم من قبل أصدقائك للعثور عليك',
     firstNameLab:'الاسم الأول',cityLab:'المدينة',birthDateLab:'تاريخ الميلاد',heightCmLab:'الطول (سم)',weightKgLab:'الوزن (كغ)',
-    kmWeekLab:'كم / أسبوع',compDateLab:'تاريخ السباق',coachLab:'المدرب',saveBtn:'حفظ',
+    kmWeekLab:'كم / أسبوع',compDateLab:'تاريخ السباق',saveBtn:'حفظ',
     filterAll:'الكل',filterObtained:'مكتسبة',filterLocked:'مغلقة',badgesObtainedCount:'{0} / {1} وسام مكتسب',
     badgeDetailTitle:'تفاصيل الوسام',tierOf:'المستوى {0} من {1}',newBadgeUnlocked:'وسام جديد مفتوح',
     tapToContinue:'اضغط للمتابعة',seeDetails:'عرض التفاصيل',tapToClose:'اضغط للإغلاق',previewLocked:'معاينة · مغلق',
@@ -3267,7 +3267,7 @@ const I18N={
     hydraTip:'اشرب بانتظام رشفات صغيرة. راقب لون بولك.',
     basalMetabolism:'الأيض الأساسي (كالوري/يوم)',needsByActivity:'الاحتياجات حسب النشاط',
     actSedentary:'خامل',actLight:'خفيف',actModerate:'معتدل',actIntense:'مكثف',actAthlete:'رياضي',
-    valueField:'القيمة',fromField:'من',toField:'إلى',
+    fromField:'من',toField:'إلى',
     quickNotesTitle:'ملاحظات سريعة',notesPlaceholder:'اكتب هنا... (حفظ تلقائي)',autoSaveLocal:'حفظ تلقائي محلي.',
     lapBtn:'شوط',stopBtn:'إيقاف',resetBtn2:'إعادة تعيين',bestLap:'أفضل شوط',slowestLap:'الأبطأ',avgLap:'المتوسط',lapsLab:'الأشواط',
     exportBtn:'تصدير',fastTag:'سريع',slowTag:'بطيء',lapsCopied:'تم نسخ الأشواط',
@@ -3283,12 +3283,12 @@ const I18N={
     levelReq:'المستوى *',howChooseLab:'كيف أختار؟',
     lvlBeginner:'مبتدئ',lvlIntermediate:'متوسط',lvlAdvanced:'متقدم',lvlVeryAdvanced:'متقدم جدًا',lvlElite:'نخبة',
     obGoalTitle:'هدفك',obGoalIntro:'ما الذي يجعلك تجري.',goalReq:'الهدف *',goalPh:'مثال: أقل من 20:00 في 5 كم',
-    compDateReq:'تاريخ السباق *',coachOptional:'المدرب — اختياري',coachPh:'اسم مدربك',
+    compDateReq:'تاريخ السباق *',
     obPerfTitle:'أداؤك',obPerfIntro:'أضف أفضل أوقاتك. مطلوب واحد على الأقل.',
     perfNote:'تحسب أوقاتك <b>VDOT</b> (قدرتك) وكل <b>وتيرات تدريبك</b>. أعط وقتًا واحدًا حديثًا وموثوقًا على الأقل. اختر المسافة ثم الوقت بالعجلات.',
     addAnotherPerf:'إضافة أداء آخر',backLab:'رجوع',continueLab:'متابعة',
-    paramsTitle:'الإعدادات',libTitle:'المكتبة',configureTitle:'تهيئة',programTitle:'البرنامج',sessionTitle:'الحصة',
-    newProgramTitle:'برنامج جديد',homeDefault:'الرئيسية',chooseLab:'اختر',validateLab2:'تأكيد',
+    paramsTitle:'الإعدادات',libTitle:'المكتبة',configureTitle:'تهيئة',sessionTitle:'الحصة',
+    newProgramTitle:'برنامج جديد',chooseLab:'اختر',validateLab2:'تأكيد',
     understoodLab:'فهمت',howChooseLevelTitle:'كيف أختار مستواي؟',
     lvlBeginnerDesc:'تجري منذ أقل من سنة. تتدرب أحيانًا وما زلت تتعلم الأساسيات.',
     lvlIntermediateDesc:'تجري بانتظام، تشارك أحيانًا في مسابقات وتتقن أنواع الحصص الرئيسية.',
@@ -3297,11 +3297,11 @@ const I18N={
     lvlEliteDesc:'رياضي محترف: أداء وطني/دولي، تدريب يومي بحجم كبير جدًا.',
     checkingLab:'جارٍ التحقق…',
     fillRequiredFields:'املأ الحقول المطلوبة',chooseUsernameLab:'اختر اسم مستخدم',usernameUnavailable:'اسم المستخدم هذا غير متاح',
-    quickProfileEnabled:'تم تفعيل الملف السريع — تم تفعيل الوضع المبسّط',chooseLevelLab:'اختر مستوى',goalDateRequired:'الهدف والتاريخ مطلوبان',addAtLeastOnePerf:'أضف أداءً واحدًا على الأقل',
+    chooseLevelLab:'اختر مستوى',goalDateRequired:'الهدف والتاريخ مطلوبان',addAtLeastOnePerf:'أضف أداءً واحدًا على الأقل',
     finishLab:'إنهاء',distanceLab2:'المسافة',timeForLab:'الوقت · {0}',chooseWord:'اختر',
     usernameTakenMeanwhile:'تم أخذ الاسم المستعار في هذه الأثناء، غيّره من الملف الشخصي',
     liveFinishBtn:'إنهاء',durationLab:'المدة',volumeLab:'الحجم',setsLab:'المجموعات',deleteLab2:'حذف',
-    exerciseDoneLab:'منتهٍ',setsDoneCount:'{0}/{1} مجموعة منجزة',restTimerLab:'مؤقت الراحة: {0}',disabledLab:'معطّل',
+    exerciseDoneLab:'منتهٍ',setsDoneCount:'{0}/{1} مجموعة منجزة',restTimerLab:'مؤقت الراحة: {0}',
     setCol:'مجموعة',prevCol:'السابق',kgCol:'كغ',repsCol:'تكرار',addSetBtn:'إضافة مجموعة',
     addExerciseBtn:'إضافة تمرين',cancelSessionBtn:'إلغاء الحصة',
     restSeconds:'الراحة (ثوانٍ)',minOneSetRemain:'يجب أن تبقى مجموعة واحدة على الأقل',changeRestLab:'تعديل وقت الراحة',
@@ -3346,7 +3346,7 @@ const I18N={
     bdg_legende_name:'أسطورة',bdg_legende_desc:'أصبحت مرجعًا.',
     tierBronze:'برونزي',tierArgent:'فضي',tierOr:'ذهبي',tierPlatine:'بلاتيني',tierDiamant:'ماسي',tierMaitre:'أستاذ',tierLegende:'أسطورة',
     medalCatSeances:'الحصص',medalCatRegularite:'الانتظام',medalCatDistance:'المسافة',
-    daysLab:'أيام',continueUnlockBadges:'واصل لفتح أوسمتك',    ach_premiere_name:'أول سباق',ach_premiere_desc:'أنهِ السباق الذي كنت تُحضّر له.',
+    daysLab:'أيام',    ach_premiere_name:'أول سباق',ach_premiere_desc:'أنهِ السباق الذي كنت تُحضّر له.',
     ach_cinqk_name:'5 كم',ach_cinqk_desc:'اجرِ أكثر من 5 كم دفعة واحدة.',
     ach_dixk_name:'10 كم',ach_dixk_desc:'اجرِ أكثر من 10 كم دفعة واحدة.',
     ach_serie_name:'سلسلة',ach_serie_desc:'حافظ على الانتظام لمدة شهر (30 يومًا متتاليًا).',
@@ -3373,7 +3373,7 @@ const I18N={
     confirmFinalIrreversible:'تأكيد أخير: هل أنت متأكد حقًا؟ هذا الإجراء لا رجعة فيه.',deleteAccountFailed:'فشل الحذف على الخادم — حسابك ما زال موجودًا. تحقق من اتصالك وحاول مرة أخرى.',
     genericErrorRetry:'خطأ، أعد المحاولة',
     confirmRemoveFriend:'إزالة هذا الصديق؟',
-    connectFirst:'سجّل الدخول أولاً',copiedClipboard:'تم النسخ',
+    
     usernameFormatHint:'3 إلى 20 حرفًا: أحرف، أرقام، _',checkingEllipsis:'جارٍ التحقق…',
     available:'متاح',alreadyTaken:'مُستخدم بالفعل',
     alarmDefaultTitle:'منبّه',timeUpMsg:'انتهى الوقت!',timeUpTitle:'انتهى الوقت!',
@@ -3391,19 +3391,19 @@ const I18N={
     notifBlockedTip:'الإشعارات محظورة — فعّلها من إعدادات هاتفك لهذا التطبيق.',
     notifUnsupportedToast:'الإشعارات غير متوفرة على هذا الجهاز',
     prayerNotifLabel:'تذكيرات الصلاة',socialNotifLabel:'أرقام أصدقائي القياسية',socialNotifDesc:'إشعار عندما يحسّن صديق أو عضو في ناديك مؤشر VDOT لديه. ويُعلَن تقدّمك أنت في VDOT لهم بالطريقة نفسها — دون أزمنتك أو حصصك أبدًا.',socialNotifOnToast:'سيتم إعلامك بأرقام أصدقائك القياسية',
-    cmRecovTrot:'{0} هرولة',cmDayLab:'اليوم',cmFree:'فارغ',cmContentLab:'المحتوى',cmReps:'التكرارات',cmRepDist:'مسافة كل تكرار',cmRecov:'الاسترجاع',cmHills:'الصعود',cmHillsSub:'من 30 إلى 45 ث جهد لكل واحدة',cmSurges:'التسارعات',cmSurgesSub:'دقيقة سريعة ودقيقة هادئة',cmTempo:'كتلة التيمبو',cmTempoSub:'بوتيرة {0} /كم',cmDistSub:'بوتيرة {0} /كم',cmWeekWarn:'يصبح أسبوعك {0} كم بدل {1}. بعد +10% يرتفع خطر الإصابة.',cmFixed:'لهذه الحصة بنية ثابتة: يمكنك نقلها أو جعلها راحة.',customizedTag:'مخصّصة',customizeSessionBtn:'تعديل هذه الحصة',customizeMoveLabel:'نقل إلى يوم آخر',
-    customizeVolumeLabel:'تعديل الحجم',customizeSkipBtn:'تحويلها إلى يوم راحة',customizeResetBtn:'إعادة التعيين',
+    cmRecovTrot:'{0} هرولة',cmDayLab:'اليوم',cmFree:'فارغ',cmContentLab:'المحتوى',cmReps:'التكرارات',cmRepDist:'مسافة كل تكرار',cmRecov:'الاسترجاع',cmHills:'الصعود',cmHillsSub:'من 30 إلى 45 ث جهد لكل واحدة',cmSurges:'التسارعات',cmSurgesSub:'دقيقة سريعة ودقيقة هادئة',cmTempo:'كتلة التيمبو',cmTempoSub:'بوتيرة {0} /كم',cmDistSub:'بوتيرة {0} /كم',cmWeekWarn:'يصبح أسبوعك {0} كم بدل {1}. بعد +10% يرتفع خطر الإصابة.',cmFixed:'لهذه الحصة بنية ثابتة: يمكنك نقلها أو جعلها راحة.',customizedTag:'مخصّصة',customizeSessionBtn:'تعديل هذه الحصة',
+    customizeSkipBtn:'تحويلها إلى يوم راحة',customizeResetBtn:'إعادة التعيين',
     customizeMovedToast:'تم نقل الحصة',customizeSkippedToast:'تم تحويل الحصة إلى راحة',customizeResetToast:'تمت إعادة تعيين الحصة',
     resumeSessionConfirm:'كانت حصة « {0} » جارية ({1} د). المتابعة؟',sessionColonName:'حصة: {0}',
     accentBlue:'أزرق',accentRed:'أحمر',accentGreen:'أخضر عسكري',accentBrown:'بني خشبي',accentYellow:'أصفر',accentCarbon:'ألياف الكربون',accentForged:'كربون مطروق',lumSoftDark:'داكن ناعم',lumSoftLight:'فاتح ناعم',matBetween:'بين {0} و{1}',matFreeHint:'عجلة حرّة: كل درجة خامة، وكل ما بينها لك.',
     colorApplied:'تم تطبيق اللون',easyModeOn:'تم تفعيل الوضع المبسّط',easyModeOff:'تم إلغاء الوضع المبسّط',
-    profileIncompleteAddTime:'الملف غير مكتمل: أضف زمنًا في أرقامك القياسية',chooseCompDate:'اختر تاريخ المنافسة',raceDateTooSoon:'اختر تاريخ سباق بعد 7 أيام على الأقل — تاريخ ماضٍ أو قريب جدًا لا يترك وقتًا كافيًا لبناء خطة.',planStartsOn:'تبدأ خطتك يوم {0}: تغطي الأسابيع الـ28 التي تسبق السباق.',planSafetyAdjustedToast:'خطة آمنة: زيادة الحمل محدودة بـ 10% أسبوعيًا مع احترام الاستشفاء.',planSafetyMigratedToast:'تم تعديل خطتك: تدرّج أكثر أمانًا في الحمل، دون حصص صعبة متتالية.',planSafetyHint:'للحدّ من خطر الإصابة، يرفع IKORUN حجمك بـ 10% أسبوعيًا كحد أقصى ويخفّف أسبوعًا من كل أربعة.',debriefTitle:'حصيلة الحصة',modeLightLab:'فاتح',modeDarkLab:'داكن',glassLab:'تأثير الزجاج (Liquid Glass)',glassStd:'Liquid Glass',glassMax:'أقصى',glassHintStd:'زجاج IKORUN: انعكاسات وحواف مضيئة وشفافية معتدلة. التوازن المثالي.',glassHintMax:'أقصى تأثير: زجاج شفاف جدًا وضبابي على كامل الشاشة، انعكاسات أقوى وخلفية حية تتحرك تحت الزجاج. يستهلك بطارية أكثر قليلًا.',glassWrap:'تغليف',glassHintWrap:'تغليف: هيكل بغلاف مطفي، تفاصيل بالأسود اللامع ولون واحد للمكابح، مثل مواصفات سيارة حقيقية.',wrapNoir:'أسود ساتان',styleLab:'اللون والخامة',wrapShadeLab:'لون الغلاف',optionsLab:'خيارات',wrapColorsNote:'يأتي كل لون مع لون مكابح يناسبه.',wrapMat:'أسود مطفي',wrapStealth:'أسود كامل',wrapAnthracite:'رمادي أنثراسايت',wrapTrimSilver:'لمسات فضية',wrapCalRed:'مكابح حمراء',wrapCalBlue:'مكابح زرقاء',wrapCalYellow:'مكابح صفراء',restGoToast:'هيا نعود!',glassTiltBtn:'انعكاسات حسب ميل الهاتف',glassTiltActive:'انعكاسات حسب الميل: مفعّلة',glassTiltOn:'الانعكاسات تتبع ميل الهاتف الآن',glassTiltOff:'لا وصول للحركة: الانعكاسات تتبع التمرير',offlineStartToast:'وضع عدم الاتصال: كل شيء يعمل، وستُزامَن تعديلاتك عند عودة الإنترنت.',offlineReadyToast:'IKORUN جاهز للعمل دون اتصال',raceDateInvalid:'تاريخ سباق غير صالح: اختره بعد 7 أيام على الأقل.',bdayInvalid:'تاريخ ميلاد غير صالح.',sessionKmRequired:'أدخل مسافة الحصة (كم).',paceFormatInvalid:'وتيرة غير صالحة: اكتبها بصيغة د:ث (مثال 5:30).',addSessionBtn:'إضافة الحصة',psTitleLab:'العنوان',psTitlePh:'جري الصباح',typeVMA:'VO₂max',typeFractionne:'تمارين متقطعة',typeTest:'اختبار',persoFollowingDesc:'تستخدم الشاشة الرئيسية والحصيلة هذه الخطة. تواصل خطة IKORUN التكيّف في الخلفية حسب ما تفعله هنا.',persoFollowDesc:'ستعرض شاشتك الرئيسية حصص هذه الخطة بدل الخطة المُولَّدة. يمكنك العودة إلى خطة IKORUN متى شئت.',persoStopBtn:'إيقاف',persoFollowBtn:'متابعة',persoNoSession:'لا توجد حصص بعد. أضف حصتك الأولى!',typeLab:'النوع',psHowLab:'كيف تريد إدخال هذه الحصة؟',psModeSimple:'بسيط (كم + وتيرة)',psModeReps:'حسب التكرار (زمن كل تكرار)',psPaceLab:'الوتيرة /كم',psRepDistLab:'مسافة كل تكرار',psAddRepBtn:'إضافة تكرار',psDescLab:'الوصف (اختياري)',psDescPh:'تفاصيل الحصة...',psNewSessionTitle:'حصة جديدة',psRepShort:'تكرار',chooseAtLeastOneDay:'اختر يومًا واحدًا على الأقل',profileValuesInvalid:'قيمة خارج الحدود: الطول 100-250 سم، الوزن 25-250 كغ، النبض الأقصى 120-230، نبض الراحة 30-120 (أقل من الأقصى)، كم/أسبوع 0-250.',
+    profileIncompleteAddTime:'الملف غير مكتمل: أضف زمنًا في أرقامك القياسية',chooseCompDate:'اختر تاريخ المنافسة',raceDateTooSoon:'اختر تاريخ سباق بعد 7 أيام على الأقل — تاريخ ماضٍ أو قريب جدًا لا يترك وقتًا كافيًا لبناء خطة.',planStartsOn:'تبدأ خطتك يوم {0}: تغطي الأسابيع الـ28 التي تسبق السباق.',planSafetyAdjustedToast:'خطة آمنة: زيادة الحمل محدودة بـ 10% أسبوعيًا مع احترام الاستشفاء.',planSafetyMigratedToast:'تم تعديل خطتك: تدرّج أكثر أمانًا في الحمل، دون حصص صعبة متتالية.',debriefTitle:'حصيلة الحصة',modeLightLab:'فاتح',modeDarkLab:'داكن',glassStd:'Liquid Glass',glassMax:'أقصى',glassHintStd:'زجاج IKORUN: انعكاسات وحواف مضيئة وشفافية معتدلة. التوازن المثالي.',glassHintMax:'أقصى تأثير: زجاج شفاف جدًا وضبابي على كامل الشاشة، انعكاسات أقوى وخلفية حية تتحرك تحت الزجاج. يستهلك بطارية أكثر قليلًا.',glassWrap:'تغليف',glassHintWrap:'تغليف: هيكل بغلاف مطفي، تفاصيل بالأسود اللامع ولون واحد للمكابح، مثل مواصفات سيارة حقيقية.',wrapNoir:'أسود ساتان',prefsLab:'التفضيلات',accountHelpLab:'الحساب والمساعدة',accountDataLab:'الحساب والبيانات',legalLab:'الشروط والخصوصية',dataLab:'بياناتي',wrapShadeLab:'لون الغلاف',optionsLab:'خيارات',wrapColorsNote:'يأتي كل لون مع لون مكابح يناسبه.',wrapMat:'أسود مطفي',wrapStealth:'أسود كامل',wrapAnthracite:'رمادي أنثراسايت',wrapTrimSilver:'لمسات فضية',wrapCalRed:'مكابح حمراء',wrapCalBlue:'مكابح زرقاء',wrapCalYellow:'مكابح صفراء',restGoToast:'هيا نعود!',glassTiltBtn:'انعكاسات حسب ميل الهاتف',glassTiltActive:'انعكاسات حسب الميل: مفعّلة',glassTiltOn:'الانعكاسات تتبع ميل الهاتف الآن',glassTiltOff:'لا وصول للحركة: الانعكاسات تتبع التمرير',offlineStartToast:'وضع عدم الاتصال: كل شيء يعمل، وستُزامَن تعديلاتك عند عودة الإنترنت.',offlineReadyToast:'IKORUN جاهز للعمل دون اتصال',raceDateInvalid:'تاريخ سباق غير صالح: اختره بعد 7 أيام على الأقل.',bdayInvalid:'تاريخ ميلاد غير صالح.',sessionKmRequired:'أدخل مسافة الحصة (كم).',paceFormatInvalid:'وتيرة غير صالحة: اكتبها بصيغة د:ث (مثال 5:30).',addSessionBtn:'إضافة الحصة',psTitleLab:'العنوان',psTitlePh:'جري الصباح',typeVMA:'VO₂max',typeFractionne:'تمارين متقطعة',typeTest:'اختبار',persoFollowingDesc:'تستخدم الشاشة الرئيسية والحصيلة هذه الخطة. تواصل خطة IKORUN التكيّف في الخلفية حسب ما تفعله هنا.',persoFollowDesc:'ستعرض شاشتك الرئيسية حصص هذه الخطة بدل الخطة المُولَّدة. يمكنك العودة إلى خطة IKORUN متى شئت.',persoStopBtn:'إيقاف',persoFollowBtn:'متابعة',persoNoSession:'لا توجد حصص بعد. أضف حصتك الأولى!',typeLab:'النوع',psHowLab:'كيف تريد إدخال هذه الحصة؟',psModeSimple:'بسيط (كم + وتيرة)',psModeReps:'حسب التكرار (زمن كل تكرار)',psPaceLab:'الوتيرة /كم',psRepDistLab:'مسافة كل تكرار',psAddRepBtn:'إضافة تكرار',psDescLab:'الوصف (اختياري)',psDescPh:'تفاصيل الحصة...',psNewSessionTitle:'حصة جديدة',psRepShort:'تكرار',chooseAtLeastOneDay:'اختر يومًا واحدًا على الأقل',profileValuesInvalid:'قيمة خارج الحدود: الطول 100-250 سم، الوزن 25-250 كغ، النبض الأقصى 120-230، نبض الراحة 30-120 (أقل من الأقصى)، كم/أسبوع 0-250.',
     planGenerated:'تم إنشاء خطة « {0} »: {1} أسبوع، {2} حصة',raceGeneric:'سباق',
     followingPersoPlan:'أنت الآن تتبع هذه الخطة الشخصية',backToIkorunPlan:'العودة إلى خطة IKORUN',
     namePromptLabel:'الاسم:',copySuffix:'(نسخة)',confirmDeletePlan:'حذف هذه الخطة؟',
     addAtLeastOneRepTime:'أضف زمنًا واحدًا على الأقل للتكرار',sessionAdded:'تمت إضافة الحصة',
     myPlanColon:'خطتي: {0}',shareNotSupported:'المشاركة غير مدعومة',confirmDeleteProgram:'حذف هذا البرنامج؟',
-    routineTitle:'روتين',exercisesCount:{zero:'{0} تمرين',one:'تمرين واحد',two:'تمرينان',few:'{0} تمارين',many:'{0} تمرينًا',other:'{0} تمرين'},exercisesCap:'تمارين',setsCap:'مجموعات',estDurationCap:'المدة التقديرية',
+    routineTitle:'روتين',exercisesCount:{zero:'{0} تمرين',one:'تمرين واحد',two:'تمرينان',few:'{0} تمارين',many:'{0} تمرينًا',other:'{0} تمرين'},setsCap:'مجموعات',estDurationCap:'المدة التقديرية',
     setsRepsLine:'{0} مجموعات · {1} تكرار',addExercise:'إضافة تمرين',startWorkout:'بدء التمرين',
     defaultProgramsNotEditable:'لا يمكن تعديل البرامج الافتراضية',
     heightCmTitle:'الطول (سم)',weightKgTitle:'الوزن (كغ)',heightSaved:'تم حفظ الطول',weightSaved:'تم حفظ الوزن',
@@ -3411,7 +3411,7 @@ const I18N={
     photoUpdated:'تم تحديث الصورة',photoRemoved:'تمت إزالة الصورة',bioPromptLabel:'نبذتك:',
     usernameInvalid:'اسم مستخدم غير صالح (3-20، أحرف/أرقام/_)',usernameNotAvailable:'هذا الاسم غير متاح',
     usernameJustTaken:'تم أخذ هذا الاسم للتو، اختر اسمًا آخر',usernameUpdated:'تم تحديث اسم المستخدم',
-    profileUpdated:'تم تحديث الملف الشخصي',localDataOnly:'بيانات محلية فقط',exportGenerated:'تم إنشاء التصدير',
+    profileUpdated:'تم تحديث الملف الشخصي',exportGenerated:'تم إنشاء التصدير',
     confirmClearAll:'مسح كل شيء؟ هذا الإجراء لا رجعة فيه.',confirmClearAllFinal:'متأكد حقًا؟ ستفقد جميع بياناتك.',
     offlineSinceDays:{zero:'غير متصل منذ {0} يوم — تذكّر إعادة الاتصال',one:'غير متصل منذ يوم واحد — تذكّر إعادة الاتصال',two:'غير متصل منذ يومين — تذكّر إعادة الاتصال',few:'غير متصل منذ {0} أيام — تذكّر إعادة الاتصال',many:'غير متصل منذ {0} يومًا — تذكّر إعادة الاتصال',other:'غير متصل منذ {0} يوم — تذكّر إعادة الاتصال'},dataSynced:'تمت مزامنة البيانات',
     connectionRestored:'تمت استعادة الاتصال · مزامنة…',offlineModeAvailable:'وضع عدم الاتصال — كل شيء يبقى متاحًا',
@@ -3536,7 +3536,7 @@ const I18N={
     targetPaceLabel:'الوتيرة المستهدفة',targetSplitLabel:'زمن القطع المستهدف',warmupLabel:'الإحماء',
     weekLabelWithNum:'الأسبوع',whySessionLabel:'لماذا هذه الحصة؟',zone2FCmaxLine:'المنطقة 2 · 70% من أقصى معدل ضربات القلب · {0}/كم',
     analyzeSessionBtn:'حلّل حصتي',autoLightenedFlag:'تم تخفيف الحصة تلقائيًا (السبب: {0} بتاريخ {1}).',
-    avgPaceKmLabel:'الوتيرة المتوسطة /كم',coachAnalysisTitle:'تحليل المدرب',
+    
     coach_adj_continue:'واصل كما هو مخطط، خطتك معايرة جيدًا.',
     coach_motiv1:'حصة إضافية في رصيدك — اللياقة تُبنى بالانتظام، لا بالإنجازات المتفرقة.',
     coach_motiv2:'أنجزت الجزء الأصعب: أنك خرجت. الباقي يتكفّل به جسدك أثناء التعافي.',
@@ -3564,7 +3564,7 @@ const I18N={
     coach_tip_nutrition:'تناول الكربوهيدرات والبروتين خلال 30 دقيقة بعد المجهود.',
     coach_tip_sleep:'استهدف 8 ساعات نوم الليلة، وأغلق الشاشات قبلها بساعة.',
     constructiveCriticismTitle:'ملاحظات بنّاءة',dayNutritionLabel:'تغذية اليوم',
-    dbTileWork:'الجهد',dbTileWorkTime:'زمن الجهد',dbTilePace:'الوتيرة',dbEffortLab:'الجهد المحسوس',rpeL1:'سهل جدًا',rpeL3:'سهل',rpeL5:'معتدل',rpeL7:'صعب',rpeL9:'صعب جدًا',rpeL10:'أقصى جهد',caVerdictOk:'حصة ناجحة',caVerdictMid:'حصة جيدة، نقطة تستحق الانتباه',caVerdictWarn:'حصة تستحق المتابعة',dbIntro:'كل شيء مضبوط على ما كان مقررًا: غيّر فقط ما اختلف.',dbRepOf:'التكرار {0} / {1} · {2} م',dbPrev:'السابق',dbNext:'التالي',dbDistLab:'المسافة',dbDurLab:'المدة الكاملة',dbHourMin:'سا · د',dbSumReps:'{0} كم · {1} من الجهد · {2} /كم',dbSumRun:'متوسط الوتيرة: {0} /كم',dbSumEmpty:'اضبط المسافة والمدة',debriefIntro:'أجب بصدق: سيحلل محرك IKORUN حصتك.',
+    dbTileWork:'الجهد',dbTileWorkTime:'زمن الجهد',dbTilePace:'الوتيرة',dbEffortLab:'الجهد المحسوس',rpeL1:'سهل جدًا',rpeL3:'سهل',rpeL5:'معتدل',rpeL7:'صعب',rpeL9:'صعب جدًا',rpeL10:'أقصى جهد',caVerdictOk:'حصة ناجحة',caVerdictMid:'حصة جيدة، نقطة تستحق الانتباه',caVerdictWarn:'حصة تستحق المتابعة',dbIntro:'كل شيء مضبوط على ما كان مقررًا: غيّر فقط ما اختلف.',dbRepOf:'التكرار {0} / {1} · {2} م',dbPrev:'السابق',dbNext:'التالي',dbDistLab:'المسافة',dbDurLab:'المدة الكاملة',
     distanceKmLabel:'المسافة (كم)',distanceKmOptionalLabel:'المسافة (كم، اختياري)',
     durationMinLabel:'المدة (دقيقة)',durationMinOptionalLabel:'المدة (دقيقة، اختياري)',
     elevationGainLabel:'فرق الارتفاع الصاعد (م، اختياري)',fatigueLabel:'التعب',freeCommentLabel:'تعليق حر',
@@ -3578,13 +3578,13 @@ const I18N={
     note_cardioAlreadyCounted:'تم احتساب حمل الكارديو بالفعل، الخطة لم تتغير',
     note_explosiveCaution:'توخَّ الحذر في حصتك الانفجارية القادمة',note_nextHardLightened:'تم تخفيف الحصة الشاقة القادمة',
     notedCoachBtn:'تم الفهم، أيها المدرب!',notesOptionalLabel:'ملاحظات (اختياري)',paceKmLabel:'الوتيرة /كم',painLabel:'الألم',
-    paceAdherenceLabel:'هل احترمت الوتيرة؟',paceFasterOpt:'أسرع',paceAsPlannedOpt:'كما هو مخطط',paceSlowerOpt:'أبطأ قليلاً',paceMuchSlowerOpt:'أبطأ بكثير',
+    
     moreDetailsBtn:'المزيد من التفاصيل ↓',lessDetailsBtn:'تفاصيل أقل ↑',
     planUpdatedWeekReason:'تم تحديث الخطة لهذا الأسبوع — {0}',positivePointsTitle:'نقاط إيجابية',
     recentMissesReducedMsg:'3 حصص فائتة مؤخرًا: تم تقليل حجم الأسابيع القادمة بنسبة 15%',
     repByRepSummary:'ملخص لكل تكرار — {0} × {1} م',
-    repLegendLine:'= أدخل الزمن الفعلي · ✓ = «حافظت على الوتيرة» (يملأ تلقائيًا بالزمن المستهدف)',
-    repNumDist:'تكرار {0} · {1} م',replacementMuscuTitle:'بديل — {0}',replacementRunTitle:'ركض بديل',
+    
+    replacementMuscuTitle:'بديل — {0}',replacementRunTitle:'ركض بديل',
     respectedCount:'{0}/{1} محترمة',rpeFeltLabel:'RPE — الصعوبة المُحسّة:',sensationsLabel:'الإحساس',
     sessionNotedToast:'تم تسجيل الحصة',sessionTypeLabel:'نوع الحصة',targetColon:'الهدف {0}',
     upcomingAdjustmentsTitle:'تعديلات قادمة',weatherLabel:'الطقس',
@@ -3600,9 +3600,9 @@ const I18N={
     sleepInsufficient:'غير كافٍ — التعافي مُعرَّض للخطر',sleepOptimal:'مثالي للرياضي',sleepPlenty:'كثير — استمع لجسدك',
     speedLabel:'السرعة',timeHMSLabel:'الزمن (س : د : ث)',
     psCardRace:'سباقك',psCardWeek:'أسبوعك',psFinishHint:'الهدف: عبور خط الوصول بحالة جيدة، دون وقت محدد.',psDaysPerWeek:'{0} أيام/أسبوع',psCardGoal:'هدفك',psSitLab:'وضعك',psSitCont:'في تحضير',psSitRep:'أعود بعد توقف',psSitOther:'أخرى',psLvlLab:'مستواك',lvlDeb:'مبتدئ',lvlInt:'متوسط',lvlConf:'متقدم',psRecLab:'آخر أوقاتك',psRecEdit:'تحديث',psRecNone:'لا شيء بعد',psGapLab:'آخر جري لك كان منذ',gapLt1:'أقل من شهر',gap13:'1–3 أشهر',gap36:'3–6 أشهر',gapGt6:'أكثر من 6 أشهر',psRepHint:'تبدأ الخطة بهدوء وترتفع شيئًا فشيئًا.',psOtherHint:'لا مشكلة: يتكيف IKORUN مع أوقاتك وسجلّك.',psDistLab:'المسافة بالضبط',psDateIn:'بعد {0} أسابيع',psDateSoon:'قريب جدًا: تحتاج أسبوعًا من التحضير على الأقل',psTimeLab:'الوقت المستهدف',psTimePace:'أي {0} /كم',psTimePred:'التوقع الحالي {0}',psVolume:'الحجم يضبطه IKORUN: {0} ← {1} كم في الأسبوع. لا أكثر من +10% من أسبوع لآخر، وأسبوع أخف من كل أربعة.',psSessLab:'حصص خطتك',psSessHint:'المس حصة لتعرف فائدتها.',st_VMAc:'تكرارات قصيرة (200 إلى 400 م) سريعة جدًا بسرعتك الهوائية القصوى، مع استرجاع. تطوّر السرعة وقوة القلب.',st_VMAl:'تكرارات من 800 إلى 1200 م تحت سرعتك القصوى بقليل. تتعلم الحفاظ على وتيرة سريعة مدة أطول.',st_INTERVAL:'تناوب بين جهود قوية واسترجاع بمدد مختلفة. يعمل على الإيقاع والقدرة على التسريع.',st_TEMPO:'جري متواصل «صعب بشكل مريح» من 20 إلى 40 دقيقة. يحسّن التحمل بوتيرة سريعة.',st_SEUIL:'كتل بالوتيرة التي تحافظ عليها نحو ساعة، مع استرجاع قصير. يؤخر لحظة احتراق الساقين.',st_EF:'جري سهل تستطيع فيه الكلام دون لهاث. الأساس: 70 إلى 80% من تدريبك.',st_LONG:'أطول جري في الأسبوع بوتيرة سهلة. يعوّد جسمك على المدة وتوفير الطاقة.',st_DBLSEUIL:'حصتان عند العتبة في اليوم نفسه (صباحًا ومساءً) بحجم معتدل. عمل مفيد كثير دون تعب زائد.',st_FARTLEK:'«لعب السرعة»: تسارعات حرة أثناء جري سهل حسب الإحساس. متنوع وممتع.',st_COTES:'صعود قصير وحيوي، والنزول بالهرولة. يقوّي الساقين والخطوة دون صدمات المضمار.',st_VO2:'جهود صعبة جدًا من 3 إلى 5 دقائق قريبة من حدك الأقصى. ترفع استهلاكك الأقصى للأكسجين.',st_SPE:'مقاطع بالوتيرة الدقيقة لسباقك المستهدف. يحفظ جسمك إيقاع يوم السباق.',st_RECUP:'جري بطيء جدًا وقصير، أو مشي. يساعد على الاسترجاع دون جمود.',configurePlanTitle:'إعداد خطتي',courseProfileLabel:'طبيعة المسار',generateMyPlanBtn:'أنشئ خطتي',
-    planSetupSimpleHint:'نتكفّل بالباقي (الوتيرة، المسافات، الحصص) ونعدّل كل شيء تدريجيًا مع تقدّمك.',
-    maxKmWeekLabel:'أقصى كم/أسبوع (الذروة)',minKmWeekLabel:'أدنى كم/أسبوع',preferredSessionsLabel:'الحصص المفضلة (سيفضلها المدرب)',
-    preparedRaceLabel:'السباق الذي تستعد له',raceDateLabel:'تاريخ السباق',targetTimeOptionalLabel:'الزمن المستهدف (اختياري)',
+    
+    minKmWeekLabel:'أدنى كم/أسبوع',
+    preparedRaceLabel:'السباق الذي تستعد له',raceDateLabel:'تاريخ السباق',
     trainingDaysLabel:'أيام التدريب',yourNextRaceDefault:'سباقك القادم',
     guardFutureDate:'لا يمكن تسجيل حصة بتاريخ مستقبلي.',guardFutureRecord:'لا يمكن تسجيل أداء بتاريخ مستقبلي.',guardRecordImpossible:'هذا الزمن يعني VDOT قدره {0}، أعلى من أفضل رياضيي العالم. تحقق من زمنك.',recordBigJumpConfirm:'تقدّم كبير: سينتقل مستواك من VDOT {0} إلى {1}، وستتسارع وتيرات تدريبك تبعًا لذلك. هل هذا أداء حقيقي حديث؟',
     sessionNotYetLabel:'هذه الحصة لم تحن بعد',guardFutureSession:'لا يمكن تسجيل إنجاز حصة لم تحن بعد',
@@ -3611,9 +3611,9 @@ const I18N={
     guardRecordTooFast:'هذا الأداء يعني VDOT قدره {0}، بعيد جدًا عن مستواك الحالي. تحقق من زمنك.',
     guardStorageTooBig:'هذه البيانات كبيرة جدًا ولم تتم مزامنتها مع السحابة.',
     loginWelcomeTitle:'مرحبًا',loginSubConnect:'سجّل الدخول لحفظ تقدمك وحصصك وأرقامك القياسية — مُزامَنة على كل أجهزتك.',
-    signupTitle:'إنشاء حساب',signupSub:'انضم إلى IKORUN لحفظ تقدمك واسترجاعه على كل أجهزتك.',
+    signupTitle:'إنشاء حساب',
     forgotTitle:'نسيت كلمة المرور',forgotSub:'أدخل بريدك الإلكتروني، سنرسل لك رابط إعادة التعيين.',
-    emailLabel:'البريد الإلكتروني',passwordLabel:'كلمة المرور',confirmPasswordLabel:'تأكيد كلمة المرور',
+    emailLabel:'البريد الإلكتروني',passwordLabel:'كلمة المرور',
     emailPlaceholder:'you@email.com',
     loginBtnLabel:'تسجيل الدخول',signupBtnLabel:'إنشاء حسابي',sendResetLinkBtn:'إرسال الرابط',
     forgotPasswordLink:'نسيت كلمة المرور؟',noAccountLink:'ليس لديك حساب؟ أنشئ واحدًا',
@@ -3628,7 +3628,7 @@ const I18N={
     termsOfUseLab:'شروط الاستخدام',privacyPolicyLab:'سياسة الخصوصية',
     sessionPausedLab:'الحصة موقوفة مؤقتًا',createBtn:'إنشاء',libraryLab:'المكتبة',
     defaultProgramsLab:'البرامج الافتراضية',myCreationsLab:'إبداعاتي',
-    exSetsSummary:'{0} تمارين · {1} مجموعات',exosShort:'{0} تمارين',
+    
     loadKgLab:'الحمل (كغ)',restLab2:'الراحة',personalNotesLab:'ملاحظات شخصية (اختياري)',notesPh:'مثال: اضغط لوحي الكتف جيدًا',
     levelUpTitle:'مستوى أعلى',
     syncedCloudLab:'متزامن مع السحابة',addAccountBtn:'إضافة حساب',dangerZoneLab:'منطقة الخطر',
@@ -3644,9 +3644,9 @@ const I18N={
     weeksLab:'الأسابيع',projectionLab:'التوقع',
     hrMaxLab:'أقصى نبض (نبضة/د)',hrRestLab:'نبض الراحة (نبضة/د)',hrZonesLab:'مناطق النبض (Karvonen)',
     hrZ1:'Z1 استشفاء',hrZ2:'Z2 تحمّل',hrZ3:'Z3 تيمبو',hrZ4:'Z4 عتبة',hrZ5:'Z5 VO2max',
-    restTimesLab:'أوقات الراحة الموصى بها',supersetLab:'سوبرسِت',pomoFocus:'تركيز',pomoBreak:'استراحة',pomodorosDoneLab:'بومودورو مكتملة: {0}',
+    restTimesLab:'أوقات الراحة الموصى بها',pomoFocus:'تركيز',pomoBreak:'استراحة',pomodorosDoneLab:'بومودورو مكتملة: {0}',
     fillEmailPasswordToast:'أدخل البريد الإلكتروني وكلمة المرور.',invalidEmailToast:'عنوان بريد إلكتروني غير صالح.',
-    passwordTooShortToast:'كلمة المرور قصيرة جدًا (8 أحرف كحد أدنى).',passwordsMismatchToast:'كلمتا المرور غير متطابقتين.',
+    passwordTooShortToast:'كلمة المرور قصيرة جدًا (8 أحرف كحد أدنى).',
     passwordTooCommonToast:'كلمة المرور هذه شائعة جدًا — وهي موجودة في القوائم المستخدمة لاختراق الحسابات. اختر غيرها.',passwordContainsEmailToast:'كلمة المرور تحتوي على بريدك الإلكتروني — يسهل تخمينها. اختر غيرها.',
     resendConfirmLink:'لم يصلني بريد التأكيد',fillEmailFirstToast:'اكتب بريدك الإلكتروني في الأعلى أولًا.',confirmResentToast:'تم إرسال بريد التأكيد من جديد. تحقّق من مجلد الرسائل غير المرغوب فيها.',
     showPasswordLink:'إظهار كلمة المرور',hidePasswordLink:'إخفاء كلمة المرور',
@@ -3666,13 +3666,13 @@ const I18N={
     guestLinkUnavailableWarn:'لا يمكن ربط حساب الضيف بحساب Google حاليًا.\n\nتسجيل الدخول عبر Google سينشئ حسابًا منفصلًا: ستبقى حصصك وأرقامك القياسية وقياساتك على حساب الضيف، دون أي وسيلة للعودة إليه.\n\nصدّر بياناتك أولًا — ستتمكن من استيرادها في الحساب الجديد.',
     exportBeforeBtn:'تصدير بياناتي',
     pendingEmailNoPwDesc:'حسابك يعمل وبياناتك محفوظة. أكّد هذا البريد من الرسالة التي وصلتك، ثم اختر كلمة المرور عبر «نسيت كلمة المرور؟» في شاشة الدخول. هذا ما يتيح لك الدخول من جهاز آخر. تحقّق أيضًا من مجلد الرسائل غير المرغوب فيها.',
-    wrongCredentialsToast:'بريد إلكتروني أو كلمة مرور غير صحيحة — وإذا أنشأت حسابك للتو، فأكّد بريدك الإلكتروني أولًا.',emailRateLimitToast:'طلبات بريد كثيرة متتالية. انتظر بضع دقائق قبل إعادة المحاولة.',sessionExpiredToast:'انتهت الجلسة، سجّل الدخول من جديد. بياناتك تبقى على هذا الجهاز.',sessionLostDuringActivity:'نشاطك الجاري يستمر ويبقى محفوظًا على هذا الجهاز.',storageBlockedToast:'متصفحك يحظر التخزين: التطبيق يعمل، لكن لن يُحفظ شيء عند الخروج.',storageFullToast:'ذاكرة الجهاز ممتلئة: تعذّر حفظ أحدث بياناتك. صدّر بياناتك من الملف الشخصي > البيانات.',swInactiveTip:'المكوّن دون اتصال غير مفعّل على هذا الجهاز: لا يمكن للإشعارات أن تعمل. أعد تحميل الصفحة وتأكد أن تخزين المواقع غير محظور.',emailAlreadyUsedToast:'يوجد حساب بالفعل بهذا البريد الإلكتروني.',
-    authGenericErrorToast:'حدث خطأ ما. حاول مرة أخرى.',checkEmailConfirmToast:'تم إنشاء الحساب ✓ تحقق من بريدك لتأكيد عنوانك.',
+    wrongCredentialsToast:'بريد إلكتروني أو كلمة مرور غير صحيحة — وإذا أنشأت حسابك للتو، فأكّد بريدك الإلكتروني أولًا.',emailRateLimitToast:'طلبات بريد كثيرة متتالية. انتظر بضع دقائق قبل إعادة المحاولة.',sessionExpiredToast:'انتهت الجلسة، سجّل الدخول من جديد. بياناتك تبقى على هذا الجهاز.',sessionLostDuringActivity:'نشاطك الجاري يستمر ويبقى محفوظًا على هذا الجهاز.',storageBlockedToast:'متصفحك يحظر التخزين: التطبيق يعمل، لكن لن يُحفظ شيء عند الخروج.',storageFullToast:'ذاكرة الجهاز ممتلئة: تعذّر حفظ أحدث بياناتك. صدّر بياناتك من الملف الشخصي > الحساب والبيانات.',swInactiveTip:'المكوّن دون اتصال غير مفعّل على هذا الجهاز: لا يمكن للإشعارات أن تعمل. أعد تحميل الصفحة وتأكد أن تخزين المواقع غير محظور.',
+    authGenericErrorToast:'حدث خطأ ما. حاول مرة أخرى.',
     authTimeoutToast:'\u0627\u0644\u0627\u062A\u0635\u0627\u0644 \u064A\u0633\u062A\u063A\u0631\u0642 \u0648\u0642\u062A\u064B\u0627 \u0637\u0648\u064A\u0644\u0627\u064B. \u062A\u062D\u0642\u0642 \u0645\u0646 \u0627\u062A\u0635\u0627\u0644\u0643 \u0628\u0627\u0644\u0625\u0646\u062A\u0631\u0646\u062A \u0648\u0623\u0639\u062F \u0627\u0644\u0645\u062D\u0627\u0648\u0644\u0629.',
     resetLinkSentToast:'تم إرسال الرابط ✓ تحقق من بريدك.',loggingInToast:'جارٍ تسجيل الدخول…',creatingAccountToast:'جارٍ إنشاء الحساب…',sendingResetToast:'جارٍ إرسال الرابط…',
     continueAsGuestLink:'المتابعة كضيف',guestConnectingToast:'جارٍ الدخول كضيف…',guestDisabledToast:'وضع الضيف غير مفعّل بعد. حاول لاحقًا أو أنشئ حسابًا.',
     guestModeTitle:'وضع الضيف',guestModeLabel:'وضع الضيف',guestModeDesc:'بياناتك مرتبطة بهذا الجهاز. إذا سجّلت الخروج أو غيّرت الهاتف، قد تفقدها. أضف بريدًا إلكترونيًا لحمايتها.',
-    guestSaveAccountBtn:'حفظ حسابي',guestUpgradeSentToast:'تحقق من بريدك الإلكتروني للتأكيد. بعدها يمكنك تسجيل الدخول بهذا البريد في أي وقت (استخدم «نسيت كلمة المرور» لاختيار كلمة مرور).',guestUpgradeEmailUsedToast:'هذا البريد الإلكتروني مستخدم بالفعل من حساب آخر.',
+    guestSaveAccountBtn:'حفظ حسابي',guestUpgradeEmailUsedToast:'هذا البريد الإلكتروني مستخدم بالفعل من حساب آخر.',
     guestUpgradeMaybeSentToast:'لم يصل الرد، لكن الطلب ربما نجح رغم ذلك. تحقق من بريدك الإلكتروني (ومجلد الرسائل غير المرغوب فيها) قبل إعادة المحاولة.',
     tourSkip:'تخطي',tourStartBtn:'لنبدأ',tourNextBtn:'التالي',tourFinalBtn:'أنشئ خطتي',replayTourBtn:'إعادة مشاهدة الجولة التعريفية',
     tour_welcome_t:'مرحبًا {0} 👋',tour_welcome_d:'IKORUN ليس جهاز GPS ولا عدّاد خطى: إنه سجل تدريب ذكي يُنشئ خطتك ويعدّلها حسب ما تخبره به. 8 خطوات، دقيقة واحدة.',
@@ -3718,6 +3718,13 @@ function tp(key,...args){
   return s;
 }
 function localeCode(){ return curLang()==='en'?'en-US':(curLang()==='ar'?'ar-DZ':'fr-FR'); }
+/* Formats de nombres et de dates (V3.10.3) : n.toLocaleString(loc,{…}) recrée un formateur
+   Intl à chaque appel — l'opération la plus lente du plan complet (des centaines de dates
+   et de km). Un formateur par langue et par format, gardé une fois créé. */
+const _ikFmt={};
+function ikNum(n,k,o){ const loc=localeCode(), id='n|'+loc+'|'+k; return (_ikFmt[id]||(_ikFmt[id]=new Intl.NumberFormat(loc,o))).format(n); }
+function ikDate(d,k,o){ if(!(d instanceof Date) || isNaN(d)) return String(d); // comme toLocaleDateString : pas d'exception sur une date invalide
+  const loc=localeCode(), id='d|'+loc+'|'+k; return (_ikFmt[id]||(_ikFmt[id]=new Intl.DateTimeFormat(loc,o))).format(d); }
 const LANGS=[['fr','FR','Français'],['en','EN','English'],['ar','AR','العربية']];
 function setLang(l){
   P.lang=l; saveAll();
@@ -4445,7 +4452,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='3.10.2';
+const APP_VERSION='3.10.3';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -5364,7 +5371,6 @@ function pickSpeed(title,init,cb){
 }
 
 /* ---------- NAV ---------- */
-const TITLES={home:['Accueil',''],sport:['Sport','Running & Musculation'],stats:['Statistiques','Tes données réelles'],outils:['Outils','Calculs & timers'],profil:['Profil','']};
 /* Le mode simplifié applique zoom:1.16 sur <html> (voir .easy-mode). Trois
    unités coexistent alors :
    · pixels ÉCRAN : le doigt (clientX/Y), innerWidth/innerHeight ;
@@ -5463,7 +5469,6 @@ function nav(s){
   scr.classList.add('on');
   $$('.nb').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
-  positionNavPill(btn);
   const subs={home:'',sport:t('sub_sport'),stats:t('sub_stats'),outils:t('sub_outils'),profil:''};
   document.body.dataset.scr=s;
   $('#tbTitle').textContent=t(s);
@@ -5476,13 +5481,17 @@ function nav(s){
     av.textContent=((P.name||'').trim().charAt(0)||'?').toUpperCase();
     if(ph){ const im=document.createElement('img'); im.alt=''; im.onerror=()=>im.remove(); im.src=ph; av.appendChild(im); }
   }
-  $('#scroll').scrollTop=0;
   const navElReset=document.getElementById('nav'); if(navElReset) navElReset.classList.remove('nav-hidden');
   if(s==='home') renderHome();
   if(s==='sport'){ renderSport(); setTimeout(checkMissedSessions,300); }
   if(s==='stats') renderStats();
   if(s==='outils') renderOutils();
   if(s==='profil') renderProfile();
+  // V3.10.3 : les lectures de position (défilement, pastille, en-tête) viennent APRÈS le
+  // rendu de l'écran — avant, la pastille lisait la barre entre le changement d'écran et
+  // le rendu : le navigateur recalculait toute la mise en page deux fois.
+  $('#scroll').scrollTop=0;
+  positionNavPill(btn);
   markScreenSeen('s-'+s);
   ikhSync(); ikhCompact();
   ikEnterScreen(s);
@@ -6914,6 +6923,7 @@ function applyTheme(){
   document.documentElement.setAttribute('data-mode',mode);
   // Covering (V3.10.0) : la teinte du film remplace la couleur de l'app (data-wrap) ; en
   // mode simplifié, le Covering se met en veille et la couleur choisie revient.
+  if(P.theme==='clay') P.theme='red'; // couleur « Guimauve » retirée (V3.10.3) : le rouge corail est le plus proche
   const wrap=wrapOn(), acc=wrap?'wrap':P.theme==='forged'?'carbon':(P.theme||'blue'); // le carbone forgé partage les couleurs du carbone
   document.documentElement.setAttribute('data-accent',acc);
   if(wrap) document.documentElement.setAttribute('data-wrap',wrapKey()); else document.documentElement.removeAttribute('data-wrap');
@@ -7026,9 +7036,8 @@ const ACCENTS=[
   {key:'blue',name:'accentBlue',fam:'cool'},{key:'ocean',name:'accentOcean',fam:'cool'},{key:'violet',name:'accentViolet',fam:'cool'},{key:'lavender',name:'accentLavender',fam:'cool'},
   {key:'pink',name:'accentPink',fam:'warm'},{key:'sakura',name:'accentSakura',fam:'warm'},{key:'red',name:'accentRed',fam:'warm'},{key:'orange',name:'accentOrange',fam:'warm'},{key:'yellow',name:'accentYellow',fam:'warm'},
   {key:'green',name:'accentGreen',fam:'nature'},{key:'mint',name:'accentMint',fam:'nature'},{key:'teal',name:'accentTeal',fam:'nature'},{key:'brown',name:'accentBrown',fam:'nature'},
-  {key:'carbon',name:'accentCarbon',fam:'neutral'},{key:'forged',name:'accentForged',fam:'neutral'},{key:'mono',name:'accentMono',fam:'neutral'},
-  {key:'clay',name:'accentClay',fam:'special'}];
-const ACCENT_FAMS=[['cool','colorFamCool'],['warm','colorFamWarm'],['nature','colorFamNature'],['neutral','colorFamNeutral'],['special','colorFamSpecial']];
+  {key:'carbon',name:'accentCarbon',fam:'neutral'},{key:'forged',name:'accentForged',fam:'neutral'},{key:'mono',name:'accentMono',fam:'neutral'}];
+const ACCENT_FAMS=[['cool','colorFamCool'],['warm','colorFamWarm'],['nature','colorFamNature'],['neutral','colorFamNeutral']];
 function accentName(k){ const a=ACCENTS.find(x=>x.key===k); return a?t(a.name):t('accentBlue'); }
 /* Teintes COVERING (V3.10.0) : avec la matière Covering, le menu Couleurs propose des
    teintes de film. Chacune est une configuration complète — le film, le noir brillant et
@@ -8450,7 +8459,7 @@ const PS_RACES=['5 km','10 km','Semi-marathon','Marathon','Ultra','Trail','Cross
 const RACE_M={'5 km':5000,'10 km':10000,'Semi-marathon':21097,'Marathon':42195,'Trail':21097,'Cross':8000,'Ultra':50000};
 function raceMetersOf(race,km){ return race==='Autre' && +km>0 ? Math.round(+km*1000) : (RACE_M[race]||5000); }
 function raceLabel(){ return P && P.objRace==='Autre' && +P.objRaceKm>0 ? fmtKmShort(+P.objRaceKm)+' km' : trRace(P && P.objRace); }
-function fmtKmShort(k){ return (Math.round(k*10)/10).toLocaleString(localeCode(),{maximumFractionDigits:1}); }
+function fmtKmShort(k){ return ikNum(Math.round(k*10)/10,'m1',{maximumFractionDigits:1}); }
 function psDefaultDate(){ const d=new Date(); d.setDate(d.getDate()+84); return dateKey(d); }
 function openPlanSetup(){
   if(!getUserVDOT()){ toast(t('profileIncompleteAddTime')); openRecords(); return; }
@@ -8484,7 +8493,7 @@ function psSeg(key,cur,opts,attr){
 function psDateParts(s){ const p=String(s.compDate||psDefaultDate()).split('-').map(Number); return {y:p[0],m:p[1],d:p[2]}; }
 function psDateHTML(s){
   const {y,m,d}=psDateParts(s), y0=new Date().getFullYear(), dim=new Date(y,m,0).getDate();
-  const months=Array.from({length:12},(_,i)=>new Date(2024,i,1).toLocaleDateString(localeCode(),{month:'short'}).replace('.',''));
+  const months=Array.from({length:12},(_,i)=>ikDate(new Date(2024,i,1),'{month:short}',{month:'short'}).replace('.',''));
   const days=Math.round((new Date(y,m-1,d)-new Date(new Date().toDateString()))/864e5);
   const hint=s.compDate<minRaceDate()?'<span style="color:var(--warn)">'+t('psDateSoon')+'</span>':tp('psDateIn',Math.max(1,Math.round(days/7)));
   return '<div class="wheels ps-wheels">'+wheel('PS.d',1,dim,Math.min(d,dim))+wheel('PS.mo',1,12,m,months)+wheel('PS.y',y0,y0+2,Math.min(y0+2,Math.max(y0,y)))+'</div><div class="ps-whint" id="psDateHint">'+hint+'</div>';
@@ -8517,12 +8526,12 @@ function psSessionsHTML(s){
 }
 function psRaceName(s){ return s.objRace==='Autre'?fmtKmShort(s.raceKm)+' km':trRace(s.objRace); }
 function psSummary(s){
-  const {y,m,d}=psDateParts(s), dt=new Date(y,m-1,d).toLocaleDateString(localeCode(),{day:'numeric',month:'short',year:'numeric'});
+  const {y,m,d}=psDateParts(s), dt=ikDate(new Date(y,m-1,d),'{day:numeric,month:short,year:numeric}',{day:'numeric',month:'short',year:'numeric'});
   return '<b>'+escHtml(psRaceName(s))+'</b> · '+dt+' · '+tp('psDaysPerWeek',s.days.length)+(s.objGoal==='Record personnel'&&s.timeS?' · '+fmtTime(s.timeS):'');
 }
 function renderPlanSetup(){
   const s=setupTmp, easy=!!P.easyMode;
-  const dn=[0,1,2,3,4,5,6].map(d=>new Date(2023,0,1+d).toLocaleDateString(localeCode(),{weekday:'short'}).replace('.',''));
+  const dn=[0,1,2,3,4,5,6].map(d=>ikDate(new Date(2023,0,1+d),'{weekday:short}',{weekday:'short'}).replace('.',''));
   const card=(icon,title,body)=>'<div class="ps-card"><div class="ps-card-h">'+ICN(icon,15)+' '+title+'</div>'+body+'</div>';
   let h=easy?'':psSituationHTML(s);
   // 1. La course
@@ -8843,7 +8852,7 @@ function kmBarSeries(period){
   if(period==='3m'){
     const labels=[], values=[]; const now=new Date();
     for(let m=2;m>=0;m--){ const st=new Date(now.getFullYear(),now.getMonth()-m,1); const en=new Date(now.getFullYear(),now.getMonth()-m+1,1);
-      values.push(sumKmBetween(st,en)); labels.push(st.toLocaleDateString('fr-FR',{month:'short'}).replace('.','')); }
+      values.push(sumKmBetween(st,en)); labels.push(ikDate(st,'mo',{month:'short'}).replace('.','')); }
     return {labels,values,total:values.reduce((a,v)=>a+v,0),prevTotal};
   }
   if(period==='year'){
@@ -8855,7 +8864,7 @@ function kmBarSeries(period){
   // 'week' par défaut
   // initiales des jours dans la langue de l'app (elles restaient en français en anglais/arabe)
   const labels=[]; const values=[];
-  for(let i=0;i<7;i++){ const d=new Date(ws); d.setDate(ws.getDate()+i); const en=new Date(d); en.setDate(d.getDate()+1); values.push(sumKmBetween(d,en)); labels.push(d.toLocaleDateString(localeCode(),{weekday:'narrow'})); }
+  for(let i=0;i<7;i++){ const d=new Date(ws); d.setDate(ws.getDate()+i); const en=new Date(d); en.setDate(d.getDate()+1); values.push(sumKmBetween(d,en)); labels.push(ikDate(d,'{weekday:narrow}',{weekday:'narrow'})); }
   return {labels,values,total:values.reduce((a,v)=>a+v,0),prevTotal};
 }
 /* Tendance hebdo (8 dernières semaines) pour le graphe en ligne, indépendante
@@ -8917,7 +8926,7 @@ function tonnageBarSeries(period){
   if(period==='3m'){
     const labels=[], values=[]; const now=new Date();
     for(let m=2;m>=0;m--){ const st=new Date(now.getFullYear(),now.getMonth()-m,1); const en=new Date(now.getFullYear(),now.getMonth()-m+1,1);
-      values.push(sumTonnageBetween(st,en)); labels.push(st.toLocaleDateString('fr-FR',{month:'short'}).replace('.','')); }
+      values.push(sumTonnageBetween(st,en)); labels.push(ikDate(st,'mo',{month:'short'}).replace('.','')); }
     return {labels,values,total:values.reduce((a,v)=>a+v,0),prevTotal};
   }
   if(period==='year'){
@@ -8928,7 +8937,7 @@ function tonnageBarSeries(period){
   }
   // initiales des jours dans la langue de l'app (elles restaient en français en anglais/arabe)
   const labels=[]; const values=[];
-  for(let i=0;i<7;i++){ const d=new Date(ws); d.setDate(ws.getDate()+i); const en=new Date(d); en.setDate(d.getDate()+1); values.push(sumTonnageBetween(d,en)); labels.push(d.toLocaleDateString(localeCode(),{weekday:'narrow'})); }
+  for(let i=0;i<7;i++){ const d=new Date(ws); d.setDate(ws.getDate()+i); const en=new Date(d); en.setDate(d.getDate()+1); values.push(sumTonnageBetween(d,en)); labels.push(ikDate(d,'{weekday:narrow}',{weekday:'narrow'})); }
   return {labels,values,total:values.reduce((a,v)=>a+v,0),prevTotal};
 }
 function weeklyTonnageTrend8(){
@@ -9120,19 +9129,19 @@ function homeNextUpcoming(){
   return {session:nxt,label};
 }
 // Nombre de km à l'affichage — séparateur décimal de la langue active (20,7 en FR, 20.7 en EN).
-function hKm(v){ const n=Number(v); return isFinite(n)?n.toLocaleString(localeCode(),{maximumFractionDigits:1}):String(v); }
+function hKm(v){ const n=Number(v); return isFinite(n)?ikNum(n,'m1',{maximumFractionDigits:1}):String(v); }
 // Une décimale fixe, au format de la langue (34,7 en français, 34.7 en anglais).
 // Libellé du meilleur créneau d'un graphique Stats (jour complet en vue semaine).
 function bestBarLabel(per,bars,i){
   if(!bars.values.length||!(bars.values[i]>0)) return '—';
-  if(per==='week'){ try{ const d=new Date(2024,0,1+i).toLocaleDateString(localeCode(),{weekday:'long'}); return d.charAt(0).toUpperCase()+d.slice(1); }catch(e){} }
+  if(per==='week'){ try{ const d=ikDate(new Date(2024,0,1+i),'{weekday:long}',{weekday:'long'}); return d.charAt(0).toUpperCase()+d.slice(1); }catch(e){} }
   return bars.labels[i];
 }
-function fmt1(v){ const n=Number(v); return (v!==''&&v!=null&&isFinite(n))?n.toLocaleString(localeCode(),{minimumFractionDigits:1,maximumFractionDigits:1}):String(v); }
+function fmt1(v){ const n=Number(v); return (v!==''&&v!=null&&isFinite(n))?ikNum(n,'f1',{minimumFractionDigits:1,maximumFractionDigits:1}):String(v); }
 // Jusqu'à 2 décimales, sans zéros inutiles (1,25 · 2,5 · 5).
-function hKm2(v){ const n=Number(v); return isFinite(n)?n.toLocaleString(localeCode(),{maximumFractionDigits:2}):String(v); }
+function hKm2(v){ const n=Number(v); return isFinite(n)?ikNum(n,'m2',{maximumFractionDigits:2}):String(v); }
 // Même chose avec d décimales fixes (0,83 · 12,50 km/h) : les outils écrivaient « 0.83 » en français.
-function fmtN(v,d){ const n=Number(v); return (v!==''&&v!=null&&isFinite(n))?n.toLocaleString(localeCode(),{minimumFractionDigits:d,maximumFractionDigits:d}):String(v); }
+function fmtN(v,d){ const n=Number(v); return (v!==''&&v!=null&&isFinite(n))?ikNum(n,'f'+d,{minimumFractionDigits:d,maximumFractionDigits:d}):String(v); }
 // Les n prochaines vraies séances du plan (hors repos), strictement après aujourd'hui.
 function homeNextRows(n){
   if(!PLAN||!PLAN.sessions) return null;
@@ -9143,7 +9152,7 @@ function homeNextRows(n){
   list.forEach(s=>{
     const d=new Date(s.date+'T00:00:00');
     const days=Math.max(1,Math.round((d-today)/86400000));
-    const dayRaw=d.toLocaleDateString(localeCode(),{weekday:'short'}).replace('.','');
+    const dayRaw=ikDate(d,'{weekday:short}',{weekday:'short'}).replace('.','');
     const dayCap=dayRaw.charAt(0).toUpperCase()+dayRaw.slice(1);
     const meta=dayCap+(s.km?' · '+hKm(s.km)+' km':'')+(s.pace?' · '+s.pace+'/km':'');
     h+='<div class="hv7-nx" onclick="openRunSheet('+s.id+')"><i style="background:'+baseTypeColor(s.baseType)+'"></i>'+
@@ -9186,9 +9195,9 @@ function renderHome(){
 
   // SALUTATION — semaine/phase du plan si actif, sinon quip objectif. La série en cours,
   // quand il y en a une, est glissée en suffixe pour ne pas encombrer la carte du jour.
-  const wdRaw=new Date().toLocaleDateString(localeCode(),{weekday:'long'});
+  const wdRaw=ikDate(new Date(),'{weekday:long}',{weekday:'long'});
   const wdCap=wdRaw.charAt(0).toUpperCase()+wdRaw.slice(1);
-  const wdShortRaw=new Date().toLocaleDateString(localeCode(),{weekday:'short'}).replace('.','');
+  const wdShortRaw=ikDate(new Date(),'{weekday:short}',{weekday:'short'}).replace('.','');
   const wdShort=wdShortRaw.charAt(0).toUpperCase()+wdShortRaw.slice(1);
   let sub;
   if(PLAN && PLAN.sessions && PLAN.sessions.length){
@@ -9331,7 +9340,7 @@ function renderHomeSimple(ps,sessW,sessTarget,kmW,first){
   if(goal) h+='<div class="next-lab">'+t('objective')+'</div>'+goal;
   return h;
 }
-function fmtDate(s){ const d=new Date(s); return d.toLocaleDateString(localeCode(),{weekday:'short',day:'numeric',month:'short'}); }
+function fmtDate(s){ return ikDate(new Date(s),'wdm',{weekday:'short',day:'numeric',month:'short'}); }
 
 /* ---------- SPORT ---------- */
 let sportTab='run', runSub='ia';
@@ -9462,7 +9471,6 @@ function addPersoPlan(){
 }
 function openPerso(id){ curPerso=id; renderSport(); setTimeout(()=>renderPersoDetail(),0); }
 let sportView='list';
-let sportShowAllWeeks=false; // n'affiche que la semaine en cours par défaut, dans les deux modes
 function renderSport(){
   document.body.dataset.scr = sportView==='calendar' ? 'calendrier' : 'sport';
   $('#tbTitle').textContent = sportView==='calendar' ? t('calendarTitle') : t('sport');
@@ -9519,7 +9527,7 @@ function sessionsForDate(k){
 function renderCalendarView(){
   const now=new Date(); const view=new Date(now.getFullYear(),now.getMonth()+calMonthOffset,1);
   const y=view.getFullYear(), m=view.getMonth();
-  const monthLab=view.toLocaleDateString(localeCode(),{month:'long',year:'numeric'});
+  const monthLab=ikDate(view,'{month:long,year:numeric}',{month:'long',year:'numeric'});
   const firstDow=(new Date(y,m,1).getDay()+6)%7; // 0=lundi
   const daysInMonth=new Date(y,m+1,0).getDate();
   const daysInPrev=new Date(y,m,0).getDate();
@@ -9549,8 +9557,8 @@ function renderCalendarView(){
     const d=new Date(); d.setDate(d.getDate()+i); const k=dateKey(d);
     const sess=sessionsForDate(k);
     if(!sess.length) continue;
-    const lab=i<2?dayLabels[i]:d.toLocaleDateString(localeCode(),{weekday:'long'});
-    const dlab=lab.charAt(0).toUpperCase()+lab.slice(1)+' · '+d.getDate()+' '+d.toLocaleDateString(localeCode(),{month:'long'});
+    const lab=i<2?dayLabels[i]:ikDate(d,'{weekday:long}',{weekday:'long'});
+    const dlab=lab.charAt(0).toUpperCase()+lab.slice(1)+' · '+d.getDate()+' '+ikDate(d,'{month:long}',{month:'long'});
     if(shown>0) h+='<div style="height:1px;background:var(--hair);margin:12px 0"></div>';
     h+='<div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:8px">'+dlab+'</div>';
     sess.forEach(s=>{
@@ -10193,7 +10201,7 @@ function renderPlanCustomizeHTML(){
     const d=new Date(mon); d.setDate(mon.getDate()+i); const dk=dateKey(d);
     const o=PLAN.sessions.find(x=>x.date===dk), cur=dk===s.date, off=dk<tk || dk>=raceK || (o&&o.done);
     const lab=cur?'':(o?((!o.km||o.type==='Repos')?t('restTag'):planSessLabel(o)):t('cmFree'));
-    h+='<button type="button" class="cm-day'+(cur?' on':'')+(o&&!cur?' busy':'')+'"'+(off&&!cur?' disabled':'')+' onclick="cmMoveTo(\''+dk+'\')"><b>'+d.toLocaleDateString(localeCode(),{weekday:'short'}).replace('.','')+'</b><i>'+d.getDate()+'</i><span>'+escHtml(lab||'')+'</span></button>';
+    h+='<button type="button" class="cm-day'+(cur?' on':'')+(o&&!cur?' busy':'')+'"'+(off&&!cur?' disabled':'')+' onclick="cmMoveTo(\''+dk+'\')"><b>'+ikDate(d,'{weekday:short}',{weekday:'short'}).replace('.','')+'</b><i>'+d.getDate()+'</i><span>'+escHtml(lab||'')+'</span></button>';
   }
   h+='</div>';
   // le contenu
@@ -10201,7 +10209,7 @@ function renderPlanCustomizeHTML(){
     h+='<div class="db-sec">'+t('cmContentLab')+'</div><div class="cm-card">';
     if(k==='reps'){
       h+=cmStepper(t('cmReps'),s.series.reps,'','reps',s.series.reps-1,s.series.reps+1);
-      h+='<div class="cm-step-l" style="margin:12px 2px 8px"><b>'+t('cmRepDist')+'</b></div><div class="cm-chips">'+CM_REP_DISTS.map(m=>'<button type="button" class="cm-chip'+(m===s.series.dist?' on':'')+'" onclick="cmSet(\'dist\','+m+')">'+(m>=1000?(m/1000).toLocaleString(localeCode())+' km':m+' m')+'</button>').join('')+'</div>';
+      h+='<div class="cm-step-l" style="margin:12px 2px 8px"><b>'+t('cmRepDist')+'</b></div><div class="cm-chips">'+CM_REP_DISTS.map(m=>'<button type="button" class="cm-chip'+(m===s.series.dist?' on':'')+'" onclick="cmSet(\'dist\','+m+')">'+(m>=1000?ikNum((m/1000),'i')+' km':m+' m')+'</button>').join('')+'</div>';
       const rec=s.series.recoverySec||60;
       h+=cmStepper(t('cmRecov'),rec>=60?(Math.floor(rec/60)+':'+String(rec%60).padStart(2,'0')):rec,rec>=60?'min':'s','rec',rec-15,rec+15);
     } else if(k==='hills') h+=cmStepper(t('cmHills'),s.series.reps,'','hills',s.series.reps-1,s.series.reps+1,t('cmHillsSub'));
@@ -11600,14 +11608,14 @@ function statsMuscu(){
   '</div>';
 
   h+='<div class="kchart-card">'+
-    '<div class="kchart-top"><div><div class="kchart-lab">'+t('tonnageLab')+'</div><div class="kchart-val">'+Math.round(tonnageCur).toLocaleString(localeCode())+'<span>'+t('kgCumulated')+'</span></div></div>'+
+    '<div class="kchart-top"><div><div class="kchart-lab">'+t('tonnageLab')+'</div><div class="kchart-val">'+ikNum(Math.round(tonnageCur),'i')+'<span>'+t('kgCumulated')+'</span></div></div>'+
     (deltaPct!==null?'<div><div class="kchart-delta'+(deltaPct<0?' bad':'')+'">'+(deltaPct>0?'+':deltaPct<0?'−':'')+Math.abs(deltaPct)+'%</div><div class="kchart-delta-sub">'+t('vsPrevPeriod')+'</div></div>':'')+
     '</div>'+
     kBarsHTML(bars.labels,bars.values,per==='week'?((new Date().getDay()+6)%7):null)+
   '</div>';
 
   h+='<div class="kchart-card">'+
-    '<div class="kchart-top"><div><div class="kchart-lab">'+t('tonnageTrendLab')+'</div><div class="kchart-val">'+Math.round(trend[trend.length-1]).toLocaleString(localeCode())+'<span>'+t('kgThisWeek')+'</span></div></div>'+
+    '<div class="kchart-top"><div><div class="kchart-lab">'+t('tonnageTrendLab')+'</div><div class="kchart-val">'+ikNum(Math.round(trend[trend.length-1]),'i')+'<span>'+t('kgThisWeek')+'</span></div></div>'+
     '<div><div class="kchart-delta">'+t('eightWeeksLab')+'</div></div></div>'+
     '<div style="margin-top:14px">'+lineChartSVG(trend,300,60,'var(--e2)')+'</div>'+
     '<div class="kline-labs"><span>'+t('weeksAgoLab')+'</span><span>'+t('thisWeek')+'</span></div>'+
@@ -11975,53 +11983,6 @@ function exGlyph(e,size){ const g=(e&&((e.muscles&&e.muscles[0])||(e.primary&&e.
 /* colored rounded-square icon badge used in card headers, replaces flat emoji */
 function cardIcon(name,color){ color=color||'var(--e)'; return '<span class="icb" style="background:linear-gradient(145deg,color-mix(in srgb,'+color+' 13%,transparent),color-mix(in srgb,'+color+' 5%,transparent));box-shadow:0 0 0 1px color-mix(in srgb,'+color+' 20%,transparent) inset,0 4px 10px -4px color-mix(in srgb,'+color+' 33%,transparent);color:'+color+'">'+ICN(name,15,color)+'</span>'; }
 
-/* ---------- BADGE CRESTS (SVG sur-mesure, remplace les emojis) ----------
-   Inspiré des rangs Rocket League : un écusson qui gagne des ailes et des
-   ornements (étoile, laurier, gemme, couronne) au fil des paliers. */
-/* Aile-plume unique : part du centre bas, s'évase vers l'extérieur-haut.
-   idx=position de la plume dans l'aile (0=intérieure), total=nb de plumes. */
-function _bdPlume(mirror,idx,total,op){
-  const t=total<=1?0:idx/(total-1);
-  const spread=10+t*20, rise=10+t*26, w=4+t*3;
-  const bx=3+idx*0.6, by=46-idx*1.6;
-  const tipX=bx+spread, tipY=by-rise;
-  const ctrlX=bx+spread*0.55, ctrlY=by-rise*0.65;
-  return '<g transform="scale('+mirror+',1)"><path d="M'+bx+' '+by+
-    ' Q'+ctrlX+' '+(ctrlY-2)+' '+tipX+' '+tipY+
-    ' Q'+(ctrlX-2)+' '+(ctrlY+3)+' '+(bx-1)+' '+(by-3)+' Z" '+
-    'fill="rgba(255,255,255,'+op+')"/></g>';
-}
-function _bdWings(count){
-  let out='';
-  for(let i=0;i<count;i++){
-    const op=(0.32+ (i/(Math.max(1,count-1)))*0.55).toFixed(2);
-    out+=_bdPlume(1,i,count,op)+_bdPlume(-1,i,count,op);
-  }
-  return out;
-}
-/* Gemme centrale (losange) — grossit avec le prestige du palier */
-function _bdGem(cy,r){
-  return '<polygon points="32,'+(cy-r)+' '+(32+r*0.68).toFixed(1)+','+cy+' 32,'+(cy+r)+' '+(32-r*0.68).toFixed(1)+','+cy+
-    '" fill="rgba(255,255,255,.95)" stroke="rgba(255,255,255,.55)" stroke-width="0.8"/>'+
-    '<line x1="32" y1="'+(cy-r)+'" x2="32" y2="'+(cy+r)+'" stroke="rgba(255,255,255,.35)" stroke-width="0.6"/>';
-}
-/* Couronne — réservée au tout dernier palier */
-function _bdCrown(){
-  return '<path d="M18 16 L22.5 24 L32 12 L41.5 24 L46 16 L43.5 26 L20.5 26 Z" fill="rgba(255,255,255,.95)"/>'+
-    '<circle cx="18" cy="15" r="2.2" fill="rgba(255,255,255,.95)"/><circle cx="32" cy="11" r="2.6" fill="rgba(255,255,255,.95)"/><circle cx="46" cy="15" r="2.2" fill="rgba(255,255,255,.95)"/>';
-}
-const BADGE_GLYPHS={
-  initie:      _bdWings(2)+_bdGem(36,3.6),
-  discipline:  _bdWings(3)+_bdGem(35,4.4),
-  perseverant: _bdWings(4)+_bdGem(34,5),
-  determine:   _bdWings(4)+_bdGem(33,5.6),
-  avance:      _bdWings(5)+_bdGem(32,6.2),
-  elite:       _bdWings(5)+_bdGem(31,6.8),
-  exceptionnel:_bdWings(6)+_bdGem(30,7.4),
-  legendaire:  _bdWings(6)+_bdGem(30,8),
-  ultime:      _bdWings(7)+_bdGem(29,8.6),
-  iconique:    _bdWings(8)+_bdGem(30,9)+_bdCrown()
-};
 // Images des 8 paliers de badges encodées en base64 directement dans le code
 // (comme le logo IKORUN) : plus de fichiers .png séparés à servir/déployer,
 // tout est déjà présent dès que app.js est chargé — demande explicite du 20/09.
@@ -12266,7 +12227,6 @@ function addWeight(){ const cur=P.weight||62; const whole=Math.floor(cur),dec=Ma
    L'utilisateur saisit 2 valeurs → les 2 autres se calculent.
    On mémorise l'ordre des saisies (recent[]) pour savoir lesquelles fixer. */
 let LAB={dist:null,time:null,pace:null,speed:null,recent:[]};
-let labTab='resultats';
 function labSet(field,val){
   LAB[field]=val;
   LAB.recent=[field,...LAB.recent.filter(f=>f!==field)].slice(0,2);
@@ -12366,7 +12326,7 @@ function renderLoadTool(){
   h+='<div class="tip" style="margin-top:12px">'+t('acwrTip')+'</div>';
   $('#outBody').innerHTML=h;
 }
-let calKm=10,calMin=50;
+let calKm=10;
 function renderCaloriesTool(){
   const w=P.weight||62; const cal=Math.round(0.9*w*calKm);
   let h='<div class="card"><div class="field"><label>'+t('distanceKmLab')+'</label><div class="stepper"><button onclick="calKm=Math.max(1,calKm-1);renderCaloriesTool()">−</button><span class="val">'+calKm+'</span><button onclick="calKm++;renderCaloriesTool()">+</button></div></div></div>';
@@ -12428,8 +12388,8 @@ function renderConvertTool(){
 
   if(cvCat==='dist'){
     const meters=cvDistVal*CV_DIST_UNITS[cvDistFrom];
-    const fromStr=cvDistVal.toLocaleString(localeCode(),{maximumFractionDigits:2});
-    const resStr=(meters/CV_DIST_UNITS[cvDistTo]).toLocaleString(localeCode(),{maximumFractionDigits:2});
+    const fromStr=ikNum(cvDistVal,'{maximumFractionDigits:2}',{maximumFractionDigits:2});
+    const resStr=ikNum((meters/CV_DIST_UNITS[cvDistTo]),'{maximumFractionDigits:2}',{maximumFractionDigits:2});
     h+='<div class="cv-card">'+
       '<div class="cv-side" onclick="cvPickDist()"><div class="cv-lab">'+t('fromField')+'</div><div class="cv-val" style="font-size:'+cvValSize(fromStr)+'">'+fromStr+'</div>'+
       cvUnitPills(CV_DIST_LABEL,cvDistFrom,u=>"event.stopPropagation();cvSetDistUnit('from','"+u+"')")+'</div>'+
@@ -12439,8 +12399,8 @@ function renderConvertTool(){
     '</div>';
   } else if(cvCat==='weight'){
     const kg=cvWeightVal*CV_WEIGHT_UNITS[cvWeightFrom];
-    const fromStr=cvWeightVal.toLocaleString(localeCode(),{maximumFractionDigits:1});
-    const resStr=(kg/CV_WEIGHT_UNITS[cvWeightTo]).toLocaleString(localeCode(),{maximumFractionDigits:1});
+    const fromStr=ikNum(cvWeightVal,'{maximumFractionDigits:1}',{maximumFractionDigits:1});
+    const resStr=ikNum((kg/CV_WEIGHT_UNITS[cvWeightTo]),'{maximumFractionDigits:1}',{maximumFractionDigits:1});
     h+='<div class="cv-card">'+
       '<div class="cv-side" onclick="cvPickWeight()"><div class="cv-lab">'+t('fromField')+'</div><div class="cv-val" style="font-size:'+cvValSize(fromStr)+'">'+fromStr+'</div>'+
       cvUnitPills(CV_WEIGHT_LABEL,cvWeightFrom,u=>"event.stopPropagation();cvSetWeightUnit('from','"+u+"')")+'</div>'+
@@ -13092,7 +13052,6 @@ function feteToday(){
   return null;
 }
 function feteOn(){ const k=feteToday(); return !!k && (!!_fetePreview || (feteEnabled() && P.feteOff!==todayKey())); }
-function bdayThemeOn(){ return feteOn() && feteToday()==='bday'; }
 // Un record battu aujourd'hui, même à l'entraînement, met la journée en fête.
 function feteRecord(txt){
   try{
@@ -13131,13 +13090,11 @@ function feteCardHTML(){
     '<div class="fc-txt"><b>'+title+'</b><span>'+sub+'</span>'+
     '<button type="button" class="fc-btn" onclick="event.stopPropagation();toggleFeteToday()">'+btn+'</button></div></div>';
 }
-function bdayCardHTML(){ return feteCardHTML(); }
 function toggleFeteToday(){
   if(_fetePreview){ _fetePreview=null; applyTheme(); renderHome(); return; }
   P.feteOff=feteOn()?todayKey():null; saveAll(); applyTheme(); renderHome();
   if(feteOn()) celebrateFete(true);
 }
-function toggleBdayToday(){ toggleFeteToday(); }
 // Première ouverture de la journée : un feu de confettis aux couleurs de la fête et sa mélodie.
 // Les nuits spirituelles (Nuit du Destin, Isra wal Mi'raj) restent sobres : pas de confettis,
 // juste la mélodie et une vibration légère — ce ne sont pas des fêtes à confettis.
@@ -13148,7 +13105,6 @@ function celebrateFete(force){
   try{ if(!force && localStorage.getItem(key)) return; localStorage.setItem(key,'1'); }catch(e){}
   setTimeout(()=>{ try{ if(!quiet && !ikMotionOff()) burst(FETE_BURST[k]||undefined); sfx(k==='bday'?'bday':'fete_'+k); if(navigator.vibrate) navigator.vibrate(quiet?[40]:[30,60,30,60,80]); }catch(e){} },700);
 }
-function celebrateBday(force){ celebrateFete(force); }
 // Aperçu depuis Profil › Apparence : la fête s'applique jusqu'au prochain lancement.
 function feteTry(k){
   if(!feteDevMode() || !FETE_KEYS.includes(k)) return;
@@ -13534,7 +13490,7 @@ function renderPriere(){
   const order=['Fajr','Dhuhr','Asr','Maghrib','Isha'];
   let activeIdx=-1;
   order.forEach((p,i)=>{ const[hh,mm]=times[p].split(':').map(Number); if(hh*60+mm<=nowMin) activeIdx=i; });
-  let h='<div class="card"><div class="card-t">'+t('prayerTitle')+'</div><div style="font-size:12px;color:var(--muted);margin-bottom:14px">'+tp('uoifMethod',now.toLocaleDateString(localeCode(),{weekday:'long',day:'numeric',month:'long'}))+'</div>';
+  let h='<div class="card"><div class="card-t">'+t('prayerTitle')+'</div><div style="font-size:12px;color:var(--muted);margin-bottom:14px">'+tp('uoifMethod',ikDate(now,'{weekday:long,day:numeric,month:long}',{weekday:'long',day:'numeric',month:'long'}))+'</div>';
   const icons={Fajr:'sun',Dhuhr:'sun',Asr:'sun',Maghrib:'moon',Isha:'moon'};
   order.forEach((p,i)=>{
     const act=i===activeIdx;
@@ -13591,9 +13547,13 @@ function nextPrayerInfo(){
 // système d'iOS n'apparaît donc jamais (voir requestNotifPermCTA). Une croix
 // permet de la retirer définitivement (P.notifPromptDismissed) sans agir.
 function dismissNotifBubble(e){ if(e) e.stopPropagation(); P.notifPromptDismissed=true; saveAll(); const active=document.querySelector('.nb.on'); if(active) nav(active.dataset.s); }
+// Notification.permission est demandé au système à chaque lecture (coûteux, et l'Accueil se
+// redessine souvent) : la bulle le relit au plus toutes les 3 secondes.
+let _npCache={v:null,t:0};
+function notifPermCached(){ const n=Date.now(); if(n-_npCache.t>3000){ _npCache.v=('Notification'in window)?Notification.permission:'unsupported'; _npCache.t=n; } return _npCache.v; }
 function notifPermBubbleHTML(){
   if(P.notifPromptDismissed) return '';
-  if(!('Notification'in window) || Notification.permission!=='default') return '';
+  if(notifPermCached()!=='default') return '';
   return '<div class="row" style="align-items:center;gap:10px;padding:11px 12px;border-radius:16px;background:rgba(var(--e-rgb),.10);border:1px solid rgba(var(--e-rgb),.28);margin-bottom:12px">'+
     '<span style="display:inline-flex;flex-shrink:0">'+ICN('bell',17,'var(--e)')+'</span>'+
     '<span style="flex:1;font-size:12.5px;line-height:1.4;cursor:pointer" onclick="requestNotifPermCTA()">'+t('notifBubbleText')+' <b style="color:var(--e)">'+t('notifBubbleAction')+'</b></span>'+
@@ -13656,13 +13616,15 @@ function renderProfile(){
   h+='</div>';
   // ===== APERÇU RAPIDE — carte unique, une ligne par info (au lieu d'une grille + bannière séparées) =====
   h+='<div class="grp-card stag" style="animation-delay:.04s">'+
-    '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('scale',20,'currentColor')+'</div><div class="lr-title">'+t('heightWeight')+'</div><div class="lr-val">'+escHtml(P.height||'—')+' cm · '+escHtml(P.weight||'—')+' kg</div></div>'+
-    '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('calendar',20,'currentColor')+'</div><div class="lr-title">'+t('age')+'</div><div class="lr-val">'+age()+' '+(curLang()==='en'?'yo':curLang()==='ar'?'سنة':'ans')+'</div></div>'+
+    '<div class="grp-row" onclick="openProfileEdit()"><div class="lr-icon">'+ICN('scale',20,'currentColor')+'</div><div class="lr-title">'+t('heightWeight')+'</div><div class="lr-val">'+escHtml(P.height||'—')+' cm · '+escHtml(P.weight||'—')+' kg</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileEdit()"><div class="lr-icon">'+ICN('calendar',20,'currentColor')+'</div><div class="lr-title">'+t('age')+'</div><div class="lr-val">'+age()+' '+(curLang()==='en'?'yo':curLang()==='ar'?'سنة':'ans')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('chart',20,'currentColor')+'</div><div class="lr-title">VDOT</div><div class="lr-val">'+(getUserVDOT()?fmt1(getUserVDOT()):'—')+'</div></div>'+
     '<div class="grp-row" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ia\';renderSport()"><div class="lr-icon">'+ICN('target',20,'currentColor')+'</div><div class="lr-title">'+t('objective')+'</div><div class="lr-val">'+escHtml(raceLabel()||P.goal||t('noObjective'))+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
   // ===== PROGRESSION — badges intégrés directement au profil =====
-  { const unlocked=unlockedBadges(); const recent=[...unlocked].sort((a,b)=>b.date<a.date?-1:1).slice(0,5).map(u=>BADGE_TIERS.find(b=>b.key===u.key)).filter(Boolean);
+  // Un palier atteint depuis la dernière vérification (le temps qui passe, par exemple) est
+  // débloqué ici : avant, la carte disait « aucun badge » puis « palier atteint · 100 % ».
+  { checkNewBadges(false); const unlocked=unlockedBadges(); const recent=[...unlocked].sort((a,b)=>b.date<a.date?-1:1).slice(0,5).map(u=>BADGE_TIERS.find(b=>b.key===u.key)).filter(Boolean);
     h+='<div class="sec-head stag" style="animation-delay:.06s"><h3 class="grp-lab" style="margin:0">'+t('progression')+'</h3><span class="see" onclick="openBadges()">'+tp('seeAllProgress',unlocked.length,BADGE_TIERS.length)+'</span></div>';
     h+='<div class="card stag" style="animation-delay:.07s">';
     if(recent.length){
@@ -13677,41 +13639,32 @@ function renderProfile(){
     }
     h+='</div>';
   }
-  // ===== SECTIONS GROUPÉES — 4 groupes à vocation unique (avant : 3 groupes qui
-  // mélangeaient données/apparence/compte, plus deux liens différents ("Données
-  // & confidentialité" et "Centre d'aide") qui ouvraient le MÊME écran — d'où
-  // la confusion. Suivi = regarder son historique ; Compte = son identité ;
-  // Apparence = ce que l'app montre ; Assistance = tout le reste, une fois. =====
+  // ===== SECTIONS GROUPÉES (V3.10.3) — trois groupes, plus aucun doublon :
+  // · « Gérer le profil » doublonnait le crayon du haut et les lignes Taille / Âge (qui
+  //   ouvrent maintenant la fiche) ; « Statistiques » doublonnait l'onglet du bas ;
+  // · le Thème est réglé sur la fiche Apparence, avec la couleur et la matière ;
+  // · Mot de passe et Données ouvrent une seule fiche « Compte et données » ;
+  // · Conditions et Confidentialité, une seule fiche (avec un sélecteur). =====
   h+='<div class="grp-lab stag" style="animation-delay:.09s">'+t('trackingLab')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.10s">'+
-    '<div class="grp-row pf-club-row" onclick="openClub()"><div class="lr-icon">'+ICN('flag',20,'currentColor')+'</div><div class="lr-title">'+t('myClubLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openFriends()"><div class="lr-icon">'+ICN('users',20,'currentColor')+'</div><div class="lr-title">'+t('friendsRanking')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openRecords()"><div class="lr-icon">'+ICN('medal',20,'currentColor')+'</div><div class="lr-title">'+t('historyRecords')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="nav(\'stats\')"><div class="lr-icon">'+ICN('chart',20,'currentColor')+'</div><div class="lr-title">'+t('statistics')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openFriends()"><div class="lr-icon">'+ICN('users',20,'currentColor')+'</div><div class="lr-title">'+t('friendsRanking')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row pf-club-row" onclick="openClub()"><div class="lr-icon">'+ICN('flag',20,'currentColor')+'</div><div class="lr-title">'+t('myClubLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
-  h+='<div class="grp-lab stag" style="animation-delay:.12s">'+t('account')+'</div>';
+  h+='<div class="grp-lab stag" style="animation-delay:.12s">'+t('prefsLab')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.13s">'+
-    '<div class="grp-row" onclick="openProfileEdit()"><div class="lr-icon">'+ICN('users',20,'currentColor')+'</div><div class="lr-title">'+t('manageProfile')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'account\')"><div class="lr-icon">'+ICN('lock',20,'currentColor')+'</div><div class="lr-title">'+t('passwordSecurity')+'</div><div class="lr-val">'+(window.currentUserEmail||(window.isGuestUser?t('guestModeLabel'):t('notConnected')))+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'notif\')"><div class="lr-icon">'+ICN('bell',20,'currentColor')+'</div><div class="lr-title">'+t('notifLabel')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-  '</div>';
-  h+='<div class="grp-lab stag" style="animation-delay:.15s">'+t('appearanceLab')+'</div>';
-  h+='<div class="grp-card stag" style="animation-delay:.16s">'+
+    '<div class="grp-row" onclick="openProfileSection(\'appearance\')"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('appearance')+'</div><div class="lr-val">'+colorDotNow()+colorNameNow()+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openProfileSection(\'lang\')"><div class="lr-icon">'+ICN('globe',20,'currentColor')+'</div><div class="lr-title">'+t('language')+'</div><div class="lr-val">'+langInfo[1]+' '+langInfo[2]+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('moon',20,'currentColor')+'</div><div class="lr-title">'+t('theme')+'</div>'+pfThemeSwitchHTML()+'</div>'+
-    // V3.10.2 : couleur et matière sont réglées sur la même fiche (elles vont ensemble : en
-    // Covering, les couleurs deviennent des teintes de film).
-    '<div class="grp-row" onclick="openProfileSection(\'appearance\')"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('styleLab')+'</div><div class="lr-val">'+colorDotNow()+colorNameNow()+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    '<div class="grp-row" onclick="openProfileSection(\'notif\')"><div class="lr-icon">'+ICN('bell',20,'currentColor')+'</div><div class="lr-title">'+t('notifLabel')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('heart',20,'currentColor')+'</div><div><div class="lr-title">'+t('simplifiedMode')+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px;max-width:200px">'+t('simplifiedModeDesc')+'</div></div><div class="toggle'+(P.easyMode?' on':'')+'" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
   '</div>';
-  h+='<div class="grp-lab stag" style="animation-delay:.18s">'+t('support')+'</div>';
-  h+='<div class="grp-card stag" style="animation-delay:.19s">'+
+  h+='<div class="grp-lab stag" style="animation-delay:.15s">'+t('accountHelpLab')+'</div>';
+  h+='<div class="grp-card stag" style="animation-delay:.16s">'+
+    '<div class="grp-row" onclick="openProfileSection(\'account\')"><div class="lr-icon">'+ICN('lock',20,'currentColor')+'</div><div class="lr-title">'+t('accountDataLab')+'</div><div class="lr-val">'+escHtml(window.currentUserEmail||(window.isGuestUser?t('guestModeLabel'):t('notConnected')))+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
     '<div class="grp-row" onclick="openFeedback()"><div class="lr-icon">'+ICN('comment',20,'currentColor')+'</div><div class="lr-title">'+t('sendFeedbackLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    (isStandalone()?'':'<div class="grp-row" onclick="installApp()"><div class="lr-icon">'+ICN('download',20,'currentColor')+'</div><div class="lr-title">'+t('installAppBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>')+
     '<div class="grp-row" onclick="startAppTour()"><div class="lr-icon">'+ICN('flag',20,'currentColor')+'</div><div class="lr-title">'+t('replayTourBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'terms\')"><div class="lr-icon">'+ICN('clipboard',20,'currentColor')+'</div><div class="lr-title">'+t('termsOfUseLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'privacy\')"><div class="lr-icon">'+ICN('shield',20,'currentColor')+'</div><div class="lr-title">'+t('privacyPolicyLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'data\')"><div class="lr-icon">'+ICN('lock',20,'currentColor')+'</div><div class="lr-title">'+t('dataPrivacy')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    (isStandalone()?'':'<div class="grp-row" onclick="installApp()"><div class="lr-icon">'+ICN('download',20,'currentColor')+'</div><div class="lr-title">'+t('installAppBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>')+
+    '<div class="grp-row" onclick="openProfileSection(\'legal\')"><div class="lr-icon">'+ICN('shield',20,'currentColor')+'</div><div class="lr-title">'+t('legalLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
   // (le numéro de version est désormais dans la signature IKORUN en bas de chaque écran)
   swapIn('s-profil',h);
@@ -13752,11 +13705,10 @@ function renderProfileSimple(){
 
   h+='<div class="grp-lab">'+t('support')+'</div>';
   h+='<div class="grp-card">'+
-    row('lock',t('account'),"openProfileSection('account')")+
+    row('lock',t('accountDataLab'),"openProfileSection('account')")+
     row('comment',t('sendFeedbackLab'),'openFeedback()')+
     (isStandalone()?'':row('download',t('installAppBtn'),'installApp()'))+
-    row('clipboard',t('termsOfUseLab'),"openProfileSection('terms')")+
-    row('shield',t('privacyPolicyLab'),"openProfileSection('privacy')")+
+    row('shield',t('legalLab'),"openProfileSection('legal')")+
   '</div>';
   // La signature de bas d'écran est masquée en mode simplifié : la version reste lisible ici.
   h+='<div class="ez-ver">IKORUN · V'+APP_VERSION+'</div>';
@@ -13764,10 +13716,14 @@ function renderProfileSimple(){
 }
 /* ---- Fiches de réglages du profil, ouvertes dans l'overlay générique ---- */
 let _pfSheet=null;
+let _legalTab='terms';
 function openProfileSection(key){
   const toColor=key==='color'; if(toColor) key='appearance'; // l'ancienne fiche Couleur fait partie d'Apparence
+  // V3.10.3 : Données fait partie de Compte ; Conditions et Confidentialité partagent une fiche
+  if(key==='data') key='account';
+  if(key==='terms'||key==='privacy'){ _legalTab=key; key='legal'; }
   _pfSheet=key;
-  const titles={account:t('account'),color:t('appColor'),lang:''+t('language'),appearance:''+t('appearance'),notif:''+t('notifsApp'),data:''+t('dataPrivacy'),terms:t('termsOfUseLab'),privacy:t('privacyPolicyLab')};
+  const titles={account:t('accountDataLab'),lang:''+t('language'),appearance:''+t('appearance'),notif:''+t('notifsApp'),legal:t('legalLab')};
   $('#ovProgTitle').textContent=titles[key]||t('settings');
   $('#progBody').innerHTML=pfSectionHTML(key);
   openOv('ovProg');
@@ -13775,13 +13731,13 @@ function openProfileSection(key){
 }
 function refreshPfSheet(){ if(_pfSheet && $('#ovProg').classList.contains('on')) $('#progBody').innerHTML=pfSectionHTML(_pfSheet); }
 function pfSectionHTML(key){
-  if(key==='account') return pfAccountHTML();
+  if(key==='account') return pfAccountHTML()+pfDataHTML();
   if(key==='lang') return pfLangHTML();
   if(key==='appearance') return pfAppearanceHTML();
   if(key==='notif') return pfNotifHTML();
-  if(key==='data') return pfDataHTML();
-  if(key==='terms') return legalTermsHTML();
-  if(key==='privacy') return legalPrivacyHTML();
+  if(key==='legal') return '<div class="seg-ctrl sub" data-seg="legal" style="margin-bottom:6px">'+
+    [['terms','termsOfUseLab'],['privacy','privacyPolicyLab']].map(([k,l])=>'<div class="seg-btn'+(_legalTab===k?' on':'')+'" onclick="_legalTab=\''+k+'\';refreshPfSheet()">'+t(l)+'</div>').join('')+'</div>'+
+    (_legalTab==='privacy'?legalPrivacyHTML():legalTermsHTML());
   return '';
 }
 /* ---------- CGU & CONFIDENTIALITÉ ----------
@@ -13809,7 +13765,7 @@ function legalTermsHTML(){
   +legalP('3. Avertissement santé et sport — à lire attentivement',
     'IKORUN n’est pas un dispositif médical et ne fournit aucun avis médical. Les plans d’entraînement générés le sont par des algorithmes génériques et ne remplacent pas l’avis d’un professionnel de santé. Avant de commencer tout programme, en particulier en cas d’antécédents médicaux, de condition de santé particulière, ou de reprise d’activité après une longue interruption, consulte un médecin. Tu es seul(e) responsable de l’évaluation de ta condition physique et des risques liés à la pratique sportive. L’Éditeur ne pourra être tenu responsable de blessures, malaises ou dommages résultant de l’utilisation des plans ou conseils fournis par l’Application.')
   +legalP('4. Compte utilisateur',
-    'Tu es responsable de la confidentialité de tes identifiants et de toute activité effectuée depuis ton compte. Les informations fournies doivent être exactes. Tu peux à tout moment exporter tes données depuis Profil > Données & confidentialité, et supprimer définitivement ton compte depuis Profil > Compte > Zone de danger.')
+    'Tu es responsable de la confidentialité de tes identifiants et de toute activité effectuée depuis ton compte. Les informations fournies doivent être exactes. Tu peux à tout moment exporter tes données depuis Profil > Compte et données, et supprimer définitivement ton compte depuis Profil > Compte > Zone de danger.')
   +legalP('5. Contenu et comportement',
     'Ton nom d’utilisateur, ta photo de profil et les contenus que tu partages via les fonctionnalités sociales doivent rester respectueux, ne pas usurper l’identité d’un tiers, et respecter la loi. L’Éditeur se réserve le droit de suspendre ou supprimer tout compte enfreignant ces règles.')
   +legalP('6. Propriété intellectuelle',
@@ -13844,7 +13800,7 @@ function legalPrivacyHTML(){
   +legalP('3. Finalités',
     'Ces données sont utilisées pour fournir le service (génération de plans, suivi, statistiques), synchroniser tes données entre tes appareils, permettre les fonctionnalités sociales optionnelles que tu actives, et protéger le service contre les abus. Elles ne sont ni vendues ni louées. À ce jour, elles ne servent à aucune publicité personnalisée — voir l’article 3 bis pour une évolution possible de ce point.')
   +legalP('3 bis. Publicité — évolution possible',
-    'L’Application n’affiche aujourd’hui aucune publicité et ne partage aucune donnée à des fins publicitaires. Si des espaces publicitaires sont introduits à l’avenir (voir CGU, article 8 ter), deux cas seront distingués. Une publicité contextuelle (liée au contenu affiché, sans suivi de ton comportement) pourra être mise en place sans consentement préalable, comme le permet la réglementation. Une publicité personnalisée (basée sur ton profil ou ton comportement dans l’Application) nécessitera en revanche ton consentement explicite, recueilli via une demande claire que tu pourras accepter ou refuser librement, et retirer à tout moment depuis Profil > Données & confidentialité sans perdre l’accès à l’Application. Le ou les partenaires publicitaires éventuels et les données précises qui leur seraient transmises seront décrits ici, dans cet article, avant toute activation.')
+    'L’Application n’affiche aujourd’hui aucune publicité et ne partage aucune donnée à des fins publicitaires. Si des espaces publicitaires sont introduits à l’avenir (voir CGU, article 8 ter), deux cas seront distingués. Une publicité contextuelle (liée au contenu affiché, sans suivi de ton comportement) pourra être mise en place sans consentement préalable, comme le permet la réglementation. Une publicité personnalisée (basée sur ton profil ou ton comportement dans l’Application) nécessitera en revanche ton consentement explicite, recueilli via une demande claire que tu pourras accepter ou refuser librement, et retirer à tout moment depuis Profil > Compte et données sans perdre l’accès à l’Application. Le ou les partenaires publicitaires éventuels et les données précises qui leur seraient transmises seront décrits ici, dans cet article, avant toute activation.')
   +legalP('4. Base légale',
     'Le traitement repose sur l’exécution du contrat qui te lie à l’Éditeur (fourniture du service demandé) et, pour les fonctionnalités optionnelles (photo, réseau social), sur ton consentement.')
   +legalP('5. Données visibles par d’autres utilisateurs',
@@ -13852,7 +13808,7 @@ function legalPrivacyHTML(){
   +legalP('6. Hébergement et destinataires',
     'Tes données sont hébergées chez Supabase, sur des serveurs situés dans l’Union européenne (Irlande). Y ont accès : l’Éditeur ; Supabase en tant qu’hébergeur ; les autres utilisateurs, uniquement dans les limites décrites à l’article précédent. Si tu choisis la connexion Google, celle-ci est gérée par Google LLC selon sa propre politique de confidentialité, ce qui implique un transfert vers les États-Unis encadré par le cadre de protection des données UE–États-Unis. Par ailleurs, pour afficher les polices de caractères, charger une bibliothèque technique et afficher les images d’exercices, ton navigateur contacte trois services externes : Google Fonts, jsDelivr et GitHub. Ces services reçoivent de ce fait ton adresse IP, sans qu’aucune donnée d’entraînement ne leur soit transmise. Tu peux les bloquer avec une extension de navigateur : l’Application reste utilisable, avec un affichage dégradé. Si tu actives les notifications, l’envoi passe obligatoirement par le service de notification de ton système : Apple Push Notification Service (Apple Inc., États-Unis) sur iPhone et iPad, Firebase Cloud Messaging (Google LLC, États-Unis) sur Android et Chrome. Ces services reçoivent l’identifiant d’abonnement de ton appareil et le contenu de la notification — pour un rappel de séance, cela inclut le titre de la séance concernée. Désactiver les notifications dans Profil > Notifications met fin à ces transferts.')
   +legalP('7. Durée de conservation et suppression',
-    'Tes données sont conservées tant que ton compte est actif. Un compte resté sans aucune connexion pendant trois ans est considéré comme inactif : il est supprimé, avec toutes les données associées, après un email de relance resté sans réponse pendant un mois (pour un compte invité, sans email connu, la suppression intervient directement au terme des trois ans). Tu peux exporter une copie complète au format JSON depuis Profil > Données & confidentialité, et supprimer définitivement ton compte depuis Profil > Compte > Zone de danger. La suppression efface ton compte, ton profil public, tes données d’entraînement, tes liens d’amitié, ton appartenance à un club et les clubs dont tu es propriétaire ; elle est immédiate et irréversible. Attention à ne pas confondre avec « Réinitialiser », dans Données & confidentialité, qui n’efface que cet appareil et laisse ton compte intact. Les sauvegardes techniques de l’hébergeur peuvent conserver une copie résiduelle quelques jours avant d’être écrasées.')
+    'Tes données sont conservées tant que ton compte est actif. Un compte resté sans aucune connexion pendant trois ans est considéré comme inactif : il est supprimé, avec toutes les données associées, après un email de relance resté sans réponse pendant un mois (pour un compte invité, sans email connu, la suppression intervient directement au terme des trois ans). Tu peux exporter une copie complète au format JSON depuis Profil > Compte et données, et supprimer définitivement ton compte depuis Profil > Compte > Zone de danger. La suppression efface ton compte, ton profil public, tes données d’entraînement, tes liens d’amitié, ton appartenance à un club et les clubs dont tu es propriétaire ; elle est immédiate et irréversible. Attention à ne pas confondre avec « Réinitialiser », dans Données & confidentialité, qui n’efface que cet appareil et laisse ton compte intact. Les sauvegardes techniques de l’hébergeur peuvent conserver une copie résiduelle quelques jours avant d’être écrasées.')
   +legalP('8. Tes droits',
     'Conformément au RGPD, tu disposes d’un droit d’accès, de rectification, d’effacement, de portabilité (export JSON disponible dans l’Application), de limitation du traitement et d’opposition sur tes données. Tu peux également retirer à tout moment ton consentement aux fonctionnalités optionnelles (photo de profil, amis, club) — le retrait ne remet pas en cause ce qui a été fait avant. Tu peux enfin définir des directives sur le sort de tes données après ton décès. Pour exercer ces droits, utilise les outils intégrés à l’Application ou contacte ikorunn@gmail.com. Tu peux aussi introduire une réclamation auprès de la CNIL (www.cnil.fr).')
   +legalP('9. Décisions automatisées',
@@ -14202,11 +14158,6 @@ function lumInput(el){
   });
 }
 function lumCommit(el){ el.value=Math.round(lumValue()); _iksNotch=null; saveAll(); applyTheme(); }
-function setGlass(k){
-  if(!MAT_ANCHORS.includes(k)) return;
-  P.glass=k; P.mat=MAT_ANCHORS.indexOf(k); saveAll(); applyTheme(); refreshPfSheet(); sfx&&sfx('tap');
-  if(document.body.dataset.scr==='profil') renderProfile(); // la ligne « Effet verre » affiche le niveau choisi
-}
 /* Bascule le thème avec une petite animation (glissement + pulse + halo qui explose) */
 const ICN_SUN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
 const ICN_MOON='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>';
@@ -14289,6 +14240,7 @@ function requestNotifPermCTA(){
   if(!('Notification'in window) || typeof Notification.requestPermission!=='function'){ toast(t('notifUnsupportedToast')); return; }
   try{
     Promise.resolve(Notification.requestPermission()).then(perm=>{
+      _npCache.t=0; // la réponse change la bulle de l'Accueil tout de suite
       renderProfile();
       if(perm==='granted'){ ensurePush(); syncDailyReminderState(); toast(t('notifEnabledToast')); }
       else toast(t('notifDeniedToast'));
@@ -14372,7 +14324,7 @@ function sendFeedback(){
   toast(t('feedbackSentToast'));
 }
 function pfDataHTML(){
-  return '<div class="card" style="padding:16px">'+
+  return '<div class="lab" style="margin:20px 2px 10px">'+t('dataLab')+'</div><div class="card" style="padding:16px">'+
       '<div style="font-size:11.5px;color:var(--muted);margin-bottom:14px;line-height:1.5">'+t('exportImportDesc')+'</div>'+
       '<button class="btn ghost sm" style="width:100%;margin-bottom:8px" onclick="exportData()">'+t('exportData')+'</button>'+
       '<button class="btn ghost sm" style="width:100%" onclick="importData()">'+t('importData')+'</button>'+
@@ -14463,7 +14415,12 @@ function cleanImportedDeep(v,depth){
   if(typeof v==='number') return Number.isFinite(v)?v:null;
   if(typeof v==='string') return stripHtmlChars(v).slice(0,4000);
   if(Array.isArray(v)) return v.slice(0,5000).map(x=>cleanImportedDeep(x,depth+1));
-  if(typeof v==='object'){ const o={}; Object.keys(v).slice(0,300).forEach(k=>{ if(k==='__proto__'||k==='constructor'||k==='prototype') return; o[stripHtmlChars(k).slice(0,80)]=cleanImportedDeep(v[k],depth+1); }); return o; }
+  if(typeof v==='object'){ const o={}; Object.keys(v).slice(0,300).forEach(k=>{ if(k==='__proto__'||k==='constructor'||k==='prototype') return;
+      // Un identifiant finit tel quel entre apostrophes dans un onclick="openPerso('…')" :
+      // une apostrophe ou une parenthèse y suffirait à injecter du code. On ne garde
+      // donc que les caractères qu'un vrai identifiant peut contenir.
+      const val=(typeof v[k]==='string' && /^(id|key)$|Id$/.test(k)) ? v[k].replace(/[^\w.:-]/g,'').slice(0,80) : cleanImportedDeep(v[k],depth+1);
+      o[stripHtmlChars(k).slice(0,80)]=val; }); return o; }
   return null;
 }
 function cleanImportedProfile(src){
