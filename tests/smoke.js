@@ -667,16 +667,17 @@
     essaie(c,'Covering : teintes, couleurs assorties, retour à la couleur choisie',function(){
       var av={mat:P.mat,matV:P.matV,glass:P.glass,easy:P.easyMode,theme:P.theme,wrap:P.wrap}, h=document.documentElement;
       try{
-        P.easyMode=false; P.theme='violet'; P.glass='wrap'; P.mat=2; P.wrap='nardo'; applyTheme();
-        if(h.getAttribute('data-glass')!=='wrap' || h.dataset.wrap!=='nardo' || h.dataset.accent!=='wrap') throw new Error('Covering non appliqué : '+h.getAttribute('data-glass')+' '+h.dataset.wrap+' '+h.dataset.accent);
+        P.easyMode=false; P.theme='violet'; P.glass='wrap'; P.mat=2; P.wrap='mat'; applyTheme();
+        if(h.getAttribute('data-glass')!=='wrap' || h.dataset.wrap!=='mat' || h.dataset.accent!=='wrap') throw new Error('Covering non appliqué : '+h.getAttribute('data-glass')+' '+h.dataset.wrap+' '+h.dataset.accent);
         var e=getComputedStyle(h).getPropertyValue('--e').trim().toUpperCase();
-        if(e!=='#E0312B') throw new Error('Gris Nardo sans ses étriers rouges : '+e);
+        if(e!=='#FFC400') throw new Error('Noir Mat sans ses étriers jaunes : '+e);
         var html=pfColorHTML();
         if(html.indexOf('setWrap(')<0 || html.indexOf('setAccent(')>=0) throw new Error('le menu Couleurs propose encore les couleurs');
-        if(WRAPS.length<8 || WRAPS.some(function(w){ return !t(w.name) || t(w.name)===w.name || !t(w.det) || t(w.det)===w.det; })) throw new Error('teinte sans nom');
-        setWrap('nuit'); if(h.dataset.wrap!=='nuit') throw new Error('changement de teinte ignoré');
+        if(WRAPS.length!==4 || WRAPS.some(function(w){ return !t(w.name) || t(w.name)===w.name || !t(w.det) || t(w.det)===w.det; })) throw new Error('teinte sans nom');
+        setWrap('anthracite'); if(h.dataset.wrap!=='anthracite') throw new Error('changement de teinte ignoré');
         P.wrap='militaire'; applyTheme(); if(h.dataset.wrap!=='noir' || P.wrap!=='noir') throw new Error('ancienne teinte verte non recalée');
-        P.wrap='craie'; applyTheme(); if(h.dataset.wrap!=='nardo') throw new Error('ancienne teinte craie non recalée');
+        P.wrap='nuit'; applyTheme(); if(h.dataset.wrap!=='anthracite') throw new Error('ancienne teinte bleu nuit non recalée');
+        P.wrap='bordeaux'; applyTheme(); if(h.dataset.wrap!=='mat') throw new Error('ancienne teinte bordeaux non recalée');
         if(document.getElementById('ikCarbon')) throw new Error('plaque carbone sous le Covering');
         P.wrap='inconnue'; applyTheme(); if(h.dataset.wrap!=='noir') throw new Error('teinte inconnue non recalée');
         var tp=JSON.parse(localStorage.getItem('ik_theme_prefs')||'{}'); if(tp.glass!=='wrap' || tp.wrap!=='noir') throw new Error('démarrage rapide sans le Covering');
@@ -689,6 +690,22 @@
         el.value='130'; matInput(el); if(P.glass!=='max' || P.mat!==1) throw new Error('molette : retour à l’Ultime raté '+P.mat);
         return WRAPS.map(function(w){ return t(w.name); }).join(' · ');
       } finally { P.mat=av.mat; P.matV=av.matV; P.glass=av.glass; P.easyMode=av.easy; P.theme=av.theme; P.wrap=av.wrap; applyTheme(); }
+    });
+    // V3.10.2 : couleur et matière sur une seule fiche (Profil › Couleur et matière)
+    essaie(c,'couleur et matière réunies sur une seule fiche',function(){
+      var av={glass:P.glass,mat:P.mat,easy:P.easyMode};
+      try{
+        P.easyMode=false; P.glass='std'; P.mat=0; applyTheme();
+        var html=pfAppearanceHTML();
+        if(html.indexOf('matInput(')<0 || html.indexOf('setAccent(')<0 || html.indexOf('lumInput(')<0) throw new Error('la fiche ne réunit pas matière, couleur et thème');
+        if(pfSectionHTML('color')!=='' ) throw new Error('fiche Couleur séparée encore présente');
+        P.glass='wrap'; P.mat=2; applyTheme();
+        if(pfAppearanceHTML().indexOf('setWrap(')<0) throw new Error('teintes de film absentes de la fiche');
+        var src=String(renderProfile);
+        if(src.indexOf("openProfileSection(\\'color\\')")>=0) throw new Error('le Profil garde une ligne Couleur séparée');
+        if(src.indexOf("t('styleLab')")<0) throw new Error('ligne « Couleur et matière » absente du Profil');
+        return t('styleLab');
+      } finally { P.glass=av.glass; P.mat=av.mat; P.easyMode=av.easy; applyTheme(); }
     });
   }
 
