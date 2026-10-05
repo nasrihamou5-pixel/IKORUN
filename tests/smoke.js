@@ -485,9 +485,34 @@
       // bas qui choisissait le mauvais onglet), et la palette vert mat est bien posée.
       essaie(c,'aucun zoom CSS, palette vert mat',function(){
         var z=parseFloat(getComputedStyle(h).zoom)||1; if(Math.abs(z-1)>0.001) throw new Error('zoom '+z);
-        var bg=getComputedStyle(h).getPropertyValue('--bg').trim().toUpperCase();
-        if(bg!=='#0F1612' && bg!=='#E9EFE9') throw new Error('fond '+bg);
+        var bg=getComputedStyle(h).getPropertyValue('--bg').trim().toUpperCase(), ez=h.getAttribute('data-ez');
+        if((!ez||ez==='green') && bg!=='#0F1612' && bg!=='#E9EFE9') throw new Error('fond '+bg);
         return 'zoom 1 · fond '+bg;
+      });
+      // V3.12.1 : huit teintes au choix. Chacune, en sombre comme en clair : texte blanc lisible
+      // sur les boutons, boutons et icônes visibles sur le fond, accent écrit (--et) lisible.
+      essaie(c,'les huit couleurs du mode simple restent lisibles',function(){
+        if(typeof EZ_COLORS==='undefined') throw new Error('EZ_COLORS absent');
+        var ezAvant=h.getAttribute('data-ez'), modeAvant=h.getAttribute('data-mode'), faibles=[];
+        var rgb=function(v){ var m=String(v).trim().match(/^#([0-9a-f]{6})$/i); if(!m) return null; var n=parseInt(m[1],16); return [n>>16&255,n>>8&255,n&255]; };
+        var L=function(c){ return c.reduce(function(s,x,i){ x/=255; x=x<=0.04045?x/12.92:Math.pow((x+0.055)/1.055,2.4); return s+x*[.2126,.7152,.0722][i]; },0); };
+        var cr=function(a,b){ var x=L(a),y=L(b); return (Math.max(x,y)+.05)/(Math.min(x,y)+.05); };
+        try{
+          ['dark','light'].forEach(function(m){ h.setAttribute('data-mode',m);
+            EZ_COLORS.forEach(function(k){ h.setAttribute('data-ez',k); var s=getComputedStyle(h);
+              var bg=rgb(s.getPropertyValue('--bg')), e=rgb(s.getPropertyValue('--e')), et=rgb(s.getPropertyValue('--et'));
+              if(!bg||!e||!et){ faibles.push(k+'/'+m+' variables'); return; }
+              if(cr([255,255,255],e)<4.5) faibles.push(k+'/'+m+' bouton '+cr([255,255,255],e).toFixed(1));
+              if(cr(e,bg)<3) faibles.push(k+'/'+m+' accent '+cr(e,bg).toFixed(1));
+              if(cr(et,bg)<4.5) faibles.push(k+'/'+m+' texte '+cr(et,bg).toFixed(1));
+            });
+          });
+        } finally {
+          if(ezAvant==null) h.removeAttribute('data-ez'); else h.setAttribute('data-ez',ezAvant);
+          if(modeAvant==null) h.removeAttribute('data-mode'); else h.setAttribute('data-mode',modeAvant);
+        }
+        if(faibles.length) throw new Error(faibles.join(', '));
+        return EZ_COLORS.length+' teintes × 2 modes';
       });
       essaie(c,'la pastille reste dans la barre quand l\'onglet Outils est masqué',function(){
         var outils=document.querySelector('.nb[data-s="outils"]'), pf=document.querySelector('.nb[data-s="profil"]'), pill=document.getElementById('nav-pill');
