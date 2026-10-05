@@ -409,7 +409,7 @@ html.easy-mode{
   --glass-border:var(--hair); --glass-border-soft:var(--hair);
   --glass-shine:none; --glass-sheen:none;
   --glass-shadow:none;
-  zoom:1.16;
+  /* zoom:1.16 retiré en V3.12.0 : Safari l'appliquait mal (voir le bloc MODE SIMPLE V3.12.0) */
 }
 html.easy-mode *{ -webkit-backdrop-filter:none!important; backdrop-filter:none!important; text-shadow:none!important; transition-duration:.15s!important; }
 html.easy-mode .stag{ opacity:1!important; animation:none!important; }
@@ -2737,7 +2737,7 @@ html.easy-mode[data-mode] .toggle.on{background:var(--e) !important;border:2px s
 html.easy-mode[data-mode] .toggle::after{background:#fff !important;box-shadow:0 1px 2px rgba(0,0,0,.3) !important;}
 html.easy-mode[data-mode] #nav-pill{background:var(--ed) !important;border:2px solid rgba(var(--e-rgb),.35) !important;box-shadow:none !important;}
 html.easy-mode #toast{background:var(--s1);border:2px solid var(--e);box-shadow:0 8px 20px -8px rgba(0,0,0,.5);
-  max-width:min(76vw,330px);} /* html.easy-mode est zoomé à 1,16 : 88vw débordait de l'écran */
+  max-width:min(calc(100% - 40px),330px);}
 /* CONNEXION — liens secondaires : centrés, en texte courant (ils étaient en Unbounded gras, alignés à gauche) */
 .login-guest{text-align:center;font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:700;font-size:14px;line-height:1.4;}
 .login-guest.subtle{font-weight:600;font-size:12.5px;}
@@ -3537,9 +3537,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
   .btn{font-size:13px;padding-inline:8px;}
   .bd-name{font-size:10.5px;}
 }
-/* Mode simplifié : le zoom 1,16 ramenait un écran de 320 px à 276 px utiles. */
-@media (max-width:370px){ html.easy-mode{zoom:1.08;} }
-@media (max-width:330px){ html.easy-mode{zoom:1;} }
+
 
 /* ===================================================================
    BILAN DE SÉANCE (V3.5.5, mise en page V3.7.0)
@@ -4009,3 +4007,489 @@ html[data-glass="wrap"][data-wrap="nuit"][data-mode="light"]:not(#_){
 /* FLUIDITÉ (V3.10.3) : le plan complet compte des centaines de séances ; celles qui sont
    hors de l'écran ne sont ni mises en page ni dessinées tant qu'on n'y arrive pas. */
 #fullPlanBody .sess{content-visibility:auto;contain-intrinsic-size:auto 76px;}
+
+/* ===================================================================
+   MODE SIMPLE (V3.12.0) — vert mat, sans zoom, lisible
+   Retour du 05/10 : « des pages qui pivotent », « la barre du bas sélectionne mal »,
+   « je veux un truc mat, qui ne reflète pas, simple à lire, genre du vert mat ».
+   · Plus de zoom:1.16 sur <html> : Safari l'applique mal (unités vw/rem gonflées,
+     coordonnées du doigt décalées). Les textes sont agrandis un par un (bloc généré
+     plus bas, ×1,15) et les cibles tactiles explicitement (≥ 48 px, souvent 56).
+   · Palette propre au mode simple, vert mat dans les deux modes : aplats, aucune
+     lueur, aucun dégradé, aucune ombre portée. Contrastes vérifiés : texte 14,6:1 et
+     16:1, texte secondaire ≥ 5,8:1, blanc sur bouton 4,8:1 et 5,2:1.
+   · Titres de section en clair, plus de petites majuscules espacées.
+   =================================================================== */
+html.easy-mode:not(#_):not(#__):not(#___){
+  --bg:#0F1612; --s1:#18221C; --s2:#1F2B24; --s3:#283629; --marineL:#1F2B24;
+  --hair:#34473B; --hair2:#53705E; --snow:#EEF3EF; --muted:#B3C2B7; --dim:#9DAEA2;
+  --e:#36804F; --e-rgb:54,128,79; --e2:#8ED1A5; --e2-rgb:142,209,165; --ed:rgba(54,128,79,.24);
+  --grad-btn:linear-gradient(#36804F,#36804F); --accent-ink:#FFFFFF; --accent-ink-shadow:none;
+  --bg-rgb:15,22,18; --s1-rgb:24,34,28; --s2-rgb:31,43,36; --s3-rgb:40,54,41;
+  --grad-card:none; --sh-sm:none; --sh-md:none; --sh-lg:none; --sh-e:none; --sh-hero:none; --sh-deep:none;
+  --float-sm:none; --float-md:none; --float-lg:none;
+  --glass-bg:var(--s1); --glass-bg-2:var(--s2); --glass-border:var(--hair2); --glass-border-soft:var(--hair);
+  --glass-shine:none; --glass-sheen:none; --glass-shadow:none; --glass-blur:0px; --glass-sat:1;
+  --chrome-spec:none; --chrome-base:var(--s1); --chrome-border:var(--hair2); --chrome-edge:none;
+  --fill-danger:linear-gradient(#C2413F,#C2413F);
+}
+html.easy-mode[data-mode="light"]:not(#_):not(#__):not(#___){
+  --bg:#E9EFE9; --s1:#F7FAF6; --s2:#EEF3ED; --s3:#DFE7DF; --marineL:#DFE7DF;
+  --hair:#C3D0C5; --hair2:#869C8C; --snow:#13201A; --muted:#45574B; --dim:#556759;
+  --e:#2F7A4E; --e-rgb:47,122,78; --e2:#256641; --e2-rgb:37,102,65; --ed:rgba(47,122,78,.14);
+  --grad-btn:linear-gradient(#2F7A4E,#2F7A4E);
+  --bg-rgb:233,239,233; --s1-rgb:247,250,246; --s2-rgb:238,243,237; --s3-rgb:223,231,223;
+  --chrome-base:var(--s1);
+}
+/* fond uni : ni halo d'accent, ni grain */
+html.easy-mode,html.easy-mode body{background:var(--bg) !important;}
+html.easy-mode body::before{background:var(--bg) !important;}
+html.easy-mode body::after{display:none !important;}
+html.easy-mode .next-ic{background:var(--ed) !important;border:0 !important;}
+
+/* Titres de section : en clair, gros, sans majuscules (plus lisibles que des capitales espacées) */
+html.easy-mode:not(#_) :is(.next-lab,.sec-lab,.hv7-sec-lab,.grp-lab,#toolRes > .lab){
+  font-size:18px;font-weight:800;letter-spacing:0;text-transform:none;color:var(--snow);margin:26px 2px 10px !important;}
+html.easy-mode:not(#_) .ez-lab-row .see{font-size:15px;}
+html.easy-mode:not(#_) .ik-greet h1{font-size:27px;line-height:1.15;}
+
+/* Barre du bas : pleine largeur, collée en bas, haute, onglet actif en vert plein.
+   Une barre fixe et prévisible, comme celles du système, plutôt qu'une capsule flottante. */
+html.easy-mode:not(#_) #nav{left:0;right:0;bottom:0;transform:none;width:100%;max-width:none;margin:0 auto;
+  border-radius:0;border:0;border-top:1.5px solid var(--hair2);background:var(--s1) !important;box-shadow:none !important;
+  padding:6px 8px calc(6px + env(safe-area-inset-bottom));}
+html.easy-mode:not(#_) #nav::before{display:none;}
+html.easy-mode:not(#_) .nb{height:60px;gap:4px;color:var(--muted);}
+html.easy-mode:not(#_) .nb svg{width:25px;height:25px;}
+html.easy-mode:not(#_) .nb span{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:13.5px;font-weight:700;letter-spacing:0;}
+html.easy-mode:not(#_) .nb.on,html.easy-mode:not(#_) .nb.on-alt{color:#fff;}
+html.easy-mode:not(#_) .nb.on::after{display:none;}
+html.easy-mode:not(#_) .nb.on svg{animation:none;}
+html.easy-mode[data-mode]:not(#_) #nav-pill{top:6px;height:60px;border-radius:14px;background:var(--e) !important;border:0 !important;box-shadow:none !important;transition:none !important;}
+html.easy-mode #scroll{padding-bottom:calc(110px + env(safe-area-inset-bottom)) !important;}
+
+/* Cibles tactiles (≥ 48 px) et textes de contrôle */
+html.easy-mode:not(#_) .btn{min-height:56px;font-size:17px;border-radius:14px;}
+html.easy-mode:not(#_) .btn.sm{min-height:48px;font-size:15.5px;}
+html.easy-mode:not(#_) :is(input.inp,select.inp,.inp:not(textarea)){min-height:52px;}
+html.easy-mode:not(#_) :is(.x,.tb-gear){min-width:44px;min-height:44px;}
+html.easy-mode:not(#_) .seg-btn{min-height:46px;font-size:15.5px;}
+html.easy-mode:not(#_) :is(.grp-row,.list-row){min-height:62px;}
+html.easy-mode:not(#_) .lr-icon{width:42px;height:42px;}
+html.easy-mode .card,html.easy-mode .grp-card{border-radius:16px !important;}
+
+/* Accueil : la séance du jour, avec un vrai bouton */
+.ez-today{display:flex;flex-direction:column;gap:14px;padding:16px;}
+.ez-today-row{display:flex;align-items:center;gap:14px;min-width:0;}
+.ez-today-row .next-body{min-width:0;}
+html.easy-mode:not(#_) .ez-today .next-ic{width:50px;height:50px;border-radius:14px;}
+html.easy-mode:not(#_) .ez-today .next-title{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:20px;font-weight:800;margin:0;line-height:1.2;}
+html.easy-mode:not(#_) .ez-today .next-meta{font-size:15.5px;margin-top:4px;}
+.ez-today-btn{width:100%;}
+
+/* Mode simple : derniers reflets passés en aplats (pastille de niveau, avatar, curseur
+   des sous-onglets, carte de prière, interrupteurs). */
+html.easy-mode:not(#_) .rankchip{background:var(--ed) !important;color:var(--e2) !important;border:1.5px solid rgba(var(--e-rgb),.45);box-shadow:none !important;}
+html.easy-mode:not(#_) [style*="background:linear-gradient(135deg,var(--e),var(--marineL))"]{background:var(--e) !important;box-shadow:none !important;}
+html.easy-mode:not(#_) #tbAvatar{background:var(--e) !important;box-shadow:none !important;}
+html.easy-mode:not(#_) .seg-ctrl{background:var(--s2) !important;border:1.5px solid var(--hair2) !important;box-shadow:none !important;}
+html.easy-mode:not(#_) .seg-ctrl>.seg-thumb{background:var(--e) !important;box-shadow:none !important;border:0 !important;}
+html.easy-mode:not(#_) .seg-ctrl.has-thumb>.seg-btn.on{color:#fff !important;}
+html.easy-mode:not(#_) :is(.hv7-day,.ik-prayer-card,.hv7-score){background:var(--s1) !important;box-shadow:none !important;border:1.5px solid var(--hair2) !important;}
+html.easy-mode:not(#_) :is(.hv7-day,.ik-prayer-card,.hv7-score)::before,html.easy-mode:not(#_) :is(.hv7-day,.ik-prayer-card,.hv7-score)::after{display:none !important;}
+
+/* Le contenu d'un écran ne déborde jamais sur le côté (un halo ou une animation d'entrée
+   dépassait de quelques pixels : l'écran pouvait glisser de gauche à droite). clip ne crée
+   pas de zone de défilement et laisse fonctionner position:sticky. */
+.scr{overflow-x:clip;}
+
+/* iOS (V3.12.0) : Safari zoome toute la page dès qu'on touche un champ dont le texte fait moins
+   de 16 px, et ne revient pas toujours en arrière — la page restait agrandie et glissait de côté.
+   -webkit-touch-callout n'existe que sur iOS : Android et ordinateur gardent leurs tailles. */
+@supports (-webkit-touch-callout:none){
+  :is(input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=color]):not([type=file]),textarea,select){font-size:16px !important;}
+  html.easy-mode :is(input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=color]):not([type=file]),textarea,select){font-size:17px !important;}
+}
+/* La zone de défilement suit la hauteur réellement visible (barre d'adresse comprise) */
+@supports (height:100dvh){ #scroll{height:100dvh;} }
+
+/* >>> MODE SIMPLE : TEXTES AGRANDIS (généré par tools/ezscale.py, ne pas éditer à la main) >>> */
+html.easy-mode .acc-sw span{font-size:13px;}
+html.easy-mode .ik-logo span{font-size:18.5px;}
+html.easy-mode .ik-greet h1{font-size:25px;}
+html.easy-mode .ik-greet p{font-size:15px;}
+html.easy-mode .next-lab{font-size:11.5px;}
+html.easy-mode .next-title{font-size:17px;}
+html.easy-mode .next-meta{font-size:14px;}
+html.easy-mode .next-when{font-size:14px;}
+html.easy-mode .hv7-logo{font-size:16.5px;}
+html.easy-mode .hv7-greet h1{font-size:22px;}
+html.easy-mode .hv7-greet p{font-size:14px;}
+html.easy-mode .hv7-day-chip{font-size:10.5px;}
+html.easy-mode .hv7-day-when{font-size:10.5px;}
+html.easy-mode .hv7-day-title{font-size:22.5px;}
+html.easy-mode .hv7-day-why{font-size:14px;}
+html.easy-mode .hv7-day-targets b{font-size:19.5px;}
+html.easy-mode .hv7-day-targets span{font-size:10.5px;}
+html.easy-mode .hv7-act{font-size:14.5px;}
+html.easy-mode .hv7-day-state{font-size:14.5px;}
+html.easy-mode .hv7-ktile-lab{font-size:10.5px;}
+html.easy-mode .hv7-ktile-val{font-size:20.5px;}
+html.easy-mode .hv7-sec-lab{font-size:11.5px;}
+html.easy-mode .hv7-sec-lab .see{font-size:13px;}
+html.easy-mode .hv7-nx-b b{font-size:15.5px;}
+html.easy-mode .hv7-nx-b span{font-size:13px;}
+html.easy-mode .hv7-nx em{font-size:12.5px;}
+html.easy-mode .rs-badge{font-size:12.5px;}
+html.easy-mode .rs-title{font-size:26px;}
+html.easy-mode .rs-sub{font-size:13px;}
+html.easy-mode .rs-stat .v{font-size:22.5px;}
+html.easy-mode .rs-stat .l{font-size:12.5px;}
+html.easy-mode .rs-obj-lab{font-size:11.5px;}
+html.easy-mode .rs-obj-txt{font-size:15px;}
+html.easy-mode .rs-row-t{font-size:16px;}
+html.easy-mode .rs-row-m{font-size:14px;}
+html.easy-mode .rs-target-lab{font-size:12.5px;}
+html.easy-mode .rs-target-v{font-size:19.5px;}
+html.easy-mode .cal-head span{font-size:12px;}
+html.easy-mode .cal-cell{font-size:15px;}
+html.easy-mode .sec-head h3{font-size:18.5px;}
+html.easy-mode .sec-head .see{font-size:14px;}
+html.easy-mode .ch-ic{font-size:26px;}
+html.easy-mode .tb-title{font-size:22px;}
+html.easy-mode .tb-sub{font-size:13px;}
+html.easy-mode .card-t{font-size:15.5px;}
+html.easy-mode .lab{font-size:12px;}
+html.easy-mode .list-row .lr-title{font-size:15.5px;}
+html.easy-mode .list-row .lr-sub{font-size:13px;}
+html.easy-mode .grp-row .lr-icon{font-size:16.5px;}
+html.easy-mode .grp-row .lr-title{font-size:16px;}
+html.easy-mode .grp-row .lr-val{font-size:14.5px;}
+html.easy-mode .grp-lab{font-size:14px;}
+html.easy-mode .mini-ic{font-size:15px;}
+html.easy-mode .mtile-img{font-size:24px;}
+html.easy-mode .mtile-lab{font-size:11.5px;}
+html.easy-mode .exg-add{font-size:18.5px;}
+html.easy-mode .exg-name{font-size:14.5px;}
+html.easy-mode .exg-sub{font-size:12px;}
+html.easy-mode .rankchip{font-size:14.5px;}
+html.easy-mode .bd-icon{font-size:30px;}
+html.easy-mode .bd-lock-chip{font-size:12.5px;}
+html.easy-mode .bd-icon.big .bd-lock-chip,html.easy-mode .bd-lock-chip.big{font-size:20.5px;}
+html.easy-mode .bd-icon.xs{font-size:16px;}
+html.easy-mode .bd-status-chip{font-size:13px;}
+html.easy-mode .bd-cell .bd-name{font-size:12.5px;}
+html.easy-mode .bd-cell .bd-lvl{font-size:10.5px;}
+html.easy-mode .btn{font-size:17px;}
+html.easy-mode .btn.sm{font-size:15px;}
+html.easy-mode .pill{font-size:15px;}
+html.easy-mode .pills.sub .pill{font-size:13px;}
+html.easy-mode .field label{font-size:13px;}
+html.easy-mode .inp{font-size:17px;}
+html.easy-mode .note{font-size:14.5px;}
+html.easy-mode .setcell{font-size:17px;}
+html.easy-mode .pkfield::after{font-size:20.5px;}
+html.easy-mode .perfcard .pcl{font-size:12.5px;}
+html.easy-mode .perfcard .pcv{font-size:20.5px;}
+html.easy-mode .perfcard .pcv.empty{font-size:16px;}
+html.easy-mode .perfdel{font-size:18.5px;}
+html.easy-mode .addperf{font-size:16px;}
+html.easy-mode .chrome-box .cb-head{font-size:14.5px;}
+html.easy-mode .chrome-box .cb-body{font-size:15.5px;}
+html.easy-mode .chrome-chip{font-size:12.5px;}
+html.easy-mode .pace-warn{font-size:14.5px;}
+html.easy-mode .nb span{font-size:11px;}
+html.easy-mode .ov-head h2{font-size:22px;}
+html.easy-mode .x{font-size:18.5px;}
+html.easy-mode .ov.ov-push .ov-head .x{font-size:20.5px;}
+html.easy-mode .login-brand{font-size:27px;}
+html.easy-mode .login-tag{font-size:13px;}
+html.easy-mode .login-h1{font-size:27px;}
+html.easy-mode .login-sub{font-size:15.5px;}
+html.easy-mode .gbtn{font-size:16.5px;}
+html.easy-mode .gbtn-hint{font-size:13px;}
+html.easy-mode .gbtn .gicon{font-size:20.5px;}
+html.easy-mode .login-or{font-size:13px;}
+html.easy-mode .login-guest{font-size:15.5px;}
+html.easy-mode .login-guest.subtle{font-size:14.5px;}
+html.easy-mode .login-legal{font-size:12px;}
+html.easy-mode .li-field-body label{font-size:11.5px;}
+html.easy-mode .li-inp{font-size:16.5px;}
+html.easy-mode .li-forgot{font-size:14px;}
+html.easy-mode .li-guest-btn{font-size:16px;}
+html.easy-mode .ob-step h1{font-size:29px;}
+html.easy-mode .ob-step p.intro{font-size:16.5px;}
+html.easy-mode .uname-status{font-size:14px;}
+html.easy-mode .ob-pref-lab{font-size:12.5px;}
+html.easy-mode .ob-mode-ic{font-size:24px;}
+html.easy-mode .ob-mode-t{font-size:18.5px;}
+html.easy-mode .ob-mode-d{font-size:15px;}
+html.easy-mode .ob-mode-hint{font-size:14.5px;}
+html.easy-mode .ring-c .big{font-size:22.5px;}
+html.easy-mode .ring-c .sm{font-size:11px;}
+html.easy-mode .wd .dot{font-size:12px;}
+html.easy-mode .wd .dl{font-size:11px;}
+html.easy-mode .sbox .v{font-size:22.5px;}
+html.easy-mode .sbox .l{font-size:12px;}
+html.easy-mode .seg-btn{font-size:14px;}
+html.easy-mode .kchart-lab{font-size:14.5px;}
+html.easy-mode .kchart-val{font-size:25px;}
+html.easy-mode .kchart-val span{font-size:14px;}
+html.easy-mode .kchart-delta{font-size:12.5px;}
+html.easy-mode .kchart-delta-sub{font-size:11px;}
+html.easy-mode .kbars-labs span{font-size:11.5px;}
+html.easy-mode .kline-labs span{font-size:11px;}
+html.easy-mode .kduo-lab{font-size:14px;}
+html.easy-mode .kduo-val{font-size:23px;}
+html.easy-mode .kduo-sub{font-size:12px;}
+html.easy-mode .kinsights-head{font-size:19px;}
+html.easy-mode .ktile-lab{font-size:11px;}
+html.easy-mode .ktile-val{font-size:16.5px;}
+html.easy-mode .ktile-sub{font-size:11px;}
+html.easy-mode .ktile-star{font-size:14px;}
+html.easy-mode .pf-cam{font-size:16px;}
+html.easy-mode .phase-head{font-size:14.5px;}
+html.easy-mode .stepper button{font-size:19.5px;}
+html.easy-mode .stepper .val{font-size:22px;}
+html.easy-mode .wheel .wi{font-size:23px;}
+html.easy-mode .wheel .wi.sel{font-size:26px;}
+html.easy-mode .wheel-sep{font-size:24px;}
+html.easy-mode .cv-lab{font-size:11.5px;}
+html.easy-mode .cv-val{font-size:28px;}
+html.easy-mode .cv-unit{font-size:13px;}
+html.easy-mode .pkitem{font-size:22px;}
+html.easy-mode .pk-sep{font-size:23px;}
+html.easy-mode .pk-unit{font-size:15px;}
+html.easy-mode #toast{font-size:16px;}
+html.easy-mode .zname{font-size:16px;}
+html.easy-mode .zval{font-size:16px;}
+html.easy-mode .tip{font-size:15px;}
+html.easy-mode .mtag{font-size:11.5px;}
+html.easy-mode .grip{font-size:20.5px;}
+html.easy-mode .badge{font-size:13px;}
+html.easy-mode .favlab{font-size:12px;}
+html.easy-mode .chbtn{font-size:15px;}
+html.easy-mode .sp-race{font-size:22.5px;}
+html.easy-mode .sp-race-sub{font-size:14px;}
+html.easy-mode .sp-days b{font-size:32.5px;}
+html.easy-mode .sp-days span{font-size:10.5px;}
+html.easy-mode .sp-rail-lab b{font-size:15px;}
+html.easy-mode .sp-rail-lab span{font-size:11.5px;}
+html.easy-mode .sp-metrics b{font-size:19.5px;}
+html.easy-mode .sp-metrics span{font-size:10.5px;}
+html.easy-mode .sp-delta{font-size:12.5px;}
+html.easy-mode .sp-acts button{font-size:14px;}
+html.easy-mode .sp-acts .lnk{font-size:13px;}
+html.easy-mode .sess-t{font-size:16px;}
+html.easy-mode .sess-m{font-size:14px;}
+html.easy-mode .sess-s{font-size:14px;}
+html.easy-mode .qbadge{font-size:12px;}
+html.easy-mode .mus-name{font-size:18px;}
+html.easy-mode .mus-tags span{font-size:11.5px;}
+html.easy-mode .mus-meta{font-size:13px;}
+html.easy-mode .mus-last{font-size:11.5px;}
+html.easy-mode .prog-stats-c .v{font-size:23px;}
+html.easy-mode .live-rest{font-size:14.5px;}
+html.easy-mode .reason-tile{font-size:15px;}
+html.easy-mode .act-tile .ic{font-size:26px;}
+html.easy-mode .act-tile .lb{font-size:12.5px;}
+html.easy-mode .streak{font-size:12.5px;}
+html.easy-mode .sec-lab{font-size:12.5px;}
+html.easy-mode .sec-lab .link{font-size:14px;}
+html.easy-mode .stat-v{font-size:16.5px;}
+html.easy-mode .stat-l{font-size:8.5px;}
+html.easy-mode .pb-dist{font-size:10.5px;}
+html.easy-mode .pb-time{font-size:22px;}
+html.easy-mode .pb-pace{font-size:11px;}
+html.easy-mode .goal-lab{font-size:11.5px;}
+html.easy-mode .goal-race{font-size:17px;}
+html.easy-mode .goal-target{font-size:12.5px;}
+html.easy-mode .goal-count .n{font-size:32.5px;}
+html.easy-mode .goal-count .u{font-size:10.5px;}
+html.easy-mode .fr-search input{font-size:16.5px;}
+html.easy-mode .fr-avatar{font-size:18.5px;}
+html.easy-mode .fr-name{font-size:16.5px;}
+html.easy-mode .fr-lvl-chip{font-size:11.5px;}
+html.easy-mode .club-admin-chip{font-size:11px;}
+html.easy-mode .club-role-btn{font-size:12px;}
+html.easy-mode .fr-km-txt{font-size:13px;}
+html.easy-mode .fr-pod-medal{font-size:24px;}
+html.easy-mode .fr-pod-name{font-size:13px;}
+html.easy-mode .fr-pod-xp{font-size:11.5px;}
+html.easy-mode .fr-rank-num{font-size:15px;}
+html.easy-mode .fr-profile-av{font-size:34.5px;}
+html.easy-mode .fr-profile-lvl{font-size:12px;}
+html.easy-mode .ex-swipe-action{font-size:13px;}
+html.easy-mode .ex-swipe-action span{font-size:22px;}
+html.easy-mode .set-swipe-action{font-size:18.5px;}
+html.easy-mode .tour-tab{font-size:12px;}
+html.easy-mode .tour-t{font-size:19px;}
+html.easy-mode .tour-d{font-size:15px;}
+html.easy-mode .tour-skip{font-size:14.5px;}
+html.easy-mode .seg-ctrl.sub .seg-btn{font-size:13px;}
+html.easy-mode #ikMaj{font-size:14.5px;}
+html.easy-mode #ikMaj .ik-maj-x{font-size:20.5px;}
+html.easy-mode #tbAvatar{font-size:16px;}
+html.easy-mode .sbox .v{font-size:20.5px;}
+html.easy-mode .mus-last{font-size:12.5px;}
+html.easy-mode .ikh-title{font-size:27px;}
+html.easy-mode .ikh-sub{font-size:14.5px;}
+html.easy-mode #ikHead .ikh-av{font-size:16px;}
+html.easy-mode .ikh-home .hv7-greet h1{font-size:27px;}
+html.easy-mode .ikh-home .hv7-greet p{font-size:13px;}
+html.easy-mode .ikh-login .login-brand{font-size:32.5px;}
+html.easy-mode .ikh-ob .ikh-title{font-size:22px;}
+html.easy-mode .ikh-ob-big .login-brand{font-size:32.5px;}
+html.easy-mode .ikh:not(.ikh-dark) .ikh-title{font-size:22.5px;}
+html.easy-mode .ikh:not(.ikh-dark) .ikh-sub{font-size:14px;}
+html.easy-mode .ikh-home .hv7-greet h1{font-size:24px;}
+html.easy-mode .ikh-brand{font-size:12.5px;}
+html.easy-mode .login-guest{font-size:16px;}
+html.easy-mode .login-guest.subtle{font-size:14.5px;}
+html.easy-mode .ik-sign b{font-size:12.5px;}
+html.easy-mode .ik-sign span{font-size:11.5px;}
+html.easy-mode .ik-sign em{font-size:11px;}
+html.easy-mode .glass-demo-t{font-size:17px;}
+html.easy-mode .glass-demo-s{font-size:12.5px;}
+html.easy-mode .ch-sub{font-size:12.5px;}
+html.easy-mode.easy-mode .nb span{font-size:12px;}
+html.easy-mode.easy-mode .btn{font-size:18px;}
+html.easy-mode.easy-mode :is(.next-lab,.sec-lab,.hv7-sec-lab,.grp-lab,#toolRes > .lab){font-size:13px;}
+html.easy-mode.easy-mode .ez-lab-row .see{font-size:14px;}
+html.easy-mode.easy-mode .next-title{font-size:18.5px;}
+html.easy-mode.easy-mode .next-meta{font-size:15px;}
+html.easy-mode.easy-mode .next-when{font-size:15px;}
+html.easy-mode.easy-mode .goal-card .goal-race{font-size:18.5px;}
+html.easy-mode.easy-mode .goal-card .goal-target{font-size:14.5px;}
+html.easy-mode.easy-mode .goal-count .u{font-size:11.5px;}
+html.easy-mode .ez-week-row{font-size:16px;}
+html.easy-mode .ez-week-row b{font-size:26px;}
+html.easy-mode .ez-week-km b{font-size:20.5px;}
+html.easy-mode .ez-week-prev{font-size:14.5px;}
+html.easy-mode.easy-mode .stat-v{font-size:20.5px;}
+html.easy-mode.easy-mode .stat-l{font-size:11.5px;}
+html.easy-mode.easy-mode .grp-row .lr-title{font-size:16.5px;}
+html.easy-mode.easy-mode .grp-row .lr-sub{font-size:14px;}
+html.easy-mode .ez-ver{font-size:12.5px;}
+html.easy-mode.easy-mode .favlab{font-size:14px;}
+html.easy-mode.easy-mode .tool-title{font-size:18.5px !important;}
+html.easy-mode.easy-mode .list-row .lr-title{font-size:17px;}
+html.easy-mode.easy-mode .mus-name{font-size:18.5px;}
+html.easy-mode.easy-mode .mus-meta{font-size:14.5px;}
+html.easy-mode.easy-mode .list-row .lr-sub{font-size:14px;}
+html.easy-mode .isl-t{font-size:15.5px;}
+html.easy-mode .isl-s{font-size:13px;}
+html.easy-mode .isl-time{font-size:22px;}
+html.easy-mode .isl-flash{font-size:17px;}
+html.easy-mode #ikIsland.duo .isl-time{font-size:19.5px;}
+html.easy-mode .fc-txt b{font-size:18.5px;}
+html.easy-mode .fc-txt span{font-size:14px;}
+html.easy-mode .fete-try > span,html.easy-mode .fete-hij > span{font-size:14px;}
+html.easy-mode .isl-mt{font-size:12px;}
+html.easy-mode .iks-ends{font-size:14px;}
+html.easy-mode .iks-ends b{font-size:14.5px;}
+@media (max-width:340px){
+  html.easy-mode .nb span{font-size:10px;}
+}
+@media (max-width:300px){
+  html.easy-mode .nb span{font-size:8.5px;}
+  html.easy-mode .btn{font-size:15px;}
+  html.easy-mode .bd-name{font-size:12px;}
+}
+html.easy-mode .db-lead{font-size:14.5px;}
+html.easy-mode .db-tile b{font-size:19.5px;}
+html.easy-mode .db-tile b small{font-size:12px;}
+html.easy-mode .db-tile span{font-size:12px;}
+html.easy-mode .db-okchip{font-size:14px;}
+html.easy-mode .db-card-h{font-size:15px;}
+html.easy-mode .db-rep b{font-size:11.5px;}
+html.easy-mode .db-rep span{font-size:15px;}
+html.easy-mode .db-wlab{font-size:13px;}
+html.easy-mode .db-sec{font-size:14px;}
+html.easy-mode .db-rpe-b{font-size:15px;}
+html.easy-mode .db-rpe-lab{font-size:14px;}
+html.easy-mode .db-more{font-size:14.5px;}
+@media (max-width:340px){
+  html.easy-mode .db-tile b{font-size:16.5px;}
+  html.easy-mode .db-rpe-b{font-size:13px;}
+}
+html.easy-mode .ps-sit-lab,html.easy-mode .ps-sub-lab{font-size:12.5px;}
+html.easy-mode .ps-recs{font-size:14px;}
+html.easy-mode .ps-whint{font-size:14px;}
+html.easy-mode .ps-info .pill{font-size:14px;}
+html.easy-mode .ps-explain{font-size:14.5px;}
+html.easy-mode .wheels .wheel .wi{font-size:17px;}
+html.easy-mode .wheels .wheel .wi.sel{font-size:22px;}
+html.easy-mode .wheels .wheel.txt .wi{font-size:16px;}
+html.easy-mode .wheels .wheel.txt .wi.sel{font-size:18.5px;}
+html.easy-mode .wheels .wheel-sep{font-size:18.5px;}
+html.easy-mode .wheels .wheel-sep.u{font-size:13px;}
+html.easy-mode .ps-card-h{font-size:15.5px;}
+html.easy-mode .ps-row{font-size:15px;}
+html.easy-mode .ps-select{font-size:16px;}
+html.easy-mode .ps-lab{font-size:13px;}
+html.easy-mode .ps-day{font-size:13px;}
+html.easy-mode .ps-vol{font-size:13px;}
+html.easy-mode .ps-fold{font-size:15px;}
+html.easy-mode .ps-sum{font-size:14px;}
+@media (max-width:340px){
+  html.easy-mode .ps-day{font-size:11.5px;}
+}
+html.easy-mode .cm-back{font-size:15px;}
+html.easy-mode .cm-title{font-size:22.5px;}
+html.easy-mode .cm-structure{font-size:14.5px;}
+html.easy-mode .cm-day b{font-size:11.5px;}
+html.easy-mode .cm-day i{font-size:17px;}
+html.easy-mode .cm-day span{font-size:10.5px;}
+html.easy-mode .cm-step-l b{font-size:15.5px;}
+html.easy-mode .cm-step-l span{font-size:13px;}
+html.easy-mode .cm-step-c button{font-size:23px;}
+html.easy-mode .cm-step-c output{font-size:19.5px;}
+html.easy-mode .cm-step-c output small{font-size:12.5px;}
+html.easy-mode .cm-chip{font-size:14.5px;}
+html.easy-mode .cm-warn{font-size:14px;}
+html.easy-mode .cm-act{font-size:14.5px;}
+@media (max-width:340px){
+  html.easy-mode .cm-step-c output{font-size:17px;}
+}
+html.easy-mode .ca-hero b{font-size:18.5px;}
+html.easy-mode .ca-hero span{font-size:14px;}
+html.easy-mode .ca-rpe{font-size:14.5px;}
+html.easy-mode .ca-h{font-size:15px;}
+html.easy-mode .ca-list li{font-size:15px;}
+html.easy-mode .ca-quote{font-size:15.5px;}
+html.easy-mode .acc-sw small{font-size:11.5px;}
+html.easy-mode .wrap-note{font-size:14px;}
+html.easy-mode .ap-demo .glass-demo-t{font-size:19.5px;}
+html.easy-mode .ap-demo .glass-demo-s{font-size:13px;}
+html.easy-mode .ap-hint{font-size:13px;}
+html.easy-mode .btn.sm.ap-tilt{font-size:14px;}
+html.easy-mode #progBody .acc-fam .lab{font-size:11.5px;}
+html.easy-mode #progBody .acc-grid:not(.wrap-grid) .acc-sw span{font-size:12px;}
+html.easy-mode .ap-opt b{font-size:16px;}
+html.easy-mode .ap-opt span{font-size:13px;}
+html.easy-mode .btn.sm.ap-intro{font-size:14.5px;}
+@supports (-webkit-touch-callout:none){
+  html.easy-mode :is(input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=color]):not([type=file]),textarea,select){font-size:18.5px !important;}
+  html.easy-mode.easy-mode :is(input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=color]):not([type=file]),textarea,select){font-size:19.5px !important;}
+}
+html.easy-mode [style*="font-size:9px"]{font-size:10.5px !important;}
+html.easy-mode [style*="font-size:9.5px"]{font-size:11px !important;}
+html.easy-mode [style*="font-size:10px"]{font-size:11.5px !important;}
+html.easy-mode [style*="font-size:10.5px"]{font-size:12px !important;}
+html.easy-mode [style*="font-size:11px"]{font-size:12.5px !important;}
+html.easy-mode [style*="font-size:11.5px"]{font-size:13px !important;}
+html.easy-mode [style*="font-size:12px"]{font-size:14px !important;}
+html.easy-mode [style*="font-size:12.5px"]{font-size:14.5px !important;}
+html.easy-mode [style*="font-size:13px"]{font-size:15px !important;}
+html.easy-mode [style*="font-size:13.5px"]{font-size:15.5px !important;}
+html.easy-mode [style*="font-size:14px"]{font-size:16px !important;}
+html.easy-mode [style*="font-size:14.5px"]{font-size:16.5px !important;}
+html.easy-mode [style*="font-size:15px"]{font-size:17px !important;}
+html.easy-mode [style*="font-size:15.5px"]{font-size:18px !important;}
+html.easy-mode [style*="font-size:16px"]{font-size:18.5px !important;}
+html.easy-mode [style*="font-size:17px"]{font-size:19.5px !important;}
+html.easy-mode [style*="font-size:18px"]{font-size:20.5px !important;}
+html.easy-mode [style*="font-size:19px"]{font-size:22px !important;}
+html.easy-mode [style*="font-size:20px"]{font-size:23px !important;}
+/* <<< MODE SIMPLE : TEXTES AGRANDIS <<< */

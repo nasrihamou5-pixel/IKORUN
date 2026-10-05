@@ -1964,7 +1964,7 @@ const I18N={
     cvCat_dist:'Distance',cvCat_pace:'Allure',cvCat_weight:'Poids',cvTapToEdit:'Touche pour modifier',
     googleStandaloneBody:'Sur iPhone, quand IKORUN est ouvert depuis l\u2019ic\u00f4ne de l\u2019\u00e9cran d\u2019accueil, la connexion Google part dans Safari et n\u2019en revient pas : elle r\u00e9ussit, mais dans Safari, pas ici. Continue en tant qu\u2019invit\u00e9 dans l\u2019app, ou ouvre IKORUN dans Safari pour utiliser Google.',
     progression:'Progression',
-    todayCap:'AUJOURD\u2019HUI',tapToStart:'Voir le détail',
+    todayCap:'AUJOURD\u2019HUI',tapToStart:'Voir le détail',ezToday:'Aujourd\u2019hui',ezSeeSession:'Voir la séance',ezSeePlan:'Voir mon plan',
     courseDefault:'Course',raceOn:'Course le {0}',
     thisWeek:'Cette semaine',weekOf:'Semaine {0}/{1}',
     regenConfirm:'Régénérer un nouveau plan ? Tes séances faites restent dans tes stats.',
@@ -2486,7 +2486,7 @@ const I18N={
     accountReadySlowEmailToast:'Compte créé, tu peux commencer. L’envoi de l’email a été long — vérifie ta boîte, ou relance depuis Profil > Compte.',
     accountReadyNoPwToast:'Compte créé, tu peux commencer. Ton mot de passe sera à choisir après confirmation de l’adresse — tout est expliqué dans Profil > Compte.',
     linkGoogleBtn:'Rattacher mon compte Google',
-    soundVolumeLab:'Volume des effets',sndTest1:'Départ',sndTest2:'Série',sndTest3:'Objectif',sndTest4:'Badge',sndTest5:'Séance finie',
+    soundVolumeLab:'Volume des effets',sndPackLab:'Ambiance sonore',sndPackSoft:'Sobre',sndPackSig:'Signature',sndPackSoftDesc:'Des notes douces et feutrées, discrètes au quotidien.',sndPackSigDesc:'Le logo sonore IKORUN : montées, impacts et grand accord.',sndTest1:'Départ',sndTest2:'Série',sndTest3:'Objectif',sndTest4:'Badge',sndTest5:'Séance finie',
     guestLinkUnavailableTitle:'Rattachement impossible',
     guestLinkUnavailableWarn:'Ton compte invité ne peut pas être rattaché à Google pour l’instant.\n\nSe connecter avec Google créerait un compte séparé : tes séances, tes records et tes mesures resteraient sur le compte invité, sans aucun moyen d’y revenir.\n\nExporte tes données avant toute chose — tu pourras les réimporter dans le nouveau compte.',
     exportBeforeBtn:'Exporter mes données',
@@ -2550,7 +2550,7 @@ const I18N={
     cvCat_dist:'Distance',cvCat_pace:'Pace',cvCat_weight:'Weight',cvTapToEdit:'Tap to edit',
     googleStandaloneBody:'On iPhone, when IKORUN is opened from the home-screen icon, Google sign-in leaves for Safari and never comes back: it succeeds, but in Safari, not here. Continue as a guest inside the app, or open IKORUN in Safari to use Google.',
     progression:'Progress',
-    todayCap:'TODAY',tapToStart:'View details',
+    todayCap:'TODAY',tapToStart:'View details',ezToday:'Today',ezSeeSession:'See the session',ezSeePlan:'See my plan',
     courseDefault:'Race',raceOn:'Race on {0}',
     thisWeek:'This week',weekOf:'Week {0}/{1}',
     regenConfirm:'Regenerate a new plan? Completed sessions stay in your stats.',
@@ -3072,7 +3072,7 @@ const I18N={
     accountReadySlowEmailToast:'Account created, you can start now. Sending the email took a while — check your inbox, or resend from Profile > Account.',
     accountReadyNoPwToast:'Account created, you can start now. You’ll pick your password once the address is confirmed — it’s all explained in Profile > Account.',
     linkGoogleBtn:'Link my Google account',
-    soundVolumeLab:'Effects volume',sndTest1:'Start',sndTest2:'Set',sndTest3:'Goal',sndTest4:'Badge',sndTest5:'Session done',
+    soundVolumeLab:'Effects volume',sndPackLab:'Sound style',sndPackSoft:'Subtle',sndPackSig:'Signature',sndPackSoftDesc:'Soft, felt notes that stay discreet every day.',sndPackSigDesc:'The IKORUN sound logo: risers, impacts and a big chord.',sndTest1:'Start',sndTest2:'Set',sndTest3:'Goal',sndTest4:'Badge',sndTest5:'Session done',
     guestLinkUnavailableTitle:'Linking unavailable',
     guestLinkUnavailableWarn:'Your guest account can’t be linked to Google right now.\n\nSigning in with Google would create a separate account: your sessions, records and measurements would stay on the guest account, with no way back to it.\n\nExport your data first — you’ll be able to import it into the new account.',
     exportBeforeBtn:'Export my data',
@@ -3136,7 +3136,7 @@ const I18N={
     cvCat_dist:'المسافة',cvCat_pace:'الوتيرة',cvCat_weight:'الوزن',cvTapToEdit:'اضغط للتعديل',
     googleStandaloneBody:'على iPhone، عند فتح IKORUN من أيقونة الشاشة الرئيسية، يغادر تسجيل الدخول عبر Google إلى Safari ولا يعود: ينجح، لكن داخل Safari وليس هنا. تابع كضيف داخل التطبيق، أو افتح IKORUN في Safari لاستخدام Google.',
     progression:'التقدم',
-    todayCap:'اليوم',tapToStart:'عرض التفاصيل',
+    todayCap:'اليوم',tapToStart:'عرض التفاصيل',ezToday:'اليوم',ezSeeSession:'عرض الحصة',ezSeePlan:'عرض خطتي',
     courseDefault:'سباق',raceOn:'السباق يوم {0}',
     thisWeek:'هذا الأسبوع',weekOf:'الأسبوع {0}/{1}',
     regenConfirm:'إعادة توليد خطة جديدة؟ الحصص المنجزة تبقى في إحصائياتك.',
@@ -3661,7 +3661,7 @@ const I18N={
     accountReadySlowEmailToast:'تم إنشاء الحساب، يمكنك البدء الآن. استغرق إرسال البريد وقتًا — تحقّق من صندوقك أو أعد الإرسال من الملف الشخصي > الحساب.',
     accountReadyNoPwToast:'تم إنشاء الحساب، يمكنك البدء الآن. ستختار كلمة المرور بعد تأكيد البريد — التفاصيل في الملف الشخصي > الحساب.',
     linkGoogleBtn:'ربط حساب Google',
-    soundVolumeLab:'مستوى المؤثرات',sndTest1:'البداية',sndTest2:'المجموعة',sndTest3:'الهدف',sndTest4:'وسام',sndTest5:'انتهت الحصة',
+    soundVolumeLab:'مستوى المؤثرات',sndPackLab:'نمط الأصوات',sndPackSoft:'هادئ',sndPackSig:'التوقيع',sndPackSoftDesc:'نغمات ناعمة وهادئة للاستعمال اليومي.',sndPackSigDesc:'الشعار الصوتي لـ IKORUN: تصاعد وضربات ووتر كبير.',sndTest1:'البداية',sndTest2:'المجموعة',sndTest3:'الهدف',sndTest4:'وسام',sndTest5:'انتهت الحصة',
     guestLinkUnavailableTitle:'الربط غير متاح',
     guestLinkUnavailableWarn:'لا يمكن ربط حساب الضيف بحساب Google حاليًا.\n\nتسجيل الدخول عبر Google سينشئ حسابًا منفصلًا: ستبقى حصصك وأرقامك القياسية وقياساتك على حساب الضيف، دون أي وسيلة للعودة إليه.\n\nصدّر بياناتك أولًا — ستتمكن من استيرادها في الحساب الجديد.',
     exportBeforeBtn:'تصدير بياناتي',
@@ -4452,7 +4452,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='3.11.0';
+const APP_VERSION='3.12.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -4632,7 +4632,7 @@ function segSlideContent(seg,dir){
   if(ikMotionOff()) return;
   const anchor=seg.parentElement && seg.parentElement.classList.contains('seg-row')?seg.parentElement:seg;
   let el=anchor.nextElementSibling, n=0;
-  const dist=seg.classList.contains('sub')?18:30;
+  const dist=seg.classList.contains('sub')?8:12; // discret : un grand décalage donnait l'impression que la page pivotait
   while(el && n<14){
     if(!el.classList.contains('seg-ctrl') && el.offsetParent!==null){
       try{ el.animate([{transform:'translateX('+(dir*dist)+'px)',opacity:0},{transform:'none',opacity:1}],{duration:320,delay:n*18,easing:'cubic-bezier(.16,1,.3,1)',fill:'backwards'}); }catch(e){}
@@ -4882,10 +4882,59 @@ function _drop(f0,f1,dur,vol,delay,opt){
 function _vary(f,pct){ const p=pct||0.02; return f*(1+(Math.random()*2-1)*p); }
 // do majeur pentatonique (do ré mi sol la), du sol3 au mi6
 const _N={G4:392,A4:440,C5:523.25,D5:587.33,E5:659.25,G5:783.99,A5:880,C6:1046.5,D6:1174.66,E6:1318.51};
+/* ---- Ambiance « Sobre » (V3.12.0, par défaut) ----
+   Retour du 05/10 : Signature « en fait trop », les packs trouvés sur GitHub « font kiki ».
+   Ce qui fait « jouet », ce sont les petites gammes qui grimpent, les aigus brillants et les
+   attaques qui claquent. Ici : une ou deux notes (trois, posées ensemble, pour les grands
+   moments), registre médium (la4–mi5), attaque ronde de 6 ms, timbre feutré (sinus + une
+   2e harmonique qui s'éteint vite, filtré à 2,6 kHz), un soupçon de petite pièce, volumes
+   bas. Accords ouverts, en la majeur. Signature reste au choix dans Profil > Notifications. */
+const _SN={A4:440,Cs5:554.37,E5:659.25,A5:880,Cs6:1108.73};
+function _felt(f,dur,vol,delay,o){
+  const ctx=audioCtx(); if(!ctx||!_busDry) return;
+  o=o||{}; const t0=ctx.currentTime+(delay||0), tau=Math.max(0.04,dur/4.6), atk=o.atk||0.006;
+  const out=ctx.createGain(); _env(out,t0,Math.max(0.0002,vol),atk,tau);
+  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.Q.value=0.3; lp.frequency.value=Math.min(ctx.sampleRate*0.45,o.cut||2600); lp.connect(out);
+  const a=ctx.createOscillator(); a.frequency.value=f;
+  const d=ctx.createOscillator(); d.frequency.value=f*1.0025; const dg=ctx.createGain(); dg.gain.value=0.35; // léger désaccord : un son vivant, pas un bip
+  const b=ctx.createOscillator(); b.frequency.value=f*2; const bg=ctx.createGain(); _env(bg,t0,0.16,atk,tau*0.4); // 2e harmonique, s'éteint vite
+  a.connect(lp); d.connect(dg); dg.connect(lp); b.connect(bg); bg.connect(lp);
+  const end=t0+atk+tau*6; [a,d,b].forEach(x=>{ x.start(t0); x.stop(end); });
+  _route(out,o);
+}
+// Appui : un « toc » feutré, grave et très court (une touche qu'on enfonce, pas un clic).
+function _softTock(vol){
+  const ctx=audioCtx(); if(!ctx||!_busDry) return;
+  const t0=ctx.currentTime, o=ctx.createOscillator(); o.frequency.setValueAtTime(_vary(760,0.03),t0); o.frequency.exponentialRampToValueAtTime(520,t0+0.018);
+  const g=ctx.createGain(); _env(g,t0,vol,0.002,0.012);
+  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=1800; lp.Q.value=0.3;
+  o.connect(g); g.connect(lp); o.start(t0); o.stop(t0+0.12); _route(lp,{wet:0.04});
+}
+const SOFT={
+  tap:()=>_softTock(0.07),
+  tick:()=>_felt(_SN.E5,0.42,0.11,0,{wet:0.12}),
+  start:()=>{ _felt(_SN.A4,0.5,0.11,0,{wet:0.14}); _felt(_SN.E5,0.6,0.1,0.11,{wet:0.16}); },
+  stop:()=>{ _felt(_SN.E5,0.45,0.1,0,{wet:0.14}); _felt(_SN.A4,0.6,0.1,0.11,{wet:0.16}); },
+  go:()=>{ _felt(_SN.E5,0.4,0.11,0,{wet:0.12}); _felt(_SN.A5,0.55,0.1,0.1,{wet:0.14}); },
+  goal:()=>{ _felt(_SN.A4,0.9,0.08,0,{wet:0.16}); _felt(_SN.E5,0.9,0.08,0,{wet:0.16}); _felt(_SN.A5,1,0.08,0.13,{wet:0.2}); },
+  xp:()=>_felt(_SN.A5,0.4,0.06,0,{wet:0.14}),
+  notif:()=>{ _felt(_SN.E5,0.45,0.09,0,{wet:0.14}); _felt(_SN.Cs5,0.6,0.09,0.13,{wet:0.16}); },
+  medal:()=>{ [_SN.A4,_SN.Cs5,_SN.E5].forEach(f=>_felt(f,1.3,0.07,0,{wet:0.2,atk:0.012})); _felt(_SN.A5,1.5,0.075,0.16,{wet:0.24}); _felt(_SN.Cs6,1.6,0.05,0.3,{wet:0.26}); },
+  finish:()=>{ [_SN.A4,_SN.Cs5,_SN.E5].forEach(f=>_felt(f,1.6,0.07,0,{wet:0.22,atk:0.015})); _felt(_SN.A5,1.8,0.07,0.2,{wet:0.26}); },
+  timer:()=>{ for(let i=0;i<3;i++) _felt(_SN.A5,0.3,0.12,i*0.26,{wet:0.06}); }
+};
+// Ambiance choisie : « Sobre » par défaut, « Signature » en option.
+function sndPack(){ return (typeof P!=='undefined' && P && P.sndPack==='signature') ? 'signature' : 'soft'; }
+function setSndPack(k){
+  P.sndPack=(k==='signature')?'signature':'soft'; saveAll();
+  if(P.sndPack==='signature') sigStart();
+  try{ refreshPfSheet(); }catch(e){}
+  setTimeout(()=>previewSfx('goal'),80);
+}
 function sfx(name){
   if(!soundsOn()) return;
-  if(SIG.play(name)) return; // ambiance Signature, dès que le son est calculé
-  sigStart();
+  if(sndPack()==='signature'){ if(SIG.play(name)) return; sigStart(); } // Signature, dès que le son est calculé
+  else if(SOFT[name]){ SOFT[name](); return; }
   const N=_N;
   switch(name){
     // Appui : une goutte, à peine audible.
@@ -5169,7 +5218,7 @@ const SIG=(()=>{
   return {play, render, supported, ready:n=>!!BUF[n], names:()=>Object.keys(BUF), get started(){ return started; }};
 })();
 // Lance le calcul des sons Signature (une seule fois, et seulement si les sons sont activés).
-function sigStart(){ if(SIG.started || !soundsOn() || !SIG.supported()) return; SIG.render().catch(e=>console.error('[IKORUN] sons Signature',e)); }
+function sigStart(){ if(SIG.started || !soundsOn() || sndPack()!=='signature' || !SIG.supported()) return; SIG.render().catch(e=>console.error('[IKORUN] sons Signature',e)); }
 
 /* ============ VRAIE ALARME (son répété + vibration + écran d'arrêt) ============ */
 let _alarmIv=null, _alarmStart=0, _alarmGen=0, _snoozeTo=null;
@@ -5851,20 +5900,24 @@ function askGlassTilt(){
   const navEl=document.getElementById('nav'); if(!navEl) return;
   let pressTimer=null, dragMode=false, startX=0, startY=0, lastTab=null, suppressClick=false;
   function tabAt(x,y){ const el=document.elementFromPoint(x,y); return el && el.closest('.nb'); }
+  // V3.12.0 : un appui un peu lent (> 0,32 s) passait en mode « glisser » et le moindre
+  // tremblement du doigt choisissait l'onglet voisin (« ça sélectionne mal »). Seuil porté à
+  // 0,5 s, et geste coupé en mode simple : un geste caché n'a rien à y faire.
   navEl.addEventListener('touchstart',e=>{
     const tt=e.touches[0]; startX=tt.clientX; startY=tt.clientY;
     const nb=e.target.closest('.nb'); if(!nb) return;
     clearTimeout(pressTimer);
+    if(typeof P!=='undefined' && P && P.easyMode) return;
     pressTimer=setTimeout(()=>{
       dragMode=true; suppressClick=true; navEl.classList.add('nav-dragging');
       lastTab=nb.dataset.s; nav(lastTab);
       if(navigator.vibrate) navigator.vibrate(9);
-    },320);
+    },500);
   },{passive:true});
   navEl.addEventListener('touchmove',e=>{
     const tt=e.touches[0];
     if(!dragMode){
-      if(Math.abs(tt.clientX-startX)>10||Math.abs(tt.clientY-startY)>10) clearTimeout(pressTimer);
+      if(Math.abs(tt.clientX-startX)>6||Math.abs(tt.clientY-startY)>6) clearTimeout(pressTimer);
       return;
     }
     e.preventDefault();
@@ -5883,28 +5936,34 @@ function askGlassTilt(){
    en cours, comme le geste "retour" natif iOS. Reprend la logique du
    liveSwipe plus bas (transform direct pendant le drag, seuil au relâcher). */
 (function(){
-  let ovEl=null, ovId=null, startX=0, startY=0, dx=0, dragging=false, t0=0;
+  let ovEl=null, ovId=null, startX=0, startY=0, dx=0, dragging=false, t0=0, engaged=false;
   const THRESH=90;
   document.addEventListener('touchstart',e=>{
     const edge=e.target.closest('.ov-push-edge'); if(!edge) return;
     ovId=edge.dataset.ovid; ovEl=document.getElementById(ovId); if(!ovEl) return;
-    startX=e.touches[0].clientX; startY=e.touches[0].clientY; dx=0; dragging=true; t0=performance.now();
-    ovEl.classList.add('dragging');
+    startX=e.touches[0].clientX; startY=e.touches[0].clientY; dx=0; dragging=true; engaged=false; t0=performance.now();
   },{passive:true});
   document.addEventListener('touchmove',e=>{
     if(!dragging||!ovEl) return;
     const tx=e.touches[0].clientX, ty=e.touches[0].clientY;
     const ddx=tx-startX, ddy=ty-startY;
-    if(Math.abs(ddy)>Math.abs(ddx)&&Math.abs(ddy)>12){ dragging=false; ovEl.classList.remove('dragging'); return; }
-    dx=Math.max(0,ddx);
+    // V3.12.0 : la page suivait le doigt dès le premier pixel, même pour un défilement
+    // vertical commencé près du bord : elle « pivotait » de gauche à droite. Le geste ne
+    // s'engage qu'une fois franchement parti vers la droite (10 px, et 1,4× plus qu'en hauteur).
+    if(!engaged){
+      if(Math.abs(ddx)<10 && Math.abs(ddy)<10) return;
+      if(ddx>Math.abs(ddy)*1.4){ engaged=true; startX=tx-1; t0=performance.now(); ovEl.classList.add('dragging'); }
+      else { dragging=false; return; }
+    }
+    dx=Math.max(0,tx-startX);
     // dx vient de clientX (pixels écran) alors que le transform s'applique dans
     // le sous-arbre zoomé du mode simplifié : sans division la carte glissait
     // 16% plus vite que le doigt (voir uiZoomFactor).
     const card=ovEl.querySelector('.ov-card'); if(card) card.style.transform='translateX('+(dx/uiZoomFactor())+'px)';
   },{passive:true});
   document.addEventListener('touchend',()=>{
-    if(!dragging||!ovEl){ dragging=false; return; }
-    dragging=false; ovEl.classList.remove('dragging');
+    if(!dragging||!ovEl||!engaged){ dragging=false; engaged=false; return; }
+    dragging=false; engaged=false; ovEl.classList.remove('dragging');
     const card=ovEl.querySelector('.ov-card');
     const vite=dx>36 && dx/Math.max(1,performance.now()-t0)>0.45; // petit geste rapide = retour aussi
     // Fermeture : la sortie animée part de là où est le doigt (avant, la page
@@ -9555,25 +9614,26 @@ function renderHomeSimple(ps,sessW,sessTarget,kmW,first){
     '<span>IKORUN</span></div>'+
     '<button type="button" class="ez-av" onclick="nav(\'profil\')" aria-label="'+t('profil')+'">'+avatarHTML(40,16)+'</button>'+
   '</div>';
-  h+=homeStreakBadge();
+  // V3.12.0 : la séance du jour d'abord, avec un vrai bouton écrit (pas une carte à
+  // deviner « touchable ») ; puis la prière, la semaine, l'objectif. La série de jours et
+  // la bulle de notifications passent en bas : moins de petits éléments en tête d'écran.
   h+='<div class="ik-greet"><h1>'+t('greet')+' '+escHtml(first||t('you'))+'</h1></div>';
   h+=feteCardHTML();
-  h+=notifPermBubbleHTML();
-  h+=homePrayerCardHTML();
 
-  h+='<div class="next-lab">'+t('todayCap')+'</div>';
+  h+='<div class="next-lab">'+t('ezToday')+'</div>';
   if(ps && ps.type!=='Repos'){
-    h+='<div class="card next-card stag" onclick="'+(ps._source==='perso'?"curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')":'openRunSheet('+ps.id+')')+'">'+
-      '<div class="next-body"><div class="next-title">'+planSessTitle(ps)+'</div>'+
-      '<div class="next-meta">'+(ps.km?hKm(ps.km)+' km · '+ps.pace+'/km'+(ps.duration?' · '+ps.duration+' min':''):'')+'</div>'+
-      '<div class="next-when">'+t('tapToStart')+'</div></div>'+
-      '<div class="next-ic">'+ICN('run',20)+'</div></div>';
+    const go=ps._source==='perso'?"curPerso='"+ps._personId+"';openPersoSheet('"+ps.id+"')":'openRunSheet('+ps.id+')';
+    h+='<div class="card ez-today">'+
+      '<div class="ez-today-row"><div class="next-ic">'+ICN('run',22)+'</div><div class="next-body"><div class="next-title">'+planSessTitle(ps)+'</div>'+
+      '<div class="next-meta">'+(ps.km?hKm(ps.km)+' km · '+ps.pace+'/km'+(ps.duration?' · '+ps.duration+' min':''):'')+'</div></div></div>'+
+      '<button type="button" class="btn ez-today-btn" onclick="'+go+'">'+t('ezSeeSession')+'</button></div>';
   } else {
-    h+='<div class="card next-card stag" onclick="nav(\'sport\')">'+
-      '<div class="next-body"><div class="next-title">'+t('restDay')+'</div>'+
-      '<div class="next-meta">'+t('noSessionToday')+'</div></div>'+
-      '<div class="next-ic">'+ICN('moon',20)+'</div></div>';
+    h+='<div class="card ez-today">'+
+      '<div class="ez-today-row"><div class="next-ic">'+ICN('moon',22)+'</div><div class="next-body"><div class="next-title">'+t('restDay')+'</div>'+
+      '<div class="next-meta">'+t('noSessionToday')+'</div></div></div>'+
+      '<button type="button" class="btn ghost ez-today-btn" onclick="nav(\'sport\')">'+t('ezSeePlan')+'</button></div>';
   }
+  h+=homePrayerCardHTML();
 
   // Cette semaine : séances faites sur prévues (la barre) et kilomètres parcourus.
   const pct=sessTarget?Math.min(100,Math.round(sessW/sessTarget*100)):0;
@@ -9586,6 +9646,8 @@ function renderHomeSimple(ps,sessW,sessTarget,kmW,first){
   // Objectif : le titre de section suffit, la carte ne le répète plus (voir .goal-lab en CSS).
   const goal=homeGoalCard();
   if(goal) h+='<div class="next-lab">'+t('objective')+'</div>'+goal;
+  h+=homeStreakBadge();
+  h+=notifPermBubbleHTML();
   return h;
 }
 function fmtDate(s){ return ikDate(new Date(s),'wdm',{weekday:'short',day:'numeric',month:'short'}); }
@@ -14376,7 +14438,7 @@ function lumApply(){
     root.dataset.lumMix='1';
   }
   const meta=document.querySelector('meta[name="theme-color"]');
-  if(meta) meta.content=P.easyMode?(light?'#FFFFFF':'#000000'):(bg||(light?'#F2F4F8':'#0A0D12'));
+  if(meta) meta.content=P.easyMode?(light?'#E9EFE9':'#0F1612'):(bg||(light?'#F2F4F8':'#0A0D12'));
 }
 let _iksRaf=0, _iksNotch=null;
 function iksNotch(v){ if(v!==_iksNotch && v!=null){ try{ if(navigator.vibrate) navigator.vibrate(8); }catch(e){} } _iksNotch=v; }
@@ -14530,7 +14592,10 @@ function pfNotifHTML(){
     // Le volume et l'écoute n'apparaissent que si les sons sont actifs : un
     // curseur sur un réglage éteint ne veut rien dire.
     (P.sounds!==false
-      ? '<div style="margin-bottom:14px">'+
+      ? '<div style="margin-bottom:14px"><div style="font-size:13px;color:var(--muted);margin-bottom:8px">'+t('sndPackLab')+'</div>'+
+          '<div class="seg-ctrl sub">'+[['soft','sndPackSoft'],['signature','sndPackSig']].map(([k,l])=>'<div class="seg-btn'+(sndPack()===k?' on':'')+'" onclick="setSndPack(\''+k+'\')">'+t(l)+'</div>').join('')+'</div>'+
+          '<div style="font-size:11.5px;color:var(--muted);line-height:1.45;margin-top:7px">'+t(sndPack()==='signature'?'sndPackSigDesc':'sndPackSoftDesc')+'</div></div>'+
+        '<div style="margin-bottom:14px">'+
           '<div class="row" style="margin-bottom:7px"><span style="font-size:13px;color:var(--muted)">'+t('soundVolumeLab')+'</span>'+
             '<span class="num" style="font-size:12px;color:var(--e)" id="sndVolVal">'+Math.round(soundVol()*100)+'%</span></div>'+
           '<input type="range" min="0" max="100" step="5" value="'+Math.round(soundVol()*100)+'" style="width:100%" oninput="setSoundVol(this.value)">'+
@@ -14681,7 +14746,7 @@ function cleanImportedProfile(src){
     if(typeof src[k]==='boolean') o[k]=src[k];
   });
   const STR={name:40,username:20,bio:160,city:60,goal:80,compDate:10,bday:10,objRace:40,objTime:12,
-    t5k:12,t3k:12,t10k:12,t1500:12,pb5k:12,pb3k:12,pb10k:12,pb1500:12,lang:2,mode:10,theme:20,glass:8,
+    t5k:12,t3k:12,t10k:12,t1500:12,pb5k:12,pb3k:12,pb10k:12,pb1500:12,lang:2,mode:10,theme:20,glass:8,sndPack:12,wrap:12,
     sex:10,objGoal:40,objProfile:40,followPerso:40,planSituation:10,planLevel:6,planGap:6};
   Object.keys(STR).forEach(k=>{ if(typeof src[k]==='string') o[k]=stripHtmlChars(src[k]).slice(0,STR[k]); });
   if(Array.isArray(src.days)) o.days=src.days.filter(x=>Number.isInteger(x)&&x>=0&&x<=6).slice(0,7);
