@@ -879,8 +879,9 @@
       chk(c,'la chaîne audio est construite', !!_master && !!_busDry, '');
       chk(c,'la réverbération est disponible', !!_busWet, '');
       chk(c,'l\'alarme a son bus dédié', !!_alarmBus, '');
+      chk(c,'les sons Signature ont leur sortie', !!_studioOut, '');
 
-      var an=ctx.createAnalyser(); an.fftSize=2048; _master.connect(an);
+      var an=ctx.createAnalyser(); an.fftSize=2048; _master.connect(an); if(_studioOut) _studioOut.connect(an);
       var buf=new Float32Array(an.fftSize);
       function rms(){ an.getFloatTimeDomainData(buf); var s=0; for(var i=0;i<buf.length;i++) s+=buf[i]*buf[i]; return Math.sqrt(s/buf.length); }
       function mesure(nom,ms){
@@ -901,21 +902,27 @@
       // (faux positif constaté le 24/09). On force le son le temps de la mesure.
       var sonsAvant=P && P.sounds;
       if(P) P.sounds=true;
-      setTimeout(function(){
-        var noms=['start','goal','medal'];
+      // Ambiance Signature (V3.11.0) : on attend son calcul (hors ligne, quelques secondes)
+      // pour mesurer les vrais sons, pas la voix marimba de secours.
+      var calcul=SIG.supported() ? Promise.race([SIG.render(), new Promise(function(r){ setTimeout(r,30000); })]) : Promise.resolve();
+      calcul.then(function(){
+        var prets=SIG.names();
+        chk(c,'l\'ambiance Signature est calculée (10 sons)', !SIG.supported() || prets.length===10, prets.join(', ')||'non pris en charge ici');
+      }).then(function(){ return new Promise(function(r){ setTimeout(r,450); }); }).then(function(){
+        var noms=['start','goal','medal'], fen={start:1500,goal:900,medal:2600};
         var i=0, niveaux={};
         (function suivant(){
           if(i>=noms.length){
             if(P) P.sounds=sonsAvant;
-            _master.disconnect(an);
+            _master.disconnect(an); if(_studioOut) _studioOut.disconnect(an);
             var tous=noms.every(function(n){ return niveaux[n]>0.005; });
             chk(c,'chaque effet produit réellement du signal', tous, JSON.stringify(niveaux));
             return resolve();
           }
           var n=noms[i++];
-          mesure(n,700).then(function(v){ niveaux[n]=+v.toFixed(4); setTimeout(suivant,120); });
+          mesure(n,fen[n]).then(function(v){ niveaux[n]=+v.toFixed(4); setTimeout(suivant,120); });
         })();
-      },450);
+      });
     });
   }
 

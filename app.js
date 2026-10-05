@@ -4452,7 +4452,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='3.10.4';
+const APP_VERSION='3.11.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -4752,7 +4752,7 @@ function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('on'); 
    épaissit le timbre, la réverbération sort les sons de la « boîte ». L'alarme
    garde son propre gain : elle doit rester audible même si le volume des effets
    est baissé, c'est son rôle. */
-let _actx=null, _busDry=null, _busWet=null, _master=null, _alarmBus=null;
+let _actx=null, _busDry=null, _busWet=null, _master=null, _alarmBus=null, _studioOut=null;
 // isFinite, pas seulement typeof : un NaN venu d'un fichier importé passerait le
 // test "c'est un nombre", et un gain à NaN coupe tout le son sans rien signaler.
 // Défaut 0,55 (27/09, « sons plus sobres ») : un volume déjà réglé par l'utilisateur est conservé.
@@ -4797,6 +4797,9 @@ function _buildAudioGraph(){
   _alarmBus=ctx.createGain();
   _alarmBus.gain.value=Math.max(0.6,soundVol()); // plancher : une alarme baissée ne sert à rien
   _alarmBus.connect(out);
+  // Sons Signature : déjà mixés et mis au niveau au calcul, ils vont droit à la sortie,
+  // sans le compresseur ni l'adoucissement des aigus (ils les écraseraient).
+  _studioOut=ctx.createGain(); _studioOut.gain.value=soundVol()*0.85; _studioOut.connect(ctx.destination);
 }
 function audioCtx(){
   if(!_actx){
@@ -4811,6 +4814,7 @@ function applySoundVol(){
   const v=soundVol();
   _master.gain.setTargetAtTime(v,_actx.currentTime,0.02);
   if(_alarmBus) _alarmBus.gain.setTargetAtTime(Math.max(0.6,v),_actx.currentTime,0.02);
+  if(_studioOut) _studioOut.gain.setTargetAtTime(v*0.85,_actx.currentTime,0.02);
 }
 // P n'existe qu'après DB_READY : un sfx déclenché avant (tap sur l'écran de
 // connexion pendant le déchiffrement) plantait ici. Défaut = son actif, comme
@@ -4880,6 +4884,8 @@ function _vary(f,pct){ const p=pct||0.02; return f*(1+(Math.random()*2-1)*p); }
 const _N={G4:392,A4:440,C5:523.25,D5:587.33,E5:659.25,G5:783.99,A5:880,C6:1046.5,D6:1174.66,E6:1318.51};
 function sfx(name){
   if(!soundsOn()) return;
+  if(SIG.play(name)) return; // ambiance Signature, dès que le son est calculé
+  sigStart();
   const N=_N;
   switch(name){
     // Appui : une goutte, à peine audible.
@@ -4924,6 +4930,246 @@ function sfx(name){
     case 'timer': for(let i=0;i<3;i++) _mallet(N.A5,0.3,0.18,i*0.26,{wet:0.06,hard:2.2}); break;
   }
 }
+
+/* ---- Ambiance « Signature » (V3.11.0) ----
+   Choisie le 05/10 sur la page d'écoute, parmi une quinzaine d'ambiances. Ces sons sont trop
+   riches pour être synthétisés en direct : supersaws étalées en stéréo, réverbération de 3,4 s,
+   échos ping-pong, montées inversées, nuée de voix qui glissent vers un accord. Ils sont donc
+   calculés une seule fois, hors ligne (OfflineAudioContext), peu après le démarrage, puis joués
+   instantanément depuis leur tampon. Tous sont rendus ensemble sur une même piste, puis découpés :
+   préparer la réverbération fige l'écran ~60 ms sur un téléphone lent, on ne le fait que deux fois. Tant qu'un son n'est pas prêt, ou si l'appareil ne sait pas
+   faire de rendu hors ligne, la voix marimba ci-dessus prend le relais : l'app n'est jamais muette.
+   Tout est en ré majeur ; le motif IKORUN (la, ré, mi, la) revient d'un son à l'autre. */
+const SIG=(()=>{
+  const SR=48000;
+  let seed=1; const rnd=()=>{ seed=(seed*1664525+1013904223)>>>0; return seed/4294967296; }; // même son à chaque calcul
+  const hash=s=>{ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619)>>>0; } return h; };
+  const D={D3:146.83,A3:220,D4:293.66,Fs4:369.99,A4:440,D5:587.33,E5:659.25,Fs5:739.99,A5:880,D6:1174.66,E6:1318.51,Fs6:1479.98,A6:1760,D7:2349.32};
+  const MOTIF=[D.A4,D.D5,D.E5,D.A5];
+  const BUF={}, BIG=new Set(['start','goal','medal','finish']);
+  let big=null, irCache=null, nzCache=null;
+
+  // Réverbération : premières réflexions, puis queue dense dont les aigus s'éteignent plus vite.
+  function irData(dur){
+    if(irCache) return irCache;
+    const n=Math.floor(SR*dur), out=[new Float32Array(n),new Float32Array(n)];
+    for(let ch=0;ch<2;ch++){ const d=out[ch];
+      for(let r=0;r<12;r++){ const t=Math.floor(SR*(0.006+rnd()*0.08)); d[t]+=(0.25+rnd()*0.5)*(rnd()<0.5?-1:1)*(1-(t/SR)/0.1); }
+      // Décroissances par multiplication pas à pas (pas de Math.exp à chaque échantillon : ~10× plus rapide).
+      let lp=0, lp2=0; const s0=Math.floor(SR*0.018), k1=Math.exp(-1/(SR*0.35)), k2=Math.exp(-1/(SR*dur*0.28)), k3=Math.exp(-1/(SR*dur*0.36));
+      let e1=Math.exp(-s0/(SR*0.35)), e2=Math.exp(-s0/(SR*dur*0.28)), e3=Math.exp(-s0/(SR*dur*0.36));
+      const fade=Math.floor(SR*0.04);
+      for(let i=s0;i<n;i++){ const w=rnd()*2-1; lp+=(w-lp)*0.18; lp2+=(lp-lp2)*0.25;
+        d[i]+=((w-lp)*e1*0.35+(lp-lp2)*e2*1.1+lp2*e3*1.6)*0.32*Math.min(1,(i-s0)/fade); e1*=k1; e2*=k2; e3*=k3; }
+    }
+    return irCache=out;
+  }
+  const bufFrom=(c,chs)=>{ const b=c.createBuffer(2,chs[0].length,c.sampleRate); b.copyToChannel(chs[0],0); b.copyToChannel(chs[1],1); return b; };
+  function noiseBuf(c){ if(!nzCache) nzCache=[0,1].map(()=>{ const a=new Float32Array(SR*3); for(let i=0;i<a.length;i++) a[i]=rnd()*2-1; return a; }); return bufFrom(c,nzCache); }
+  let satCurve=null;
+  function sat(){ if(satCurve) return satCurve; const n=2048, a=new Float32Array(n); for(let i=0;i<n;i++){ const x=i/(n-1)*2-1; a[i]=Math.tanh(3.5*x)/Math.tanh(3.5); } return satCurve=a; }
+
+  // Le « studio » d'un rendu : sec, réverbération, écho ping-pong gauche ↔ droite.
+  function bus(c){
+    const out=c.createGain(); out.connect(c.destination);
+    const dry=c.createGain(); dry.connect(out);
+    const conv=c.createConvolver(); conv.buffer=bufFrom(c,irData(3.4));
+    const vhp=c.createBiquadFilter(); vhp.type='highpass'; vhp.frequency.value=180;
+    const vlp=c.createBiquadFilter(); vlp.type='lowpass'; vlp.frequency.value=9000;
+    const verb=c.createGain(); verb.connect(vhp); vhp.connect(conv); conv.connect(vlp); vlp.connect(out);
+    const pin=c.createGain(); pin.channelCount=1; pin.channelCountMode='explicit'; pin.channelInterpretation='speakers';
+    const dL=c.createDelay(2), dR=c.createDelay(2); dL.delayTime.value=dR.delayTime.value=0.25;
+    const fL=c.createGain(), fR=c.createGain(); fL.gain.value=fR.gain.value=0.42;
+    const lpL=c.createBiquadFilter(), lpR=c.createBiquadFilter(); lpL.type=lpR.type='lowpass'; lpL.frequency.value=lpR.frequency.value=5200;
+    const mg=c.createChannelMerger(2);
+    pin.connect(dL); dL.connect(lpL); lpL.connect(mg,0,0); lpL.connect(fL); fL.connect(dR); dR.connect(lpR); lpR.connect(mg,0,1); lpR.connect(fR); fR.connect(dL);
+    const pout=c.createGain(); pout.gain.value=0.8; mg.connect(pout); pout.connect(out); const pv=c.createGain(); pv.gain.value=0.35; pout.connect(pv); pv.connect(verb);
+    return {c,dry,verb,ping:pin,o:0};
+  }
+  const at=(b,o)=>Object.assign({},b,{o}); // le même studio, décalé dans le temps
+  function send(b,node,o){ o=o||{}; const g=(v,dst)=>{ if(!v) return; const x=b.c.createGain(); x.gain.value=v; node.connect(x); x.connect(dst); }; g(o.dry==null?1:o.dry,b.dry); g(o.verb,b.verb); g(o.ping,b.ping); }
+  function noise(b,t0,o){
+    t0+=b.o; const c=b.c, src=c.createBufferSource(); src.buffer=noiseBuf(c);
+    const f=c.createBiquadFilter(); f.type=o.type||'bandpass'; f.Q.value=o.q||1; f.frequency.setValueAtTime(o.f||2000,t0);
+    if(o.f1) f.frequency.exponentialRampToValueAtTime(o.f1,t0+(o.sweep||0.3));
+    const g=c.createGain(), v=o.vol||0.3;
+    if(o.hold){ g.gain.setValueAtTime(0.0001,t0); g.gain.exponentialRampToValueAtTime(v,t0+(o.atk||0.01)); g.gain.setValueAtTime(v,t0+o.hold); g.gain.setTargetAtTime(0.0001,t0+o.hold,o.tau||0.03); }
+    else { g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(v,t0+0.002); g.gain.setTargetAtTime(0,t0+0.002,o.tau||0.05); }
+    src.connect(f); f.connect(g); src.start(t0); src.stop(t0+(o.hold||0)+(o.tau||0.05)*8+0.05); send(b,g,o);
+  }
+  // Supersaw : 7 dents de scie désaccordées, étalées de gauche à droite.
+  function ssaw(b,freqs,t0,dur,o){
+    t0+=b.o; const c=b.c, amp=c.createGain(), atk=o.atk||0.02, rel=o.rel||0.6, v=o.vol||0.2;
+    amp.gain.setValueAtTime(0,t0); amp.gain.linearRampToValueAtTime(v,t0+atk); amp.gain.setValueAtTime(v*0.85,t0+dur); amp.gain.setTargetAtTime(0,t0+dur,rel/4);
+    const lp=c.createBiquadFilter(); lp.type='lowpass'; lp.Q.value=0.7;
+    lp.frequency.setValueAtTime(o.c0||400,t0); lp.frequency.exponentialRampToValueAtTime(o.c1||5000,t0+(o.cAtk||atk+0.05)); lp.frequency.exponentialRampToValueAtTime(o.c2||1800,t0+dur+rel);
+    lp.connect(amp);
+    const det=[-21,-13,-6,0,6,13,21], pans=[-0.9,-0.6,-0.3,0,0.3,0.6,0.9], end=t0+dur+rel*1.5;
+    freqs.forEach(f=>det.forEach((dc,i)=>{
+      const s=c.createOscillator(); s.type='sawtooth'; s.detune.value=dc;
+      if(o.glide){ s.frequency.setValueAtTime(f*o.glide,t0); s.frequency.exponentialRampToValueAtTime(f,t0+(o.glideT||0.3)); } else s.frequency.value=f;
+      const p=c.createStereoPanner(); p.pan.value=pans[i]; const g=c.createGain(); g.gain.value=1/(freqs.length*4.5);
+      s.connect(g); g.connect(p); p.connect(lp); s.start(t0+rnd()*0.004); s.stop(end); }));
+    send(b,amp,o);
+  }
+  // Pluck de verre en FM : attaque brillante, corps rond.
+  function pluck(b,f,t0,o){
+    t0+=b.o; const c=b.c, v=o.vol||0.18, dec=o.dec||0.5;
+    const out=c.createGain(); out.gain.setValueAtTime(0,t0); out.gain.linearRampToValueAtTime(v,t0+0.003); out.gain.setTargetAtTime(0,t0+0.003,dec/4);
+    const pan=c.createStereoPanner(); pan.pan.value=o.pan||0; out.connect(pan);
+    const car=c.createOscillator(); car.frequency.value=f; const mod=c.createOscillator(); mod.frequency.value=f*2;
+    const mg=c.createGain(); mg.gain.setValueAtTime(f*(o.idx||2.2),t0); mg.gain.setTargetAtTime(f*0.15,t0,0.05);
+    mod.connect(mg); mg.connect(car.frequency); car.connect(out);
+    const tri=c.createOscillator(); tri.type='triangle'; tri.frequency.value=f*2; const tg=c.createGain(); tg.gain.setValueAtTime(0.25,t0); tg.gain.setTargetAtTime(0,t0,dec/8); tri.connect(tg); tg.connect(out);
+    const end=t0+dec*1.8+0.05; [car,mod,tri].forEach(s=>{ s.start(t0); s.stop(end); });
+    send(b,pan,o);
+  }
+  // Cloche, chaque partiel légèrement placé dans l'espace.
+  function bell(b,f,t0,o){
+    t0+=b.o; const c=b.c, v=o.vol||0.12, dur=o.dur||2, nyq=c.sampleRate/2;
+    const out=c.createGain(); out.gain.value=v; const pan=c.createStereoPanner(); pan.pan.value=o.pan||0; out.connect(pan);
+    [[1,1,1,0],[1.0015,0.6,1,0],[2,0.45,0.55,-0.3],[2.76,0.32,0.42,0.3],[4.07,0.17,0.3,-0.5],[5.4,0.1,0.2,0.5],[6.8,0.05,0.14,0]].forEach(([r,a,k,pp])=>{
+      const fr=f*r; if(fr>nyq*0.85) return; const s=c.createOscillator(); s.frequency.value=fr; const g=c.createGain();
+      g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(a,t0+0.002); g.gain.setTargetAtTime(0,t0+0.002,dur*k/4.6);
+      const p=c.createStereoPanner(); p.pan.value=pp*0.6; s.connect(g); g.connect(p); p.connect(out); s.start(t0); s.stop(t0+dur*k*1.6+0.05); });
+    send(b,pan,o);
+  }
+  // Impact : grave saturé (ses harmoniques le rendent audible sur un haut-parleur de téléphone), claquement, souffle.
+  function impact(b,t0,o){
+    const T=t0+b.o, c=b.c, v=o.vol||0.3, s=c.createOscillator(); s.frequency.setValueAtTime(o.f0||120,T); s.frequency.exponentialRampToValueAtTime(o.f1||38,T+0.45);
+    const sh=c.createWaveShaper(); sh.curve=sat(); sh.oversample='4x';
+    const g=c.createGain(); g.gain.setValueAtTime(0,T); g.gain.linearRampToValueAtTime(v,T+0.004); g.gain.setTargetAtTime(0,T+0.01,o.tau||0.35);
+    s.connect(sh); sh.connect(g); s.start(T); s.stop(T+3); send(b,g,{verb:o.verb==null?0.5:o.verb});
+    noise(b,t0,{type:'lowpass',f:2400,q:0.7,vol:v*0.5,tau:0.07,verb:0.6});
+    noise(b,t0,{type:'highpass',f:3500,q:0.7,vol:v*0.35,tau:0.012,verb:0.3});
+  }
+  function riser(b,t0,dur,v){
+    noise(b,t0,{f:400,f1:9000,sweep:dur,q:3.5,vol:v,atk:dur*0.95,hold:dur,tau:0.03,verb:0.4});
+    ssaw(b,[D.D3,D.A3],t0,dur,{vol:v*0.5,atk:dur*0.9,rel:0.05,c0:300,c1:4000,cAtk:dur,glide:0.5,glideT:dur,verb:0.5});
+  }
+  // Nuée de voix qui errent puis glissent toutes ensemble vers un grand accord.
+  function swarm(b,t0,dur,targets,o){
+    t0+=b.o; const c=b.c, v=o.vol||0.3, n=targets.length*2, hold=o.hold||1.2, rel=o.rel||1.2;
+    const amp=c.createGain(); amp.gain.setValueAtTime(0.0001,t0); amp.gain.exponentialRampToValueAtTime(v*0.25,t0+dur*0.35); amp.gain.exponentialRampToValueAtTime(v,t0+dur*0.9);
+    amp.gain.setValueAtTime(v,t0+dur+hold); amp.gain.setTargetAtTime(0.0001,t0+dur+hold,rel/4);
+    const lp=c.createBiquadFilter(); lp.type='lowpass'; lp.Q.value=0.5; lp.frequency.setValueAtTime(500,t0); lp.frequency.exponentialRampToValueAtTime(1400,t0+dur*0.5); lp.frequency.exponentialRampToValueAtTime(7000,t0+dur);
+    lp.connect(amp);
+    const end=t0+dur+hold+rel*1.5;
+    for(let i=0;i<n;i++){
+      const tgt=targets[i%targets.length]*(i>=targets.length?1.003:0.997), s=c.createOscillator(); s.type='sawtooth';
+      const pts=new Float32Array(64); let f=200+rnd()*200;
+      for(let k=0;k<64;k++){ const u=k/63; if(u<0.45){ f*=1+(rnd()-0.5)*0.03; pts[k]=f; } else { const w=Math.min(1,(u-0.45)/0.45), e=w*w*(3-2*w); pts[k]=Math.exp(Math.log(f)*(1-e)+Math.log(tgt)*e); } }
+      pts[63]=tgt; s.frequency.setValueCurveAtTime(pts,t0,dur);
+      const p=c.createStereoPanner(); p.pan.value=(rnd()*2-1)*0.9; const g=c.createGain(); g.gain.value=1.6/n;
+      s.connect(g); g.connect(p); p.connect(lp); s.start(t0); s.stop(end);
+    }
+    send(b,amp,{verb:o.verb==null?0.45:o.verb});
+  }
+  function sparkle(b,t0,dur,count,v){ const notes=[D.D6,D.E6,D.Fs6,D.A6,D.D7];
+    for(let i=0;i<count;i++) pluck(b,notes[Math.floor(rnd()*notes.length)],t0+rnd()*dur,{vol:v*(0.6+rnd()*0.4),dec:0.4,pan:rnd()*1.8-0.9,dry:0.6,verb:0.6,ping:0.3,idx:1.2}); }
+  function tock(b,t0,f,v){
+    t0+=b.o; const c=b.c, s=c.createOscillator(); s.frequency.setValueAtTime(f,t0); s.frequency.exponentialRampToValueAtTime(f*0.5,t0+0.02);
+    const g=c.createGain(); g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(v,t0+0.001); g.gain.setTargetAtTime(0,t0+0.001,0.008);
+    const o=c.createOscillator(); o.type='triangle'; o.frequency.value=f*0.37; const og=c.createGain(); og.gain.setValueAtTime(0,t0); og.gain.linearRampToValueAtTime(v*0.5,t0+0.001); og.gain.setTargetAtTime(0,t0+0.001,0.014);
+    const m=c.createGain(); s.connect(g); g.connect(m); o.connect(og); og.connect(m); [s,o].forEach(x=>{ x.start(t0); x.stop(t0+0.15); });
+    send(b,m,{verb:0.06});
+  }
+  function playBuf(b,buf,t0,v){ t0+=b.o; const s=b.c.createBufferSource(); s.buffer=buf; const g=b.c.createGain(); g.gain.value=v; s.connect(g); send(b,g,{}); s.start(Math.max(0,t0)); }
+  // Découpe un morceau de la piste rendue (et le retourne au besoin).
+  function slice(buf,o,d,rev){ const s0=Math.floor(o*SR), n=Math.min(Math.floor(d*SR),buf.length-s0), out=new AudioBuffer({length:n,numberOfChannels:2,sampleRate:SR});
+    for(let ch=0;ch<2;ch++){ const a=buf.getChannelData(ch).slice(s0,s0+n); if(rev) a.reverse(); out.copyToChannel(a,ch); } return out; }
+  // Passe-haut d'ordre 2 (RBJ), pour mesurer le volume au-dessus de 250 Hz.
+  function hp250(){ const w=2*Math.PI*250/SR, cs=Math.cos(w), al=Math.sin(w)/1.4, a0=1+al, b0=(1+cs)/2/a0, b1=-(1+cs)/a0, a1=-2*cs/a0, a2=(1-al)/a0; let x1=0,x2=0,y1=0,y2=0;
+    return x=>{ const y=b0*x+b1*x1+b0*x2-a1*y1-a2*y2; x2=x1; x1=x; y2=y1; y1=y; return y; }; }
+  // Même volume perçu d'un son à l'autre, mesuré sur ce qu'un haut-parleur de téléphone restitue
+  // (au-dessus de 250 Hz) ; plafond à -18 dB efficaces au total ; crêtes adoucies par un limiteur ;
+  // puis on coupe la fin silencieuse (mémoire).
+  // Traitée par tranches avec une pause entre chacune : l'écran ne se fige jamais (un long son
+  // représente ~700 000 échantillons, soit plus de 100 ms d'un bloc sur un téléphone lent).
+  const breathe=()=>new Promise(r=>setTimeout(r,0)), STEP=60000;
+  async function finish(buf,dB){
+    const ch=[buf.getChannelData(0),buf.getChannelData(1)]; let s=0,sf=0,n=0,pk=0;
+    for(const d of ch){ const hp=hp250(); for(let i0=0;i0<d.length;i0+=STEP){ const e=Math.min(d.length,i0+STEP);
+      for(let i=i0;i<e;i++){ const a=Math.abs(d[i]); if(a>pk) pk=a; const y=hp(d[i]); if(a>0.002){ s+=y*y; sf+=d[i]*d[i]; n++; } } await breathe(); } }
+    if(!n||!pk) return buf;
+    const g=Math.min(Math.pow(10,dB/20)/Math.sqrt(s/n),Math.pow(10,-18/20)/Math.sqrt(sf/n),2.2/pk), T=0.6;
+    let last=0;
+    for(const d of ch) for(let i0=0;i0<d.length;i0+=STEP){ const e=Math.min(d.length,i0+STEP);
+      for(let i=i0;i<e;i++){ const x=d[i]*g, a=Math.abs(x); const y=a<=T?x:Math.sign(x)*(T+(0.97-T)*Math.tanh((a-T)/(0.97-T))); d[i]=y; if((y>0.0005||y<-0.0005)&&i>last) last=i; } await breathe(); }
+    const len=Math.min(buf.length,last+Math.floor(SR*0.02));
+    if(len>=buf.length-SR*0.05) return buf;
+    const out=new AudioBuffer({length:len,numberOfChannels:2,sampleRate:SR}); out.copyToChannel(ch[0].subarray(0,len),0); out.copyToChannel(ch[1].subarray(0,len),1); return out;
+  }
+
+  // Coups rendus d'abord puis retournés : la réverbération « aspire » vers l'impact (effet cinéma).
+  const REV={
+    start:{d:1.3,f:b=>{ ssaw(b,[D.D3,D.A3,D.D4,D.Fs4],0,.15,{vol:.35,atk:.005,rel:.3,c0:3000,c1:6000,c2:2000,verb:1.6,dry:.4}); bell(b,D.A5,0,{vol:.1,dur:1.5,verb:1.2}); }},
+    finish:{d:1.5,f:b=>ssaw(b,[D.D3,D.A3,D.D4,D.Fs4,D.A4],0,.2,{vol:.35,atk:.005,rel:.3,c0:3500,c1:7000,c2:2500,verb:1.8,dry:.3})}
+  };
+  // Les sons. d = durée du rendu (s), db = volume visé. R = les coups inversés de la passe 1.
+  const SPEC={
+    tap:{d:.35,db:-31,f:b=>tock(b,.005,1500,.32)},
+    tick:{d:1.8,db:-26,f:b=>{ pluck(b,D.A5,.005,{vol:.16,dec:.5,ping:.35,verb:.25,pan:-.15}); pluck(b,D.E6,.005,{vol:.08,dec:.45,ping:.35,verb:.25,pan:.15}); }},
+    stop:{d:1.8,db:-25,f:b=>{ pluck(b,D.D5,.005,{vol:.14,dec:.45,ping:.3,verb:.25,pan:.2}); pluck(b,D.A4,.13,{vol:.14,dec:.6,ping:.3,verb:.3,pan:-.2}); }},
+    xp:{d:1.4,db:-27,f:b=>{ pluck(b,D.A5,.005,{vol:.12,dec:.4,ping:.3,verb:.3}); sparkle(b,.06,.2,2,.04); }},
+    notif:{d:2,db:-24,f:b=>{ bell(b,D.D6,.005,{vol:.1,dur:1.2,ping:.2,verb:.3,pan:-.2}); pluck(b,D.A5,.14,{vol:.12,dec:.5,ping:.25,verb:.3,pan:.2}); }},
+    go:{d:2.8,db:-21,f:b=>{ riser(b,0,.55,.16); const h=.55; impact(b,h,{vol:.14,f0:140,f1:60,tau:.18,verb:.3});
+      pluck(b,D.E5,h,{vol:.15,dec:.6,ping:.35,verb:.3,pan:-.2}); pluck(b,D.A5,h+.14,{vol:.15,dec:.9,ping:.4,verb:.35,pan:.2}); }},
+    start:{d:4.2,db:-21,f:(b,R)=>{ const h=1.05; playBuf(b,R.start,h-R.start.duration,.9);
+      ssaw(b,[D.D3,D.A3,D.D4,D.Fs4],h,.6,{vol:.24,atk:.008,rel:.9,c0:600,c1:5200,c2:1400,cAtk:.06,verb:.55,ping:.1});
+      impact(b,h,{vol:.2,f0:110,f1:42,tau:.3,verb:.4});
+      pluck(b,D.A4,h+.12,{vol:.13,dec:.6,ping:.4,verb:.3,pan:-.3}); pluck(b,D.D5,h+.3,{vol:.13,dec:.8,ping:.4,verb:.3,pan:.3}); }},
+    goal:{d:3.8,db:-21,f:b=>{ ssaw(b,[D.D4,D.Fs4,D.A4],0,1.2,{vol:.1,atk:.35,rel:1,c0:300,c1:2600,c2:900,cAtk:.8,verb:.6});
+      MOTIF.forEach((f,i)=>pluck(b,f,.15+i*.13,{vol:.15,dec:i===3?1.1:.55,ping:.35,verb:.35,pan:(i-1.5)*.35})); sparkle(b,.7,.8,6,.04); }},
+    medal:{d:6.2,db:-20.5,f:b=>{ const T=2.3; swarm(b,0,T,[D.D3,D.A3,D.D4,D.Fs4,D.A4,D.D5,D.Fs5,D.A5,D.D6],{vol:.34,hold:1.2,rel:1.6,verb:.5});
+      impact(b,T,{vol:.28,f0:120,f1:36,tau:.45,verb:.6}); bell(b,D.D6,T,{vol:.09,dur:2.4,verb:.7,ping:.2}); bell(b,D.A6,T+.06,{vol:.05,dur:2,verb:.7,pan:.3}); sparkle(b,T+.05,1.1,10,.045); }},
+    // Le logo sonore : une montée, un impact, l'accord large, puis les quatre notes IKORUN.
+    finish:{d:7.6,db:-20.5,f:(b,R)=>{ const T=1.5;
+      riser(b,0,T,.13); playBuf(b,R.finish,T-R.finish.duration,.8);
+      impact(b,T,{vol:.3,f0:110,f1:34,tau:.55,verb:.7});
+      ssaw(b,[D.D3,D.A3,D.D4,D.Fs4,D.A4,D.D5],T,2.2,{vol:.22,atk:.01,rel:2.2,c0:700,c1:6000,c2:900,cAtk:.08,verb:.6,ping:.08});
+      MOTIF.forEach((f,i)=>bell(b,f*2,T+.25+i*.2,{vol:i===3?.1:.08,dur:i===3?3:1.6,verb:.6,ping:.25,pan:(i-1.5)*.4}));
+      sparkle(b,T+1.1,1.4,8,.035); }}
+  };
+  const ORDER=['tap','tick','start','stop','go','goal','xp','notif','medal','finish'];
+  let started=false, done=null;
+  function supported(){ return typeof OfflineAudioContext==='function' && typeof StereoPannerNode==='function' && typeof AudioBuffer==='function'; }
+  // Rend une liste de sons l'un après l'autre sur une même piste (0,25 s d'écart), dans un seul studio.
+  async function track(list,make){
+    let t=0; const lay=list.map(([k,spec])=>{ const o=t; t+=spec.d+0.25; return [k,spec,o]; });
+    const c=new OfflineAudioContext(2,Math.ceil(SR*t),SR), b=bus(c);
+    // un son construit par tâche : des centaines de nœuds d'un coup figeraient l'écran
+    for(const [k,spec,o] of lay){ await breathe(); seed=hash('signature:'+k); make(spec,at(b,o)); }
+    return {r:await c.startRendering(), lay};
+  }
+  function render(){
+    if(done) return done;
+    started=true;
+    done=(async()=>{
+      try{
+        const p1=await track(Object.entries(REV).map(([k,v])=>['rev:'+k,v]),(spec,b)=>spec.f(b));
+        const R={}; p1.lay.forEach(([k,spec,o])=>{ R[k.slice(4)]=slice(p1.r,o,spec.d,true); });
+        await breathe();
+        const p2=await track(ORDER.map(k=>[k,SPEC[k]]),(spec,b)=>spec.f(b,R));
+        for(const [k,spec,o] of p2.lay){ await breathe(); BUF[k]=await finish(slice(p2.r,o,spec.d),spec.db); }
+      }catch(e){ console.error('[IKORUN] sons Signature',e); }
+      return Object.keys(BUF).length;
+    })();
+    return done;
+  }
+  // Joue le son s'il est prêt ; sinon false, et sfx() retombe sur la voix marimba.
+  // Un grand son (départ, objectif, badge, fin) en remplace un autre déjà en cours au lieu de s'y empiler.
+  function play(name){
+    const buf=BUF[name]; if(!buf) return false;
+    const ctx=audioCtx(); if(!ctx||!_studioOut) return false;
+    const src=ctx.createBufferSource(); src.buffer=buf; const g=ctx.createGain(); src.connect(g); g.connect(_studioOut);
+    if(BIG.has(name)){ if(big){ try{ big.g.gain.setTargetAtTime(0,ctx.currentTime,0.05); big.s.stop(ctx.currentTime+0.3); }catch(e){} } big={s:src,g}; src.onended=()=>{ if(big&&big.s===src) big=null; }; }
+    src.start(); return true;
+  }
+  return {play, render, supported, ready:n=>!!BUF[n], names:()=>Object.keys(BUF), get started(){ return started; }};
+})();
+// Lance le calcul des sons Signature (une seule fois, et seulement si les sons sont activés).
+function sigStart(){ if(SIG.started || !soundsOn() || !SIG.supported()) return; SIG.render().catch(e=>console.error('[IKORUN] sons Signature',e)); }
 
 /* ============ VRAIE ALARME (son répété + vibration + écran d'arrêt) ============ */
 let _alarmIv=null, _alarmStart=0, _alarmGen=0, _snoozeTo=null;
@@ -6208,6 +6454,7 @@ function initApp(){
   // tout juste d'être marqué manquée.
   setTimeout(ensurePush,900);
   setTimeout(syncDailyReminderState,900);
+  setTimeout(sigStart,1500); // calcul des sons Signature, une fois l'accueil affiché
   if(window._launchTourAfterInit){
     window._launchTourAfterInit=false;
     setTimeout(startAppTour,1200);
