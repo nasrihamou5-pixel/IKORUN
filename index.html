@@ -14,6 +14,7 @@
       if(tp.mode === 'light') document.documentElement.setAttribute('data-mode', 'light');
       if(tp.accent) document.documentElement.setAttribute('data-accent', tp.accent);
       if(tp.easyMode) document.documentElement.classList.add('easy-mode');
+      if(tp.easyMode && typeof tp.ez === 'string' && /^[a-z]{2,12}$/.test(tp.ez)) document.documentElement.setAttribute('data-ez', tp.ez);
       if(tp.glass === 'std' || tp.glass === 'max' || tp.glass === 'wrap') document.documentElement.setAttribute('data-glass', tp.glass);
       if(tp.glass === 'wrap' && typeof tp.wrap === 'string' && /^[a-z]{2,12}$/.test(tp.wrap)) document.documentElement.setAttribute('data-wrap', tp.wrap);
       // couleurs de l'intro (voir <style id="ikiCss">), le temps qu'app.css se charge
@@ -103,7 +104,7 @@
 <!-- téléchargés dès maintenant, exécutés après la première image (voir bas de page) -->
 <link rel="preload" as="script" href="vendor/supabase.js?v=1">
 <link rel="preload" as="script" href="vendor/sb-init.js?v=3">
-<link rel="preload" as="script" href="app.js?v=129">
+<link rel="preload" as="script" href="app.js?v=130">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
@@ -192,9 +193,9 @@ html[data-mode="light"] .iki-word{color:#10141B;}
   #ikIntro *,#ikIntro{animation:none!important;}
 }
 </style>
-<link rel="preload" as="style" href="app.css?v=36">
-<link rel="stylesheet" id="ikCss" href="app.css?v=36" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="app.css?v=36"></noscript>
+<link rel="preload" as="style" href="app.css?v=37">
+<link rel="stylesheet" id="ikCss" href="app.css?v=37" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="app.css?v=37"></noscript>
 </head>
 <body>
 <script>
@@ -454,8 +455,8 @@ html[data-mode="light"] .iki-word{color:#10141B;}
      ne persiste RIEN : elle photographie l'état, teste, restaure. -->
 <script>
 (function(){
-  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=3', 'app.js?v=129'];
-  if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=23');
+  var SCRIPTS = ['vendor/supabase.js?v=1', 'vendor/sb-init.js?v=3', 'app.js?v=130'];
+  if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=24');
   var lance = false;
   function charge(){
     if (lance) return; lance = true;

@@ -238,7 +238,7 @@ async function ikorunLogoutCookie(){
    de laisser retenter en boucle. Le vrai correctif (connexion Google jouée dans
    la page, sans redirection) demande une configuration Google Cloud côté compte. */
 function showGoogleStandaloneHelp(){
-  const h='<div style="text-align:center;padding:4px 0 14px;color:var(--e)">'+ICN('warning',40,'currentColor')+'</div>'+
+  const h='<div style="text-align:center;padding:4px 0 14px;color:var(--et,var(--e))">'+ICN('warning',40,'currentColor')+'</div>'+
     '<div class="tip" style="margin-bottom:14px">'+t('googleStandaloneBody')+'</div>'+
     '<button class="btn" style="margin-bottom:10px" onclick="closeOv(\'ovProg\');continueAsGuest()">'+t('googleUseGuestBtn')+'</button>'+
     '<button class="btn ghost" onclick="closeOv(\'ovProg\');window.open(location.href,\'_blank\')">'+t('googleOpenSafariBtn')+'</button>';
@@ -2486,7 +2486,7 @@ const I18N={
     accountReadySlowEmailToast:'Compte créé, tu peux commencer. L’envoi de l’email a été long — vérifie ta boîte, ou relance depuis Profil > Compte.',
     accountReadyNoPwToast:'Compte créé, tu peux commencer. Ton mot de passe sera à choisir après confirmation de l’adresse — tout est expliqué dans Profil > Compte.',
     linkGoogleBtn:'Rattacher mon compte Google',
-    soundVolumeLab:'Volume des effets',sndPackLab:'Ambiance sonore',sndPackSoft:'Sobre',sndPackSig:'Signature',sndPackSoftDesc:'Des notes douces et feutrées, discrètes au quotidien.',sndPackSigDesc:'Le logo sonore IKORUN : montées, impacts et grand accord.',sndTest1:'Départ',sndTest2:'Série',sndTest3:'Objectif',sndTest4:'Badge',sndTest5:'Séance finie',
+    soundVolumeLab:'Volume des effets',sndPackLab:'Ambiance sonore',ezColorLab:'Couleur',ezCol_green:'Vert',ezCol_teal:'Bleu-vert',ezCol_blue:'Bleu',ezCol_violet:'Violet',ezCol_red:'Rouge',ezCol_orange:'Orange',ezCol_brown:'Brun',ezCol_mono:'Gris',sndPackSoft:'Sobre',sndPackSig:'Signature',sndPackSoftDesc:'Des notes douces et feutrées, discrètes au quotidien.',sndPackSigDesc:'Le logo sonore IKORUN : montées, impacts et grand accord.',sndTest1:'Départ',sndTest2:'Série',sndTest3:'Objectif',sndTest4:'Badge',sndTest5:'Séance finie',
     guestLinkUnavailableTitle:'Rattachement impossible',
     guestLinkUnavailableWarn:'Ton compte invité ne peut pas être rattaché à Google pour l’instant.\n\nSe connecter avec Google créerait un compte séparé : tes séances, tes records et tes mesures resteraient sur le compte invité, sans aucun moyen d’y revenir.\n\nExporte tes données avant toute chose — tu pourras les réimporter dans le nouveau compte.',
     exportBeforeBtn:'Exporter mes données',
@@ -3072,7 +3072,7 @@ const I18N={
     accountReadySlowEmailToast:'Account created, you can start now. Sending the email took a while — check your inbox, or resend from Profile > Account.',
     accountReadyNoPwToast:'Account created, you can start now. You’ll pick your password once the address is confirmed — it’s all explained in Profile > Account.',
     linkGoogleBtn:'Link my Google account',
-    soundVolumeLab:'Effects volume',sndPackLab:'Sound style',sndPackSoft:'Subtle',sndPackSig:'Signature',sndPackSoftDesc:'Soft, felt notes that stay discreet every day.',sndPackSigDesc:'The IKORUN sound logo: risers, impacts and a big chord.',sndTest1:'Start',sndTest2:'Set',sndTest3:'Goal',sndTest4:'Badge',sndTest5:'Session done',
+    soundVolumeLab:'Effects volume',sndPackLab:'Sound style',ezColorLab:'Colour',ezCol_green:'Green',ezCol_teal:'Teal',ezCol_blue:'Blue',ezCol_violet:'Violet',ezCol_red:'Red',ezCol_orange:'Orange',ezCol_brown:'Brown',ezCol_mono:'Grey',sndPackSoft:'Subtle',sndPackSig:'Signature',sndPackSoftDesc:'Soft, felt notes that stay discreet every day.',sndPackSigDesc:'The IKORUN sound logo: risers, impacts and a big chord.',sndTest1:'Start',sndTest2:'Set',sndTest3:'Goal',sndTest4:'Badge',sndTest5:'Session done',
     guestLinkUnavailableTitle:'Linking unavailable',
     guestLinkUnavailableWarn:'Your guest account can’t be linked to Google right now.\n\nSigning in with Google would create a separate account: your sessions, records and measurements would stay on the guest account, with no way back to it.\n\nExport your data first — you’ll be able to import it into the new account.',
     exportBeforeBtn:'Export my data',
@@ -3661,7 +3661,7 @@ const I18N={
     accountReadySlowEmailToast:'تم إنشاء الحساب، يمكنك البدء الآن. استغرق إرسال البريد وقتًا — تحقّق من صندوقك أو أعد الإرسال من الملف الشخصي > الحساب.',
     accountReadyNoPwToast:'تم إنشاء الحساب، يمكنك البدء الآن. ستختار كلمة المرور بعد تأكيد البريد — التفاصيل في الملف الشخصي > الحساب.',
     linkGoogleBtn:'ربط حساب Google',
-    soundVolumeLab:'مستوى المؤثرات',sndPackLab:'نمط الأصوات',sndPackSoft:'هادئ',sndPackSig:'التوقيع',sndPackSoftDesc:'نغمات ناعمة وهادئة للاستعمال اليومي.',sndPackSigDesc:'الشعار الصوتي لـ IKORUN: تصاعد وضربات ووتر كبير.',sndTest1:'البداية',sndTest2:'المجموعة',sndTest3:'الهدف',sndTest4:'وسام',sndTest5:'انتهت الحصة',
+    soundVolumeLab:'مستوى المؤثرات',sndPackLab:'نمط الأصوات',ezColorLab:'اللون',ezCol_green:'أخضر',ezCol_teal:'أزرق مخضر',ezCol_blue:'أزرق',ezCol_violet:'بنفسجي',ezCol_red:'أحمر',ezCol_orange:'برتقالي',ezCol_brown:'بني',ezCol_mono:'رمادي',sndPackSoft:'هادئ',sndPackSig:'التوقيع',sndPackSoftDesc:'نغمات ناعمة وهادئة للاستعمال اليومي.',sndPackSigDesc:'الشعار الصوتي لـ IKORUN: تصاعد وضربات ووتر كبير.',sndTest1:'البداية',sndTest2:'المجموعة',sndTest3:'الهدف',sndTest4:'وسام',sndTest5:'انتهت الحصة',
     guestLinkUnavailableTitle:'الربط غير متاح',
     guestLinkUnavailableWarn:'لا يمكن ربط حساب الضيف بحساب Google حاليًا.\n\nتسجيل الدخول عبر Google سينشئ حسابًا منفصلًا: ستبقى حصصك وأرقامك القياسية وقياساتك على حساب الضيف، دون أي وسيلة للعودة إليه.\n\nصدّر بياناتك أولًا — ستتمكن من استيرادها في الحساب الجديد.',
     exportBeforeBtn:'تصدير بياناتي',
@@ -4435,7 +4435,7 @@ function levelUpAnimation(level){
   const ov=document.createElement('div');
   ov.style.cssText='position:fixed;inset:0;z-index:13500;display:flex;align-items:center;justify-content:center;background:rgba(5,7,10,.86);backdrop-filter:blur(8px);animation:fade .3s';
   ov.innerHTML='<div style="text-align:center;animation:popIn .6s cubic-bezier(.34,1.56,.64,1)">'+
-    '<div style="font-size:14px;letter-spacing:3px;color:var(--e);font-weight:700;font-family:Unbounded,system-ui,-apple-system,sans-serif">'+t('levelUpTitle')+'</div>'+
+    '<div style="font-size:14px;letter-spacing:3px;color:var(--et,var(--e));font-weight:700;font-family:Unbounded,system-ui,-apple-system,sans-serif">'+t('levelUpTitle')+'</div>'+
     '<div style="margin:6px 0;filter:drop-shadow(0 0 20px var(--e));display:flex;justify-content:center">'+ICN('star',80,'var(--e)')+'</div>'+
     '<div class="man" style="font-weight:800;font-size:54px;background:linear-gradient(135deg,var(--e),#9FD8FF);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">Niv. '+level+'</div>'+
     '<div class="man" style="font-weight:700;font-size:22px;margin-top:4px">'+levelName(level)+'</div>'+
@@ -4452,7 +4452,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='3.12.0';
+const APP_VERSION='3.12.1';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -6053,7 +6053,7 @@ function askGlassTilt(){
   ind.style.cssText='position:fixed;left:50%;top:max(10px,env(safe-area-inset-top));'
     +'transform:translate(-50%,-70px);z-index:9500;width:36px;height:36px;border-radius:50%;'
     +'background:var(--s1);border:1px solid var(--hair);display:flex;align-items:center;justify-content:center;'
-    +'color:var(--e);font-size:16px;box-shadow:var(--sh-md);transition:transform .18s var(--ease-out),opacity .18s;opacity:0;';
+    +'color:var(--et,var(--e));font-size:16px;box-shadow:var(--sh-md);transition:transform .18s var(--ease-out),opacity .18s;opacity:0;';
   ind.innerHTML='<i class="ik-logo-mark"></i>'; // signature : le symbole IKORUN tourne quand on tire
   document.body.appendChild(ind);
   sc.addEventListener('touchstart',e=>{
@@ -7205,7 +7205,7 @@ async function installApp(){
 }
 function showInstallGuide(platform){
   const ios=platform==='ios';
-  const h='<div style="text-align:center;padding:4px 0 14px;color:var(--e)">'+ICN(ios?'share':'download',40,'currentColor')+'</div>'+
+  const h='<div style="text-align:center;padding:4px 0 14px;color:var(--et,var(--e))">'+ICN(ios?'share':'download',40,'currentColor')+'</div>'+
     '<div class="tip" style="margin-bottom:10px">'+t(ios?'iosInstallStep1':'androidInstallStep1')+'</div>'+
     '<div class="tip" style="margin-bottom:14px">'+t(ios?'iosInstallStep2':'androidInstallStep2')+'</div>'+
     '<button class="btn" onclick="closeOv(\'ovProg\')">'+t('understoodLab')+'</button>';
@@ -7234,6 +7234,7 @@ function applyTheme(){
   document.documentElement.setAttribute('data-accent',acc);
   if(wrap) document.documentElement.setAttribute('data-wrap',wrapKey()); else document.documentElement.removeAttribute('data-wrap');
   document.documentElement.classList.toggle('easy-mode',!!P.easyMode);
+  if(P.easyMode) document.documentElement.setAttribute('data-ez',ezKey()); else document.documentElement.removeAttribute('data-ez');
   // molettes (V3.5.0) : un réglage posé ailleurs (bascule soleil/lune) les recale
   if(typeof matValue==='function'){
     if(matNearest(matValue())!==(P.glass||'std')) P.mat=Math.max(0,MAT_ANCHORS.indexOf(P.glass||'std'));
@@ -7252,7 +7253,7 @@ function applyTheme(){
   // paint au prochain chargement, sans attendre le déchiffrement async du profil.
   // + les couleurs de l'intro, qui s'affiche avant app.css (voir <style id="ikiCss">)
   try{ const cs=getComputedStyle(document.documentElement), v=n=>cs.getPropertyValue(n).trim();
-    localStorage.setItem('ik_theme_prefs', JSON.stringify({mode, accent:acc, easyMode:!!P.easyMode, glass:wrap?'wrap':P.glass==='max'?'max':'std',wrap:wrap?wrapKey():null,
+    localStorage.setItem('ik_theme_prefs', JSON.stringify({mode, accent:acc, easyMode:!!P.easyMode, ez:P.easyMode?ezKey():null, glass:wrap?'wrap':P.glass==='max'?'max':'std',wrap:wrap?wrapKey():null,
       iki:{e:v('--e'),e2:v('--e2'),er:v('--e-rgb'),bg:v('--bg'),mu:v('--muted')}})); }catch(e){}
 }
 /* ---------- FIBRE DE CARBONE (V3.5.0) ----------
@@ -7361,8 +7362,8 @@ const WRAP_OLD={militaire:'noir',craie:'noir',graphite:'anthracite',grenat:'noir
 function wrapOn(){ return !!P && P.glass==='wrap' && !P.easyMode; }
 function wrapKey(){ if(P && WRAP_OLD[P.wrap]) P.wrap=WRAP_OLD[P.wrap]; return WRAPS.some(w=>w.key===P.wrap) ? P.wrap : 'noir'; }
 function wrapName(k){ const w=WRAPS.find(x=>x.key===k)||WRAPS[0]; return t(w.name); }
-function colorNameNow(){ return wrapOn() ? wrapName(wrapKey()) : accentName(P.theme); }
-function colorDotNow(){ return wrapOn() ? '<i class="wrap-sw mini" data-w="'+wrapKey()+'"></i>'
+function colorNameNow(){ return P.easyMode ? t('ezCol_'+ezKey()) : wrapOn() ? wrapName(wrapKey()) : accentName(P.theme); }
+function colorDotNow(){ return P.easyMode ? '<i class="ez-dot mini" data-ez="'+ezKey()+'"></i>' : wrapOn() ? '<i class="wrap-sw mini" data-w="'+wrapKey()+'"></i>'
   : '<i class="accent-dot" data-a="'+(P.theme||'blue')+'" style="display:inline-block;width:14px;height:14px;vertical-align:-2px;margin-inline-end:6px;box-shadow:none"></i>'; }
 function setWrap(k){
   if(!WRAPS.some(w=>w.key===k)) return;
@@ -7372,6 +7373,11 @@ function setWrap(k){
 }
 // Profil › Couleur de l'app : une fiche par familles, chaque variante avec son nom.
 function pfColorHTML(){
+  if(P.easyMode){
+    const cur=ezKey();
+    return '<div class="acc-grid ez-colors">'+EZ_COLORS.map(k=>{ const a=ACCENTS.find(x=>x.key===k);
+      return '<div class="acc-sw'+(cur===k?' on':'')+'" role="button" onclick="setEzColor(\''+k+'\')"><i class="ez-dot" data-ez="'+k+'"></i><span>'+t('ezCol_'+k)+'</span></div>'; }).join('')+'</div>';
+  }
   if(wrapOn()){
     const cw=wrapKey();
     return '<div class="acc-grid wrap-grid">'+WRAPS.map(w=>'<div class="acc-sw'+(cw===w.key?' on':'')+'" role="button" onclick="setWrap(\''+w.key+'\')"><i class="wrap-sw" data-w="'+w.key+'"></i><span>'+t(w.name)+'</span><small>'+t(w.det)+'</small></div>').join('')+'</div>'+
@@ -7381,6 +7387,19 @@ function pfColorHTML(){
   return ACCENT_FAMS.map(([f,lab])=>'<div class="acc-fam"><div class="lab">'+t(lab)+'</div><div class="acc-grid">'+
     ACCENTS.filter(a=>a.fam===f).map(a=>'<div class="acc-sw'+(cur===a.key?' on':'')+'" role="button" onclick="setAccent(\''+a.key+'\')"><i class="accent-dot'+(cur===a.key?' on':'')+'" data-a="'+a.key+'"></i><span>'+t(a.name)+'</span></div>').join('')+
     '</div></div>').join('');
+}
+/* Couleur du MODE SIMPLE (V3.12.1) : retour du 05/10 « les couleurs ne marchent pas dans le
+   mode simple » — le vert mat était imposé, et toucher une couleur dans Apparence ne changeait
+   rien. Le mode simple a désormais sa propre couleur (vert par défaut), parmi huit teintes
+   mates construites sur le même modèle que le vert (contrastes vérifiés). La couleur du mode
+   normal (P.theme) n'est pas touchée. */
+const EZ_COLORS=['green','teal','blue','violet','red','orange','brown','mono'];
+function ezKey(){ return (P && EZ_COLORS.includes(P.ezTheme)) ? P.ezTheme : 'green'; }
+function setEzColor(k){
+  if(!EZ_COLORS.includes(k)) return;
+  P.ezTheme=k; saveAll(); applyTheme();
+  if($('#s-profil')&&$('#s-profil').classList.contains('on')) renderProfile();
+  refreshPfSheet(); sfx&&sfx('tap'); toast(t('colorApplied'));
 }
 function setAccent(c){
   P.theme=c;
@@ -7894,7 +7913,9 @@ const TYPE_COLORS={EF:'--ok','Tempo':'--warn','Seuil':'--or','VMA':'--bad','Inte
 // affichée AVANT clic sur la carte de séance (aperçu rapide).
 const BASETYPE_COLORS={EF:'--ok',RECUP:'--muted',LIGNES:'--ok',LONG:'--e',LONG_COURT:'--e',TEMPO:'--warn',TEMPO_SPE:'--warn',FARTLEK:'--warn',PROGRESSIF:'--warn',COTES:'--bad',SPE:'--e2',SPE_COURT:'--e2',
   SEUIL:'--or',DBLSEUIL:'--or',VMAc:'--bad',VMAl:'--bad',VO2:'--bad',INTERVAL:'--bad',COURSE:'--e',Repos:'--muted'};
-function baseTypeColor(bt){ return 'var('+(BASETYPE_COLORS[bt]||'--e')+')'; }
+// --e passe par --et : en mode simple l'accent est une couleur de remplissage, trop sombre pour
+// écrire « Long » ou « Course » sur le fond (--et n'existe qu'en mode simple).
+function baseTypeColor(bt){ const v=BASETYPE_COLORS[bt]||'--e'; return v==='--e'?'var(--et,var(--e))':'var('+v+')'; }
 
 /* ============================================================
    GÉNÉRATEUR DE PLAN — moteur scientifique périodisé
@@ -9767,7 +9788,7 @@ function renderPersoList(){
   else persoPlans.forEach((p)=>{
     const done=p.sessions.filter(s=>s.done).length;
     const followBadge=P.followPerso===p.id?'<span class="chrome-chip" style="color:var(--ok);margin-left:6px">'+t('followedTag')+'</span>':'';
-    h+='<div class="card" style="padding:13px 14px"><div class="row" onclick="openPerso(\''+p.id+'\')" style="cursor:pointer"><div><div style="font-weight:700;font-size:14.5px">'+escHtml(p.name)+followBadge+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+tp('sessionsCount',p.sessions.length,done)+'</div></div><span style="color:var(--e);font-size:18px">›</span></div>'+
+    h+='<div class="card" style="padding:13px 14px"><div class="row" onclick="openPerso(\''+p.id+'\')" style="cursor:pointer"><div><div style="font-weight:700;font-size:14.5px">'+escHtml(p.name)+followBadge+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+tp('sessionsCount',p.sessions.length,done)+'</div></div><span style="color:var(--et,var(--e));font-size:18px">›</span></div>'+
       '<div class="row" style="margin-top:9px;gap:8px"><div class="pbar" style="flex:1;margin-top:0"><div style="width:'+(p.sessions.length?done/p.sessions.length*100:0)+'%"></div></div>'+
       '<span class="mini-ic" onclick="dupPerso(\''+p.id+'\')" title="'+t('duplicate')+'">⎘</span><span class="mini-ic" onclick="sharePlan(\''+p.id+'\')" title="'+t('share')+'">↗</span><span class="mini-ic" style="color:var(--bad)" onclick="delPerso(\''+p.id+'\')" title="'+t('delete')+'">'+ICN('trash',16)+'</span></div></div>';
   });
@@ -10290,12 +10311,12 @@ let curRunId=null;
 function seriesTableHTML(sr){
   if(!sr) return '';
   if(sr.segments){
-    const rows=sr.segments.map(sg=>'<div class="row" style="font-size:13px;padding:4px 0"><span style="color:var(--muted)">'+sg.dist+' m</span><span style="font-weight:700;color:var(--e)">'+fmtSplit(sg.splitSec)+'</span></div>').join('');
+    const rows=sr.segments.map(sg=>'<div class="row" style="font-size:13px;padding:4px 0"><span style="color:var(--muted)">'+sg.dist+' m</span><span style="font-weight:700;color:var(--et,var(--e))">'+fmtSplit(sg.splitSec)+'</span></div>').join('');
     return '<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:6px">'+ICN('run',15,'var(--e)')+t('seriesPyramidTitle')+'</div>'+rows+'<div style="font-size:11.5px;color:var(--muted);margin-top:8px">'+t('recoveryColon')+' '+escHtml(sr.recoveryLabel)+'</div></div>';
   }
   if(sr.reps && sr.dist){
     return '<div class="card" style="padding:14px;margin-bottom:14px"><div class="card-t" style="margin-bottom:8px">'+ICN('run',15,'var(--e)')+sr.reps+' × '+sr.dist+' m</div>'
-      +'<div class="row" style="font-size:13px;padding:3px 0"><span style="color:var(--muted)">'+t('targetSplitLabel')+'</span><span style="font-weight:700;color:var(--e)">'+fmtSplit(splitSecFromPace(sr.paceSecPerKm,sr.dist))+'</span></div>'
+      +'<div class="row" style="font-size:13px;padding:3px 0"><span style="color:var(--muted)">'+t('targetSplitLabel')+'</span><span style="font-weight:700;color:var(--et,var(--e))">'+fmtSplit(splitSecFromPace(sr.paceSecPerKm,sr.dist))+'</span></div>'
       +'<div class="row" style="font-size:13px;padding:3px 0"><span style="color:var(--muted)">'+t('equivalentPaceLabel')+'</span><span>'+spkToStr(sr.paceSecPerKm)+'/km</span></div>'
       +'<div class="row" style="font-size:13px;padding:3px 0"><span style="color:var(--muted)">'+t('recoveryLabel')+'</span><span>'+escHtml(sr.recoveryLabel)+'</span></div>'
       +(sr.note?'<div style="font-size:11.5px;color:var(--muted);margin-top:6px">'+escHtml(sr.note)+'</div>':'')
@@ -10934,7 +10955,7 @@ function renderExDetail(){
     if(f.equip) h+='<div class="card"><div class="row"><span class="lab">'+t('equipmentLabel')+'</span><span style="font-weight:600">'+trEquip(f.equip)+'</span></div></div>';
   } else {
     // Instructions + Conseils réunis dans le même onglet
-    h+='<div class="card"><div class="card-t">'+ICN('clipboard',15,'var(--e)')+t('executionLabel')+'</div>'+((f.steps&&f.steps.length)?f.steps.map((s,i)=>'<div class="tip" style="margin-bottom:6px"><b style="color:var(--e)">'+(i+1)+'.</b> '+s+'</div>').join(''):'<div style="font-size:13px;color:var(--muted)">'+t('defaultExecutionHint')+'</div>')+'</div>';
+    h+='<div class="card"><div class="card-t">'+ICN('clipboard',15,'var(--e)')+t('executionLabel')+'</div>'+((f.steps&&f.steps.length)?f.steps.map((s,i)=>'<div class="tip" style="margin-bottom:6px"><b style="color:var(--et,var(--e))">'+(i+1)+'.</b> '+s+'</div>').join(''):'<div style="font-size:13px;color:var(--muted)">'+t('defaultExecutionHint')+'</div>')+'</div>';
     if(f.breathing) h+='<div class="card"><div class="card-t">'+ICN('lung',15,'var(--e)')+t('breathingLabel')+'</div><div class="tip">'+f.breathing+'</div></div>';
     if(f.tips&&f.tips.length) h+='<div class="card"><div class="card-t">'+ICN('check',15,'var(--e)')+t('adviceLabel')+'</div>'+f.tips.map(x=>'<div class="tip" style="margin-bottom:6px">'+x+'</div>').join('')+'</div>';
     if(f.mistakes&&f.mistakes.length) h+='<div class="card"><div class="card-t" style="color:var(--bad)">'+ICN('warning',15,'var(--e)')+t('commonMistakesLabel')+'</div>'+f.mistakes.map(x=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(255,92,108,.3);background:rgba(255,92,108,.08)">'+x+'</div>').join('')+'</div>';
@@ -11030,7 +11051,7 @@ function renderLive(){
     '</div>';
   // Stats : Durée / Volume / Séries
   h+='<div class="card" style="padding:14px 6px;margin-bottom:16px"><div style="display:flex;text-align:center">'+
-    '<div style="flex:1;border-right:1px solid var(--hair)"><div class="lab" style="margin:0 0 4px;display:inline-flex;align-items:center;gap:6px"><i class="ik-live-dot" aria-hidden="true"></i>'+t('durationLab')+'</div><div class="mono" id="liveTime" style="font-weight:800;font-size:16px;color:var(--e)">'+dur+'</div></div>'+
+    '<div style="flex:1;border-right:1px solid var(--hair)"><div class="lab" style="margin:0 0 4px;display:inline-flex;align-items:center;gap:6px"><i class="ik-live-dot" aria-hidden="true"></i>'+t('durationLab')+'</div><div class="mono" id="liveTime" style="font-weight:800;font-size:16px;color:var(--et,var(--e))">'+dur+'</div></div>'+
     '<div style="flex:1;border-right:1px solid var(--hair)"><div class="lab" style="margin:0 0 4px">'+t('volumeLab')+'</div><div id="liveVol" style="font-weight:800;font-size:16px">'+Math.round(LIVE.tonnage)+' kg</div></div>'+
     '<div style="flex:1"><div class="lab" style="margin:0 0 4px">'+t('setsLab')+'</div><div id="liveSets" style="font-weight:800;font-size:16px">'+LIVE.setsDone+'/'+totalSets+'</div></div>'+
     '</div>'+
@@ -11482,7 +11503,7 @@ function finishLive(){
   // PR
   if(prs.length) h+='<div class="card-t">'+t('newRecordsLab')+'</div>'+prs.map(p=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(242,184,75,.4);background:rgba(242,184,75,.1)">'+p+'</div>').join('');
   // muscles schema
-  if(Object.keys(muscles).length){ h+='<div class="card-t" style="margin-top:12px">'+t('musclesWorkedLab')+'</div><div class="muscle-tags" style="margin-bottom:12px">'+Object.keys(muscles).map(m=>'<span class="mtag" style="background:var(--ed);color:var(--e);border-color:var(--e)">'+m+'</span>').join('')+'</div>'; }
+  if(Object.keys(muscles).length){ h+='<div class="card-t" style="margin-top:12px">'+t('musclesWorkedLab')+'</div><div class="muscle-tags" style="margin-bottom:12px">'+Object.keys(muscles).map(m=>'<span class="mtag" style="background:var(--ed);color:var(--et,var(--e));border-color:var(--e)">'+m+'</span>').join('')+'</div>'; }
   h+='<div class="badge" style="width:100%;justify-content:center;padding:14px;margin:6px 0 14px">'+tp('xpEarnedLab',xpGain)+'</div>';
   h+='<button class="btn" onclick="closeOv(\'ovLive\');LIVE=null;_finishingLive=false;renderSport()">'+t('closeLab')+'</button>';
   $('#liveBody').innerHTML=h;
@@ -11505,7 +11526,7 @@ function renderCreate(){
   h+='<div class="lab" style="margin:10px 0 8px">'+tp('exercisesCountLab',newProg.ex.length)+'</div>';
   if(!newProg.ex.length) h+='<div class="tip" style="margin-bottom:12px">'+t('addExFromLib')+'</div>';
   newProg.ex.forEach((e,i)=>{
-    h+='<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:8px"><span style="font-size:22px">'+e.anim+'</span><div><div style="font-weight:700;font-size:14px">'+escHtml(e.name)+'</div><div class="num" style="font-size:12px;color:var(--e)">'+e.sets+'×'+e.reps+(e.rest?' · '+e.rest+'s':'')+'</div></div></div><button class="x" onclick="newProg.ex.splice('+i+',1);renderCreate()">'+ICN('trash',16)+'</button></div></div>';
+    h+='<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:8px"><span style="font-size:22px">'+e.anim+'</span><div><div style="font-weight:700;font-size:14px">'+escHtml(e.name)+'</div><div class="num" style="font-size:12px;color:var(--et,var(--e))">'+e.sets+'×'+e.reps+(e.rest?' · '+e.rest+'s':'')+'</div></div></div><button class="x" onclick="newProg.ex.splice('+i+',1);renderCreate()">'+ICN('trash',16)+'</button></div></div>';
   });
   h+='<button class="btn ghost" style="margin-bottom:12px" onclick="openLibFor(addToNewProg)">'+t('addFromLibBtn')+'</button>';
   h+='<button class="btn" onclick="saveNewProg()">'+t('saveProgramBtn')+'</button>';
@@ -11542,7 +11563,7 @@ function renderLib(){
     if(q && !e.name.toLowerCase().includes(q) && !trExName(e.name).toLowerCase().includes(q)) return false;
     return true;
   });
-  h+='<div class="row" style="margin-bottom:8px"><div class="lab" style="flex:1">'+tp('exercisesCount',list.length)+'</div><div style="display:flex;gap:6px"><span class="mini-ic" style="'+(libView==='grid'?'color:var(--e);border-color:var(--e)':'')+'" onclick="libView=\'grid\';renderLib()">▦</span><span class="mini-ic" style="'+(libView==='list'?'color:var(--e);border-color:var(--e)':'')+'" onclick="libView=\'list\';renderLib()"></span></div></div>';
+  h+='<div class="row" style="margin-bottom:8px"><div class="lab" style="flex:1">'+tp('exercisesCount',list.length)+'</div><div style="display:flex;gap:6px"><span class="mini-ic" style="'+(libView==='grid'?'color:var(--et,var(--e));border-color:var(--e)':'')+'" onclick="libView=\'grid\';renderLib()">▦</span><span class="mini-ic" style="'+(libView==='list'?'color:var(--et,var(--e));border-color:var(--e)':'')+'" onclick="libView=\'list\';renderLib()"></span></div></div>';
   if(libView==='grid'){
     h+='<div class="exg-grid">';
     list.forEach(e=>{
@@ -11556,7 +11577,7 @@ function renderLib(){
   } else {
   list.forEach(e=>{
     const lvCol=e.level==='Débutant'?'--ok':e.level==='Avancé'?'--bad':'--warn';
-    h+='<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:10px;flex:1;cursor:pointer" onclick=\'openFiche("'+e.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'")\'>'+exThumb(e.name,48)+'<div><div style="font-weight:700;font-size:14px">'+trExName(e.name)+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+trEquip(e.equip)+' · <span style="color:var('+lvCol+')">'+trLevel(e.level)+'</span></div><div class="muscle-tags">'+(e.primary||[]).map(m=>'<span class="mtag">'+trMuscle(m)+'</span>').join('')+'</div></div></div>'+(libBrowseMode?'<button class="x" onclick=\'openFiche("'+e.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'")\'>›</button>':'<button class="x" style="color:var(--e)" onclick=\'pickEx("'+e.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'")\'>＋</button>')+'</div></div>';
+    h+='<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:10px;flex:1;cursor:pointer" onclick=\'openFiche("'+e.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'")\'>'+exThumb(e.name,48)+'<div><div style="font-weight:700;font-size:14px">'+trExName(e.name)+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+trEquip(e.equip)+' · <span style="color:var('+lvCol+')">'+trLevel(e.level)+'</span></div><div class="muscle-tags">'+(e.primary||[]).map(m=>'<span class="mtag">'+trMuscle(m)+'</span>').join('')+'</div></div></div>'+(libBrowseMode?'<button class="x" onclick=\'openFiche("'+e.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'")\'>›</button>':'<button class="x" style="color:var(--et,var(--e))" onclick=\'pickEx("'+e.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'")\'>＋</button>')+'</div></div>';
   });
   }
   $('#libBody').innerHTML=h;
@@ -11579,10 +11600,10 @@ function openFiche(name){
     h+='<div style="position:relative;background:linear-gradient(135deg,var(--s2),var(--s1));border:1px solid var(--hair);border-radius:18px;padding:34px 16px;text-align:center;margin-bottom:14px;overflow:hidden">'+
       '<div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 40%,var(--ed),transparent 70%)"></div>'+
       '<div style="position:relative;animation:demoFloat 1.5s ease-in-out infinite;filter:drop-shadow(0 6px 14px rgba(0,0,0,.4))">'+exGlyph(f,68)+'</div>'+
-      '<div style="position:relative;display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:11px;color:var(--e);font-weight:700"><span style="width:7px;height:7px;border-radius:50%;background:var(--e);animation:demoPulse 1s infinite"></span>'+t('movementDemoCap')+'</div></div>';
+      '<div style="position:relative;display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:11px;color:var(--et,var(--e));font-weight:700"><span style="width:7px;height:7px;border-radius:50%;background:var(--e);animation:demoPulse 1s infinite"></span>'+t('movementDemoCap')+'</div></div>';
   }
-  h+='<div class="card-t">'+ICN('target',15,'var(--e)')+t('musclesWorked')+'</div><div style="margin-bottom:12px"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">'+t('primaryLabel')+'</div><div class="muscle-tags">'+(f.primary||[]).map(m=>'<span class="mtag" style="background:var(--ed);color:var(--e);border-color:var(--e)">'+trMuscle(m)+'</span>').join('')+'</div>'+((f.secondary&&f.secondary.length)?'<div style="font-size:12px;color:var(--muted);margin:8px 0 4px">'+t('secondaryLabel')+'</div><div class="muscle-tags">'+f.secondary.map(m=>'<span class="mtag">'+trMuscle(m)+'</span>').join('')+'</div>':'')+'</div>';
-  h+='<div class="card-t">'+ICN('clipboard',15,'var(--e)')+t('stepByStepExecution')+'</div>'+f.steps.map((s,i)=>'<div class="tip" style="margin-bottom:6px"><b style="color:var(--e)">'+(i+1)+'.</b> '+s+'</div>').join('');
+  h+='<div class="card-t">'+ICN('target',15,'var(--e)')+t('musclesWorked')+'</div><div style="margin-bottom:12px"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">'+t('primaryLabel')+'</div><div class="muscle-tags">'+(f.primary||[]).map(m=>'<span class="mtag" style="background:var(--ed);color:var(--et,var(--e));border-color:var(--e)">'+trMuscle(m)+'</span>').join('')+'</div>'+((f.secondary&&f.secondary.length)?'<div style="font-size:12px;color:var(--muted);margin:8px 0 4px">'+t('secondaryLabel')+'</div><div class="muscle-tags">'+f.secondary.map(m=>'<span class="mtag">'+trMuscle(m)+'</span>').join('')+'</div>':'')+'</div>';
+  h+='<div class="card-t">'+ICN('clipboard',15,'var(--e)')+t('stepByStepExecution')+'</div>'+f.steps.map((s,i)=>'<div class="tip" style="margin-bottom:6px"><b style="color:var(--et,var(--e))">'+(i+1)+'.</b> '+s+'</div>').join('');
   h+='<div class="card-t" style="margin-top:14px">'+ICN('lung',15,'var(--e)')+t('breathingLabel')+'</div><div class="tip">'+f.breathing+'</div>';
   h+='<div class="card-t" style="margin-top:14px;color:var(--bad)">'+ICN('warning',15,'var(--e)')+t('commonMistakesLabel')+'</div>'+f.mistakes.map(m=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(255,92,108,.3);background:rgba(255,92,108,.08)">'+m+'</div>').join('');
   h+='<div class="card-t" style="margin-top:14px">'+ICN('check',15,'var(--e)')+t('coachTipsLabel')+'</div>'+f.tips.map(tt=>'<div class="tip" style="margin-bottom:6px">'+tt+'</div>').join('');
@@ -12405,7 +12426,7 @@ function outilsHome(){
   // La VDOT est affichée dans Sport, Stats et Profil : plus de pastille ici (retour du 26/09).
   let h='';
   // Raccourcis rapides Chrono + Minuteur
-  h+='<div style="display:flex;gap:10px;margin-bottom:16px"><div class="card" style="flex:1;padding:14px;margin:0;cursor:pointer;text-align:center" onclick="openTool(\'chrono\')"><div style="color:var(--e);display:flex;justify-content:center">'+ICN('stopwatch',26)+'</div><div style="font-weight:700;font-size:13px;margin-top:6px">'+t('toolChronoName')+'</div></div><div class="card" style="flex:1;padding:14px;margin:0;cursor:pointer;text-align:center" onclick="openQuickTimer()"><div style="color:var(--warn);display:flex;justify-content:center">'+ICN('timer',26)+'</div><div style="font-weight:700;font-size:13px;margin-top:6px">'+t('quickTimer')+'</div></div></div>';
+  h+='<div style="display:flex;gap:10px;margin-bottom:16px"><div class="card" style="flex:1;padding:14px;margin:0;cursor:pointer;text-align:center" onclick="openTool(\'chrono\')"><div style="color:var(--et,var(--e));display:flex;justify-content:center">'+ICN('stopwatch',26)+'</div><div style="font-weight:700;font-size:13px;margin-top:6px">'+t('toolChronoName')+'</div></div><div class="card" style="flex:1;padding:14px;margin:0;cursor:pointer;text-align:center" onclick="openQuickTimer()"><div style="color:var(--warn);display:flex;justify-content:center">'+ICN('timer',26)+'</div><div style="font-weight:700;font-size:13px;margin-top:6px">'+t('quickTimer')+'</div></div></div>';
   h+='<div style="display:flex;gap:10px;align-items:center"><div class="searchbox" style="flex:1;min-width:0"><span class="searchic">'+ICN('search',18,'var(--muted)')+'</span><input class="inp" id="toolSearchInp" type="search" enterkeyhint="search" autocomplete="off" style="padding-left:42px" placeholder="'+t('searchTool')+'" value="'+escHtml(toolSearch||'')+'"></div></div>';
   return h+'<div id="toolRes">'+outilsList()+'</div>';
 }
@@ -12421,7 +12442,7 @@ function outilsList(){
     return h;
   }
   const rowHTML=k=>{ const tl=TOOLS[k]; return tl?'<div class="list-row" onclick="openTool(\''+k+'\')"><div class="lr-icon">'+tl.icon+'</div><div class="lr-txt"><div class="lr-title">'+tl.name+'</div><div class="lr-sub">'+tl.sub+'</div></div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>':''; };
-  const tileHTML=k=>{ const tl=TOOLS[k]; return tl?'<div class="favtile" onclick="openTool(\''+k+'\')"><div style="color:var(--e);display:flex;justify-content:center">'+tl.icon+'</div><div class="favlab">'+favShort(k)+'</div></div>':''; };
+  const tileHTML=k=>{ const tl=TOOLS[k]; return tl?'<div class="favtile" onclick="openTool(\''+k+'\')"><div style="color:var(--et,var(--e));display:flex;justify-content:center">'+tl.icon+'</div><div class="favlab">'+favShort(k)+'</div></div>':''; };
   // MODE SIMPLIFIÉ : pas de favoris à gérer ; les outils du quotidien en grandes lignes
   // (la prière comprise, sinon seulement joignable depuis l'Accueil), le reste en tuiles
   // de trois par ligne, plus lisibles que les quatre du mode normal.
@@ -12433,9 +12454,9 @@ function outilsList(){
   }
   // FAVORIS
   const favs=toolFav().filter(k=>TOOLS[k]);
-  h+='<div class="row" style="margin:18px 0 10px"><span class="lab">'+t('favorites')+'</span><span class="see" style="font-size:12px;color:var(--e);cursor:pointer" onclick="editFavs()">'+t('edit')+'</span></div>';
+  h+='<div class="row" style="margin:18px 0 10px"><span class="lab">'+t('favorites')+'</span><span class="see" style="font-size:12px;color:var(--et,var(--e));cursor:pointer" onclick="editFavs()">'+t('edit')+'</span></div>';
   h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:22px">';
-  favs.slice(0,8).forEach(k=>{ const tl=TOOLS[k]; h+='<div class="favtile" onclick="openTool(\''+k+'\')"><div style="color:var(--e);display:flex;justify-content:center">'+tl.icon+'</div><div class="favlab">'+favShort(k)+'</div></div>'; });
+  favs.slice(0,8).forEach(k=>{ const tl=TOOLS[k]; h+='<div class="favtile" onclick="openTool(\''+k+'\')"><div style="color:var(--et,var(--e));display:flex;justify-content:center">'+tl.icon+'</div><div class="favlab">'+favShort(k)+'</div></div>'; });
   h+='</div>';
   // OUTILS PRINCIPAUX
   h+='<div class="lab" style="margin:0 0 12px">'+t('mainTools')+'</div>';
@@ -12444,7 +12465,7 @@ function outilsList(){
   });
   // AUTRES OUTILS
   h+='<div class="lab" style="margin:18px 0 12px">'+t('otherTools')+'</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px">';
-  OTHER_TOOLS.forEach(k=>{ const tl=TOOLS[k]; h+='<div class="favtile" style="padding:12px 4px" onclick="openTool(\''+k+'\')"><div style="color:var(--e);display:flex;justify-content:center">'+tl.icon+'</div><div class="favlab">'+favShort(k)+'</div></div>'; });
+  OTHER_TOOLS.forEach(k=>{ const tl=TOOLS[k]; h+='<div class="favtile" style="padding:12px 4px" onclick="openTool(\''+k+'\')"><div style="color:var(--et,var(--e));display:flex;justify-content:center">'+tl.icon+'</div><div class="favlab">'+favShort(k)+'</div></div>'; });
   h+='</div>';
   return h;
 }
@@ -12482,7 +12503,7 @@ function renderSanteTool(){
   // POIDS
   const last=WEIGHTLOG[WEIGHTLOG.length-1], prev=WEIGHTLOG[WEIGHTLOG.length-2];
   const trend=last&&prev?(last.w-prev.w):0;
-  h+='<div class="card"><div class="row"><div class="card-t" style="margin:0">'+t('weightLab')+'</div><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="addWeight()">'+t('addBtn')+'</span></div>';
+  h+='<div class="card"><div class="row"><div class="card-t" style="margin:0">'+t('weightLab')+'</div><span style="font-size:12px;color:var(--et,var(--e));cursor:pointer" onclick="addWeight()">'+t('addBtn')+'</span></div>';
   h+='<div class="row" style="align-items:flex-end;margin-top:8px"><div class="man" style="font-size:36px;font-weight:800">'+hKm(last?last.w:w)+'<span style="font-size:16px;color:var(--muted)"> kg</span></div>'+(trend?'<span class="num" style="margin-left:10px;color:'+(trend<0?'var(--ok)':'var(--warn)')+'">'+(trend>0?'▲ +':'▼ ')+fmt1(trend)+' kg</span>':'')+'</div>';
   if(WEIGHTLOG.length>=2) h+='<div style="margin-top:12px">'+weightSparkline()+'</div>';
   h+='</div>';
@@ -12491,7 +12512,7 @@ function renderSanteTool(){
     '<div class="pbar" style="margin-top:12px"><div style="width:'+Math.min(100,(imc/40)*100)+'%;background:var('+imcCol+')"></div></div></div>';
   // INDICATEURS — grille
   h+='<div class="sgrid" style="margin-bottom:14px">';
-  h+='<div class="sbox"><div class="v" style="color:var(--e)">'+freq+'</div><div class="l">'+t('sessionsPerWeek')+'</div></div>';
+  h+='<div class="sbox"><div class="v" style="color:var(--et,var(--e))">'+freq+'</div><div class="l">'+t('sessionsPerWeek')+'</div></div>';
   h+='<div class="sbox"><div class="v" style="color:var(--or)">'+bmr+'</div><div class="l">'+t('metabolismKcal')+'</div></div>';
   h+='<div class="sbox"><div class="v" style="color:var(--bad)">'+Math.round(burned)+'</div><div class="l">'+t('burned7d')+'</div></div>';
   h+='<div class="sbox"><div class="v" style="color:var(--platine)">'+hKm(Math.round(w*35/100)/10)+' L</div><div class="l">'+t('waterPerDay')+'</div></div>';
@@ -12571,14 +12592,14 @@ function renderAIO(){
   if(LAB.dist&&LAB.pace&&LAB.dist>=1){
     h+='<div class="card-t" style="margin-top:20px">'+t('splitTimesTitle')+'</div>';
     const n=Math.min(Math.floor(LAB.dist),42);
-    for(let k=1;k<=n;k++){ const hi=[5,10,21,42].includes(k); h+='<div class="zrow" style="padding:9px 0"><span class="zname" style="'+(hi?'color:var(--e)':'')+'">km '+k+(hi?'':'')+'</span><span class="zval mono">'+fmtTime(LAB.pace*k)+'</span></div>'; }
+    for(let k=1;k<=n;k++){ const hi=[5,10,21,42].includes(k); h+='<div class="zrow" style="padding:9px 0"><span class="zname" style="'+(hi?'color:var(--et,var(--e))':'')+'">km '+k+(hi?'':'')+'</span><span class="zval mono">'+fmtTime(LAB.pace*k)+'</span></div>'; }
     if(LAB.dist%1>0.01) h+='<div class="zrow" style="padding:9px 0"><span class="zname">'+fmtN(LAB.dist,2)+' km</span><span class="zval mono">'+fmtTime(LAB.time)+'</span></div>';
   }
   $('#outBody').innerHTML=h;
 }
 function labField(label,icon,field,val,isComputed){
   const filled=LAB[field]!=null;
-  return '<div class="card" style="padding:14px;margin-bottom:9px;cursor:pointer;'+(isComputed?'border-color:var(--e);background:var(--ed)':'')+'" onclick="editLab(\''+field+'\')"><div class="row"><div class="row" style="gap:11px"><span style="font-size:19px">'+icon+'</span><div><div style="font-size:11px;color:var(--muted)">'+label+(isComputed?' · '+t('calculatedLab'):filled?'':' · '+t('toFillLab'))+'</div><div class="mono" style="font-weight:700;font-size:19px;margin-top:2px;color:'+(isComputed?'var(--e)':'var(--snow)')+'">'+val+'</div></div></div><span style="color:var(--dim);font-size:15px">'+(isComputed?'':'')+'</span></div></div>';
+  return '<div class="card" style="padding:14px;margin-bottom:9px;cursor:pointer;'+(isComputed?'border-color:var(--e);background:var(--ed)':'')+'" onclick="editLab(\''+field+'\')"><div class="row"><div class="row" style="gap:11px"><span style="font-size:19px">'+icon+'</span><div><div style="font-size:11px;color:var(--muted)">'+label+(isComputed?' · '+t('calculatedLab'):filled?'':' · '+t('toFillLab'))+'</div><div class="mono" style="font-weight:700;font-size:19px;margin-top:2px;color:'+(isComputed?'var(--et,var(--e))':'var(--snow)')+'">'+val+'</div></div></div><span style="color:var(--dim);font-size:15px">'+(isComputed?'':'')+'</span></div></div>';
 }
 function editLab(field){
   if(field==='dist') pickDistance(t('distField'),LAB.dist||10,v=>labSet('dist',v));
@@ -12591,7 +12612,7 @@ function resetLab(){ LAB={dist:null,time:null,pace:null,speed:null,recent:[]}; r
 /* ----- Nouveaux outils ----- */
 function renderVDOTtool(){
   const vdot=getUserVDOT();
-  let h='<div class="card" style="text-align:center"><div class="man" style="font-size:48px;font-weight:800;color:var(--e)">'+(vdot?fmt1(vdot):'—')+'</div><div class="lab">'+t('vdotToolTitle')+'</div></div>';
+  let h='<div class="card" style="text-align:center"><div class="man" style="font-size:48px;font-weight:800;color:var(--et,var(--e))">'+(vdot?fmt1(vdot):'—')+'</div><div class="lab">'+t('vdotToolTitle')+'</div></div>';
   if(vdot){ const vo2=fmt1(vdot);
     h+='<div class="card"><div class="card-t">'+t('physioEstimates')+'</div>'+
       '<div class="zrow"><span class="zname">'+t('vo2maxEst')+'</span><span class="zval">'+vo2+' ml/kg/min</span></div>'+
@@ -12611,7 +12632,7 @@ function renderRMtool(){
   const rm=rmR<=1?rmW:Math.round(rmW*(1+rmR/30)); // Epley (1 rép. = la charge elle-même, pas +3 %)
   let h='<div class="card"><div class="field"><label>'+t('liftedLoadKgLab')+'</label><div class="stepper"><button onclick="rmW=Math.max(0,rmW-2.5);renderRMtool()">−</button><span class="val">'+rmW+'</span><button onclick="rmW+=2.5;renderRMtool()">+</button></div></div>';
   h+='<div class="field"><label>'+t('repsLab')+'</label><div class="stepper"><button onclick="rmR=Math.max(1,rmR-1);renderRMtool()">−</button><span class="val">'+rmR+'</span><button onclick="rmR++;renderRMtool()">+</button></div></div></div>';
-  h+='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var(--e)">'+rm+' kg</div><div class="lab">'+t('estimated1RMLab')+'</div></div>';
+  h+='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var(--et,var(--e))">'+rm+' kg</div><div class="lab">'+t('estimated1RMLab')+'</div></div>';
   h+='<div class="card"><div class="card-t">'+t('percentOf1RMLab')+'</div>'+[[95,2],[90,4],[85,6],[80,8],[75,10],[70,12],[60,15]].map(x=>'<div class="zrow"><span class="zname">'+x[0]+'% · ~'+x[1]+' '+t('repsShort')+'</span><span class="zval">'+Math.round(rm*x[0]/100)+' kg</span></div>').join('')+'</div>';
   $('#outBody').innerHTML=h;
 }
@@ -12619,7 +12640,7 @@ let tonW=60,tonS=4,tonR=10;
 function renderTonnageTool(){
   const ton=tonW*tonS*tonR;
   let h='<div class="card"><div class="field"><label>'+t('loadKgLab')+'</label><div class="stepper"><button onclick="tonW=Math.max(0,tonW-2.5);renderTonnageTool()">−</button><span class="val">'+tonW+'</span><button onclick="tonW+=2.5;renderTonnageTool()">+</button></div></div><div class="field"><label>'+t('setsLab')+'</label><div class="stepper"><button onclick="tonS=Math.max(1,tonS-1);renderTonnageTool()">−</button><span class="val">'+tonS+'</span><button onclick="tonS++;renderTonnageTool()">+</button></div></div><div class="field"><label>'+t('repsLab')+'</label><div class="stepper"><button onclick="tonR=Math.max(1,tonR-1);renderTonnageTool()">−</button><span class="val">'+tonR+'</span><button onclick="tonR++;renderTonnageTool()">+</button></div></div></div>';
-  h+='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var(--e)">'+ton+' kg</div><div class="lab">'+tp('totalTonnageLab',tonS,tonR,tonW)+'</div></div>';
+  h+='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var(--et,var(--e))">'+ton+' kg</div><div class="lab">'+tp('totalTonnageLab',tonS,tonR,tonW)+'</div></div>';
   $('#outBody').innerHTML=h;
 }
 function renderLoadTool(){
@@ -12640,7 +12661,7 @@ let calKm=10;
 function renderCaloriesTool(){
   const w=P.weight||62; const cal=Math.round(0.9*w*calKm);
   let h='<div class="card"><div class="field"><label>'+t('distanceKmLab')+'</label><div class="stepper"><button onclick="calKm=Math.max(1,calKm-1);renderCaloriesTool()">−</button><span class="val">'+calKm+'</span><button onclick="calKm++;renderCaloriesTool()">+</button></div></div></div>';
-  h+='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var(--e)">'+cal+'</div><div class="lab">'+tp('kcalBurnedLab',w)+'</div></div>';
+  h+='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var(--et,var(--e))">'+cal+'</div><div class="lab">'+tp('kcalBurnedLab',w)+'</div></div>';
   $('#outBody').innerHTML=h;
 }
 function renderHydraTool(){
@@ -12652,7 +12673,7 @@ let bmrSex=(P&&P.sex)||'Homme';
 function renderBMRtool(){
   const w=P.weight||62,ht=P.height||175,ag=+age(),a=isFinite(ag)&&ag>0?ag:25;
   const bmr=Math.round(bmrSex==='Femme'?(10*w+6.25*ht-5*a-161):(10*w+6.25*ht-5*a+5));
-  let h='<div class="card" style="text-align:center"><div class="man" style="font-size:40px;font-weight:800;color:var(--e)">'+bmr+'</div><div class="lab">'+t('basalMetabolism')+'</div></div>';
+  let h='<div class="card" style="text-align:center"><div class="man" style="font-size:40px;font-weight:800;color:var(--et,var(--e))">'+bmr+'</div><div class="lab">'+t('basalMetabolism')+'</div></div>';
   h+='<div class="card"><div class="card-t">'+t('needsByActivity')+'</div>'+[[t('actSedentary'),1.2],[t('actLight'),1.375],[t('actModerate'),1.55],[t('actIntense'),1.725],[t('actAthlete'),1.9]].map(x=>'<div class="zrow"><span class="zname">'+x[0]+'</span><span class="zval">'+Math.round(bmr*x[1])+' kcal</span></div>').join('')+'</div>';
   $('#outBody').innerHTML=h;
 }
@@ -12817,7 +12838,7 @@ function renderCalc(){
   h+='<div class="field"><label>'+t('paceMinSecKmLabel')+'</label><div class="wheels">'+wheel('TP.m',2,12,calc.TP.m)+'<span class="wheel-sep">:</span>'+wheel('TP.s',0,59,calc.TP.s)+'</div></div>';
   // speed
   const spk=calc.TP.m*60+calc.TP.s; const kmh=spk>0?fmt1(3600/spk):'0';
-  h+='<div class="sbox" style="text-align:center;margin-bottom:12px"><div class="v" style="color:var(--e)">'+kmh+' km/h</div><div class="l">'+t('speedLabel')+'</div></div>';
+  h+='<div class="sbox" style="text-align:center;margin-bottom:12px"><div class="v" style="color:var(--et,var(--e))">'+kmh+' km/h</div><div class="l">'+t('speedLabel')+'</div></div>';
   h+='<div class="row" style="gap:8px"><button class="btn ghost sm" onclick="resetCalc()">'+t('resetShortLabel')+'</button><button class="btn ghost sm" onclick="calc._adv=!calc._adv;renderCalc()">'+t('advancedLabel')+'</button><button class="btn sm" onclick="doCalc()">'+t('calculateLabel')+'</button></div>';
   if(calc._adv){
     h+='<hr class="hl"><div class="field"><label>'+t('penaltySecKmLabel')+'</label><div class="stepper"><button onclick="calc.penalty-=1;renderCalc()">−</button><span class="val">'+calc.penalty+'</span><button onclick="calc.penalty+=1;renderCalc()">+</button></div></div><div class="chk '+(calc.negSplit?'done':'')+'" onclick="calc.negSplit=!calc.negSplit;renderCalc()"><div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div><div class="txt">'+t('negativeSplitLabel')+'</div></div>';
@@ -12884,7 +12905,7 @@ function renderCalcResult(){
   // splits
   h+='<div class="lab" style="margin-bottom:8px">'+t('kmSplitsLabel')+'</div><div style="max-height:180px;overflow-y:auto">';
   const nk=Math.floor(resultDist/1000);
-  for(let k=1;k<=nk;k++){ const hi=[5,10,21,42].includes(k); h+='<div class="zrow" style="padding:8px 0"><span class="zname" style="'+(hi?'color:var(--e)':'')+'">km '+k+(hi?'':'')+'</span><span class="zval mono">'+fmtTime(spk*k)+'</span></div>'; }
+  for(let k=1;k<=nk;k++){ const hi=[5,10,21,42].includes(k); h+='<div class="zrow" style="padding:8px 0"><span class="zname" style="'+(hi?'color:var(--et,var(--e))':'')+'">km '+k+(hi?'':'')+'</span><span class="zval mono">'+fmtTime(spk*k)+'</span></div>'; }
   h+='</div>';
   // actions
   h+='<div class="row" style="gap:8px;margin-top:14px"><button class="btn ghost sm" onclick="saveCalcResult()">'+t('saveLabel')+'</button><button class="btn ghost sm" onclick="copyCalc()">'+t('copyLabel')+'</button><button class="btn ghost sm" onclick="shareCalc()">'+t('share')+'</button></div>';
@@ -12959,7 +12980,7 @@ function renderChrono(){
   if(chrono.laps.length){
     const best=Math.min(...chrono.laps), worst=Math.max(...chrono.laps), avg=chrono.laps.reduce((a,b)=>a+b,0)/chrono.laps.length;
     h+='<div class="sgrid" style="margin-bottom:12px"><div class="sbox"><div class="v mono" style="font-size:15px;color:var(--ok)">'+fmtChrono(best)+'</div><div class="l">'+t('bestLap')+'</div></div><div class="sbox"><div class="v mono" style="font-size:15px;color:var(--bad)">'+fmtChrono(worst)+'</div><div class="l">'+t('slowestLap')+'</div></div><div class="sbox"><div class="v mono" style="font-size:15px">'+fmtChrono(avg)+'</div><div class="l">'+t('avgLap')+'</div></div><div class="sbox"><div class="v">'+chrono.laps.length+'</div><div class="l">'+t('lapsLab')+'</div></div></div>';
-    h+='<div class="card"><div class="row" style="margin-bottom:8px"><div class="card-t" style="margin:0">'+t('lapsLab')+'</div><span style="font-size:12px;color:var(--e);cursor:pointer" onclick="exportLaps()">'+t('exportBtn')+'</span></div>';
+    h+='<div class="card"><div class="row" style="margin-bottom:8px"><div class="card-t" style="margin:0">'+t('lapsLab')+'</div><span style="font-size:12px;color:var(--et,var(--e));cursor:pointer" onclick="exportLaps()">'+t('exportBtn')+'</span></div>';
     [...chrono.laps].reverse().forEach((l,ri)=>{ const i=chrono.laps.length-1-ri; const isBest=l===best&&chrono.laps.length>1, isWorst=l===worst&&chrono.laps.length>1;
       h+='<div class="zrow'+(ri===0&&_ikNewLap?' ik-new':'')+'"><span class="zname">'+t('lapBtn')+' '+(i+1)+(isBest?' <span style="color:var(--ok);font-size:11px">'+t('fastTag')+'</span>':isWorst?' <span style="color:var(--bad);font-size:11px">'+t('slowTag')+'</span>':'')+'</span><span class="zval mono" style="'+(isBest?'color:var(--ok)':isWorst?'color:var(--bad)':'')+'">'+fmtChrono(l)+'</span></div>'; });
     h+='</div>';
@@ -13804,7 +13825,7 @@ function renderPriere(){
   const icons={Fajr:'sun',Dhuhr:'sun',Asr:'sun',Maghrib:'moon',Isha:'moon'};
   order.forEach((p,i)=>{
     const act=i===activeIdx;
-    h+='<div class="zrow" style="'+(act?'background:var(--ed);border-radius:12px;padding:11px 12px;margin:0 -4px':'')+'"><span style="display:inline-flex">'+ICN(icons[p],18)+'</span><span class="zname" style="margin-left:8px;'+(act?'color:var(--e)':'')+'">'+trPrayer(p)+'</span><span class="zval mono" style="'+(act?'color:var(--e);font-weight:700':'')+'">'+times[p]+'</span></div>';
+    h+='<div class="zrow" style="'+(act?'background:var(--ed);border-radius:12px;padding:11px 12px;margin:0 -4px':'')+'"><span style="display:inline-flex">'+ICN(icons[p],18)+'</span><span class="zname" style="margin-left:8px;'+(act?'color:var(--et,var(--e))':'')+'">'+trPrayer(p)+'</span><span class="zval mono" style="'+(act?'color:var(--et,var(--e));font-weight:700':'')+'">'+times[p]+'</span></div>';
   });
   h+='</div>';
   $('#outBody').innerHTML=h;
@@ -13866,7 +13887,7 @@ function notifPermBubbleHTML(){
   if(notifPermCached()!=='default') return '';
   return '<div class="row" style="align-items:center;gap:10px;padding:11px 12px;border-radius:16px;background:rgba(var(--e-rgb),.10);border:1px solid rgba(var(--e-rgb),.28);margin-bottom:12px">'+
     '<span style="display:inline-flex;flex-shrink:0">'+ICN('bell',17,'var(--e)')+'</span>'+
-    '<span style="flex:1;font-size:12.5px;line-height:1.4;cursor:pointer" onclick="requestNotifPermCTA()">'+t('notifBubbleText')+' <b style="color:var(--e)">'+t('notifBubbleAction')+'</b></span>'+
+    '<span style="flex:1;font-size:12.5px;line-height:1.4;cursor:pointer" onclick="requestNotifPermCTA()">'+t('notifBubbleText')+' <b style="color:var(--et,var(--e))">'+t('notifBubbleAction')+'</b></span>'+
     '<span onclick="dismissNotifBubble(event)" style="flex-shrink:0;padding:4px;cursor:pointer;color:var(--dim)">'+ICN('close',15)+'</span>'+
   '</div>';
 }
@@ -13945,7 +13966,7 @@ function renderProfile(){
     const nb=nextBadge();
     if(nb){
       const prog=badgeProgress(nb);
-      h+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--hair)"><div class="row" style="margin-bottom:6px"><span style="font-size:12px;color:var(--muted)">'+tp('nextBadgeLab',nb.name)+'</span><span class="mono" style="font-size:12px;color:var(--e)">'+prog.pct+'%</span></div><div class="pbar" style="height:6px"><div style="width:'+prog.pct+'%"></div></div><div style="font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.4">'+badgeHintText(prog)+'</div></div>';
+      h+='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--hair)"><div class="row" style="margin-bottom:6px"><span style="font-size:12px;color:var(--muted)">'+tp('nextBadgeLab',nb.name)+'</span><span class="mono" style="font-size:12px;color:var(--et,var(--e))">'+prog.pct+'%</span></div><div class="pbar" style="height:6px"><div style="width:'+prog.pct+'%"></div></div><div style="font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.4">'+badgeHintText(prog)+'</div></div>';
     }
     h+='</div>';
   }
@@ -14142,7 +14163,7 @@ function pfAccountHTML(){
     return '<div class="card" style="padding:16px">'+
       '<div class="row" style="justify-content:space-between;align-items:center">'+
         '<div class="row" style="gap:12px">'+
-          '<div style="width:44px;height:44px;border-radius:50%;background:var(--ed);color:var(--e);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0">'+(P.name?P.name[0].toUpperCase():'?')+'</div>'+
+          '<div style="width:44px;height:44px;border-radius:50%;background:var(--ed);color:var(--et,var(--e));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0">'+(P.name?P.name[0].toUpperCase():'?')+'</div>'+
           '<div><div style="font-weight:700">'+escHtml(P.name||'Athlète')+'</div><div style="font-size:12px;color:var(--muted)">'+escHtml(window.currentUserEmail)+'</div></div>'+
         '</div>'+
         '<span class="badge" style="font-size:10px;flex-shrink:0">Google</span>'+
@@ -14173,7 +14194,7 @@ function pfAccountHTML(){
     }
     return '<div class="card" style="padding:16px">'+
       '<div class="row" style="gap:12px;align-items:center">'+
-        '<div style="width:44px;height:44px;border-radius:50%;background:var(--ed);color:var(--e);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0">'+(P.name?P.name[0].toUpperCase():'?')+'</div>'+
+        '<div style="width:44px;height:44px;border-radius:50%;background:var(--ed);color:var(--et,var(--e));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0">'+(P.name?P.name[0].toUpperCase():'?')+'</div>'+
         '<div><div style="font-weight:700">'+escHtml(P.name||'Athlète')+'</div><div style="font-size:12px;color:var(--muted)">'+t('guestModeTitle')+'</div></div>'+
       '</div>'+
       '<div style="font-size:12px;color:var(--muted);margin-top:12px;line-height:1.5">'+t('guestModeDesc')+'</div>'+
@@ -14329,6 +14350,9 @@ function pfAppearanceHTML(){
   // sombre, puis les options. Les molettes (V3.5.0) restent libres : un cran doux (et une
   // petite vibration) marque chaque réglage d'origine.
   const lum=lumValue(), mv=matValue(), near=matNearest(mv);
+  // Mode simple (V3.12.1) : ni aperçu « verre » ni matière (sans objet ici) — la couleur, le
+  // thème et les options, rien d'autre.
+  if(P.easyMode) return '<div class="lab ap-lab" id="apColor">'+t('ezColorLab')+'</div>'+pfColorHTML()+pfAppearanceTail(lum);
   let s='<div class="glass-demo ap-demo" aria-hidden="true"><div class="glass-demo-card card"><div class="glass-demo-t">IKORUN</div><div class="glass-demo-s" id="matDemo">'+apDemoText(mv)+'</div></div></div>';
   s+='<div class="lab ap-lab">'+t('matLab')+'</div>';
   if(P.easyMode) s+='<div class="ap-hint">'+t('glassEasyNote')+'</div>';
@@ -14337,7 +14361,11 @@ function pfAppearanceHTML(){
      '<div class="ap-hint" id="matHint">'+matHint(mv)+'</div>'+
      ((near==='max'||near==='wrap'||carbonKind())?'<button class="btn ghost sm ap-tilt" onclick="askGlassTilt()">'+ICN('bolt',14)+' '+t(P.glassTilt?'glassTiltActive':'glassTiltBtn')+'</button>':'');
   s+='<div class="lab ap-lab" id="apColor">'+t(wrapOn()?'wrapShadeLab':'appColor')+'</div>'+pfColorHTML();
-  s+='<div class="lab ap-lab">'+t('theme')+'</div>'+
+  return s+pfAppearanceTail(lum);
+}
+// Thème (molette sombre ↔ clair) et options : communs au mode normal et au mode simple.
+function pfAppearanceTail(lum){
+  let s='<div class="lab ap-lab">'+t('theme')+'</div>'+
     '<div class="iks iks-lum"><input type="range" min="0" max="100" step="1" value="'+Math.round(lum)+'" aria-label="'+t('theme')+'" oninput="lumInput(this)" onchange="lumCommit(this)">'+
     '<div class="iks-ends"><span>'+ICN('moon',14)+t('modeDarkLab')+'</span><b id="lumNote">'+lumNote(lum)+'</b><span>'+t('modeLightLab')+ICN('sun',14)+'</span></div></div>';
   s+='<div class="lab ap-lab">'+t('optionsLab')+'</div>'+
@@ -14438,7 +14466,7 @@ function lumApply(){
     root.dataset.lumMix='1';
   }
   const meta=document.querySelector('meta[name="theme-color"]');
-  if(meta) meta.content=P.easyMode?(light?'#E9EFE9':'#0F1612'):(bg||(light?'#F2F4F8':'#0A0D12'));
+  if(meta) meta.content=P.easyMode?(getComputedStyle(root).getPropertyValue('--bg').trim()||(light?'#E9EFE9':'#0F1612')):(bg||(light?'#F2F4F8':'#0A0D12'));
 }
 let _iksRaf=0, _iksNotch=null;
 function iksNotch(v){ if(v!==_iksNotch && v!=null){ try{ if(navigator.vibrate) navigator.vibrate(8); }catch(e){} } _iksNotch=v; }
@@ -14579,7 +14607,7 @@ function pfNotifHTML(){
     // Notifications est l'endroit explicite où on vient chercher ce réglage.
     h+='<div class="row" style="align-items:center;gap:10px;padding:11px 12px;border-radius:16px;background:rgba(var(--e-rgb),.10);border:1px solid rgba(var(--e-rgb),.28);margin-bottom:16px;cursor:pointer" onclick="requestNotifPermCTA()">'+
       '<span style="display:inline-flex;flex-shrink:0">'+ICN('bell',17,'var(--e)')+'</span>'+
-      '<span style="flex:1;font-size:12.5px;line-height:1.4">'+t('notifBubbleText')+' <b style="color:var(--e)">'+t('notifBubbleAction')+'</b></span>'+
+      '<span style="flex:1;font-size:12.5px;line-height:1.4">'+t('notifBubbleText')+' <b style="color:var(--et,var(--e))">'+t('notifBubbleAction')+'</b></span>'+
     '</div>';
   } else if('Notification'in window && Notification.permission==='denied'){
     h+='<div class="tip" style="margin-bottom:16px">'+t('notifBlockedTip')+'</div>';
@@ -14597,7 +14625,7 @@ function pfNotifHTML(){
           '<div style="font-size:11.5px;color:var(--muted);line-height:1.45;margin-top:7px">'+t(sndPack()==='signature'?'sndPackSigDesc':'sndPackSoftDesc')+'</div></div>'+
         '<div style="margin-bottom:14px">'+
           '<div class="row" style="margin-bottom:7px"><span style="font-size:13px;color:var(--muted)">'+t('soundVolumeLab')+'</span>'+
-            '<span class="num" style="font-size:12px;color:var(--e)" id="sndVolVal">'+Math.round(soundVol()*100)+'%</span></div>'+
+            '<span class="num" style="font-size:12px;color:var(--et,var(--e))" id="sndVolVal">'+Math.round(soundVol()*100)+'%</span></div>'+
           '<input type="range" min="0" max="100" step="5" value="'+Math.round(soundVol()*100)+'" style="width:100%" oninput="setSoundVol(this.value)">'+
           '<div class="pills" style="margin-top:10px;flex-wrap:wrap">'+
             [['start','sndTest1'],['tick','sndTest2'],['goal','sndTest3'],['medal','sndTest4'],['finish','sndTest5']]
@@ -14616,7 +14644,7 @@ function pfNotifHTML(){
    des CGU/politique de confidentialité : à remplacer par l'adresse réelle. */
 const FEEDBACK_EMAIL='ikorunn@gmail.com';
 function openFeedback(){
-  let h='<div style="text-align:center;padding:4px 0 14px;color:var(--e)">'+ICN('comment',40,'currentColor')+'</div>';
+  let h='<div style="text-align:center;padding:4px 0 14px;color:var(--et,var(--e))">'+ICN('comment',40,'currentColor')+'</div>';
   h+='<div class="tip" style="margin-bottom:14px">'+t('feedbackIntro')+'</div>';
   h+='<textarea class="inp" id="fb_text" rows="6" placeholder="'+t('feedbackPh')+'"></textarea>';
   h+='<button class="btn" style="margin-top:14px" onclick="sendFeedback()">'+t('sendBtn')+'</button>';
@@ -14746,7 +14774,7 @@ function cleanImportedProfile(src){
     if(typeof src[k]==='boolean') o[k]=src[k];
   });
   const STR={name:40,username:20,bio:160,city:60,goal:80,compDate:10,bday:10,objRace:40,objTime:12,
-    t5k:12,t3k:12,t10k:12,t1500:12,pb5k:12,pb3k:12,pb10k:12,pb1500:12,lang:2,mode:10,theme:20,glass:8,sndPack:12,wrap:12,
+    t5k:12,t3k:12,t10k:12,t1500:12,pb5k:12,pb3k:12,pb10k:12,pb1500:12,lang:2,mode:10,theme:20,glass:8,sndPack:12,wrap:12,ezTheme:12,
     sex:10,objGoal:40,objProfile:40,followPerso:40,planSituation:10,planLevel:6,planGap:6};
   Object.keys(STR).forEach(k=>{ if(typeof src[k]==='string') o[k]=stripHtmlChars(src[k]).slice(0,STR[k]); });
   if(Array.isArray(src.days)) o.days=src.days.filter(x=>Number.isInteger(x)&&x>=0&&x<=6).slice(0,7);
@@ -14811,7 +14839,7 @@ function openRecords(){
     const sorted=[...RECORDS].sort((a,b)=>(a.meters||0)-(b.meters||0));
     sorted.forEach((r,i)=>{
       const v=r.meters?vdotFromRace(r.meters,parseTime(r.time)).toFixed(1):'—';
-      h+='<div class="card" style="padding:13px"><div class="row"><div><div style="font-weight:700">'+escHtml(r.dist)+' · <span class="mono" style="color:var(--e)">'+escHtml(r.time)+'</span></div><div style="font-size:11px;color:var(--muted);margin-top:3px">'+(r.date?fmtDate(r.date):'')+(r.place?' · '+escHtml(r.place):'')+(r.meters?' · VDOT '+v:'')+'</div></div><button class="x" onclick="delRecord('+i+')">'+ICN('trash',16)+'</button></div>'+(r.feel||r.hrAvg?'<div style="font-size:11px;color:var(--dim);margin-top:6px">'+(r.feel?escHtml(r.feel):'')+(r.hrAvg?' · '+t('avgHR')+' '+r.hrAvg:'')+(r.hrMax?' / '+t('maxHRshort')+' '+r.hrMax:'')+'</div>':'')+'</div>';
+      h+='<div class="card" style="padding:13px"><div class="row"><div><div style="font-weight:700">'+escHtml(r.dist)+' · <span class="mono" style="color:var(--et,var(--e))">'+escHtml(r.time)+'</span></div><div style="font-size:11px;color:var(--muted);margin-top:3px">'+(r.date?fmtDate(r.date):'')+(r.place?' · '+escHtml(r.place):'')+(r.meters?' · VDOT '+v:'')+'</div></div><button class="x" onclick="delRecord('+i+')">'+ICN('trash',16)+'</button></div>'+(r.feel||r.hrAvg?'<div style="font-size:11px;color:var(--dim);margin-top:6px">'+(r.feel?escHtml(r.feel):'')+(r.hrAvg?' · '+t('avgHR')+' '+r.hrAvg:'')+(r.hrMax?' / '+t('maxHRshort')+' '+r.hrMax:'')+'</div>':'')+'</div>';
     });
     const best=bestRecord();
     if(best) h+='<div class="card" style="border-color:var(--or);text-align:center"><div class="lab" style="color:var(--or)">'+t('bestPerf')+'</div><div class="man" style="font-weight:800;font-size:18px;margin-top:4px">'+escHtml(best.dist)+' — '+escHtml(best.time)+'</div><div style="font-size:12px;color:var(--muted)">VDOT '+vdotFromRace(best.meters,parseTime(best.time)).toFixed(1)+'</div></div>';
