@@ -478,8 +478,16 @@
     try{
       document.head.appendChild(fige);
       h.classList.add('easy-mode');
-      essaie(c,'la page ne déborde pas de l\'écran sous le zoom',function(){
+      essaie(c,'la page ne déborde pas de l\'écran',function(){
         var d=h.scrollHeight-innerHeight; if(d>1) throw new Error('dépasse de '+d+' px'); return 'au pixel près';
+      });
+      // V3.12.0 : plus de zoom CSS (Safari l'appliquait mal : pages qui glissaient, barre du
+      // bas qui choisissait le mauvais onglet), et la palette vert mat est bien posée.
+      essaie(c,'aucun zoom CSS, palette vert mat',function(){
+        var z=parseFloat(getComputedStyle(h).zoom)||1; if(Math.abs(z-1)>0.001) throw new Error('zoom '+z);
+        var bg=getComputedStyle(h).getPropertyValue('--bg').trim().toUpperCase();
+        if(bg!=='#0F1612' && bg!=='#E9EFE9') throw new Error('fond '+bg);
+        return 'zoom 1 · fond '+bg;
       });
       essaie(c,'la pastille reste dans la barre quand l\'onglet Outils est masqué',function(){
         var outils=document.querySelector('.nb[data-s="outils"]'), pf=document.querySelector('.nb[data-s="profil"]'), pill=document.getElementById('nav-pill');
@@ -880,6 +888,8 @@
       chk(c,'la réverbération est disponible', !!_busWet, '');
       chk(c,'l\'alarme a son bus dédié', !!_alarmBus, '');
       chk(c,'les sons Signature ont leur sortie', !!_studioOut, '');
+      // V3.12.0 : « Sobre » est l'ambiance par défaut, Signature reste au choix
+      chk(c,'ambiance Sobre par défaut, Signature au choix', (P.sndPack==='signature'||sndPack()==='soft') && typeof SOFT.medal==='function' && typeof setSndPack==='function', sndPack());
 
       var an=ctx.createAnalyser(); an.fftSize=2048; _master.connect(an); if(_studioOut) _studioOut.connect(an);
       var buf=new Float32Array(an.fftSize);
