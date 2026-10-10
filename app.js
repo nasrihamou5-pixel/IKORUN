@@ -4452,7 +4452,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='3.12.2';
+const APP_VERSION='3.12.3';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -9819,9 +9819,16 @@ function addPersoPlan(){
 function openPerso(id){ curPerso=id; renderSport(); setTimeout(()=>renderPersoDetail(),0); }
 let sportView='list';
 function renderSport(){
-  document.body.dataset.scr = sportView==='calendar' ? 'calendrier' : 'sport';
-  $('#tbTitle').textContent = sportView==='calendar' ? t('calendarTitle') : t('sport');
-  $('#tbSub').textContent = sportView==='calendar' ? t('calendarSub') : t('sub_sport');
+  // V3.12.3 : renderSport() est aussi appelée en arrière-plan (séance cochée depuis l'Accueil,
+  // synchro, séances manquées…). Elle posait alors « Sport » dans l'en-tête et marquait l'app
+  // sur Sport alors que l'Accueil restait affiché : bannière Sport au-dessus de « Salut ».
+  // L'en-tête ne change donc que si l'onglet Sport est réellement à l'écran.
+  const sc=$('#s-sport');
+  if(sc && sc.classList.contains('on')){
+    document.body.dataset.scr = sportView==='calendar' ? 'calendrier' : 'sport';
+    $('#tbTitle').textContent = sportView==='calendar' ? t('calendarTitle') : t('sport');
+    $('#tbSub').textContent = sportView==='calendar' ? t('calendarSub') : t('sub_sport');
+  }
   if(sportView==='calendar'){ swapIn('s-sport',renderCalendarView()); return; }
   let h='<div class="seg-row">'+
     '<div class="seg-ctrl"><div class="seg-btn'+(sportTab==='run'?' on':'')+'" onclick="sportTab=\'run\';curPerso=null;renderSport()">'+t('running')+'</div><div class="seg-btn'+(sportTab==='muscu'?' on':'')+'" onclick="sportTab=\'muscu\';renderSport()">'+t('muscu')+'</div></div>'+

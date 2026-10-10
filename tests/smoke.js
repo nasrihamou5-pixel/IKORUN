@@ -772,6 +772,16 @@
       if(se.scrollWidth>innerWidth+1) throw new Error('largeur '+se.scrollWidth+' > '+innerWidth);
       return innerWidth+' px';
     });
+    // V3.12.3 : une séance cochée depuis l'Accueil redessinait Sport en arrière-plan, et
+    // renderSport() posait « Sport » dans l'en-tête : bannière Sport au-dessus de l'Accueil.
+    essaie(c,'redessiner Sport en arrière-plan ne change pas l\'en-tête',function(){
+      var scr=document.body.dataset.scr, tt=document.getElementById('tbTitle'), avant=tt?tt.textContent:'';
+      if(!scr||scr==='sport'||scr==='calendrier') return 'Sport affiché, rien à vérifier';
+      renderSport();
+      if(document.body.dataset.scr!==scr) throw new Error('écran devenu '+document.body.dataset.scr);
+      if(tt && tt.textContent!==avant) throw new Error('titre devenu '+tt.textContent);
+      return 'en-tête « '+avant+' » conservé';
+    });
   }
 
   /* ======================= 7f. BILAN À LA MOLETTE, INTRO (V3.5.5) ========== */
