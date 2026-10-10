@@ -32,7 +32,7 @@
 // ou immuable (app.js n'est plus retéléchargé à chaque ouverture) ; chaque fichier
 // est ajouté séparément (un seul fichier manquant ne fait pas échouer l'installation).
 // ============================================================================
-const C = 'ikorun-v113';
+const C = 'ikorun-v114';
 const STATIC = 'ikorun-static-v1';
 const EXT = 'ikorun-ext-v1';
 const EXT_MAX = 250;

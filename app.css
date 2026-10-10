@@ -4192,6 +4192,14 @@ html.easy-mode[data-mode]:not(#_) :is(.btn:not(.ghost):not(.danger),.hv7-act.mai
    en clair) ; jours du plan : plus de dégradé qui partait d'une teinte claire sous le chiffre blanc. */
 html.easy-mode[data-mode]:not(#_) :is(.pill.on,.cv-unit.on,.ps-day.on){background:var(--e) !important;border-color:var(--e) !important;box-shadow:none !important;color:#fff !important;}
 
+/* Grand écran (V3.12.3) : de part et d'autre de la colonne de l'app, le fond « ambiance » (et en
+   Maximal ses grandes taches de couleur qui dérivent) remplissait tout l'écran du PC : un grand
+   bloc bleu à gauche ou à droite. Les côtés restent au fond uni, avec un filet qui cadre l'app. */
+@media (min-width:600px){
+  html::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:2147483000;
+    background:linear-gradient(90deg,var(--bg) calc(50% - 216px),var(--hair) calc(50% - 216px),var(--hair) calc(50% - 215px),transparent calc(50% - 215px),
+      transparent calc(50% + 215px),var(--hair) calc(50% + 215px),var(--hair) calc(50% + 216px),var(--bg) calc(50% + 216px));}
+}
 /* iOS (V3.12.0) : Safari zoome toute la page dès qu'on touche un champ dont le texte fait moins
    de 16 px, et ne revient pas toujours en arrière — la page restait agrandie et glissait de côté.
    -webkit-touch-callout n'existe que sur iOS : Android et ordinateur gardent leurs tailles. */
