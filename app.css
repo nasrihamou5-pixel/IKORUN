@@ -768,6 +768,11 @@ body[data-scr="home"] .topbar{display:none;}
 .exg-card:active{transform:scale(.97);}
 .exg-img{position:relative;width:100%;aspect-ratio:5/4;background:linear-gradient(135deg,var(--s2),var(--s1)) center/cover no-repeat;
   display:flex;align-items:center;justify-content:center;font-size:34px;}
+/* V3.12.2 : la photo est une <img loading="lazy"> (en fond CSS, les 91 photos partaient d'un coup à
+   l'ouverture) ; les cartes hors de l'écran ne sont ni mises en page ni peintes (content-visibility). */
+.exg-ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .3s ease;}
+.exg-ph.on{opacity:1;}
+.exg-card{content-visibility:auto;contain-intrinsic-size:auto 196px;}
 .exg-add{position:absolute;top:7px;right:7px;width:26px;height:26px;border-radius:8px;background:var(--e);color:#fff;font-size:16px;font-weight:800;
   display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px -4px rgba(var(--e-rgb),.6);}
 .exg-body{padding:9px 10px 11px;}
@@ -825,7 +830,14 @@ html.easy-mode .pagein{animation:none!important;}
 .bd-icon:not(.locked)::before{content:'';position:absolute;top:-30%;left:-60%;width:60%;height:160%;pointer-events:none;
   background:linear-gradient(100deg,transparent 20%,rgba(255,255,255,.55) 45%,transparent 70%);
   transform:rotate(20deg);animation:bdIdleSweep 3.8s ease-in-out infinite;animation-delay:calc(var(--sw,0)*.22s);}
-#scroll.is-scrolling .bd-icon:not(.locked)::before{animation-play-state:paused;}
+:is(#scroll,.ov).is-scrolling .bd-icon:not(.locked)::before{animation-play-state:paused;}
+/* V3.12.2 : une fenêtre ouverte floute l'écran qu'elle recouvre. Une animation qui tournait dessous
+   (étincelle des traits lumineux, reflet de l'îlot) obligeait à recalculer ce flou à chaque image :
+   le défilement des Badges ou du plan complet tombait à ~45 images/s (60 sans elles). Tout ce qui
+   est derrière une fenêtre se fige donc le temps qu'elle reste ouverte. */
+body:has(.ov.on) :is(#scroll,.topbar,#ikIsland) *,
+body:has(.ov.on) :is(#scroll,.topbar,#ikIsland) *::before,
+body:has(.ov.on) :is(#scroll,.topbar,#ikIsland) *::after{animation-play-state:paused !important;}
 @keyframes bdIdleSweep{0%,42%{transform:translateX(0) rotate(20deg);}58%,100%{transform:translateX(260%) rotate(20deg);}}
 
 /* ===== ÉCRAN "DÉTAILS DU BADGE" — rail de paliers, halo matière, chips ===== */
@@ -1114,6 +1126,10 @@ html[data-mode="light"]{
    même logique que .ex-swipe-card plus bas dans le fichier, mais pour la
    navigation entre écrans plutôt que pour révéler une action. */
 .ov.ov-push{background:transparent;backdrop-filter:none;align-items:stretch;justify-content:stretch;}
+/* Grand écran (V3.12.2) : ces pages prenaient toute la largeur d'un PC ou d'une tablette (Amis,
+   Club, Bibliothèque, Programme, réglages du Profil…). Elles restent dans la colonne de l'app,
+   centrées comme le reste ; overflow:hidden garde le glissement d'entrée dans la colonne. */
+.ov.ov-push{left:0;right:0;width:auto;max-width:430px;margin:0 auto;overflow:hidden;}
 .ov.ov-push .ov-card{width:100%;max-width:none;height:100%;max-height:none;border-radius:0;border-top:none;
   box-shadow:none;animation:none;transform:translateX(100%);transition:transform .34s var(--ease-out);
   display:flex;flex-direction:column;padding:max(18px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom));}
@@ -1762,6 +1778,7 @@ html[data-mode="light"]{
 .mus-card{position:relative;display:flex;align-items:stretch;gap:12px;padding:14px 16px;margin-bottom:10px;
   border-radius:20px;background:var(--s2);border:1px solid var(--hair);cursor:pointer;box-shadow:var(--sh-sm);
   transition:transform .15s var(--ease-spring),border-color .2s;}
+.mus-card{content-visibility:auto;contain-intrinsic-size:auto 132px;} /* V3.12.2 : cartes hors écran ignorées au rendu */
 .mus-card:active{transform:scale(.985);}
 .mus-card-b{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;justify-content:center;}
 .mus-name{font-family:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:700;font-size:15.5px;letter-spacing:-.3px;line-height:1.2;}
@@ -2990,6 +3007,9 @@ html.ik-lines-anim .ik-lit-now::before,html.ik-lines-anim .ik-lit-now::after{tra
   animation:ikSpark 9s var(--spark-delay,2s) ease-in-out infinite;}
 @keyframes ikSpark{0%{background-position:-30% 0,0 0;}14%{background-position:130% 0,0 0;}100%{background-position:130% 0,0 0;}}
 html.easy-mode .ik-lit::before,html.easy-mode .ik-lit::after{animation:none;}
+/* V3.12.2 : l'étincelle anime background-position (repeinte à chaque image, hors compositeur) ; elle
+   se fige pendant un défilement, sinon l'Accueil perdait 5 à 7 images par geste sur un petit téléphone. */
+#scroll.is-scrolling .ik-lit::before,#scroll.is-scrolling .ik-lit::after{animation-play-state:paused;}
 @media (prefers-reduced-motion: reduce){ .ik-lit::before,.ik-lit::after{animation:none !important;} }
 
 /* ===================================================================

@@ -4452,7 +4452,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='3.12.1';
+const APP_VERSION='3.12.2';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -4479,6 +4479,7 @@ const APP_VERSION='3.12.1';
    boucle. Restent les réponses à un geste (série validée, tour de chrono…). */
 const IK_TABS=['home','sport','stats','outils','profil'];
 const IK_GROUPS=[['.kbars-row','.kbar'],['.sp-rail','i'],['.bd-grid','.bd-cell'],['svg','.lc-dot']];
+const IK_PLAY_SEL='.kbar,.pbar,.kgoal-bar,.goal-bar,.sp-rail,.lc-line,.lc-area,.lc-dot,.bd-cell,.bd-icon';
 let _ikPrevTab='home';
 const _ikSeenTabs=new Set();
 // Vrai la première fois que `key` est vu sur `el` depuis le lancement de l'app.
@@ -4489,10 +4490,12 @@ function ikMotionOff(){
 }
 function ikFlow(c){ if(/^(SCRIPT|STYLE|TEMPLATE)$/.test(c.tagName)) return false; const cs=getComputedStyle(c); return cs.display!=='none' && cs.position!=='absolute' && cs.position!=='fixed'; }
 // Racine de la cascade : on traverse les enveloppes qui ne contiennent qu'un ou deux blocs.
+// V3.12.2 : on s'arrête au 3e bloc trouvé (la Bibliothèque en a 180 : getComputedStyle sur chacun).
+function ikFlowKids(el,max){ const out=[]; for(const c of el.children){ if(ikFlow(c)){ out.push(c); if(out.length>=max) break; } } return out; }
 function ikContentRoot(el){
   let r=el;
   for(let g=0; g<5; g++){
-    const kids=[...r.children].filter(ikFlow);
+    const kids=ikFlowKids(r,3);
     if(kids.length>2) break;
     const big=kids.reduce((b,c)=>(!b||c.children.length>b.children.length)?c:b,null);
     if(!big||big.children.length<2) break;
@@ -4502,7 +4505,7 @@ function ikContentRoot(el){
 }
 function ikCascade(root,skip){
   // Les sélecteurs (.seg-ctrl) ne réapparaissent pas : seule leur pastille glisse (V3.6.0).
-  const kids=[...root.children].filter(c=>ikFlow(c) && !c.matches('.seg-ctrl,.seg-row') && !(skip && c.matches(skip))).slice(0,14);
+  const kids=[]; for(const c of root.children){ if(ikFlow(c) && !c.matches('.seg-ctrl,.seg-row') && !(skip && c.matches(skip))){ kids.push(c); if(kids.length>=14) break; } }
   kids.forEach(c=>c.classList.remove('ik-in'));
   void root.offsetWidth;
   kids.forEach((c,i)=>{
@@ -4575,8 +4578,12 @@ function ikPlay(root,opts){
   root._ikT=now;
   if(opts.cascade!==false) ikCascade(ikContentRoot(root),opts.skip);
   IK_GROUPS.forEach(([g,c])=>root.querySelectorAll(g).forEach(box=>box.querySelectorAll(c).forEach((el,i)=>el.style.setProperty('--bi',Math.min(i,24)))));
-  root.classList.remove('ik-play'); void root.offsetWidth; root.classList.add('ik-play');
-  clearTimeout(root._ikPlayT); root._ikPlayT=setTimeout(()=>root.classList.remove('ik-play'),2600);
+  // .ik-play ne sert qu'aux graphiques (barres, courbes, badges) : sur une vue qui n'en a pas,
+  // le basculer restylait tout le contenu deux fois (la règle « .pbar > div » vise tous les div).
+  if(root.querySelector(IK_PLAY_SEL)){
+    root.classList.remove('ik-play'); void root.offsetWidth; root.classList.add('ik-play');
+    clearTimeout(root._ikPlayT); root._ikPlayT=setTimeout(()=>root.classList.remove('ik-play'),2600);
+  }
   ikDrawRings(root); ikCountUp(root);
 }
 function ikEnterScreen(s){
@@ -4787,7 +4794,10 @@ function _buildAudioGraph(){
   try{
     // Sobre (27/09) : pièce plus petite — queue de 0,9 s au lieu de 1,5 s, qui s'éteint plus vite.
     // IR posée juste après : le tout premier son part sans attendre son calcul.
-    const conv=ctx.createConvolver(); setTimeout(()=>{ try{ conv.buffer=_makeIR(ctx,1.1,0.22); }catch(e){} },30);
+    const conv=ctx.createConvolver(); const ir=()=>{ try{ conv.buffer=_makeIR(ctx,1.1,0.22); }catch(e){} };
+    // V3.12.2 : calculée quand le téléphone est libre — au premier toucher (souvent un défilement),
+    // ces ~20 ms tombaient en plein geste.
+    if(window.requestIdleCallback) requestIdleCallback(ir,{timeout:1500}); else setTimeout(ir,400);
     // passe-haut avant (pas de graves boueux) et passe-bas après (queue feutrée, pas de sifflement)
     const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=420;
     const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=5200;
@@ -6153,6 +6163,11 @@ let _lastScrollTouch=0;
     _scrollEndT=setTimeout(()=>{ sc.classList.remove('is-scrolling'); },200);
   },{passive:true});
 })();
+// V3.12.2 : même pause dans les fenêtres qui défilent (Badges : des dizaines de reflets en boucle).
+document.addEventListener('scroll',e=>{
+  const t=e.target, ov=t&&t.closest?t.closest('.ov'):null; if(!ov) return;
+  ov.classList.add('is-scrolling'); clearTimeout(ov._scT); ov._scT=setTimeout(()=>ov.classList.remove('is-scrolling'),200);
+},{capture:true,passive:true});
 /* ---------- NAV : masquage auto au scroll ----------
    Descend (avec petite animation ressort) quand on scrolle vers le bas,
    revient dès qu'on remonte. Reste toujours visible tout en haut de page,
@@ -6514,6 +6529,7 @@ function initApp(){
   setTimeout(ensurePush,900);
   setTimeout(syncDailyReminderState,900);
   setTimeout(sigStart,1500); // calcul des sons Signature, une fois l'accueil affiché
+  setTimeout(()=>{ if(window.requestIdleCallback) requestIdleCallback(warmFigures,{timeout:4000}); else warmFigures(); },2200);
   if(window._launchTourAfterInit){
     window._launchTourAfterInit=false;
     setTimeout(startAppTour,1200);
@@ -10636,13 +10652,28 @@ function progLastDone(p){
    saccadait. Une <img> est dessinée une seule fois puis simplement déplacée. Les couleurs
    (variables CSS, que l'image ne voit pas) sont résolues au moment de la construire ; le
    cache se renouvelle donc tout seul quand le thème change. */
-const _figCache=new Map();
+const _figCache=new Map(), _figPng=new Map();
+function _figRaster(key,url,vb){
+  const im=new Image();
+  im.onload=()=>{ try{ const W=160, H=Math.round(W*vb[3]/vb[2]), c=document.createElement('canvas'); c.width=W; c.height=H;
+      c.getContext('2d').drawImage(im,0,0,W,H); _figPng.set(key,c.toDataURL('image/webp',0.9)); }catch(e){ _figPng.delete(key); } };
+  im.onerror=()=>_figPng.delete(key);
+  im.src=url;
+}
+// Prépare les silhouettes des programmes pendant que le téléphone est libre, après l'accueil :
+// le premier passage sur Musculation affiche alors directement les PNG.
+function warmFigures(){ [...PROGS,...CUSTOM.filter(p=>p.kind==='muscu')].slice(0,30).forEach(p=>{ try{ progBodyMini(p); }catch(e){} }); }
 function anatomyImg(zoneInfo,PARTS,viewBox){
   const cs=getComputedStyle(document.documentElement);
   const col=v=>{ const m=/^var\((--[\w-]+)\)$/.exec(v); return m?(cs.getPropertyValue(m[1]).trim()||'#888'):v; };
   const zoneMap={}; zoneInfo.zones.forEach(z=>{ zoneMap[z.key]=z.strength; });
   const base=col('var(--s3)'), hair=col('var(--card2)')||base, pri=col(ANATOMY_STRENGTH_COLOR.primary), sec=col(ANATOMY_STRENGTH_COLOR.secondary);
   const key=viewBox+'|'+base+hair+pri+sec+'|'+Object.keys(zoneMap).sort().map(k=>k+zoneMap[k]).join(',');
+  // V3.12.2 : une fois figée en image (WebP, ou PNG si le navigateur n'encode pas le WebP ; 160 px
+// de large), la silhouette ne coûte plus rien
+  // à afficher ; en SVG, ses centaines de tracés étaient redessinés à chaque ouverture de l'onglet.
+  const png=_figPng.get(key); const vb=viewBox.split(/\s+/).map(Number);
+  if(png) return '<img class="mus-fig" src="'+png+'" alt="" decoding="async" draggable="false" style="aspect-ratio:'+vb[2]+'/'+vb[3]+'">';
   let url=_figCache.get(key);
   if(!url){
     let out='';
@@ -10651,10 +10682,10 @@ function anatomyImg(zoneInfo,PARTS,viewBox){
       PARTS[slug].forEach(d=>{ out+='<path d="'+d+'" fill="'+fill+'" opacity="'+op+'"/>'; });
     });
     url='data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="'+viewBox+'">'+out+'</svg>');
-    if(_figCache.size>60) _figCache.clear();
+    if(_figCache.size>60){ _figCache.clear(); _figPng.clear(); }
     _figCache.set(key,url);
   }
-  const vb=viewBox.split(/\s+/).map(Number);
+  if(!_figPng.has(key)){ _figPng.set(key,null); const job=()=>_figRaster(key,url,vb); if(window.requestIdleCallback) requestIdleCallback(job,{timeout:3000}); else setTimeout(job,300); }
   return '<img class="mus-fig" src="'+url+'" alt="" decoding="async" draggable="false" style="aspect-ratio:'+vb[2]+'/'+vb[3]+'">';
 }
 function progBodyMini(p){
@@ -11547,7 +11578,7 @@ function openLibFor(cb){ libCallback=cb; libBrowseMode=false; _libFromCreate=(cb
 function openLibBrowse(){ libCallback=null; libBrowseMode=true; renderLib(); openOv('ovLib'); }
 let libView='grid';
 function renderLib(){
-  let h='<input class="inp" style="margin-bottom:14px" placeholder="'+t('searchExercisePlaceholder')+'" value="'+escHtml(libSearch||'')+'" oninput="libSearch=this.value;renderLib();this.focus()">';
+  let h='<input class="inp" style="margin-bottom:14px" placeholder="'+t('searchExercisePlaceholder')+'" value="'+escHtml(libSearch||'')+'" oninput="libSearch=this.value;clearTimeout(_libSearchT);_libSearchT=setTimeout(renderLibList,140)">';
   // Tuiles muscle en photo — navigation visuelle rapide, comme une planche anatomique
   h+='<div class="lab" style="margin-bottom:8px">'+t('muscleLabel')+'</div><div class="mtile-row">'+MUSCLE_GROUPS.map(m=>{
     const img=muscleRepImg(m); const on=libFilter===m;
@@ -11555,6 +11586,14 @@ function renderLib(){
   }).join('')+'</div>';
   h+='<div class="lab" style="margin-bottom:6px">'+t('equipmentLabel')+'</div><div class="pills" style="margin-bottom:10px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent)">'+EQUIPMENT.map(m=>'<div class="pill '+(libFilterEquip===m?'on':'')+'" onclick="libFilterEquip=\''+m+'\';renderLib()">'+(m==='Tous'?t('filterAll'):trEquip(m))+'</div>').join('')+'</div>';
   h+='<div class="lab" style="margin-bottom:6px">'+t('levelLabel')+'</div><div class="pills" style="margin-bottom:14px">'+['Tous',...LEVELS].map(m=>'<div class="pill '+(libFilterLevel===m?'on':'')+'" onclick="libFilterLevel=\''+m+'\';renderLib()">'+(m==='Tous'?t('filterAll'):trLevel(m))+'</div>').join('')+'</div>';
+  $('#libBody').innerHTML=h+'<div id="libList">'+libListHTML()+'</div>';
+}
+// Recherche (V3.12.2) : chaque lettre redessinait toute la bibliothèque (filtres, tuiles
+// photo et 177 cartes) ; seule la liste change désormais, 140 ms après la dernière frappe.
+let _libSearchT=null;
+function renderLibList(){ const el=$('#libList'); if(el) el.innerHTML=libListHTML(); }
+function libListHTML(){
+  let h='';
   const q=libSearch.toLowerCase().trim();
   const list=allExercises().filter(e=>{
     if(libFilter!=='Tous' && e.group!==libFilter && !(e.primary||[]).some(m=>m.includes(libFilter)||libFilter.includes(m))) return false;
@@ -11569,7 +11608,7 @@ function renderLib(){
     list.forEach(e=>{
       const nm=e.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;'); const g=exGif(e.name); const lvCol=e.level==='Débutant'?'--ok':e.level==='Avancé'?'--bad':'--warn';
       h+='<div class="exg-card" onclick=\'openFiche("'+nm+'")\'>'+
-        '<div class="exg-img" '+(g?'style="background-image:url(\''+g[0]+'\')"':'')+'>'+(g?'':'<span style="display:inline-flex">'+exGlyph(e,22)+'</span>')+
+        '<div class="exg-img">'+(g?'<img class="exg-ph" src="'+g[0]+'" alt="" loading="lazy" decoding="async" onload="this.classList.add(\'on\')" onerror="this.remove()">':'<span style="display:inline-flex">'+exGlyph(e,22)+'</span>')+
         (libBrowseMode?'':'<span class="exg-add" onclick=\'event.stopPropagation();pickEx("'+nm+'")\'>＋</span>')+
         '</div><div class="exg-body"><div class="exg-name">'+trExName(e.name)+'</div><div class="exg-sub">'+trEquip(e.equip)+' · <span style="color:var('+lvCol+')">'+trLevel(e.level)+'</span></div></div></div>';
     });
@@ -11580,7 +11619,7 @@ function renderLib(){
     h+='<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:10px;flex:1;cursor:pointer" onclick=\'openFiche("'+e.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'")\'>'+exThumb(e.name,48)+'<div><div style="font-weight:700;font-size:14px">'+trExName(e.name)+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+trEquip(e.equip)+' · <span style="color:var('+lvCol+')">'+trLevel(e.level)+'</span></div><div class="muscle-tags">'+(e.primary||[]).map(m=>'<span class="mtag">'+trMuscle(m)+'</span>').join('')+'</div></div></div>'+(libBrowseMode?'<button class="x" onclick=\'openFiche("'+e.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'")\'>›</button>':'<button class="x" style="color:var(--et,var(--e))" onclick=\'pickEx("'+e.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'")\'>＋</button>')+'</div></div>';
   });
   }
-  $('#libBody').innerHTML=h;
+  return h;
 }
 function pickEx(name){ const e=findEx(name); if(libCallback) libCallback(e); else openFiche(name); }
 /* Fiche tutoriel complète */
