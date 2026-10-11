@@ -353,6 +353,15 @@
       chk(c,'jamais deux séances dures d\'affilée ni dure le lendemain d\'une sortie longue', !bilan.enchaine.length, bilan.enchaine.slice(0,3).join(' | '));
       chk(c,'aucune semaine au-dessus du km/sem maxi', !bilan.max.length, bilan.max.slice(0,4).join(' | '));
       chk(c,'la régénération hebdomadaire ne dépasse pas le km/sem maxi', !bilan.regen.length, bilan.regen.slice(0,4).join(' | ')||'2 régénérations par plan');
+      // V3.14.0 : contrôle complet (distance × allure = durée, zones, sortie longue, ordre, progression)
+      var tous=[]; SC.forEach(function(sc){
+        var d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+sc[4]*7-1);
+        P.compDate=dateKey(d); P.days=sc[1]; P.objRace=sc[0]; P.kmWeekMin=sc[2]; P.kmWeekMax=sc[3]; SESSLOG=[]; SESS=[];
+        generatePlan(); var v=validatePlan(PLAN); v.errors.forEach(function(e){ tous.push(sc[0]+' : '+e); });
+        weeklyAdaptiveRegen(true); v=validatePlan(PLAN); v.errors.forEach(function(e){ tous.push(sc[0]+' (régénéré) : '+e); });
+      });
+      chk(c,'validatePlan : chaque séance et chaque semaine sont cohérentes', !tous.length, tous.slice(0,3).join(' | ')||'3 plans + leur régénération');
+      chk(c,'la semaine 1 est visible juste après la génération', PLAN.sessions[0] && PLAN.sessions[0].week===1, PLAN.sessions[0]&&('1re séance en semaine '+PLAN.sessions[0].week));
     }catch(e){ ko(c,'exécution',e&&e.message); }
     finally{
       window.toast=vraiToast; window.burst=vraiBurst; window.renderSport=vraiRender;
