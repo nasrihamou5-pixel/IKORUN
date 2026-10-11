@@ -2013,7 +2013,7 @@ const I18N={
     // --- Stats ---
     tabBilan:'Bilan',tabRun:'Course',tabMuscu:'Muscu',tabTrophies:'Trophées',
     perWeek:'Semaine',perMonth:'Mois',per3Month:'3 Mois',perYear:'Année',
-    completeProfileTitle:'Complète ton profil',completeProfileDesc:'Ta taille et ton poids servent à calculer ton IMC, tes calories et tes besoins.',
+    completeProfileTitle:'Complète ton profil',completeProfileBtn:'Renseigner ma taille et mon poids',completeProfileDesc:'Ta taille et ton poids servent à calculer ton IMC, tes calories et tes besoins.',
     chooseHeight:'Choisir ta taille',chooseWeight:'Choisir ton poids',
     mileage:'Kilométrage',kmCumulated:'km cumulés',vsPrevPeriod:'vs période préc.',
     kgCumulated:'kg cumulés',tonnageTrendLab:'Tendance tonnage',kgThisWeek:'kg cette sem.',vsPrevCountShort:'vs {0} préc.',
@@ -2424,7 +2424,7 @@ const I18N={
     sleepCyclesTitle:'Cycles de sommeil',sleepHoursPerNightLabel:'Heures de sommeil / nuit',
     sleepInsufficient:'Insuffisant — récupération compromise',sleepOptimal:'Optimal pour un athlète',sleepPlenty:'Beaucoup — écoute ton corps',
     speedLabel:'Vitesse',timeHMSLabel:'Temps (h : mm : ss)',
-    psCardRace:'Ta course',psCardWeek:'Ta semaine',psFinishHint:'Objectif : franchir la ligne en forme, sans chrono imposé.',psDaysPerWeek:'{0} j/sem',psCardGoal:'Ton objectif',psSitLab:'Ta situation',psSitCont:'En prépa',psSitRep:'Je reprends',psSitOther:'Autre',psLvlLab:'Ton niveau',lvlDeb:'Débutant',lvlInt:'Intermédiaire',lvlConf:'Confirmé',psRecLab:'Tes derniers chronos',psRecEdit:'Mettre à jour',psRecNone:'aucun pour l’instant',psGapLab:'Ta dernière sortie remonte à',gapLt1:'– 1 mois',gap13:'1–3 mois',gap36:'3–6 mois',gapGt6:'+ 6 mois',psRepHint:'Le plan repart en douceur et remonte petit à petit.',psOtherHint:'Pas de souci : IKORUN se cale sur tes chronos et ton historique.',psDistLab:'Distance exacte',psDateIn:'Plan de {0} semaines',psDateSoon:'Trop proche : il faut au moins une semaine de préparation',psTimeLab:'Chrono visé',psTimePace:'soit {0} /km',psTimePred:'prédiction actuelle {0}',psVolume:'IKORUN règle ton volume : {0} → {1} km/sem, +10 % max d’une semaine à l’autre, une semaine allégée sur quatre.',psSessLab:'Les séances de ton plan',psSessHint:'Touche une séance pour savoir à quoi elle sert.',st_VMAc:'Répétitions courtes (200 à 400 m) très rapides, à ta vitesse maximale aérobie, avec récupération. Développe ta vitesse et la puissance de ton cœur.',st_VMAl:'Répétitions de 800 à 1 200 m juste sous ta VMA. Tu apprends à tenir une allure rapide plus longtemps.',st_INTERVAL:'Alternance d’efforts soutenus et de récupérations, de durées variées. Travaille le rythme et la capacité à relancer.',st_TEMPO:'Course continue « confortablement dure », 20 à 40 min. Améliore ton endurance à allure rapide.',st_SEUIL:'Blocs à l’allure que tu tiendrais environ une heure, avec de courtes récupérations. Repousse le moment où les jambes brûlent.',st_EF:'Footing facile où tu peux parler sans souffler. La base de tout : 70 à 80 % de ton entraînement.',st_LONG:'La plus longue sortie de la semaine, en endurance. Habitue ton corps à durer et à économiser son énergie.',st_DBLSEUIL:'Deux séances au seuil le même jour (matin et soir), à volume modéré. Beaucoup de travail utile sans trop de fatigue.',st_FARTLEK:'« Jeu de vitesse » : des accélérations libres pendant un footing, au feeling. Varié et ludique.',st_COTES:'Montées courtes et dynamiques, retour en trottinant. Renforce les jambes et la foulée, sans les chocs de la piste.',st_VO2:'Efforts de 3 à 5 min très durs, proches de ton maximum. Augmente ta consommation maximale d’oxygène.',st_SPE:'Portions à l’allure exacte de ta course objectif. Ton corps mémorise le rythme du jour J.',st_RECUP:'Footing très lent et court, ou marche. Aide à récupérer sans rester immobile.',configurePlanTitle:'Configurer mon plan',courseProfileLabel:'Profil du parcours',generateMyPlanBtn:'Générer mon plan',
+    psCardRace:'Ta course',psCardWeek:'Ta semaine',psFinishHint:'Objectif : franchir la ligne en forme, sans chrono imposé.',psDaysPerWeek:'{0} j/sem',psCardGoal:'Ton objectif',psSitLab:'Ta situation',psSitCont:'En prépa',psSitRep:'Je reprends',psSitOther:'Autre',psLvlLab:'Ton niveau',lvlDeb:'Débutant',lvlInt:'Intermédiaire',lvlConf:'Confirmé',psRecLab:'Tes derniers chronos',psRecEdit:'Mettre à jour',psEdit:'Modifier',psFromSignup:'Repris de ton inscription',psRecNone:'aucun pour l’instant',psGapLab:'Ta dernière sortie remonte à',gapLt1:'– 1 mois',gap13:'1–3 mois',gap36:'3–6 mois',gapGt6:'+ 6 mois',psRepHint:'Le plan repart en douceur et remonte petit à petit.',psOtherHint:'Pas de souci : IKORUN se cale sur tes chronos et ton historique.',psDistLab:'Distance exacte',psDateIn:'Plan de {0} semaines',psDateSoon:'Trop proche : il faut au moins une semaine de préparation',psTimeLab:'Chrono visé',psTimePace:'soit {0} /km',psTimePred:'prédiction actuelle {0}',psVolume:'IKORUN règle ton volume : {0} → {1} km/sem, +10 % max d’une semaine à l’autre, une semaine allégée sur quatre.',psSessLab:'Les séances de ton plan',psSessHint:'Touche une séance pour savoir à quoi elle sert.',st_VMAc:'Répétitions courtes (200 à 400 m) très rapides, à ta vitesse maximale aérobie, avec récupération. Développe ta vitesse et la puissance de ton cœur.',st_VMAl:'Répétitions de 800 à 1 200 m juste sous ta VMA. Tu apprends à tenir une allure rapide plus longtemps.',st_INTERVAL:'Alternance d’efforts soutenus et de récupérations, de durées variées. Travaille le rythme et la capacité à relancer.',st_TEMPO:'Course continue « confortablement dure », 20 à 40 min. Améliore ton endurance à allure rapide.',st_SEUIL:'Blocs à l’allure que tu tiendrais environ une heure, avec de courtes récupérations. Repousse le moment où les jambes brûlent.',st_EF:'Footing facile où tu peux parler sans souffler. La base de tout : 70 à 80 % de ton entraînement.',st_LONG:'La plus longue sortie de la semaine, en endurance. Habitue ton corps à durer et à économiser son énergie.',st_DBLSEUIL:'Deux séances au seuil le même jour (matin et soir), à volume modéré. Beaucoup de travail utile sans trop de fatigue.',st_FARTLEK:'« Jeu de vitesse » : des accélérations libres pendant un footing, au feeling. Varié et ludique.',st_COTES:'Montées courtes et dynamiques, retour en trottinant. Renforce les jambes et la foulée, sans les chocs de la piste.',st_VO2:'Efforts de 3 à 5 min très durs, proches de ton maximum. Augmente ta consommation maximale d’oxygène.',st_SPE:'Portions à l’allure exacte de ta course objectif. Ton corps mémorise le rythme du jour J.',st_RECUP:'Footing très lent et court, ou marche. Aide à récupérer sans rester immobile.',configurePlanTitle:'Configurer mon plan',courseProfileLabel:'Profil du parcours',generateMyPlanBtn:'Générer mon plan',
     
     minKmWeekLabel:'Km/sem mini',
     preparedRaceLabel:'Course préparée',raceDateLabel:'Date de la course',
@@ -2599,7 +2599,7 @@ const I18N={
     // --- Stats ---
     tabBilan:'Overview',tabRun:'Running',tabMuscu:'Strength',tabTrophies:'Trophies',
     perWeek:'Week',perMonth:'Month',per3Month:'3 Months',perYear:'Year',
-    completeProfileTitle:'Complete your profile',completeProfileDesc:'Your height and weight are used to calculate your BMI, calories and needs.',
+    completeProfileTitle:'Complete your profile',completeProfileBtn:'Add my height and weight',completeProfileDesc:'Your height and weight are used to calculate your BMI, calories and needs.',
     chooseHeight:'Choose your height',chooseWeight:'Choose your weight',
     mileage:'Mileage',kmCumulated:'km total',vsPrevPeriod:'vs previous period',
     kgCumulated:'kg total',tonnageTrendLab:'Volume trend',kgThisWeek:'kg this week',vsPrevCountShort:'vs {0} prev.',
@@ -3010,7 +3010,7 @@ const I18N={
     sleepCyclesTitle:'Sleep cycles',sleepHoursPerNightLabel:'Hours of sleep / night',
     sleepInsufficient:'Insufficient — recovery compromised',sleepOptimal:'Optimal for an athlete',sleepPlenty:'A lot — listen to your body',
     speedLabel:'Speed',timeHMSLabel:'Time (h : mm : ss)',
-    psCardRace:'Your race',psCardWeek:'Your week',psFinishHint:'Goal: cross the line feeling good, no set time.',psDaysPerWeek:'{0} days/wk',psCardGoal:'Your goal',psSitLab:'Your situation',psSitCont:'In training',psSitRep:'Coming back',psSitOther:'Other',psLvlLab:'Your level',lvlDeb:'Beginner',lvlInt:'Intermediate',lvlConf:'Advanced',psRecLab:'Your latest times',psRecEdit:'Update',psRecNone:'none yet',psGapLab:'Your last run was',gapLt1:'< 1 month',gap13:'1–3 months',gap36:'3–6 months',gapGt6:'6+ months',psRepHint:'The plan starts gently and builds up little by little.',psOtherHint:'No problem: IKORUN adapts to your times and history.',psDistLab:'Exact distance',psDateIn:'{0}-week plan',psDateSoon:'Too soon: you need at least one week of training',psTimeLab:'Target time',psTimePace:'that is {0} /km',psTimePred:'current prediction {0}',psVolume:'IKORUN sets your volume: {0} → {1} km/wk, +10% max week to week, one easier week out of four.',psSessLab:'The sessions in your plan',psSessHint:'Tap a session to see what it is for.',st_VMAc:'Short, very fast reps (200 to 400 m) at your maximal aerobic speed, with recovery. Builds speed and heart power.',st_VMAl:'800 to 1,200 m reps just below your MAS. Teaches you to hold a fast pace for longer.',st_INTERVAL:'Hard efforts and recoveries of varied lengths. Works rhythm and the ability to surge.',st_TEMPO:'Continuous “comfortably hard” running, 20 to 40 min. Improves endurance at a fast pace.',st_SEUIL:'Blocks at the pace you could hold for about an hour, with short recoveries. Pushes back the moment your legs burn.',st_EF:'Easy running where you can talk without gasping. The foundation: 70 to 80% of your training.',st_LONG:'The longest run of the week, at an easy pace. Teaches your body to last and save energy.',st_DBLSEUIL:'Two threshold sessions on the same day (morning and evening), at moderate volume. Lots of useful work without too much fatigue.',st_FARTLEK:'“Speed play”: free surges during an easy run, by feel. Varied and fun.',st_COTES:'Short, punchy climbs, jogging back down. Strengthens legs and stride without the pounding of the track.',st_VO2:'Very hard 3 to 5 min efforts, close to your maximum. Raises your maximal oxygen uptake.',st_SPE:'Sections at the exact pace of your goal race. Your body memorises race-day rhythm.',st_RECUP:'A very slow, short jog or a walk. Helps you recover without sitting still.',configurePlanTitle:'Configure my plan',courseProfileLabel:'Course profile',generateMyPlanBtn:'Generate my plan',
+    psCardRace:'Your race',psCardWeek:'Your week',psFinishHint:'Goal: cross the line feeling good, no set time.',psDaysPerWeek:'{0} days/wk',psCardGoal:'Your goal',psSitLab:'Your situation',psSitCont:'In training',psSitRep:'Coming back',psSitOther:'Other',psLvlLab:'Your level',lvlDeb:'Beginner',lvlInt:'Intermediate',lvlConf:'Advanced',psRecLab:'Your latest times',psRecEdit:'Update',psEdit:'Edit',psFromSignup:'From your sign-up',psRecNone:'none yet',psGapLab:'Your last run was',gapLt1:'< 1 month',gap13:'1–3 months',gap36:'3–6 months',gapGt6:'6+ months',psRepHint:'The plan starts gently and builds up little by little.',psOtherHint:'No problem: IKORUN adapts to your times and history.',psDistLab:'Exact distance',psDateIn:'{0}-week plan',psDateSoon:'Too soon: you need at least one week of training',psTimeLab:'Target time',psTimePace:'that is {0} /km',psTimePred:'current prediction {0}',psVolume:'IKORUN sets your volume: {0} → {1} km/wk, +10% max week to week, one easier week out of four.',psSessLab:'The sessions in your plan',psSessHint:'Tap a session to see what it is for.',st_VMAc:'Short, very fast reps (200 to 400 m) at your maximal aerobic speed, with recovery. Builds speed and heart power.',st_VMAl:'800 to 1,200 m reps just below your MAS. Teaches you to hold a fast pace for longer.',st_INTERVAL:'Hard efforts and recoveries of varied lengths. Works rhythm and the ability to surge.',st_TEMPO:'Continuous “comfortably hard” running, 20 to 40 min. Improves endurance at a fast pace.',st_SEUIL:'Blocks at the pace you could hold for about an hour, with short recoveries. Pushes back the moment your legs burn.',st_EF:'Easy running where you can talk without gasping. The foundation: 70 to 80% of your training.',st_LONG:'The longest run of the week, at an easy pace. Teaches your body to last and save energy.',st_DBLSEUIL:'Two threshold sessions on the same day (morning and evening), at moderate volume. Lots of useful work without too much fatigue.',st_FARTLEK:'“Speed play”: free surges during an easy run, by feel. Varied and fun.',st_COTES:'Short, punchy climbs, jogging back down. Strengthens legs and stride without the pounding of the track.',st_VO2:'Very hard 3 to 5 min efforts, close to your maximum. Raises your maximal oxygen uptake.',st_SPE:'Sections at the exact pace of your goal race. Your body memorises race-day rhythm.',st_RECUP:'A very slow, short jog or a walk. Helps you recover without sitting still.',configurePlanTitle:'Configure my plan',courseProfileLabel:'Course profile',generateMyPlanBtn:'Generate my plan',
     
     minKmWeekLabel:'Min km/week',
     preparedRaceLabel:'Race you\u2019re preparing for',raceDateLabel:'Race date',
@@ -3185,7 +3185,7 @@ const I18N={
     // --- الإحصائيات ---
     tabBilan:'الحصيلة',tabRun:'الجري',tabMuscu:'كمال الأجسام',tabTrophies:'الأوسمة',
     perWeek:'أسبوع',perMonth:'شهر',per3Month:'3 أشهر',perYear:'سنة',
-    completeProfileTitle:'أكمل ملفك الشخصي',completeProfileDesc:'يُستخدم طولك ووزنك لحساب مؤشر كتلة جسمك وسعراتك واحتياجاتك.',
+    completeProfileTitle:'أكمل ملفك الشخصي',completeProfileBtn:'أدخل طولي ووزني',completeProfileDesc:'يُستخدم طولك ووزنك لحساب مؤشر كتلة جسمك وسعراتك واحتياجاتك.',
     chooseHeight:'اختر طولك',chooseWeight:'اختر وزنك',
     mileage:'المسافة المقطوعة',kmCumulated:'كم متراكمة',vsPrevPeriod:'مقارنة بالفترة السابقة',
     kgCumulated:'كغ متراكمة',tonnageTrendLab:'اتجاه الحمولة',kgThisWeek:'كغ هذا الأسبوع',vsPrevCountShort:'مقارنة بـ {0} سابقًا',
@@ -3599,7 +3599,7 @@ const I18N={
     sleepCyclesTitle:'دورات النوم',sleepHoursPerNightLabel:'ساعات النوم / الليلة',
     sleepInsufficient:'غير كافٍ — التعافي مُعرَّض للخطر',sleepOptimal:'مثالي للرياضي',sleepPlenty:'كثير — استمع لجسدك',
     speedLabel:'السرعة',timeHMSLabel:'الزمن (س : د : ث)',
-    psCardRace:'سباقك',psCardWeek:'أسبوعك',psFinishHint:'الهدف: عبور خط الوصول بحالة جيدة، دون وقت محدد.',psDaysPerWeek:'{0} أيام/أسبوع',psCardGoal:'هدفك',psSitLab:'وضعك',psSitCont:'في تحضير',psSitRep:'أعود بعد توقف',psSitOther:'أخرى',psLvlLab:'مستواك',lvlDeb:'مبتدئ',lvlInt:'متوسط',lvlConf:'متقدم',psRecLab:'آخر أوقاتك',psRecEdit:'تحديث',psRecNone:'لا شيء بعد',psGapLab:'آخر جري لك كان منذ',gapLt1:'أقل من شهر',gap13:'1–3 أشهر',gap36:'3–6 أشهر',gapGt6:'أكثر من 6 أشهر',psRepHint:'تبدأ الخطة بهدوء وترتفع شيئًا فشيئًا.',psOtherHint:'لا مشكلة: يتكيف IKORUN مع أوقاتك وسجلّك.',psDistLab:'المسافة بالضبط',psDateIn:'خطة من {0} أسابيع',psDateSoon:'قريب جدًا: تحتاج أسبوعًا من التحضير على الأقل',psTimeLab:'الوقت المستهدف',psTimePace:'أي {0} /كم',psTimePred:'التوقع الحالي {0}',psVolume:'الحجم يضبطه IKORUN: {0} ← {1} كم في الأسبوع. لا أكثر من +10% من أسبوع لآخر، وأسبوع أخف من كل أربعة.',psSessLab:'حصص خطتك',psSessHint:'المس حصة لتعرف فائدتها.',st_VMAc:'تكرارات قصيرة (200 إلى 400 م) سريعة جدًا بسرعتك الهوائية القصوى، مع استرجاع. تطوّر السرعة وقوة القلب.',st_VMAl:'تكرارات من 800 إلى 1200 م تحت سرعتك القصوى بقليل. تتعلم الحفاظ على وتيرة سريعة مدة أطول.',st_INTERVAL:'تناوب بين جهود قوية واسترجاع بمدد مختلفة. يعمل على الإيقاع والقدرة على التسريع.',st_TEMPO:'جري متواصل «صعب بشكل مريح» من 20 إلى 40 دقيقة. يحسّن التحمل بوتيرة سريعة.',st_SEUIL:'كتل بالوتيرة التي تحافظ عليها نحو ساعة، مع استرجاع قصير. يؤخر لحظة احتراق الساقين.',st_EF:'جري سهل تستطيع فيه الكلام دون لهاث. الأساس: 70 إلى 80% من تدريبك.',st_LONG:'أطول جري في الأسبوع بوتيرة سهلة. يعوّد جسمك على المدة وتوفير الطاقة.',st_DBLSEUIL:'حصتان عند العتبة في اليوم نفسه (صباحًا ومساءً) بحجم معتدل. عمل مفيد كثير دون تعب زائد.',st_FARTLEK:'«لعب السرعة»: تسارعات حرة أثناء جري سهل حسب الإحساس. متنوع وممتع.',st_COTES:'صعود قصير وحيوي، والنزول بالهرولة. يقوّي الساقين والخطوة دون صدمات المضمار.',st_VO2:'جهود صعبة جدًا من 3 إلى 5 دقائق قريبة من حدك الأقصى. ترفع استهلاكك الأقصى للأكسجين.',st_SPE:'مقاطع بالوتيرة الدقيقة لسباقك المستهدف. يحفظ جسمك إيقاع يوم السباق.',st_RECUP:'جري بطيء جدًا وقصير، أو مشي. يساعد على الاسترجاع دون جمود.',configurePlanTitle:'إعداد خطتي',courseProfileLabel:'طبيعة المسار',generateMyPlanBtn:'أنشئ خطتي',
+    psCardRace:'سباقك',psCardWeek:'أسبوعك',psFinishHint:'الهدف: عبور خط الوصول بحالة جيدة، دون وقت محدد.',psDaysPerWeek:'{0} أيام/أسبوع',psCardGoal:'هدفك',psSitLab:'وضعك',psSitCont:'في تحضير',psSitRep:'أعود بعد توقف',psSitOther:'أخرى',psLvlLab:'مستواك',lvlDeb:'مبتدئ',lvlInt:'متوسط',lvlConf:'متقدم',psRecLab:'آخر أوقاتك',psRecEdit:'تحديث',psEdit:'تعديل',psFromSignup:'من بيانات تسجيلك',psRecNone:'لا شيء بعد',psGapLab:'آخر جري لك كان منذ',gapLt1:'أقل من شهر',gap13:'1–3 أشهر',gap36:'3–6 أشهر',gapGt6:'أكثر من 6 أشهر',psRepHint:'تبدأ الخطة بهدوء وترتفع شيئًا فشيئًا.',psOtherHint:'لا مشكلة: يتكيف IKORUN مع أوقاتك وسجلّك.',psDistLab:'المسافة بالضبط',psDateIn:{zero:'خطة من {0} أسبوع',one:'خطة من أسبوع واحد',two:'خطة من أسبوعين',few:'خطة من {0} أسابيع',many:'خطة من {0} أسبوعًا',other:'خطة من {0} أسبوع'},psDateSoon:'قريب جدًا: تحتاج أسبوعًا من التحضير على الأقل',psTimeLab:'الوقت المستهدف',psTimePace:'أي {0} /كم',psTimePred:'التوقع الحالي {0}',psVolume:'الحجم يضبطه IKORUN: {0} ← {1} كم في الأسبوع. لا أكثر من +10% من أسبوع لآخر، وأسبوع أخف من كل أربعة.',psSessLab:'حصص خطتك',psSessHint:'المس حصة لتعرف فائدتها.',st_VMAc:'تكرارات قصيرة (200 إلى 400 م) سريعة جدًا بسرعتك الهوائية القصوى، مع استرجاع. تطوّر السرعة وقوة القلب.',st_VMAl:'تكرارات من 800 إلى 1200 م تحت سرعتك القصوى بقليل. تتعلم الحفاظ على وتيرة سريعة مدة أطول.',st_INTERVAL:'تناوب بين جهود قوية واسترجاع بمدد مختلفة. يعمل على الإيقاع والقدرة على التسريع.',st_TEMPO:'جري متواصل «صعب بشكل مريح» من 20 إلى 40 دقيقة. يحسّن التحمل بوتيرة سريعة.',st_SEUIL:'كتل بالوتيرة التي تحافظ عليها نحو ساعة، مع استرجاع قصير. يؤخر لحظة احتراق الساقين.',st_EF:'جري سهل تستطيع فيه الكلام دون لهاث. الأساس: 70 إلى 80% من تدريبك.',st_LONG:'أطول جري في الأسبوع بوتيرة سهلة. يعوّد جسمك على المدة وتوفير الطاقة.',st_DBLSEUIL:'حصتان عند العتبة في اليوم نفسه (صباحًا ومساءً) بحجم معتدل. عمل مفيد كثير دون تعب زائد.',st_FARTLEK:'«لعب السرعة»: تسارعات حرة أثناء جري سهل حسب الإحساس. متنوع وممتع.',st_COTES:'صعود قصير وحيوي، والنزول بالهرولة. يقوّي الساقين والخطوة دون صدمات المضمار.',st_VO2:'جهود صعبة جدًا من 3 إلى 5 دقائق قريبة من حدك الأقصى. ترفع استهلاكك الأقصى للأكسجين.',st_SPE:'مقاطع بالوتيرة الدقيقة لسباقك المستهدف. يحفظ جسمك إيقاع يوم السباق.',st_RECUP:'جري بطيء جدًا وقصير، أو مشي. يساعد على الاسترجاع دون جمود.',configurePlanTitle:'إعداد خطتي',courseProfileLabel:'طبيعة المسار',generateMyPlanBtn:'أنشئ خطتي',
     
     minKmWeekLabel:'أدنى كم/أسبوع',
     preparedRaceLabel:'السباق الذي تستعد له',raceDateLabel:'تاريخ السباق',
@@ -4452,7 +4452,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='3.13.0';
+const APP_VERSION='3.14.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -8752,7 +8752,7 @@ function planShrinkStep(s,pc){
   const sr=s.series, gp=s.genParams, bt=s.baseType;
   const MINREP={TEMPO_SPE:2,SEUIL:3,SPE:3,SPE_COURT:2,VMAl:3,VO2:3,VMAc:6};
   if(sr && sr.reps && sr.dist && MINREP[bt]!=null && sr.reps>MINREP[bt]){ sr.reps--; }
-  else if(bt==='TEMPO' && gp && gp.tmin>15){ gp.tmin=Math.max(15,gp.tmin-5); }
+  else if(bt==='TEMPO' && gp && gp.tmin>10){ gp.tmin=Math.max(10,gp.tmin-5); }
   else if(bt==='FARTLEK' && gp && gp.n>6){ gp.n=Math.max(6,gp.n-2); }
   else if(bt==='COTES' && sr && sr.reps>6){ sr.reps=Math.max(6,sr.reps-2); }
   else if((bt==='PROGRESSIF'||bt==='LIGNES') && s.km>6.5){ s.km=Math.max(6,Math.floor(s.km-1)); }
@@ -8802,13 +8802,15 @@ function planShapeWeeks(plan,pc){
 function planBalanceLoad(plan,pc){
   if(!plan||!plan.sessions) return 0;
   pc=pc||planPaces(plan.vdot||getUserVDOT()||45);
-  const tk=todayKey(), nDays=plan.nDays||4; let prev=null, n=0;
+  const tk=todayKey(), nDays=plan.nDays||4; let prev=null, peak=0, n=0;
   const ed=s=>!s.done && !s.missed && !s.customized && s.date>=tk;
   [...new Set(plan.sessions.map(s=>s.week))].sort((a,b)=>a-b).forEach(w=>{
     const list=plan.sessions.filter(s=>s.week===w && s.km>0 && s.baseType!=='COURSE' && s.baseType!=='Repos');
-    const full=list.length>=nDays, light=list.some(s=>s.deload||s.phaseKey==='TAPER');
-    if(full && !light && prev!=null){
-      const capKm=prev*SAFE_WEEKLY_INCREASE;
+    const full=list.length>=nDays, deload=list.some(s=>s.deload), taper=list.some(s=>s.phaseKey==='TAPER');
+    const light=deload||taper;
+    // semaine de charge : ≤ +10 % ; décharge : ≤ 80 % du pic du bloc (le pic baisse quand on l'allège)
+    const capKm=(full && !light && prev!=null)?prev*SAFE_WEEKLY_INCREASE:(deload && !taper && peak>0)?peak*SAFE_DELOAD_MAX:null;
+    if(capKm!=null){
       const L=list.filter(planIsLong).sort((a,b)=>b.km-a.km)[0];
       for(let g=0; g<80 && planWeekKm(list)>capKm+0.05; g++){
         const over=planWeekKm(list)-capKm;
@@ -8818,7 +8820,7 @@ function planBalanceLoad(plan,pc){
         if(q){ n++; continue; }
         // trop de qualité pour la semaine : la moins prioritaire devient un footing (une au moins reste)
         const hard=list.filter(planIsHard);
-        if(hard.length>1){
+        if(hard.length>(deload?0:1)){
           const dq=hard.filter(ed).sort((a,b)=>PLAN_DROP_ORDER.indexOf(a.baseType)-PLAN_DROP_ORDER.indexOf(b.baseType))[0];
           if(dq){ const km=Math.max(3,Math.round(Math.min(dq.km-over,(L?L.km:dq.km)-1))); Object.assign(dq,{baseType:'EF',type:t('sessLabel_EF'),title:t('sessTitle_EF'),rpe:3,desc:t('bs_ef_objectif'),detail:null,series:null,genParams:null,km});
             planApplySegs(dq,pc); n++; continue; }
@@ -8835,7 +8837,8 @@ function planBalanceLoad(plan,pc){
         break;
       }
     }
-    if(full && !light) prev=planWeekKm(list);
+    if(full && !light){ prev=planWeekKm(list); peak=Math.max(peak,prev); }
+    else if(light) peak=0;
   });
   return n;
 }
@@ -8878,7 +8881,7 @@ function validatePlan(plan,opts){
     });
   });
   const byWeek={}; ss.forEach(s=>{ (byWeek[s.week]=byWeek[s.week]||[]).push(s); });
-  let prevLoad=null;
+  let prevLoad=null, peakLoad=0;
   Object.keys(byWeek).map(Number).sort((a,b)=>a-b).forEach(w=>{
     const list=byWeek[w].filter(s=>s.km>0 && s.baseType!=='Repos' && s.baseType!=='COURSE');
     const km=planWeekKm(list), target=plan.wkKm&&plan.wkKm[w];
@@ -8895,7 +8898,9 @@ function validatePlan(plan,opts){
     if(target && list.length>=Math.max(2,(plan.nDays||4)-1) && (km>target*1.25+1 || km<target*0.6)) warnings.push('volume S'+w+' '+weeks[w].km+' km vs prévu '+target);
     const deload=list.some(s=>s.deload), taper=list.some(s=>s.phaseKey==='TAPER');
     if(prevLoad!=null && !deload && !taper && list.length>=(plan.nDays||4) && km>prevLoad*1.10+1.5) errors.push('progression > +10 % : S'+w+' '+weeks[w].km+' km après '+Math.round(prevLoad*10)/10);
-    if(!deload && !taper && list.length>=(plan.nDays||4)) prevLoad=km;
+    if(deload && !taper && peakLoad>0 && km>peakLoad*SAFE_DELOAD_MAX+0.5) errors.push('décharge > 80 % du pic : S'+w+' '+weeks[w].km+' km pour un pic de '+Math.round(peakLoad*10)/10);
+    if(!deload && !taper && list.length>=(plan.nDays||4)){ prevLoad=km; peakLoad=Math.max(peakLoad,km); }
+    else if(deload||taper) peakLoad=0;
   });
   const m={}; ss.forEach(s=>{ if(s.km>0 && s.baseType!=='Repos') m[s.date]=s; });
   Object.keys(m).sort().forEach(d=>{
@@ -9127,14 +9132,36 @@ function raceMetersOf(race,km){ return race==='Autre' && +km>0 ? Math.round(+km*
 function raceLabel(){ return P && P.objRace==='Autre' && +P.objRaceKm>0 ? fmtKmShort(+P.objRaceKm)+' km' : trRace(P && P.objRace); }
 function fmtKmShort(k){ return ikNum(Math.round(k*10)/10,'m1',{maximumFractionDigits:1}); }
 function psDefaultDate(){ const d=new Date(); d.setDate(d.getDate()+84); return dateKey(d); }
+// Chrono écrit dans l'objectif de l'inscription (« passer sous 40:00 au 10 km », « 1h45 au semi »,
+// « 3:29:59 ») — gardé seulement s'il est plausible pour la distance (40 % à 250 % du chrono prédit).
+function goalTimeFromText(g,race,km){
+  g=String(g||'');
+  let s=0, m;
+  if((m=g.match(/(\d{1,2})\s*[:h]\s*(\d{2})\s*[:']\s*(\d{2})/))) s=(+m[1])*3600+(+m[2])*60+(+m[3]);
+  else if((m=g.match(/(\d{1,2})\s*h\s*(\d{1,2})?/i))) s=(+m[1])*3600+(+(m[2]||0))*60;
+  else if((m=g.match(/(\d{1,3})\s*[:']\s*(\d{2})/))) s=(+m[1])*60+(+m[2]);
+  else if((m=g.match(/(\d{2,3})\s*min/i))) s=(+m[1])*60;
+  if(!s) return 0;
+  const v=getUserVDOT(), pr=v?predictTime(v,raceMetersOf(race,km)):0;
+  if(pr && (s<pr*0.4 || s>pr*2.5)) return 0;
+  return s;
+}
+const OB_LEVEL_TO_PLAN={'Débutant':'deb','Intermédiaire':'int','Confirmé':'conf','Très avancé':'conf','Élite':'conf'};
 function openPlanSetup(){
   if(!getUserVDOT()){ toast(t('profileIncompleteAddTime')); openRecords(); return; }
-  const goal=P.objGoal==='Finir'?'Finir':'Record personnel';
+  // V3.14.0 : ce que l'inscription a déjà demandé (objectif, date de course, niveau) est repris
+  // et résumé au lieu d'être redemandé ; « Modifier » rouvre les réglages.
+  const race=PS_RACES.includes(P.objRace)?P.objRace:(inferRaceFromGoal()||'5 km');
+  const goalT=parseTime(P.objTime)||goalTimeFromText(P.goal,race,P.objRaceKm);
+  const goal=P.objGoal?(P.objGoal==='Finir'?'Finir':'Record personnel'):(goalT?'Record personnel':(/finir|terminer|finish|أنهي|إنهاء/i.test(P.goal||'')?'Finir':'Record personnel'));
+  const dateOk=!!(P.compDate && P.compDate>=minRaceDate());
   setupTmp={
-    situation:P.planSituation||'autre', level:P.planLevel||(getUserVDOT()<38?'deb':getUserVDOT()<50?'int':'conf'), gap:P.planGap||'m1_3',
-    objRace:PS_RACES.includes(P.objRace)?P.objRace:(inferRaceFromGoal()||'5 km'), raceKm:+P.objRaceKm||15,
-    compDate:(P.compDate && P.compDate>=minRaceDate())?P.compDate:psDefaultDate(), objProfile:['Plate','Vallonnée','Montagne'].includes(P.objProfile)?P.objProfile:'Plate',
-    objGoal:goal, timeS:parseTime(P.objTime)||0, days:[...(P.days||[1,3,5,6])], info:null
+    situation:P.planSituation||'autre', level:P.planLevel||OB_LEVEL_TO_PLAN[P.level]||(getUserVDOT()<38?'deb':getUserVDOT()<50?'int':'conf'), gap:P.planGap||'m1_3',
+    objRace:race, raceKm:+P.objRaceKm||15,
+    compDate:dateOk?P.compDate:psDefaultDate(), objProfile:['Plate','Vallonnée','Montagne'].includes(P.objProfile)?P.objProfile:'Plate',
+    objGoal:goal, timeS:goalT||0, days:[...(P.days||[1,3,5,6])], info:null,
+    knownRace:dateOk && (PS_RACES.includes(P.objRace)||!!inferRaceFromGoal()),
+    knownGoal:!!(P.objGoal||goalT), knownLevel:!!(P.planLevel||OB_LEVEL_TO_PLAN[P.level])
   };
   if(!setupTmp.timeS) setupTmp.timeS=psPredicted(setupTmp);
   openOv('ovProg'); $('#ovProgTitle').textContent=t('configurePlanTitle');
@@ -9174,7 +9201,8 @@ function psSituationHTML(s){
     psSeg('psSit',s.situation,[['continue',t('psSitCont')],['reprise',t('psSitRep')],['autre',t('psSitOther')]],'situation');
   if(s.situation==='continue'){
     const recs=[...(RECORDS||[])].filter(r=>r&&r.time).sort((a,b)=>(a.meters||0)-(b.meters||0)).slice(0,4);
-    h+='<div class="ps-sub-lab">'+t('psLvlLab')+'</div>'+psSeg('psLvl',s.level,[['deb',t('lvlDeb')],['int',t('lvlInt')],['conf',t('lvlConf')]],'level');
+    if(s.knownLevel && !s.editLevel) h+='<div class="ps-known"><span>'+t('psLvlLab')+' : <b>'+({deb:t('lvlDeb'),int:t('lvlInt'),conf:t('lvlConf')})[s.level]+'</b></span><button type="button" onclick="setupTmp.editLevel=true;renderPlanSetup()">'+t('psEdit')+'</button></div>';
+    else h+='<div class="ps-sub-lab">'+t('psLvlLab')+'</div>'+psSeg('psLvl',s.level,[['deb',t('lvlDeb')],['int',t('lvlInt')],['conf',t('lvlConf')]],'level');
     h+='<div class="ps-recs"><span>'+t('psRecLab')+' : '+(recs.length?recs.map(r=>escHtml(r.dist)+' <b>'+escHtml(r.time)+'</b>').join(' · '):t('psRecNone'))+'</span><a role="button" onclick="openRecords()">'+t('psRecEdit')+'</a></div>';
   } else if(s.situation==='reprise'){
     h+='<div class="ps-sub-lab">'+t('psGapLab')+'</div>'+psSeg('psGap',s.gap,[['lt1',t('gapLt1')],['m1_3',t('gap13')],['m3_6',t('gap36')],['gt6',t('gapGt6')]],'gap');
@@ -9200,7 +9228,12 @@ function renderPlanSetup(){
   const dn=[0,1,2,3,4,5,6].map(d=>ikDate(new Date(2023,0,1+d),'{weekday:short}',{weekday:'short'}).replace('.',''));
   const card=(icon,title,body)=>'<div class="ps-card"><div class="ps-card-h">'+ICN(icon,15)+' '+title+'</div>'+body+'</div>';
   let h=easy?'':psSituationHTML(s);
-  // 1. La course
+  // 1. La course (déjà donnée à l'inscription : résumé + « Modifier »)
+  const fromSignup='<div class="ps-from">'+ICN('check',13)+' '+t('psFromSignup')+'</div>';
+  if(s.knownRace && !s.editRace){
+    const {y,m,d}=psDateParts(s);
+    h+=card('flag',t('psCardRace'),'<div class="ps-known"><span><b>'+escHtml(psRaceName(s))+'</b> · '+ikDate(new Date(y,m-1,d),'{weekday:short,day:numeric,month:long,year:numeric}',{weekday:'short',day:'numeric',month:'long',year:'numeric'})+'<br><small id="psDateHint">'+tp('psDateIn',planCalendar(s.compDate,s.days).weeks)+'</small></span><button type="button" onclick="setupTmp.editRace=true;renderPlanSetup()">'+t('psEdit')+'</button></div>'+fromSignup);
+  } else {
   let c='<label class="ps-row"><span>'+t('preparedRaceLabel')+'</span><select class="ps-select" onchange="setupTmp.objRace=this.value;setupTmp.timeS=psPredicted(setupTmp);renderPlanSetup()">'+PS_RACES.map(r=>'<option value="'+r+'" '+(s.objRace===r?'selected':'')+'>'+trRace(r)+'</option>').join('')+'</select></label>';
   if(s.objRace==='Autre'){
     const ki=Math.floor(s.raceKm), kd=Math.round((s.raceKm-ki)*10)%10;
@@ -9209,10 +9242,17 @@ function renderPlanSetup(){
   c+='<div class="ps-lab">'+t('raceDateLabel')+'</div>'+psDateHTML(s);
   if(!easy) c+='<div class="ps-lab">'+t('courseProfileLabel')+'</div>'+psSeg('psProf',s.objProfile,['Plate','Vallonnée','Montagne'].map(p=>[p,trProfile(p)]),'objProfile');
   h+=card('flag',t('psCardRace'),c);
-  // 2. L'objectif
-  c=psSeg('psGoal',s.objGoal,[['Finir',trGoal('Finir')],['Record personnel',trGoal('Record personnel')]],'objGoal');
-  if(s.objGoal==='Record personnel') c+='<div class="ps-lab">'+t('psTimeLab')+'</div>'+psTimeHTML(s);
-  else c+='<div class="ps-whint">'+t('psFinishHint')+'</div>';
+  }
+  // 2. L'objectif (chrono écrit à l'inscription repris tel quel, pas recalculé)
+  let c;
+  if(s.knownGoal && !s.editGoal){
+    const m=raceMetersOf(s.objRace,s.raceKm);
+    c='<div class="ps-known"><span><b>'+trGoal(s.objGoal)+'</b>'+(s.objGoal==='Record personnel'&&s.timeS?' · '+fmtTime(s.timeS)+' <small>('+tp('psTimePace',fmtSplit(Math.round(s.timeS/(m/1000))))+')</small>':'')+'</span><button type="button" onclick="setupTmp.editGoal=true;renderPlanSetup()">'+t('psEdit')+'</button></div>'+fromSignup;
+  } else {
+    c=psSeg('psGoal',s.objGoal,[['Finir',trGoal('Finir')],['Record personnel',trGoal('Record personnel')]],'objGoal');
+    if(s.objGoal==='Record personnel') c+='<div class="ps-lab">'+t('psTimeLab')+'</div>'+psTimeHTML(s);
+    else c+='<div class="ps-whint">'+t('psFinishHint')+'</div>';
+  }
   h+=card('target',t('psCardGoal'),c);
   // 3. La semaine
   const vol=planAutoVolume(s);
@@ -12127,12 +12167,10 @@ function bodyInfoCard(){
   return '<div class="card" style="margin-bottom:14px">'+
     '<div class="card-t">'+t('completeProfileTitle')+'</div>'+
     '<div style="font-size:13px;color:var(--muted);margin-bottom:12px">'+t('completeProfileDesc')+'</div>'+
-    '<div class="field" style="margin-bottom:10px"><label>'+t('height')+'</label><div class="inp pkfield" onclick="pickBodyHeight()">'+(P.height?escHtml(P.height)+' cm':t('chooseHeight'))+'</div></div>'+
-    '<div class="field" style="margin-bottom:0"><label>'+t('weight')+'</label><div class="inp pkfield" onclick="pickBodyWeight()">'+(P.weight?escHtml(P.weight)+' kg':t('chooseWeight'))+'</div></div>'+
+    // V3.14.0 : une seule question, dans Profil › Modifier (même P.height / P.weight)
+    '<button class="btn ghost" onclick="openProfileEdit(\'pe_h\')">'+t('completeProfileBtn')+'</button>'+
   '</div>';
 }
-function pickBodyHeight(){ pickInt(t('heightCmTitle'),120,220,P.height||170,'cm',v=>{ P.height=v; saveAll(); renderStats(); toast(t('heightSaved')); }); }
-function pickBodyWeight(){ openPicker({title:t('weightKgTitle'),cols:[{values:range(30,200),sel:Math.max(0,(P.weight||65)-30)},{values:range(0,9),sel:0,unit:'kg'}],seps:['.'],onOk:idx=>{ const w=(idx[0]+30)+idx[1]/10; P.weight=w; saveAll(); renderStats(); toast(t('weightSaved')); }}); }
 function statsBilan(){
   const per=bilanPeriod;
   const {cur,prev}=periodRanges(per);
@@ -15265,7 +15303,7 @@ function computeVDOTfromRecords(){
   RECORDS.forEach(r=>{ if(r.meters&&r.time){ const v=vdotFromRace(r.meters,parseTime(r.time)); if(v>best)best=v; }});
   return best>0?clampVdot(best):0;
 }
-function openProfileEdit(){
+function openProfileEdit(focusId){
   $('#ovProfile').querySelector('h2').textContent=t('editProfileTitle');
   const f=(l,id,v,ty)=>'<div class="field"><label>'+l+'</label><input class="inp" id="'+id+'" value="'+escHtml(v||'')+'" '+(ty?'type="'+ty+'"':'')+'></div>';
   let h='<div class="field"><label>'+t('usernameLab')+'</label><div class="uname-wrap"><span class="uname-at">@</span><input class="inp" id="pe_username" value="'+escHtml(P.username||'')+'" autocapitalize="off" autocorrect="off" spellcheck="false"></div><div class="uname-status" id="pe_username_status">'+t('usernameHint')+'</div></div>';
@@ -15273,12 +15311,14 @@ function openProfileEdit(){
     f(t('heightCmLab'),'pe_h',P.height,'number')+f(t('weightKgLab'),'pe_w',P.weight,'number')+
     f(t('hrMaxLab'),'pe_hrmax',P.hrMax,'number')+f(t('hrRestLab'),'pe_hrrest',P.hrRest,'number')+
     f(t('kmWeekLab'),'pe_km',P.kmWeek,'number')+f(t('objective'),'pe_goal',P.goal)+f(t('compDateLab'),'pe_comp',P.compDate,'date')+
-    f('5000m','pe_5k',P.t5k)+f('3000m','pe_3k',P.t3k)+f('1500m','pe_1500',P.t1500)+f('10km','pe_10k',P.t10k);
+    // V3.14.0 : les chronos ne se saisissent plus ici (doublon de « Mes records », la seule source de la VDOT)
+    '<div class="grp-card" style="margin-top:6px"><div class="grp-row" role="button" onclick="openRecords()"><div class="lr-icon">'+ICN('medal',20,'currentColor')+'</div><div class="lr-title">'+t('historyRecords')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div></div>';
   $('#profileEditBody').innerHTML=h;
   $('#profileEditFoot').innerHTML='<button class="btn" onclick="saveProfileEdit()">'+t('saveBtn')+'</button>';
   openOv('ovProfile');
   peUsernameOk=true; // on ne bloque pas si le champ n'a pas changé
   wireUsernameField('pe_username','pe_username_status',ok=>{ peUsernameOk=ok; });
+  if(focusId) setTimeout(()=>{ const el=$('#'+focusId); if(el){ el.scrollIntoView({block:'center'}); el.focus(); } },380);
 }
 let peUsernameOk=true;
 async function saveProfileEdit(){
@@ -15302,8 +15342,6 @@ async function saveProfileEdit(){
   P.height=+$('#pe_h').value||P.height; P.weight=+$('#pe_w').value||P.weight;
   P.hrMax=+$('#pe_hrmax').value||P.hrMax; P.hrRest=+$('#pe_hrrest').value||P.hrRest;
   P.kmWeek=+$('#pe_km').value||P.kmWeek; P.goal=$('#pe_goal').value.trim(); P.compDate=$('#pe_comp').value;
-  P.t5k=$('#pe_5k').value.trim(); P.t3k=$('#pe_3k').value.trim(); P.t1500=$('#pe_1500').value.trim(); P.t10k=$('#pe_10k').value.trim();
-  P.pb5k=P.t5k; P.pb3k=P.t3k; P.pb1500=P.t1500; P.pb10k=P.t10k;
   // Records d'abord, comme au démarrage (initApp) : computeVDOT() seul ne lit que
   // les chronos du formulaire et remettait la VDOT à 0 pour qui avait saisi ses
   // performances à l'onboarding (qui les range dans RECORDS).
