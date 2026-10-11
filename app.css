@@ -1177,7 +1177,7 @@ html[data-mode="light"]{
   display:none;align-items:flex-end;justify-content:center;}
 .ov.on{display:flex;}
 .ov-card{width:100%;max-width:430px;max-height:92vh;background:var(--bg);border-radius:26px 26px 0 0;
-  border-top:1px solid var(--hair2);box-shadow:var(--sh-lg);overflow-y:auto;animation:sheetUp .38s var(--ease-out);
+  border-top:1px solid var(--hair2);box-shadow:var(--sh-lg);overflow-y:auto;animation:sheetUp .26s var(--ease-out);
   padding:18px 16px max(24px,env(safe-area-inset-bottom));}
 .ov-card::before{content:'';display:block;width:36px;height:4px;border-radius:99px;background:var(--hair2);margin:0 auto 14px;}
 @keyframes sheetUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
@@ -1205,7 +1205,7 @@ html[data-mode="light"]{
    centrées comme le reste ; overflow:hidden garde le glissement d'entrée dans la colonne. */
 .ov.ov-push{left:0;right:0;width:auto;max-width:430px;margin:0 auto;overflow:hidden;}
 .ov.ov-push .ov-card{width:100%;max-width:none;height:100%;max-height:none;border-radius:0;border-top:none;
-  box-shadow:none;animation:none;transform:translateX(100%);transition:transform .34s var(--ease-out);
+  box-shadow:none;animation:none;transform:translateX(100%);transition:transform .26s var(--ease-out);
   display:flex;flex-direction:column;padding:max(18px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom));}
 .ov.ov-push .ov-card::before{display:none;}
 .ov.ov-push.on .ov-card{transform:translateX(0);}
@@ -1220,7 +1220,7 @@ html[data-mode="light"]{
    d'un coup (la transition ne peut pas partir d'un display:none) et toutes les
    fenêtres disparaissaient sans transition. .ov-leaving garde la fenêtre affichée
    le temps de sa sortie ; .on est déjà retiré, la logique la voit fermée. */
-.ov.ov-push.on .ov-card{animation:ovPushIn .34s var(--ease-out);}
+.ov.ov-push.on .ov-card{animation:ovPushIn .26s var(--ease-out);}
 @keyframes ovPushIn{from{transform:translateX(100%);}}
 .ov.ov-leaving{display:flex;pointer-events:none;animation:ovFadeOut .26s ease forwards;}
 .ov.ov-leaving .ov-card{animation:ovSheetDown .26s cubic-bezier(.4,0,1,1) forwards;}
@@ -1230,6 +1230,14 @@ html[data-mode="light"]{
 @keyframes ovPushOut{to{transform:translateX(100%);}}
 @keyframes ovFadeOut{to{opacity:0;}}
 .ov.sheet-drag .ov-card{transition:none;animation:none;}
+/* OUVERTURE EN MOINS DE 300 ms (V3.14.0) — « Configurer mon plan » ou un sélecteur restaient
+   flous 2 à 3 s sur iPhone : la feuille glissait (0,34-0,38 s) pendant que ses cartes de verre,
+   chacune avec son propre flou de 26-34 px, apparaissaient une à une (cascade de ~0,9 s). Sur
+   WebKit, un flou d'arrière-plan sous une opacité qui change est recalculé à chaque image.
+   Désormais : seule la feuille bouge (transform, 0,26 s), pas de cascade dans les fenêtres, et
+   les flous des cartes INTÉRIEURES sont suspendus le temps du glissement (.ov-opening, 0,3 s).
+   Le contenu est lisible et touchable dès la première image. */
+.ov.ov-opening .ov-card *{-webkit-backdrop-filter:none !important;backdrop-filter:none !important;}
 @media (prefers-reduced-motion: reduce){ .ov.ov-leaving{display:none;} .ov.ov-push.on .ov-card{animation:none;} }
 html.easy-mode .ov.ov-leaving{display:none;}
 

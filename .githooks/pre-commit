@@ -128,6 +128,28 @@ if git diff --cached -U0 -- index.html | grep -q '^+.*app\.js?v='; then
   fi
 fi
 
+# --- 4c. Versions qui ne peuvent plus diverger (V3.14.0) -----------------------
+# Un meme fichier cite avec deux ?v= differents dans index.html = deux telechargements
+# (le preload d une version, l execution d une autre). Et une page qui change ses
+# ?v= sans nouveau cache du service worker (const C) garderait l ancienne coquille.
+if [ -f index.html ]; then
+  for f in 'app\.js' 'app\.css' 'vendor/supabase\.js' 'vendor/sb-init\.js'; do
+    nv=$(git show :index.html 2>/dev/null | grep -oE "$f\?v=[0-9]+" | sort -u | wc -l | tr -d ' ')
+    if [ "$nv" -gt 1 ]; then
+      echo "ERREUR : index.html cite $(echo $f | tr -d '\\') avec $nv numeros ?v= differents :"
+      git show :index.html | grep -oE "$f\?v=[0-9]+" | sort -u | sed 's/^/           /'
+      fail=1
+    fi
+  done
+  if git diff --cached -U0 -- index.html | grep -qE '^\+.*\.(js|css)\?v='; then
+    git diff --cached -U0 -- sw.js | grep -qE "^\+const C *=" || {
+      echo "ERREUR : les ?v= d index.html ont change mais pas const C dans sw.js"; fail=1; }
+  fi
+  if git show :_headers 2>/dev/null | grep -qE '^[^#]*\?v=[0-9]'; then
+    echo "ERREUR : _headers cite un fichier versionne (?v=N) : il serait perime a la prochaine version"; fail=1
+  fi
+fi
+
 # --- 5. Rappel des suites ---------------------------------------------------
 if git diff --cached --name-only | grep -qE '^(app\.js|index\.html|sw\.js)$'; then
   echo "Pense a rejouer :"

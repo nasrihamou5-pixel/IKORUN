@@ -4612,7 +4612,9 @@ function ikEnterScreen(s){
 function ikOpenOv(ov){
   if(!ov || ikMotionOff() || ov.id==='ovLive') return; // séance : une seule montée, pas de cascade sur ~40 blocs
   const card=ov.querySelector('.ov-card'); if(!card) return;
-  requestAnimationFrame(()=>{ if(ikFirst(ov,ikSig(card.innerHTML))) ikPlay(card,{skip:'.ov-head'}); });
+  // V3.14.0 : plus de cascade dans les fenêtres (la feuille qui glisse suffit, < 300 ms) ;
+  // restent les graphiques et chiffres qui se dessinent, sans masquer le contenu.
+  requestAnimationFrame(()=>{ if(ikFirst(ov,ikSig(card.innerHTML))) ikPlay(card,{skip:'.ov-head',cascade:false}); });
 }
 // Fin de l'intro (index.html) : on rejoue l'entrée de l'écran qu'elle cachait.
 window.addEventListener('ik-intro-end',()=>{
@@ -5506,7 +5508,7 @@ function ovLeave(el){
   clearTimeout(el._leaveT); el.classList.add('ov-leaving');
   el._leaveT=setTimeout(()=>{ el.classList.remove('ov-leaving'); const c=el.querySelector('.ov-card'); if(c) c.style.transform=''; },280);
 }
-function openOv(id){ const el=$('#'+id); if(!el) return; clearTimeout(el._leaveT); el.classList.remove('ov-leaving'); const c=el.querySelector('.ov-card'); if(c) c.style.transform=''; el.style.zIndex=topZ(); el.classList.add('on'); ikOpenOv(el); if(id==='ovLive' && typeof ikIslandKick==='function') ikIslandKick(); }
+function openOv(id){ const el=$('#'+id); if(!el) return; clearTimeout(el._leaveT); el.classList.remove('ov-leaving'); const c=el.querySelector('.ov-card'); if(c) c.style.transform=''; el.style.zIndex=topZ(); el.classList.add('on','ov-opening'); clearTimeout(el._openT); el._openT=setTimeout(()=>el.classList.remove('ov-opening'),300); ikOpenOv(el); if(id==='ovLive' && typeof ikIslandKick==='function') ikIslandKick(); }
 function closeOv(id){ const el=$('#'+id); if(!el) return; ovLeave(el); el.classList.remove('on'); el.style.zIndex=''; if(id==='ovProg') _pfSheet=null; if(id==='ovLib'&&typeof _exDemoTimer!=='undefined'){ clearInterval(_exDemoTimer); } if((id==='ovProg'||id==='ovLive')&&typeof _exDemo2!=='undefined'&&_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; }
   // Garde-fou : openLibFor() ferme ovCreate pour ouvrir la bibliothèque par-dessus (voir plus
   // bas). Sans ce bloc, annuler depuis la bibliothèque ou depuis "Configurer" (X, pas
@@ -6230,7 +6232,9 @@ function boot(){
   feteApplyUrlOverride(); // ?fete= : réservé au compte de développement (voir feteDevMode)
   applyTheme(); // applique le mode (clair/sombre) dès le démarrage
   applyStaticLabels();
-  checkConnectivity();
+  // V3.14.0 : après la première image — au démarrage, elle forçait une mise en page complète
+  // (nudgeScroll) et une sauvegarde chiffrée avant même que l'interface soit construite.
+  setTimeout(checkConnectivity,1200);
   if(P.notif!==false) ensureNotifPerm();
   positionNavPill(document.querySelector('.nb.on')||document.querySelector('.nb'));
   window.addEventListener('resize',()=>positionNavPill(document.querySelector('.nb.on')));
@@ -11015,7 +11019,11 @@ const _figCache=new Map(), _figPng=new Map();
 function _figRaster(key,url,vb){
   const im=new Image();
   im.onload=()=>{ try{ const W=160, H=Math.round(W*vb[3]/vb[2]), c=document.createElement('canvas'); c.width=W; c.height=H;
-      c.getContext('2d').drawImage(im,0,0,W,H); _figPng.set(key,c.toDataURL('image/webp',0.9)); }catch(e){ _figPng.delete(key); } };
+      c.getContext('2d').drawImage(im,0,0,W,H);
+      // V3.14.0 : toBlob encode hors du fil principal (toDataURL le bloquait ~165 ms au démarrage,
+      // pendant la préparation des silhouettes) ; l'image est servie par une adresse blob:.
+      if(c.toBlob) c.toBlob(b=>{ if(b && _figPng.get(key)===null) _figPng.set(key,URL.createObjectURL(b)); else if(!b) _figPng.delete(key); },'image/webp',0.9);
+      else _figPng.set(key,c.toDataURL('image/webp',0.9)); }catch(e){ _figPng.delete(key); } };
   im.onerror=()=>_figPng.delete(key);
   im.src=url;
 }
@@ -11041,7 +11049,7 @@ function anatomyImg(zoneInfo,PARTS,viewBox){
       PARTS[slug].forEach(d=>{ out+='<path d="'+d+'" fill="'+fill+'" opacity="'+op+'"/>'; });
     });
     url='data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="'+viewBox+'">'+out+'</svg>');
-    if(_figCache.size>60){ _figCache.clear(); _figPng.clear(); }
+    if(_figCache.size>60){ _figCache.clear(); _figPng.forEach(u=>{ if(u && u.startsWith('blob:')) URL.revokeObjectURL(u); }); _figPng.clear(); }
     _figCache.set(key,url);
   }
   if(!_figPng.has(key)){ _figPng.set(key,null); const job=()=>_figRaster(key,url,vb); if(window.requestIdleCallback) requestIdleCallback(job,{timeout:3000}); else setTimeout(job,300); }
