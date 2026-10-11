@@ -566,8 +566,9 @@ html[data-accent="carbon"] .ik-logo-mark{background:var(--grad-btn);}
 
 
 /* ===== ACCUEIL V7 — refonte visuelle de l'accueil (carte "goutte" unique, préfixe hv7- pour ne pas
-   interférer avec les classes .card/.next-*/.plan-* déjà utilisées ailleurs dans l'app) ===== */
-#s-home{overflow:hidden;}
+   interférer avec les classes .card, .next-… et .plan-… déjà utilisées ailleurs dans l'app) ===== */
+/* (V3.14.0) « .next- étoile barre » (la fin de commentaire) fermait ce commentaire trop tôt : la règle #s-home{overflow:hidden} qui
+   suivait n'a jamais été appliquée. Retirée pour garder le rendu à l'identique. */
 .hv7-bg{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
 .hv7-bg span{position:absolute;border-radius:50%;filter:blur(60px);opacity:.5;}
 .hv7-lb1{width:300px;height:300px;top:-120px;left:-80px;background:radial-gradient(circle, rgba(var(--e-rgb),.5), transparent 70%);animation:hv7drift1 22s ease-in-out infinite;}
@@ -909,9 +910,11 @@ html.easy-mode .pagein{animation:none!important;}
    (étincelle des traits lumineux, reflet de l'îlot) obligeait à recalculer ce flou à chaque image :
    le défilement des Badges ou du plan complet tombait à ~45 images/s (60 sans elles). Tout ce qui
    est derrière une fenêtre se fige donc le temps qu'elle reste ouverte. */
-body:has(.ov.on) :is(#scroll,.topbar,#ikIsland) *,
-body:has(.ov.on) :is(#scroll,.topbar,#ikIsland) *::before,
-body:has(.ov.on) :is(#scroll,.topbar,#ikIsland) *::after{animation-play-state:paused !important;}
+/* V3.14.0 : body.ik-ov-on (posée par app.js, voir ikOvWatch) au lieu de body:has(.ov.on) — testé sur
+   chaque élément à chaque recalcul de style, ce :has() représentait 25 % du temps de sélecteurs. */
+body.ik-ov-on :is(#scroll,.topbar,#ikIsland) *,
+body.ik-ov-on :is(#scroll,.topbar,#ikIsland) *::before,
+body.ik-ov-on :is(#scroll,.topbar,#ikIsland) *::after{animation-play-state:paused !important;}
 @keyframes bdIdleSweep{0%,42%{transform:translateX(0) rotate(20deg);}58%,100%{transform:translateX(260%) rotate(20deg);}}
 
 /* ===== ÉCRAN "DÉTAILS DU BADGE" — rail de paliers, halo matière, chips ===== */
@@ -1659,7 +1662,8 @@ html.motion-settled .login-hero{
 .theme-switch.sm .ts-thumb{width:22px;height:22px;top:2px;left:2px;}
 .theme-switch.sm .ts-thumb svg{width:12px;height:12px;}
 .theme-switch.sm.light .ts-thumb{left:calc(100% - 24px);}
-.theme-switch.sm .ts-star{width:1.5px;height:1.5px;}
+/* V3.14.0 : sur la petite taille, une étoile tombait collée à la lune et se lisait comme un « · » égaré */
+.theme-switch.sm .ts-star{display:none;}
 .theme-switch.sm .ts-ray{width:40px;height:40px;margin:-20px 0 0 -20px;}
 
 /* STEPPER */
@@ -1749,6 +1753,8 @@ html[dir="rtl"] .nb span{direction:rtl;}
   background:var(--s1);border:1px solid var(--e);color:var(--snow);padding:12px 20px;border-radius:999px;
   font-size:14px;font-weight:600;opacity:0;transition:.3s;pointer-events:none;max-width:90%;text-align:center;}
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast.top{top:calc(env(safe-area-inset-top,0px) + 14px);bottom:auto;transform:translateX(-50%) translateY(-20px);}
+#toast.top.on{transform:translateX(-50%) translateY(0);}
 
 /* CONFETTI */
 #confetti{position:fixed;inset:0;z-index:13000;pointer-events:none;}

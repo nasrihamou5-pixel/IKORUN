@@ -2,3 +2,6 @@
 *.zip
 apercu_*.png
 sons_*.wav
+
+# Dépendances des outils de construction (cd tools && npm install)
+tools/node_modules/

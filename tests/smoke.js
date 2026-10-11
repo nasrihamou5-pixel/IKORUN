@@ -409,7 +409,7 @@
     }
     // Ce que l'utilisateur peut vérifier sur iPhone : l'app est-elle prête sans réseau ?
     if(!('serviceWorker' in navigator) || !window.caches){ ok(c,'l\'app est enregistrée sur le téléphone','service worker indisponible ici (navigation privée ?)'); return Promise.resolve(); }
-    var sc=document.querySelector('script[src*="app.js"]');
+    var sc=document.querySelector('script[src*="app.min.js"],script[src*="app.js"]');
     var appSrc=sc ? new URL(sc.getAttribute('src'), location.href).href : null;
     var fin=Date.now()+15000;
     return new Promise(function(resolve){
@@ -699,7 +699,7 @@
           if(document.documentElement.getAttribute('data-glass')!==k) throw new Error(k+' non appliquée'); });
         P.glass='clay'; applyTheme();
         if(document.documentElement.getAttribute('data-glass')!=='std') throw new Error('matière retirée encore appliquée');
-        if(/P\.glass\s*=\s*'clay'/.test(String(setAccent))) throw new Error('la couleur Guimauve impose encore sa matière');
+        if(/P\.glass\s*=\s*["']clay["']/.test(String(setAccent))) throw new Error('la couleur Guimauve impose encore sa matière');
         ['glassClay','glassPaper','glassFlat','clayOn'].forEach(function(k){ if(k in I18N.fr || k in I18N.en || k in I18N.ar) throw new Error('texte restant : '+k); });
         var css=document.getElementById('ikCss'), restes=0;
         if(css && css.sheet) [].forEach.call(css.sheet.cssRules,function(r){ if(/data-glass="(clay|paper|flat)"/.test(r.cssText||'')) restes++; });
@@ -748,8 +748,9 @@
         P.glass='wrap'; P.mat=2; applyTheme();
         if(pfAppearanceHTML().indexOf('setWrap(')<0) throw new Error('teintes de film absentes de la fiche');
         var src=String(renderProfile);
-        if(src.indexOf("openProfileSection(\\'color\\')")>=0) throw new Error('le Profil garde une ligne Couleur séparée');
-        if(src.indexOf("openProfileSection(\\'appearance\\')")<0) throw new Error('ligne Apparence absente du Profil');
+        // V3.14.0 : indépendant des guillemets (la version minifiée réécrit \' en ")
+        if(/openProfileSection\(\\?["']color\\?["']\)/.test(src)) throw new Error('le Profil garde une ligne Couleur séparée');
+        if(!/openProfileSection\(\\?["']appearance\\?["']\)/.test(src)) throw new Error('ligne Apparence absente du Profil');
         // V3.10.3 : plus de doublons dans le Profil
         ["openProfileSection(\\'data\\')","openProfileSection(\\'terms\\')","openProfileSection(\\'privacy\\')","t('manageProfile')","nav(\\'stats\\')"].forEach(function(k){
           if(src.indexOf(k)>=0) throw new Error('doublon encore dans le Profil : '+k); });
