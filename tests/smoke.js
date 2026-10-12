@@ -1013,6 +1013,41 @@
       (R.length-echecs.length)+' ok, '+echecs.length+' échec(s)', echecs);
   }
 
+  /* ======================= 7i. ÉDITEUR DE THÈME (V3.14.0) ================= */
+  function testTheme(){
+    var c='7i. Éditeur de thème';
+    essaie(c,'neuf couleurs de base, une par teinte, chaque nuance rattachée',function(){
+      if(BASE_HUES.length!==9) throw new Error(BASE_HUES.length+' couleurs de base');
+      var all=[]; BASE_HUES.forEach(function(b){ all=all.concat(b[2]); });
+      var orph=ACCENTS.filter(function(a){ return all.indexOf(a.key)<0; }).map(function(a){ return a.key; });
+      if(orph.length) throw new Error('nuances sans couleur de base : '+orph.join(', '));
+      return '9 couleurs, '+all.length+' nuances';
+    });
+    essaie(c,'contraste garanti sur 300 réglages au hasard (accent, texte du bouton, textes secondaires)',function(){
+      var bad=0;
+      for(var i=0;i<300;i++){
+        var B=txBuild({on:true,base:'blue',h:Math.random()*360,s:Math.random()*100,l:Math.random()*100,bg:Math.random()*100,tint:Math.random()*100});
+        ['dark','light'].forEach(function(m){ var o=B[m], f=function(k){ return okFromHex(o[k]); }, g=/,(#[0-9A-F]{6}) 55%/.exec(o['--grad-btn'])[1];
+          if(okCR(f('--e'),f('--bg'))<4.5 || okCR(okFromHex(o['--accent-ink']),okFromHex(g))<4.5 || okCR(f('--muted'),f('--s2'))<4.5 || okCR(f('--dim'),f('--s2'))<4.5) bad++; });
+      }
+      if(bad) throw new Error(bad+' thèmes sous 4,5:1');
+      return '600 thèmes (sombre + clair) vérifiés';
+    });
+    essaie(c,'le thème perso est posé avant la première image, une couleur prédéfinie le remplace',function(){
+      var av=P.tx, avT=P.theme;
+      try{
+        P.tx=txDefaults('green'); P.tx.h=300; applyTheme();
+        var tp=JSON.parse(localStorage.getItem('ik_theme_prefs')||'{}');
+        var re=/^html:not\(#ik-tx\):not\(#ik-tx2\)\{[-\w\s:;#,.()%]*\}html:not\(#ik-tx\):not\(#ik-tx2\)\[data-mode="light"\]\{[-\w\s:;#,.()%]*\}$/;
+        if(!tp.css || !re.test(tp.css)) throw new Error('miroir absent ou refusé par le filtre d’index.html');
+        if(!document.getElementById('ikTx')) throw new Error('feuille du thème absente');
+        P.theme='red'; P.tx.on=false; applyTheme();
+        if(document.getElementById('ikTx')) throw new Error('la couleur prédéfinie ne remplace pas le thème perso');
+        return 'miroir de '+tp.css.length+' caractères';
+      } finally { P.tx=av; P.theme=avT; applyTheme(); }
+    });
+  }
+
   /* ======================= ENCHAÎNEMENT ================================== */
   function lancer(){
     window.__smokeState='en cours';
@@ -1027,6 +1062,7 @@
     testModeSimple();
     testIlotEtFete();
     testMatieres();
+    testTheme();
     testPetitsEcrans();
     testBilanMolette();
     testSelecteursEtPlan();

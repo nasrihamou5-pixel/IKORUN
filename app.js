@@ -2066,7 +2066,7 @@ const I18N={
     loadingLab:'Chargement…',friendsLoadError:'Impossible de charger tes amis. Vérifie ta connexion.',retryBtn:'Réessayer',
     resumeBtn:'Reprendre',discardBtn:'Abandonner',
     alreadyLinked:'déjà lié',addBtn:'Ajouter',searchError:'Erreur de recherche',alreadySentOrFriend:'Déjà envoyé ou déjà ami',
-    requestSent:'Demande envoyée',friendProfileTitle:'Profil',removeLab:'Retirer',lvlDot:'Rang',kmThisWeekShort:'{0} km cette semaine',lastWeekKm:'Semaine dernière : {0} km',minimizeLab:'Réduire',bdayTitle:'Joyeux anniversaire, {0} !',bdayAge:'{0} ans aujourd’hui',bdayWish:'toute l’équipe IKORUN te souhaite une belle journée',bdayOffBtn:'Mes couleurs',bdayOnBtn:'Remettre la fête',feteLab:'Jours spéciaux',feteDesc:'Ton anniversaire, le jour J de ta course, un record battu, le Ramadan, la Nuit du Destin, le Mawlid, l’Achoura, le Nouvel an musulman, l’Isra wal Mi’raj, l’Aïd, Noël, le Nouvel an, Halloween et la Journée du sport : ces jours-là, l’app se met en fête avec toi.',hijriAdjLab:'Fêtes musulmanes',hijriAdjDesc:'Calendrier Umm al-Qura. Si ton pays annonce les fêtes un jour plus tôt ou plus tard (observation de la lune), décale-les ici.',hijriAdjEarly:'1 jour plus tôt',hijriAdjStd:'Umm al-Qura',hijriAdjLate:'1 jour plus tard',fetePreviewLab:'Aperçu',fetePreviewEnd:'Terminer l’aperçu',fete_bday:'Anniversaire',fete_race:'Jour J',fete_record:'Record',fete_ramadan:'Ramadan',fete_eidFitr:'Aïd el-Fitr',fete_eidAdha:'Aïd el-Adha',fete_xmas:'Noël',fete_newyear:'Nouvel an',fete_halloween:'Halloween',feteRaceTitle:'C’est le jour J !',feteRaceSub:'{0} : tout ton entraînement mène à aujourd’hui. Respire, pars prudent, finis fort.',feteRaceSubPlain:'Tout ton entraînement mène à aujourd’hui. Respire, pars prudent, finis fort.',feteRecordTitle:'Nouveau record !',feteRecordSub:'{0} — bravo, tu progresses. Savoure !',feteRecordSubPlain:'Bravo, tu progresses. Savoure !',feteEidTitle:'Aïd Moubarak, {0} !',feteEidAdhaSub:'Saha Aïdkoum ! Belle fête à toi et à tes proches.',feteEidFitrSub:'Saha Aïdkoum ! Après le Ramadan, reprends l’entraînement en douceur.',feteRamadanTitle:'Ramadan Moubarak !',feteRamadanSub:'Premier jour du mois sacré. Entraîne-toi plutôt après la rupture du jeûne, et bois bien le soir.',feteXmasTitle:'Joyeux Noël, {0} !',feteXmasSub:'Une sortie tranquille, puis au chaud. Bonnes fêtes !',feteNyeTitle:'Bon réveillon !',feteNyeSub:'Dernier jour de {0} : bravo pour tous ces kilomètres.',feteNyTitle:'Bonne année {0} !',feteNySub:'Nouvelle année, nouveaux records. On y va ?',feteHalloweenTitle:'Joyeux Halloween !',feteHalloweenSub:'Des araignées rôdent… cours plus vite qu’elles !',fete_muharram:'Nouvel an musulman',fete_achoura:'Achoura',fete_mawlid:'Mawlid',fete_qadr:'Nuit du Destin',fete_isra:'Isra wal Mi’raj',fete_sportDay:'Journée du sport',feteMuharramTitle:'Nouvel an musulman moubarak !',feteMuharramSub:'Nous entrons dans l’an {0} de l’hégire.',feteMuharramSubPlain:'Une nouvelle année hégirienne commence.',feteAchouraTitle:'Achoura Moubarak !',feteAchouraSub:'Un jour de partage et de jeûne recommandé — pense à tes proches.',feteMawlidTitle:'Mawlid Ennabaoui Moubarak !',feteMawlidSub:'Anniversaire de la naissance du Prophète ﷺ — une journée de lumière et de rappel.',feteQadrTitle:'Nuit du Destin',feteQadrSub:'Elle vaut mieux que mille mois — une pensée, une prière, un moment pour toi.',feteIsraTitle:'Isra wal Mi’raj',feteIsraSub:'Le voyage nocturne du Prophète ﷺ vers les cieux — une nuit à retenir.',feteSportTitle:'Journée internationale du sport',feteSportSub:'Le sport rassemble et rend meilleur — profite de ta séance aujourd’hui !',recLongestRun:'Plus longue sortie : {0} km',recRunTime:'{0} en {1}',matLab:'Matière',accentOcean:'Océan',accentViolet:'Améthyste',accentLavender:'Lavande',accentPink:'Framboise',accentSakura:'Sakura',accentMint:'Menthe',accentTeal:'Lagon',accentOrange:'Ambre',accentMono:'Mono',colorFamCool:'Bleus et violets',colorFamWarm:'Roses et chauds',colorFamNature:'Nature',colorFamNeutral:'Neutres',liveAlreadyRunning:'Une séance est déjà en cours. Termine-la ou annule-la avant d’en commencer une autre.',backToSessionLab:'Revenir à la séance',islandNext:'Ensuite : {0}',islandEndsAt:'Fin à {0}',islandPaused:'En pause',islandSets:'{0}/{1} séries',glassEasyNote:'Le mode simplifié garde un affichage net, sans effet verre : ce réglage reprendra effet quand tu le désactiveras.',youDefaultName:'Toi',backToFriends:'Retour aux amis',profileNotFound:'Profil introuvable.',noBadgeUnlocked:'Aucun badge débloqué pour l\u2019instant.',kmPerWeek:'km/sem.',daysStreak:'Jours de suite',kmTotalLab:'km au total',tonnageKgLab:'Tonnage kg',
+    requestSent:'Demande envoyée',friendProfileTitle:'Profil',removeLab:'Retirer',lvlDot:'Rang',kmThisWeekShort:'{0} km cette semaine',lastWeekKm:'Semaine dernière : {0} km',minimizeLab:'Réduire',bdayTitle:'Joyeux anniversaire, {0} !',bdayAge:'{0} ans aujourd’hui',bdayWish:'toute l’équipe IKORUN te souhaite une belle journée',bdayOffBtn:'Mes couleurs',bdayOnBtn:'Remettre la fête',feteLab:'Jours spéciaux',feteDesc:'Ton anniversaire, le jour J de ta course, un record battu, le Ramadan, la Nuit du Destin, le Mawlid, l’Achoura, le Nouvel an musulman, l’Isra wal Mi’raj, l’Aïd, Noël, le Nouvel an, Halloween et la Journée du sport : ces jours-là, l’app se met en fête avec toi.',hijriAdjLab:'Fêtes musulmanes',hijriAdjDesc:'Calendrier Umm al-Qura. Si ton pays annonce les fêtes un jour plus tôt ou plus tard (observation de la lune), décale-les ici.',hijriAdjEarly:'1 jour plus tôt',hijriAdjStd:'Umm al-Qura',hijriAdjLate:'1 jour plus tard',fetePreviewLab:'Aperçu',fetePreviewEnd:'Terminer l’aperçu',fete_bday:'Anniversaire',fete_race:'Jour J',fete_record:'Record',fete_ramadan:'Ramadan',fete_eidFitr:'Aïd el-Fitr',fete_eidAdha:'Aïd el-Adha',fete_xmas:'Noël',fete_newyear:'Nouvel an',fete_halloween:'Halloween',feteRaceTitle:'C’est le jour J !',feteRaceSub:'{0} : tout ton entraînement mène à aujourd’hui. Respire, pars prudent, finis fort.',feteRaceSubPlain:'Tout ton entraînement mène à aujourd’hui. Respire, pars prudent, finis fort.',feteRecordTitle:'Nouveau record !',feteRecordSub:'{0} — bravo, tu progresses. Savoure !',feteRecordSubPlain:'Bravo, tu progresses. Savoure !',feteEidTitle:'Aïd Moubarak, {0} !',feteEidAdhaSub:'Saha Aïdkoum ! Belle fête à toi et à tes proches.',feteEidFitrSub:'Saha Aïdkoum ! Après le Ramadan, reprends l’entraînement en douceur.',feteRamadanTitle:'Ramadan Moubarak !',feteRamadanSub:'Premier jour du mois sacré. Entraîne-toi plutôt après la rupture du jeûne, et bois bien le soir.',feteXmasTitle:'Joyeux Noël, {0} !',feteXmasSub:'Une sortie tranquille, puis au chaud. Bonnes fêtes !',feteNyeTitle:'Bon réveillon !',feteNyeSub:'Dernier jour de {0} : bravo pour tous ces kilomètres.',feteNyTitle:'Bonne année {0} !',feteNySub:'Nouvelle année, nouveaux records. On y va ?',feteHalloweenTitle:'Joyeux Halloween !',feteHalloweenSub:'Des araignées rôdent… cours plus vite qu’elles !',fete_muharram:'Nouvel an musulman',fete_achoura:'Achoura',fete_mawlid:'Mawlid',fete_qadr:'Nuit du Destin',fete_isra:'Isra wal Mi’raj',fete_sportDay:'Journée du sport',feteMuharramTitle:'Nouvel an musulman moubarak !',feteMuharramSub:'Nous entrons dans l’an {0} de l’hégire.',feteMuharramSubPlain:'Une nouvelle année hégirienne commence.',feteAchouraTitle:'Achoura Moubarak !',feteAchouraSub:'Un jour de partage et de jeûne recommandé — pense à tes proches.',feteMawlidTitle:'Mawlid Ennabaoui Moubarak !',feteMawlidSub:'Anniversaire de la naissance du Prophète ﷺ — une journée de lumière et de rappel.',feteQadrTitle:'Nuit du Destin',feteQadrSub:'Elle vaut mieux que mille mois — une pensée, une prière, un moment pour toi.',feteIsraTitle:'Isra wal Mi’raj',feteIsraSub:'Le voyage nocturne du Prophète ﷺ vers les cieux — une nuit à retenir.',feteSportTitle:'Journée internationale du sport',feteSportSub:'Le sport rassemble et rend meilleur — profite de ta séance aujourd’hui !',recLongestRun:'Plus longue sortie : {0} km',recRunTime:'{0} en {1}',matLab:'Matière',accentOcean:'Océan',accentViolet:'Améthyste',accentLavender:'Lavande',accentPink:'Framboise',accentSakura:'Sakura',accentMint:'Menthe',accentTeal:'Lagon',accentOrange:'Ambre',accentMono:'Mono',liveAlreadyRunning:'Une séance est déjà en cours. Termine-la ou annule-la avant d’en commencer une autre.',backToSessionLab:'Revenir à la séance',islandNext:'Ensuite : {0}',islandEndsAt:'Fin à {0}',islandPaused:'En pause',islandSets:'{0}/{1} séries',glassEasyNote:'Le mode simplifié garde un affichage net, sans effet verre : ce réglage reprendra effet quand tu le désactiveras.',youDefaultName:'Toi',backToFriends:'Retour aux amis',profileNotFound:'Profil introuvable.',noBadgeUnlocked:'Aucun badge débloqué pour l\u2019instant.',kmPerWeek:'km/sem.',daysStreak:'Jours de suite',kmTotalLab:'km au total',tonnageKgLab:'Tonnage kg',
     addPerf:'Ajouter une performance',addChronosHint:'Ajoute tes chronos : ils alimentent ton VDOT et ton plan.',
     bestPerf:'Meilleure perf',avgHR:'FC moy',maxHRshort:'max',perfHistoryTitle:'Historique des performances',
     chooseDistance:'Choisis la distance',otherDist:'Autre',customDistance:'Distance personnalisée',
@@ -2081,7 +2081,7 @@ const I18N={
     badgeDetailTitle:'Détails du badge',tierOf:'Palier {0} sur {1}',newBadgeUnlocked:'NOUVEAU BADGE DÉBLOQUÉ',
     tapToContinue:'Touche pour continuer',seeDetails:'Voir les détails',tapToClose:'Touche pour fermer',previewLocked:'APERÇU · VERROUILLÉ',
     obtainedOn:'Obtenu le {0}',lockedLab:'Verrouillé',replayAnim:'Revivre l\u2019animation',seePreview:'Voir un aperçu',
-    obtainConditions:'Conditions d\u2019obtention',globalProgress:'Progression globale',shareBadgeBtn:'Partager ce badge',closeLab:'Fermer',homeNoPlanYet:'Pas encore de plan',ariaPrevMonth:'Mois précédent',ariaNextMonth:'Mois suivant',ariaSetDone:'Valider la série',
+    obtainConditions:'Conditions d\u2019obtention',globalProgress:'Progression globale',shareBadgeBtn:'Partager ce badge',closeLab:'Fermer',hue_blue:'Bleu',hue_green:'Vert',hue_red:'Rouge',hue_orange:'Orange',hue_violet:'Violet',hue_pink:'Rose',hue_gold:'Jaune / Or',hue_brown:'Marron',hue_grey:'Gris / Carbone',txShadesOf:'Nuances de {0}',txCustomize:'Personnaliser',txCustomizeSub:'Teinte, fond, verre et reflets',txCustomOn:'Thème personnalisé actif',txTitle:'Personnaliser le thème',txPreviewTitle:'Footing facile',txPreviewBtn:'Commencer',txColorLab:'Couleur',txHue:'Teinte',txSat:'Saturation',txLight:'Luminosité',txBgLab:'Fond',txBgLevel:'Niveau du fond',txBgOled:'Noir OLED',txBgAnthracite:'Anthracite',txBgWhite:'Blanc',txBgSoftGrey:'Gris doux',txBgTint:'Teinte du fond',txNeutral:'Neutre',txTinted:'Teinté',txGlassLab:'Verre',txGlassOn:'Effet verre',txGlassDesc:'Coupé : surfaces pleines, plus sobres et plus rapides.',txBlur:'Flou',txOpacity:'Opacité',txShine:'Brillance',txTiltLab:'Reflets',txTiltOn:'Reflets selon l’inclinaison',txTiltDesc:'La lumière glisse quand tu inclines le téléphone ; sans capteur, elle suit le défilement.',txTiltReduced:'Mouvements réduits sur ce téléphone : le reflet reste fixe.',txTiltStatic:'Inclinaison non autorisée : le reflet suivra le défilement.',txTiltK:'Intensité',txReset:'Réinitialiser',txDone:'Terminé',txResetDone:'Thème d’origine rétabli',homeNoPlanYet:'Pas encore de plan',ariaPrevMonth:'Mois précédent',ariaNextMonth:'Mois suivant',ariaSetDone:'Valider la série',
     weightLab:'Poids',imcLab:'IMC',imcUnderweight:'Maigreur',imcNormal:'Normal',imcOverweight:'Surpoids',imcObese:'Obésité',
     sessionsPerWeek:'Séances / sem',metabolismKcal:'Métabolisme kcal',burned7d:'Brûlées 7j (run)',waterPerDay:'Eau / jour',
     recentFormTitle:'Forme récente (7 dernières séances)',sleepLab:'Sommeil',energyFeelLab:'Énergie / sensations',fatigueLab:'Fatigue',
@@ -2652,7 +2652,7 @@ const I18N={
     loadingLab:'Loading…',friendsLoadError:'Couldn\'t load your friends. Check your connection.',retryBtn:'Retry',
     resumeBtn:'Resume',discardBtn:'Discard',
     alreadyLinked:'already linked',addBtn:'Add',searchError:'Search error',alreadySentOrFriend:'Already sent or already friends',
-    requestSent:'Request sent',friendProfileTitle:'Profile',removeLab:'Remove',lvlDot:'Rank',kmThisWeekShort:'{0} km this week',lastWeekKm:'Last week: {0} km',minimizeLab:'Minimize',bdayTitle:'Happy birthday, {0}!',bdayAge:'{0} today',bdayWish:'the whole IKORUN team wishes you a great day',bdayOffBtn:'My colors',bdayOnBtn:'Bring back the party',feteLab:'Special days',feteDesc:'Your birthday, race day, a new record, Ramadan, the Night of Decree, Mawlid, Ashura, the Islamic New Year, Isra & Mi’raj, Eid, Christmas, New Year, Halloween and Sport Day: on those days, the app celebrates with you.',hijriAdjLab:'Muslim holidays',hijriAdjDesc:'Umm al-Qura calendar. If your country announces holidays a day earlier or later (moon sighting), shift them here.',hijriAdjEarly:'A day earlier',hijriAdjStd:'Umm al-Qura',hijriAdjLate:'A day later',fetePreviewLab:'Preview',fetePreviewEnd:'End preview',fete_bday:'Birthday',fete_race:'Race day',fete_record:'Record',fete_ramadan:'Ramadan',fete_eidFitr:'Eid al-Fitr',fete_eidAdha:'Eid al-Adha',fete_xmas:'Christmas',fete_newyear:'New Year',fete_halloween:'Halloween',feteRaceTitle:'It’s race day!',feteRaceSub:'{0}: all your training leads to today. Breathe, start easy, finish strong.',feteRaceSubPlain:'All your training leads to today. Breathe, start easy, finish strong.',feteRecordTitle:'New record!',feteRecordSub:'{0} — well done, you’re getting better. Enjoy it!',feteRecordSubPlain:'Well done, you’re getting better. Enjoy it!',feteEidTitle:'Eid Mubarak, {0}!',feteEidAdhaSub:'Saha Aïdkoum! A happy Eid to you and your loved ones.',feteEidFitrSub:'Saha Aïdkoum! After Ramadan, ease back into training.',feteRamadanTitle:'Ramadan Mubarak!',feteRamadanSub:'First day of the holy month. Train after iftar rather than before, and drink well in the evening.',feteXmasTitle:'Merry Christmas, {0}!',feteXmasSub:'An easy run, then somewhere warm. Happy holidays!',feteNyeTitle:'Happy New Year’s Eve!',feteNyeSub:'Last day of {0}: well done for all those kilometres.',feteNyTitle:'Happy New Year {0}!',feteNySub:'New year, new records. Shall we?',feteHalloweenTitle:'Happy Halloween!',feteHalloweenSub:'Spiders are on the prowl… run faster than them!',fete_muharram:'Islamic New Year',fete_achoura:'Ashura',fete_mawlid:'Mawlid',fete_qadr:'Night of Decree',fete_isra:'Isra & Mi’raj',fete_sportDay:'Sport Day',feteMuharramTitle:'Happy Islamic New Year!',feteMuharramSub:'We’re entering year {0} of the Hijra.',feteMuharramSubPlain:'A new Hijri year begins.',feteAchouraTitle:'Happy Ashura!',feteAchouraSub:'A day of sharing and recommended fasting — think of your loved ones.',feteMawlidTitle:'Happy Mawlid!',feteMawlidSub:'The Prophet’s ﷺ birthday — a day of light and remembrance.',feteQadrTitle:'Night of Decree',feteQadrSub:'Better than a thousand months — a thought, a prayer, a moment for you.',feteIsraTitle:'Isra & Mi’raj',feteIsraSub:'The Prophet’s ﷺ night journey to the heavens — a night to remember.',feteSportTitle:'International Sport Day',feteSportSub:'Sport brings people together and makes you better — enjoy your session today!',recLongestRun:'Longest run: {0} km',recRunTime:'{0} in {1}',matLab:'Material',accentOcean:'Ocean',accentViolet:'Amethyst',accentLavender:'Lavender',accentPink:'Raspberry',accentSakura:'Sakura',accentMint:'Mint',accentTeal:'Lagoon',accentOrange:'Amber',accentMono:'Mono',colorFamCool:'Blues & purples',colorFamWarm:'Pinks & warm',colorFamNature:'Nature',colorFamNeutral:'Neutrals',liveAlreadyRunning:'A session is already running. Finish or cancel it before starting another one.',backToSessionLab:'Back to session',islandNext:'Next: {0}',islandEndsAt:'Ends at {0}',islandPaused:'Paused',islandSets:'{0}/{1} sets',glassEasyNote:'Simplified mode keeps a clean display with no glass effect: this setting applies again once you turn it off.',youDefaultName:'You',backToFriends:'Back to friends',profileNotFound:'Profile not found.',noBadgeUnlocked:'No badge unlocked yet.',kmPerWeek:'km/wk',daysStreak:'Day streak',kmTotalLab:'total km',tonnageKgLab:'Volume kg',
+    requestSent:'Request sent',friendProfileTitle:'Profile',removeLab:'Remove',lvlDot:'Rank',kmThisWeekShort:'{0} km this week',lastWeekKm:'Last week: {0} km',minimizeLab:'Minimize',bdayTitle:'Happy birthday, {0}!',bdayAge:'{0} today',bdayWish:'the whole IKORUN team wishes you a great day',bdayOffBtn:'My colors',bdayOnBtn:'Bring back the party',feteLab:'Special days',feteDesc:'Your birthday, race day, a new record, Ramadan, the Night of Decree, Mawlid, Ashura, the Islamic New Year, Isra & Mi’raj, Eid, Christmas, New Year, Halloween and Sport Day: on those days, the app celebrates with you.',hijriAdjLab:'Muslim holidays',hijriAdjDesc:'Umm al-Qura calendar. If your country announces holidays a day earlier or later (moon sighting), shift them here.',hijriAdjEarly:'A day earlier',hijriAdjStd:'Umm al-Qura',hijriAdjLate:'A day later',fetePreviewLab:'Preview',fetePreviewEnd:'End preview',fete_bday:'Birthday',fete_race:'Race day',fete_record:'Record',fete_ramadan:'Ramadan',fete_eidFitr:'Eid al-Fitr',fete_eidAdha:'Eid al-Adha',fete_xmas:'Christmas',fete_newyear:'New Year',fete_halloween:'Halloween',feteRaceTitle:'It’s race day!',feteRaceSub:'{0}: all your training leads to today. Breathe, start easy, finish strong.',feteRaceSubPlain:'All your training leads to today. Breathe, start easy, finish strong.',feteRecordTitle:'New record!',feteRecordSub:'{0} — well done, you’re getting better. Enjoy it!',feteRecordSubPlain:'Well done, you’re getting better. Enjoy it!',feteEidTitle:'Eid Mubarak, {0}!',feteEidAdhaSub:'Saha Aïdkoum! A happy Eid to you and your loved ones.',feteEidFitrSub:'Saha Aïdkoum! After Ramadan, ease back into training.',feteRamadanTitle:'Ramadan Mubarak!',feteRamadanSub:'First day of the holy month. Train after iftar rather than before, and drink well in the evening.',feteXmasTitle:'Merry Christmas, {0}!',feteXmasSub:'An easy run, then somewhere warm. Happy holidays!',feteNyeTitle:'Happy New Year’s Eve!',feteNyeSub:'Last day of {0}: well done for all those kilometres.',feteNyTitle:'Happy New Year {0}!',feteNySub:'New year, new records. Shall we?',feteHalloweenTitle:'Happy Halloween!',feteHalloweenSub:'Spiders are on the prowl… run faster than them!',fete_muharram:'Islamic New Year',fete_achoura:'Ashura',fete_mawlid:'Mawlid',fete_qadr:'Night of Decree',fete_isra:'Isra & Mi’raj',fete_sportDay:'Sport Day',feteMuharramTitle:'Happy Islamic New Year!',feteMuharramSub:'We’re entering year {0} of the Hijra.',feteMuharramSubPlain:'A new Hijri year begins.',feteAchouraTitle:'Happy Ashura!',feteAchouraSub:'A day of sharing and recommended fasting — think of your loved ones.',feteMawlidTitle:'Happy Mawlid!',feteMawlidSub:'The Prophet’s ﷺ birthday — a day of light and remembrance.',feteQadrTitle:'Night of Decree',feteQadrSub:'Better than a thousand months — a thought, a prayer, a moment for you.',feteIsraTitle:'Isra & Mi’raj',feteIsraSub:'The Prophet’s ﷺ night journey to the heavens — a night to remember.',feteSportTitle:'International Sport Day',feteSportSub:'Sport brings people together and makes you better — enjoy your session today!',recLongestRun:'Longest run: {0} km',recRunTime:'{0} in {1}',matLab:'Material',accentOcean:'Ocean',accentViolet:'Amethyst',accentLavender:'Lavender',accentPink:'Raspberry',accentSakura:'Sakura',accentMint:'Mint',accentTeal:'Lagoon',accentOrange:'Amber',accentMono:'Mono',liveAlreadyRunning:'A session is already running. Finish or cancel it before starting another one.',backToSessionLab:'Back to session',islandNext:'Next: {0}',islandEndsAt:'Ends at {0}',islandPaused:'Paused',islandSets:'{0}/{1} sets',glassEasyNote:'Simplified mode keeps a clean display with no glass effect: this setting applies again once you turn it off.',youDefaultName:'You',backToFriends:'Back to friends',profileNotFound:'Profile not found.',noBadgeUnlocked:'No badge unlocked yet.',kmPerWeek:'km/wk',daysStreak:'Day streak',kmTotalLab:'total km',tonnageKgLab:'Volume kg',
     addPerf:'Add a performance',addChronosHint:'Add your times: they power your VDOT and your plan.',
     bestPerf:'Best performance',avgHR:'avg HR',maxHRshort:'max',perfHistoryTitle:'Performance history',
     chooseDistance:'Choose the distance',otherDist:'Other',customDistance:'Custom distance',
@@ -2667,7 +2667,7 @@ const I18N={
     badgeDetailTitle:'Badge details',tierOf:'Tier {0} of {1}',newBadgeUnlocked:'NEW BADGE UNLOCKED',
     tapToContinue:'Tap to continue',seeDetails:'See details',tapToClose:'Tap to close',previewLocked:'PREVIEW · LOCKED',
     obtainedOn:'Earned on {0}',lockedLab:'Locked',replayAnim:'Replay animation',seePreview:'See preview',
-    obtainConditions:'Requirements',globalProgress:'Overall progress',shareBadgeBtn:'Share this badge',closeLab:'Close',homeNoPlanYet:'No plan yet',ariaPrevMonth:'Previous month',ariaNextMonth:'Next month',ariaSetDone:'Mark set as done',
+    obtainConditions:'Requirements',globalProgress:'Overall progress',shareBadgeBtn:'Share this badge',closeLab:'Close',hue_blue:'Blue',hue_green:'Green',hue_red:'Red',hue_orange:'Orange',hue_violet:'Purple',hue_pink:'Pink',hue_gold:'Yellow / Gold',hue_brown:'Brown',hue_grey:'Grey / Carbon',txShadesOf:'{0} shades',txCustomize:'Customize',txCustomizeSub:'Hue, background, glass and reflections',txCustomOn:'Custom theme on',txTitle:'Customize theme',txPreviewTitle:'Easy run',txPreviewBtn:'Start',txColorLab:'Colour',txHue:'Hue',txSat:'Saturation',txLight:'Lightness',txBgLab:'Background',txBgLevel:'Background level',txBgOled:'OLED black',txBgAnthracite:'Charcoal',txBgWhite:'White',txBgSoftGrey:'Soft grey',txBgTint:'Background tint',txNeutral:'Neutral',txTinted:'Tinted',txGlassLab:'Glass',txGlassOn:'Glass effect',txGlassDesc:'Off: solid surfaces, plainer and faster.',txBlur:'Blur',txOpacity:'Opacity',txShine:'Shine',txTiltLab:'Reflections',txTiltOn:'Tilt reflections',txTiltDesc:'Light glides as you tilt your phone; without a sensor, it follows scrolling.',txTiltReduced:'Reduced motion is on: the reflection stays still.',txTiltStatic:'Tilt not allowed: the reflection will follow scrolling.',txTiltK:'Intensity',txReset:'Reset',txDone:'Done',txResetDone:'Original theme restored',homeNoPlanYet:'No plan yet',ariaPrevMonth:'Previous month',ariaNextMonth:'Next month',ariaSetDone:'Mark set as done',
     weightLab:'Weight',imcLab:'BMI',imcUnderweight:'Underweight',imcNormal:'Normal',imcOverweight:'Overweight',imcObese:'Obese',
     sessionsPerWeek:'Sessions / wk',metabolismKcal:'Metabolism kcal',burned7d:'Burned 7d (run)',waterPerDay:'Water / day',
     recentFormTitle:'Recent form (last 7 sessions)',sleepLab:'Sleep',energyFeelLab:'Energy / feel',fatigueLab:'Fatigue',
@@ -3238,7 +3238,7 @@ const I18N={
     loadingLab:'جارٍ التحميل…',friendsLoadError:'تعذّر تحميل أصدقائك. تحقّق من اتصالك.',retryBtn:'إعادة المحاولة',
     resumeBtn:'استئناف',discardBtn:'التخلي',
     alreadyLinked:'مرتبط بالفعل',addBtn:'إضافة',searchError:'خطأ في البحث',alreadySentOrFriend:'تم الإرسال بالفعل أو صديق بالفعل',
-    requestSent:'تم إرسال الطلب',friendProfileTitle:'الملف الشخصي',removeLab:'إزالة',lvlDot:'رتبة',kmThisWeekShort:'{0} كم هذا الأسبوع',lastWeekKm:'الأسبوع الماضي: {0} كم',minimizeLab:'تصغير',bdayTitle:'عيد ميلاد سعيد يا {0}!',bdayAge:'{0} سنة اليوم',bdayWish:'فريق IKORUN كله يتمنى لك يومًا جميلًا',bdayOffBtn:'ألواني',bdayOnBtn:'أعد الاحتفال',feteLab:'الأيام الخاصة',feteDesc:'عيد ميلادك، يوم سباقك، رقم قياسي جديد، رمضان، ليلة القدر، المولد النبوي، عاشوراء، رأس السنة الهجرية، الإسراء والمعراج، العيد، الكريسماس، رأس السنة، الهالوين، ويوم الرياضة: في هذه الأيام تحتفل التطبيقة معك.',hijriAdjLab:'الأعياد الإسلامية',hijriAdjDesc:'تقويم أم القرى. إذا أعلن بلدك الأعياد قبل يوم أو بعد يوم (رؤية الهلال)، عدّلها هنا.',hijriAdjEarly:'قبل يوم',hijriAdjStd:'أم القرى',hijriAdjLate:'بعد يوم',fetePreviewLab:'معاينة',fetePreviewEnd:'إنهاء المعاينة',fete_bday:'عيد الميلاد',fete_race:'يوم السباق',fete_record:'رقم قياسي',fete_ramadan:'رمضان',fete_eidFitr:'عيد الفطر',fete_eidAdha:'عيد الأضحى',fete_xmas:'الكريسماس',fete_newyear:'رأس السنة',fete_halloween:'الهالوين',feteRaceTitle:'إنه اليوم الموعود!',feteRaceSub:'{0}: كل تدريبك يقود إلى هذا اليوم. تنفّس، انطلق بهدوء وأنهِ بقوة.',feteRaceSubPlain:'كل تدريبك يقود إلى هذا اليوم. تنفّس، انطلق بهدوء وأنهِ بقوة.',feteRecordTitle:'رقم قياسي جديد!',feteRecordSub:'{0} — أحسنت، أنت تتقدّم. استمتع باللحظة!',feteRecordSubPlain:'أحسنت، أنت تتقدّم. استمتع باللحظة!',feteEidTitle:'عيد مبارك يا {0}!',feteEidAdhaSub:'صحّا عيدكم! عيد سعيد لك ولأحبّائك.',feteEidFitrSub:'صحّا عيدكم! بعد رمضان، عُد إلى التدريب بهدوء.',feteRamadanTitle:'رمضان مبارك!',feteRamadanSub:'أول يوم من الشهر الفضيل. تدرّب بعد الإفطار بدل ما قبله، واشرب جيدًا في المساء.',feteXmasTitle:'عيد ميلاد مجيد يا {0}!',feteXmasSub:'خرجة هادئة ثم إلى الدفء. أعياد سعيدة!',feteNyeTitle:'سهرة رأس سنة سعيدة!',feteNyeSub:'آخر يوم من {0}: برافو على كل هذه الكيلومترات.',feteNyTitle:'سنة سعيدة {0}!',feteNySub:'سنة جديدة، أرقام قياسية جديدة. هيا بنا؟',feteHalloweenTitle:'هالوين سعيد!',feteHalloweenSub:'العناكب تتجوّل… اركض أسرع منها!',fete_muharram:'رأس السنة الهجرية',fete_achoura:'عاشوراء',fete_mawlid:'المولد النبوي',fete_qadr:'ليلة القدر',fete_isra:'الإسراء والمعراج',fete_sportDay:'يوم الرياضة',feteMuharramTitle:'كل عام هجري وأنت بخير!',feteMuharramSub:'ندخل السنة {0} الهجرية.',feteMuharramSubPlain:'سنة هجرية جديدة تبدأ.',feteAchouraTitle:'عاشوراء مبارك!',feteAchouraSub:'يوم للتقاسم والصيام المستحب — فكّر في أحبائك.',feteMawlidTitle:'المولد النبوي الشريف مبارك!',feteMawlidSub:'ذكرى ميلاد النبي ﷺ — يوم نور وذكر.',feteQadrTitle:'ليلة القدر',feteQadrSub:'خير من ألف شهر — لحظة، دعاء، ووقت لنفسك.',feteIsraTitle:'الإسراء والمعراج',feteIsraSub:'رحلة النبي ﷺ الليلية إلى السماء — ليلة تُذكر.',feteSportTitle:'اليوم العالمي للرياضة',feteSportSub:'الرياضة تجمع وتجعلك أفضل — استمتع بحصتك اليوم!',recLongestRun:'أطول خرجة: {0} كم',recRunTime:'{0} في {1}',matLab:'الخامة',accentOcean:'محيط',accentViolet:'جمشت',accentLavender:'خزامى',accentPink:'توت',accentSakura:'ساكورا',accentMint:'نعناع',accentTeal:'بحيرة',accentOrange:'كهرمان',accentMono:'أحادي',colorFamCool:'أزرق وبنفسجي',colorFamWarm:'وردي ودافئ',colorFamNature:'طبيعة',colorFamNeutral:'محايدة',liveAlreadyRunning:'هناك حصة جارية بالفعل. أنهِها أو ألغِها قبل بدء حصة أخرى.',backToSessionLab:'العودة إلى الحصة',islandNext:'التالي: {0}',islandEndsAt:'ينتهي عند {0}',islandPaused:'متوقف مؤقتًا',islandSets:'{0}/{1} مجموعات',glassEasyNote:'الوضع المبسّط يُبقي العرض واضحًا دون تأثير الزجاج: يعود هذا الإعداد للعمل عند إيقافه.',youDefaultName:'أنت',backToFriends:'العودة إلى الأصدقاء',profileNotFound:'الملف غير موجود.',noBadgeUnlocked:'لا يوجد وسام مفتوح بعد.',kmPerWeek:'كم/أسبوع',daysStreak:'أيام متتالية',kmTotalLab:'كم إجمالية',tonnageKgLab:'الحمولة كغ',
+    requestSent:'تم إرسال الطلب',friendProfileTitle:'الملف الشخصي',removeLab:'إزالة',lvlDot:'رتبة',kmThisWeekShort:'{0} كم هذا الأسبوع',lastWeekKm:'الأسبوع الماضي: {0} كم',minimizeLab:'تصغير',bdayTitle:'عيد ميلاد سعيد يا {0}!',bdayAge:'{0} سنة اليوم',bdayWish:'فريق IKORUN كله يتمنى لك يومًا جميلًا',bdayOffBtn:'ألواني',bdayOnBtn:'أعد الاحتفال',feteLab:'الأيام الخاصة',feteDesc:'عيد ميلادك، يوم سباقك، رقم قياسي جديد، رمضان، ليلة القدر، المولد النبوي، عاشوراء، رأس السنة الهجرية، الإسراء والمعراج، العيد، الكريسماس، رأس السنة، الهالوين، ويوم الرياضة: في هذه الأيام تحتفل التطبيقة معك.',hijriAdjLab:'الأعياد الإسلامية',hijriAdjDesc:'تقويم أم القرى. إذا أعلن بلدك الأعياد قبل يوم أو بعد يوم (رؤية الهلال)، عدّلها هنا.',hijriAdjEarly:'قبل يوم',hijriAdjStd:'أم القرى',hijriAdjLate:'بعد يوم',fetePreviewLab:'معاينة',fetePreviewEnd:'إنهاء المعاينة',fete_bday:'عيد الميلاد',fete_race:'يوم السباق',fete_record:'رقم قياسي',fete_ramadan:'رمضان',fete_eidFitr:'عيد الفطر',fete_eidAdha:'عيد الأضحى',fete_xmas:'الكريسماس',fete_newyear:'رأس السنة',fete_halloween:'الهالوين',feteRaceTitle:'إنه اليوم الموعود!',feteRaceSub:'{0}: كل تدريبك يقود إلى هذا اليوم. تنفّس، انطلق بهدوء وأنهِ بقوة.',feteRaceSubPlain:'كل تدريبك يقود إلى هذا اليوم. تنفّس، انطلق بهدوء وأنهِ بقوة.',feteRecordTitle:'رقم قياسي جديد!',feteRecordSub:'{0} — أحسنت، أنت تتقدّم. استمتع باللحظة!',feteRecordSubPlain:'أحسنت، أنت تتقدّم. استمتع باللحظة!',feteEidTitle:'عيد مبارك يا {0}!',feteEidAdhaSub:'صحّا عيدكم! عيد سعيد لك ولأحبّائك.',feteEidFitrSub:'صحّا عيدكم! بعد رمضان، عُد إلى التدريب بهدوء.',feteRamadanTitle:'رمضان مبارك!',feteRamadanSub:'أول يوم من الشهر الفضيل. تدرّب بعد الإفطار بدل ما قبله، واشرب جيدًا في المساء.',feteXmasTitle:'عيد ميلاد مجيد يا {0}!',feteXmasSub:'خرجة هادئة ثم إلى الدفء. أعياد سعيدة!',feteNyeTitle:'سهرة رأس سنة سعيدة!',feteNyeSub:'آخر يوم من {0}: برافو على كل هذه الكيلومترات.',feteNyTitle:'سنة سعيدة {0}!',feteNySub:'سنة جديدة، أرقام قياسية جديدة. هيا بنا؟',feteHalloweenTitle:'هالوين سعيد!',feteHalloweenSub:'العناكب تتجوّل… اركض أسرع منها!',fete_muharram:'رأس السنة الهجرية',fete_achoura:'عاشوراء',fete_mawlid:'المولد النبوي',fete_qadr:'ليلة القدر',fete_isra:'الإسراء والمعراج',fete_sportDay:'يوم الرياضة',feteMuharramTitle:'كل عام هجري وأنت بخير!',feteMuharramSub:'ندخل السنة {0} الهجرية.',feteMuharramSubPlain:'سنة هجرية جديدة تبدأ.',feteAchouraTitle:'عاشوراء مبارك!',feteAchouraSub:'يوم للتقاسم والصيام المستحب — فكّر في أحبائك.',feteMawlidTitle:'المولد النبوي الشريف مبارك!',feteMawlidSub:'ذكرى ميلاد النبي ﷺ — يوم نور وذكر.',feteQadrTitle:'ليلة القدر',feteQadrSub:'خير من ألف شهر — لحظة، دعاء، ووقت لنفسك.',feteIsraTitle:'الإسراء والمعراج',feteIsraSub:'رحلة النبي ﷺ الليلية إلى السماء — ليلة تُذكر.',feteSportTitle:'اليوم العالمي للرياضة',feteSportSub:'الرياضة تجمع وتجعلك أفضل — استمتع بحصتك اليوم!',recLongestRun:'أطول خرجة: {0} كم',recRunTime:'{0} في {1}',matLab:'الخامة',accentOcean:'محيط',accentViolet:'جمشت',accentLavender:'خزامى',accentPink:'توت',accentSakura:'ساكورا',accentMint:'نعناع',accentTeal:'بحيرة',accentOrange:'كهرمان',accentMono:'أحادي',liveAlreadyRunning:'هناك حصة جارية بالفعل. أنهِها أو ألغِها قبل بدء حصة أخرى.',backToSessionLab:'العودة إلى الحصة',islandNext:'التالي: {0}',islandEndsAt:'ينتهي عند {0}',islandPaused:'متوقف مؤقتًا',islandSets:'{0}/{1} مجموعات',glassEasyNote:'الوضع المبسّط يُبقي العرض واضحًا دون تأثير الزجاج: يعود هذا الإعداد للعمل عند إيقافه.',youDefaultName:'أنت',backToFriends:'العودة إلى الأصدقاء',profileNotFound:'الملف غير موجود.',noBadgeUnlocked:'لا يوجد وسام مفتوح بعد.',kmPerWeek:'كم/أسبوع',daysStreak:'أيام متتالية',kmTotalLab:'كم إجمالية',tonnageKgLab:'الحمولة كغ',
     addPerf:'إضافة أداء',addChronosHint:'أضف أوقاتك: تُستخدم لحساب VDOT وخطتك.',
     bestPerf:'أفضل أداء',avgHR:'متوسط النبض',maxHRshort:'الأقصى',perfHistoryTitle:'سجل الأداء',
     chooseDistance:'اختر المسافة',otherDist:'أخرى',customDistance:'مسافة مخصصة',
@@ -3253,7 +3253,7 @@ const I18N={
     badgeDetailTitle:'تفاصيل الوسام',tierOf:'المستوى {0} من {1}',newBadgeUnlocked:'وسام جديد مفتوح',
     tapToContinue:'اضغط للمتابعة',seeDetails:'عرض التفاصيل',tapToClose:'اضغط للإغلاق',previewLocked:'معاينة · مغلق',
     obtainedOn:'تم الحصول عليه في {0}',lockedLab:'مغلق',replayAnim:'إعادة الرسوم المتحركة',seePreview:'عرض معاينة',
-    obtainConditions:'شروط الحصول',globalProgress:'التقدم الإجمالي',shareBadgeBtn:'مشاركة هذا الوسام',closeLab:'إغلاق',homeNoPlanYet:'لا خطة بعد',ariaPrevMonth:'الشهر السابق',ariaNextMonth:'الشهر التالي',ariaSetDone:'تأكيد المجموعة',
+    obtainConditions:'شروط الحصول',globalProgress:'التقدم الإجمالي',shareBadgeBtn:'مشاركة هذا الوسام',closeLab:'إغلاق',hue_blue:'أزرق',hue_green:'أخضر',hue_red:'أحمر',hue_orange:'برتقالي',hue_violet:'بنفسجي',hue_pink:'وردي',hue_gold:'أصفر / ذهبي',hue_brown:'بني',hue_grey:'رمادي / كربون',txShadesOf:'درجات {0}',txCustomize:'تخصيص',txCustomizeSub:'اللون والخلفية والزجاج والانعكاسات',txCustomOn:'السمة المخصصة مفعّلة',txTitle:'تخصيص السمة',txPreviewTitle:'جري سهل',txPreviewBtn:'ابدأ',txColorLab:'اللون',txHue:'درجة اللون',txSat:'التشبع',txLight:'الإضاءة',txBgLab:'الخلفية',txBgLevel:'مستوى الخلفية',txBgOled:'أسود OLED',txBgAnthracite:'فحمي',txBgWhite:'أبيض',txBgSoftGrey:'رمادي فاتح',txBgTint:'تلوين الخلفية',txNeutral:'محايد',txTinted:'ملوّن',txGlassLab:'الزجاج',txGlassOn:'تأثير الزجاج',txGlassDesc:'عند الإيقاف: أسطح مصمتة، أبسط وأسرع.',txBlur:'الضبابية',txOpacity:'العتامة',txShine:'اللمعان',txTiltLab:'الانعكاسات',txTiltOn:'انعكاسات حسب الإمالة',txTiltDesc:'ينزلق الضوء عند إمالة الهاتف؛ وبدون مستشعر يتبع التمرير.',txTiltReduced:'تقليل الحركة مفعّل: يبقى الانعكاس ثابتًا.',txTiltStatic:'الإمالة غير مسموح بها: سيتبع الانعكاس التمرير.',txTiltK:'الشدة',txReset:'إعادة الضبط',txDone:'تم',txResetDone:'تمت استعادة السمة الأصلية',homeNoPlanYet:'لا خطة بعد',ariaPrevMonth:'الشهر السابق',ariaNextMonth:'الشهر التالي',ariaSetDone:'تأكيد المجموعة',
     weightLab:'الوزن',imcLab:'كتلة الجسم',imcUnderweight:'نحافة',imcNormal:'طبيعي',imcOverweight:'زيادة وزن',imcObese:'سمنة',
     sessionsPerWeek:'حصص/أسبوع',metabolismKcal:'الأيض كالوري',burned7d:'محروقة 7 أيام (جري)',waterPerDay:'الماء/يوم',
     recentFormTitle:'اللياقة الأخيرة (آخر 7 حصص)',sleepLab:'النوم',energyFeelLab:'الطاقة/الإحساس',fatigueLab:'التعب',
@@ -5919,19 +5919,21 @@ function glassJellyOn(){ return glassMax(); }
   const glare=()=>{ if(!gl){ gl=document.createElement('div'); gl.id='ikGlare'; gl.setAttribute('aria-hidden','true'); gl.innerHTML='<i></i><b></b>'; document.body.appendChild(gl); } return gl; };
   // Carbone (V3.5.0) : la 2e tuile (lumière à 90°) apparaît plus ou moins, le vernis glisse.
   const carbon=()=>!ikMotionOff() && document.getElementById('ikCarbon');
+  const tiltOn=()=>typeof tiltActive==='function' && tiltActive() && !ikMotionOff();
   const push=()=>{ raf=0;
-    if(glassMax()||glassWrap()) glare().style.transform='translate3d('+(tx*30).toFixed(2)+'%,'+(ty*24).toFixed(2)+'%,0) rotate('+(tx*9).toFixed(2)+'deg)';
+    const a=tiltOn()?(0.5+txNum(P.tiltK,0,100,60)/100):1; // éditeur de thème : amplitude selon l'intensité
+    if(glassMax()||glassWrap()||tiltOn()) glare().style.transform='translate3d('+(tx*30*a).toFixed(2)+'%,'+(ty*24*a).toFixed(2)+'%,0) rotate('+(tx*9*a).toFixed(2)+'deg)';
     const c=carbon(); if(c){ c.children[1].style.opacity=cf.toFixed(3); c.children[2].style.transform='translate3d('+(tx*26).toFixed(2)+'%,'+(ty*22).toFixed(2)+'%,0)'; } };
   const ask=()=>{ if(!raf) raf=requestAnimationFrame(push); };
   window.addEventListener('deviceorientation',e=>{
-    if(!(glassMax()||glassWrap()||carbon()) || e.gamma==null) return;
+    if(!(glassMax()||glassWrap()||carbon()||tiltOn()) || e.gamma==null) return;
     const nx=Math.max(-1,Math.min(1,e.gamma/25)), ny=Math.max(-1,Math.min(1,((e.beta||45)-45)/25));
     if(Math.abs(nx-tx)<.01 && Math.abs(ny-ty)<.01) return;
     tx=nx; ty=ny; cf=.5+.5*Math.sin(nx*1.4+ny*.6); lastTilt=Date.now(); ask();
   });
   const sc=document.getElementById('scroll');
   if(sc) sc.addEventListener('scroll',()=>{
-    if(!(glassMax()||glassWrap()||carbon()) || Date.now()-lastTilt<3000) return; // l'inclinaison a la priorité
+    if(!(glassMax()||glassWrap()||carbon()||tiltOn()) || Date.now()-lastTilt<3000) return; // l'inclinaison a la priorité
     const v=Math.sin(sc.scrollTop/300); ty=v*.8; tx=v*.45; cf=.5+.5*Math.sin(sc.scrollTop/210); ask();
   },{passive:true});
   glare();
@@ -7363,6 +7365,8 @@ function applyTheme(){
     if(k) document.documentElement.setAttribute('data-fete',k); else document.documentElement.removeAttribute('data-fete');
     if(document.body) feteSync(); }
   if(document.body && typeof carbonApply==='function') carbonApply();
+  const txCss=(typeof txApply==='function')?txApply():null; // éditeur de thème (V3.14.0)
+  if(typeof tiltActive==='function'){ if(tiltActive()) document.documentElement.setAttribute('data-tilt',''); else document.documentElement.removeAttribute('data-tilt'); glareK(); }
   if(typeof lumApply==='function'){ lumApply(); matApply(); }
   if(typeof ikhCompact==='function') ikhCompact();
   // la couleur de la barre d'état suit le fond (voir lumApply)
@@ -7372,7 +7376,7 @@ function applyTheme(){
   // + les couleurs de l'intro, qui s'affiche avant app.css (voir <style id="ikiCss">)
   try{ const cs=getComputedStyle(document.documentElement), v=n=>cs.getPropertyValue(n).trim();
     localStorage.setItem('ik_theme_prefs', JSON.stringify({mode, accent:acc, easyMode:!!P.easyMode, ez:P.easyMode?ezKey():null, glass:wrap?'wrap':P.glass==='max'?'max':'std',wrap:wrap?wrapKey():null,
-      iki:{e:v('--e'),e2:v('--e2'),er:v('--e-rgb'),bg:v('--bg'),mu:v('--muted')}})); }catch(e){}
+      iki:{e:v('--e'),e2:v('--e2'),er:v('--e-rgb'),bg:v('--bg'),mu:v('--muted')}, css:txCss||null})); }catch(e){}
 }
 /* ---------- FIBRE DE CARBONE (V3.5.0) ----------
    L'ancien « carbone » n'était qu'une trame de 6 px presque invisible : on voyait du mono.
@@ -7462,7 +7466,6 @@ const ACCENTS=[
   {key:'pink',name:'accentPink',fam:'warm'},{key:'sakura',name:'accentSakura',fam:'warm'},{key:'coral',name:'accentCoral',fam:'warm'},{key:'red',name:'accentRed',fam:'warm'},{key:'bordeaux',name:'accentBordeaux',fam:'warm'},{key:'orange',name:'accentOrange',fam:'warm'},{key:'yellow',name:'accentYellow',fam:'warm'},
   {key:'green',name:'accentGreen',fam:'nature'},{key:'emerald',name:'accentEmerald',fam:'nature'},{key:'mint',name:'accentMint',fam:'nature'},{key:'teal',name:'accentTeal',fam:'nature'},{key:'brown',name:'accentBrown',fam:'nature'},
   {key:'carbon',name:'accentCarbon',fam:'neutral'},{key:'forged',name:'accentForged',fam:'neutral'},{key:'mono',name:'accentMono',fam:'neutral'}];
-const ACCENT_FAMS=[['cool','colorFamCool'],['warm','colorFamWarm'],['nature','colorFamNature'],['neutral','colorFamNeutral']];
 function accentName(k){ const a=ACCENTS.find(x=>x.key===k); return a?t(a.name):t('accentBlue'); }
 /* Teintes COVERING (V3.10.0) : avec la matière Covering, le menu Couleurs propose des
    teintes de film. Chacune est une configuration complète — le film, le noir brillant et
@@ -7501,10 +7504,8 @@ function pfColorHTML(){
     return '<div class="acc-grid wrap-grid">'+WRAPS.map(w=>'<div class="acc-sw'+(cw===w.key?' on':'')+'" role="button" onclick="setWrap(\''+w.key+'\')"><i class="wrap-sw" data-w="'+w.key+'"></i><span>'+t(w.name)+'</span><small>'+t(w.det)+'</small></div>').join('')+'</div>'+
       '<div class="wrap-note">'+t('wrapColorsNote')+'</div>';
   }
-  const cur=P.theme||'blue';
-  return ACCENT_FAMS.map(([f,lab])=>'<div class="acc-fam"><div class="lab">'+t(lab)+'</div><div class="acc-grid">'+
-    ACCENTS.filter(a=>a.fam===f).map(a=>'<div class="acc-sw'+(cur===a.key?' on':'')+'" role="button" onclick="setAccent(\''+a.key+'\')"><i class="accent-dot'+(cur===a.key?' on':'')+'" data-a="'+a.key+'"></i><span>'+t(a.name)+'</span></div>').join('')+
-    '</div></div>').join('');
+  // V3.14.0 : neuf couleurs de base, les nuances de celle choisie et l'éditeur (voir pfBaseColorsHTML)
+  return pfBaseColorsHTML();
 }
 /* Couleur du MODE SIMPLE (V3.12.1) : retour du 05/10 « les couleurs ne marchent pas dans le
    mode simple » — le vert mat était imposé, et toucher une couleur dans Apparence ne changeait
@@ -7519,8 +7520,177 @@ function setEzColor(k){
   if($('#s-profil')&&$('#s-profil').classList.contains('on')) renderProfile();
   refreshPfSheet(); sfx&&sfx('tap'); toast(t('colorApplied'));
 }
+/* ===== ÉDITEUR DE THÈME (V3.14.0) =====
+   Couleurs de base : une par teinte (bleu, vert, rouge, orange, violet, rose, jaune / or, marron,
+   gris / carbone) ; chacune garde ses nuances d'avant (Bleu nuit, Océan…). « Personnaliser »
+   ouvre un éditeur : teinte 0–360, saturation, luminosité, niveau du fond (noir OLED →
+   anthracite, et l'équivalent en clair), teinte du fond, verre (flou, opacité, brillance, ou
+   coupé) et reflets selon l'inclinaison. Le thème est CALCULÉ (couleurs OKLCH, comme les teintes
+   de V3.13.0) et écrit dans une feuille <style id="ikTx"> dont la priorité passe devant les
+   couleurs prédéfinies ; un miroir en clair (ik_theme_prefs.css) la repose avant la première
+   image au lancement suivant — pas de flash. Garde-fous de contraste : accent ≥ 5:1 sur le fond,
+   textes secondaires ≥ 4,5:1 sur les surfaces, texte du bouton blanc ou foncé selon ce qui se
+   lit le mieux (≥ 4,5:1). Rangé dans P.tx (profil), donc synchronisé comme le reste du profil,
+   y compris en invité. Sans effet en mode simplifié et en Covering, qui ont leurs propres teintes. */
+const BASE_HUES=[['blue','hue_blue',['blue','navy','ocean','indigo']],['green','hue_green',['green','emerald','mint','teal']],['red','hue_red',['red','coral','bordeaux']],
+  ['orange','hue_orange',['orange']],['violet','hue_violet',['violet','lavender']],['pink','hue_pink',['pink','sakura']],['yellow','hue_gold',['yellow']],
+  ['brown','hue_brown',['brown']],['carbon','hue_grey',['carbon','forged','mono']]];
+function baseOfAccent(k){ const b=BASE_HUES.find(x=>x[2].includes(k)); return b?b[0]:'blue'; }
+// réglages de l'éditeur qui redonnent chaque couleur prédéfinie : [teinte, saturation, luminosité, fond, teinte du fond]
+const TX_SEEDS={blue:[261,76,40,52,20],navy:[266,71,40,50,85],ocean:[233,63,57,52,61],indigo:[279,73,43,50,60],violet:[295,87,37,53,64],lavender:[295,57,65,56,53],pink:[358,84,53,53,49],sakura:[353,50,79,57,34],coral:[32,71,55,50,53],red:[30,85,47,49,44],bordeaux:[8,71,45,50,72],orange:[54,71,62,54,50],yellow:[89,71,85,56,42],green:[134,73,55,56,30],emerald:[158,62,65,50,54],mint:[160,77,79,59,62],teal:[185,55,62,60,49],brown:[63,55,46,55,24],carbon:[256,5,83,40,0],forged:[256,5,83,40,0],mono:[258,2,100,43,0]};
+// ---- couleurs : sRGB ↔ OKLCH (Björn Ottosson), contraste WCAG ----
+const _okLin=v=>v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4), _okUnlin=v=>v<=0.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-0.055;
+function okFromHex(h){ const n=parseInt(h.slice(1),16); return [(n>>16&255)/255,(n>>8&255)/255,(n&255)/255]; }
+function okHex(c){ return '#'+c.map(v=>Math.max(0,Math.min(255,Math.round(v*255))).toString(16).padStart(2,'0')).join('').toUpperCase(); }
+function okLum(c){ const [r,g,b]=c.map(_okLin); return .2126*r+.7152*g+.0722*b; }
+function okCR(a,b){ const x=okLum(a), y=okLum(b); return (Math.max(x,y)+.05)/(Math.min(x,y)+.05); }
+function okLCH(L,C,H){ // → sRGB 0..1 dans le gamut (la saturation baisse jusqu'à rentrer)
+  for(let c=C;;c-=0.002){ const k=Math.max(0,c), A=k*Math.cos(H*Math.PI/180), B=k*Math.sin(H*Math.PI/180);
+    let l=L+0.3963377774*A+0.2158037573*B, m=L-0.1055613458*A-0.0638541728*B, s=L-0.0894841775*A-1.2914855480*B; l=l*l*l; m=m*m*m; s=s*s*s;
+    const lin=[4.0767416621*l-3.3077115913*m+0.2309699292*s,-1.2684380046*l+2.6097574011*m-0.3413193965*s,-0.0041960863*l-0.7034186147*m+1.7076147010*s];
+    if(k<=0 || lin.every(v=>v>=-1e-4&&v<=1+1e-4)) return lin.map(v=>_okUnlin(Math.max(0,Math.min(1,v)))); }
+}
+const _okRGB=c=>c.map(v=>Math.round(Math.max(0,Math.min(1,v))*255)).join(',');
+const _okW=[1,1,1], _okInk=okFromHex('#111418');
+function txDefaults(base){ const s=TX_SEEDS[base]||TX_SEEDS.blue; return {on:true,base:base,h:s[0],s:s[1],l:s[2],bg:s[3],tint:s[4],gCustom:false,gOn:true,blur:22,op:62,shine:55}; }
+function txActive(){ return !!(P && P.tx && P.tx.on && !P.easyMode && !wrapOn()); }
+function txNum(v,a,b,d){ v=+v; return Number.isFinite(v)?Math.max(a,Math.min(b,v)):d; }
+function txClean(p){ const d=txDefaults(p&&TX_SEEDS[p.base]?p.base:'blue'); p=Object.assign({},d,p||{});
+  return {on:!!p.on,base:TX_SEEDS[p.base]?p.base:'blue',h:txNum(p.h,0,360,d.h),s:txNum(p.s,0,100,d.s),l:txNum(p.l,0,100,d.l),bg:txNum(p.bg,0,100,d.bg),tint:txNum(p.tint,0,100,d.tint),
+    gCustom:!!p.gCustom,gOn:p.gOn!==false,blur:txNum(p.blur,0,40,22),op:txNum(p.op,15,100,62),shine:txNum(p.shine,0,100,55)}; }
+// Le thème complet, en sombre et en clair : { dark:{--var:valeur}, light:{…} }
+function txBuild(p){
+  p=txClean(p);
+  const H=p.h, C=0.24*p.s/100, tk=2.2*p.tint/100, out={};
+  // ---- sombre : du noir OLED (0) à l'anthracite (100)
+  const b0=0.27*p.bg/100, D={bg:[0,.022],s1:[.05,.030],s2:[.08,.036],s3:[.12,.042],marineL:[.145,.07],hair:[.11,.032],hair2:[.155,.040]}, d={};
+  Object.keys(D).forEach(k=>{ d[k]=okLCH(Math.min(.6,b0+D[k][0]),D[k][1]*tk,H); });
+  let Le=0.50+0.40*p.l/100; while(Math.min(okCR(okLCH(Le,C,H),d.bg),okCR(okLCH(Le,C,H),d.s2))<4.8 && Le<0.98) Le+=0.01;
+  const e=okLCH(Le,C,H), e2=okLCH(Math.min(.97,Le+0.12),C*0.75,H);
+  // bouton : comme les couleurs prédéfinies, un dégradé assez foncé pour un texte blanc (≥ 4,8:1) ;
+  // les accents très clairs (jaune, gris clair) gardent un bouton clair et un texte foncé
+  let Lg=Le; if(Le<0.80) while(okCR(_okW,okLCH(Lg,C*0.95,H))<4.8 && Lg>0.05) Lg-=0.01;
+  out.dark=txTokens(d,e,e2,okLCH(Math.min(.98,Lg+0.06),C*0.95,H),okLCH(Lg,C*0.95,H),okLCH(Math.max(0,Lg-0.07),C*0.9,H),false);
+  // ---- clair : du blanc pur (0) au gris doux (100)
+  const lb=0.985-0.06*p.bg/100, Lt={bg:[0,.010],s1:[.028,0],s2:[-.028,.020],s3:[-.057,.028],marineL:[-.047,.040],hair:[-.067,.024],hair2:[-.132,.036]}, l={};
+  Object.keys(Lt).forEach(k=>{ l[k]=okLCH(Math.min(1,lb+Lt[k][0]),Lt[k][1]*1.2*tk,H); });
+  let Ll=Math.min(0.62,Le-0.26); const okL=x=>Math.min(okCR(okLCH(x,C,H),_okW),okCR(okLCH(x,C,H),l.bg),okCR(okLCH(x,C,H),l.s2));
+  while(okL(Ll)<5 && Ll>0.05) Ll-=0.01;
+  const le=okLCH(Ll,C,H), le2=okLCH(Math.max(0,Ll-0.08),C*0.9,H);
+  out.light=txTokens(l,le,le2,okLCH(Math.min(.95,Ll+0.06),C,H),le,le2,true);
+  // ---- verre (si réglé dans l'éditeur ; sinon la matière choisie garde le sien)
+  if(p.gCustom){ [['dark',out.dark,.30],['light',out.light,.95]].forEach(([m,o,a])=>{
+    if(!p.gOn){ o['--lg-blur']='none'; o['--glass-blur']='0px'; o['--lg-fill']='rgb(var(--s1-rgb))'; o['--glass-bg']='rgb(var(--s1-rgb))'; o['--glass-bg-2']='rgb(var(--s2-rgb))';
+      o['--lg-spec']='linear-gradient(transparent,transparent)'; o['--glass-shine']='linear-gradient(transparent,transparent)'; return; }
+    const op=(p.op/100).toFixed(2), sh=(a*p.shine/100).toFixed(3);
+    o['--lg-blur']=p.blur<0.5?'none':'blur('+p.blur+'px) saturate(170%)'; o['--glass-blur']=p.blur+'px';
+    o['--lg-fill']='rgba(var(--s1-rgb),'+op+')'; o['--glass-bg']='rgba(var(--s1-rgb),'+op+')'; o['--glass-bg-2']='rgba(var(--s2-rgb),'+Math.min(1,+op+.04).toFixed(2)+')';
+    o['--lg-spec']='radial-gradient(130% 80% at 10% -18%,rgba(255,255,255,'+sh+'),transparent 55%)';
+    o['--glass-shine']='linear-gradient(155deg,rgba(255,255,255,'+sh+') 0%,rgba(255,255,255,'+(sh/4).toFixed(3)+') 22%,rgba(255,255,255,0) 45%)'; }); }
+  return out;
+}
+function txTokens(S,e,e2,g1,g2,g3,light){
+  const o={'--e':okHex(e),'--e2':okHex(e2),'--e-rgb':_okRGB(e),'--e2-rgb':_okRGB(e2)};
+  ['bg','s1','s2','s3','marineL','hair','hair2'].forEach(k=>{ o['--'+k]=okHex(S[k]); });
+  ['bg','s1','s2','s3'].forEach(k=>{ o['--'+k+'-rgb']=_okRGB(S[k]); });
+  o['--grad-btn']='linear-gradient(180deg,'+okHex(g1)+','+okHex(g2)+' 55%,'+okHex(g3)+')';
+  // texte posé sur l'accent : blanc ou foncé, le plus lisible des deux (≥ 4,5:1 visé)
+  const w=okCR(_okW,g2), k=okCR(_okInk,g2);
+  if(w>=4.6 || w>=k){ o['--accent-ink']='#FFFFFF'; o['--accent-ink-shadow']='0 1px 2px rgba(0,0,0,.45)'; }
+  else { o['--accent-ink']='#111418'; o['--accent-ink-shadow']='none'; }
+  // textes secondaires toujours lisibles sur les surfaces (fond anthracite ou gris doux)
+  const base=light?{dim:'#5F6675',muted:'#525A68'}:{dim:'#8B94A7',muted:'#97A0B2'};
+  Object.keys(base).forEach(k=>{ let c=okFromHex(base[k]), i=0;
+    while(Math.min(okCR(c,S.s2),okCR(c,S.bg))<4.6 && i++<40) c=c.map(v=>light?Math.max(0,v-0.02):Math.min(1,v+0.02));
+    o['--'+k]=okHex(c); });
+  return o;
+}
+function txCSS(p){
+  const T=txBuild(p), sel='html:not(#ik-tx):not(#ik-tx2)', body=o=>Object.keys(o).map(k=>k+':'+o[k]).join(';');
+  return sel+'{'+body(T.dark)+'}'+sel+'[data-mode="light"]{'+body(T.light)+'}';
+}
+function txApply(){
+  const root=document.documentElement; let st=document.getElementById('ikTx');
+  if(!txActive()){ if(st) st.remove(); delete root.dataset.tx; return null; }
+  const css=txCSS(P.tx);
+  if(!st){ st=document.createElement('style'); st.id='ikTx'; document.head.appendChild(st); }
+  if(st.textContent!==css) st.textContent=css;
+  root.dataset.tx=String(_fnvTx(css)); // change de clé pour les caches de lumApply / matApply
+  return css;
+}
+function _fnvTx(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+
+// ---- interface de l'éditeur (Profil › Apparence › Personnaliser) ----
+function txState(){ // réglages en cours : ceux enregistrés, ou ceux de la couleur actuelle
+  if(P.tx && P.tx.on) return txClean(P.tx);
+  const cur=P.theme||'blue', d=txDefaults(cur), keep=P.tx||{};
+  if(keep.gCustom){ d.gCustom=true; d.gOn=keep.gOn!==false; d.blur=keep.blur; d.op=keep.op; d.shine=keep.shine; }
+  return txClean(Object.assign(d,{on:false}));
+}
+function openThemeEditor(){ if(P.easyMode||wrapOn()) return; openProfileSection('theme'); }
+function txRow(key,lab,min,max,val,ends,extra){
+  return '<div class="tx-row'+(extra&&extra.off?' off':'')+'"><div class="tx-row-h"><label for="tx_'+key+'">'+lab+'</label><b id="txv_'+key+'">'+txValLab(key,val)+'</b></div>'+
+    '<input class="tx-range tx-'+key+'" id="tx_'+key+'" type="range" min="'+min+'" max="'+max+'" step="1" value="'+Math.round(val)+'"'+(extra&&extra.off?' disabled':'')+
+    ' oninput="txInput(\''+key+'\',this.value)" onchange="txCommit()">'+(ends?'<div class="tx-ends"><span>'+ends[0]+'</span><span>'+ends[1]+'</span></div>':'')+'</div>';
+}
+function txValLab(key,v){ v=Math.round(+v); return key==='h'?v+'°':key==='blur'?v+' px':v+' %'; }
+function pfThemeEditorHTML(){
+  const p=txState(), light=effectiveMode()==='light', reduce=(()=>{ try{ return matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } })();
+  const tiltK=txNum(P.tiltK,0,100,60);
+  let h='<div class="tx-ed" id="txEd" style="--tx-hue:'+Math.round(p.h)+'"><div class="tx-prev" aria-hidden="true"><div class="tx-prev-bg"><i></i><i></i></div>'+
+    '<div class="card tx-prev-card"><div class="tx-prev-top"><span class="pill on">'+t('today')+'</span><span class="tx-prev-meta">8 km · 5:37/km</span></div>'+
+    '<div class="tx-prev-t">'+t('txPreviewTitle')+'</div><div class="pbar"><div style="width:62%"></div></div>'+
+    '<button type="button" class="btn sm" tabindex="-1">'+t('txPreviewBtn')+'</button></div></div>';
+  h+='<div class="lab ap-lab">'+t('txColorLab')+'</div>'+
+    txRow('h',t('txHue'),0,360,p.h)+txRow('s',t('txSat'),0,100,p.s)+txRow('l',t('txLight'),0,100,p.l);
+  h+='<div class="lab ap-lab">'+t('txBgLab')+'</div>'+
+    txRow('bg',t('txBgLevel'),0,100,p.bg,light?[t('txBgWhite'),t('txBgSoftGrey')]:[t('txBgOled'),t('txBgAnthracite')])+
+    txRow('tint',t('txBgTint'),0,100,p.tint,[t('txNeutral'),t('txTinted')]);
+  h+='<div class="lab ap-lab">'+t('txGlassLab')+'</div>'+
+    '<div class="ap-opt"><div><b>'+t('txGlassOn')+'</b><span>'+t('txGlassDesc')+'</span></div><div class="toggle'+(p.gOn?' on':'')+'" role="switch" aria-checked="'+p.gOn+'" aria-label="'+t('txGlassOn')+'" onclick="txGlassToggle()"></div></div>'+
+    txRow('blur',t('txBlur'),0,40,p.blur,null,{off:!p.gOn})+txRow('op',t('txOpacity'),15,100,p.op,null,{off:!p.gOn})+txRow('shine',t('txShine'),0,100,p.shine,null,{off:!p.gOn});
+  h+='<div class="lab ap-lab">'+t('txTiltLab')+'</div>'+
+    '<div class="ap-opt"><div><b>'+t('txTiltOn')+'</b><span>'+t(reduce?'txTiltReduced':'txTiltDesc')+'</span></div><div class="toggle'+(P.tiltOn?' on':'')+'" role="switch" aria-checked="'+!!P.tiltOn+'" aria-label="'+t('txTiltOn')+'" onclick="txTiltToggle()"></div></div>'+
+    txRow('tk',t('txTiltK'),0,100,tiltK,null,{off:!P.tiltOn});
+  h+='<div class="tx-acts"><button type="button" class="btn ghost" onclick="txReset()">'+t('txReset')+'</button><button type="button" class="btn" onclick="closeOv(\'ovProg\')">'+t('txDone')+'</button></div></div>';
+  return h;
+}
+let _txRaf=0, _txSave=0;
+function txLive(){ cancelAnimationFrame(_txRaf); _txRaf=requestAnimationFrame(()=>{ txApply(); if(typeof lumApply==='function'){ lumApply(); matApply(); } glareK(); }); }
+function txInput(key,val){
+  val=+val;
+  if(key==='tk'){ P.tiltK=val; }
+  else{
+    const p=txState(); p[key]=val; p.on=true; if(key==='blur'||key==='op'||key==='shine') p.gCustom=true; P.tx=p;
+  }
+  const v=$('#txv_'+key); if(v) v.textContent=txValLab(key,val);
+  if(key==='h'){ const ed=$('#txEd'); if(ed) ed.style.setProperty('--tx-hue',Math.round(val)); }
+  txLive(); clearTimeout(_txSave); _txSave=setTimeout(saveAll,500);
+}
+function txCommit(){ clearTimeout(_txSave); saveAll(); applyTheme(); if(document.body.dataset.scr==='profil') renderProfile(); }
+function txGlassToggle(){ const p=txState(); p.gOn=!p.gOn; p.gCustom=true; p.on=true; P.tx=p; saveAll(); applyTheme(); refreshPfSheet(); sfx&&sfx('tap'); }
+// L'inclinaison n'arrive sur iPhone qu'après un « oui », demandé ici, au toucher (obligatoire).
+function txTiltToggle(){
+  P.tiltOn=!P.tiltOn;
+  if(P.tiltOn){ const D=window.DeviceOrientationEvent;
+    if(D && typeof D.requestPermission==='function') D.requestPermission().then(r=>{ P.glassTilt=(r==='granted'); saveAll(); if(r!=='granted') toast(t('txTiltStatic')); }).catch(()=>toast(t('txTiltStatic')));
+    else P.glassTilt=true; }
+  saveAll(); applyTheme(); refreshPfSheet(); sfx&&sfx('tap');
+}
+function txReset(){ const keep=P.theme||'blue'; P.tx=null; P.tiltOn=false; P.tiltK=60; P.theme=keep; saveAll(); applyTheme(); refreshPfSheet(); if(document.body.dataset.scr==='profil') renderProfile(); toast(t('txResetDone')); }
+function tiltActive(){ return !!(P && P.tiltOn && !P.easyMode); }
+function glareK(){ const g=document.getElementById('ikGlare'); if(g) g.style.opacity=tiltActive()?(0.25+0.75*txNum(P.tiltK,0,100,60)/100).toFixed(2):''; }
+// Profil › Couleur : les neuf couleurs de base, les nuances de celle choisie, puis « Personnaliser ».
+function pfBaseColorsHTML(){
+  const cur=P.theme||'blue', base=baseOfAccent(cur), tx=txActive(), b=BASE_HUES.find(x=>x[0]===base);
+  let h='<div class="acc-grid base-grid">'+BASE_HUES.map(([k,lab])=>'<div class="acc-sw'+(!tx&&base===k?' on':'')+'" role="button" aria-pressed="'+(!tx&&base===k)+'" onclick="setAccent(\''+k+'\')"><i class="accent-dot" data-a="'+k+'"></i><span>'+t(lab)+'</span></div>').join('')+'</div>';
+  if(b && b[2].length>1) h+='<div class="lab ap-sub">'+tp('txShadesOf',t(b[1]))+'</div><div class="acc-chips">'+b[2].map(k=>'<button type="button" class="acc-chip'+(!tx&&cur===k?' on':'')+'" aria-pressed="'+(!tx&&cur===k)+'" onclick="setAccent(\''+k+'\')"><i class="accent-dot" data-a="'+k+'"></i>'+accentName(k)+'</button>').join('')+'</div>';
+  h+='<button type="button" class="tx-open'+(tx?' on':'')+'" onclick="openThemeEditor()"><span class="tx-open-ic">'+ICN('palette',20,'currentColor')+'</span><span><b>'+t('txCustomize')+'</b><small>'+t(tx?'txCustomOn':'txCustomizeSub')+'</small></span>'+ICN('chevronR',16)+'</button>';
+  return h;
+}
+
 function setAccent(c){
-  P.theme=c;
+  P.theme=c; if(P.tx) P.tx.on=false; // une couleur prédéfinie remplace le thème personnalisé (gardé de côté)
   saveAll(); applyTheme();
   if($('#s-profil')&&$('#s-profil').classList.contains('on')) renderProfile();
   refreshPfSheet();
@@ -7528,9 +7698,10 @@ function setAccent(c){
   toast(t('colorApplied'));
 }
 function pfAccentPickerHTML(){
-  const cur=P.theme||'blue';
-  return '<div class="accent-picker">'+ACCENTS.map(a=>
-    '<div class="accent-dot'+(cur===a.key?' on':'')+'" data-a="'+a.key+'" title="'+t(a.name)+'" onclick="event.stopPropagation();setAccent(\''+a.key+'\')"></div>'
+  // V3.14.0 : les neuf couleurs de base, comme dans Profil › Apparence (nuances et éditeur y restent)
+  const base=baseOfAccent(P.theme||'blue');
+  return '<div class="accent-picker">'+BASE_HUES.map(([k,lab])=>
+    '<div class="accent-dot'+(base===k?' on':'')+'" data-a="'+k+'" role="button" aria-label="'+t(lab)+'" aria-pressed="'+(base===k)+'" title="'+t(lab)+'" onclick="event.stopPropagation();setAccent(\''+k+'\')"></div>'
   ).join('')+'</div>';
 }
 function toggleEasyMode(){
@@ -14549,9 +14720,10 @@ function openProfileSection(key){
   if(key==='data') key='account';
   if(key==='terms'||key==='privacy'){ _legalTab=key; key='legal'; }
   _pfSheet=key;
-  const titles={account:t('accountDataLab'),lang:''+t('language'),appearance:''+t('appearance'),notif:''+t('notifsApp'),legal:t('legalLab')};
+  const titles={account:t('accountDataLab'),lang:''+t('language'),appearance:''+t('appearance'),theme:t('txTitle'),notif:''+t('notifsApp'),legal:t('legalLab')};
   $('#ovProgTitle').textContent=titles[key]||t('settings');
   $('#progBody').innerHTML=pfSectionHTML(key);
+  { const sc=$('#ovProg .ov-body-scroll'); if(sc && !toColor) sc.scrollTop=0; } // V3.14.0 : une nouvelle fiche s'ouvre en haut (elle gardait le défilement de la précédente)
   openOv('ovProg');
   if(toColor) setTimeout(()=>{ const c=$('#apColor'); if(c) c.scrollIntoView({block:'start'}); },60);
 }
@@ -14560,6 +14732,7 @@ function pfSectionHTML(key){
   if(key==='account') return pfAccountHTML()+pfDataHTML();
   if(key==='lang') return pfLangHTML();
   if(key==='appearance') return pfAppearanceHTML();
+  if(key==='theme') return pfThemeEditorHTML();
   if(key==='notif') return pfNotifHTML();
   if(key==='legal') return '<div class="seg-ctrl sub" data-seg="legal" style="margin-bottom:6px">'+
     [['terms','termsOfUseLab'],['privacy','privacyPolicyLab']].map(([k,l])=>'<div class="seg-btn'+(_legalTab===k?' on':'')+'" onclick="_legalTab=\''+k+'\';refreshPfSheet()">'+t(l)+'</div>').join('')+'</div>'+
@@ -14930,7 +15103,7 @@ function matMix(name,a,b,f){
 }
 let _matCache={key:null,A:null};
 function matAnchorVals(){
-  const root=document.documentElement, key=[root.dataset.accent,root.dataset.mode,root.dataset.carbon||'',root.style.getPropertyValue('--s1')].join('|');
+  const root=document.documentElement, key=[root.dataset.accent,root.dataset.mode,root.dataset.carbon||'',root.dataset.tx||'',root.style.getPropertyValue('--s1')].join('|');
   if(_matCache.key===key) return _matCache.A;
   MAT_VARS.forEach(v=>root.style.removeProperty(v)); delete root.dataset.matMix;
   const cur=root.getAttribute('data-glass'), A={};
@@ -14953,7 +15126,7 @@ function lumApply(){
   let bg=null;
   if(amt<.01){ if(root.dataset.lumMix) clear(); }
   else{
-    const key=[root.dataset.accent,root.dataset.mode,root.dataset.carbon||'',root.dataset.wrap||''].join('|');
+    const key=[root.dataset.accent,root.dataset.mode,root.dataset.carbon||'',root.dataset.wrap||'',root.dataset.tx||''].join('|');
     if(_lumCache.key!==key){ clear(); const cs=getComputedStyle(root); _lumCache={key,base:LUM_VARS.map(x=>cssRGBA(cs.getPropertyValue(x))||[0,0,0,1])}; }
     const target=light?[150,158,170]:[64,72,86], K=LUM_K[light?'light':'dark'];
     LUM_VARS.forEach((x,j)=>{ const c=_lumCache.base[j], k=K[j]*Math.min(1,amt), m=[0,1,2].map(n=>Math.round(c[n]+(target[n]-c[n])*k));

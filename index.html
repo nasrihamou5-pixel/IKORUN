@@ -17,6 +17,11 @@
       if(tp.easyMode && typeof tp.ez === 'string' && /^[a-z]{2,12}$/.test(tp.ez)) document.documentElement.setAttribute('data-ez', tp.ez);
       if(tp.glass === 'std' || tp.glass === 'max' || tp.glass === 'wrap') document.documentElement.setAttribute('data-glass', tp.glass);
       if(tp.glass === 'wrap' && typeof tp.wrap === 'string' && /^[a-z]{2,12}$/.test(tp.wrap)) document.documentElement.setAttribute('data-wrap', tp.wrap);
+      // thème personnalisé (V3.14.0, voir txApply dans app.js) : posé avant la première image.
+      // Seules des déclarations de variables CSS sont acceptées (ni balise, ni url, ni @).
+      if(typeof tp.css==='string' && tp.css.length<8000 && /^html:not\(#ik-tx\):not\(#ik-tx2\)\{[-\w\s:;#,.()%]*\}html:not\(#ik-tx\):not\(#ik-tx2\)\[data-mode="light"\]\{[-\w\s:;#,.()%]*\}$/.test(tp.css)){
+        var st=document.createElement('style'); st.id='ikTx'; st.textContent=tp.css; document.head.appendChild(st); document.documentElement.setAttribute('data-tx','1');
+      }
       // couleurs de l'intro (voir <style id="ikiCss">), le temps qu'app.css se charge
       if(tp.iki) ['e','e2','er','bg','mu'].forEach(function(k){ var v=tp.iki[k];
         if(typeof v==='string' && /^[#\w\s,.()%-]{1,48}$/.test(v)) document.documentElement.style.setProperty('--iki-'+k, v); });
@@ -195,9 +200,9 @@ html[data-mode="light"] .iki-word{color:#10141B;}
   #ikIntro *,#ikIntro{animation:none!important;}
 }
 </style>
-<link rel="preload" as="style" href="app.min.css?v=43">
-<link rel="stylesheet" id="ikCss" href="app.min.css?v=43" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="app.min.css?v=43"></noscript>
+<link rel="preload" as="style" href="app.min.css?v=44">
+<link rel="stylesheet" id="ikCss" href="app.min.css?v=44" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="app.min.css?v=44"></noscript>
 </head>
 <body>
 <script>
@@ -466,7 +471,7 @@ html[data-mode="light"] .iki-word{color:#10141B;}
   // de version par fichier dans toute la page (avant : recopié ici, et un oubli faisait
   // précharger une version et exécuter une autre, donc deux téléchargements).
   var SCRIPTS = [].map.call(document.querySelectorAll('link[rel=preload][as=script]'), function(l){ return l.getAttribute('href'); });
-  if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=29');
+  if (location.search.indexOf('selftest=1') > -1) SCRIPTS.push('tests/smoke.js?v=30');
   var lance = false;
   function charge(){
     if (lance) return; lance = true;

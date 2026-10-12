@@ -474,6 +474,57 @@ html[data-mode="light"][data-accent="emerald"]{
 .acc-sw .accent-dot{width:34px;height:34px;pointer-events:none;}
 .acc-sw .accent-dot.on{transform:none;}
 .acc-sw span{font-size:11.5px;font-weight:700;text-align:center;line-height:1.2;color:var(--snow);}
+/* ===== COULEURS DE BASE ET ÉDITEUR DE THÈME (V3.14.0) ===== */
+.ap-sub{margin:14px 2px 8px;font-size:11.5px;}
+.acc-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.acc-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 12px 7px 8px;border-radius:999px;border:1.5px solid var(--hair);background:var(--s1);
+  color:var(--snow);font:600 12.5px/1.2 inherit;cursor:pointer;transition:transform .18s var(--ease-spring),border-color .2s ease;}
+.acc-chip .accent-dot{width:18px;height:18px;pointer-events:none;}
+.acc-chip.on{border-color:var(--e);box-shadow:0 0 0 3px rgba(var(--e-rgb),.16);}
+.acc-chip:active{transform:scale(.95);}
+.tx-open{display:flex;align-items:center;gap:12px;width:100%;margin-top:14px;padding:13px 14px;border-radius:16px;border:1.5px solid var(--hair);
+  background:var(--s1);color:var(--snow);text-align:start;font:inherit;cursor:pointer;}
+.tx-open>span:nth-child(2){flex:1;display:flex;flex-direction:column;gap:2px;}
+.tx-open b{font-size:14px;} .tx-open small{font-size:12px;color:var(--muted);font-weight:500;}
+.tx-open.on{border-color:var(--e);box-shadow:0 0 0 3px rgba(var(--e-rgb),.16);}
+.tx-open-ic{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--e);background:rgba(var(--e-rgb),.14);}
+[dir=rtl] .tx-open svg:last-child{transform:scaleX(-1);}
+/* aperçu : collé en haut de la fiche, il montre les vrais réglages de l'app pendant qu'on les change */
+.tx-prev{position:sticky;top:0;z-index:3;height:172px;margin:0 0 6px;border-radius:22px;overflow:hidden;background:var(--bg);
+  border:1px solid var(--hair);box-shadow:0 10px 24px -14px rgba(0,0,0,.6);}
+.tx-prev-bg i{position:absolute;border-radius:50%;filter:blur(18px);}
+.tx-prev-bg i:first-child{width:150px;height:150px;left:-30px;top:-40px;background:rgba(var(--e-rgb),.55);}
+.tx-prev-bg i:last-child{width:130px;height:130px;right:-20px;bottom:-50px;background:rgba(var(--e2-rgb),.45);}
+.tx-prev-card.card{position:absolute;inset:18px 16px;margin:0;padding:14px;display:flex;flex-direction:column;gap:9px;}
+.tx-prev-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.tx-prev-top .pill{margin:0;padding:4px 10px;font-size:11px;}
+.tx-prev-meta{font-size:12px;color:var(--muted);font-weight:600;}
+.tx-prev-t{font-family:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:800;font-size:17px;color:var(--snow);}
+.tx-prev-card .pbar{height:6px;}
+.tx-prev-card .btn{margin:2px 0 0;pointer-events:none;}
+.tx-row{margin:2px 0 12px;}
+.tx-row.off{opacity:.45;}
+.tx-row-h{display:flex;justify-content:space-between;align-items:baseline;margin:0 2px 4px;font-size:13px;font-weight:700;color:var(--snow);}
+.tx-row-h b{font-size:12px;color:var(--muted);font-weight:700;font-variant-numeric:tabular-nums;}
+.tx-ends{display:flex;direction:ltr;justify-content:space-between;margin:2px 2px 0;font-size:11px;color:var(--muted);font-weight:600;}
+/* curseurs : piste colorée (teinte en OKLCH, comme le moteur), toujours de gauche à droite */
+.tx-range{-webkit-appearance:none;appearance:none;direction:ltr;width:100%;height:30px;margin:0;background:transparent;cursor:pointer;}
+.tx-range:focus-visible{outline:2px solid var(--e);outline-offset:2px;border-radius:99px;}
+.tx-range::-webkit-slider-runnable-track{height:10px;border-radius:99px;background:var(--tx-track,linear-gradient(90deg,rgba(var(--e-rgb),.75),rgba(var(--e2-rgb),.35)));box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);}
+.tx-range::-moz-range-track{height:10px;border-radius:99px;background:var(--tx-track,linear-gradient(90deg,rgba(var(--e-rgb),.75),rgba(var(--e2-rgb),.35)));}
+.tx-range::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;margin-top:-8px;border-radius:50%;background:#fff;border:0;
+  box-shadow:0 2px 8px rgba(0,0,0,.4),0 0 0 1px rgba(0,0,0,.1);}
+.tx-range::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#fff;border:0;box-shadow:0 2px 8px rgba(0,0,0,.4);}
+.tx-range:disabled{cursor:default;}
+.tx-h{--tx-track:linear-gradient(90deg,oklch(.7 .16 0),oklch(.7 .16 45),oklch(.7 .16 90),oklch(.7 .16 135),oklch(.7 .16 180),oklch(.7 .16 225),oklch(.7 .16 270),oklch(.7 .16 315),oklch(.7 .16 360));}
+.tx-s{--tx-track:linear-gradient(90deg,oklch(.7 0 var(--tx-hue,261)),oklch(.7 .22 var(--tx-hue,261)));}
+.tx-l{--tx-track:linear-gradient(90deg,oklch(.5 .15 var(--tx-hue,261)),oklch(.92 .1 var(--tx-hue,261)));}
+.tx-bg{--tx-track:linear-gradient(90deg,#000,#3A3E46);}
+html[data-mode="light"] .tx-bg{--tx-track:linear-gradient(90deg,#FFF,#DFE2E7);}
+.tx-tint{--tx-track:linear-gradient(90deg,oklch(.3 0 var(--tx-hue,261)),oklch(.3 .07 var(--tx-hue,261)));}
+html[data-mode="light"] .tx-tint{--tx-track:linear-gradient(90deg,oklch(.95 0 var(--tx-hue,261)),oklch(.93 .04 var(--tx-hue,261)));}
+.tx-acts{display:flex;gap:10px;margin:18px 0 6px;}
+.tx-acts .btn{flex:1;margin:0;}
 
 /* ===== MODE SIMPLIFIÉ — pour les utilisateurs peu à l'aise avec la technologie :
    supprime le flou "liquid glass", grossit les textes/boutons, réduit les animations. ===== */
@@ -3066,6 +3117,8 @@ html[data-glass="max"] :is(.card,.grp-card,.kchart-card,.kduo-card,.list-row,.fa
    l'inclinaison ou le défilement. Seul son transform change : rien à recalculer ailleurs. */
 #ikGlare{position:fixed;inset:-35%;z-index:9998;pointer-events:none;display:none;will-change:transform;transition:transform .12s linear;}
 html[data-glass="max"] #ikGlare{display:block;}
+/* V3.14.0 : reflets activés dans l'éditeur de thème, quelle que soit la matière (intensité = opacité, posée par app.js) */
+html[data-tilt] #ikGlare{display:block;}
 #ikGlare i,#ikGlare b{position:absolute;inset:0;}
 #ikGlare i{background:linear-gradient(118deg,transparent 41%,rgba(255,255,255,.07) 46%,rgba(255,255,255,.16) 49.5%,rgba(255,255,255,.07) 53%,transparent 58%),
   linear-gradient(118deg,transparent 60%,rgba(255,255,255,.05) 62.5%,transparent 65%);}
@@ -4102,6 +4155,7 @@ html[data-glass="wrap"][data-wrap="nuit"][data-mode="light"]:not(#_){
 #progBody .acc-fam .lab{margin:0 2px 7px;font-size:10px;opacity:.85;}
 #progBody .acc-fam .lab::after{display:none;}
 #progBody .acc-grid:not(.wrap-grid){grid-template-columns:repeat(4,1fr);gap:7px;}
+#progBody .acc-grid.base-grid{grid-template-columns:repeat(3,1fr);} /* V3.14.0 : neuf couleurs de base, 3 × 3 */
 #progBody .acc-grid:not(.wrap-grid) .acc-sw{padding:9px 3px 8px;gap:5px;border-radius:13px;}
 #progBody .acc-grid:not(.wrap-grid) .accent-dot{width:26px;height:26px;}
 #progBody .acc-grid:not(.wrap-grid) .acc-sw span{font-size:10.5px;}
@@ -4308,6 +4362,15 @@ html.easy-mode[data-mode]:not(#_) :is(.pill.on,.cv-unit.on,.ps-day.on){backgroun
 
 /* >>> MODE SIMPLE : TEXTES AGRANDIS (généré par tools/ezscale.py, ne pas éditer à la main) >>> */
 html.easy-mode .acc-sw span{font-size:13px;}
+html.easy-mode .ap-sub{font-size:13px;}
+html.easy-mode .tx-open b{font-size:16px;}
+html.easy-mode .tx-open small{font-size:14px;}
+html.easy-mode .tx-prev-top .pill{font-size:12.5px;}
+html.easy-mode .tx-prev-meta{font-size:14px;}
+html.easy-mode .tx-prev-t{font-size:19.5px;}
+html.easy-mode .tx-row-h{font-size:15px;}
+html.easy-mode .tx-row-h b{font-size:14px;}
+html.easy-mode .tx-ends{font-size:12.5px;}
 html.easy-mode .ik-logo span{font-size:18.5px;}
 html.easy-mode .ik-greet h1{font-size:25px;}
 html.easy-mode .ik-greet p{font-size:15px;}
