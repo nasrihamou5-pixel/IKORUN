@@ -62,6 +62,8 @@
       P:P, SESS:SESS, MSESS:MSESS, CUSTOM:CUSTOM, PLAN:PLAN, GOALS:GOALS,
       AGENDA:AGENDA, XP:XP, RECORDS:RECORDS, PREFS:PREFS, WEIGHTLOG:WEIGHTLOG,
       TRACKER:TRACKER, SESSLOG:SESSLOG, MUSCU_PR:MUSCU_PR,
+      CHECKINS:(typeof CHECKINS!=='undefined')?CHECKINS:null, ADAPT_LOG:(typeof ADAPT_LOG!=='undefined')?ADAPT_LOG:null,
+      Pjson:JSON.stringify(P),
       outilsTab: (typeof outilsTab!=='undefined') ? outilsTab : null,
       LIVE: (typeof LIVE!=='undefined') ? LIVE : null,
       html: document.body.innerHTML
@@ -73,6 +75,8 @@
     GOALS=SNAP.GOALS; AGENDA=SNAP.AGENDA; XP=SNAP.XP; RECORDS=SNAP.RECORDS;
     PREFS=SNAP.PREFS; WEIGHTLOG=SNAP.WEIGHTLOG; TRACKER=SNAP.TRACKER;
     SESSLOG=SNAP.SESSLOG; MUSCU_PR=SNAP.MUSCU_PR;
+    if(SNAP.CHECKINS) CHECKINS=SNAP.CHECKINS; if(SNAP.ADAPT_LOG) ADAPT_LOG=SNAP.ADAPT_LOG;
+    if(SNAP.Pjson){ var p0=JSON.parse(SNAP.Pjson); Object.keys(P).forEach(function(k){ if(!(k in p0)) delete P[k]; }); Object.assign(P,p0); }
     if(SNAP.outilsTab!==null) outilsTab=SNAP.outilsTab;
     if(typeof LIVE!=='undefined') LIVE=SNAP.LIVE;
   }
@@ -128,7 +132,10 @@
   /* ======================= 3. CLÉS UTILISÉES MAIS ABSENTES =============== */
   function testI18nUsage(){
     var c='3. Traductions';
-    return fetch('app.js?selftest='+Date.now()).then(function(r){return r.text();}).then(function(src){
+    // V3.15.0 : le cœur est assemblé de plusieurs sources (tools/bundle.json)
+    return fetch('tools/bundle.json?selftest='+Date.now()).then(function(r){return r.json();}).then(function(b){
+      return Promise.all(b['app.min.js'].map(function(f){ return fetch(f+'?selftest='+Date.now()).then(function(r){return r.text();}); }));
+    }).then(function(parts){ return parts.join('\n'); }).then(function(src){
       // La clé doit être IMMÉDIATEMENT suivie de ) ou , : sinon il s'agit d'un
       // préfixe concaténé — t('nav_'+s), t('phase_'+key)... — dont la clé finale
       // n'existe pas telle quelle dans la table. Sans ce garde, le test
@@ -344,7 +351,9 @@
           var n=parDate[addDaysKey(s.date,1)]; if(!n) return;
           if((planIsHard(s)&&planIsHard(n))||(planIsLong(s)&&(planIsHard(n)||planIsLong(n)))) bilan.enchaine.push(nom+' '+s.date+' '+s.baseType+'→'+n.baseType);
         });
-        weeklyAdaptiveRegen(true); weeklyAdaptiveRegen(true);
+        // V3.15.0 : un allègement du moteur d'adaptation (3 jours à −15 %) repasse par planSettle
+        P.adapt={}; ADAPT_LOG=[];
+        adaptApply('smoke',false,function(pl,pc,k){ var n=0; adWindow(pl,k,7,false).forEach(function(s){ if(adLighten(s,0.85,pc,'smoke')) n++; }); return n; },{k:'adMsgAcwrHigh',p:['1,40']});
         var apres={}; PLAN.sessions.forEach(function(s){ apres[s.week]=(apres[s.week]||0)+(s.baseType==='COURSE'?0:(s.km||0)); });
         Object.keys(apres).forEach(function(w){ if(apres[w]>sc[3]+1) bilan.regen.push(nom+' S'+w+' '+Math.round(apres[w])+' km'); });
       });
@@ -352,15 +361,16 @@
       chk(c,'une décharge pèse au plus 80 % du pic', !bilan.decharge.length, bilan.decharge.slice(0,4).join(' | '));
       chk(c,'jamais deux séances dures d\'affilée ni dure le lendemain d\'une sortie longue', !bilan.enchaine.length, bilan.enchaine.slice(0,3).join(' | '));
       chk(c,'aucune semaine au-dessus du km/sem maxi', !bilan.max.length, bilan.max.slice(0,4).join(' | '));
-      chk(c,'la régénération hebdomadaire ne dépasse pas le km/sem maxi', !bilan.regen.length, bilan.regen.slice(0,4).join(' | ')||'2 régénérations par plan');
+      chk(c,'un ajustement du moteur ne dépasse pas le km/sem maxi', !bilan.regen.length, bilan.regen.slice(0,4).join(' | ')||'3 plans allégés');
       // V3.14.0 : contrôle complet (distance × allure = durée, zones, sortie longue, ordre, progression)
       var tous=[]; SC.forEach(function(sc){
         var d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+sc[4]*7-1);
         P.compDate=dateKey(d); P.days=sc[1]; P.objRace=sc[0]; P.kmWeekMin=sc[2]; P.kmWeekMax=sc[3]; SESSLOG=[]; SESS=[];
         generatePlan(); var v=validatePlan(PLAN); v.errors.forEach(function(e){ tous.push(sc[0]+' : '+e); });
-        weeklyAdaptiveRegen(true); v=validatePlan(PLAN); v.errors.forEach(function(e){ tous.push(sc[0]+' (régénéré) : '+e); });
+        P.adapt={}; adaptApply('smoke',false,function(pl,pc,k){ var n=0; adWindow(pl,k,7,false).forEach(function(s){ if(adLighten(s,0.8,pc,'smoke')) n++; }); return n; },{k:'adMsgAcwrHigh',p:['1,40']});
+        v=validatePlan(PLAN); v.errors.forEach(function(e){ tous.push(sc[0]+' (ajusté) : '+e); });
       });
-      chk(c,'validatePlan : chaque séance et chaque semaine sont cohérentes', !tous.length, tous.slice(0,3).join(' | ')||'3 plans + leur régénération');
+      chk(c,'validatePlan : chaque séance et chaque semaine sont cohérentes', !tous.length, tous.slice(0,3).join(' | ')||'3 plans + un ajustement chacun');
       chk(c,'la semaine 1 est visible juste après la génération', PLAN.sessions[0] && PLAN.sessions[0].week===1, PLAN.sessions[0]&&('1re séance en semaine '+PLAN.sessions[0].week));
     }catch(e){ ko(c,'exécution',e&&e.message); }
     finally{
@@ -802,6 +812,7 @@
       var avO=window.openOv; window.openOv=function(){};
       try{
         openSessionDebrief({date:todayKey(),title:'Test',km:8,pace:'4:30',type:'VMA',duration:40,series:{reps:4,dist:400,paceSecPerKm:225}});
+        blSetStatus('modified');
         if(debriefReps.length!==4 || debriefReps[0].timeS!==90) throw new Error('passages mal pré-réglés '+JSON.stringify(debriefReps[0]));
         debriefRepSel=2; debriefWheel('DB.rep.s',40); // 1:30 → 1:40
         if(debriefReps[2].timeS!==100 || debriefReps[2].respected) throw new Error('passage 3 : '+JSON.stringify(debriefReps[2]));
@@ -815,11 +826,39 @@
       var avO=window.openOv; window.openOv=function(){};
       try{
         openSessionDebrief({date:todayKey(),title:'Test',km:10,pace:'5:30',type:'Long',duration:55});
+        blSetStatus('modified');
+        if(!document.querySelector('#progBody .wheel[data-key="DB.km.i"]')) throw new Error('molettes absentes en « Modifié »');
         debriefWheel('DB.km.i',12); debriefWheel('DB.km.d',5); debriefWheel('DB.dur.h',1); debriefWheel('DB.dur.m',2);
         if(debriefData.distance!==12.5 || debriefData.duration!==62) throw new Error(debriefData.distance+' km '+debriefData.duration+' min');
         if(debriefData.pace!=='4:58') throw new Error('allure '+debriefData.pace);
         if(debriefAdherence()!=='faster') throw new Error('respect de l\'allure : '+debriefAdherence());
         return '12,5 km en 1 h 02';
+      } finally { window.openOv=avO; debriefCtx=null; try{ closeOv('ovProg'); }catch(e){} }
+    });
+    // V3.15.0 : cas simple en 3 gestes — « comme prévu », effort, Valider ; aucune molette affichée.
+    essaie(c,'bilan simple : comme prévu, sans molette, valeurs prévues',function(){
+      var avO=window.openOv; window.openOv=function(){};
+      try{
+        openSessionDebrief({date:todayKey(),title:'Test',km:8,pace:'5:00',type:'EF',duration:40});
+        if(debriefData.status!=='done') throw new Error('statut '+debriefData.status);
+        if(document.querySelector('#progBody .wheel')) throw new Error('une molette est affichée');
+        if(!document.querySelector('#progBody .bl-range')) throw new Error('curseur d\'effort absent');
+        if(debriefData.distance!==8 || debriefData.duration!==40) throw new Error('valeurs '+debriefData.distance+' / '+debriefData.duration);
+        blSetStatus('missed');
+        if(!document.querySelectorAll('#progBody .bl-reason').length) throw new Error('raisons absentes');
+        if(!document.getElementById('blSubmit').disabled) throw new Error('Valider actif sans raison');
+        return '3 gestes · « pas fait » = 1 question';
+      } finally { window.openOv=avO; debriefCtx=null; try{ closeOv('ovProg'); }catch(e){} }
+    });
+    essaie(c,'douleur : silhouette, zone et côté',function(){
+      var avO=window.openOv; window.openOv=function(){};
+      try{
+        openSessionDebrief({date:todayKey(),title:'Test',km:8,pace:'5:00',type:'EF',duration:40});
+        debriefStep=2; debriefData.pain.on=true; renderDebrief();
+        var z=document.querySelectorAll('#progBody .bl-z'); if(z.length<15) throw new Error(z.length+' zones');
+        blPainZone('knee','L'); if(debriefData.pain.zone!=='knee'||debriefData.pain.side!=='L') throw new Error('zone non retenue');
+        if(!document.querySelector('#progBody .bl-z.on')) throw new Error('zone non surlignée');
+        return z.length+' zones';
       } finally { window.openOv=avO; debriefCtx=null; try{ closeOv('ovProg'); }catch(e){} }
     });
     // La molette retient la valeur affichée au centre (réglé sur 05, le minuteur partait de 6:00).
@@ -920,6 +959,21 @@
         return 'ok';
       } finally { document.getElementById('progBody').innerHTML=html; document.getElementById('ovProgTitle').textContent=tit; }
     });
+  }
+
+  /* ======================= 7g. MOTEUR D'ADAPTATION (V3.15.0) ============= */
+  function testAdaptation(){
+    var c='7g. Moteur d\'adaptation';
+    photographie();
+    try{
+      var rows=simulateAll({});
+      rows.forEach(function(r){ chk(c,'simulateAthlete · '+r.scénario, r.ok==='✔', r['échecs']||(r.ajustements+' ajustement(s)')); });
+      chk(c,'Daniels : 14 jours d\'arrêt = 0,973, 28 jours = 0,931', Math.abs(danielsBreakFactor(14)-0.973)<1e-9 && Math.abs(danielsBreakFactor(28)-0.931)<1e-9 && danielsBreakFactor(4)===1, '');
+      var e=adaptExec({baseType:'SEUIL',status:'modified',rpe:7,planned:{paceS:270,dur:50},real:{paceS:283,dur:50,km:10},wx:{corr:0.05},date:todayKey()});
+      chk(c,'chaleur : 5 % plus lent par +5 % de correction reste « dans la cible »', e.verdict==='ok' && e.rawVerdict!=='ok', e.verdict+' / brut '+e.rawVerdict);
+      var lm=loadModel(); chk(c,'charge : une seule source (outil ACWR = moteur)', typeof lm.acute==='number' && 'acwr' in lm && 'monotony' in lm, '');
+    }catch(err){ ko(c,'exécution',err&&err.message); }
+    finally{ restaure(); }
   }
 
   /* ======================= 8. SON ======================================== */
@@ -1065,6 +1119,7 @@
     testTheme();
     testPetitsEcrans();
     testBilanMolette();
+    testAdaptation();
     testSelecteursEtPlan();
     testModifierSeance();
     Promise.resolve(testI18nUsage())

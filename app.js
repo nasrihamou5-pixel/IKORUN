@@ -42,7 +42,7 @@ window.currentUserEmail = null;
 /* Logo IKORUN : dessiné en CSS (masque SVG de .ik-logo-mark, index.html). L'ancienne image
    webp intégrée ici avait un fond semi-opaque qui faisait un carré pâle derrière le symbole. */
 
-const VVV_ARRAY_KEYS = ['sessions','muscu_sessions','records','weightlog','sesslog','agenda','custom_progs'];
+const VVV_ARRAY_KEYS = ['sessions','muscu_sessions','records','weightlog','sesslog','agenda','custom_progs','checkins','adapt_log'];
 // Clés d'état "séance en cours" : purement locales, JAMAIS envoyées/lues sur le cloud.
 // Avant, elles étaient synchronisées comme le reste → si le push de suppression (cloudPush(k,null))
 // n'avait pas le temps de partir (app fermée/mise en veille juste après "Terminer"), l'ancienne
@@ -54,10 +54,13 @@ function mergeStorageValue(key, localVal, cloudVal){
   if(VVV_ARRAY_KEYS.includes(key)){
     if(!Array.isArray(localVal)) return cloudVal || [];
     if(!Array.isArray(cloudVal)) return localVal || [];
-    const seen = new Set(); const merged = [];
+    // V3.15.0 : à identifiant égal, la version modifiée le plus récemment (ut) gagne — un
+    // ajustement annulé sur un téléphone ne revient pas « appliqué » depuis le serveur.
+    const seen = new Map(); const merged = [];
     [...cloudVal, ...localVal].forEach(item=>{
       const sig = item && (item.id || (item.date && (item.type||'')) || JSON.stringify(item));
-      if(!seen.has(sig)){ seen.add(sig); merged.push(item); }
+      if(!seen.has(sig)){ seen.set(sig, merged.length); merged.push(item); }
+      else if(item && item.ut && (+item.ut||0) > (+(merged[seen.get(sig)]||{}).ut||0)) merged[seen.get(sig)] = item;
     });
     return merged;
   }
@@ -1386,11 +1389,14 @@ function renderClubTab(){
     '<div style="font-size:11.5px;color:var(--dim);margin-top:6px">'+t('shareCodeHint')+'</div>'+
   '</div>';
   h+=clubPlanHTML(c);
-  h+='<div class="sec-lab">'+t('clubXpRanking')+'</div>';
   // Les admins (propriétaire inclus) peuvent nommer ou retirer d'autres admins.
   // Le propriétaire n'est jamais rétrogradable — côté serveur aussi
   // (ikorun_set_club_role lève 'cannot_demote_owner').
   const iAmClubAdmin = c.owner_id===window.currentUserId || clubCache.members.some(m=>m.isMe && m.isAdmin);
+  // V3.15.0 : forme partagée avec l'encadrement (consentement), et tableau de bord pour les encadrants
+  h+=clubShareCardHTML();
+  if(iAmClubAdmin) h+=clubStatusHTML(c,clubCache.members.length);
+  h+='<div class="sec-lab">'+t('clubXpRanking')+'</div>';
   h+='<div class="card" style="padding:2px 6px">'+sorted.map((m,i)=>{
     const av=m.photo_url?'<div class="fr-avatar" style="background-image:url(\''+safePhotoUrl(m.photo_url)+'\')"></div>':'<div class="fr-avatar">'+(m.username?escHtml(m.username[0].toUpperCase()):'?')+'</div>';
     const roleChip=m.isAdmin?'<span class="club-admin-chip">'+(m.isOwner?t('clubOwnerChip'):t('clubAdminChip'))+'</span>':'';
@@ -1870,7 +1876,7 @@ function ensureLocalCacheOwnership(uid){
 }
 
 /* ---------- STATE ---------- */
-let P, SESS, MSESS, CUSTOM, PLAN, GOALS, AGENDA, XP, RECORDS, PREFS, WEIGHTLOG, TRACKER, SESSLOG, MUSCU_PR;
+let P, SESS, MSESS, CUSTOM, PLAN, GOALS, AGENDA, XP, RECORDS, PREFS, WEIGHTLOG, TRACKER, SESSLOG, MUSCU_PR, CHECKINS, ADAPT_LOG;
 
 // Retire les doublons stricts (même distance + même temps + même date) — trouvé
 // lors de l'audit du 20/09 : un seul chrono saisi à l'étape "Tes performances"
@@ -1902,6 +1908,8 @@ function reloadState(){
   TRACKER = DB.load('tracker') || null;
   SESSLOG = DB.load('sesslog') || [];
   MUSCU_PR = DB.load('muscu_pr') || {};
+  CHECKINS = DB.load('checkins') || [];   // check du matin (plan/adapt.js)
+  ADAPT_LOG = DB.load('adapt_log') || []; // ajustements du plan, avec avant → après
   /* Migration : les comptes créés avant l'ajout du critère "ancienneté"
      n'ont pas de joinedAt. On le reconstitue à partir de leur toute
      première séance connue (run ou muscu) pour ne pas leur faire perdre
@@ -1923,6 +1931,7 @@ function saveAll(){
   DB.save('agenda',AGENDA); DB.save('xp',XP);
   DB.save('records',RECORDS); DB.save('prefs',PREFS); DB.save('weightlog',WEIGHTLOG);
   DB.save('tracker',TRACKER); DB.save('sesslog',SESSLOG);
+  DB.save('checkins',CHECKINS); DB.save('adapt_log',ADAPT_LOG);
   if(window.currentUserId){ schedulePublicProfileSync(); try{ syncDailyReminderState(); }catch(e){} }
 }
 // Saisie au clavier (notes…) : une sauvegarde après une courte pause plutôt qu'à chaque
@@ -1977,7 +1986,7 @@ const I18N={
     planIkorunTitle:'Plan IKORUN — moteur scientifique',
     planIkorunDescLong:'Génère un plan périodisé sur-mesure (méthode norvégienne + VDOT/Daniels) basé sur ton VDOT ({0}), ton objectif, tes préférences et ta date de course. Le plan se réajuste automatiquement si tu rates une séance.',vdotToBeCalculated:'à calculer',
     planIkorunDescSimple:'Crée ton plan d’entraînement, adapté à ton niveau et à ta course. Il s’ajuste tout seul si tu rates une séance.',
-    configureGenerate:'Configurer & générer',weekN:'Semaine {0}',acwrUnder:'Sous-charge',acwrOptimal:'Optimal',acwrHigh:'Élevé',acwrRisk:'Risque blessure',acwrRatioLab:'Ratio Aigu/Chronique (ACWR)',acwrAcuteLab:'Charge aiguë (7j)',acwrChronicLab:'Charge chronique (28j)',acwrTip:'Zone optimale : 0,8–1,3. Au-dessus de 1,5, le risque de blessure augmente fortement.',restMaxStrength:'Force max (1-5 reps)',restHypertrophy:'Hypertrophie (6-12)',restEndurance:'Endurance (15+)',restPower:'Puissance / explosif',restSupersetVal:'0 s entre, 90 s après',restTip:'Plus la charge est lourde, plus le repos doit être long pour récupérer le système nerveux.',deloadTag:' · allégée',missedTag:'Manquée',restTag:'Repos',
+    configureGenerate:'Configurer & générer',weekN:'Semaine {0}',acwrUnder:'Sous-charge',acwrOptimal:'Optimal',acwrHigh:'Élevé',acwrRisk:'Risque blessure',acwrRatioLab:'Ratio Aigu/Chronique (ACWR)',acwrAcuteLab:'Charge aiguë (7j)',acwrChronicLab:'Charge chronique (28j)',acwrTip:'Charge = durée × effort ressenti (RPE), course et musculation comprises. Zone optimale : 0,8–1,3. Au-delà de 1,5, le risque de blessure augmente fortement : ton coach allège alors le plan.',restMaxStrength:'Force max (1-5 reps)',restHypertrophy:'Hypertrophie (6-12)',restEndurance:'Endurance (15+)',restPower:'Puissance / explosif',restSupersetVal:'0 s entre, 90 s après',restTip:'Plus la charge est lourde, plus le repos doit être long pour récupérer le système nerveux.',deloadTag:' · allégée',missedTag:'Manquée',restTag:'Repos',
     newPersoPlan:'Nouveau plan personnel',createCustomPlan:'Crée ton plan sur-mesure',
     createCustomPlanDesc:'Ajoute tes propres séances, choisis les dates, types et allures. Tout se synchronise avec ton accueil et tes stats.',
     sessionsCount:{one:'{0} séance · {1} terminée',other:'{0} séances · {1} terminées'},followedTag:'Suivi',duplicate:'Dupliquer',share:'Partager',
@@ -2405,7 +2414,17 @@ const I18N={
     load_goodAssimilation:'Bonne assimilation (répétitions respectées, RPE maîtrisé) → volume et intensité légèrement augmentés.',
     load_high:'Charge élevée détectée (séances ratées, RPE au-dessus du prévu ou fatigue) → volume réduit d\u2019environ 12% cette semaine.',
     load_stable:'Charge stable : nouvelles variantes de séances, volume inchangé.',
-    missedReasonPrompt:'Pourquoi cette séance n\u2019a-t-elle pas été réalisée ?',missedReplacementPrompt:'As-tu finalement fait autre chose ?',
+    missedReasonPrompt:'Pourquoi cette séance n\u2019a-t-elle pas été réalisée ?',
+    blHowWent:'Comment ça s’est passé ?',blAsPlanned:'Comme prévu',blModified:'Modifié',blNotDone:'Pas fait',blAddDetails:'Ajouter des détails',blDetailsN:{one:'{0} détail',other:'{0} détails'},blMissedMany:{one:'{0} séance depuis le {1}',other:'{0} séances depuis le {1}'},blAllRepsAt:'Toutes à {0}',blRpeExpected:'attendu : {0}',blIllSince:'Depuis quand ?',blIllToday:'Aujourd’hui',blIll2:'2 jours',blIll4:'4 jours ou plus',blIllAdvice:'Fièvre, toux ou courbatures partout : pas de course. Si ça dure ou si ça t’inquiète, consulte un médecin.',blDidOther:'J’ai fait autre chose à la place',blDidInstead:'À la place : {0}',blFront:'Face',blBack:'Dos',blPickZone:'Touche l’endroit qui fait mal',blPainLevel:'Intensité : {0}/10',blPainLevelLab:'Intensité de la douleur',blGait:'Ça change ma foulée',blGaitSub:'Je boite ou je compense',blNo:'Non',blYes:'Oui',blHr:'Fréquence cardiaque',blHrAvg:'Moyenne',blHrMax:'Max',blLegs:'Jambes',blLegsFresh:'Fraîches',blLegsNormal:'Normales',blLegsHeavy:'Lourdes',blSleep:'Sommeil',blSleepBad:'Mauvais',blSleepMid:'Moyen',blSleepGood:'Bon',blMood:'Humeur',blMood1:'Très mauvaise',blMood2:'Mauvaise',blMood3:'Neutre',blMood4:'Bonne',blMood5:'Excellente',blHarderThanExpected:'Plus dur que prévu : {0}/10 pour {1} attendu sur ce type de séance.',blPainNoted:'Douleur notée : ton coach en tient compte pour les prochains jours.',blHeatTip:'Chaleur : ton allure cible était corrigée de +{0} %. Bois avant d’avoir soif.',blVsTarget:'Allure / cible',blVerdictFast:'Plus vite que prévu',blVerdictOk:'Dans la cible',blVerdictSlow:'Un peu en dessous de la cible',blVerdictVerySlow:'Nettement en dessous de la cible',blVerdictRace:'Course terminée, bravo',adZone_foot:'Pied',adZone_ankle:'Cheville',adZone_achilles:'Tendon d’Achille',adZone_shin:'Tibia',adZone_calf:'Mollet',adZone_knee:'Genou',adZone_thighF:'Cuisse (avant)',adZone_thighB:'Cuisse (arrière)',adZone_hip:'Hanche',adZone_lowBack:'Bas du dos',adZone_other:'Autre endroit',adSideL:'gauche',adSideR:'droit(e)',
+    adZone_foot_L:'Pied gauche',adZone_foot_R:'Pied droit',adZone_ankle_L:'Cheville gauche',adZone_ankle_R:'Cheville droite',adZone_achilles_L:'Tendon d’Achille gauche',adZone_achilles_R:'Tendon d’Achille droit',adZone_shin_L:'Tibia gauche',adZone_shin_R:'Tibia droit',adZone_calf_L:'Mollet gauche',adZone_calf_R:'Mollet droit',adZone_knee_L:'Genou gauche',adZone_knee_R:'Genou droit',adZone_thighF_L:'Cuisse gauche (avant)',adZone_thighF_R:'Cuisse droite (avant)',adZone_thighB_L:'Cuisse gauche (arrière)',adZone_thighB_R:'Cuisse droite (arrière)',adZone_hip_L:'Hanche gauche',adZone_hip_R:'Hanche droite',
+    adCause_heat:'la chaleur',adCause_wind:'le vent',adCause_hills:'le dénivelé',adCause_fasting:'le jeûne',adCause_ill:'la maladie',adCause_sleep:'une mauvaise nuit',adCause_legs:'des jambes lourdes',adCause_load:'une charge élevée',adCause_pain:'une douleur',adMsgPain:'Douleur {0}/10 ({1}) : pas d’intensité pendant 3 jours, seulement des footings très légers ou du repos. Si elle ne baisse pas, fais-toi examiner par un médecin ou un kiné.',adMsgPainRepeat:'{0} : troisième douleur au même endroit en 7 jours. L’intensité est bloquée jusqu’à ce que tu n’aies plus mal. Consulte un médecin ou un kiné avant de reprendre le fractionné.',adMsgPainLight:'Douleur légère ({0}/10, {1}) notée. Le plan ne change pas ; si elle revient ou augmente, ton coach allégera.',adMsgIll:'Malade : repos jusqu’au {0}, puis reprise en douceur, sans intensité jusqu’au {1}. Si tu as de la fièvre ou si ça dure, consulte un médecin.',adMsgBlockKeep:'Intensité toujours en pause ({0}) : les séances dures des prochains jours restent des footings.',adMsgIllKeep:'Reprise après la maladie : pas d’intensité jusqu’au {0}.',adMsgGap3:{one:'{0} jour sans courir : la semaine qui vient est allégée (−20 %) pour reprendre le rythme.',other:'{0} jours sans courir : la semaine qui vient est allégée (−20 %) pour reprendre le rythme.'},adMsgGap7:{one:'{0} jour d’arrêt',other:'{0} jours d’arrêt : VDOT {1} → {2} (table de Daniels), et plan reconstruit jusqu’à la course. Reprise à {3} % de ton volume habituel, puis {4} %, avant de retrouver ta progression.'},adMsgGap7Light:'{0} jours d’arrêt et une course trop proche pour reconstruire le plan : la semaine qui vient est nettement allégée.',adMsgAcwrRisk:'Charge en forte hausse (ACWR {0}, au-delà de 1,5) : c’est la zone où le risque de blessure monte vraiment. 7 jours allégés (−30 %), et tes deux prochaines séances dures deviennent des footings.',adMsgAcwrHigh:'Charge un peu haute (ACWR {0}) : les 3 prochains jours sont allégés de 15 %.',adMsgAcwrLow:'Charge basse depuis 2 semaines (ACWR {0}) : tes footings gagnent 5 %, sans dépasser +10 % sur la semaine.',adMsgMonotony:'Entraînement très répétitif (monotonie {0}) : on varie la longueur des footings, même volume au total.',adMsgReadyCaution:'Forme moyenne ce matin ({0}/100) : garde la séance, mais reste au bas de la fourchette d’allure et arrête-toi si ça ne vient pas.',adMsgReadyLow:'Forme basse ce matin ({0}/100) : la séance dure du jour devient un footing.',adMsgReadySwap:'Forme basse ce matin ({0}/100) : la séance dure est échangée avec un footing plus tard dans la semaine.',adMsgFastOnce:'Couru à {0}/km pour {1}/km prévu ({2} % plus vite). Plus vite que la cible, c’est de la fatigue en plus sans gain : ta prochaine séance dure est un peu raccourcie pour bien récupérer.',adMsgFastMoved:'Couru à {0}/km pour {1}/km prévu ({2} % plus vite). Plus vite que la cible, c’est de la fatigue en plus sans gain : ta prochaine séance dure est décalée d’un jour pour bien récupérer.',adMsgFastInfo:'Couru à {0}/km pour {1}/km prévu ({2} % plus vite). La séance vise une intensité précise : la tenir rapporte plus que la dépasser.',adMsgVdotUp:{one:'{0} séance clé plus rapide que prévu, sans effort en plus. Proposition : VDOT {1} → {2} (allures un peu plus rapides), ou un test pour le confirmer.',other:'{0} séances clés plus rapides que prévu, sans effort en plus. Proposition : VDOT {1} → {2} (allures un peu plus rapides), ou un test pour le confirmer.'},adMsgVdotDown:'Tes séances clés sont trop dures depuis plusieurs semaines, sans cause extérieure. Proposition : VDOT {0} → {1}, pour des allures à ta portée.',adMsgVdotUpDone:'VDOT {0} → {1} : tes allures sont mises à jour pour toutes les séances à venir.',adMsgVdotDownDone:'VDOT {0} → {1} : allures plus accessibles pour les séances à venir.',adMsgSlowExplained:'Plus lent que prévu, mais expliqué par {0} : rien ne change, c’est normal.',adMsgSlowTaper:'Affûtage : une séance moins bonne ne change rien, la fraîcheur arrive pour le jour J.',adMsgSlowTrend:'Deux séances clés sur trois trop dures ou trop lentes : la semaine qui vient est allégée (qualité raccourcie, footings −10 %).',adMsgSlowOnce:'Couru à {0}/km pour {1}/km prévu, effort {2}/10 (attendu {3}). Une séance ne fait pas une tendance : on regarde les suivantes.',adMsgHardOnce:'Effort {2}/10 pour {3} attendu : séance plus dure que prévu. Une séance ne fait pas une tendance : on regarde les suivantes.',adMsgShort:'Séance raccourcie : notée. Le plan continue ; dis-le dans le bilan si c’était la fatigue.',adMsgGood:'Dans la cible : {0}/km pour {1}/km prévu. C’est exactement ce qui fait progresser.',adMsgGoodHeat:'Dans la cible corrigée de la chaleur : {0}/km pour {1}/km. Ralentir par forte chaleur, c’est bien courir.',adMsgGoodEasy:'Séance validée. Le plan continue comme prévu.',adMsgRace:'Course faite : prends quelques jours faciles, ton corps a donné le maximum.',adMsgMissEasy:'{0} ratée : on ne la rattrape pas, une séance facile manquée ne change rien.',adMsgMissTaper:'{0} ratée pendant l’affûtage : on ne la rattrape pas, la fraîcheur compte plus.',adMsgMissKeyMoved:'{0} ratée : déplacée au {1}, à la place d’un footing.',adMsgMissKeyDropped:'{0} ratée : pas de place sûre cette semaine pour la rattraper, on la laisse. Le plan reste équilibré.',adMsgMissFatigue:'Fatigue : ta prochaine séance dure est allégée.',adMsgSafetyBack:'Reprise de l’intensité : la première séance dure est un peu raccourcie.',adCoachTitle:'Ton coach a ajusté ton plan',adHistory:'Historique des ajustements',
+    mcSetting:'Check du matin',mcSettingDesc:'Sommeil, courbatures, humeur : 3 gestes sur l’Accueil avant 14 h. Ton coach s’en sert pour adapter la séance du jour.',
+    
+    csShareTitle:'Partager ma forme avec l’encadrement',csShareSub:'Le créateur et les admins de tes clubs voient ta charge, ta forme du jour et si tu as mal. Rien d’autre.',csDetailTitle:'Inclure le détail des douleurs',csDetailSub:'L’endroit et l’intensité, en plus du « oui / non ».',csSharedOn:'Ta forme est partagée avec l’encadrement.',csSharedOff:'Partage arrêté : tes données ont été retirées.',csDetailOn:'Le détail des douleurs est partagé.',csDetailOff:'Seul le « oui / non » est partagé.',csTeamTitle:'Forme de l’équipe',csNotAdmin:'Réservé au créateur et aux admins du club.',csTeamEmpty:'Aucun membre ne partage encore sa forme. Chacun peut l’activer dans l’onglet Club.',csPain:'Douleur',csHiddenN:{one:'{0} membre ne partage pas sa forme.',other:'{0} membres ne partagent pas leur forme.'},
+    
+    adBalance:'(équilibre de la semaine)',adMoreSessions:{one:'… et {0} autre séance',other:'… et {0} autres séances'},
+    adHistoryEmpty:'Aucun ajustement pour l’instant : ton plan suit son cours.',adHistoryFoot:'Chaque ajustement suit des règles écrites (charge, douleur, forme, exécution) et repasse par le contrôle du plan. Aucune IA.',adRebuildSub:'VDOT {0} → {1}',adRejected:'Ajustement non appliqué : il aurait déséquilibré le plan.',adUndoneTag:'Annulé',adUndo:'Annuler cet ajustement',adUndoConfirm:'Les séances reviennent à ce qu’elles étaient avant cet ajustement.',adUndoDone:'Ajustement annulé.',adUndoNothing:'Rien à annuler : ces séances sont déjà passées ou faites.',adUndoConflict:'Impossible d’annuler : une autre séance occupe ce jour-là maintenant.',adUndoUnsafe:'Impossible d’annuler sans déséquilibrer le plan.',adUndoSafety:'Ajustement de sécurité : utilise « Je n’ai plus mal » ou « Je vais mieux ».',adAcceptVdot:'Accepter ({0})',adDoTest:'Faire un test',adLater:'Plus tard',adTestHint:'Cours un 3 000 m ou un 5 km à fond, puis ajoute le chrono dans Mes records : ta VDOT se mettra à jour.',adNoMorePain:'Je n’ai plus mal',adFeelBetter:'Je vais mieux',adNoMorePainConfirm:'Tu confirmes ne plus avoir mal, même en marchant vite et en descendant les escaliers ? L’intensité reviendra progressivement à partir de demain.',adFeelBetterConfirm:'Plus de fièvre et tu te sens en forme ? La reprise sera progressive à partir de demain.',adConfirmYes:'Oui, je confirme',adSafetyCleared:'Noté : l’intensité revient progressivement.',adSafetyClearedNone:'Noté. Ton plan n’avait pas de séance à rétablir.',adGotIt:'J’ai compris',adBlockOpen:'Intensité en pause ({0}) jusqu’à ce que tu n’aies plus mal.',adBlockUntil:'Intensité en pause ({0}) jusqu’au {1}.',adIllUntil:'Reprise après la maladie : pas d’intensité jusqu’au {0}.',adCheckinNoted:'Merci, c’est noté.',mcTitle:'Comment tu te sens ce matin ?',mcLater:'Pas aujourd’hui',mcSleep:'Sommeil',mcSore:'Courbatures',mcSore1:'Aucune',mcSore2:'Un peu',mcSore3:'Beaucoup',mcThanks:'Merci ! Forme du jour : {0}/100.',rdTitle:'Forme du jour',rdLevel_low:'Basse',rdLevel_caution:'Moyenne',rdLevel_ok:'Bonne',rdLevel_good:'Excellente',rdFromCheckin:'d’après ton check du matin',rdFromBilan:'d’après ton dernier bilan',acwrNeedHistory:{one:'Encore {0} jour d’historique',other:'Encore {0} jours d’historique'},loadMonotony:'Monotonie (7 j)',loadStrain:'Contrainte (7 j)',load28Title:'Charge des 4 dernières semaines',
+    missedReplacementPrompt:'As-tu finalement fait autre chose ?',
     missedSessionTitle:'Séance manquée',nightSleepLabel:'Sommeil de la nuit',
     note_cardioAlreadyCounted:'charge cardio déjà comptabilisée, plan inchangé',
     note_explosiveCaution:'vigilance sur ta prochaine séance explosive',note_nextHardLightened:'prochaine séance dure allégée',
@@ -2563,7 +2582,7 @@ const I18N={
     planIkorunTitle:'IKORUN Plan — scientific engine',
     planIkorunDescLong:'Generates a custom periodized plan (Norwegian method + VDOT/Daniels) based on your VDOT ({0}), goal, preferences and race date. The plan auto-adjusts if you miss a session.',vdotToBeCalculated:'to be calculated',
     planIkorunDescSimple:'Creates your training plan, matched to your level and your race. It adjusts itself if you miss a session.',
-    configureGenerate:'Configure & generate',weekN:'Week {0}',acwrUnder:'Under-load',acwrOptimal:'Optimal',acwrHigh:'High',acwrRisk:'Injury risk',acwrRatioLab:'Acute/Chronic ratio (ACWR)',acwrAcuteLab:'Acute load (7d)',acwrChronicLab:'Chronic load (28d)',acwrTip:'Optimal zone: 0.8–1.3. Above 1.5, injury risk rises sharply.',restMaxStrength:'Max strength (1-5 reps)',restHypertrophy:'Hypertrophy (6-12)',restEndurance:'Endurance (15+)',restPower:'Power / explosive',restSupersetVal:'0 s between, 90 s after',restTip:'The heavier the load, the longer the rest needed to recover the nervous system.',deloadTag:' · deload',missedTag:'Missed',restTag:'Rest',
+    configureGenerate:'Configure & generate',weekN:'Week {0}',acwrUnder:'Under-load',acwrOptimal:'Optimal',acwrHigh:'High',acwrRisk:'Injury risk',acwrRatioLab:'Acute/Chronic ratio (ACWR)',acwrAcuteLab:'Acute load (7d)',acwrChronicLab:'Chronic load (28d)',acwrTip:'Load = duration × perceived effort (RPE), running and strength included. Sweet spot: 0.8–1.3. Above 1.5 the injury risk rises sharply: your coach then lightens the plan.',restMaxStrength:'Max strength (1-5 reps)',restHypertrophy:'Hypertrophy (6-12)',restEndurance:'Endurance (15+)',restPower:'Power / explosive',restSupersetVal:'0 s between, 90 s after',restTip:'The heavier the load, the longer the rest needed to recover the nervous system.',deloadTag:' · deload',missedTag:'Missed',restTag:'Rest',
     newPersoPlan:'New custom plan',createCustomPlan:'Build your custom plan',
     createCustomPlanDesc:'Add your own sessions, pick dates, types and paces. Everything syncs with your home and stats.',
     sessionsCount:{one:'{0} session · {1} done',other:'{0} sessions · {1} done'},followedTag:'Following',duplicate:'Duplicate',share:'Share',
@@ -2991,7 +3010,17 @@ const I18N={
     load_goodAssimilation:'Good assimilation (reps on target, RPE under control) → volume and intensity slightly increased.',
     load_high:'High load detected (missed sessions, RPE above plan, or fatigue) → volume reduced by about 12% this week.',
     load_stable:'Stable load: new session variants, volume unchanged.',
-    missedReasonPrompt:'Why wasn\u2019t this session completed?',missedReplacementPrompt:'Did you end up doing something else?',
+    missedReasonPrompt:'Why wasn\u2019t this session completed?',
+    blHowWent:'How did it go?',blAsPlanned:'As planned',blModified:'Changed',blNotDone:'Not done',blAddDetails:'Add details',blDetailsN:{one:'{0} detail',other:'{0} details'},blMissedMany:{one:'{0} session since {1}',other:'{0} sessions since {1}'},blAllRepsAt:'All at {0}',blRpeExpected:'expected: {0}',blIllSince:'Since when?',blIllToday:'Today',blIll2:'2 days',blIll4:'4 days or more',blIllAdvice:'Fever, cough or aching all over: no running. If it lasts or worries you, see a doctor.',blDidOther:'I did something else instead',blDidInstead:'Instead: {0}',blFront:'Front',blBack:'Back',blPickZone:'Tap where it hurts',blPainLevel:'Intensity: {0}/10',blPainLevelLab:'Pain intensity',blGait:'It changes my stride',blGaitSub:'I limp or compensate',blNo:'No',blYes:'Yes',blHr:'Heart rate',blHrAvg:'Average',blHrMax:'Max',blLegs:'Legs',blLegsFresh:'Fresh',blLegsNormal:'Normal',blLegsHeavy:'Heavy',blSleep:'Sleep',blSleepBad:'Poor',blSleepMid:'Average',blSleepGood:'Good',blMood:'Mood',blMood1:'Very low',blMood2:'Low',blMood3:'Neutral',blMood4:'Good',blMood5:'Great',blHarderThanExpected:'Harder than expected: {0}/10 where {1} is expected for this kind of session.',blPainNoted:'Pain noted: your coach takes it into account for the next few days.',blHeatTip:'Heat: your target pace was adjusted by +{0}%. Drink before you feel thirsty.',blVsTarget:'Pace / target',blVerdictFast:'Faster than planned',blVerdictOk:'On target',blVerdictSlow:'A bit off target',blVerdictVerySlow:'Well off target',blVerdictRace:'Race done, well done',adZone_foot:'Foot',adZone_ankle:'Ankle',adZone_achilles:'Achilles tendon',adZone_shin:'Shin',adZone_calf:'Calf',adZone_knee:'Knee',adZone_thighF:'Thigh (front)',adZone_thighB:'Thigh (back)',adZone_hip:'Hip',adZone_lowBack:'Lower back',adZone_other:'Somewhere else',adSideL:'left',adSideR:'right',
+    adZone_foot_L:'Left foot',adZone_foot_R:'Right foot',adZone_ankle_L:'Left ankle',adZone_ankle_R:'Right ankle',adZone_achilles_L:'Left Achilles tendon',adZone_achilles_R:'Right Achilles tendon',adZone_shin_L:'Left shin',adZone_shin_R:'Right shin',adZone_calf_L:'Left calf',adZone_calf_R:'Right calf',adZone_knee_L:'Left knee',adZone_knee_R:'Right knee',adZone_thighF_L:'Left thigh (front)',adZone_thighF_R:'Right thigh (front)',adZone_thighB_L:'Left thigh (back)',adZone_thighB_R:'Right thigh (back)',adZone_hip_L:'Left hip',adZone_hip_R:'Right hip',
+    adCause_heat:'heat',adCause_wind:'wind',adCause_hills:'hills',adCause_fasting:'fasting',adCause_ill:'illness',adCause_sleep:'a poor night',adCause_legs:'heavy legs',adCause_load:'high load',adCause_pain:'pain',adMsgPain:'Pain {0}/10 ({1}): no intensity for 3 days, only very easy runs or rest. If it doesn’t ease, get it checked by a doctor or physio.',adMsgPainRepeat:'{0}: third pain in the same place within 7 days. Intensity is paused until it no longer hurts. See a doctor or physio before going back to intervals.',adMsgPainLight:'Mild pain ({0}/10, {1}) noted. The plan stays the same; if it comes back or gets worse, your coach will ease off.',adMsgIll:'Ill: rest until {0}, then an easy return with no intensity until {1}. If you have a fever or it lasts, see a doctor.',adMsgBlockKeep:'Intensity still paused ({0}): the hard sessions of the coming days stay easy runs.',adMsgIllKeep:'Coming back from illness: no intensity until {0}.',adMsgGap3:{one:'{0} day without running: the coming week is lighter (−20%) to get back into rhythm.',other:'{0} days without running: the coming week is lighter (−20%) to get back into rhythm.'},adMsgGap7:{one:'{0} day off',other:'{0} days off: VDOT {1} → {2} (Daniels’ table), and the plan is rebuilt up to the race. Back at {3}% of your usual volume, then {4}%, before resuming your progression.'},adMsgGap7Light:'{0} days off and the race is too close to rebuild the plan: the coming week is much lighter.',adMsgAcwrRisk:'Load rising sharply (ACWR {0}, above 1.5): this is where injury risk really climbs. 7 lighter days (−30%), and your next two hard sessions become easy runs.',adMsgAcwrHigh:'Load a bit high (ACWR {0}): the next 3 days are 15% lighter.',adMsgAcwrLow:'Low load for 2 weeks (ACWR {0}): your easy runs gain 5%, never more than +10% for the week.',adMsgMonotony:'Very repetitive training (monotony {0}): the easy runs vary in length, same total volume.',adMsgReadyCaution:'So-so form this morning ({0}/100): keep the session, but stay at the slow end of the pace range and stop if it isn’t there.',adMsgReadyLow:'Low form this morning ({0}/100): today’s hard session becomes an easy run.',adMsgReadySwap:'Low form this morning ({0}/100): the hard session swaps places with an easy run later this week.',adMsgFastOnce:'Ran at {0}/km for {1}/km planned ({2}% faster). Faster than target means extra fatigue with no extra gain: your next hard session is slightly shorter so you recover well.',adMsgFastMoved:'Ran at {0}/km for {1}/km planned ({2}% faster). Faster than target means extra fatigue with no extra gain: your next hard session moves one day later so you recover well.',adMsgFastInfo:'Ran at {0}/km for {1}/km planned ({2}% faster). The session targets a precise intensity: holding it pays off more than beating it.',adMsgVdotUp:{one:'{0} key session faster than planned with no extra effort. Suggestion: VDOT {1} → {2} (slightly faster paces), or a test to confirm it.',other:'{0} key sessions faster than planned with no extra effort. Suggestion: VDOT {1} → {2} (slightly faster paces), or a test to confirm it.'},adMsgVdotDown:'Your key sessions have been too hard for several weeks, with no outside cause. Suggestion: VDOT {0} → {1}, for paces within your reach.',adMsgVdotUpDone:'VDOT {0} → {1}: your paces are updated for every upcoming session.',adMsgVdotDownDone:'VDOT {0} → {1}: easier paces for the upcoming sessions.',adMsgSlowExplained:'Slower than planned, but explained by {0}: nothing changes, that’s normal.',adMsgSlowTaper:'Taper: one weaker session changes nothing, freshness is coming for race day.',adMsgSlowTrend:'Two key sessions out of three too hard or too slow: the coming week is lighter (shorter quality, easy runs −10%).',adMsgSlowOnce:'Ran at {0}/km for {1}/km planned, effort {2}/10 (expected {3}). One session isn’t a trend: we’ll watch the next ones.',adMsgHardOnce:'Effort {2}/10 where {3} was expected: harder than planned. One session isn’t a trend: we’ll watch the next ones.',adMsgShort:'Shortened session: noted. The plan carries on; say so in the review if it was fatigue.',adMsgGood:'On target: {0}/km for {1}/km planned. That’s exactly what makes you progress.',adMsgGoodHeat:'On the heat-adjusted target: {0}/km for {1}/km. Slowing down in the heat is running smart.',adMsgGoodEasy:'Session done. The plan carries on as planned.',adMsgRace:'Race done: take a few easy days, your body gave everything.',adMsgMissEasy:'{0} missed: no need to make it up, one missed easy run changes nothing.',adMsgMissTaper:'{0} missed during the taper: no make-up, freshness matters more.',adMsgMissKeyMoved:'{0} missed: moved to {1}, in place of an easy run.',adMsgMissKeyDropped:'{0} missed: no safe slot this week to make it up, so we drop it. The plan stays balanced.',adMsgMissFatigue:'Fatigue: your next hard session is lighter.',adMsgSafetyBack:'Intensity is back: the first hard session is slightly shorter.',adCoachTitle:'Your coach adjusted your plan',adHistory:'Adjustment history',
+    mcSetting:'Morning check',mcSettingDesc:'Sleep, soreness, mood: 3 taps on Home before 2 pm. Your coach uses it to adapt today’s session.',
+    
+    csShareTitle:'Share my form with the coaches',csShareSub:'Your clubs’ creator and admins see your load, today’s form and whether you are in pain. Nothing else.',csDetailTitle:'Include pain details',csDetailSub:'Where and how much, on top of “yes / no”.',csSharedOn:'Your form is shared with the coaches.',csSharedOff:'Sharing stopped: your data has been removed.',csDetailOn:'Pain details are shared.',csDetailOff:'Only “yes / no” is shared.',csTeamTitle:'Team form',csNotAdmin:'For the club’s creator and admins only.',csTeamEmpty:'No member shares their form yet. Everyone can turn it on in the Club tab.',csPain:'Pain',csHiddenN:{one:'{0} member doesn’t share their form.',other:'{0} members don’t share their form.'},
+    
+    adBalance:'(week balance)',adMoreSessions:{one:'… and {0} more session',other:'… and {0} more sessions'},
+    adHistoryEmpty:'No adjustments yet: your plan is on track.',adHistoryFoot:'Each adjustment follows written rules (load, pain, form, execution) and goes through the plan check again. No AI.',adRebuildSub:'VDOT {0} → {1}',adRejected:'Adjustment not applied: it would have unbalanced the plan.',adUndoneTag:'Undone',adUndo:'Undo this adjustment',adUndoConfirm:'The sessions go back to what they were before this adjustment.',adUndoDone:'Adjustment undone.',adUndoNothing:'Nothing to undo: these sessions are already past or done.',adUndoConflict:'Can’t undo: another session now sits on that day.',adUndoUnsafe:'Can’t undo without unbalancing the plan.',adUndoSafety:'Safety adjustment: use “It no longer hurts” or “I feel better”.',adAcceptVdot:'Accept ({0})',adDoTest:'Do a test',adLater:'Later',adTestHint:'Run an all-out 3,000 m or 5 km, then add the time in My records: your VDOT will update.',adNoMorePain:'It no longer hurts',adFeelBetter:'I feel better',adNoMorePainConfirm:'Do you confirm it no longer hurts, even walking fast and going down stairs? Intensity will come back gradually from tomorrow.',adFeelBetterConfirm:'No more fever and feeling well? The return will be gradual from tomorrow.',adConfirmYes:'Yes, I confirm',adSafetyCleared:'Noted: intensity is coming back gradually.',adSafetyClearedNone:'Noted. Your plan had no session to restore.',adGotIt:'Got it',adBlockOpen:'Intensity paused ({0}) until it no longer hurts.',adBlockUntil:'Intensity paused ({0}) until {1}.',adIllUntil:'Coming back from illness: no intensity until {0}.',adCheckinNoted:'Thanks, noted.',mcTitle:'How do you feel this morning?',mcLater:'Not today',mcSleep:'Sleep',mcSore:'Soreness',mcSore1:'None',mcSore2:'A little',mcSore3:'A lot',mcThanks:'Thanks! Today’s form: {0}/100.',rdTitle:'Today’s form',rdLevel_low:'Low',rdLevel_caution:'So-so',rdLevel_ok:'Good',rdLevel_good:'Excellent',rdFromCheckin:'from your morning check',rdFromBilan:'from your last review',acwrNeedHistory:{one:'{0} more day of history needed',other:'{0} more days of history needed'},loadMonotony:'Monotony (7 d)',loadStrain:'Strain (7 d)',load28Title:'Load over the last 4 weeks',
+    missedReplacementPrompt:'Did you end up doing something else?',
     missedSessionTitle:'Missed session',nightSleepLabel:'Night\u2019s sleep',
     note_cardioAlreadyCounted:'cardio load already accounted for, plan unchanged',
     note_explosiveCaution:'caution advised for your next explosive session',note_nextHardLightened:'next hard session lightened',
@@ -3149,7 +3178,7 @@ const I18N={
     planIkorunTitle:'خطة IKORUN — محرك علمي',
     planIkorunDescLong:'يولّد خطة مرحلية مخصصة (الطريقة النرويجية + VDOT/Daniels) بناءً على VDOT الخاص بك ({0})، هدفك، تفضيلاتك وتاريخ سباقك. تتعدل الخطة تلقائيًا إذا فاتتك حصة.',vdotToBeCalculated:'قيد الحساب',
     planIkorunDescSimple:'\u064A\u0646\u0634\u0626 \u062E\u0637\u0629 \u062A\u062F\u0631\u064A\u0628\u0643 \u062D\u0633\u0628 \u0645\u0633\u062A\u0648\u0627\u0643 \u0648\u0633\u0628\u0627\u0642\u0643. \u062A\u062A\u0639\u062F\u0644 \u0627\u0644\u062E\u0637\u0629 \u062A\u0644\u0642\u0627\u0626\u064A\u064B\u0627 \u0625\u0630\u0627 \u0641\u0627\u062A\u062A\u0643 \u062D\u0635\u0629.',
-    configureGenerate:'إعداد وتوليد',weekN:'الأسبوع {0}',acwrUnder:'حمل ناقص',acwrOptimal:'مثالي',acwrHigh:'مرتفع',acwrRisk:'خطر إصابة',acwrRatioLab:'نسبة الحمل الحاد/المزمن (ACWR)',acwrAcuteLab:'الحمل الحاد (7 أيام)',acwrChronicLab:'الحمل المزمن (28 يومًا)',acwrTip:'المنطقة المثالية: 0.8–1.3. فوق 1.5 يرتفع خطر الإصابة بشدة.',restMaxStrength:'القوة القصوى (1-5 تكرارات)',restHypertrophy:'تضخيم العضلات (6-12)',restEndurance:'التحمّل (15+)',restPower:'القوة / الانفجارية',restSupersetVal:'0 ث بين التمرينين، 90 ث بعدهما',restTip:'كلما كان الحمل أثقل، يجب أن تكون الراحة أطول لاستعادة الجهاز العصبي.',deloadTag:' · مخففة',missedTag:'فائتة',restTag:'راحة',
+    configureGenerate:'إعداد وتوليد',weekN:'الأسبوع {0}',acwrUnder:'حمل ناقص',acwrOptimal:'مثالي',acwrHigh:'مرتفع',acwrRisk:'خطر إصابة',acwrRatioLab:'نسبة الحمل الحاد/المزمن (ACWR)',acwrAcuteLab:'الحمل الحاد (7 أيام)',acwrChronicLab:'الحمل المزمن (28 يومًا)',acwrTip:'الحمل = المدة × الجهد المحسوس (RPE)، بما في ذلك الجري وتمارين القوة. المنطقة المثلى: 0.8–1.3. فوق 1.5 يرتفع خطر الإصابة بشدة: عندها يخفف مدربك الخطة.',restMaxStrength:'القوة القصوى (1-5 تكرارات)',restHypertrophy:'تضخيم العضلات (6-12)',restEndurance:'التحمّل (15+)',restPower:'القوة / الانفجارية',restSupersetVal:'0 ث بين التمرينين، 90 ث بعدهما',restTip:'كلما كان الحمل أثقل، يجب أن تكون الراحة أطول لاستعادة الجهاز العصبي.',deloadTag:' · مخففة',missedTag:'فائتة',restTag:'راحة',
     newPersoPlan:'خطة شخصية جديدة',createCustomPlan:'أنشئ خطتك المخصصة',
     createCustomPlanDesc:'أضف حصصك الخاصة، اختر التواريخ والأنواع والوتيرة. كل شيء يتزامن مع صفحتك الرئيسية وإحصائياتك.',
     sessionsCount:{zero:'{0} حصة · {1} منجزة',one:'حصة واحدة · {1} منجزة',two:'حصتان · {1} منجزة',few:'{0} حصص · {1} منجزة',many:'{0} حصة · {1} منجزة',other:'{0} حصة · {1} منجزة'},followedTag:'متابَعة',duplicate:'نسخ',share:'مشاركة',
@@ -3578,7 +3607,17 @@ const I18N={
     load_goodAssimilation:'استيعاب جيد (التكرارات محترمة، RPE متحكم به) ← زيادة طفيفة في الحجم والشدة.',
     load_high:'تم رصد حمل مرتفع (حصص فائتة، RPE أعلى من المتوقع، أو تعب) ← تقليل الحجم بنحو 12% هذا الأسبوع.',
     load_stable:'حمل مستقر: تنويعات جديدة للحصص، الحجم دون تغيير.',
-    missedReasonPrompt:'لماذا لم تُنجَز هذه الحصة؟',missedReplacementPrompt:'هل قمت بشيء آخر في النهاية؟',
+    missedReasonPrompt:'لماذا لم تُنجَز هذه الحصة؟',
+    blHowWent:'كيف جرت الحصة؟',blAsPlanned:'كما هو مخطط',blModified:'معدّلة',blNotDone:'لم أنجزها',blAddDetails:'إضافة تفاصيل',blDetailsN:{zero:'{0} تفصيل',one:'تفصيل واحد',two:'تفصيلان',few:'{0} تفاصيل',many:'{0} تفصيلًا',other:'{0} تفصيل'},blMissedMany:{zero:'{0} حصة منذ {1}',one:'حصة واحدة منذ {1}',two:'حصتان منذ {1}',few:'{0} حصص منذ {1}',many:'{0} حصة منذ {1}',other:'{0} حصة منذ {1}'},blAllRepsAt:'كلها في {0}',blRpeExpected:'المتوقع: {0}',blIllSince:'منذ متى؟',blIllToday:'اليوم',blIll2:'يومان',blIll4:'4 أيام أو أكثر',blIllAdvice:'حمّى أو سعال أو آلام في كل الجسم: لا جري. إذا استمر الأمر أو أقلقك، استشر طبيبًا.',blDidOther:'قمت بنشاط آخر بدلها',blDidInstead:'بدلها: {0}',blFront:'أمام',blBack:'خلف',blPickZone:'المس مكان الألم',blPainLevel:'الشدة: {0}/10',blPainLevelLab:'شدة الألم',blGait:'يغيّر طريقة جريي',blGaitSub:'أعرج أو أعوّض بالرجل الأخرى',blNo:'لا',blYes:'نعم',blHr:'نبض القلب',blHrAvg:'المتوسط',blHrMax:'الأقصى',blLegs:'الساقان',blLegsFresh:'منتعشتان',blLegsNormal:'عاديتان',blLegsHeavy:'ثقيلتان',blSleep:'النوم',blSleepBad:'سيئ',blSleepMid:'متوسط',blSleepGood:'جيد',blMood:'المزاج',blMood1:'سيئ جدًا',blMood2:'سيئ',blMood3:'عادي',blMood4:'جيد',blMood5:'ممتاز',blHarderThanExpected:'أصعب من المتوقع: {0}/10 بينما المتوقع {1} لهذا النوع من الحصص.',blPainNoted:'تم تسجيل الألم: يأخذه مدربك بعين الاعتبار في الأيام القادمة.',blHeatTip:'الحرارة: تم تعديل وتيرتك المستهدفة بـ +{0}%. اشرب قبل أن تعطش.',blVsTarget:'الوتيرة / الهدف',blVerdictFast:'أسرع من المخطط',blVerdictOk:'في الهدف',blVerdictSlow:'أبطأ قليلًا من الهدف',blVerdictVerySlow:'أبطأ بكثير من الهدف',blVerdictRace:'انتهى السباق، أحسنت',adZone_foot:'القدم',adZone_ankle:'الكاحل',adZone_achilles:'وتر أخيل',adZone_shin:'قصبة الساق',adZone_calf:'ربلة الساق',adZone_knee:'الركبة',adZone_thighF:'الفخذ (أمام)',adZone_thighB:'الفخذ (خلف)',adZone_hip:'الورك',adZone_lowBack:'أسفل الظهر',adZone_other:'مكان آخر',adSideL:'اليسرى',adSideR:'اليمنى',
+    adZone_foot_L:'القدم اليسرى',adZone_foot_R:'القدم اليمنى',adZone_ankle_L:'الكاحل الأيسر',adZone_ankle_R:'الكاحل الأيمن',adZone_achilles_L:'وتر أخيل الأيسر',adZone_achilles_R:'وتر أخيل الأيمن',adZone_shin_L:'قصبة الساق اليسرى',adZone_shin_R:'قصبة الساق اليمنى',adZone_calf_L:'ربلة الساق اليسرى',adZone_calf_R:'ربلة الساق اليمنى',adZone_knee_L:'الركبة اليسرى',adZone_knee_R:'الركبة اليمنى',adZone_thighF_L:'الفخذ الأيسر (أمام)',adZone_thighF_R:'الفخذ الأيمن (أمام)',adZone_thighB_L:'الفخذ الأيسر (خلف)',adZone_thighB_R:'الفخذ الأيمن (خلف)',adZone_hip_L:'الورك الأيسر',adZone_hip_R:'الورك الأيمن',
+    adCause_heat:'الحرارة',adCause_wind:'الرياح',adCause_hills:'الصعود',adCause_fasting:'الصيام',adCause_ill:'المرض',adCause_sleep:'ليلة سيئة',adCause_legs:'ساقان ثقيلتان',adCause_load:'حمل مرتفع',adCause_pain:'ألم',adMsgPain:'ألم {0}/10 ({1}): لا شدة لمدة 3 أيام، فقط جري خفيف جدًا أو راحة. إذا لم يخفّ، اعرض نفسك على طبيب أو أخصائي علاج طبيعي.',adMsgPainRepeat:'{0}: ثالث ألم في المكان نفسه خلال 7 أيام. توقفت الحصص الشديدة حتى يزول الألم. استشر طبيبًا أو أخصائي علاج طبيعي قبل العودة إلى التدريب المتقطع.',adMsgPainLight:'تم تسجيل ألم خفيف ({0}/10، {1}). الخطة لا تتغير؛ إذا عاد أو ازداد، سيخفف مدربك الحمل.',adMsgIll:'مريض: راحة حتى {0}، ثم عودة هادئة دون شدة حتى {1}. إذا كانت لديك حمّى أو طال الأمر، استشر طبيبًا.',adMsgBlockKeep:'الشدة ما زالت متوقفة ({0}): الحصص الشاقة في الأيام القادمة تبقى جريًا خفيفًا.',adMsgIllKeep:'العودة بعد المرض: لا شدة حتى {0}.',adMsgGap3:{zero:'{0} يوم دون جري: الأسبوع القادم أخف (−20%) لاستعادة الإيقاع.',one:'يوم دون جري: الأسبوع القادم أخف (−20%) لاستعادة الإيقاع.',two:'يومان دون جري: الأسبوع القادم أخف (−20%) لاستعادة الإيقاع.',few:'{0} أيام دون جري: الأسبوع القادم أخف (−20%) لاستعادة الإيقاع.',many:'{0} يومًا دون جري: الأسبوع القادم أخف (−20%) لاستعادة الإيقاع.',other:'{0} يوم دون جري: الأسبوع القادم أخف (−20%) لاستعادة الإيقاع.'},adMsgGap7:{zero:'{0} يوم توقف: VDOT {1} ← {2} (جدول دانيالز)، وأُعيد بناء الخطة حتى السباق. العودة بـ {3}% من حجمك المعتاد، ثم {4}%، قبل استئناف تقدّمك.',one:'يوم توقف',two:'يوما توقف',few:'{0} أيام توقف: VDOT {1} ← {2} (جدول دانيالز)، وأُعيد بناء الخطة حتى السباق. العودة بـ {3}% من حجمك المعتاد، ثم {4}%، قبل استئناف تقدّمك.',many:'{0} يومًا من التوقف: VDOT {1} ← {2} (جدول دانيالز)، وأُعيد بناء الخطة حتى السباق. العودة بـ {3}% من حجمك المعتاد، ثم {4}%، قبل استئناف تقدّمك.',other:'{0} يوم توقف: VDOT {1} ← {2} (جدول دانيالز)، وأُعيد بناء الخطة حتى السباق. العودة بـ {3}% من حجمك المعتاد، ثم {4}%، قبل استئناف تقدّمك.'},adMsgGap7Light:'{0} أيام توقف والسباق قريب جدًا لإعادة بناء الخطة: الأسبوع القادم أخف بكثير.',adMsgAcwrRisk:'الحمل يرتفع بشدة (ACWR {0}، فوق 1.5): هنا يرتفع خطر الإصابة فعلًا. 7 أيام أخف (−30%)، وتتحول حصتاك الشاقتان القادمتان إلى جري خفيف.',adMsgAcwrHigh:'الحمل مرتفع قليلًا (ACWR {0}): الأيام الثلاثة القادمة أخف بـ 15%.',adMsgAcwrLow:'الحمل منخفض منذ أسبوعين (ACWR {0}): يزداد جريك الخفيف بـ 5%، دون تجاوز +10% في الأسبوع.',adMsgMonotony:'تدريب متكرر جدًا (الرتابة {0}): نغيّر طول الجري الخفيف، بنفس الحجم الإجمالي.',adMsgReadyCaution:'لياقة متوسطة هذا الصباح ({0}/100): احتفظ بالحصة، لكن ابقَ في الحد الأبطأ للوتيرة وتوقف إن لم تشعر بالارتياح.',adMsgReadyLow:'لياقة منخفضة هذا الصباح ({0}/100): حصة اليوم الشاقة تصبح جريًا خفيفًا.',adMsgReadySwap:'لياقة منخفضة هذا الصباح ({0}/100): تم تبديل الحصة الشاقة بجري خفيف لاحقًا هذا الأسبوع.',adMsgFastOnce:'جريت بوتيرة {0}/كم بدل {1}/كم المخططة (أسرع بـ {2}%). الجري أسرع من الهدف يعني تعبًا إضافيًا دون فائدة: حصتك الشاقة القادمة أقصر قليلًا لتتعافى جيدًا.',adMsgFastMoved:'جريت بوتيرة {0}/كم بدل {1}/كم المخططة (أسرع بـ {2}%). الجري أسرع من الهدف يعني تعبًا إضافيًا دون فائدة: تأخرت حصتك الشاقة القادمة يومًا لتتعافى جيدًا.',adMsgFastInfo:'جريت بوتيرة {0}/كم بدل {1}/كم المخططة (أسرع بـ {2}%). الحصة تستهدف شدة محددة: الالتزام بها أنفع من تجاوزها.',adMsgVdotUp:{zero:'{0} حصة أساسية أسرع من المخطط دون جهد إضافي. اقتراح: VDOT {1} ← {2} (وتيرات أسرع قليلًا)، أو اختبار للتأكد.',one:'حصة أساسية أسرع من المخطط دون جهد إضافي. اقتراح: VDOT {1} ← {2} (وتيرات أسرع قليلًا)، أو اختبار للتأكد.',two:'حصتان أساسيتان أسرع من المخطط دون جهد إضافي. اقتراح: VDOT {1} ← {2} (وتيرات أسرع قليلًا)، أو اختبار للتأكد.',few:'{0} حصص أساسية أسرع من المخطط دون جهد إضافي. اقتراح: VDOT {1} ← {2} (وتيرات أسرع قليلًا)، أو اختبار للتأكد.',many:'{0} حصة أساسية أسرع من المخطط دون جهد إضافي. اقتراح: VDOT {1} ← {2} (وتيرات أسرع قليلًا)، أو اختبار للتأكد.',other:'{0} حصة أساسية أسرع من المخطط دون جهد إضافي. اقتراح: VDOT {1} ← {2} (وتيرات أسرع قليلًا)، أو اختبار للتأكد.'},adMsgVdotDown:'حصصك الأساسية صعبة جدًا منذ عدة أسابيع دون سبب خارجي. اقتراح: VDOT {0} ← {1}، لوتيرات في متناولك.',adMsgVdotUpDone:'VDOT {0} ← {1}: تم تحديث وتيراتك لكل الحصص القادمة.',adMsgVdotDownDone:'VDOT {0} ← {1}: وتيرات أسهل للحصص القادمة.',adMsgSlowExplained:'أبطأ من المخطط، لكن السبب {0}: لا شيء يتغير، هذا طبيعي.',adMsgSlowTaper:'فترة التخفيف: حصة أقل جودة لا تغير شيئًا، الانتعاش قادم ليوم السباق.',adMsgSlowTrend:'حصتان أساسيتان من ثلاث صعبتان أو بطيئتان جدًا: الأسبوع القادم أخف (جودة أقصر، جري خفيف −10%).',adMsgSlowOnce:'جريت بوتيرة {0}/كم بدل {1}/كم، الجهد {2}/10 (المتوقع {3}). حصة واحدة ليست اتجاهًا: سنراقب الحصص القادمة.',adMsgHardOnce:'الجهد {2}/10 بينما المتوقع {3}: الحصة أصعب من المخطط. حصة واحدة ليست اتجاهًا: سنراقب الحصص القادمة.',adMsgShort:'حصة مختصرة: تم التسجيل. الخطة مستمرة؛ اذكر ذلك في التقييم إن كان السبب التعب.',adMsgGood:'في الهدف: {0}/كم بدل {1}/كم المخططة. هذا بالضبط ما يجعلك تتقدم.',adMsgGoodHeat:'في الهدف المعدّل حسب الحرارة: {0}/كم بدل {1}/كم. الإبطاء في الحر هو الجري بذكاء.',adMsgGoodEasy:'تم تسجيل الحصة. الخطة مستمرة كما هو مخطط.',adMsgRace:'انتهى السباق: خذ بضعة أيام خفيفة، جسمك قدّم أقصى ما لديه.',adMsgMissEasy:'{0} فائتة: لا داعي لتعويضها، حصة خفيفة فائتة لا تغير شيئًا.',adMsgMissTaper:'{0} فائتة خلال فترة التخفيف: لا تعويض، الانتعاش أهم.',adMsgMissKeyMoved:'{0} فائتة: نُقلت إلى {1}، مكان جري خفيف.',adMsgMissKeyDropped:'{0} فائتة: لا يوجد مكان آمن هذا الأسبوع لتعويضها، نتركها. تبقى الخطة متوازنة.',adMsgMissFatigue:'تعب: حصتك الشاقة القادمة أخف.',adMsgSafetyBack:'عودة الشدة: أول حصة شاقة أقصر قليلًا.',adCoachTitle:'عدّل مدربك خطتك',adHistory:'سجل التعديلات',
+    mcSetting:'فحص الصباح',mcSettingDesc:'النوم وآلام العضلات والمزاج: 3 لمسات في الرئيسية قبل الساعة 14. يستعمله مدربك لتكييف حصة اليوم.',
+    
+    csShareTitle:'مشاركة لياقتي مع المؤطرين',csShareSub:'يرى منشئ أنديتك ومشرفوها حملك ولياقة يومك وهل تشعر بألم. لا شيء غير ذلك.',csDetailTitle:'تضمين تفاصيل الألم',csDetailSub:'المكان والشدة، إضافة إلى «نعم / لا».',csSharedOn:'لياقتك مشاركة مع المؤطرين.',csSharedOff:'توقفت المشاركة: حُذفت بياناتك.',csDetailOn:'تفاصيل الألم مشاركة.',csDetailOff:'تتم مشاركة «نعم / لا» فقط.',csTeamTitle:'لياقة الفريق',csNotAdmin:'مخصص لمنشئ النادي ومشرفيه فقط.',csTeamEmpty:'لا أحد من الأعضاء يشارك لياقته بعد. يمكن لكل واحد تفعيلها في تبويب النادي.',csPain:'ألم',csHiddenN:{zero:'{0} عضو لا يشارك لياقته.',one:'عضو واحد لا يشارك لياقته.',two:'عضوان لا يشاركان لياقتهما.',few:'{0} أعضاء لا يشاركون لياقتهم.',many:'{0} عضوًا لا يشاركون لياقتهم.',other:'{0} عضو لا يشاركون لياقتهم.'},
+    
+    adBalance:'(توازن الأسبوع)',adMoreSessions:{zero:'… و{0} حصة أخرى',one:'… وحصة أخرى',two:'… وحصتان أخريان',few:'… و{0} حصص أخرى',many:'… و{0} حصة أخرى',other:'… و{0} حصة أخرى'},
+    adHistoryEmpty:'لا تعديلات حتى الآن: خطتك تسير كما هو مخطط.',adHistoryFoot:'كل تعديل يتبع قواعد مكتوبة (الحمل، الألم، اللياقة، التنفيذ) ويمر من جديد بفحص الخطة. دون ذكاء اصطناعي.',adRebuildSub:'VDOT {0} ← {1}',adRejected:'لم يُطبَّق التعديل: كان سيُخل بتوازن الخطة.',adUndoneTag:'أُلغي',adUndo:'إلغاء هذا التعديل',adUndoConfirm:'تعود الحصص كما كانت قبل هذا التعديل.',adUndoDone:'تم إلغاء التعديل.',adUndoNothing:'لا شيء للإلغاء: هذه الحصص مضت أو أُنجزت.',adUndoConflict:'لا يمكن الإلغاء: حصة أخرى تشغل ذلك اليوم الآن.',adUndoUnsafe:'لا يمكن الإلغاء دون الإخلال بتوازن الخطة.',adUndoSafety:'تعديل للسلامة: استخدم «لم أعد أتألم» أو «أشعر بتحسن».',adAcceptVdot:'قبول ({0})',adDoTest:'إجراء اختبار',adLater:'لاحقًا',adTestHint:'اجرِ 3000 م أو 5 كم بأقصى جهد، ثم أضف الزمن في أرقامي القياسية: سيتحدث VDOT.',adNoMorePain:'لم أعد أتألم',adFeelBetter:'أشعر بتحسن',adNoMorePainConfirm:'هل تؤكد أنك لم تعد تتألم، حتى عند المشي السريع ونزول الدرج؟ ستعود الشدة تدريجيًا ابتداءً من الغد.',adFeelBetterConfirm:'لا حمّى وتشعر بأنك بخير؟ ستكون العودة تدريجية ابتداءً من الغد.',adConfirmYes:'نعم، أؤكد',adSafetyCleared:'تم: الشدة تعود تدريجيًا.',adSafetyClearedNone:'تم. لم تكن في خطتك حصة لإعادتها.',adGotIt:'فهمت',adBlockOpen:'الشدة متوقفة ({0}) حتى يزول الألم.',adBlockUntil:'الشدة متوقفة ({0}) حتى {1}.',adIllUntil:'العودة بعد المرض: لا شدة حتى {0}.',adCheckinNoted:'شكرًا، تم التسجيل.',mcTitle:'كيف تشعر هذا الصباح؟',mcLater:'ليس اليوم',mcSleep:'النوم',mcSore:'آلام العضلات',mcSore1:'لا شيء',mcSore2:'قليلًا',mcSore3:'كثيرًا',mcThanks:'شكرًا! لياقة اليوم: {0}/100.',rdTitle:'لياقة اليوم',rdLevel_low:'منخفضة',rdLevel_caution:'متوسطة',rdLevel_ok:'جيدة',rdLevel_good:'ممتازة',rdFromCheckin:'حسب فحص الصباح',rdFromBilan:'حسب آخر تقييم',acwrNeedHistory:{zero:'يلزم {0} يوم من السجل',one:'يلزم يوم آخر من السجل',two:'يلزم يومان آخران من السجل',few:'يلزم {0} أيام أخرى من السجل',many:'يلزم {0} يومًا آخر من السجل',other:'يلزم {0} يوم من السجل'},loadMonotony:'الرتابة (7 أيام)',loadStrain:'الإجهاد (7 أيام)',load28Title:'الحمل خلال آخر 4 أسابيع',
+    missedReplacementPrompt:'هل قمت بشيء آخر في النهاية؟',
     missedSessionTitle:'حصة فائتة',nightSleepLabel:'نوم الليلة',
     note_cardioAlreadyCounted:'تم احتساب حمل الكارديو بالفعل، الخطة لم تتغير',
     note_explosiveCaution:'توخَّ الحذر في حصتك الانفجارية القادمة',note_nextHardLightened:'تم تخفيف الحصة الشاقة القادمة',
@@ -3897,8 +3936,15 @@ const VDOT_MIN=20, VDOT_MAX=90;
 function clampVdot(v){ if(!v||isNaN(v)) return 0; return Math.min(VDOT_MAX,Math.max(VDOT_MIN,Math.round(v*10)/10)); }
 function getUserVDOT(){
   const fromRec=(typeof RECORDS!=='undefined')?computeVDOTfromRecords():computeVDOT();
-  if(fromRec) return fromRec;
-  return clampVdot(P.vdot)||computeVDOT();
+  const base=fromRec||clampVdot(P.vdot)||computeVDOT();
+  // V3.15.0 : VDOT ajustée par le moteur d'adaptation (coupure, proposition acceptée). Un record
+  // enregistré après l'ajustement reprend la main : c'est une mesure, l'ajustement une estimation.
+  const a=P&&P.vdotAdj;
+  if(base && a && a.v>0){
+    const last=(typeof RECORDS!=='undefined'?RECORDS:[]).reduce((m,r)=>(r&&r.date&&r.date>m)?r.date:m,'');
+    if(!last || last<=a.date) return clampVdot(a.v);
+  }
+  return base;
 }
 function computeVDOT(){
   if(!P) return 0;
@@ -4470,7 +4516,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='3.14.0';
+const APP_VERSION='4.0.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -4759,7 +4805,10 @@ function swapIn(id,html){
   el.classList.add('pagein');
   ikPlay(el);
 }
-function todayKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+// Horloge de l'app. simulateAthlete() la fait avancer jour par jour (window.__ikSimNow, en ms)
+// sans toucher à l'horloge du téléphone ; sinon c'est l'heure réelle.
+function ikNow(){ return window.__ikSimNow!=null ? new Date(window.__ikSimNow) : new Date(); }
+function todayKey(){ const d=ikNow(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function dateKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function daysBetween(a,b){ return Math.round((b-a)/86400000); }
 function toast(m){ const t=$('#toast'); t.textContent=m;
@@ -5443,7 +5492,7 @@ document.addEventListener('visibilitychange',async()=>{
 /* Une PWA installée n'est presque jamais "redémarrée" : sur iOS elle reste
    résidente des jours. Or getDailyGoals() (bascule des objectifs du jour +
    mise en banque de l'XP de la veille), checkMissedSessions() et
-   weeklyAdaptiveRegen() n'étaient appelés QUE dans initApp(). Après minuit,
+   le moteur d'adaptation (adaptDaily) n'étaient appelés QUE dans initApp(). Après minuit,
    l'app affichait donc encore les objectifs de la veille, ne détectait pas la
    séance manquée, et surtout n'adaptait plus le plan — alors que c'est la
    promesse centrale du produit. On rejoue cette séquence dès que la date change
@@ -5459,7 +5508,7 @@ function checkDayRollover(){
   try{ getDailyGoals(); }catch(e){ console.error('[IKORUN] rollover getDailyGoals',e); }
   try{ refreshXP(); }catch(e){ console.error('[IKORUN] rollover refreshXP',e); }
   try{ checkMissedSessions(); }catch(e){ console.error('[IKORUN] rollover checkMissedSessions',e); }
-  try{ weeklyAdaptiveRegen(); }catch(e){ console.error('[IKORUN] rollover weeklyAdaptiveRegen',e); }
+  try{ adaptDaily(); }catch(e){ console.error('[IKORUN] rollover adaptDaily',e); }
   // Re-rend l'écran actif pour que la carte du jour, la semaine et les objectifs
   // reflètent la nouvelle date au lieu de rester figés sur la veille.
   try{ const active=document.querySelector('.nb.on'); if(active) nav(active.dataset.s); }catch(e){}
@@ -6574,13 +6623,11 @@ function initApp(){
   scheduleMotionSettle(1400);
   // Reprise automatique d'une séance muscu interrompue
   setTimeout(maybeResumeLive,600);
-  // Détection des séances passées non faites → marque s.missed=true et ouvre
-  // le flow "pourquoi manquée ?" (s'enchaîne tout seul sur les suivantes via
-  // finalizeMissedSession). AVANT weeklyAdaptiveRegen : sans ça, missedCount
-  // reste toujours à 0 et le plan ne s'adapte jamais après des jours d'absence.
+  // Séances passées sans réponse : une seule question pour toutes (« pas fait », raison), AVANT
+  // le moteur d'adaptation, qui a besoin de savoir qu'elles ont été ratées pour voir une coupure.
   setTimeout(checkMissedSessions,700);
-  // Régénération hebdomadaire adaptative du plan (au moins 1x/semaine si nécessaire)
-  setTimeout(weeklyAdaptiveRegen,1000);
+  // Moteur d'adaptation du jour (plan/adapt.js) : blocages en cours, coupures, charge, forme.
+  setTimeout(()=>{ try{ const r=adaptDaily(); if(r.some(x=>x&&x.status==='applied')){ if(document.body.dataset.scr==='home') renderHome(); else if(document.body.dataset.scr==='sport') renderSport(); } }catch(e){ console.error('[IKORUN] adaptDaily',e); } },1000);
   // Plans générés avant le garde-fou de charge (27/09) : on les remet une fois dans
   // les limites (progression, décharge, enchaînements), sans attendre la prochaine
   // régénération hebdomadaire qui peut être à 6 jours.
@@ -8447,31 +8494,6 @@ const PAIN_TR={
 function trPain(p){ if(!p) return p; const l=curLang(); if(l==='fr'||!PAIN_TR[l]) return p; return PAIN_TR[l][p]||p; }
 let missedCtx=null;
 
-function checkMissedSessions(){
-  if(!PLAN || !PLAN.sessions) return;
-  const tk=todayKey();
-  const missed=PLAN.sessions.find(s=>s.date<tk && !s.done && !s.missed && s.type!=='Repos');
-  if(missed) openMissedFlow(missed.id);
-}
-function openMissedFlow(sid){
-  missedCtx={sessionId:sid, reason:null, replacement:null, replData:null, muscuCat:null};
-  renderMissedReason();
-  $('#ovProgTitle').textContent=t('missedSessionTitle');
-  openOv('ovProg');
-}
-function renderMissedReason(){
-  const s=PLAN.sessions.find(x=>x.id===missedCtx.sessionId); if(!s) return;
-  let h='<div class="card" style="border-color:rgba(255,92,108,.35);background:linear-gradient(rgba(255,92,108,.07),rgba(255,92,108,.07)),var(--lg-fill);margin-bottom:18px"><div style="font-weight:700;color:var(--bad)">'+t('missedSessionTitle')+'</div><div style="font-size:13px;color:var(--muted);margin-top:4px">'+planSessTitle(s)+' · '+fmtDate(s.date)+'</div></div>';
-  h+='<div class="lab" style="margin-bottom:10px">'+t('missedReasonPrompt')+'</div>';
-  h+='<div class="reason-grid">'+MISSED_REASONS.map(r=>'<div class="reason-tile" onclick="selectMissedReason(\''+r+'\')">'+(MISSED_REASON_ICONS[r]?ICN(MISSED_REASON_ICONS[r],18):'')+' '+trReason(r)+'</div>').join('')+'</div>';
-  $('#progBody').innerHTML=h;
-}
-function selectMissedReason(r){ missedCtx.reason=r; renderMissedReplacement(); }
-function renderMissedReplacement(){
-  let h='<div class="lab" style="margin-bottom:10px">'+t('missedReplacementPrompt')+'</div>';
-  h+='<div class="act-grid">'+REPLACEMENT_ACTIVITIES.map(a=>'<div class="act-tile" onclick="selectReplacement(\''+a+'\')"><div class="ic">'+(REPLACEMENT_ICONS[a]?ICN(REPLACEMENT_ICONS[a],20):'')+'</div><div class="lb">'+trActivity(a)+'</div></div>').join('')+'</div>';
-  $('#progBody').innerHTML=h;
-}
 function selectReplacement(a){
   missedCtx.replacement=a;
   if(a==='Aucune activité'){ finalizeMissedSession(); return; }
@@ -8531,170 +8553,15 @@ function renderMissedSimpleForm(kind){
   $('#progBody').innerHTML=h;
 }
 function saveMissedSimple(kind){ missedCtx.replData={kind,dur:+$('#ms_dur').value||0}; finalizeMissedSession(); }
-function finalizeMissedSession(){
-  const s=PLAN.sessions.find(x=>x.id===missedCtx.sessionId);
-  if(!s){ missedCtx=null; closeOv('ovProg'); return; }
-  s.missed=true; s.missedReason=missedCtx.reason||null; s.missedReplacement=missedCtx.replacement||'Aucune activité'; s.missedReplData=missedCtx.replData||null;
-  const note=ruleBasedAdjust(s, missedCtx.reason, missedCtx.replacement);
-  weeklyAdaptiveRegen();
-  saveAll();
-  closeOv('ovProg');
-  toast(''+t('sessionNotedToast')+(note?' — '+note:''));
-  missedCtx=null;
-  renderSport();
-  setTimeout(checkMissedSessions,400);
-}
 
-/* ---------- MOTEUR DE RÈGLES D'ADAPTATION (100% local, aucune IA) ---------- */
+/* ---------- OUTILS DE DATES DU PLAN ---------- */
 function addDaysKey(dateKey,n){ const d=new Date(dateKey); d.setDate(d.getDate()+n); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function nextUpcoming(afterDate){ return PLAN.sessions.filter(s=>s.date>afterDate && !s.done && !s.missed).sort((a,b)=>a.date<b.date?-1:1); }
 function nextHardUpcoming(afterDate){ return nextUpcoming(afterDate).find(s=>HARD_TYPES.includes(s.baseType)); }
-function ruleBasedAdjust(session, reason, replacement){
-  const heavyReasons=['Fatigue','Douleur','Maladie'];
-  let note='';
-  if(heavyReasons.includes(reason)){
-    const cardioReplacement=(replacement==='Running'||replacement==='Vélo'||replacement==='Natation');
-    const nh=nextHardUpcoming(session.date);
-    if(nh){
-      const factor=cardioReplacement?0.9:0.75;
-      nh.km=Math.round(nh.km*factor*10)/10;
-      nh.duration=Math.round(nh.duration*factor);
-      const flag=''+tp('autoLightenedFlag',trReason(reason).toLowerCase(),fmtDate(session.date))+' — ';
-      if(nh.detail && nh.detail.objectif) nh.detail.objectif=flag+nh.detail.objectif;
-      nh.desc=flag+(nh.desc||'');
-      note=t('note_nextHardLightened');
-    }
-  } else if(replacement==='Musculation' && missedCtx && ['Bas du corps','Explosivité','Puissance'].includes(missedCtx.muscuCat)){
-    const tomorrow=addDaysKey(session.date,1);
-    const nextDay=PLAN.sessions.find(s=>s.date===tomorrow && !s.done && !s.missed);
-    if(nextDay && ['VMAc','COTES'].includes(nextDay.baseType)){
-      const flag=''+t('legDayCarryoverFlag')+' — ';
-      if(nextDay.detail && nextDay.detail.objectif) nextDay.detail.objectif=flag+nextDay.detail.objectif;
-      nextDay.desc=flag+(nextDay.desc||'');
-      note=t('note_explosiveCaution');
-    }
-  } else if((replacement==='Vélo'||replacement==='Natation') && !heavyReasons.includes(reason)){
-    note=t('note_cardioAlreadyCounted');
-  }
-  checkConsecutiveMisses();
-  return note;
-}
-function checkConsecutiveMisses(){
-  if(!PLAN) return;
-  const tk=todayKey();
-  const recentMissed=PLAN.sessions.filter(s=>s.missed && s.date>=addDaysKey(tk,-14) && s.date<=tk).length;
-  if(recentMissed>=3 && PLAN.autoReducedAt!==tk){
-    nextUpcoming(tk).forEach(s=>{ s.km=Math.round(s.km*0.85*10)/10; s.duration=Math.round(s.duration*0.85); });
-    PLAN.autoReducedAt=tk;
-    toast(''+t('recentMissesReducedMsg'));
-  }
-}
-function applyProgressiveOverload(entry){
-  if(!PLAN) return;
-  if(entry.pain && entry.pain!=='Aucune') return;
-  if(entry.fatigue>=4) return;
-  if(!(entry.feel>=4 && entry.plannedRpe && entry.rpe<=entry.plannedRpe)) return;
-  const sess=PLAN.sessions.find(s=>s.date===entry.date);
-  const wk=sess?sess.week:0;
-  PLAN.overloadWeeks=PLAN.overloadWeeks||[];
-  if(PLAN.overloadWeeks.includes(wk)) return;
-  PLAN.overloadWeeks.push(wk);
-  nextUpcoming(entry.date).slice(0,3).forEach(s=>{
-    if(s.customized) return; // un volume réglé à la main n'est jamais retouché
-    if(s.baseType==='EF'||s.baseType==='LONG'){ s.km=Math.round(s.km*1.05*10)/10; s.duration=Math.round(s.duration*1.05); }
-  });
-  planSafetyPass(PLAN); // +5 % ne doit jamais faire sortir une semaine des limites de progression
-  saveAll();
-}
 
-/* ---------- RÉGÉNÉRATION HEBDOMADAIRE ADAPTATIVE DU PLAN ----------
-   Le plan n'est jamais figé : au moins une fois par semaine, si besoin,
-   les séances à venir (non faites) sont RECONSTRUITES (nouveau tirage
-   aléatoire dans buildSessionV2 → variantes différentes, pas une copie)
-   avec un volume/intensité ajusté selon :
-   - le taux de répétitions "respectées" dans les bilans récents,
-   - l'écart RPE réel vs prévu,
-   - la fatigue déclarée,
-   - le nombre de séances ratées récemment.
-   La périodisation (semaine/phase/type de séance/date) est conservée :
-   seul le contenu réel de chaque séance à venir est régénéré. */
-function weeklyAdaptiveRegen(force){
-  if(!PLAN || !PLAN.sessions || !PLAN.sessions.length) return;
-  const tk=todayKey();
-  const last=PLAN.lastAdapt||PLAN.created;
-  if(!force && daysBetween(new Date(last),new Date(tk))<7) return;
-  const since=addDaysKey(tk,-14);
-  const recentLogs=(SESSLOG||[]).filter(e=>e.date>=since && e.date<=tk);
-  const missedCount=PLAN.sessions.filter(s=>s.missed && s.date>=since && s.date<=tk).length;
-  let repTot=0, repOk=0, rpeDeltaSum=0, rpeN=0, fatSum=0, fatN=0;
-  recentLogs.forEach(e=>{
-    if(e.repsLog) e.repsLog.forEach(r=>{ if(r.timeS!=null){ repTot++; if(r.respected) repOk++; } });
-    if(e.plannedRpe){ rpeDeltaSum+=(e.rpe-e.plannedRpe); rpeN++; }
-    if(e.fatigue){ fatSum+=e.fatigue; fatN++; }
-  });
-  const repRatio=repTot?repOk/repTot:null;
-  const rpeDelta=rpeN?rpeDeltaSum/rpeN:0;
-  const avgFatigue=fatN?fatSum/fatN:3;
-  let factor=1, reason=t('load_stable');
-  if(missedCount>=2 || rpeDelta>=1.5 || avgFatigue>=4){
-    factor=0.88; reason=t('load_high');
-  } else if(repRatio!=null && repRatio>=0.85 && rpeDelta<=0 && avgFatigue<=3){
-    factor=1.06; reason=t('load_goodAssimilation');
-  }
-  const vdot=getUserVDOT(); if(!vdot) return;
-  const pace=planPaces(vdot);
-  const seed=(Date.now()^Math.floor(Math.random()*1e9))>>>0;
-  const rng=mulberry32(seed);
-  const pick=arr=>arr[Math.floor(rng()*arr.length)];
-  const upcoming=nextUpcoming(tk);
-  if(!upcoming.length){ PLAN.lastAdapt=tk; saveAll(); return; }
-  const kmMax=PLAN.kmMax||planKmMax();
-  const nDays=PLAN.nDays||((P.days&&P.days.length)||4);
-  // Cible de chaque semaine = la cible PRÉVUE à la génération (PLAN.wkKm) × facteur.
-  // Avant (audit 27/09), elle repartait du volume courant de la semaine : chaque
-  // passage multipliait le résultat du précédent, et les footings étaient recalculés
-  // sans le budget de generatePlan — le volume enflait même à facteur 1 (10 km, max
-  // 60 km/sem : S9 59 → 78 → 89 km). Les plans d'avant cette version n'ont pas de
-  // PLAN.wkKm : on retombe sur le volume actuel, plafonné par le garde-fou ensuite.
-  const rebuildable=s=>s.baseType!=='Repos' && s.km>0 && s.baseType!=='COURSE' && !s.customized;
-  const weeksUp=[...new Set(upcoming.filter(rebuildable).map(s=>s.week))];
-  weeksUp.forEach(w=>{
-    const all=PLAN.sessions.filter(s=>s.week===w);
-    const redo=upcoming.filter(s=>s.week===w && rebuildable(s));
-    const base=(PLAN.wkKm&&PLAN.wkKm[w])||planWeekKm(all);
-    const target=Math.min(kmMax,Math.max(15,Math.round(base*factor)));
-    let used=planWeekKm(all.filter(s=>!redo.includes(s)));
-    const build=(s,extra)=>{
-      const built=buildSessionV2(s.baseType,Object.assign({vdot,pace,wkKm:target,nDays,phase:{name:s.phase,key:s.phaseKey,color:s.color},rng,pick,isDeload:s.deload,goal:PLAN.goal,w:s.week,weeks:PLAN.weeks},extra||{}));
-      const durMin=built.durMin!=null?built.durMin:(built.pace==='—'?0:Math.round(built.km*parseTime(built.pace)/60));
-      s.type=built.label; s.title=built.title; s.km=built.km; s.duration=durMin; s.pace=built.pace;
-      s.rpe=built.rpe; s.series=built.series||null; s.desc=built.detail.objectif; s.detail=built.detail; s.genParams=built.genParams||null;
-      planApplySegs(s,pace); // V3.14.0 : mêmes segments que le générateur
-      return s.km||0;
-    };
-    const isEasy=s=>s.baseType==='EF'||s.baseType==='RECUP';
-    const easy=redo.filter(isEasy), longs=redo.filter(planIsLong), quality=redo.filter(s=>!isEasy(s)&&!planIsLong(s));
-    quality.forEach(s=>{ used+=build(s); });
-    let longKm=0;
-    longs.forEach(s=>{
-      const share=s.baseType==='LONG_COURT'?0.22:(s.phaseKey==='SPE'?0.34:0.30);
-      const room=Math.floor(target-used-4*easy.length);
-      const km=Math.max(8,Math.min(longRunCapKm(),Math.round(target*share),Math.max(8,room)));
-      longKm=build(s,{longKm:km}); used+=longKm;
-    });
-    if(easy.length){
-      const weights=easy.reduce((a,s)=>a+(s.baseType==='RECUP'?0.7:1),0);
-      let easyKm=Math.max(4,Math.min(Math.max(5,Math.round(target/nDays*0.95)),Math.floor((target-used)/weights)));
-      if(longKm) easyKm=Math.max(4,Math.min(easyKm,longKm-1));
-      easy.forEach(s=>build(s,{easyKm}));
-    }
-  });
-  planSafetyPass(PLAN,{kmMax});
-  planSettle(PLAN,pace);
-  PLAN.lastAdapt=tk;
-  DB.save('run_plan',PLAN);
-  toast(''+tp('planUpdatedWeekReason',reason));
-}
+/* (V3.15.0) La régénération hebdomadaire (weeklyAdaptiveRegen), l'allègement après une séance
+   ratée (ruleBasedAdjust) et la surcharge progressive (applyProgressiveOverload) sont remplacés
+   par le moteur d'adaptation : plan/adapt.js. Le bilan et les séances ratées : plan/bilan.js. */
 
 /* ---------- GARDE-FOU DE CHARGE (27/09) ----------
    Audit du 27/09 : six plans générés, confrontés aux règles d'un validateur de
@@ -8857,6 +8724,13 @@ function planMainPart(s){
 function planKmMax(){ return P.kmWeekMax||Math.round((P.kmWeek||35)*1.6); }
 function planIsLong(s){ return !!s && (s.baseType==='LONG'||s.baseType==='LONG_COURT'); }
 function planIsHard(s){ return !!s && PLAN_HARD_Q.includes(s.baseType); }
+// Semaine « légère » hors décharge : reprise après une coupure (s.ramp) ou séances allégées par
+// le moteur d'adaptation (s.adj.light). Elle ne sert jamais de base à la progression de +10 %.
+function planWeekLight(list){ return list.some(s=>s.ramp || (s.adj && s.adj.light)); }
+// Volume PRÉVU d'une semaine allégée par le moteur : la progression reprend comme si elle avait été
+// faite telle que prévue (sinon la semaine d'après, comparée à deux semaines plus tôt, était rabotée,
+// puis toutes les suivantes). Une semaine de reprise (s.ramp) n'a pas de volume nominal : null.
+function planWeekNominalKm(list){ if(list.some(s=>s.ramp)) return null; return list.reduce((a,s)=>a+(s.baseType==='COURSE'?0:((s.adj&&s.adj.km0!=null)?s.adj.km0:(+s.km||0))),0); }
 function planWeekKm(list){ return list.reduce((a,s)=>a+(s.baseType==='COURSE'?0:(+s.km||0)),0); }
 // Charge réelle des 4 dernières semaines, en km/semaine — seulement si l'historique
 // est crédible (≥ 6 sorties étalées sur ≥ 3 semaines), sinon null : une appli toute
@@ -8981,14 +8855,16 @@ function planSafetyPass(plan,opts){
     const list=weekOf(w);
     const hasRace=list.some(s=>s.baseType==='COURSE');
     const isTaper=list.some(s=>s.phaseKey==='TAPER') || hasRace;
-    const isDeload=list.some(s=>s.deload);
+    const isDeload=list.some(s=>s.deload), lite=planWeekLight(list);
     const partial=(w===firstWeek && list.filter(s=>s.baseType!=='COURSE').length<nDays);
     let cap=kmMax;
     if(isTaper){ if(lastLoad!=null) cap=Math.min(cap,lastLoad); }
+    else if(lite){ /* reprise ou allègement du moteur : plafonds déjà posés, pas une base des +10 % */ }
     else if(isDeload){ if(blockPeak>0) cap=Math.min(cap,blockPeak*SAFE_DELOAD_MAX); }
     else if(lastLoad!=null && !partial) cap=Math.min(cap,lastLoad*SAFE_WEEKLY_INCREASE);
     if(planWeekKm(list)>cap+0.05) reduceWeek(list,cap,isDeload||isTaper);
     const km=planWeekKm(list);
+    if(lite){ const nom=planWeekNominalKm(list); if(nom!=null && !partial){ lastLoad=nom; blockPeak=Math.max(blockPeak,nom); } return; }
     if(isTaper) blockPeak=0;
     else if(isDeload) blockPeak=0;
     else if(!partial){ lastLoad=km; blockPeak=Math.max(blockPeak,km); }
@@ -9071,9 +8947,10 @@ function planBalanceLoad(plan,pc){
   [...new Set(plan.sessions.map(s=>s.week))].sort((a,b)=>a-b).forEach(w=>{
     const list=plan.sessions.filter(s=>s.week===w && s.km>0 && s.baseType!=='COURSE' && s.baseType!=='Repos');
     const full=list.length>=nDays, deload=list.some(s=>s.deload), taper=list.some(s=>s.phaseKey==='TAPER');
-    const light=deload||taper;
+    // V3.15.0 : semaine de reprise ou allégée par le moteur d'adaptation = légère (pas une base des +10 %)
+    const light=deload||taper||planWeekLight(list);
     // semaine de charge : ≤ +10 % ; décharge : ≤ 80 % du pic du bloc (le pic baisse quand on l'allège)
-    const capKm=(full && !light && prev!=null)?prev*SAFE_WEEKLY_INCREASE:(deload && !taper && peak>0)?peak*SAFE_DELOAD_MAX:null;
+    const capKm=(full && !light && prev!=null)?prev*SAFE_WEEKLY_INCREASE:(deload && !taper && !planWeekLight(list) && peak>0)?peak*SAFE_DELOAD_MAX:null;
     if(capKm!=null){
       const L=list.filter(planIsLong).sort((a,b)=>b.km-a.km)[0];
       for(let g=0; g<80 && planWeekKm(list)>capKm+0.05; g++){
@@ -9102,7 +8979,8 @@ function planBalanceLoad(plan,pc){
       }
     }
     if(full && !light){ prev=planWeekKm(list); peak=Math.max(peak,prev); }
-    else if(light) peak=0;
+    else if(deload||taper) peak=0;
+    else if(full && planWeekLight(list)){ const nom=planWeekNominalKm(list); if(nom!=null){ prev=nom; peak=Math.max(peak,nom); } }
   });
   return n;
 }
@@ -9133,6 +9011,9 @@ function validatePlan(plan,opts){
   const seen={}; ss.forEach(s=>{ if(seen[s.date]) errors.push('date en double : '+s.date); seen[s.date]=1; if(since && s.date<since && !s.done) errors.push('date passée : '+tag(s)); });
   ss.forEach(s=>{
     if(!(s.km>0) || s.baseType==='Repos') return;
+    // V3.15.0 : une séance faite ou ratée est de l'historique — ses allures sont celles de la VDOT
+    // du moment ; une VDOT ajustée depuis ne la rend pas « incohérente ».
+    if(s.done || s.missed) return;
     const sg=planSegs(s,pc); if(!sg.length){ warnings.push('sans segments : '+tag(s)); return; }
     const km=sg.reduce((q,x)=>q+x.km,0), sec=sg.reduce((q,x)=>q+x.sec,0), sp=parseTime(s.pace);
     if(Math.abs(km-s.km)>0.11) errors.push('distance ≠ segments : '+tag(s)+' '+s.km+' km vs '+km.toFixed(2));
@@ -9160,10 +9041,11 @@ function validatePlan(plan,opts){
       if(km>0 && L.km/km>0.5 && list.length>2) warnings.push('sortie longue > 50 % du volume : S'+w+' '+L.km+'/'+weeks[w].km);
     }
     if(target && list.length>=Math.max(2,(plan.nDays||4)-1) && (km>target*1.25+1 || km<target*0.6)) warnings.push('volume S'+w+' '+weeks[w].km+' km vs prévu '+target);
-    const deload=list.some(s=>s.deload), taper=list.some(s=>s.phaseKey==='TAPER');
-    if(prevLoad!=null && !deload && !taper && list.length>=(plan.nDays||4) && km>prevLoad*1.10+1.5) errors.push('progression > +10 % : S'+w+' '+weeks[w].km+' km après '+Math.round(prevLoad*10)/10);
-    if(deload && !taper && peakLoad>0 && km>peakLoad*SAFE_DELOAD_MAX+0.5) errors.push('décharge > 80 % du pic : S'+w+' '+weeks[w].km+' km pour un pic de '+Math.round(peakLoad*10)/10);
-    if(!deload && !taper && list.length>=(plan.nDays||4)){ prevLoad=km; peakLoad=Math.max(peakLoad,km); }
+    const deload=list.some(s=>s.deload), taper=list.some(s=>s.phaseKey==='TAPER'), lite=planWeekLight(list);
+    if(prevLoad!=null && !deload && !taper && !lite && list.length>=(plan.nDays||4) && km>prevLoad*1.10+1.5) errors.push('progression > +10 % : S'+w+' '+weeks[w].km+' km après '+Math.round(prevLoad*10)/10);
+    if(deload && !taper && !lite && peakLoad>0 && km>peakLoad*SAFE_DELOAD_MAX+0.5) errors.push('décharge > 80 % du pic : S'+w+' '+weeks[w].km+' km pour un pic de '+Math.round(peakLoad*10)/10);
+    if(!deload && !taper && !lite && list.length>=(plan.nDays||4)){ prevLoad=km; peakLoad=Math.max(peakLoad,km); }
+    else if(lite && !deload && !taper && list.length>=(plan.nDays||4)){ const nom=planWeekNominalKm(list); if(nom!=null){ prevLoad=nom; peakLoad=Math.max(peakLoad,nom); } }
     else if(deload||taper) peakLoad=0;
   });
   const m={}; ss.forEach(s=>{ if(s.km>0 && s.baseType!=='Repos') m[s.date]=s; });
@@ -9174,7 +9056,7 @@ function validatePlan(plan,opts){
   });
   return {ok:!errors.length,errors,warnings,weeks};
 }
-function minRaceDate(){ const d=new Date(); d.setDate(d.getDate()+7); return d.toISOString().slice(0,10); }
+function minRaceDate(){ const d=ikNow(); d.setDate(d.getDate()+7); return d.toISOString().slice(0,10); }
 /* Calendrier du plan (V3.14.0), partagé par le générateur et « Configurer mon plan » : semaines
    CALENDAIRES (lundi → dimanche), la dernière étant celle de la course, 28 au plus. Si la semaine en
    cours n'a plus au moins la moitié des jours d'entraînement devant elle, le plan démarre le lundi
@@ -9182,7 +9064,7 @@ function minRaceDate(){ const d=new Date(); d.setDate(d.getDate()+7); return d.t
    semblait avoir disparu. */
 function planCalendar(compDate,days){
   days=(days&&days.length)?days:[1,3,5,6];
-  const today=new Date(); today.setHours(0,0,0,0);
+  const today=ikNow(); today.setHours(0,0,0,0);
   const comp=new Date(compDate+'T00:00:00'); comp.setHours(0,0,0,0);
   const raceKey=dateKey(comp);
   const mondayOf=d=>{ const m=new Date(d); m.setDate(d.getDate()-((d.getDay()+6)%7)); return m; };
@@ -9197,18 +9079,42 @@ function planCalendar(compDate,days){
   return {startMonday,weeks:Math.max(2,weeks),raceKey};
 }
 function generatePlan(){
-  const vdot=getUserVDOT();
-  if(!vdot){ toast(t('profileIncompleteAddTime')); return; }
-  if(!P.compDate){ toast(t('chooseCompDate')); return; }
+  const r=planBuild({});
+  if(r.err){ toast(t(r.err)); return; }
+  PLAN=r.plan;
+  DB.save('run_plan',PLAN);
+  toast(''+tp('planGenerated',(raceLabel()||t('raceGeneric')),PLAN.weeks,PLAN.sessions.length));
+  if(r.safetyFixes) setTimeout(()=>toast(t('planSafetyAdjustedToast')),2600);
+  // Course à plus de 28 semaines : le plan commence plus tard qu'aujourd'hui, il
+  // faut le dire, sinon l'écran Sport paraît vide sans explication.
+  const first=PLAN.sessions[0], today=ikNow(); today.setHours(0,0,0,0);
+  if(first && daysBetween(today,new Date(first.date+'T00:00:00'))>7)
+    setTimeout(()=>toast(tp('planStartsOn',fmtDate(first.date))),r.safetyFixes?5200:2600);
+  burst(); renderSport();
+  try{ if(typeof installAfterPlan==='function') installAfterPlan(); }catch(e){}
+}
+/* planBuild(opts) — le générateur, sans effet de bord (V3.15.0) : rend {plan} ou {err:clé}.
+   generatePlan() l'enregistre et l'annonce ; le moteur d'adaptation l'appelle pour reconstruire
+   le plan après une coupure (plan/adapt.js), et simulateAthlete() avec une horloge simulée.
+     opts.vdot      VDOT à utiliser (défaut : getUserVDOT())
+     opts.ramp      reprise : plafonds des premières semaines en part de opts.baseKm ([0.5,0.75])
+     opts.rampEasy  nombre de semaines de reprise sans qualité ni sortie longue
+     opts.keep      plan dont on garde les séances passées (numérotation des semaines continue)
+     opts.seed      graine du tirage (simulations reproductibles) */
+function planBuild(opts){
+  opts=opts||{};
+  const vdot=opts.vdot||getUserVDOT();
+  if(!vdot) return {err:'profileIncompleteAddTime'};
+  if(!P.compDate) return {err:'chooseCompDate'};
   // Jours triés dans l'ordre CALENDAIRE (lundi → dimanche) et non par numéro
   // JS (dimanche=0 passait en tête, et « le dernier jour » d'une semaine n'était
   // pas forcément le plus tardif).
   const days=((P.days&&P.days.length)?[...P.days]:[1,3,5,6]).sort((a,b)=>((a+6)%7)-((b+6)%7));
-  const today=new Date(); today.setHours(0,0,0,0);
+  const today=ikNow(); today.setHours(0,0,0,0);
   const comp=new Date(P.compDate+'T00:00:00'); comp.setHours(0,0,0,0);
   // Une date de course passée ou trop proche (< 7 j) donnait un plan de 2 semaines
   // sans avertir personne (Math.max(2,...) masquait le daysBetween négatif ou minuscule).
-  if(daysBetween(today,comp)<7){ toast(t('raceDateTooSoon')); return; }
+  if(daysBetween(today,comp)<7) return {err:'raceDateTooSoon'};
   // Semaines CALENDAIRES (lundi → dimanche), la dernière étant celle de la course.
   // Avant (audit 24/09), les semaines partaient d'aujourd'hui et la course tombait
   // sur « le dernier jour d'entraînement de la dernière semaine » : pour une course
@@ -9219,8 +9125,16 @@ function generatePlan(){
   let {startMonday,weeks}=planCalendar(P.compDate,days);
   const raceKey=dateKey(comp);
   const phaseByWeek=phaseDistribution(weeks);
+  // Reconstruction (opts.keep) : les semaines continuent la numérotation de l'ancien plan.
+  const keep=opts.keep&&opts.keep.sessions&&opts.keep.sessions.length?opts.keep:null;
+  let off=0, keptPast=[];
+  if(keep){
+    const s0=keep.sessions[0], m0=new Date(s0.date+'T00:00:00'); m0.setDate(m0.getDate()-((m0.getDay()+6)%7)-(s0.week-1)*7);
+    off=Math.max(0,Math.floor(daysBetween(m0,startMonday)/7));
+    keptPast=keep.sessions.filter(s=>s.date<dateKey(today)).map(s=>Object.assign({},s));
+  }
   // seed unique à chaque génération
-  const seed=(Date.now()^Math.floor(Math.random()*1e9))>>>0;
+  const seed=opts.seed!=null?(opts.seed>>>0):((Date.now()^Math.floor(Math.random()*1e9))>>>0);
   const rng=mulberry32(seed);
   const pick=arr=>arr[Math.floor(rng()*arr.length)];
   // allures
@@ -9230,20 +9144,27 @@ function generatePlan(){
   const kmMax=planKmMax();
   const wkTargets={};
   const liked=(PREFS.likedTypes&&PREFS.likedTypes.length)?PREFS.likedTypes:null;
-  const sessions=[]; let id=1;
+  const sessions=[]; let id=keptPast.reduce((m,s)=>Math.max(m,+s.id||0),0)+1;
   const goal=P.objGoal||'Record personnel';
   const pushSession=(d,w,ph,type,wkKm,isDeload,extra)=>{
     const built=buildSessionV2(type,Object.assign({vdot,pace,wkKm,nDays:days.length,phase:ph,rng,pick,isDeload,goal,w,weeks},extra||{}));
     const durMin=built.durMin!=null?built.durMin:(built.pace==='—'?0:Math.round(built.km*parseTime(built.pace)/60));
-    sessions.push(planApplySegs({ id:id++, week:w, phase:ph.name, phaseKey:ph.key, color:ph.color,
+    sessions.push(planApplySegs({ id:id++, week:w+off, phase:ph.name, phaseKey:ph.key, color:ph.color,
       date:dateKey(d), type:built.label, baseType:type, title:built.title,
       km:built.km, duration:durMin, pace:built.pace, rpe:built.rpe, series:built.series||null,
-      desc:built.detail.objectif, detail:built.detail, genParams:built.genParams||null, deload:isDeload, done:false },pace));
+      desc:built.detail.objectif, detail:built.detail, genParams:built.genParams||null, deload:isDeload, done:false, ramp:curRamp||undefined },pace));
   };
   const HARD=['VMAc','VMAl','VO2','INTERVAL','DBLSEUIL','SEUIL','SPE','SPE_COURT','TEMPO_SPE','TEMPO','PROGRESSIF','FARTLEK','COTES','LONG','LONG_COURT'];
   const isEasyT=t=>t==='EF'||t==='RECUP', isLongT=t=>t==='LONG'||t==='LONG_COURT';
   const repriseWeeks=({lt1:1,m1_3:2,m3_6:3,gt6:4})[P.planGap]||0;
-  let lastWkKm=kmMin, prevLoadTarget=null;
+  // Reprise après une coupure : comptée en jours réels. Une première semaine entamée (moins de jours
+  // d'entraînement que d'habitude) ne compte pas pour une semaine de reprise : elle s'ajoute devant.
+  if(opts.ramp){
+    const firstLeft=days.filter(dow=>{ const d=new Date(startMonday); d.setDate(startMonday.getDate()+((dow+6)%7)); return d>=today; }).length;
+    if(firstLeft<days.length) opts=Object.assign({},opts,{ramp:[opts.ramp[0]].concat(opts.ramp),rampEasy:(opts.rampEasy||1)+1});
+  }
+  // Reprise : la première semaine après la rampe revient au plus au volume d'avant la coupure.
+  let lastWkKm=kmMin, prevLoadTarget=opts.ramp&&opts.baseKm?Math.round(opts.baseKm/SAFE_WEEKLY_INCREASE):null, curRamp=false;
   for(let w=1;w<=weeks;w++){
     const ph=phaseByWeek[w];
     const prog=(w-1)/(weeks-1||1);
@@ -9257,8 +9178,13 @@ function generatePlan(){
     if(isDeload) wkKm=Math.round((prevLoadTarget||wkKm)*0.75);
     else if(ph.key!=='TAPER' && prevLoadTarget) wkKm=Math.min(wkKm,Math.round(prevLoadTarget*SAFE_WEEKLY_INCREASE));
     wkKm=Math.max(kmMin*0.7,Math.min(kmMax,wkKm));
-    if(!isDeload && ph.key!=='TAPER') prevLoadTarget=wkKm;
-    wkTargets[w]=wkKm;
+    // Reprise après une coupure (moteur d'adaptation) : plafonds de reprise, puis +10 %/semaine.
+    const rampW=!!(opts.ramp && w<=opts.ramp.length && w<weeks && ph.key!=='TAPER');
+    if(rampW) wkKm=Math.max(8,Math.round(Math.min(wkKm,(opts.baseKm||wkKm)*opts.ramp[w-1])));
+    curRamp=rampW;
+    // une semaine de reprise est « légère » : elle ne sert pas de base aux +10 % (comme une décharge)
+    if(!isDeload && ph.key!=='TAPER' && !rampW) prevLoadTarget=wkKm;
+    wkTargets[w+off]=wkKm;
     lastWkKm=wkKm;
     // composition de la semaine selon la phase — une séance de qualité de moins en
     // semaine de décharge : leur structure (échauffement + bloc + retour au calme) est
@@ -9268,7 +9194,7 @@ function generatePlan(){
     // Reprise après un arrêt (Configurer mon plan, V3.6.0) : les premières semaines ne
     // sont que de l'endurance facile — ni qualité ni sortie longue, dont les minimums
     // (8 km, échauffement compris) dépassaient à eux seuls le volume de reprise.
-    const reprise=P.planSituation==='reprise' && w<=repriseWeeks && w<weeks;
+    const reprise=(P.planSituation==='reprise' && w<=repriseWeeks && w<weeks) || (rampW && w<=(opts.rampEasy||1));
     if(reprise) qualityCount=0;
     let weekPlan=composeWeek(ph,days.length,qualityCount,isDeload,pick,rng,liked,w===weeks);
     if(reprise) weekPlan=weekPlan.map(x=>x==='LONG'||x==='LONG_COURT'?'EF':x);
@@ -9336,23 +9262,20 @@ function generatePlan(){
   // Le Jour J est posé EXACTEMENT à la date de la course choisie, même si ce
   // n'est pas un des jours d'entraînement habituels.
   pushSession(comp,weeks,phaseByWeek[weeks],'COURSE',lastWkKm,false);
+  if(keptPast.length) sessions.unshift(...keptPast);
   // Les jours d'entraînement sont générés dans l'ordre de leur numéro de jour de semaine
   // (ex: lundi avant vendredi), pas dans l'ordre chronologique réel à partir d'aujourd'hui
   // — sans ce tri, la 1re semaine affichait ses séances dans le désordre (ex: lun. 7 sept.
   // avant ven. 4 sept.) dès que le plan était généré un autre jour que dimanche/lundi.
   sessions.sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:0);
-  PLAN={ created:todayKey(), vdot, weeks, seed, sessions, goal, race:P.objRace||'5 km', kmMax, nDays:days.length, wkKm:wkTargets };
-  const safetyFixes=planSafetyPass(PLAN,{kmMax,useHistory:true});
-  planSettle(PLAN,pace);
-  PLAN.segV=PLAN_SEG_VERSION;
-  DB.save('run_plan',PLAN);
-  toast(''+tp('planGenerated',(raceLabel()||t('raceGeneric')),weeks,PLAN.sessions.length));
-  if(safetyFixes) setTimeout(()=>toast(t('planSafetyAdjustedToast')),2600);
-  // Course à plus de 28 semaines : le plan commence plus tard qu'aujourd'hui, il
-  // faut le dire, sinon l'écran Sport paraît vide sans explication.
-  if(sessions[0] && daysBetween(today,new Date(sessions[0].date+'T00:00:00'))>7)
-    setTimeout(()=>toast(tp('planStartsOn',fmtDate(sessions[0].date))),safetyFixes?5200:2600);
-  burst(); renderSport();
+  if(keep) Object.keys(keep.wkKm||{}).forEach(k=>{ if(+k<=off && wkTargets[k]==null) wkTargets[k]=keep.wkKm[k]; });
+  const plan={ created:keep?keep.created:todayKey(), vdot, weeks:weeks+off, seed, sessions, goal, race:P.objRace||'5 km', kmMax, nDays:days.length, wkKm:wkTargets };
+  if(keep && keep.adapt) plan.adapt=keep.adapt;
+  // Une reprise ne se mesure pas aux semaines d'avant la coupure : pas d'historique pour la passe de sécurité.
+  const safetyFixes=planSafetyPass(plan,{kmMax,useHistory:!opts.ramp});
+  planSettle(plan,pace);
+  plan.segV=PLAN_SEG_VERSION;
+  return {plan,safetyFixes};
 }
 function raceMeters(){ return raceMetersOf(P.objRace,P.objRaceKm); }
 // Plafond de la sortie longue selon l'objectif de course — évite les sorties à 30-40 km
@@ -10190,6 +10113,7 @@ function renderHome(){
   html+=feteCardHTML();
   html+=notifPermBubbleHTML();
   html+=homePrayerCardHTML();
+  html+=morningCheckHTML(); // check du matin (plan/adapt-ui.js), 3 gestes, masquable
 
   // CARTE DU JOUR — pièce maîtresse : type, titre, pourquoi, cibles, et le bilan en un geste.
   {
@@ -10235,6 +10159,8 @@ function renderHome(){
       '</div>';
     }
   }
+
+  html+=adaptCardHTML('home'); // « Ton coach a ajusté ton plan »
 
   // 3 TUILES — volume de la semaine, séances faites sur l'objectif, VDOT courant
   html+='<div class="hv7-krow3" onclick="nav(\'stats\')">'+
@@ -10376,6 +10302,7 @@ function renderRunning(){
       h+='<div class="card" id="tourPlanCta"><div class="empty"><div class="em-ic">'+ICN('bolt',36,'currentColor')+'</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">'+t('planIkorunTitle')+'</div><div style="font-size:13px;margin-bottom:16px">'+tp('planIkorunDescLong',(getUserVDOT()?fmt1(getUserVDOT()):t('vdotToBeCalculated')))+'</div><button class="btn" onclick="openPlanSetup()">'+t('configureGenerate')+'</button></div></div>';
     } else {
       h+=planHeroHTML();
+      h+=adaptCardHTML('sport');
       // Seule la semaine en cours est listée ici ; le reste du plan s'ouvre en
       // plein écran depuis le bouton « Voir le plan » de la carte ci-dessus.
       const tk=todayKey();
@@ -10384,6 +10311,7 @@ function renderRunning(){
       const featuredWeek=(todaySess||upcoming||PLAN.sessions[PLAN.sessions.length-1]).week;
       h+='<div class="hv7-sec-lab" style="margin-bottom:10px">'+planWeekHeading(featuredWeek)+'</div>';
       h+=renderPlanRows(PLAN.sessions.filter(s=>s.week===featuredWeek),tk,{flat:true});
+      if((ADAPT_LOG||[]).some(e=>e.status!=='note')) h+='<button type="button" class="ad-histlink" onclick="openAdaptHistory()">'+ICN('gear',15)+' '+t('adHistory')+'</button>';
     }
   } else {
     h+=renderPersoList();
@@ -10394,7 +10322,7 @@ function renderRunning(){
 // encore commencé (plan qui démarre le lundi suivant).
 function planWeekHeading(w){
   const first=PLAN.sessions.filter(s=>s.week===w).map(s=>s.date).sort()[0];
-  const sun=new Date(); sun.setHours(0,0,0,0); sun.setDate(sun.getDate()+((7-sun.getDay())%7));
+  const sun=ikNow(); sun.setHours(0,0,0,0); sun.setDate(sun.getDate()+((7-sun.getDay())%7));
   return (first && first>dateKey(sun)) ? tp('planWeekFrom',w,fmtDate(first)) : t('thisWeek');
 }
 /* Rendu des lignes de séances d'un plan, groupées par phase puis semaine.
@@ -10499,6 +10427,7 @@ function renderRunningSimple(){
     '<div class="man" style="font-weight:800;font-size:20px">'+escHtml(raceLabel()||t('courseDefault'))+'</div>'+
     '<div style="font-size:13px;color:var(--muted);margin-top:4px">'+t('objectiveCap')+' · J-'+daysLeft+'</div>'+
   '</div>';
+  h+=adaptCardHTML('simple');
   h+='<div class="hv7-sec-lab" style="margin:16px 0 10px">'+planWeekHeading(curSess.week)+'</div>';
   h+=renderPlanRows(PLAN.sessions.filter(s=>s.week===curSess.week),tk,{flat:true});
   h+='<button class="btn ghost" style="margin-top:12px" onclick="openFullPlan()">'+t('seePlan')+'</button>';
@@ -10723,7 +10652,7 @@ function markPersoDone(){
   const sessRef=Date.now()+Math.random();
   SESS.push({sessRef,provisional:true,date:s.date,title:s.title,km:s.km,pace:s.pace,type:s.type,duration:s.duration,rpe:s.rpe});
   saveAll(); refreshXP({animate:true}); closeOv('ovSheet'); renderSport();
-  openSessionDebrief({date:s.date,title:s.title,km:s.km,pace:s.pace,type:s.type,duration:s.duration,plannedRpe:s.rpe,sessRef});
+  openSessionDebrief({date:s.date,title:s.title,km:s.km,pace:s.pace,type:s.type,duration:s.duration,plannedRpe:s.rpe,sessRef,perso:{pid:p.id,sid:s.id}});
 }
 function delPersoSession(){
   const p=CUSTOM.find(x=>x.id===curPerso); p.sessions=p.sessions.filter(x=>x.id!==curPersoSess);
@@ -10736,233 +10665,7 @@ function sharePlan(id){
   if(navigator.share) navigator.share({title:'IKORUN Plan',text:tp('myPlanColon',n)}); else toast(t('shareNotSupported'));
 }
 
-/* ---------- QUESTIONNAIRE POST-SÉANCE + ANALYSE MOTEUR IKORUN ---------- */
-let debriefData=null, debriefCtx=null, debriefReps=[], debriefExpanded=false, debriefRepSel=0;
-/* V3.5.5 — bilan simplifié, tout à la molette. Plus de champs durée / distance / allure
-   à taper : sur un fractionné, une molette par passage (pré-réglée sur le temps cible,
-   on ne touche que ceux qui ont différé) ; sur une sortie, une molette pour les km et
-   une pour la durée totale. La durée et l'allure moyenne en découlent toutes seules,
-   et le respect de l'allure n'est plus demandé : il se déduit de l'allure prévue. */
-function openSessionDebrief(ctx){
-  debriefCtx=ctx;
-  debriefExpanded=false; debriefRepSel=0;
-  debriefData={ done:true, duration:+ctx.duration||0, distance:+ctx.km||0, pace:ctx.pace||'', deniv:ctx.deniv||'',
-    rpe:5, pain:'Aucune', paceAdherence:null, fatigue:3, weather:'sunny', feel:3, sleep:3, nutrition:3, note:'' };
-  const sr=ctx.series;
-  debriefReps=(sr&&sr.reps&&sr.dist)?Array.from({length:sr.reps},(_,i)=>{
-    const target=Math.round(splitSecFromPace(sr.paceSecPerKm,sr.dist));
-    return { n:i+1, dist:sr.dist, target, timeS:target, respected:true };
-  }):[];
-  if(debriefReps.length) syncDebriefFromReps(); else debriefAutoPace();
-  openOv('ovProg'); $('#ovProgTitle').textContent=t('debriefTitle');
-  renderDebrief();
-}
-function debriefRepOk(r){ return r.timeS<=Math.round(r.target*1.06); }
-function syncDebriefFromReps(){
-  if(!debriefReps.length) return;
-  const totKm=debriefReps.length*debriefReps[0].dist/1000;
-  const totSec=debriefReps.reduce((a,r)=>a+r.timeS,0);
-  debriefReps.forEach(r=>{ r.respected=debriefRepOk(r); });
-  debriefData.distance=+totKm.toFixed(2);
-  debriefData.duration=Math.max(1,Math.round(totSec/60));
-  debriefData.pace=fmtSplit(Math.round(totSec/totKm));
-}
-function debriefAutoPace(){
-  const d=debriefData; if(!d) return;
-  const dur=+d.duration, km=+d.distance;
-  d.pace=(dur>0 && km>0)?fmtSplit(Math.round(dur*60/km)):'';
-}
-// Allure réelle comparée à l'allure prévue (remplace la question « as-tu respecté l'allure ? »).
-function debriefAdherence(){
-  const spk=v=>{ const m=/^(\d+):(\d{2})/.exec(String(v||'')); return m?(+m[1])*60+(+m[2]):0; };
-  const real=spk(debriefData.pace), plan=spk(debriefCtx&&debriefCtx.pace);
-  if(!real || !plan || debriefReps.length) return null;
-  const k=real/plan;
-  return k<.97?'faster':k<=1.04?'asPlanned':k<=1.12?'slower':'muchSlower';
-}
-function dbRepChips(){
-  return debriefReps.map((r,i)=>'<button type="button" class="db-rep'+(i===debriefRepSel?' on':'')+(r.respected?' ok':' slow')+'" onclick="debriefPickRep('+i+')"><b>'+r.n+'</b><span>'+fmtSplit(r.timeS)+'</span></button>').join('');
-}
-function dbRepWheels(){
-  const r=debriefReps[debriefRepSel], mmax=Math.max(9,Math.ceil(r.target/60)*2);
-  return '<div class="db-wlab">'+tp('dbRepOf',r.n,debriefReps.length,r.dist)+' · '+tp('targetColon',fmtSplit(r.target))+'</div>'+
-    '<div class="db-repnav"><button type="button" class="db-arrow" aria-label="'+t('dbPrev')+'" onclick="debriefPickRep(debriefRepSel-1)"'+(debriefRepSel?'':' disabled')+'>'+ICN('chevronR',18).replace('<path','<path transform="rotate(180 12 12)"')+'</button>'+
-    '<div class="wheels">'+wheel('DB.rep.m',0,mmax,Math.min(mmax,Math.floor(r.timeS/60)),1)+'<span class="wheel-sep">:</span>'+wheel('DB.rep.s',0,59,r.timeS%60)+'</div>'+
-    '<button type="button" class="db-arrow" aria-label="'+t('dbNext')+'" onclick="debriefPickRep(debriefRepSel+1)"'+(debriefRepSel<debriefReps.length-1?'':' disabled')+'>'+ICN('chevronR',18)+'</button></div>';
-}
-// Trois tuiles : ce que la séance a donné, recalculé à chaque cran de molette.
-function dbSummary(){
-  const d=debriefData, reps=debriefReps.length;
-  const tile=(v,l)=>'<div class="db-tile"><b>'+v+'</b><span>'+l+'</span></div>';
-  let h=tile(fmt1(d.distance||0)+' <small>km</small>',reps?t('dbTileWork'):t('dbDistLab'))+
-    tile(fmtDurMin(d.duration),reps?t('dbTileWorkTime'):t('dbDurLab'))+
-    tile((d.pace||'—')+' <small>/km</small>',t('dbTilePace'));
-  if(reps){ const ok=debriefReps.filter(r=>r.respected).length;
-    h+='<div class="db-okchip'+(ok===reps?' all':'')+'">'+ICN(ok===reps?'check':'timer',13)+' '+tp('respectedCount',ok,reps)+'</div>'; }
-  return h;
-}
-function fmtDurMin(min){ min=Math.round(+min||0); const h=Math.floor(min/60); return h?h+' h '+String(min%60).padStart(2,'0'):min+' min'; }
-function debriefRefresh(){
-  const s=document.getElementById('dbSum'); if(s) s.innerHTML=dbSummary();
-  const c=document.getElementById('dbRepChips'); if(c) c.innerHTML=dbRepChips();
-}
-function debriefPickRep(i){
-  debriefRepSel=Math.max(0,Math.min(debriefReps.length-1,i));
-  const w=document.getElementById('dbRepW'); if(w){ w.innerHTML=dbRepWheels(); setTimeout(attachWheels,30); }
-  debriefRefresh();
-  const on=document.querySelector('#dbRepChips .db-rep.on'); if(on) on.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
-}
-function debriefWheel(key,val){
-  const d=debriefData;
-  if(key==='DB.rep.m'||key==='DB.rep.s'){
-    const r=debriefReps[debriefRepSel]; if(!r) return;
-    r.timeS=key==='DB.rep.m'?val*60+r.timeS%60:Math.floor(r.timeS/60)*60+val;
-    syncDebriefFromReps();
-  } else if(key==='DB.km.i'||key==='DB.km.d'){
-    const i=Math.floor(+d.distance||0), dec=Math.round(((+d.distance||0)-i)*10);
-    d.distance=key==='DB.km.i'?val+dec/10:i+val/10; debriefAutoPace();
-  } else if(key==='DB.dur.h'||key==='DB.dur.m'){
-    const dur=+d.duration||0;
-    d.duration=key==='DB.dur.h'?val*60+dur%60:Math.floor(dur/60)*60+val; debriefAutoPace();
-  }
-  debriefRefresh();
-}
-const RPE_LAB=[null,'rpeL1','rpeL1','rpeL3','rpeL3','rpeL5','rpeL5','rpeL7','rpeL7','rpeL9','rpeL10'];
-function dbRpeHTML(v){
-  return '<div class="db-rpe" role="radiogroup">'+Array.from({length:10},(_,i)=>i+1).map(n=>'<button type="button" class="db-rpe-b'+(n===v?' on':'')+(n<=v?' fill':'')+'" style="--h:'+Math.round(140-n*13)+'" role="radio" aria-checked="'+(n===v)+'" onclick="debriefSetRpe('+n+')">'+n+'</button>').join('')+'</div>'+
-    '<div class="db-rpe-lab" id="dbRpeLab">'+t(RPE_LAB[v])+'</div>';
-}
-function debriefSetRpe(n){ debriefData.rpe=n; const w=document.getElementById('dbRpeW'); if(w) w.innerHTML=dbRpeHTML(n); haptic(); }
-function renderDebrief(){
-  const d=debriefData;
-  const scale=(key,label,icons)=>'<div class="field"><label>'+label+'</label><div class="pills">'+icons.map((ic,i)=>'<div class="pill '+(d[key]===i+1?'on':'')+'" onclick="debriefData.'+key+'='+(i+1)+';renderDebrief()">'+ic+'</div>').join('')+'</div></div>';
-  let h='<p class="db-lead">'+t('dbIntro')+'</p>';
-  h+='<div class="db-sum" id="dbSum">'+dbSummary()+'</div>';
-  if(debriefReps.length){
-    h+='<div class="db-card"><div class="db-card-h">'+ICN('timer',15)+' '+tp('repByRepSummary',debriefReps.length,debriefReps[0].dist)+'</div>'+
-      '<div class="db-reps" id="dbRepChips">'+dbRepChips()+'</div>'+
-      '<div id="dbRepW">'+dbRepWheels()+'</div></div>';
-  } else {
-    const km=+d.distance||0, ki=Math.min(99,Math.floor(km)), kd=Math.round((km-Math.floor(km))*10)%10, dur=Math.round(+d.duration||0);
-    h+='<div class="db-card"><div class="db-two">'+
-      '<div><div class="db-wlab">'+t('dbDistLab')+'</div><div class="wheels">'+wheel('DB.km.i',0,99,ki,1)+'<span class="wheel-sep">,</span>'+wheel('DB.km.d',0,9,kd,1)+'<span class="wheel-sep u">km</span></div></div>'+
-      '<div><div class="db-wlab">'+t('dbDurLab')+'</div><div class="wheels">'+wheel('DB.dur.h',0,9,Math.min(9,Math.floor(dur/60)),1)+'<span class="wheel-sep u">h</span>'+wheel('DB.dur.m',0,59,dur%60)+'<span class="wheel-sep u">min</span></div></div>'+
-      '</div></div>';
-  }
-  h+='<div class="db-sec">'+t('dbEffortLab')+'</div><div id="dbRpeW">'+dbRpeHTML(d.rpe)+'</div>';
-  h+='<div class="db-sec">'+t('painLabel')+'</div><div class="seg-ctrl sub" data-seg="dbPain">'+['Aucune','Légères','Gênantes','Importantes'].map(p=>'<div class="seg-btn'+(d.pain===p?' on':'')+'" onclick="debriefData.pain=\''+p+'\';this.parentNode.querySelectorAll(\'.seg-btn\').forEach(e=>e.classList.toggle(\'on\',e===this))">'+trPain(p)+'</div>').join('')+'</div>';
-  // Le reste (dénivelé, sommeil, météo…) reste replié et prérempli : jamais bloquant.
-  h+='<button type="button" class="db-more" onclick="debriefExpanded=!debriefExpanded;renderDebrief()">'+(debriefExpanded?t('lessDetailsBtn'):t('moreDetailsBtn'))+'</button>';
-  if(debriefExpanded){
-  h+='<div class="field"><label>'+t('elevationGainLabel')+'</label><input class="inp" type="number" inputmode="numeric" value="'+(d.deniv||'')+'" oninput="debriefData.deniv=+this.value" placeholder="0"></div>';
-  h+=scale('fatigue',t('fatigueLabel'),['😀','🙂','😐','😓','😵']);
-  h+=scale('feel',t('sensationsLabel'),['😣','😕','😐','😊','🤩']);
-  h+=scale('sleep',t('nightSleepLabel'),['😴','😪','😐','🙂','💤']);
-  h+=scale('nutrition',t('dayNutritionLabel'),['🍔','😐','🙂','🥗','💪']);
-  h+='<div class="field"><label>'+t('weatherLabel')+'</label><div class="pills">'+['sunny','cloudy','rain','wind','hot','cold'].map(w=>'<div class="pill '+(d.weather===w?'on':'')+'" onclick="debriefData.weather=\''+w+'\';renderDebrief()">'+ICN(w==='sunny'?'sun':w==='cloudy'?'moon':w==='rain'?'rain':w==='wind'?'wind':w==='hot'?'fire':'snow',18)+'</div>').join('')+'</div></div>';
-  h+='<div class="field"><label>'+t('freeCommentLabel')+'</label><textarea class="inp" rows="2" oninput="debriefData.note=this.value" placeholder="'+t('howDidYouFeelPlaceholder')+'">'+escHtml(d.note||'')+'</textarea></div>';
-  }
-  h+='<div class="ik-cta-bar"><button class="btn" onclick="submitDebrief()">'+ICN('brain',18)+' '+t('analyzeSessionBtn')+'</button></div>';
-  $('#progBody').innerHTML=h;
-  setTimeout(attachWheels,30);
-}
-function submitDebrief(){
-  // Le bouton "Analyser ma séance" ne doit JAMAIS rester silencieux en cas
-  // d'erreur : on entoure tout le traitement d'un try/catch. Si quoi que ce
-  // soit plante, on log l'erreur en console (debug) et on prévient l'athlète
-  // par un toast au lieu de le laisser taper dans le vide sans retour.
-  try{
-    if(!debriefCtx){ toast(t('genericErrorRetry')); return; }
-    const guard=sessionGuard(+debriefData.distance||0,+debriefData.duration||0,debriefCtx.date);
-    if(!guard.ok){ toast(guard.msg); return; }
-    debriefData.paceAdherence=debriefAdherence();
-    const repsLog=debriefReps.length?debriefReps.map(r=>({n:r.n,dist:r.dist,target:r.target,timeS:r.timeS,respected:r.respected})):null;
-    const entry={...debriefData,date:debriefCtx.date,title:debriefCtx.title,type:debriefCtx.type,plannedRpe:debriefCtx.plannedRpe,repsLog,ts:Date.now()};
-    SESSLOG.push(entry); DB.save('sesslog',SESSLOG);
-    // Historique réel (stats, XP, charge, semaine...) : on remplace l'entrée provisoire
-    // (valeurs du plan) par les valeurs REELLES saisies dans le bilan. On ne pousse
-    // jamais deux fois la même séance dans SESS.
-    const real={
-      date:debriefCtx.date, title:debriefCtx.title, type:debriefCtx.type,
-      km:+debriefData.distance||0, pace:debriefData.pace||'—',
-      duration:+debriefData.duration||0, rpe:+debriefData.rpe||5,
-      deniv:+debriefData.deniv||0,
-      planSessionId:debriefCtx.planSessionId||null, repsLog
-    };
-    const idx=debriefCtx.sessRef?SESS.findIndex(s=>s.sessRef===debriefCtx.sessRef):-1;
-    const longest=SESS.reduce((m,s,i)=>i===idx?m:Math.max(m,+s.km||0),0);
-    if(idx>=0) SESS[idx]=real; else SESS.push(real);
-    if(real.date===todayKey() && longest>=3 && real.km>longest) feteRecord(tp('recLongestRun',Math.round(real.km*10)/10));
-    DB.save('sessions',SESS);
-    refreshXP({animate:true});
-    const analysis=coachAnalyze(entry);
-    applyProgressiveOverload(entry);
-    weeklyAdaptiveRegen();
-    renderCoachAnalysis(analysis);
-  }catch(err){
-    console.error('submitDebrief a échoué :',err);
-    toast(t('genericErrorRetry'));
-  }
-}
-function coachAnalyze(e){
-  const pos=[],errs=[],tips=[],adjust=[];
-  // Points positifs
-  if(e.done) pos.push(t('coach_pos_completed'));
-  if(e.feel>=4) pos.push(t('coach_pos_feel'));
-  if(e.sleep>=4) pos.push(t('coach_pos_sleep'));
-  if(e.pain==='Aucune') pos.push(t('coach_pos_nopain'));
-  if(e.nutrition>=4) pos.push(t('coach_pos_nutrition'));
-  // Critiques / erreurs
-  if(e.plannedRpe && e.rpe>=e.plannedRpe+2) errs.push(tp('coach_err_harderThanPlanned',e.rpe,e.plannedRpe));
-  if(e.plannedRpe && e.rpe<=e.plannedRpe-2 && e.type!=='EF' && e.type!=='Récup') errs.push(tp('coach_err_tooEasy',e.rpe));
-  if(e.pain==='Gênantes'||e.pain==='Importantes') errs.push(''+tp('coach_err_pain',trPain(e.pain).toLowerCase()));
-  if(e.sleep<=2) errs.push(t('coach_err_sleep'));
-  if(e.fatigue>=4) errs.push(t('coach_err_fatigue'));
-  // Allure respectée ou non (absent sur les séances à répétitions, déjà couvertes
-  // ligne par ligne par repsLog) : ça nourrit directement les points forts/à
-  // travailler plutôt que de rester une donnée saisie mais jamais réutilisée.
-  if(e.paceAdherence==='muchSlower') errs.push(t('coach_err_paceMuchSlower'));
-  else if(e.paceAdherence==='slower' && e.rpe>=7) tips.push(t('coach_tip_paceSlower'));
-  else if(e.paceAdherence==='faster'){
-    if(e.rpe<=6) pos.push(t('coach_pos_paceFaster'));
-    else if(e.rpe>=8) errs.push(t('coach_err_paceFasterTooHard'));
-  }
-  // Conseils
-  if(e.sleep<=2) tips.push(t('coach_tip_sleep'));
-  if(e.nutrition<=2) tips.push(t('coach_tip_nutrition'));
-  tips.push(t('coach_tip_hydrate'));
-  if(e.weather==='hot') tips.push(t('coach_tip_heat'));
-  // Ajustements prochaines séances
-  if(e.pain==='Importantes'||e.fatigue>=5){ adjust.push(t('coach_adj_rest')); }
-  else if(e.rpe>=9 && e.fatigue>=4){ adjust.push(t('coach_adj_lighten48h')); }
-  // Séance ressentie bien plus dure que prévu, ou douleurs gênantes : conclure
-  // « ton plan est bien calibré » juste après la critique « bien plus dure que
-  // prévue » était contradictoire (audit 24/09).
-  else if((e.plannedRpe && e.rpe-e.plannedRpe>=3) || e.pain==='Gênantes'){ adjust.push(t('coach_adj_lighten48h')); }
-  else if(e.feel>=4 && e.rpe<=6){ adjust.push(t('coach_adj_increaseVolume')); }
-  else adjust.push(t('coach_adj_continue'));
-  // Motivation
-  const motivKeys=['coach_motiv1','coach_motiv2','coach_motiv3','coach_motiv4'];
-  const motiv=t(motivKeys[Math.floor(Math.random()*4)]);
-  return {pos,errs,tips,adjust,motiv,e};
-}
-// V3.7.0 : verdict en tête, chiffres de la séance, puis des listes compactes (une
-// ligne par point, icône en tête) au lieu d'une pile de grands encadrés colorés.
-function renderCoachAnalysis(a){
-  const e=a.e, bad=a.errs.length, tone=bad>=2?'warn':bad?'mid':'ok';
-  let h='<div class="ca-hero ca-'+tone+'"><div class="ca-ic">'+ICN(tone==='ok'?'check':'warning',22)+'</div><div><b>'+t(tone==='ok'?'caVerdictOk':tone==='mid'?'caVerdictMid':'caVerdictWarn')+'</b><span>'+escHtml(e.title||'')+'</span></div></div>';
-  if(+e.distance>0) h+='<div class="db-sum ca-sum"><div class="db-tile"><b>'+fmt1(e.distance)+' <small>km</small></b><span>'+t('dbDistLab')+'</span></div><div class="db-tile"><b>'+fmtDurMin(e.duration)+'</b><span>'+t('dbDurLab')+'</span></div><div class="db-tile"><b>'+escHtml(e.pace||'—')+' <small>/km</small></b><span>'+t('dbTilePace')+'</span></div></div>';
-  h+='<div class="ca-rpe"><span>'+t('dbEffortLab')+'</span><b style="--h:'+Math.round(140-(+e.rpe||5)*13)+'">'+(+e.rpe||5)+'/10 · '+t(RPE_LAB[+e.rpe||5])+'</b></div>';
-  const list=(icon,cls,title,items)=>items.length?'<div class="ca-block"><div class="ca-h '+cls+'">'+ICN(icon,15)+' '+title+'</div><ul class="ca-list">'+items.map(x=>'<li>'+x+'</li>').join('')+'</ul></div>':'';
-  h+=list('gear','e',t('upcomingAdjustmentsTitle'),a.adjust);
-  h+=list('check','ok',t('positivePointsTitle'),a.pos);
-  h+=list('warning','warn',t('constructiveCriticismTitle'),a.errs);
-  h+=list('bulb','e',t('adviceLabel'),a.tips);
-  h+='<blockquote class="ca-quote">'+a.motiv+'</blockquote>';
-  h+='<div class="ik-cta-bar"><button class="btn" onclick="closeOv(\'ovProg\');renderSport();nav(\'home\')">'+t('notedCoachBtn')+'</button></div>';
-  $('#progBody').innerHTML=h; $('#ovProgTitle').textContent=t('ikorunAnalysisTitle');
-  const sc=$('#progBody').closest('.ov-body-scroll'); if(sc) sc.scrollTop=0;
-}
+/* ---------- BILAN DE SÉANCE : plan/bilan.js (V3.15.0) ---------- */
 
 /* ---------- RUN SHEET ---------- */
 let curRunId=null;
@@ -12883,6 +12586,10 @@ function statsMedals(){
 
 /* ---------- ICÔNES PREMIUM (SVG line, mode sombre) ---------- */
 const ICONS={
+  gauge:'<path d="M4 17a8 8 0 1 1 16 0"/><path d="M12 17l4-5"/><path d="M8 17h8"/>',
+  trend:'<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+  shuffle:'<path d="M3 7h4l10 10h4"/><path d="M3 17h4l3-3M14 10l3-3h4"/><path d="M18 4l3 3-3 3M18 14l3 3-3 3"/>',
+  battery:'<rect x="3" y="7" width="16" height="10" rx="2"/><path d="M21 11v2"/><path d="M6 10v4M9 10v4"/>',
   comment:'<path d="M4 4h16v12H8l-4 4V4z"/><path d="M8 9h8M8 12h5"/>',
   copy:'<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>',
   lab:'<path d="M9 3h6M10 3v6l-5 8a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-8V3"/><path d="M8 15h8"/>',
@@ -13309,20 +13016,7 @@ function renderTonnageTool(){
   h+='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var(--et,var(--e))">'+ton+' kg</div><div class="lab">'+tp('totalTonnageLab',tonS,tonR,tonW)+'</div></div>';
   $('#outBody').innerHTML=h;
 }
-function renderLoadTool(){
-  // ACWR (acute:chronic workload ratio) sur charge km*rpe
-  const load={}; SESS.forEach(s=>{load[s.date]=(load[s.date]||0)+(s.km||0)*(s.rpe||5);});
-  const end=new Date(); end.setHours(0,0,0,0);
-  let acute=0,chronic=0;
-  for(let i=0;i<28;i++){ const d=new Date(end);d.setDate(end.getDate()-i); const l=load[dateKey(d)]||0; chronic+=l; if(i<7)acute+=l; }
-  acute/=7; chronic/=28;
-  const ratio=chronic>0?(acute/chronic):0;
-  let status,col; if(ratio===0){status=t('noDataLab');col='--dim';} else if(ratio<0.8){status=t('acwrUnder');col='--platine';} else if(ratio<=1.3){status=t('acwrOptimal');col='--ok';} else if(ratio<=1.5){status=t('acwrHigh');col='--warn';} else {status=t('acwrRisk');col='--bad';}
-  let h='<div class="card" style="text-align:center"><div class="man" style="font-size:42px;font-weight:800;color:var('+col+')">'+fmtN(ratio,2)+'</div><div class="lab">'+t('acwrRatioLab')+'</div><div class="badge" style="margin-top:10px;background:color-mix(in srgb,var('+col+') 10%,transparent);color:var('+col+')">'+status+'</div></div>';
-  h+='<div class="sgrid"><div class="sbox"><div class="v">'+Math.round(acute)+'</div><div class="l">'+t('acwrAcuteLab')+'</div></div><div class="sbox"><div class="v">'+Math.round(chronic)+'</div><div class="l">'+t('acwrChronicLab')+'</div></div></div>';
-  h+='<div class="tip" style="margin-top:12px">'+t('acwrTip')+'</div>';
-  $('#outBody').innerHTML=h;
-}
+// renderLoadTool : plan/adapt-ui.js (V3.15.0, même calcul de charge que le moteur d'adaptation)
 let calKm=10;
 function renderCaloriesTool(){
   const w=P.weight||62; const cal=Math.round(0.9*w*calKm);
@@ -15284,6 +14978,8 @@ function pfNotifHTML(){
     '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('prayerNotifLabel')+'</span><div class="toggle'+(P.prayerNotif!==false?' on':'')+'" onclick="togglePrayerNotif(this)"></div></div>'+
     '<div class="row" style="margin-bottom:4px"><span style="font-size:14px">'+t('socialNotifLabel')+'</span><div class="toggle'+(P.socialNotif===true?' on':'')+'" onclick="toggleSocialNotif(this)"></div></div>'+
     '<div style="font-size:11.5px;color:var(--muted);line-height:1.45;margin-bottom:14px">'+t('socialNotifDesc')+'</div>'+
+    '<div class="row" style="margin-bottom:4px"><span style="font-size:14px">'+t('mcSetting')+'</span><div class="toggle'+(P.morningCheck!==false?' on':'')+'" role="switch" aria-checked="'+(P.morningCheck!==false)+'" aria-label="'+t('mcSetting')+'" onclick="P.morningCheck=(P.morningCheck===false);this.classList.toggle(\'on\',P.morningCheck);this.setAttribute(\'aria-checked\',P.morningCheck);DB.save(\'profile\',P);haptic()"></div></div>'+
+    '<div style="font-size:11.5px;color:var(--muted);line-height:1.45;margin-bottom:14px">'+t('mcSettingDesc')+'</div>'+
     '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('sounds')+'</span><div class="toggle'+(P.sounds!==false?' on':'')+'" onclick="toggleSounds(this)"></div></div>'+
     // Le volume et l'écoute n'apparaissent que si les sons sont actifs : un
     // curseur sur un réglage éteint ne veut rien dire.
