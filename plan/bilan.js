@@ -270,7 +270,7 @@ function blRecord(c,d,reps0,bt){
   e.exec=adaptExec(e);
   SESSLOG.push(e);
   // Historique réel : on remplace l'entrée provisoire (valeurs du plan) par les valeurs du bilan.
-  const real={ date:c.date, title:c.title, type:c.type, baseType:bt||undefined,
+  const real={ ut:adNowTs(), date:c.date, title:c.title, type:c.type, baseType:bt||undefined,
     km:+d.distance||0, pace:d.pace||'—', duration:+d.duration||0, rpe:+d.rpe||5, deniv:+d.deniv||0,
     planSessionId:c.planSessionId||null, repsLog:reps };
   const idx=c.sessRef?SESS.findIndex(s=>s.sessRef===c.sessRef):-1;

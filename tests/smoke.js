@@ -989,6 +989,33 @@
     finally{ restaure(); }
   }
 
+  /* ======================= 7j. DONNÉES DES INVITÉS (V4.0.0) ============== */
+  function testInvites(){
+    var c='7j. Invités, export, import';
+    photographie();
+    try{
+      // fusion : compte (A) + invité (B), une séance commune modifiée plus tard côté invité
+      SESS=[{date:'2026-09-01',type:'EF',km:8,duration:44,ut:100},{date:'2026-09-03',type:'Seuil',km:10,duration:50,ut:100}];
+      RECORDS=[{dist:'5000 m',meters:5000,time:'21:00',date:'2026-08-01'}]; PLAN={created:'2026-08-01',sessions:[{id:1,date:'2026-09-10',done:false}]};
+      ADAPT_LOG=[{id:'a1',ut:100,status:'applied'}];
+      var B={sessions:[{date:'2026-09-01',type:'EF',km:8,duration:44,ut:200,rpe:4},{date:'2026-09-05',type:'Long',km:14,duration:80}],
+        records:[{dist:'5000 m',meters:5000,time:'21:00',date:'2026-08-01'},{dist:'10 km',meters:10000,time:'44:00',date:'2026-09-02'}],
+        run_plan:{created:'2026-09-02',sessions:[{id:9,date:'2026-09-12',done:false}]}, adapt_log:[{id:'a1',ut:300,status:'undone'}], profile:{name:'X',city:'Oran'}};
+      var cityBefore=P.city, nameBefore=P.name; P.city=''; P.name='Moi';
+      var add=ikMergeInto(B);
+      chk(c,'fusion : sans doublon, la version la plus récente gagne', SESS.length===3 && SESS.filter(function(x){return x.date==='2026-09-01';})[0].rpe===4 && RECORDS.length===2 && ADAPT_LOG.length===1 && ADAPT_LOG[0].status==='undone', SESS.length+' séances · '+RECORDS.length+' records');
+      chk(c,'fusion : plan le plus récent, profil complété champ par champ', PLAN.created==='2026-09-02' && P.city==='Oran' && P.name!=='X', 'plan du '+PLAN.created+' · ville '+P.city);
+      P.city=cityBefore; P.name=nameBefore;
+      // export v3 → import
+      var txt=JSON.stringify({app:'IKORUN',exportVersion:3,appVersion:APP_VERSION,date:new Date().toISOString(),keys:IK_KEYS,data:ikSnapshot()});
+      var p=ikParseExport(txt);
+      chk(c,'export v3 relu par l\'import (format et version vérifiés)', !p.err && p.data.sessions.length===SESS.length && p.data.run_plan && ikParseExport('{"app":"IKORUN","exportVersion":99,"data":{}}').err==='importTooNew' && ikParseExport('{"x":1}').err==='invalidFile', 'v'+p.version);
+      var evil=ikParseExport(JSON.stringify({app:'IKORUN',exportVersion:3,data:{sessions:[{date:'2026-09-09',title:'<img src=x onerror=alert(1)>',km:5}]}}));
+      chk(c,'import : le HTML d\'un fichier fabriqué est neutralisé', evil.data.sessions[0].title.indexOf('<')<0, evil.data.sessions[0].title);
+    }catch(e){ ko(c,'exécution',e&&e.message); }
+    finally{ restaure(); }
+  }
+
   /* ======================= 8. SON ======================================== */
   function testSon(){
     var c='8. Son';
@@ -1133,6 +1160,7 @@
     testPetitsEcrans();
     testBilanMolette();
     testAdaptation();
+    testInvites();
     testSelecteursEtPlan();
     testModifierSeance();
     Promise.resolve(testI18nUsage())

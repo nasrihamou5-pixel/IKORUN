@@ -4574,6 +4574,22 @@ html[dir="rtl"] .wx-adv li.warn{box-shadow:inset -3px 0 0 #F2B84B;} html[dir="rt
 .rm-tips li{font-size:12.5px;}
 .fete-card .fc-txt .fc-rm{display:block;margin-top:6px;padding:6px 8px;border-radius:10px;font-size:11.5px;line-height:1.45;font-weight:600;cursor:pointer;background:rgba(0,0,0,.18);}
 
+/* ===== V4.0.0 — INVITÉS (core/guest.js) ===== */
+.gn-card{display:flex;gap:12px;align-items:flex-start;margin:0 0 14px;padding:14px;border-radius:20px;background:color-mix(in srgb,var(--e) 12%,var(--s1));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--e) 35%,transparent);}
+.gn-ic{flex:none;width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--e2);background:color-mix(in srgb,var(--e) 18%,transparent);}
+.gn-b{min-width:0;display:flex;flex-direction:column;gap:4px;}
+.gn-b b{font-size:13.5px;color:var(--snow);}
+.gn-b span{font-size:12.5px;line-height:1.45;color:var(--muted);}
+.gn-a{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.ik-persist,.ik-local{display:flex;gap:8px;align-items:flex-start;margin-top:12px;padding:10px 12px;border-radius:12px;font-size:12px;line-height:1.45;color:var(--muted);background:color-mix(in srgb,var(--warn) 9%,transparent);}
+.ik-persist.ok{background:color-mix(in srgb,var(--ok) 9%,transparent);}
+.ik-persist svg,.ik-local svg{flex:none;margin-top:1px;color:var(--warn);}
+.ik-persist.ok svg{color:var(--ok);}
+.ik-persist b{font-weight:600;color:var(--snow);}
+.ik-persist .ad-link{display:block;margin-top:4px;}
+.gm-card b{font-size:15px;color:var(--snow);}
+.gm-card p{margin:6px 0 12px;font-size:12.5px;line-height:1.5;color:var(--muted);}
+
 /* >>> MODE SIMPLE : TEXTES AGRANDIS (généré par tools/ezscale.py, ne pas éditer à la main) >>> */
 html.easy-mode .acc-sw span{font-size:13px;}
 html.easy-mode .ap-sub{font-size:13px;}
@@ -5015,6 +5031,11 @@ html.easy-mode .rm-times b{font-size:19.5px;}
 html.easy-mode .rm-slots b{font-size:16px;}
 html.easy-mode .rm-tips li{font-size:14.5px;}
 html.easy-mode .fete-card .fc-txt .fc-rm{font-size:13px;}
+html.easy-mode .gn-b b{font-size:15.5px;}
+html.easy-mode .gn-b span{font-size:14.5px;}
+html.easy-mode .ik-persist,html.easy-mode .ik-local{font-size:14px;}
+html.easy-mode .gm-card b{font-size:17px;}
+html.easy-mode .gm-card p{font-size:14.5px;}
 html.easy-mode [style*="font-size:9px"]{font-size:10.5px !important;}
 html.easy-mode [style*="font-size:9.5px"]{font-size:11px !important;}
 html.easy-mode [style*="font-size:10px"]{font-size:11.5px !important;}
