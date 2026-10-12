@@ -474,6 +474,57 @@ html[data-mode="light"][data-accent="emerald"]{
 .acc-sw .accent-dot{width:34px;height:34px;pointer-events:none;}
 .acc-sw .accent-dot.on{transform:none;}
 .acc-sw span{font-size:11.5px;font-weight:700;text-align:center;line-height:1.2;color:var(--snow);}
+/* ===== COULEURS DE BASE ET ÉDITEUR DE THÈME (V3.14.0) ===== */
+.ap-sub{margin:14px 2px 8px;font-size:11.5px;}
+.acc-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.acc-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 12px 7px 8px;border-radius:999px;border:1.5px solid var(--hair);background:var(--s1);
+  color:var(--snow);font:600 12.5px/1.2 inherit;cursor:pointer;transition:transform .18s var(--ease-spring),border-color .2s ease;}
+.acc-chip .accent-dot{width:18px;height:18px;pointer-events:none;}
+.acc-chip.on{border-color:var(--e);box-shadow:0 0 0 3px rgba(var(--e-rgb),.16);}
+.acc-chip:active{transform:scale(.95);}
+.tx-open{display:flex;align-items:center;gap:12px;width:100%;margin-top:14px;padding:13px 14px;border-radius:16px;border:1.5px solid var(--hair);
+  background:var(--s1);color:var(--snow);text-align:start;font:inherit;cursor:pointer;}
+.tx-open>span:nth-child(2){flex:1;display:flex;flex-direction:column;gap:2px;}
+.tx-open b{font-size:14px;} .tx-open small{font-size:12px;color:var(--muted);font-weight:500;}
+.tx-open.on{border-color:var(--e);box-shadow:0 0 0 3px rgba(var(--e-rgb),.16);}
+.tx-open-ic{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--e);background:rgba(var(--e-rgb),.14);}
+[dir=rtl] .tx-open svg:last-child{transform:scaleX(-1);}
+/* aperçu : collé en haut de la fiche, il montre les vrais réglages de l'app pendant qu'on les change */
+.tx-prev{position:sticky;top:0;z-index:3;height:172px;margin:0 0 6px;border-radius:22px;overflow:hidden;background:var(--bg);
+  border:1px solid var(--hair);box-shadow:0 10px 24px -14px rgba(0,0,0,.6);}
+.tx-prev-bg i{position:absolute;border-radius:50%;filter:blur(18px);}
+.tx-prev-bg i:first-child{width:150px;height:150px;left:-30px;top:-40px;background:rgba(var(--e-rgb),.55);}
+.tx-prev-bg i:last-child{width:130px;height:130px;right:-20px;bottom:-50px;background:rgba(var(--e2-rgb),.45);}
+.tx-prev-card.card{position:absolute;inset:18px 16px;margin:0;padding:14px;display:flex;flex-direction:column;gap:9px;}
+.tx-prev-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.tx-prev-top .pill{margin:0;padding:4px 10px;font-size:11px;}
+.tx-prev-meta{font-size:12px;color:var(--muted);font-weight:600;}
+.tx-prev-t{font-family:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:800;font-size:17px;color:var(--snow);}
+.tx-prev-card .pbar{height:6px;}
+.tx-prev-card .btn{margin:2px 0 0;pointer-events:none;}
+.tx-row{margin:2px 0 12px;}
+.tx-row.off{opacity:.45;}
+.tx-row-h{display:flex;justify-content:space-between;align-items:baseline;margin:0 2px 4px;font-size:13px;font-weight:700;color:var(--snow);}
+.tx-row-h b{font-size:12px;color:var(--muted);font-weight:700;font-variant-numeric:tabular-nums;}
+.tx-ends{display:flex;direction:ltr;justify-content:space-between;margin:2px 2px 0;font-size:11px;color:var(--muted);font-weight:600;}
+/* curseurs : piste colorée (teinte en OKLCH, comme le moteur), toujours de gauche à droite */
+.tx-range{-webkit-appearance:none;appearance:none;direction:ltr;width:100%;height:30px;margin:0;background:transparent;cursor:pointer;}
+.tx-range:focus-visible{outline:2px solid var(--e);outline-offset:2px;border-radius:99px;}
+.tx-range::-webkit-slider-runnable-track{height:10px;border-radius:99px;background:var(--tx-track,linear-gradient(90deg,rgba(var(--e-rgb),.75),rgba(var(--e2-rgb),.35)));box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);}
+.tx-range::-moz-range-track{height:10px;border-radius:99px;background:var(--tx-track,linear-gradient(90deg,rgba(var(--e-rgb),.75),rgba(var(--e2-rgb),.35)));}
+.tx-range::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;margin-top:-8px;border-radius:50%;background:#fff;border:0;
+  box-shadow:0 2px 8px rgba(0,0,0,.4),0 0 0 1px rgba(0,0,0,.1);}
+.tx-range::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#fff;border:0;box-shadow:0 2px 8px rgba(0,0,0,.4);}
+.tx-range:disabled{cursor:default;}
+.tx-h{--tx-track:linear-gradient(90deg,oklch(.7 .16 0),oklch(.7 .16 45),oklch(.7 .16 90),oklch(.7 .16 135),oklch(.7 .16 180),oklch(.7 .16 225),oklch(.7 .16 270),oklch(.7 .16 315),oklch(.7 .16 360));}
+.tx-s{--tx-track:linear-gradient(90deg,oklch(.7 0 var(--tx-hue,261)),oklch(.7 .22 var(--tx-hue,261)));}
+.tx-l{--tx-track:linear-gradient(90deg,oklch(.5 .15 var(--tx-hue,261)),oklch(.92 .1 var(--tx-hue,261)));}
+.tx-bg{--tx-track:linear-gradient(90deg,#000,#3A3E46);}
+html[data-mode="light"] .tx-bg{--tx-track:linear-gradient(90deg,#FFF,#DFE2E7);}
+.tx-tint{--tx-track:linear-gradient(90deg,oklch(.3 0 var(--tx-hue,261)),oklch(.3 .07 var(--tx-hue,261)));}
+html[data-mode="light"] .tx-tint{--tx-track:linear-gradient(90deg,oklch(.95 0 var(--tx-hue,261)),oklch(.93 .04 var(--tx-hue,261)));}
+.tx-acts{display:flex;gap:10px;margin:18px 0 6px;}
+.tx-acts .btn{flex:1;margin:0;}
 
 /* ===== MODE SIMPLIFIÉ — pour les utilisateurs peu à l'aise avec la technologie :
    supprime le flou "liquid glass", grossit les textes/boutons, réduit les animations. ===== */
@@ -566,8 +617,9 @@ html[data-accent="carbon"] .ik-logo-mark{background:var(--grad-btn);}
 
 
 /* ===== ACCUEIL V7 — refonte visuelle de l'accueil (carte "goutte" unique, préfixe hv7- pour ne pas
-   interférer avec les classes .card/.next-*/.plan-* déjà utilisées ailleurs dans l'app) ===== */
-#s-home{overflow:hidden;}
+   interférer avec les classes .card, .next-… et .plan-… déjà utilisées ailleurs dans l'app) ===== */
+/* (V3.14.0) « .next- étoile barre » (la fin de commentaire) fermait ce commentaire trop tôt : la règle #s-home{overflow:hidden} qui
+   suivait n'a jamais été appliquée. Retirée pour garder le rendu à l'identique. */
 .hv7-bg{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
 .hv7-bg span{position:absolute;border-radius:50%;filter:blur(60px);opacity:.5;}
 .hv7-lb1{width:300px;height:300px;top:-120px;left:-80px;background:radial-gradient(circle, rgba(var(--e-rgb),.5), transparent 70%);animation:hv7drift1 22s ease-in-out infinite;}
@@ -909,9 +961,11 @@ html.easy-mode .pagein{animation:none!important;}
    (étincelle des traits lumineux, reflet de l'îlot) obligeait à recalculer ce flou à chaque image :
    le défilement des Badges ou du plan complet tombait à ~45 images/s (60 sans elles). Tout ce qui
    est derrière une fenêtre se fige donc le temps qu'elle reste ouverte. */
-body:has(.ov.on) :is(#scroll,.topbar,#ikIsland) *,
-body:has(.ov.on) :is(#scroll,.topbar,#ikIsland) *::before,
-body:has(.ov.on) :is(#scroll,.topbar,#ikIsland) *::after{animation-play-state:paused !important;}
+/* V3.14.0 : body.ik-ov-on (posée par app.js, voir ikOvWatch) au lieu de body:has(.ov.on) — testé sur
+   chaque élément à chaque recalcul de style, ce :has() représentait 25 % du temps de sélecteurs. */
+body.ik-ov-on :is(#scroll,.topbar,#ikIsland) *,
+body.ik-ov-on :is(#scroll,.topbar,#ikIsland) *::before,
+body.ik-ov-on :is(#scroll,.topbar,#ikIsland) *::after{animation-play-state:paused !important;}
 @keyframes bdIdleSweep{0%,42%{transform:translateX(0) rotate(20deg);}58%,100%{transform:translateX(260%) rotate(20deg);}}
 
 /* ===== ÉCRAN "DÉTAILS DU BADGE" — rail de paliers, halo matière, chips ===== */
@@ -1177,7 +1231,7 @@ html[data-mode="light"]{
   display:none;align-items:flex-end;justify-content:center;}
 .ov.on{display:flex;}
 .ov-card{width:100%;max-width:430px;max-height:92vh;background:var(--bg);border-radius:26px 26px 0 0;
-  border-top:1px solid var(--hair2);box-shadow:var(--sh-lg);overflow-y:auto;animation:sheetUp .38s var(--ease-out);
+  border-top:1px solid var(--hair2);box-shadow:var(--sh-lg);overflow-y:auto;animation:sheetUp .26s var(--ease-out);
   padding:18px 16px max(24px,env(safe-area-inset-bottom));}
 .ov-card::before{content:'';display:block;width:36px;height:4px;border-radius:99px;background:var(--hair2);margin:0 auto 14px;}
 @keyframes sheetUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
@@ -1205,7 +1259,7 @@ html[data-mode="light"]{
    centrées comme le reste ; overflow:hidden garde le glissement d'entrée dans la colonne. */
 .ov.ov-push{left:0;right:0;width:auto;max-width:430px;margin:0 auto;overflow:hidden;}
 .ov.ov-push .ov-card{width:100%;max-width:none;height:100%;max-height:none;border-radius:0;border-top:none;
-  box-shadow:none;animation:none;transform:translateX(100%);transition:transform .34s var(--ease-out);
+  box-shadow:none;animation:none;transform:translateX(100%);transition:transform .26s var(--ease-out);
   display:flex;flex-direction:column;padding:max(18px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom));}
 .ov.ov-push .ov-card::before{display:none;}
 .ov.ov-push.on .ov-card{transform:translateX(0);}
@@ -1220,7 +1274,7 @@ html[data-mode="light"]{
    d'un coup (la transition ne peut pas partir d'un display:none) et toutes les
    fenêtres disparaissaient sans transition. .ov-leaving garde la fenêtre affichée
    le temps de sa sortie ; .on est déjà retiré, la logique la voit fermée. */
-.ov.ov-push.on .ov-card{animation:ovPushIn .34s var(--ease-out);}
+.ov.ov-push.on .ov-card{animation:ovPushIn .26s var(--ease-out);}
 @keyframes ovPushIn{from{transform:translateX(100%);}}
 .ov.ov-leaving{display:flex;pointer-events:none;animation:ovFadeOut .26s ease forwards;}
 .ov.ov-leaving .ov-card{animation:ovSheetDown .26s cubic-bezier(.4,0,1,1) forwards;}
@@ -1230,6 +1284,14 @@ html[data-mode="light"]{
 @keyframes ovPushOut{to{transform:translateX(100%);}}
 @keyframes ovFadeOut{to{opacity:0;}}
 .ov.sheet-drag .ov-card{transition:none;animation:none;}
+/* OUVERTURE EN MOINS DE 300 ms (V3.14.0) — « Configurer mon plan » ou un sélecteur restaient
+   flous 2 à 3 s sur iPhone : la feuille glissait (0,34-0,38 s) pendant que ses cartes de verre,
+   chacune avec son propre flou de 26-34 px, apparaissaient une à une (cascade de ~0,9 s). Sur
+   WebKit, un flou d'arrière-plan sous une opacité qui change est recalculé à chaque image.
+   Désormais : seule la feuille bouge (transform, 0,26 s), pas de cascade dans les fenêtres, et
+   les flous des cartes INTÉRIEURES sont suspendus le temps du glissement (.ov-opening, 0,3 s).
+   Le contenu est lisible et touchable dès la première image. */
+.ov.ov-opening .ov-card *{-webkit-backdrop-filter:none !important;backdrop-filter:none !important;}
 @media (prefers-reduced-motion: reduce){ .ov.ov-leaving{display:none;} .ov.ov-push.on .ov-card{animation:none;} }
 html.easy-mode .ov.ov-leaving{display:none;}
 
@@ -1651,7 +1713,8 @@ html.motion-settled .login-hero{
 .theme-switch.sm .ts-thumb{width:22px;height:22px;top:2px;left:2px;}
 .theme-switch.sm .ts-thumb svg{width:12px;height:12px;}
 .theme-switch.sm.light .ts-thumb{left:calc(100% - 24px);}
-.theme-switch.sm .ts-star{width:1.5px;height:1.5px;}
+/* V3.14.0 : sur la petite taille, une étoile tombait collée à la lune et se lisait comme un « · » égaré */
+.theme-switch.sm .ts-star{display:none;}
 .theme-switch.sm .ts-ray{width:40px;height:40px;margin:-20px 0 0 -20px;}
 
 /* STEPPER */
@@ -1741,6 +1804,8 @@ html[dir="rtl"] .nb span{direction:rtl;}
   background:var(--s1);border:1px solid var(--e);color:var(--snow);padding:12px 20px;border-radius:999px;
   font-size:14px;font-weight:600;opacity:0;transition:.3s;pointer-events:none;max-width:90%;text-align:center;}
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast.top{top:calc(env(safe-area-inset-top,0px) + 14px);bottom:auto;transform:translateX(-50%) translateY(-20px);}
+#toast.top.on{transform:translateX(-50%) translateY(0);}
 
 /* CONFETTI */
 #confetti{position:fixed;inset:0;z-index:13000;pointer-events:none;}
@@ -3052,6 +3117,8 @@ html[data-glass="max"] :is(.card,.grp-card,.kchart-card,.kduo-card,.list-row,.fa
    l'inclinaison ou le défilement. Seul son transform change : rien à recalculer ailleurs. */
 #ikGlare{position:fixed;inset:-35%;z-index:9998;pointer-events:none;display:none;will-change:transform;transition:transform .12s linear;}
 html[data-glass="max"] #ikGlare{display:block;}
+/* V3.14.0 : reflets activés dans l'éditeur de thème, quelle que soit la matière (intensité = opacité, posée par app.js) */
+html[data-tilt] #ikGlare{display:block;}
 #ikGlare i,#ikGlare b{position:absolute;inset:0;}
 #ikGlare i{background:linear-gradient(118deg,transparent 41%,rgba(255,255,255,.07) 46%,rgba(255,255,255,.16) 49.5%,rgba(255,255,255,.07) 53%,transparent 58%),
   linear-gradient(118deg,transparent 60%,rgba(255,255,255,.05) 62.5%,transparent 65%);}
@@ -4088,6 +4155,7 @@ html[data-glass="wrap"][data-wrap="nuit"][data-mode="light"]:not(#_){
 #progBody .acc-fam .lab{margin:0 2px 7px;font-size:10px;opacity:.85;}
 #progBody .acc-fam .lab::after{display:none;}
 #progBody .acc-grid:not(.wrap-grid){grid-template-columns:repeat(4,1fr);gap:7px;}
+#progBody .acc-grid.base-grid{grid-template-columns:repeat(3,1fr);} /* V3.14.0 : neuf couleurs de base, 3 × 3 */
 #progBody .acc-grid:not(.wrap-grid) .acc-sw{padding:9px 3px 8px;gap:5px;border-radius:13px;}
 #progBody .acc-grid:not(.wrap-grid) .accent-dot{width:26px;height:26px;}
 #progBody .acc-grid:not(.wrap-grid) .acc-sw span{font-size:10.5px;}
@@ -4275,6 +4343,13 @@ html.easy-mode[data-mode]:not(#_) :is(.pill.on,.cv-unit.on,.ps-day.on){backgroun
     background:linear-gradient(90deg,var(--bg) calc(50% - 216px),var(--hair) calc(50% - 216px),var(--hair) calc(50% - 215px),transparent calc(50% - 215px),
       transparent calc(50% + 215px),var(--hair) calc(50% + 215px),var(--hair) calc(50% + 216px),var(--bg) calc(50% + 216px));}
 }
+.rs-part{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:6px;}
+.rs-part b{font-weight:700;color:var(--snow);flex:none;}
+.rs-part span{text-align:end;color:var(--muted);}
+.ps-known{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14.5px;line-height:1.45;}
+.ps-known small{color:var(--muted);font-size:12.5px;}
+.ps-known button{flex:none;border:1px solid var(--hair2);background:var(--s2);color:var(--snow);border-radius:12px;padding:8px 14px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;}
+.ps-from{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;color:var(--ok);}
 /* iOS (V3.12.0) : Safari zoome toute la page dès qu'on touche un champ dont le texte fait moins
    de 16 px, et ne revient pas toujours en arrière — la page restait agrandie et glissait de côté.
    -webkit-touch-callout n'existe que sur iOS : Android et ordinateur gardent leurs tailles. */
@@ -4287,6 +4362,15 @@ html.easy-mode[data-mode]:not(#_) :is(.pill.on,.cv-unit.on,.ps-day.on){backgroun
 
 /* >>> MODE SIMPLE : TEXTES AGRANDIS (généré par tools/ezscale.py, ne pas éditer à la main) >>> */
 html.easy-mode .acc-sw span{font-size:13px;}
+html.easy-mode .ap-sub{font-size:13px;}
+html.easy-mode .tx-open b{font-size:16px;}
+html.easy-mode .tx-open small{font-size:14px;}
+html.easy-mode .tx-prev-top .pill{font-size:12.5px;}
+html.easy-mode .tx-prev-meta{font-size:14px;}
+html.easy-mode .tx-prev-t{font-size:19.5px;}
+html.easy-mode .tx-row-h{font-size:15px;}
+html.easy-mode .tx-row-h b{font-size:14px;}
+html.easy-mode .tx-ends{font-size:12.5px;}
 html.easy-mode .ik-logo span{font-size:18.5px;}
 html.easy-mode .ik-greet h1{font-size:25px;}
 html.easy-mode .ik-greet p{font-size:15px;}
@@ -4641,6 +4725,10 @@ html.easy-mode #progBody .acc-grid:not(.wrap-grid) .acc-sw span{font-size:12px;}
 html.easy-mode .ap-opt b{font-size:16px;}
 html.easy-mode .ap-opt span{font-size:13px;}
 html.easy-mode .btn.sm.ap-intro{font-size:14.5px;}
+html.easy-mode .ps-known{font-size:16.5px;}
+html.easy-mode .ps-known small{font-size:14.5px;}
+html.easy-mode .ps-known button{font-size:15px;}
+html.easy-mode .ps-from{font-size:14px;}
 @supports (-webkit-touch-callout:none){
   html.easy-mode :is(input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=color]):not([type=file]),textarea,select){font-size:18.5px !important;}
   html.easy-mode.easy-mode :is(input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=color]):not([type=file]),textarea,select){font-size:19.5px !important;}

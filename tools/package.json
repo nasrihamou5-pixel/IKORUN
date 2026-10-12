@@ -1,0 +1,7 @@
+{
+  "name": "ikorun-tools",
+  "private": true,
+  "description": "Outils de construction d'IKORUN (minification de app.js et app.css)",
+  "scripts": { "build": "node build.mjs" },
+  "devDependencies": { "esbuild": "0.25.10" }
+}

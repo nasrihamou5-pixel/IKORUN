@@ -353,6 +353,15 @@
       chk(c,'jamais deux séances dures d\'affilée ni dure le lendemain d\'une sortie longue', !bilan.enchaine.length, bilan.enchaine.slice(0,3).join(' | '));
       chk(c,'aucune semaine au-dessus du km/sem maxi', !bilan.max.length, bilan.max.slice(0,4).join(' | '));
       chk(c,'la régénération hebdomadaire ne dépasse pas le km/sem maxi', !bilan.regen.length, bilan.regen.slice(0,4).join(' | ')||'2 régénérations par plan');
+      // V3.14.0 : contrôle complet (distance × allure = durée, zones, sortie longue, ordre, progression)
+      var tous=[]; SC.forEach(function(sc){
+        var d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+sc[4]*7-1);
+        P.compDate=dateKey(d); P.days=sc[1]; P.objRace=sc[0]; P.kmWeekMin=sc[2]; P.kmWeekMax=sc[3]; SESSLOG=[]; SESS=[];
+        generatePlan(); var v=validatePlan(PLAN); v.errors.forEach(function(e){ tous.push(sc[0]+' : '+e); });
+        weeklyAdaptiveRegen(true); v=validatePlan(PLAN); v.errors.forEach(function(e){ tous.push(sc[0]+' (régénéré) : '+e); });
+      });
+      chk(c,'validatePlan : chaque séance et chaque semaine sont cohérentes', !tous.length, tous.slice(0,3).join(' | ')||'3 plans + leur régénération');
+      chk(c,'la semaine 1 est visible juste après la génération', PLAN.sessions[0] && PLAN.sessions[0].week===1, PLAN.sessions[0]&&('1re séance en semaine '+PLAN.sessions[0].week));
     }catch(e){ ko(c,'exécution',e&&e.message); }
     finally{
       window.toast=vraiToast; window.burst=vraiBurst; window.renderSport=vraiRender;
@@ -400,7 +409,7 @@
     }
     // Ce que l'utilisateur peut vérifier sur iPhone : l'app est-elle prête sans réseau ?
     if(!('serviceWorker' in navigator) || !window.caches){ ok(c,'l\'app est enregistrée sur le téléphone','service worker indisponible ici (navigation privée ?)'); return Promise.resolve(); }
-    var sc=document.querySelector('script[src*="app.js"]');
+    var sc=document.querySelector('script[src*="app.min.js"],script[src*="app.js"]');
     var appSrc=sc ? new URL(sc.getAttribute('src'), location.href).href : null;
     var fin=Date.now()+15000;
     return new Promise(function(resolve){
@@ -690,7 +699,7 @@
           if(document.documentElement.getAttribute('data-glass')!==k) throw new Error(k+' non appliquée'); });
         P.glass='clay'; applyTheme();
         if(document.documentElement.getAttribute('data-glass')!=='std') throw new Error('matière retirée encore appliquée');
-        if(/P\.glass\s*=\s*'clay'/.test(String(setAccent))) throw new Error('la couleur Guimauve impose encore sa matière');
+        if(/P\.glass\s*=\s*["']clay["']/.test(String(setAccent))) throw new Error('la couleur Guimauve impose encore sa matière');
         ['glassClay','glassPaper','glassFlat','clayOn'].forEach(function(k){ if(k in I18N.fr || k in I18N.en || k in I18N.ar) throw new Error('texte restant : '+k); });
         var css=document.getElementById('ikCss'), restes=0;
         if(css && css.sheet) [].forEach.call(css.sheet.cssRules,function(r){ if(/data-glass="(clay|paper|flat)"/.test(r.cssText||'')) restes++; });
@@ -739,8 +748,9 @@
         P.glass='wrap'; P.mat=2; applyTheme();
         if(pfAppearanceHTML().indexOf('setWrap(')<0) throw new Error('teintes de film absentes de la fiche');
         var src=String(renderProfile);
-        if(src.indexOf("openProfileSection(\\'color\\')")>=0) throw new Error('le Profil garde une ligne Couleur séparée');
-        if(src.indexOf("openProfileSection(\\'appearance\\')")<0) throw new Error('ligne Apparence absente du Profil');
+        // V3.14.0 : indépendant des guillemets (la version minifiée réécrit \' en ")
+        if(/openProfileSection\(\\?["']color\\?["']\)/.test(src)) throw new Error('le Profil garde une ligne Couleur séparée');
+        if(!/openProfileSection\(\\?["']appearance\\?["']\)/.test(src)) throw new Error('ligne Apparence absente du Profil');
         // V3.10.3 : plus de doublons dans le Profil
         ["openProfileSection(\\'data\\')","openProfileSection(\\'terms\\')","openProfileSection(\\'privacy\\')","t('manageProfile')","nav(\\'stats\\')"].forEach(function(k){
           if(src.indexOf(k)>=0) throw new Error('doublon encore dans le Profil : '+k); });
@@ -1003,6 +1013,41 @@
       (R.length-echecs.length)+' ok, '+echecs.length+' échec(s)', echecs);
   }
 
+  /* ======================= 7i. ÉDITEUR DE THÈME (V3.14.0) ================= */
+  function testTheme(){
+    var c='7i. Éditeur de thème';
+    essaie(c,'neuf couleurs de base, une par teinte, chaque nuance rattachée',function(){
+      if(BASE_HUES.length!==9) throw new Error(BASE_HUES.length+' couleurs de base');
+      var all=[]; BASE_HUES.forEach(function(b){ all=all.concat(b[2]); });
+      var orph=ACCENTS.filter(function(a){ return all.indexOf(a.key)<0; }).map(function(a){ return a.key; });
+      if(orph.length) throw new Error('nuances sans couleur de base : '+orph.join(', '));
+      return '9 couleurs, '+all.length+' nuances';
+    });
+    essaie(c,'contraste garanti sur 300 réglages au hasard (accent, texte du bouton, textes secondaires)',function(){
+      var bad=0;
+      for(var i=0;i<300;i++){
+        var B=txBuild({on:true,base:'blue',h:Math.random()*360,s:Math.random()*100,l:Math.random()*100,bg:Math.random()*100,tint:Math.random()*100});
+        ['dark','light'].forEach(function(m){ var o=B[m], f=function(k){ return okFromHex(o[k]); }, g=/,(#[0-9A-F]{6}) 55%/.exec(o['--grad-btn'])[1];
+          if(okCR(f('--e'),f('--bg'))<4.5 || okCR(okFromHex(o['--accent-ink']),okFromHex(g))<4.5 || okCR(f('--muted'),f('--s2'))<4.5 || okCR(f('--dim'),f('--s2'))<4.5) bad++; });
+      }
+      if(bad) throw new Error(bad+' thèmes sous 4,5:1');
+      return '600 thèmes (sombre + clair) vérifiés';
+    });
+    essaie(c,'le thème perso est posé avant la première image, une couleur prédéfinie le remplace',function(){
+      var av=P.tx, avT=P.theme;
+      try{
+        P.tx=txDefaults('green'); P.tx.h=300; applyTheme();
+        var tp=JSON.parse(localStorage.getItem('ik_theme_prefs')||'{}');
+        var re=/^html:not\(#ik-tx\):not\(#ik-tx2\)\{[-\w\s:;#,.()%]*\}html:not\(#ik-tx\):not\(#ik-tx2\)\[data-mode="light"\]\{[-\w\s:;#,.()%]*\}$/;
+        if(!tp.css || !re.test(tp.css)) throw new Error('miroir absent ou refusé par le filtre d’index.html');
+        if(!document.getElementById('ikTx')) throw new Error('feuille du thème absente');
+        P.theme='red'; P.tx.on=false; applyTheme();
+        if(document.getElementById('ikTx')) throw new Error('la couleur prédéfinie ne remplace pas le thème perso');
+        return 'miroir de '+tp.css.length+' caractères';
+      } finally { P.tx=av; P.theme=avT; applyTheme(); }
+    });
+  }
+
   /* ======================= ENCHAÎNEMENT ================================== */
   function lancer(){
     window.__smokeState='en cours';
@@ -1017,6 +1062,7 @@
     testModeSimple();
     testIlotEtFete();
     testMatieres();
+    testTheme();
     testPetitsEcrans();
     testBilanMolette();
     testSelecteursEtPlan();

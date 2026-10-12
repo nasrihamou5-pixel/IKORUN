@@ -109,14 +109,17 @@ fi
 # app.css est servi « immutable » un an (voir _headers) : modifie sans monter
 # app.css?v=N dans index.html, les telephones garderaient l ancienne version.
 if git diff --cached --name-only | grep -q '^app\.css$'; then
-  git diff --cached -U0 -- index.html | grep -q '^+.*app\.css?v=' || {
+  git diff --cached -U0 -- index.html | grep -qE '^\+.*app(\.min)?\.css\?v=' || {
     echo "ERREUR : app.css modifie sans monter app.css?v=N dans index.html"; fail=1; }
 fi
 
 # --- 4b. Numero de version affiche -----------------------------------------
 # APP_VERSION (app.js) est le numero que voit l utilisateur (V3.2.0). Toute nouvelle
 # version d app.js (?v=N change dans index.html) doit le faire evoluer.
-if git diff --cached -U0 -- index.html | grep -q '^+.*app\.js?v='; then
+# (V3.14.0) on compare le NUMÉRO ?v=N : renommer app.js en app.min.js sans changer N ne compte pas.
+oldv=$(git show HEAD:index.html 2>/dev/null | grep -oE 'app(\.min)?\.js\?v=[0-9]+' | head -1 | grep -oE '[0-9]+$')
+newv=$(git show :index.html 2>/dev/null | grep -oE 'app(\.min)?\.js\?v=[0-9]+' | head -1 | grep -oE '[0-9]+$')
+if [ -n "$newv" ] && [ "$oldv" != "$newv" ]; then
   old=$(git show HEAD:app.js 2>/dev/null | grep -o "const APP_VERSION='[^']*'" | head -1)
   new=$(git show :app.js 2>/dev/null | grep -o "const APP_VERSION='[^']*'" | head -1)
   if [ -z "$new" ]; then
@@ -127,6 +130,41 @@ if git diff --cached -U0 -- index.html | grep -q '^+.*app\.js?v='; then
     fail=1
   fi
 fi
+
+# --- 4c. Versions qui ne peuvent plus diverger (V3.14.0) -----------------------
+# Un meme fichier cite avec deux ?v= differents dans index.html = deux telechargements
+# (le preload d une version, l execution d une autre). Et une page qui change ses
+# ?v= sans nouveau cache du service worker (const C) garderait l ancienne coquille.
+if [ -f index.html ]; then
+  for f in 'app\.min\.js' 'app\.min\.css' 'vendor/supabase\.js' 'vendor/sb-init\.js'; do
+    nv=$(git show :index.html 2>/dev/null | grep -oE "$f\?v=[0-9]+" | sort -u | wc -l | tr -d ' ')
+    if [ "$nv" -gt 1 ]; then
+      echo "ERREUR : index.html cite $(echo $f | tr -d '\\') avec $nv numeros ?v= differents :"
+      git show :index.html | grep -oE "$f\?v=[0-9]+" | sort -u | sed 's/^/           /'
+      fail=1
+    fi
+  done
+  if git diff --cached -U0 -- index.html | grep -qE '^\+.*\.(js|css)\?v='; then
+    git diff --cached -U0 -- sw.js | grep -qE "^\+const C *=" || {
+      echo "ERREUR : les ?v= d index.html ont change mais pas const C dans sw.js"; fail=1; }
+  fi
+  if git show :_headers 2>/dev/null | grep -qE '^[^#]*\?v=[0-9]'; then
+    echo "ERREUR : _headers cite un fichier versionne (?v=N) : il serait perime a la prochaine version"; fail=1
+  fi
+fi
+
+# --- 4d. Fichiers minifies a jour (V3.14.0) ----------------------------------
+# La page charge app.min.js / app.min.css (tools/build.mjs). Leur en-tete porte
+# l empreinte de la source : une source modifiee sans reconstruction = refus.
+for pair in 'app.js:app.min.js' 'app.css:app.min.css'; do
+  src=${pair%%:*}; out=${pair##*:}
+  [ -f "$src" ] || continue
+  want=$(git show ":$src" 2>/dev/null | sha256sum | cut -c1-16)
+  have=$(git show ":$out" 2>/dev/null | head -c 400 | grep -o 'sha:[0-9a-f]*' | head -1 | cut -c5-)
+  if [ "$want" != "$have" ]; then
+    echo "ERREUR : $out ne correspond pas a $src (lancer : node tools/build.mjs, puis git add $out)"; fail=1
+  fi
+done
 
 # --- 5. Rappel des suites ---------------------------------------------------
 if git diff --cached --name-only | grep -qE '^(app\.js|index\.html|sw\.js)$'; then
