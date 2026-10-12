@@ -5,9 +5,13 @@
     "plan/adapt.js",
     "plan/bilan.js",
     "plan/adapt-ui.js",
-    "plan/simulate.js"
+    "plan/simulate.js",
+    "weather/weather.js"
   ],
   "app.min.css": [
     "app.css"
+  ],
+  "weather/scene.min.js": [
+    "weather/scene.js"
   ]
 }

@@ -971,6 +971,10 @@
       chk(c,'Daniels : 14 jours d\'arrêt = 0,973, 28 jours = 0,931', Math.abs(danielsBreakFactor(14)-0.973)<1e-9 && Math.abs(danielsBreakFactor(28)-0.931)<1e-9 && danielsBreakFactor(4)===1, '');
       var e=adaptExec({baseType:'SEUIL',status:'modified',rpe:7,planned:{paceS:270,dur:50},real:{paceS:283,dur:50,km:10},wx:{corr:0.05},date:todayKey()});
       chk(c,'chaleur : 5 % plus lent par +5 % de correction reste « dans la cible »', e.verdict==='ok' && e.rawVerdict!=='ok', e.verdict+' / brut '+e.rawVerdict);
+      // V4.0.0 : table de Hadley (T°F + rosée °F) : 30 °C / 20 °C = 154 → 4,5–6 % ; 20 °C / 10 °C = 118 → 0,5–1 % ; 40 °C / 28 °C > 180 → pas d'effort dur
+      var h1=heatCorr(30,20), h2=heatCorr(20,10), h3=heatCorr(40,28), h0=heatCorr(15,5);
+      chk(c,'météo : correction de chaleur selon la table de Hadley', h1.sum===154 && h1.corr>0.045 && h1.corr<0.06 && h2.corr>0.005 && h2.corr<=0.01 && h3.noHard && h0.corr===0, h1.sum+' → '+(h1.corr*100).toFixed(2)+' %');
+      chk(c,'météo : 58 wilayas, coordonnées en Algérie', WILAYAS.length===58 && WILAYAS.every(function(w,i){ return w[0]===i+1 && w[2]>18.9 && w[2]<37.2 && w[3]>-8.7 && w[3]<12; }), '');
       var lm=loadModel(); chk(c,'charge : une seule source (outil ACWR = moteur)', typeof lm.acute==='number' && 'acwr' in lm && 'monotony' in lm, '');
     }catch(err){ ko(c,'exécution',err&&err.message); }
     finally{ restaure(); }
