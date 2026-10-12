@@ -14,7 +14,7 @@
 // Le garde-fou de commit (.githooks/pre-commit) refuse un fichier servi qui ne correspond plus
 // à ses sources : l'empreinte des sources assemblées est écrite en tête (sha:…).
 // ============================================================================
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -35,6 +35,9 @@ for (const [out, srcs] of Object.entries(bundle)) {
   if (out === '_') continue;
   const loader = out.endsWith('.css') ? 'css' : 'js';
   const code = assemble(srcs);
+  // Sources inchangées : on ne réécrit pas le fichier (sinon seul l'en-tête de version changerait
+  // et le garde-fou exigerait un nouveau ?v= pour rien).
+  if (existsSync(join(ROOT, out)) && readFileSync(join(ROOT, out), 'utf8').slice(0, 600).includes('sha:' + sha(code) + ' ')) { console.log(out.padEnd(24), 'inchangé'); continue; }
   let r;
   try {
     r = esbuild.transformSync(code, {

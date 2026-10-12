@@ -990,6 +990,31 @@
   }
 
   /* ======================= 7j. DONNÉES DES INVITÉS (V4.0.0) ============== */
+  // V4.0.0 : image de partage (module chargé à la demande)
+  function testPartage(){
+    var c='7k. Image de partage';
+    return ikLoad('share').then(function(){
+      var reps=[78,76,77,75,79,76,74,77,80,73].map(function(x,i){ return {n:i+1,dist:400,timeS:x,respected:x<=79}; });
+      var ctx=shareCtxFromBilan({title:'10 × 400 m',date:todayKey(),distance:8.4,duration:42,pace:'4:58',deniv:35,rpe:7,hr:{avg:162},reps:reps,baseType:'VMAc'});
+      chk(c,'contenu du bilan repris (distance, allure, FC, répétitions)', ctx.km===8.4 && ctx.pace==='4:58' && ctx.hr===162 && ctx.reps.length===10 && ctx.kind==='session', JSON.stringify({km:ctx.km,hr:ctx.hr}));
+      var rec=shareCtxFromRecord({dist:'10 km',meters:10000,time:'41:32',date:'2026-09-20'});
+      chk(c,'record : temps, allure calculée, record perso', rec.raceTime==='41:32' && rec.pace===spkToStr(2492/10) && rec.pb && rec.kind==='race', rec.pace);
+      var sizes=[], worst=0, blank=[];
+      ['story','square'].forEach(function(f){ ['sober','big','detail','progress','race'].forEach(function(tp){
+        var t0=performance.now(), cv=shareRenderTo(ctx,{fmt:f,tpl:tp}); worst=Math.max(worst,performance.now()-t0);
+        sizes.push(cv.width+'×'+cv.height);
+        // le texte est bien dessiné : des pixels clairs au milieu de l'image
+        var px=cv.getContext('2d').getImageData(0,0,cv.width,cv.height).data, light=0;
+        for(var i=0;i<px.length;i+=4*97) if(px[i]+px[i+1]+px[i+2]>600) light++;
+        if(light<20) blank.push(f+'/'+tp);
+      }); });
+      chk(c,'formats 1080 × 1920 et 1080 × 1080', sizes.slice(0,5).every(function(x){return x==='1080×1920';}) && sizes.slice(5).every(function(x){return x==='1080×1080';}), sizes[0]+' · '+sizes[5]);
+      chk(c,'5 modèles dessinés, aucun vide', !blank.length, blank.join(', ')||'10/10');
+      chk(c,'rendu en moins d\'une seconde', worst<1000, Math.round(worst)+' ms au pire');
+      var a=shareRenderTo(Object.assign({},ctx,{name:'Nasri'}),{tpl:'sober',show:{name:false}}), b=shareRenderTo(Object.assign({},ctx,{name:'Nasri'}),{tpl:'sober'});
+      chk(c,'prénom masquable', a.toDataURL()!==b.toDataURL(), 'image différente sans le prénom');
+    }).catch(function(e){ ko(c,'chargement du module',e&&e.message); });
+  }
   function testInvites(){
     var c='7j. Invités, export, import';
     photographie();
@@ -1184,6 +1209,7 @@
     Promise.resolve(testI18nUsage())
       .then(function(){ return testHorsLigne(); })
       .then(function(){ return testSon(); })
+      .then(function(){ return testPartage(); })
       .catch(function(e){ ko('0. Suite','exécution', e && e.message); })
       .then(function(){ debloquerEcritures(); window.__smokeState='terminé'; rapport(); });
   }

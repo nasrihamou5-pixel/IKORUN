@@ -384,7 +384,9 @@ function renderCoachAnalysis(a,entries){
   h+=list('warning','warn',t('constructiveCriticismTitle'),a.errs);
   h+=list('bulb','e',t('adviceLabel'),a.tips);
   h+='<blockquote class="ca-quote">'+a.motiv+'</blockquote>';
-  h+='<div class="ik-cta-bar"><button class="btn" onclick="adMarkSeen();closeOv(\'ovProg\');renderSport();nav(\'home\')">'+t('notedCoachBtn')+'</button></div>';
+  // Partage de l'image de séance : l'entrée du bilan est gardée pour le module de partage.
+  window._shareEntry=e;
+  h+='<div class="ik-cta-bar ca-cta"><button class="btn ghost" onclick="adMarkSeen();openShareCard(\'bilan\')">'+ICN('share',17)+' '+t('share')+'</button><button class="btn" onclick="adMarkSeen();closeOv(\'ovProg\');renderSport();nav(\'home\')">'+t('notedCoachBtn')+'</button></div>';
   $('#progBody').innerHTML=h; $('#ovProgTitle').textContent=t('ikorunAnalysisTitle');
   const sc=$('#progBody').closest('.ov-body-scroll'); if(sc) sc.scrollTop=0;
   debriefCtx=null;

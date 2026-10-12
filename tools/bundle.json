@@ -16,5 +16,8 @@
   ],
   "weather/scene.min.js": [
     "weather/scene.js"
+  ],
+  "share/share.min.js": [
+    "share/share.js"
   ]
 }

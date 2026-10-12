@@ -4630,6 +4630,22 @@ a.btn{text-decoration:none;}
 .ig-acts .btn{flex:1;}
 @media (prefers-reduced-motion:reduce){.ig-ring,.ig-pop{animation:none;}.ig-ring{opacity:.8;}}
 
+/* ===== V4.0.0 — IMAGE DE PARTAGE (share/share.js) ===== */
+.sh-prev{position:relative;margin:2px auto 14px;width:100%;max-width:360px;aspect-ratio:1/1;border-radius:22px;overflow:hidden;background:var(--s1);box-shadow:var(--float-sm,0 6px 20px rgba(0,0,0,.25)),inset 0 0 0 1px var(--hair);}
+.sh-prev.story{aspect-ratio:9/16;max-width:min(300px,calc(46vh * 9 / 16));}
+.sh-prev canvas{display:block;width:100%;height:100%;touch-action:none;}
+.sh-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;}
+.sh-chip{appearance:none;font:inherit;font-size:13px;font-weight:700;color:var(--snow);padding:8px 14px;border-radius:999px;border:1px solid var(--hair2,var(--hair));background:var(--lg-fill,var(--s1));cursor:pointer;min-height:36px;transition:background .18s,color .18s,border-color .18s;}
+.sh-chip.on{background:var(--e);border-color:var(--e);color:var(--btn-ink,#fff);}
+.sh-chip:focus-visible{outline:2px solid var(--e2);outline-offset:2px;}
+.sh-photo{display:flex;flex-direction:column;gap:8px;margin:6px 0 4px;}
+.sh-photo label{display:flex;align-items:center;gap:12px;font-size:13px;font-weight:700;color:var(--muted);}
+.sh-photo label input{flex:1;}
+.ca-cta{display:flex;gap:8px;}
+.ca-cta .btn{flex:1;}
+.ca-cta .btn.ghost{flex:0 0 auto;padding-inline:18px;}
+@media (prefers-reduced-motion:reduce){.sh-chip{transition:none;}}
+
 /* >>> MODE SIMPLE : TEXTES AGRANDIS (généré par tools/ezscale.py, ne pas éditer à la main) >>> */
 html.easy-mode .acc-sw span{font-size:13px;}
 html.easy-mode .ap-sub{font-size:13px;}
@@ -5081,6 +5097,8 @@ html.easy-mode .ig-hero span{font-size:14.5px;}
 html.easy-mode .ig-warn{font-size:14.5px;}
 html.easy-mode .ig-n{font-size:14px;}
 html.easy-mode .ig-txt-b p{font-size:15px;}
+html.easy-mode .sh-chip{font-size:15px;}
+html.easy-mode .sh-photo label{font-size:15px;}
 html.easy-mode [style*="font-size:9px"]{font-size:10.5px !important;}
 html.easy-mode [style*="font-size:9.5px"]{font-size:11px !important;}
 html.easy-mode [style*="font-size:10px"]{font-size:11.5px !important;}
