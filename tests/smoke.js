@@ -62,6 +62,8 @@
       P:P, SESS:SESS, MSESS:MSESS, CUSTOM:CUSTOM, PLAN:PLAN, GOALS:GOALS,
       AGENDA:AGENDA, XP:XP, RECORDS:RECORDS, PREFS:PREFS, WEIGHTLOG:WEIGHTLOG,
       TRACKER:TRACKER, SESSLOG:SESSLOG, MUSCU_PR:MUSCU_PR,
+      CHECKINS:(typeof CHECKINS!=='undefined')?CHECKINS:null, ADAPT_LOG:(typeof ADAPT_LOG!=='undefined')?ADAPT_LOG:null,
+      Pjson:JSON.stringify(P),
       outilsTab: (typeof outilsTab!=='undefined') ? outilsTab : null,
       LIVE: (typeof LIVE!=='undefined') ? LIVE : null,
       html: document.body.innerHTML
@@ -73,6 +75,8 @@
     GOALS=SNAP.GOALS; AGENDA=SNAP.AGENDA; XP=SNAP.XP; RECORDS=SNAP.RECORDS;
     PREFS=SNAP.PREFS; WEIGHTLOG=SNAP.WEIGHTLOG; TRACKER=SNAP.TRACKER;
     SESSLOG=SNAP.SESSLOG; MUSCU_PR=SNAP.MUSCU_PR;
+    if(SNAP.CHECKINS) CHECKINS=SNAP.CHECKINS; if(SNAP.ADAPT_LOG) ADAPT_LOG=SNAP.ADAPT_LOG;
+    if(SNAP.Pjson){ var p0=JSON.parse(SNAP.Pjson); Object.keys(P).forEach(function(k){ if(!(k in p0)) delete P[k]; }); Object.assign(P,p0); }
     if(SNAP.outilsTab!==null) outilsTab=SNAP.outilsTab;
     if(typeof LIVE!=='undefined') LIVE=SNAP.LIVE;
   }
@@ -128,7 +132,10 @@
   /* ======================= 3. CLÉS UTILISÉES MAIS ABSENTES =============== */
   function testI18nUsage(){
     var c='3. Traductions';
-    return fetch('app.js?selftest='+Date.now()).then(function(r){return r.text();}).then(function(src){
+    // V3.15.0 : le cœur est assemblé de plusieurs sources (tools/bundle.json)
+    return fetch('tools/bundle.json?selftest='+Date.now()).then(function(r){return r.json();}).then(function(b){
+      return Promise.all(b['app.min.js'].map(function(f){ return fetch(f+'?selftest='+Date.now()).then(function(r){return r.text();}); }));
+    }).then(function(parts){ return parts.join('\n'); }).then(function(src){
       // La clé doit être IMMÉDIATEMENT suivie de ) ou , : sinon il s'agit d'un
       // préfixe concaténé — t('nav_'+s), t('phase_'+key)... — dont la clé finale
       // n'existe pas telle quelle dans la table. Sans ce garde, le test
@@ -344,7 +351,9 @@
           var n=parDate[addDaysKey(s.date,1)]; if(!n) return;
           if((planIsHard(s)&&planIsHard(n))||(planIsLong(s)&&(planIsHard(n)||planIsLong(n)))) bilan.enchaine.push(nom+' '+s.date+' '+s.baseType+'→'+n.baseType);
         });
-        weeklyAdaptiveRegen(true); weeklyAdaptiveRegen(true);
+        // V3.15.0 : un allègement du moteur d'adaptation (3 jours à −15 %) repasse par planSettle
+        P.adapt={}; ADAPT_LOG=[];
+        adaptApply('smoke',false,function(pl,pc,k){ var n=0; adWindow(pl,k,7,false).forEach(function(s){ if(adLighten(s,0.85,pc,'smoke')) n++; }); return n; },{k:'adMsgAcwrHigh',p:['1,40']});
         var apres={}; PLAN.sessions.forEach(function(s){ apres[s.week]=(apres[s.week]||0)+(s.baseType==='COURSE'?0:(s.km||0)); });
         Object.keys(apres).forEach(function(w){ if(apres[w]>sc[3]+1) bilan.regen.push(nom+' S'+w+' '+Math.round(apres[w])+' km'); });
       });
@@ -352,15 +361,16 @@
       chk(c,'une décharge pèse au plus 80 % du pic', !bilan.decharge.length, bilan.decharge.slice(0,4).join(' | '));
       chk(c,'jamais deux séances dures d\'affilée ni dure le lendemain d\'une sortie longue', !bilan.enchaine.length, bilan.enchaine.slice(0,3).join(' | '));
       chk(c,'aucune semaine au-dessus du km/sem maxi', !bilan.max.length, bilan.max.slice(0,4).join(' | '));
-      chk(c,'la régénération hebdomadaire ne dépasse pas le km/sem maxi', !bilan.regen.length, bilan.regen.slice(0,4).join(' | ')||'2 régénérations par plan');
+      chk(c,'un ajustement du moteur ne dépasse pas le km/sem maxi', !bilan.regen.length, bilan.regen.slice(0,4).join(' | ')||'3 plans allégés');
       // V3.14.0 : contrôle complet (distance × allure = durée, zones, sortie longue, ordre, progression)
       var tous=[]; SC.forEach(function(sc){
         var d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+sc[4]*7-1);
         P.compDate=dateKey(d); P.days=sc[1]; P.objRace=sc[0]; P.kmWeekMin=sc[2]; P.kmWeekMax=sc[3]; SESSLOG=[]; SESS=[];
         generatePlan(); var v=validatePlan(PLAN); v.errors.forEach(function(e){ tous.push(sc[0]+' : '+e); });
-        weeklyAdaptiveRegen(true); v=validatePlan(PLAN); v.errors.forEach(function(e){ tous.push(sc[0]+' (régénéré) : '+e); });
+        P.adapt={}; adaptApply('smoke',false,function(pl,pc,k){ var n=0; adWindow(pl,k,7,false).forEach(function(s){ if(adLighten(s,0.8,pc,'smoke')) n++; }); return n; },{k:'adMsgAcwrHigh',p:['1,40']});
+        v=validatePlan(PLAN); v.errors.forEach(function(e){ tous.push(sc[0]+' (ajusté) : '+e); });
       });
-      chk(c,'validatePlan : chaque séance et chaque semaine sont cohérentes', !tous.length, tous.slice(0,3).join(' | ')||'3 plans + leur régénération');
+      chk(c,'validatePlan : chaque séance et chaque semaine sont cohérentes', !tous.length, tous.slice(0,3).join(' | ')||'3 plans + un ajustement chacun');
       chk(c,'la semaine 1 est visible juste après la génération', PLAN.sessions[0] && PLAN.sessions[0].week===1, PLAN.sessions[0]&&('1re séance en semaine '+PLAN.sessions[0].week));
     }catch(e){ ko(c,'exécution',e&&e.message); }
     finally{
@@ -802,6 +812,7 @@
       var avO=window.openOv; window.openOv=function(){};
       try{
         openSessionDebrief({date:todayKey(),title:'Test',km:8,pace:'4:30',type:'VMA',duration:40,series:{reps:4,dist:400,paceSecPerKm:225}});
+        blSetStatus('modified');
         if(debriefReps.length!==4 || debriefReps[0].timeS!==90) throw new Error('passages mal pré-réglés '+JSON.stringify(debriefReps[0]));
         debriefRepSel=2; debriefWheel('DB.rep.s',40); // 1:30 → 1:40
         if(debriefReps[2].timeS!==100 || debriefReps[2].respected) throw new Error('passage 3 : '+JSON.stringify(debriefReps[2]));
@@ -815,11 +826,39 @@
       var avO=window.openOv; window.openOv=function(){};
       try{
         openSessionDebrief({date:todayKey(),title:'Test',km:10,pace:'5:30',type:'Long',duration:55});
+        blSetStatus('modified');
+        if(!document.querySelector('#progBody .wheel[data-key="DB.km.i"]')) throw new Error('molettes absentes en « Modifié »');
         debriefWheel('DB.km.i',12); debriefWheel('DB.km.d',5); debriefWheel('DB.dur.h',1); debriefWheel('DB.dur.m',2);
         if(debriefData.distance!==12.5 || debriefData.duration!==62) throw new Error(debriefData.distance+' km '+debriefData.duration+' min');
         if(debriefData.pace!=='4:58') throw new Error('allure '+debriefData.pace);
         if(debriefAdherence()!=='faster') throw new Error('respect de l\'allure : '+debriefAdherence());
         return '12,5 km en 1 h 02';
+      } finally { window.openOv=avO; debriefCtx=null; try{ closeOv('ovProg'); }catch(e){} }
+    });
+    // V3.15.0 : cas simple en 3 gestes — « comme prévu », effort, Valider ; aucune molette affichée.
+    essaie(c,'bilan simple : comme prévu, sans molette, valeurs prévues',function(){
+      var avO=window.openOv; window.openOv=function(){};
+      try{
+        openSessionDebrief({date:todayKey(),title:'Test',km:8,pace:'5:00',type:'EF',duration:40});
+        if(debriefData.status!=='done') throw new Error('statut '+debriefData.status);
+        if(document.querySelector('#progBody .wheel')) throw new Error('une molette est affichée');
+        if(!document.querySelector('#progBody .bl-range')) throw new Error('curseur d\'effort absent');
+        if(debriefData.distance!==8 || debriefData.duration!==40) throw new Error('valeurs '+debriefData.distance+' / '+debriefData.duration);
+        blSetStatus('missed');
+        if(!document.querySelectorAll('#progBody .bl-reason').length) throw new Error('raisons absentes');
+        if(!document.getElementById('blSubmit').disabled) throw new Error('Valider actif sans raison');
+        return '3 gestes · « pas fait » = 1 question';
+      } finally { window.openOv=avO; debriefCtx=null; try{ closeOv('ovProg'); }catch(e){} }
+    });
+    essaie(c,'douleur : silhouette, zone et côté',function(){
+      var avO=window.openOv; window.openOv=function(){};
+      try{
+        openSessionDebrief({date:todayKey(),title:'Test',km:8,pace:'5:00',type:'EF',duration:40});
+        debriefStep=2; debriefData.pain.on=true; renderDebrief();
+        var z=document.querySelectorAll('#progBody .bl-z'); if(z.length<15) throw new Error(z.length+' zones');
+        blPainZone('knee','L'); if(debriefData.pain.zone!=='knee'||debriefData.pain.side!=='L') throw new Error('zone non retenue');
+        if(!document.querySelector('#progBody .bl-z.on')) throw new Error('zone non surlignée');
+        return z.length+' zones';
       } finally { window.openOv=avO; debriefCtx=null; try{ closeOv('ovProg'); }catch(e){} }
     });
     // La molette retient la valeur affichée au centre (réglé sur 05, le minuteur partait de 6:00).
@@ -920,6 +959,157 @@
         return 'ok';
       } finally { document.getElementById('progBody').innerHTML=html; document.getElementById('ovProgTitle').textContent=tit; }
     });
+  }
+
+  /* ======================= 7g. MOTEUR D'ADAPTATION (V3.15.0) ============= */
+  function testAdaptation(){
+    var c='7g. Moteur d\'adaptation';
+    photographie();
+    try{
+      var rows=simulateAll({});
+      rows.forEach(function(r){ chk(c,'simulateAthlete · '+r.scénario, r.ok==='✔', r['échecs']||(r.ajustements+' ajustement(s)')); });
+      chk(c,'Daniels : 14 jours d\'arrêt = 0,973, 28 jours = 0,931', Math.abs(danielsBreakFactor(14)-0.973)<1e-9 && Math.abs(danielsBreakFactor(28)-0.931)<1e-9 && danielsBreakFactor(4)===1, '');
+      var e=adaptExec({baseType:'SEUIL',status:'modified',rpe:7,planned:{paceS:270,dur:50},real:{paceS:283,dur:50,km:10},wx:{corr:0.05},date:todayKey()});
+      chk(c,'chaleur : 5 % plus lent par +5 % de correction reste « dans la cible »', e.verdict==='ok' && e.rawVerdict!=='ok', e.verdict+' / brut '+e.rawVerdict);
+      // V4.0.0 : table de Hadley (T°F + rosée °F) : 30 °C / 20 °C = 154 → 4,5–6 % ; 20 °C / 10 °C = 118 → 0,5–1 % ; 40 °C / 28 °C > 180 → pas d'effort dur
+      var h1=heatCorr(30,20), h2=heatCorr(20,10), h3=heatCorr(40,28), h0=heatCorr(15,5);
+      chk(c,'météo : correction de chaleur selon la table de Hadley', h1.sum===154 && h1.corr>0.045 && h1.corr<0.06 && h2.corr>0.005 && h2.corr<=0.01 && h3.noHard && h0.corr===0, h1.sum+' → '+(h1.corr*100).toFixed(2)+' %');
+      chk(c,'météo : 58 wilayas, coordonnées en Algérie', WILAYAS.length===58 && WILAYAS.every(function(w,i){ return w[0]===i+1 && w[2]>18.9 && w[2]<37.2 && w[3]>-8.7 && w[3]<12; }), '');
+      // V4.0.0 : Ramadan 1448 (8 février – 8 mars 2027 selon Umm al-Qura) : actif TOUT le mois, Aïd le 9 mars
+      var sv=window.__ikSimNow, vis=P.ramadanVisual, fe=P.fetes, adj=P.hijriAdj;
+      try{
+        P.ramadanVisual=true; P.fetes=true; P.hijriAdj=0;
+        var at=function(k){ window.__ikSimNow=new Date(k+'T10:00:00').getTime(); _rmMemo={}; _hijriMemo=null; };
+        at('2027-02-08'); var f1=feteToday(); at('2027-02-21'); var f2=feteToday(); var inf=ramadanInfo(); at('2027-03-08'); var f3=feteToday(); at('2027-03-09'); var f4=feteToday(); at('2027-03-20'); var f5=feteToday();
+        chk(c,'Ramadan : actif du 1er jour à la veille de l\'Aïd, puis l\'Aïd', f1==='ramadan'&&f2==='ramadan'&&f3==='ramadan'&&f4==='eidFitr'&&f5!=='ramadan'&&inf.day===14&&inf.end==='2027-03-08', [f1,f2,f3,f4,f5].join(' / ')+' · jour '+inf.day);
+        var T=ramadanTimes('2027-02-21'); chk(c,'Ramadan : imsak = Fajr − 10 min, créneau après l\'iftar 1 h 30 – 2 h', T.imsakMin===((+T.fajr.slice(0,2))*60+(+T.fajr.slice(3)))-10 && T.after[0]>T.iftar, 'imsak '+T.imsak+' · iftar '+T.iftar+' · '+T.after.join('–'));
+      } finally { window.__ikSimNow=sv; P.ramadanVisual=vis; P.fetes=fe; P.hijriAdj=adj; _rmMemo={}; _hijriMemo=null; }
+      var lm=loadModel(); chk(c,'charge : une seule source (outil ACWR = moteur)', typeof lm.acute==='number' && 'acwr' in lm && 'monotony' in lm, '');
+    }catch(err){ ko(c,'exécution',err&&err.message); }
+    finally{ restaure(); }
+  }
+
+  /* ======================= 7j. DONNÉES DES INVITÉS (V4.0.0) ============== */
+  // V4.0.0 : image de partage (module chargé à la demande)
+  function testPartage(){
+    var c='7k. Image de partage';
+    return ikLoad('share').then(function(){
+      var reps=[78,76,77,75,79,76,74,77,80,73].map(function(x,i){ return {n:i+1,dist:400,timeS:x,respected:x<=79}; });
+      var ctx=shareCtxFromBilan({title:'10 × 400 m',date:todayKey(),distance:8.4,duration:42,pace:'4:58',deniv:35,rpe:7,hr:{avg:162},reps:reps,baseType:'VMAc'});
+      chk(c,'contenu du bilan repris (distance, allure, FC, répétitions)', ctx.km===8.4 && ctx.pace==='4:58' && ctx.hr===162 && ctx.reps.length===10 && ctx.kind==='session', JSON.stringify({km:ctx.km,hr:ctx.hr}));
+      var rec=shareCtxFromRecord({dist:'10 km',meters:10000,time:'41:32',date:'2026-09-20'});
+      chk(c,'record : temps, allure calculée, record perso', rec.raceTime==='41:32' && rec.pace===spkToStr(2492/10) && rec.pb && rec.kind==='race', rec.pace);
+      var sizes=[], worst=0, blank=[];
+      ['story','square'].forEach(function(f){ ['sober','big','detail','progress','race'].forEach(function(tp){
+        var t0=performance.now(), cv=shareRenderTo(ctx,{fmt:f,tpl:tp}); worst=Math.max(worst,performance.now()-t0);
+        sizes.push(cv.width+'×'+cv.height);
+        // le texte est bien dessiné : des pixels clairs au milieu de l'image
+        var px=cv.getContext('2d').getImageData(0,0,cv.width,cv.height).data, light=0;
+        for(var i=0;i<px.length;i+=4*97) if(px[i]+px[i+1]+px[i+2]>600) light++;
+        if(light<20) blank.push(f+'/'+tp);
+      }); });
+      chk(c,'formats 1080 × 1920 et 1080 × 1080', sizes.slice(0,5).every(function(x){return x==='1080×1920';}) && sizes.slice(5).every(function(x){return x==='1080×1080';}), sizes[0]+' · '+sizes[5]);
+      chk(c,'5 modèles dessinés, aucun vide', !blank.length, blank.join(', ')||'10/10');
+      chk(c,'rendu en moins d\'une seconde', worst<1000, Math.round(worst)+' ms au pire');
+      var a=shareRenderTo(Object.assign({},ctx,{name:'Nasri'}),{tpl:'sober',show:{name:false}}), b=shareRenderTo(Object.assign({},ctx,{name:'Nasri'}),{tpl:'sober'});
+      chk(c,'prénom masquable', a.toDataURL()!==b.toDataURL(), 'image différente sans le prénom');
+    }).catch(function(e){ ko(c,'chargement du module',e&&e.message); });
+  }
+  // V4.0.0 : calendrier des courses (module chargé à la demande, données de test locales)
+  function testCourses(){
+    var c='7l. Courses';
+    var saveF=P.raceFollows;
+    return ikLoad('races').then(function(){
+      var r={id:'11111111-1111-4111-8111-111111111111',name:'Semi-marathon test, édition; spéciale d’Alger',date:adKeyAdd(todayKey(),20),start_time:'09:00',city:'Alger',wilaya:16,lat:36.75,lon:3.06,kind:'route',distances:[10,21.097],organizer:'',url:'',reg_url:'https://example.org/i',status:'published'};
+      chk(c,'objectif du plan depuis une course (semi, 10 km, cross, autre)', raceToObjective(r,21.097).objRace==='Semi-marathon' && raceToObjective(r,10).objRace==='10 km' && raceToObjective({kind:'cross',date:r.date},4).objRace==='Cross' && raceToObjective(r,15).objRace==='Autre' && raceToObjective(r,15).objRaceKm===15 && raceToObjective(r,10).compDate===r.date, raceToObjective(r,21.097).objRace);
+      var ics=raceIcsText(r,new Date('2026-10-12T10:00:00Z')), lines=ics.split('\r\n'), enc=new TextEncoder(), long=lines.filter(function(l){ return enc.encode(l).length>75; });
+      var unf=ics.replace(/\r\n /g,'');
+      chk(c,'export .ics : lignes ≤ 75 octets, texte échappé, 3 rappels', !long.length && /SUMMARY:Semi-marathon test\\, édition\\; spéciale/.test(unf) && (unf.match(/BEGIN:VALARM/g)||[]).length===3 && /TRIGGER:-P7D/.test(unf) && /DTSTART;TZID=Africa\/Algiers:/.test(unf), long.length+' ligne(s) trop longue(s)');
+      var allDay=raceIcsText(Object.assign({},r,{start_time:null}));
+      chk(c,'export .ics journée entière : rappels à 9 h', /DTSTART;VALUE=DATE:/.test(allDay) && /TRIGGER:-PT15H/.test(allDay.replace(/\r\n /g,'')), 'veille 9 h');
+      chk(c,'contrôle du formulaire (mêmes règles que le serveur)', raceCheck(r)===null && raceCheck(Object.assign({},r,{url:'javascript:alert(1)'}))==='url' && raceCheck(Object.assign({},r,{date:'2026-13-01'}))==='date' && raceCheck(Object.assign({},r,{wilaya:59}))==='wilaya' && raceCheck(Object.assign({},r,{lat:48.8,lon:2.3}))==='coords' && raceCheck(Object.assign({},r,{distances:[5,'x']}))==='distances', 'url · date · wilaya · coords · distances');
+      chk(c,'distances saisies « 10 ; 21,1 »', JSON.stringify(raceParseDists('10 ; 21,1'))==='[10,21.1]' && JSON.stringify(raceParseDists('4|8 km'))==='[4,8]' && raceParseDists('')===null, JSON.stringify(raceParseDists('10 ; 21,1')));
+      var rows=raceParseImport('nom;date;heure;ville;wilaya;type;distances;site\n"Cross ""FAA"" test";10/01/2027;9h30;Oran;Oran;cross;4|8;https://example.org\nSemi;2027-02-01;;Alger;16;route;21,1;');
+      chk(c,'import CSV (guillemets, dates JJ/MM/AAAA, wilaya par nom, heure 9h30)', rows.length===2 && rows[0].name==='Cross "FAA" test' && rows[0].date==='2027-01-10' && rows[0].wilaya===31 && rows[0].start_time==='09:30' && rows[0].kind==='cross' && JSON.stringify(rows[0].distances)==='[4,8]' && rows[1].distances[0]===21.1, JSON.stringify(rows[0]));
+      var js=raceParseImport('[{"name":"Course","date":"2027-03-01","city":"Sétif","distance":"10"}]');
+      chk(c,'import JSON', js.length===1 && js[0].city==='Sétif' && js[0].distances[0]===10 && raceParseImport('[oops').err==='rcImpBadJson', JSON.stringify(js[0]));
+      P.raceFollows=[]; raceFollowSet(r,true);
+      var card=raceCountdownHTML();
+      chk(c,'suivi : compte à rebours sur l\'accueil (≤ 30 jours)', raceIsFollowed(r.id) && card.indexOf('rc-count')>=0 && card.indexOf('<b>20</b>')>=0, 'J-20');
+      P.raceFollows=[{id:r.id,name:'X',date:adKeyAdd(todayKey(),45),city:'Y'}];
+      chk(c,'suivi : rien au-delà de 30 jours', raceCountdownHTML()==='', 'J-45');
+      var x=cleanImportedProfile({raceFollows:[{id:r.id,name:'<img src=x>',date:'2027-01-01',city:'A'},{id:"x');alert(1);//",date:'2027-01-01'}],objRaceId:"');alert(1)//",objRaceName:'Semi <b>'});
+      chk(c,'import du profil : courses suivies nettoyées', x.raceFollows.length===1 && x.raceFollows[0].name.indexOf('<')<0 && !x.objRaceId && x.objRaceName.indexOf('<')<0, x.raceFollows.length+' gardée(s)');
+    }).catch(function(e){ ko(c,'chargement du module',e&&e.message); }).then(function(){ P.raceFollows=saveF; });
+  }
+  // V4.0.0 : statistiques anonymes (file d'attente, nettoyage, refus) et plans exemples
+  function testStatsEtMethode(){
+    var c='7m. Statistiques et méthode';
+    chk(c,'aucune statistique pendant la suite de fumée', ikAnalyticsOn()===false, 'selftest');
+    var keepOn=window.ikAnalyticsOn, keepQ=localStorage.getItem('ik_evq'), keepA=localStorage.getItem('ik_aid'), keepPa=P.analytics;
+    try{
+      localStorage.removeItem('ik_evq'); window.ikAnalyticsOn=function(){ return true; };
+      ikTrack('Bad Name',{}); ikTrack('test_ev',{a:new Array(101).join('x'),n:1.23456,o:{x:1},b:true,u:undefined});
+      var q=JSON.parse(localStorage.getItem('ik_evq')||'[]'), e=q[0]||{};
+      chk(c,'événement : nom contrôlé, propriétés courtes, identifiant aléatoire', q.length===1 && e.n==='test_ev' && e.p.a.length===40 && e.p.n===1.23 && e.p.b===true && !('o' in e.p) && /^[0-9a-f-]{36}$/.test(e.aid) && ['ios','android','desktop','other'].indexOf(e.pf)>=0, JSON.stringify(e.p));
+      chk(c,'aucune donnée de compte dans l\'événement', JSON.stringify(e).indexOf(String(window.currentUserId||'@@'))<0 && JSON.stringify(e).indexOf(String(P.name||'@@'))<0, Object.keys(e).join(','));
+      for(var i=0;i<320;i++) ikTrack('test_ev',{});
+      chk(c,'file d\'attente hors ligne bornée à 300', JSON.parse(localStorage.getItem('ik_evq')).length===300, '300');
+      window.ikAnalyticsOn=keepOn; ikAnalyticsSet(false);
+      chk(c,'refus : file et identifiant effacés', !localStorage.getItem('ik_evq') && !localStorage.getItem('ik_aid') && P.analytics===false && ikAnalyticsOn()===false, 'opt-out');
+    } finally {
+      window.ikAnalyticsOn=keepOn; clearTimeout(_ikEvT); P.analytics=keepPa;
+      try{ if(keepQ) localStorage.setItem('ik_evq',keepQ); else localStorage.removeItem('ik_evq'); if(keepA) localStorage.setItem('ik_aid',keepA); }catch(x){}
+    }
+    var before=JSON.stringify({c:P.compDate,r:P.objRace,d:P.days,p:PLAN&&PLAN.sessions.length});
+    return ikLoad('method').then(function(){
+      var res=methodSamples.map(function(s){ var o=methodSampleBuild(s); return o?{k:s.k,err:o.valid.errors.length,w:o.weeks.length,race:o.plan.sessions[o.plan.sessions.length-1].baseType}:{k:s.k,err:-1}; });
+      chk(c,'4 plans exemples produits par le moteur, sans erreur de contrôle', res.length===4 && res.every(function(r){ return r.err===0 && r.race==='COURSE'; }), res.map(function(r){ return r.k+':'+r.err+'/'+r.w+'s'; }).join(' '));
+      chk(c,'le profil et le plan de l\'utilisateur ne bougent pas', JSON.stringify({c:P.compDate,r:P.objRace,d:P.days,p:PLAN&&PLAN.sessions.length})===before, before);
+    }).catch(function(e){ ko(c,'chargement du module',e&&e.message); });
+  }
+  function testInvites(){
+    var c='7j. Invités, export, import';
+    photographie();
+    try{
+      // fusion : compte (A) + invité (B), une séance commune modifiée plus tard côté invité
+      SESS=[{date:'2026-09-01',type:'EF',km:8,duration:44,ut:100},{date:'2026-09-03',type:'Seuil',km:10,duration:50,ut:100}];
+      RECORDS=[{dist:'5000 m',meters:5000,time:'21:00',date:'2026-08-01'}]; PLAN={created:'2026-08-01',sessions:[{id:1,date:'2026-09-10',done:false}]};
+      ADAPT_LOG=[{id:'a1',ut:100,status:'applied'}];
+      var B={sessions:[{date:'2026-09-01',type:'EF',km:8,duration:44,ut:200,rpe:4},{date:'2026-09-05',type:'Long',km:14,duration:80}],
+        records:[{dist:'5000 m',meters:5000,time:'21:00',date:'2026-08-01'},{dist:'10 km',meters:10000,time:'44:00',date:'2026-09-02'}],
+        run_plan:{created:'2026-09-02',sessions:[{id:9,date:'2026-09-12',done:false}]}, adapt_log:[{id:'a1',ut:300,status:'undone'}], profile:{name:'X',city:'Oran'}};
+      var cityBefore=P.city, nameBefore=P.name; P.city=''; P.name='Moi';
+      var add=ikMergeInto(B);
+      chk(c,'fusion : sans doublon, la version la plus récente gagne', SESS.length===3 && SESS.filter(function(x){return x.date==='2026-09-01';})[0].rpe===4 && RECORDS.length===2 && ADAPT_LOG.length===1 && ADAPT_LOG[0].status==='undone', SESS.length+' séances · '+RECORDS.length+' records');
+      chk(c,'fusion : plan le plus récent, profil complété champ par champ', PLAN.created==='2026-09-02' && P.city==='Oran' && P.name!=='X', 'plan du '+PLAN.created+' · ville '+P.city);
+      P.city=cityBefore; P.name=nameBefore;
+      // export v3 → import
+      var txt=JSON.stringify({app:'IKORUN',exportVersion:3,appVersion:APP_VERSION,date:new Date().toISOString(),keys:IK_KEYS,data:ikSnapshot()});
+      var p=ikParseExport(txt);
+      chk(c,'export v3 relu par l\'import (format et version vérifiés)', !p.err && p.data.sessions.length===SESS.length && p.data.run_plan && ikParseExport('{"app":"IKORUN","exportVersion":99,"data":{}}').err==='importTooNew' && ikParseExport('{"x":1}').err==='invalidFile', 'v'+p.version);
+      var evil=ikParseExport(JSON.stringify({app:'IKORUN',exportVersion:3,data:{sessions:[{date:'2026-09-09',title:'<img src=x onerror=alert(1)>',km:5}]}}));
+      chk(c,'import : le HTML d\'un fichier fabriqué est neutralisé', evil.data.sessions[0].title.indexOf('<')<0, evil.data.sessions[0].title);
+      // V4.0.0 : détection du navigateur pour le guide d'installation
+      var UA={
+        iosSafari:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1',
+        iosChrome:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/123.0.6312.52 Mobile/15E148 Safari/604.1',
+        iosChromeOld:'Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/110.0 Mobile/15E148 Safari/604.1',
+        andChrome:'Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36',
+        samsung:'Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/24.0 Chrome/117.0.0.0 Mobile Safari/537.36',
+        waAnd:'Mozilla/5.0 (Linux; Android 13; M2101K6G Build/TKQ1.221013.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/124.0.6367.82 Mobile Safari/537.36 WhatsApp/2.24.8.85',
+        insta:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 327.0.0.32.120 (iPhone14,2; iOS 17_4; fr_FR)',
+        fb:'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/124.0 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/460.0.0.48.109;]',
+        tiktok:'Mozilla/5.0 (Linux; Android 12; SM-A525F) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/120.0 Mobile Safari/537.36 trill_340204 JsSdk/1.0 NetType/WIFI Channel/googleplay AppName/musical_ly app_version/34.2.4 BytedanceWebview/d8a21c6',
+        snap:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Snapchat/13.20.0.39 (like Safari/8617.1.17.10.12, panda)',
+        tg:'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Mobile Safari/537.36 Telegram-Android/10.9.1',
+        desk:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'};
+      var want={iosSafari:'ios-safari',iosChrome:'ios-other',iosChromeOld:'ios-old',andChrome:'android-chrome',samsung:'samsung',waAnd:'inapp',insta:'inapp',fb:'inapp',tiktok:'inapp',snap:'inapp',tg:'inapp',desk:'desktop'};
+      var bad=Object.keys(UA).filter(function(k){ return ikPlatform(UA[k]).k!==want[k]; });
+      chk(c,'installation : 12 navigateurs reconnus (dont 6 intégrés à une app)', !bad.length, bad.map(function(k){return k+'→'+ikPlatform(UA[k]).k;}).join(', ')||'ok');
+      chk(c,'installation : lien intent:// vers Chrome', /^intent:\/\/.+#Intent;scheme=https;package=com\.android\.chrome;/.test(ikIntentUrl()), '');
+    }catch(e){ ko(c,'exécution',e&&e.message); }
+    finally{ restaure(); }
   }
 
   /* ======================= 8. SON ======================================== */
@@ -1065,11 +1255,16 @@
     testTheme();
     testPetitsEcrans();
     testBilanMolette();
+    testAdaptation();
+    testInvites();
     testSelecteursEtPlan();
     testModifierSeance();
     Promise.resolve(testI18nUsage())
       .then(function(){ return testHorsLigne(); })
       .then(function(){ return testSon(); })
+      .then(function(){ return testPartage(); })
+      .then(function(){ return testCourses(); })
+      .then(function(){ return testStatsEtMethode(); })
       .catch(function(e){ ko('0. Suite','exécution', e && e.message); })
       .then(function(){ debloquerEcritures(); window.__smokeState='terminé'; rapport(); });
   }

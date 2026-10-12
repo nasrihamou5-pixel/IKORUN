@@ -31,24 +31,27 @@ fi
 
 # --- 1. Syntaxe -------------------------------------------------------------
 if [ "$node_absent" -eq 0 ]; then
-  for f in app.js sw.js tests/smoke.js; do
+  # (V3.15.0) toutes les sources assemblées (tools/bundle.json), pas seulement app.js
+  for f in sw.js tests/smoke.js $(node -e 'const b=require("./tools/bundle.json");console.log([...new Set(Object.entries(b).filter(([k])=>k.endsWith(".js")).flatMap(([,v])=>v))].join(" "))'); do
     [ -f "$f" ] || continue
     node --check "$f" || { echo "ERREUR de syntaxe dans $f"; fail=1; }
   done
 fi
 
 # --- 2. Coherence des traductions ------------------------------------------
-if [ "$node_absent" -eq 0 ] && [ -f app.js ]; then
+if [ "$node_absent" -eq 0 ] && [ -f i18n/fr.js ]; then
   node -e '
-    const src=require("fs").readFileSync("app.js","utf8");
-    const m=src.match(/const I18N *= *\{[\s\S]*?\n\};/);
+    // V4.0.0 : un fichier par langue (i18n/fr.js, en.js, ar.js). Le français est la référence.
+    const fs=require("fs"), rd=f=>{ try{ return fs.readFileSync(f,"utf8"); }catch(e){ return null; } };
+    const frSrc=rd("i18n/fr.js"), enSrc=rd("i18n/en.js"), arSrc=rd("i18n/ar.js");
     // Un controle qui abandonne en silence est pire que pas de controle : on
     // lui fait confiance a tort. Ici, ne pas pouvoir verifier EST une erreur.
-    if(!m){ console.log("ERREUR i18n : bloc I18N introuvable dans app.js"); process.exit(1); }
-    // Le bloc capture se termine par "};" — le point-virgule doit sauter, sinon
-    // eval("({...};)") est une erreur de syntaxe et le controle passait a vide.
-    const brut=m[0].replace(/^const I18N *= */,"").replace(/;\s*$/,"");
-    let I18N; try{ I18N=eval("("+brut+")"); }catch(e){ console.log("ERREUR i18n : bloc non evaluable -",e.message); process.exit(1); }
+    if(!frSrc||!enSrc||!arSrc){ console.log("ERREUR i18n : i18n/fr.js, en.js ou ar.js introuvable"); process.exit(1); }
+    let I18N;
+    try{
+      const window={};
+      I18N=new Function("window", frSrc.replace(/Object\.assign\(I18N,[^;]*;/,"")+"\n"+enSrc+"\n"+arSrc+"\nreturn Object.assign(I18N,window.IK_I18N_EXTRA);")(window);
+    }catch(e){ console.log("ERREUR i18n : fichiers non evaluables -",e.message); process.exit(1); }
     const fr=Object.keys(I18N.fr||{});
     const manqEn=fr.filter(k=>!(k in (I18N.en||{})));
     const manqAr=fr.filter(k=>!(k in (I18N.ar||{})));
@@ -70,8 +73,10 @@ fi
 # Le retrait des commentaires doit etre fait par un automate : un sed naif
 # laissait passer les commentaires de bloc, et comme ceux d app.js parlent
 # justement de prompt(), le hook refusait tous les commits pour rien.
+JSSRC=$(grep -oE '"[A-Za-z0-9_/-]+\.js"' tools/bundle.json 2>/dev/null | tr -d '"' | grep -v '\.min\.js$' | sort -u)
+[ -n "$JSSRC" ] || JSSRC=app.js
 if [ -f app.js ]; then
-  nu=$(awk '
+  nu=$(cat $JSSRC | awk '
     BEGIN{ inb=0 }
     {
       line=$0; out=""
@@ -87,11 +92,11 @@ if [ -f app.js ]; then
       }
       sub(/\/\/.*$/,"",out)
       print out
-    }' app.js)
+    }')
   for f in prompt confirm alert; do
     n=$(printf '%s' "$nu" | grep -oE "(^|[^A-Za-z0-9_.])$f[[:space:]]*\(" | wc -l | tr -d ' ')
     if [ "$n" != "0" ]; then
-      echo "ERREUR : $n appel(s) a $f() natif dans app.js — invisible dans une PWA iOS."
+      echo "ERREUR : $n appel(s) a $f() natif dans les sources JS — invisible dans une PWA iOS."
       echo "         Utiliser customPrompt / customConfirm / toast."
       fail=1
     fi
@@ -136,7 +141,7 @@ fi
 # (le preload d une version, l execution d une autre). Et une page qui change ses
 # ?v= sans nouveau cache du service worker (const C) garderait l ancienne coquille.
 if [ -f index.html ]; then
-  for f in 'app\.min\.js' 'app\.min\.css' 'vendor/supabase\.js' 'vendor/sb-init\.js'; do
+  for f in $(git show :index.html 2>/dev/null | grep -oE "[A-Za-z0-9_/.-]+\.(js|css)\?v=" | sed 's/?v=$//' | sort -u | sed 's/\./\\./g'); do
     nv=$(git show :index.html 2>/dev/null | grep -oE "$f\?v=[0-9]+" | sort -u | wc -l | tr -d ' ')
     if [ "$nv" -gt 1 ]; then
       echo "ERREUR : index.html cite $(echo $f | tr -d '\\') avec $nv numeros ?v= differents :"
@@ -153,18 +158,35 @@ if [ -f index.html ]; then
   fi
 fi
 
-# --- 4d. Fichiers minifies a jour (V3.14.0) ----------------------------------
-# La page charge app.min.js / app.min.css (tools/build.mjs). Leur en-tete porte
-# l empreinte de la source : une source modifiee sans reconstruction = refus.
-for pair in 'app.js:app.min.js' 'app.css:app.min.css'; do
-  src=${pair%%:*}; out=${pair##*:}
-  [ -f "$src" ] || continue
-  want=$(git show ":$src" 2>/dev/null | sha256sum | cut -c1-16)
-  have=$(git show ":$out" 2>/dev/null | head -c 400 | grep -o 'sha:[0-9a-f]*' | head -1 | cut -c5-)
-  if [ "$want" != "$have" ]; then
-    echo "ERREUR : $out ne correspond pas a $src (lancer : node tools/build.mjs, puis git add $out)"; fail=1
-  fi
-done
+# --- 4d. Fichiers servis a jour (V3.14.0, V3.15.0 : plusieurs sources) -------
+# La page charge des fichiers assembles et minifies (tools/build.mjs, d apres
+# tools/bundle.json). Leur en-tete porte l empreinte des sources assemblees :
+# une source modifiee sans reconstruction = refus.
+# 4e. Un fichier servi qui change doit changer de ?v= dans index.html (sinon les
+# telephones gardent l ancien, servi « immutable »).
+if [ "$node_absent" -eq 0 ] && [ -f tools/bundle.json ]; then
+  node -e '
+    const {execSync}=require("child_process"), crypto=require("crypto");
+    const show=f=>{ try{ return execSync("git show :"+f,{encoding:"utf8",maxBuffer:1<<28}); }catch(e){ return null; } };
+    const showHead=f=>{ try{ return execSync("git show HEAD:"+f,{encoding:"utf8",maxBuffer:1<<28,stdio:["pipe","pipe","ignore"]}); }catch(e){ return null; } };
+    const b=JSON.parse(show("tools/bundle.json")); let bad=0;
+    const staged=execSync("git diff --cached --name-only",{encoding:"utf8"}).split("\n");
+    const idx=show("index.html")||"", idxHead=showHead("index.html")||"";
+    const vOf=(html,f)=>{ const m=html.match(new RegExp(f.replace(/[.\/]/g,"\\$&")+"\\?v=(\\d+)")); return m?m[1]:null; };
+    for(const [out,srcs] of Object.entries(b)){ if(out==="_") continue;
+      const parts=srcs.map(show); if(parts.some(x=>x===null)){ console.log("ERREUR : source absente de l index pour "+out+" : "+srcs.filter((s,i)=>parts[i]===null).join(", ")); bad=1; continue; }
+      const want=crypto.createHash("sha256").update(parts.join("\n")).digest("hex").slice(0,16);
+      const o=show(out); const have=o&&((o.slice(0,600).match(/sha:([0-9a-f]+)/)||[])[1]);
+      if(want!==have){ console.log("ERREUR : "+out+" ne correspond pas a ses sources ("+srcs.join(" + ")+") : lancer node tools/build.mjs, puis git add "+out); bad=1; }
+      if(staged.includes(out) && showHead(out)!==null){
+        const a=vOf(idxHead,out), n=vOf(idx,out);
+        if(!n) { console.log("ERREUR : "+out+" n est cite nulle part dans index.html avec un ?v=N"); bad=1; }
+        else if(a===n){ console.log("ERREUR : "+out+" a change mais son ?v="+n+" est le meme dans index.html"); bad=1; }
+      }
+    }
+    process.exit(bad);
+  ' || fail=1
+fi
 
 # --- 5. Rappel des suites ---------------------------------------------------
 if git diff --cached --name-only | grep -qE '^(app\.js|index\.html|sw\.js)$'; then

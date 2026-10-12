@@ -1,18 +1,20 @@
-// IKORUN — construction des fichiers servis (V3.14.0)
+// IKORUN — construction des fichiers servis
 // ============================================================================
-// app.js et app.css restent LES SOURCES : on les lit, on les modifie, on les commente.
-// La page charge leurs versions minifiées, app.min.js et app.min.css, produites ici :
-// commentaires et espaces retirés, noms de variables LOCALES raccourcis. Les noms de
-// premier niveau (fonctions appelées par les onclick, P, SESS, I18N…) sont gardés
-// tels quels : la suite de fumée et les gestionnaires d'événements en dépendent.
-//
-// Mesuré le 11/10 : app.js 413 → 304 Ko compressés (−26 %), app.css 89 → 56 Ko (−37 %).
+// Les fichiers .js / .css des dossiers (app.js, plan/adapt.js, weather/…) sont LES SOURCES :
+// on les lit, on les modifie, on les commente. La page charge leurs versions assemblées et
+// minifiées, produites ici d'après tools/bundle.json :
+//   · app.min.js : le cœur, toutes ses sources mises bout à bout dans un seul script classique
+//     (elles partagent le même environnement global, comme quand tout était dans app.js) ;
+//   · app.min.css : la feuille de style ;
+//   · les modules chargés à la demande (scène météo, image de partage, courses…), un fichier chacun.
+// Commentaires et espaces retirés, noms de variables LOCALES raccourcis. Les noms de premier niveau
+// (fonctions appelées par les onclick, P, SESS, I18N…) sont gardés : la suite de fumée en dépend.
 //
 // Utilisation (une fois : cd tools && npm install) :   node tools/build.mjs
-// Le garde-fou de commit (.githooks/pre-commit) refuse un app.min.* qui ne
-// correspond plus à sa source : l'empreinte de la source est écrite en tête.
+// Le garde-fou de commit (.githooks/pre-commit) refuse un fichier servi qui ne correspond plus
+// à ses sources : l'empreinte des sources assemblées est écrite en tête (sha:…).
 // ============================================================================
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -24,16 +26,29 @@ const esbuild = require('esbuild');
 
 const sha = s => createHash('sha256').update(s).digest('hex').slice(0, 16);
 const version = (readFileSync(join(ROOT, 'app.js'), 'utf8').match(/const APP_VERSION='([^']+)'/) || [])[1] || '?';
+const bundle = JSON.parse(readFileSync(join(ROOT, 'tools', 'bundle.json'), 'utf8'));
+// Même assemblage que le garde-fou de commit (sources séparées par un saut de ligne).
+export const assemble = srcs => srcs.map(s => readFileSync(join(ROOT, s), 'utf8')).join('\n');
 
-for (const [src, out, loader] of [['app.js', 'app.min.js', 'js'], ['app.css', 'app.min.css', 'css']]) {
-  const code = readFileSync(join(ROOT, src), 'utf8');
-  const r = esbuild.transformSync(code, {
-    loader, minify: true, charset: 'utf8', legalComments: 'none',
-    // syntaxe laissée telle quelle (iOS 15+ la lit déjà) : rien n'est réécrit, seulement compacté
-    target: 'esnext', logLevel: 'error',
-  });
-  const head = '/*! IKORUN ' + version + ' · ' + out + ' construit depuis ' + src + ' sha:' + sha(code) +
-    ' · NE PAS MODIFIER : éditer ' + src + ' puis lancer node tools/build.mjs */\n';
+let fail = 0;
+for (const [out, srcs] of Object.entries(bundle)) {
+  if (out === '_') continue;
+  const loader = out.endsWith('.css') ? 'css' : 'js';
+  const code = assemble(srcs);
+  // Sources inchangées : on ne réécrit pas le fichier (sinon seul l'en-tête de version changerait
+  // et le garde-fou exigerait un nouveau ?v= pour rien).
+  if (existsSync(join(ROOT, out)) && readFileSync(join(ROOT, out), 'utf8').slice(0, 600).includes('sha:' + sha(code) + ' ')) { console.log(out.padEnd(24), 'inchangé'); continue; }
+  let r;
+  try {
+    r = esbuild.transformSync(code, {
+      loader, minify: true, charset: 'utf8', legalComments: 'none',
+      // syntaxe laissée telle quelle (iOS 15+ la lit déjà) : rien n'est réécrit, seulement compacté
+      target: 'esnext', logLevel: 'error',
+    });
+  } catch (e) { console.error('ERREUR dans', srcs.join(' + '), '\n', e.message); fail = 1; continue; }
+  const head = '/*! IKORUN ' + version + ' · ' + out + ' construit depuis ' + srcs.join('+') + ' sha:' + sha(code) +
+    ' · NE PAS MODIFIER : éditer les sources puis lancer node tools/build.mjs */\n';
   writeFileSync(join(ROOT, out), head + r.code);
-  console.log(src.padEnd(8), (code.length / 1024).toFixed(0).padStart(5), 'Ko →', out.padEnd(12), ((head + r.code).length / 1024).toFixed(0).padStart(5), 'Ko');
+  console.log(out.padEnd(24), (code.length / 1024).toFixed(0).padStart(5), 'Ko →', ((head + r.code).length / 1024).toFixed(0).padStart(5), 'Ko', srcs.length > 1 ? '(' + srcs.length + ' sources)' : '');
 }
+process.exit(fail);

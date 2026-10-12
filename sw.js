@@ -32,9 +32,12 @@
 // ou immuable (app.js n'est plus retéléchargé à chaque ouverture) ; chaque fichier
 // est ajouté séparément (un seul fichier manquant ne fait pas échouer l'installation).
 // ============================================================================
-const C = 'ikorun-v119';
+const C = 'ikorun-v129';
 const STATIC = 'ikorun-static-v1';
 const EXT = 'ikorun-ext-v1';
+// Prévisions Open-Meteo : réseau d'abord, la dernière réponse sert hors ligne (24 h au plus).
+const WX = 'ikorun-wx-v1';
+const WX_HOTES = ['api.open-meteo.com', 'air-quality-api.open-meteo.com'];
 const EXT_MAX = 250;
 const INDEX = './';
 
@@ -59,7 +62,9 @@ const STATIC_ASSETS = [
 // Scripts chargés par la page : 'vendor/supabase.js?v=1', 'app.js?v=104'… (le préchargement
 // <link rel=preload> et la liste SCRIPTS du bas d'index.html). tests/smoke.js n'en fait pas partie.
 // …et sa feuille de style app.css?v=N (sortie d'index.html le 28/09).
-const SCRIPTS_DE_LA_PAGE = /['"]((?:vendor\/)?[\w.-]+\.(?:js|css)\?v=\d+)['"]/g;
+// V4.0.0 : aussi les modules à la demande rangés dans un dossier (window.IK_MOD : weather/scene.min.js?v=1…),
+// mais jamais tests/smoke.js (suite de fumée, ?selftest=1 seulement).
+const SCRIPTS_DE_LA_PAGE = /['"]((?!tests\/)(?:[\w-]+\/)*[\w.-]+\.(?:js|css)\?v=\d+)['"]/g;
 
 // Une réponse issue d'une redirection (/index.html → /) ne peut pas resservir une
 // navigation telle quelle (Safari refuse) : on en fait une copie propre.
@@ -99,7 +104,7 @@ self.addEventListener('install', e => {
 });
 
 self.addEventListener('activate', e => {
-  const garder = [C, STATIC, EXT];
+  const garder = [C, STATIC, EXT, WX];
   e.waitUntil(
     caches.keys()
       .then(keys => Promise.all(keys.filter(k => !garder.includes(k)).map(k => caches.delete(k))))
@@ -119,6 +124,18 @@ function cacheFirst(nomCache, req, opts) {
     });
   })).catch(() => fetch(req));
 }
+// Météo : la réponse fraîche est gardée (une par lieu et par service) ; sans réseau, la dernière
+// de moins de 24 h. L'app garde aussi sa propre copie (localStorage) : double filet.
+function meteo(req) {
+  const cle = new URL(req.url); cle.searchParams.delete('_');
+  return fetch(req).then(res => {
+    if (res && res.ok) { const copie = res.clone(); caches.open(WX).then(c => c.put(cle.href, copie)).catch(() => {}); }
+    return res;
+  }).catch(() => caches.open(WX).then(c => c.match(cle.href)).then(hit => {
+    if (hit && Date.now() - new Date(hit.headers.get('date') || 0).getTime() < 864e5) return hit;
+    return Response.error();
+  }));
+}
 // Garde les N entrées les plus récentes (keys() rend l'ordre d'insertion).
 function rogner(cache, max) {
   return cache.keys().then(keys => Promise.all(keys.slice(0, Math.max(0, keys.length - max)).map(k => cache.delete(k))));
@@ -136,6 +153,7 @@ self.addEventListener('fetch', e => {
     e.respondWith(cacheFirst(EXT, req, { url: req.url, init: { mode: 'cors', credentials: 'omit' }, max: EXT_MAX }));
     return;
   }
+  if (WX_HOTES.includes(url.hostname)) { e.respondWith(meteo(req)); return; }
   // Tout autre domaine externe (Supabase, Google…) : laissé au navigateur. Le fetch()
   // d'un SW est soumis à SA CSP (connect-src) — c'est ce qui cassait tout avant.
   if (url.origin !== location.origin) return;
