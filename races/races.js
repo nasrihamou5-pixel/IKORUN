@@ -56,7 +56,7 @@
       .then(res=>{ if(res.error) throw res.error; RC.list=(res.data||[]).map(clean).filter(Boolean); RC.ts=Date.now(); RC.err=false;
         try{ localStorage.setItem(CACHE,JSON.stringify({ts:RC.ts,list:RC.list})); }catch(e){}
         syncFollows(); return RC.list; })
-      .catch(e=>{ console.warn('[IKORUN] courses',e&&e.message); RC.err=!RC.list; return RC.list||[]; })
+      .catch(e=>{ console.warn('[IKORUN] courses',e&&e.message); RC.err=!RC.list; RC.unavail=!RC.list && navigator.onLine; return RC.list||[]; })
       .finally(()=>{ RC.busy=null; });
     return RC.busy;
   }
@@ -119,7 +119,7 @@
     if(keepQ){ const q=$('#rcQ'); if(q){ q.focus(); try{ q.setSelectionRange(q.value.length,q.value.length); }catch(e){} } }
   }
   function resultsHTML(){
-    if(!RC.list) return RC.busy||navigator.onLine?'<div class="rc-empty">'+t('rcLoading')+'</div>':'<div class="rc-empty">'+t('rcOfflineEmpty')+'</div>';
+    if(!RC.list) return RC.unavail&&!RC.busy?'<div class="rc-empty"><b>'+t('rcUnavailTitle')+'</b><span>'+t('rcUnavailSub')+'</span></div>':RC.busy||navigator.onLine?'<div class="rc-empty">'+t('rcLoading')+'</div>':'<div class="rc-empty">'+t('rcOfflineEmpty')+'</div>';
     if(RC.view==='cal') return calHTML();
     const list=filtered();
     let h=RC.err?'<div class="rc-note">'+t('rcOfflineCache')+'</div>':'';
