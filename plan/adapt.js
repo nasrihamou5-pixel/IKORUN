@@ -435,7 +435,10 @@ function adRuleLoad(){
     if(r) out.push(r);
   }
   // Sous-charge prolongée : +5 % sur les footings, jamais au-delà des +10 % hebdomadaires.
-  if(a<0.8){ if(!st.lowSince) st.lowSince=k; } else if(a>=0.85) st.lowSince=null;
+  // Sous-charge seulement chez un athlète qui court (au moins 4 séances en 14 jours) : quelqu'un
+  // qui s'est arrêté relève des coupures, jamais d'une hausse de volume.
+  const runs14=(SESS||[]).filter(x=>x.date>adKeyAdd(k,-14) && x.date<k && (+x.km||0)>0).length;
+  if(a<0.8 && runs14>=4){ if(!st.lowSince) st.lowSince=k; } else if(a>=0.85 || runs14<4) st.lowSince=null;
   if(st.lowSince && adDaysBetweenKeys(st.lowSince,k)>=14 && !adCool('acwrLow',14) && !adBlockActive(k) && !adIllActive(k)){
     adFired('acwrLow');
     const r=adaptApply('acwrLow',false,(pl,pc)=>{ let n=0; adWindow(pl,k,7,false).forEach(s=>{ if((s.baseType==='EF') && s.phaseKey!=='TAPER' && !s.deload){ adKeepKm0(s); s.km=Math.round(s.km*1.05*10)/10; planApplySegs(s,pc); adTag(s,'acwrLow',false); n++; } }); return n; },
@@ -653,6 +656,7 @@ function adaptDaily(){
   let out=[];
   try{
     out=out.concat(adRuleKeepBlocks());
+    if(typeof ramadanDaily==='function') out=out.concat(ramadanDaily());
     out=out.concat(adRuleGaps());
     out=out.concat(adRuleLoad());
     out=out.concat(adRuleReadiness());

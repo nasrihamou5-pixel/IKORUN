@@ -6,7 +6,8 @@
     "plan/bilan.js",
     "plan/adapt-ui.js",
     "plan/simulate.js",
-    "weather/weather.js"
+    "weather/weather.js",
+    "ramadan/ramadan.js"
   ],
   "app.min.css": [
     "app.css"

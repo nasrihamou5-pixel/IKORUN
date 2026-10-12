@@ -139,7 +139,8 @@ function wxSessHour(){ const r=P&&+P.runHour; return (r>=5&&r<=22)?r:18; }
 function wxSetRunHour(h){ P.runHour=h; DB.save('profile',P); wxRenderSheet(); haptic(); }
 function wxForSession(s){
   if(!s||!s.date) return null;
-  const h=wxSessHour(), w=wxAt(wxHourKey(s.date,h)); if(!w) return null;
+  const rh=(typeof ramadanRunHour==='function')?ramadanRunHour(s):null; // jeûne : avant ou après l'iftar
+  const h=rh!=null?rh:wxSessHour(), w=wxAt(wxHourKey(s.date,h)); if(!w) return null;
   return Object.assign({h},w,{hc:heatCorr(w.t,w.dew)});
 }
 // Conditions d'une séance faite, pour le bilan (moteur d'adaptation) : l'heure qui précède le

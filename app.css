@@ -4552,6 +4552,28 @@ html[dir="rtl"] .wx-adv li.warn{box-shadow:inset -3px 0 0 #F2B84B;} html[dir="rt
 .wx-code{display:inline-block;min-width:22px;color:var(--muted);font-variant-numeric:tabular-nums;font-weight:600;}
 #wxSheet .ad-foot a{color:var(--e2);}
 
+/* ===== V4.0.0 — RAMADAN (ramadan/ramadan.js) ===== */
+.rm-card{margin:0 0 14px;padding:12px 14px;border-radius:20px;cursor:pointer;color:var(--snow);
+  background:linear-gradient(135deg,color-mix(in srgb,var(--e) 14%,var(--s1)),color-mix(in srgb,var(--e2) 12%,var(--s1)));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--e) 30%,transparent);}
+.rm-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 10px;}
+.rm-h b{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;}
+.rm-h b svg{color:var(--e);}
+.rm-h span{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;}
+.rm-card p{margin:6px 0 0;font-size:12.5px;line-height:1.5;color:var(--snow);}
+.rm-card .rm-hyd{display:flex;gap:6px;align-items:flex-start;color:var(--muted);}
+.rm-card .rm-hyd svg{flex:none;margin-top:2px;color:var(--e2);}
+.rm-hero{display:flex;flex-direction:column;gap:3px;padding:14px;border-radius:18px;margin-bottom:10px;background:color-mix(in srgb,var(--e) 14%,var(--s1));}
+.rm-hero b{font-family:'Unbounded',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:17px;color:var(--snow);}
+.rm-hero span{font-size:12.5px;color:var(--muted);}
+.rm-times{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+.rm-times>div,.rm-slots>div{display:flex;flex-direction:column;gap:3px;padding:10px;border-radius:14px;background:var(--lg-well,var(--s2));min-width:0;}
+.rm-times span,.rm-slots span{font-size:11px;color:var(--muted);line-height:1.35;}
+.rm-times b{font-size:17px;color:var(--snow);font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rm-slots{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.rm-slots b{font-size:14px;color:var(--snow);font-variant-numeric:tabular-nums;}
+.rm-tips li{font-size:12.5px;}
+.fete-card .fc-txt .fc-rm{display:block;margin-top:6px;padding:6px 8px;border-radius:10px;font-size:11.5px;line-height:1.45;font-weight:600;cursor:pointer;background:rgba(0,0,0,.18);}
+
 /* >>> MODE SIMPLE : TEXTES AGRANDIS (généré par tools/ezscale.py, ne pas éditer à la main) >>> */
 html.easy-mode .acc-sw span{font-size:13px;}
 html.easy-mode .ap-sub{font-size:13px;}
@@ -4983,6 +5005,16 @@ html.easy-mode .wx-cool span,html.easy-mode .wx-cool button{font-size:14.5px;}
 html.easy-mode .wx-sun{font-size:14.5px;}
 html.easy-mode .wx-li b{font-size:15.5px;}
 html.easy-mode .wx-li span{font-size:13px;}
+html.easy-mode .rm-h b{font-size:15.5px;}
+html.easy-mode .rm-h span{font-size:14px;}
+html.easy-mode .rm-card p{font-size:14.5px;}
+html.easy-mode .rm-hero b{font-size:19.5px;}
+html.easy-mode .rm-hero span{font-size:14.5px;}
+html.easy-mode .rm-times span,html.easy-mode .rm-slots span{font-size:12.5px;}
+html.easy-mode .rm-times b{font-size:19.5px;}
+html.easy-mode .rm-slots b{font-size:16px;}
+html.easy-mode .rm-tips li{font-size:14.5px;}
+html.easy-mode .fete-card .fc-txt .fc-rm{font-size:13px;}
 html.easy-mode [style*="font-size:9px"]{font-size:10.5px !important;}
 html.easy-mode [style*="font-size:9.5px"]{font-size:11px !important;}
 html.easy-mode [style*="font-size:10px"]{font-size:11.5px !important;}

@@ -975,6 +975,15 @@
       var h1=heatCorr(30,20), h2=heatCorr(20,10), h3=heatCorr(40,28), h0=heatCorr(15,5);
       chk(c,'météo : correction de chaleur selon la table de Hadley', h1.sum===154 && h1.corr>0.045 && h1.corr<0.06 && h2.corr>0.005 && h2.corr<=0.01 && h3.noHard && h0.corr===0, h1.sum+' → '+(h1.corr*100).toFixed(2)+' %');
       chk(c,'météo : 58 wilayas, coordonnées en Algérie', WILAYAS.length===58 && WILAYAS.every(function(w,i){ return w[0]===i+1 && w[2]>18.9 && w[2]<37.2 && w[3]>-8.7 && w[3]<12; }), '');
+      // V4.0.0 : Ramadan 1448 (8 février – 8 mars 2027 selon Umm al-Qura) : actif TOUT le mois, Aïd le 9 mars
+      var sv=window.__ikSimNow, vis=P.ramadanVisual, fe=P.fetes, adj=P.hijriAdj;
+      try{
+        P.ramadanVisual=true; P.fetes=true; P.hijriAdj=0;
+        var at=function(k){ window.__ikSimNow=new Date(k+'T10:00:00').getTime(); _rmMemo={}; _hijriMemo=null; };
+        at('2027-02-08'); var f1=feteToday(); at('2027-02-21'); var f2=feteToday(); var inf=ramadanInfo(); at('2027-03-08'); var f3=feteToday(); at('2027-03-09'); var f4=feteToday(); at('2027-03-20'); var f5=feteToday();
+        chk(c,'Ramadan : actif du 1er jour à la veille de l\'Aïd, puis l\'Aïd', f1==='ramadan'&&f2==='ramadan'&&f3==='ramadan'&&f4==='eidFitr'&&f5!=='ramadan'&&inf.day===14&&inf.end==='2027-03-08', [f1,f2,f3,f4,f5].join(' / ')+' · jour '+inf.day);
+        var T=ramadanTimes('2027-02-21'); chk(c,'Ramadan : imsak = Fajr − 10 min, créneau après l\'iftar 1 h 30 – 2 h', T.imsakMin===((+T.fajr.slice(0,2))*60+(+T.fajr.slice(3)))-10 && T.after[0]>T.iftar, 'imsak '+T.imsak+' · iftar '+T.iftar+' · '+T.after.join('–'));
+      } finally { window.__ikSimNow=sv; P.ramadanVisual=vis; P.fetes=fe; P.hijriAdj=adj; _rmMemo={}; _hijriMemo=null; }
       var lm=loadModel(); chk(c,'charge : une seule source (outil ACWR = moteur)', typeof lm.acute==='number' && 'acwr' in lm && 'monotony' in lm, '');
     }catch(err){ ko(c,'exécution',err&&err.message); }
     finally{ restaure(); }
