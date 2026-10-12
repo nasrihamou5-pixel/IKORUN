@@ -1,6 +1,9 @@
 {
   "_": "Fichiers servis et leurs sources, dans l'ordre d'assemblage. Le cœur (app.min.js) est un seul script classique : les sources partagent le même environnement global, comme avant. Les modules « à la demande » sont chargés par ikLoad(nom) (voir app.js) et précachés par le service worker via window.IK_MOD (index.html).",
   "app.min.js": [
+    "i18n/fr.js",
+    "i18n/i18n.js",
+    "theme/theme.js",
     "app.js",
     "analytics/track.js",
     "core/guest.js",
@@ -30,5 +33,11 @@
   ],
   "method/method.min.js": [
     "method/method.js"
+  ],
+  "i18n/en.min.js": [
+    "i18n/en.js"
+  ],
+  "i18n/ar.min.js": [
+    "i18n/ar.js"
   ]
 }

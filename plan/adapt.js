@@ -99,7 +99,6 @@ function adLastActivity(beforeKey){
 /* ---------- 2. EXÉCUTION D'UNE SÉANCE ---------- */
 // Correction d'allure du jeûne (Ramadan) : 3 % d'allure en plus sont attendus, sans faute.
 const AD_FAST_CORR=0.03;
-function adIsKeyType(bt){ return PLAN_HARD_Q.includes(bt) || bt==='COURSE'; }
 function adaptExec(e){
   const bt=e.baseType, exp=rpeExpOf(bt);
   const out={dev:null,devS:null,durDev:null,rpeDev:0,verdict:'none',rawVerdict:'none',causes:[],corr:0,tgt:null,real:null};
@@ -277,7 +276,6 @@ function adWindow(pl,k,n,safety){ const end=adKeyAdd(k,n); return pl.sessions.fi
 
 /* ---------- 6. RÈGLES ---------- */
 /* e. Douleur et maladie — jamais de diagnostic, toujours le conseil de consulter si ça dure. */
-const AD_PAIN_ZONES=['foot','ankle','achilles','shin','calf','knee','thighF','thighB','hip','lowBack','other'];
 function adRulePain(e){
   let p=e.pain; if(!p||!p.on) return [];
   const st=adState(), k=todayKey(), out=[];

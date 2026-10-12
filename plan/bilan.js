@@ -176,15 +176,31 @@ function blMissedHTML(){
       '<div class="bl-note">'+ICN('health',14)+'<span>'+t('blIllAdvice')+'</span></div>';
   }
   if(d.reason){
-    h+='<button type="button" class="db-more" onclick="blOpenReplacement()">'+ICN('plus',15)+' '+(d.repl?tp('blDidInstead',trActivity(d.repl)):t('blDidOther'))+'</button>';
+    if(!d._replOpen) h+='<button type="button" class="db-more" onclick="blOpenReplacement()">'+ICN('plus',15)+' '+(d.repl?tp('blDidInstead',trActivity(d.repl))+(d.replData&&d.replData.dur?' · '+d.replData.dur+' min':''):t('blDidOther'))+'</button>';
+    else h+=blReplHTML();
   }
   return h;
 }
-// « J'ai fait autre chose à la place » : les formulaires de remplacement existants (app.js).
-function blOpenReplacement(){
-  missedCtx={sessionId:(debriefCtx&&debriefCtx.planSessionId)||null,reason:debriefData.reason,replacement:null,replData:null,muscuCat:null,fromBilan:true};
-  renderMissedReplacement();
+/* « J'ai fait autre chose à la place » (V4.0.0, dans le bilan) : l'activité et sa durée.
+   Elle compte dans la charge (effort ressenti modéré, 4/10) et comme activité croisée
+   pendant une coupure (perte de forme réduite, voir DANIELS_OFF_X dans plan/adapt.js). */
+const BL_REPL=['Vélo','Natation','Musculation','Marche','Mobilité','Autre'];
+function blOpenReplacement(){ debriefData._replOpen=true; renderDebrief(); }
+function blReplHTML(){
+  const d=debriefData, cur=d.repl&&d.repl!=='Aucune activité'?d.repl:null, dur=d.replData&&d.replData.dur||0;
+  let h='<div class="db-card bl-repl"><div class="db-card-h">'+ICN('plus',15)+' '+t('blDidOther')+'</div><div class="sh-row">'+
+    BL_REPL.map(a=>'<button type="button" class="sh-chip'+(cur===a?' on':'')+'" aria-pressed="'+(cur===a)+'" onclick="blReplSet(\''+a+'\')">'+trActivity(a)+'</button>').join('')+'</div>';
+  if(cur) h+='<div class="db-wlab">'+t('dbDurLab')+'</div><div class="sh-row">'+[20,30,45,60,90].map(m=>'<button type="button" class="sh-chip'+(dur===m?' on':'')+'" aria-pressed="'+(dur===m)+'" onclick="blReplDur('+m+')">'+m+' min</button>').join('')+'</div>';
+  h+='<button type="button" class="db-more" onclick="blReplSet(null)">'+t(cur?'blReplNone':'cancel')+'</button></div>';
+  return h;
 }
+function blReplSet(a){
+  const d=debriefData;
+  if(!a){ d.repl=null; d.replData=null; d._replOpen=false; }
+  else { d.repl=a; d.replData={kind:a,dur:(d.replData&&d.replData.dur)||30,rpe:4}; }
+  renderDebrief(); haptic();
+}
+function blReplDur(m){ const d=debriefData; if(!d.repl) return; d.replData={kind:d.repl,dur:m,rpe:4}; renderDebrief(); haptic(); }
 /* ---- douleur : silhouette à zones ---- */
 // Zones cliquables, vue de face (F) et de dos (B). Côté de l'athlète : sur la vue de face, sa droite est à gauche.
 const BL_BODY=[
@@ -330,13 +346,6 @@ function blSubmitMissed(repl,replData){
   setTimeout(checkMissedSessions,600);
 }
 // Fin d'un formulaire de remplacement (app.js) ouvert depuis le bilan.
-function finalizeMissedSession(){
-  if(!missedCtx){ closeOv('ovProg'); return; }
-  const repl=missedCtx.replacement, data=missedCtx.replData;
-  missedCtx=null;
-  if(debriefData){ debriefData.repl=repl; debriefData.replData=data; renderDebrief(); return; }
-  closeOv('ovProg');
-}
 /* ---- séances passées sans réponse : UNE question pour toutes ---- */
 function checkMissedSessions(){
   if(!PLAN || !PLAN.sessions || document.getElementById('ovProg').classList.contains('on')) return;

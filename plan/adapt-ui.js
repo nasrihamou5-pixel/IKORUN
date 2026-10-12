@@ -144,10 +144,6 @@ function mcSet(f,v){
   const card=document.querySelector('.mc-card'); if(card) card.outerHTML=morningCheckHTML();
 }
 // Petite pastille de forme (Accueil), seulement s'il y a des données du jour.
-function readinessChipHTML(){
-  const rd=adaptReadiness(); if(!rd) return '';
-  return '<div class="rd-chip rd-'+rd.level+'" title="'+escHtml(t('rdTitle'))+'"><b>'+rd.score+'</b><span>'+t('rdLevel_'+rd.level)+'</span></div>';
-}
 
 /* ---------- OUTIL CHARGE (ACWR), même calcul que le moteur ---------- */
 function renderLoadTool(){
