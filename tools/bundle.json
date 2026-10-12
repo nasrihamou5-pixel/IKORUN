@@ -9,7 +9,8 @@
     "plan/adapt-ui.js",
     "plan/simulate.js",
     "weather/weather.js",
-    "ramadan/ramadan.js"
+    "ramadan/ramadan.js",
+    "races/follow.js"
   ],
   "app.min.css": [
     "app.css"
@@ -19,5 +20,8 @@
   ],
   "share/share.min.js": [
     "share/share.js"
+  ],
+  "races/races.min.js": [
+    "races/races.js"
   ]
 }

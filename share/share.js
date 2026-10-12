@@ -194,7 +194,7 @@
   /* ---------- écran ---------- */
   window.shareOpen=function(ctx){
     const d=ctx||window.shareCtxProgress();
-    d.dateLabel=d.date?ikDate(new Date(d.date+'T12:00:00'),'dmy',{weekday:'long',day:'numeric',month:'long'}):'';
+    d.dateLabel=d.date?ikDate(new Date(d.date+'T12:00:00'),'{weekday:long,day:numeric,month:long}',{weekday:'long',day:'numeric',month:'long'}):'';
     const has={name:!!d.name,date:!!d.date,dist:!!d.km,dur:!!d.dur,pace:!!d.pace,deniv:!!d.deniv,rpe:!!d.rpe,hr:!!d.hr,reps:!!(d.reps&&d.reps.length)};
     S={data:d,has,show:{deniv:has.deniv,hr:has.hr},fmt:'story',tpl:d.kind==='race'?'race':d.kind==='progress'?'progress':has.reps?'detail':'sober',bg:'gradient',img:null,zoom:1,px:0,py:0};
     openOv('ovProg'); $('#ovProgTitle').textContent=t('shTitle');
@@ -254,7 +254,7 @@
   };
   // Rendu hors écran (tests) : ctx = contenu, o = {fmt,tpl,bg}. Rend le canevas.
   window.shareRenderTo=function(ctx,o){
-    const keep=S, d=Object.assign({},ctx); d.dateLabel=d.date?ikDate(new Date(d.date+'T12:00:00'),'dmy',{weekday:'long',day:'numeric',month:'long'}):'';
+    const keep=S, d=Object.assign({},ctx); d.dateLabel=d.date?ikDate(new Date(d.date+'T12:00:00'),'{weekday:long,day:numeric,month:long}',{weekday:'long',day:'numeric',month:'long'}):'';
     S={data:d,has:{name:!!d.name,date:!!d.date,dist:!!d.km,dur:!!d.dur,pace:!!d.pace,deniv:!!d.deniv,rpe:!!d.rpe,hr:!!d.hr,reps:!!(d.reps&&d.reps.length)},show:Object.assign({},o&&o.show),fmt:'story',tpl:'sober',bg:'gradient',img:null,zoom:1,px:0,py:0};
     Object.assign(S,o||{}); if(S.tpl==='progress') progFill();
     const cv=document.createElement('canvas'); try{ render(cv); } finally { S=keep; }

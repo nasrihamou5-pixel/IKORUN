@@ -1015,6 +1015,33 @@
       chk(c,'prénom masquable', a.toDataURL()!==b.toDataURL(), 'image différente sans le prénom');
     }).catch(function(e){ ko(c,'chargement du module',e&&e.message); });
   }
+  // V4.0.0 : calendrier des courses (module chargé à la demande, données de test locales)
+  function testCourses(){
+    var c='7l. Courses';
+    var saveF=P.raceFollows;
+    return ikLoad('races').then(function(){
+      var r={id:'11111111-1111-4111-8111-111111111111',name:'Semi-marathon test, édition; spéciale d’Alger',date:adKeyAdd(todayKey(),20),start_time:'09:00',city:'Alger',wilaya:16,lat:36.75,lon:3.06,kind:'route',distances:[10,21.097],organizer:'',url:'',reg_url:'https://example.org/i',status:'published'};
+      chk(c,'objectif du plan depuis une course (semi, 10 km, cross, autre)', raceToObjective(r,21.097).objRace==='Semi-marathon' && raceToObjective(r,10).objRace==='10 km' && raceToObjective({kind:'cross',date:r.date},4).objRace==='Cross' && raceToObjective(r,15).objRace==='Autre' && raceToObjective(r,15).objRaceKm===15 && raceToObjective(r,10).compDate===r.date, raceToObjective(r,21.097).objRace);
+      var ics=raceIcsText(r,new Date('2026-10-12T10:00:00Z')), lines=ics.split('\r\n'), enc=new TextEncoder(), long=lines.filter(function(l){ return enc.encode(l).length>75; });
+      var unf=ics.replace(/\r\n /g,'');
+      chk(c,'export .ics : lignes ≤ 75 octets, texte échappé, 3 rappels', !long.length && /SUMMARY:Semi-marathon test\\, édition\\; spéciale/.test(unf) && (unf.match(/BEGIN:VALARM/g)||[]).length===3 && /TRIGGER:-P7D/.test(unf) && /DTSTART;TZID=Africa\/Algiers:/.test(unf), long.length+' ligne(s) trop longue(s)');
+      var allDay=raceIcsText(Object.assign({},r,{start_time:null}));
+      chk(c,'export .ics journée entière : rappels à 9 h', /DTSTART;VALUE=DATE:/.test(allDay) && /TRIGGER:-PT15H/.test(allDay.replace(/\r\n /g,'')), 'veille 9 h');
+      chk(c,'contrôle du formulaire (mêmes règles que le serveur)', raceCheck(r)===null && raceCheck(Object.assign({},r,{url:'javascript:alert(1)'}))==='url' && raceCheck(Object.assign({},r,{date:'2026-13-01'}))==='date' && raceCheck(Object.assign({},r,{wilaya:59}))==='wilaya' && raceCheck(Object.assign({},r,{lat:48.8,lon:2.3}))==='coords' && raceCheck(Object.assign({},r,{distances:[5,'x']}))==='distances', 'url · date · wilaya · coords · distances');
+      chk(c,'distances saisies « 10 ; 21,1 »', JSON.stringify(raceParseDists('10 ; 21,1'))==='[10,21.1]' && JSON.stringify(raceParseDists('4|8 km'))==='[4,8]' && raceParseDists('')===null, JSON.stringify(raceParseDists('10 ; 21,1')));
+      var rows=raceParseImport('nom;date;heure;ville;wilaya;type;distances;site\n"Cross ""FAA"" test";10/01/2027;9h30;Oran;Oran;cross;4|8;https://example.org\nSemi;2027-02-01;;Alger;16;route;21,1;');
+      chk(c,'import CSV (guillemets, dates JJ/MM/AAAA, wilaya par nom, heure 9h30)', rows.length===2 && rows[0].name==='Cross "FAA" test' && rows[0].date==='2027-01-10' && rows[0].wilaya===31 && rows[0].start_time==='09:30' && rows[0].kind==='cross' && JSON.stringify(rows[0].distances)==='[4,8]' && rows[1].distances[0]===21.1, JSON.stringify(rows[0]));
+      var js=raceParseImport('[{"name":"Course","date":"2027-03-01","city":"Sétif","distance":"10"}]');
+      chk(c,'import JSON', js.length===1 && js[0].city==='Sétif' && js[0].distances[0]===10 && raceParseImport('[oops').err==='rcImpBadJson', JSON.stringify(js[0]));
+      P.raceFollows=[]; raceFollowSet(r,true);
+      var card=raceCountdownHTML();
+      chk(c,'suivi : compte à rebours sur l\'accueil (≤ 30 jours)', raceIsFollowed(r.id) && card.indexOf('rc-count')>=0 && card.indexOf('<b>20</b>')>=0, 'J-20');
+      P.raceFollows=[{id:r.id,name:'X',date:adKeyAdd(todayKey(),45),city:'Y'}];
+      chk(c,'suivi : rien au-delà de 30 jours', raceCountdownHTML()==='', 'J-45');
+      var x=cleanImportedProfile({raceFollows:[{id:r.id,name:'<img src=x>',date:'2027-01-01',city:'A'},{id:"x');alert(1);//",date:'2027-01-01'}],objRaceId:"');alert(1)//",objRaceName:'Semi <b>'});
+      chk(c,'import du profil : courses suivies nettoyées', x.raceFollows.length===1 && x.raceFollows[0].name.indexOf('<')<0 && !x.objRaceId && x.objRaceName.indexOf('<')<0, x.raceFollows.length+' gardée(s)');
+    }).catch(function(e){ ko(c,'chargement du module',e&&e.message); }).then(function(){ P.raceFollows=saveF; });
+  }
   function testInvites(){
     var c='7j. Invités, export, import';
     photographie();
@@ -1210,6 +1237,7 @@
       .then(function(){ return testHorsLigne(); })
       .then(function(){ return testSon(); })
       .then(function(){ return testPartage(); })
+      .then(function(){ return testCourses(); })
       .catch(function(e){ ko('0. Suite','exécution', e && e.message); })
       .then(function(){ debloquerEcritures(); window.__smokeState='terminé'; rapport(); });
   }
