@@ -1042,6 +1042,32 @@
       chk(c,'import du profil : courses suivies nettoyées', x.raceFollows.length===1 && x.raceFollows[0].name.indexOf('<')<0 && !x.objRaceId && x.objRaceName.indexOf('<')<0, x.raceFollows.length+' gardée(s)');
     }).catch(function(e){ ko(c,'chargement du module',e&&e.message); }).then(function(){ P.raceFollows=saveF; });
   }
+  // V4.0.0 : statistiques anonymes (file d'attente, nettoyage, refus) et plans exemples
+  function testStatsEtMethode(){
+    var c='7m. Statistiques et méthode';
+    chk(c,'aucune statistique pendant la suite de fumée', ikAnalyticsOn()===false, 'selftest');
+    var keepOn=window.ikAnalyticsOn, keepQ=localStorage.getItem('ik_evq'), keepA=localStorage.getItem('ik_aid'), keepPa=P.analytics;
+    try{
+      localStorage.removeItem('ik_evq'); window.ikAnalyticsOn=function(){ return true; };
+      ikTrack('Bad Name',{}); ikTrack('test_ev',{a:new Array(101).join('x'),n:1.23456,o:{x:1},b:true,u:undefined});
+      var q=JSON.parse(localStorage.getItem('ik_evq')||'[]'), e=q[0]||{};
+      chk(c,'événement : nom contrôlé, propriétés courtes, identifiant aléatoire', q.length===1 && e.n==='test_ev' && e.p.a.length===40 && e.p.n===1.23 && e.p.b===true && !('o' in e.p) && /^[0-9a-f-]{36}$/.test(e.aid) && ['ios','android','desktop','other'].indexOf(e.pf)>=0, JSON.stringify(e.p));
+      chk(c,'aucune donnée de compte dans l\'événement', JSON.stringify(e).indexOf(String(window.currentUserId||'@@'))<0 && JSON.stringify(e).indexOf(String(P.name||'@@'))<0, Object.keys(e).join(','));
+      for(var i=0;i<320;i++) ikTrack('test_ev',{});
+      chk(c,'file d\'attente hors ligne bornée à 300', JSON.parse(localStorage.getItem('ik_evq')).length===300, '300');
+      window.ikAnalyticsOn=keepOn; ikAnalyticsSet(false);
+      chk(c,'refus : file et identifiant effacés', !localStorage.getItem('ik_evq') && !localStorage.getItem('ik_aid') && P.analytics===false && ikAnalyticsOn()===false, 'opt-out');
+    } finally {
+      window.ikAnalyticsOn=keepOn; clearTimeout(_ikEvT); P.analytics=keepPa;
+      try{ if(keepQ) localStorage.setItem('ik_evq',keepQ); else localStorage.removeItem('ik_evq'); if(keepA) localStorage.setItem('ik_aid',keepA); }catch(x){}
+    }
+    var before=JSON.stringify({c:P.compDate,r:P.objRace,d:P.days,p:PLAN&&PLAN.sessions.length});
+    return ikLoad('method').then(function(){
+      var res=methodSamples.map(function(s){ var o=methodSampleBuild(s); return o?{k:s.k,err:o.valid.errors.length,w:o.weeks.length,race:o.plan.sessions[o.plan.sessions.length-1].baseType}:{k:s.k,err:-1}; });
+      chk(c,'4 plans exemples produits par le moteur, sans erreur de contrôle', res.length===4 && res.every(function(r){ return r.err===0 && r.race==='COURSE'; }), res.map(function(r){ return r.k+':'+r.err+'/'+r.w+'s'; }).join(' '));
+      chk(c,'le profil et le plan de l\'utilisateur ne bougent pas', JSON.stringify({c:P.compDate,r:P.objRace,d:P.days,p:PLAN&&PLAN.sessions.length})===before, before);
+    }).catch(function(e){ ko(c,'chargement du module',e&&e.message); });
+  }
   function testInvites(){
     var c='7j. Invités, export, import';
     photographie();
@@ -1238,6 +1264,7 @@
       .then(function(){ return testSon(); })
       .then(function(){ return testPartage(); })
       .then(function(){ return testCourses(); })
+      .then(function(){ return testStatsEtMethode(); })
       .catch(function(e){ ko('0. Suite','exécution', e && e.message); })
       .then(function(){ debloquerEcritures(); window.__smokeState='terminé'; rapport(); });
   }

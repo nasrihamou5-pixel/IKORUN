@@ -116,6 +116,7 @@ function ramadanDaily(){
 }
 function ramadanSet(field,val){
   P[field]=val; DB.save('profile',P);
+  ikTrack('ramadan_set',{f:String(field).slice(0,20),on:typeof val==='boolean'?val:undefined});
   const r=ramadanDaily(); adPersist();
   if(r.length) toast(adMsg(r[r.length-1].msg));
   if(document.getElementById('rmSheet')) openRamadan(); else refreshScreen();

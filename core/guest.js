@@ -176,6 +176,7 @@ async function guestMergeGoogle(){
 
 /* ---------- export / import .json (version 3) ---------- */
 function exportData(){
+  ikTrack('export_data',{});
   const snap=ikSnapshot();
   const data={app:'IKORUN',exportVersion:IK_EXPORT_VERSION,appVersion:APP_VERSION,date:new Date().toISOString(),keys:IK_KEYS,data:snap};
   const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
@@ -237,6 +238,7 @@ function openImportChoice(){
 }
 function applyImport(mode){
   const p=_importPending; if(!p) return;
+  ikTrack('import_data',{mode:mode||''});
   const go=()=>{
     if(mode==='replace'){ const cur=ikSnapshot(); IK_KEYS.forEach(k=>{ if(p.data[k]!==undefined) cur[k]=p.data[k]; }); ikApplySnapshot(cur); }
     else ikMergeInto(p.data);

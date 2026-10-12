@@ -288,6 +288,7 @@ function submitDebrief(){
     const guard=sessionGuard(+d.distance||0,+d.duration||0,c.date);
     if(!guard.ok){ toast(guard.msg); return; }
     const e=blRecord(c,d,debriefReps,blBaseType());
+    ikTrack('bilan_done',{type:e.baseType||'',plan:!!c.planSessionId,reps:!!(e.reps&&e.reps.length)});
     refreshXP({animate:true});
     const entries=adaptAfterBilan(e);
     saveAll();

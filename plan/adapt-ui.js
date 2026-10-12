@@ -129,6 +129,7 @@ function mcHide(){ P.mcHide=todayKey(); _mc={}; DB.save('profile',P); refreshScr
 function mcSet(f,v){
   _mc[f]=v; haptic();
   if(_mc.sleep && _mc.sore && _mc.mood){
+    ikTrack('morning_check',{});
     CHECKINS=(CHECKINS||[]).filter(c=>c.date>=adKeyAdd(todayKey(),-60)).concat({id:'c'+todayKey(),ut:adNowTs(),date:todayKey(),sleep:_mc.sleep,sore:_mc.sore,mood:_mc.mood});
     _mc={};
     DB.save('checkins',CHECKINS);

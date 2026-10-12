@@ -128,3 +128,62 @@ select date_trunc('day', created_at) as jour, count(*) as comptes_crees
 from auth.users
 where created_at > now() - interval '30 days'
 group by 1 order by 1 desc;
+
+-- ============================================================================
+-- V4.0.0 (12/10/2026) — nouvelles tables : athlete_status, races, app_admins,
+-- race_proposals, race_follows, race_reminder_log, events, events_rate.
+-- Rejoué en local (PostgreSQL 16, rôles anon / authenticated simulés) avant
+-- livraison : voir le changelog V4.0.0.
+-- ============================================================================
+
+-- 11) Les tables fermées aux clients (aucune policy, aucun GRANT) ne doivent
+--     donner AUCUN droit à anon ni à authenticated. Résultat vide = OK.
+select table_name, grantee, privilege_type
+from information_schema.role_table_grants
+where table_schema = 'public'
+  and table_name in ('race_reminder_log','events','events_rate','app_secrets')
+  and grantee in ('anon','authenticated');
+
+-- 12) Seule la lecture des courses est ouverte à anon. Résultat attendu :
+--     une seule ligne (races, SELECT).
+select table_name, privilege_type
+from information_schema.role_table_grants
+where table_schema = 'public' and grantee = 'anon'
+  and table_name in ('races','race_proposals','race_follows','app_admins','athlete_status','events')
+order by 1, 2;
+
+-- 13) Écriture des courses : chaque policy d'écriture de races doit passer par
+--     ikorun_is_app_admin(). Résultat vide = OK.
+select policyname, cmd, qual, with_check
+from pg_policies
+where schemaname = 'public' and tablename = 'races' and cmd <> 'SELECT'
+  and coalesce(qual,'') || coalesce(with_check,'') not like '%ikorun_is_app_admin%';
+
+-- 14) Les fonctions d'administration refusent tout appelant qui n'est pas admin :
+--     leur corps doit appeler ikorun_is_app_admin(). Résultat vide = OK.
+select p.proname
+from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public'
+  and p.proname in ('ikorun_race_upsert','ikorun_races_import','ikorun_race_proposals_pending','ikorun_race_review','ikorun_analytics')
+  and pg_get_functiondef(p.oid) not like '%ikorun_is_app_admin()%';
+
+-- 15) Écritures publiques limitées : chaque déclencheur de garde doit appeler
+--     un compteur anti-abus. Résultat vide = OK.
+select p.proname
+from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public'
+  and p.proname in ('ikorun_athlete_status_guard','ikorun_race_proposal_guard','ikorun_race_follow_guard')
+  and pg_get_functiondef(p.oid) not like '%ikorun_check_rate_limit%';
+
+-- 16) Le statut d'entraînement n'est lisible par l'encadrement que via la
+--     fonction ikorun_club_member_status (consentement share_club) : aucune
+--     policy de SELECT d'athlete_status ne doit viser autre chose que sa propre
+--     ligne. Résultat vide = OK.
+select policyname, qual
+from pg_policies
+where schemaname = 'public' and tablename = 'athlete_status' and cmd = 'SELECT'
+  and qual not like '%auth.uid()%';
+
+-- 17) Administrateurs de l'app (informatif) : la liste doit être exactement
+--     celle que tu as ajoutée à la main.
+select a.user_id, u.email, a.created_at from public.app_admins a join auth.users u on u.id = a.user_id;

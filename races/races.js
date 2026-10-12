@@ -95,7 +95,7 @@
     openOv('ovRaces'); $('#ovRacesTitle').textContent=t(RC.pick?'rcPickTitle':'racesTitle');
     readCache(); paint();
     load(false).then(paint);
-    isAdmin().then(a=>{ if(a) paint(); });
+    isAdmin().then(a=>{ if(a){ paint(); if(opts&&opts.admin) window.raceAdminOpen('prop'); } });
     try{ if(typeof ikTrack==='function') ikTrack('races_open',{pick:RC.pick||''}); }catch(e){}
   };
   function chip(lab,on,js){ return '<button type="button" class="sh-chip'+(on?' on':'')+'" aria-pressed="'+on+'" onclick="'+js+'">'+lab+'</button>'; }

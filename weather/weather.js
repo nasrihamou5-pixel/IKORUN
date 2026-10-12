@@ -32,7 +32,7 @@ const WX_DEFAULT_LOC={name:'Béjaïa',lat:36.751,lon:5.056,src:'default'};
 function wxLoc(){ return (P&&P.wxLoc&&isFinite(P.wxLoc.lat)&&isFinite(P.wxLoc.lon))?P.wxLoc:null; }
 function wxLocOrDefault(){ return wxLoc()||WX_DEFAULT_LOC; }
 function wxSetLoc(loc){
-  P.wxLoc={name:String(loc.name||'').slice(0,60),lat:Math.round(+loc.lat*1000)/1000,lon:Math.round(+loc.lon*1000)/1000,src:loc.src||'list',w:loc.w||null};
+  P.wxLoc={name:String(loc.name||'').slice(0,60),lat:Math.round(+loc.lat*100)/100,lon:Math.round(+loc.lon*100)/100,src:loc.src||'list',w:loc.w||null};
   DB.save('profile',P); _wxMem=null; try{ localStorage.removeItem(WX_KEY); }catch(e){}
   wxRefresh(true).then(()=>{ try{ refreshScreen(); }catch(e){} });
   try{ if(typeof ikTrack==='function') ikTrack('weather_location',{src:P.wxLoc.src}); }catch(e){}

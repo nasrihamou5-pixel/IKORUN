@@ -717,6 +717,7 @@ function adaptUndo(id,opts){
 // Proposition de VDOT acceptée : nouvelles allures pour toutes les séances à venir.
 function adaptAcceptVdot(id){
   const e=adEntry(id); if(!e || e.status!=='proposal') return {ok:false};
+  ikTrack('adapt_vdot',{step:e.step||0});
   const v0=getUserVDOT(), v1=clampVdot(v0+(e.step||0));
   const prevAdj=P.vdotAdj?Object.assign({},P.vdotAdj):null;
   const r=adaptApply(e.rule,false,(pl,pc0,k)=>{
