@@ -4590,6 +4590,46 @@ html[dir="rtl"] .wx-adv li.warn{box-shadow:inset -3px 0 0 #F2B84B;} html[dir="rt
 .gm-card b{font-size:15px;color:var(--snow);}
 .gm-card p{margin:6px 0 12px;font-size:12.5px;line-height:1.5;color:var(--muted);}
 
+/* ===== V4.0.0 — GUIDE D'INSTALLATION (ui/install.js) ===== */
+.ig-hero{display:flex;gap:12px;align-items:center;margin-bottom:12px;}
+.ig-logo{flex:none;width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:var(--bg);box-shadow:inset 0 0 0 1px var(--hair),0 6px 18px rgba(0,0,0,.25);}
+.ig-logo .ik-logo-mark{width:30px;height:30px;}
+.ig-hero b{display:block;font-size:15px;color:var(--snow);}
+.ig-hero span{display:block;margin-top:3px;font-size:12.5px;line-height:1.45;color:var(--muted);}
+.ig-warn{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border-radius:14px;font-size:12.5px;line-height:1.5;color:var(--snow);background:color-mix(in srgb,var(--warn) 13%,transparent);}
+.ig-warn svg{flex:none;margin-top:2px;color:var(--warn);}
+.ig-steps{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:10px;}
+.ig-step{display:grid;grid-template-columns:112px minmax(0,1fr);gap:12px;align-items:center;padding:10px;border-radius:18px;background:var(--lg-fill,var(--s1));box-shadow:var(--lg-rim,inset 0 0 0 1px var(--hair));}
+.ig-fig{display:flex;justify-content:center;}
+.ig-ph{width:100px;height:auto;}
+a.btn{text-decoration:none;}
+.ig-body{fill:#1A1F2B;stroke:color-mix(in srgb,var(--snow) 22%,transparent);stroke-width:1.5;}
+.ig-scr{fill:var(--bg);}
+.ig-notch{fill:#0B0E14;}
+.ig-app rect{fill:color-mix(in srgb,var(--snow) 10%,transparent);}
+.ig-app .ig-card{fill:color-mix(in srgb,var(--e) 30%,transparent);}
+.ig-bar{fill:color-mix(in srgb,var(--snow) 9%,var(--bg));}
+.ig-url{fill:color-mix(in srgb,var(--snow) 14%,transparent);}
+.ig-ico{fill:none;stroke:var(--e2);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.ig-dot{fill:var(--e2);}
+.ig-sheet{fill:color-mix(in srgb,var(--snow) 12%,var(--bg));}
+.ig-row{fill:color-mix(in srgb,var(--snow) 9%,transparent);}
+.ig-row.ig-on,.ig-btn.ig-on{fill:color-mix(in srgb,var(--e) 45%,transparent);}
+.ig-btn{fill:var(--e);}
+.ig-txt{fill:color-mix(in srgb,var(--snow) 55%,transparent);} .ig-txt.dim{fill:color-mix(in srgb,var(--snow) 28%,transparent);}
+.ig-icon{fill:var(--e);}
+.ig-home rect{fill:color-mix(in srgb,var(--snow) 14%,transparent);} .ig-home .ig-icon{fill:var(--e);}
+.ig-ring{fill:none;stroke:var(--e);stroke-width:2;transform-box:fill-box;transform-origin:center;animation:igRing 1.6s var(--ease,ease) infinite;}
+.ig-pop{transform-box:fill-box;transform-origin:center;animation:igPop 2.2s var(--ease-spring,ease) infinite;}
+@keyframes igRing{0%{opacity:.95;transform:scale(.9);}70%{opacity:0;transform:scale(1.35);}100%{opacity:0;transform:scale(1.35);}}
+@keyframes igPop{0%,30%{transform:scale(.4);opacity:0;}45%{transform:scale(1.12);opacity:1;}60%,100%{transform:scale(1);opacity:1;}}
+.ig-txt-b{display:flex;gap:10px;align-items:flex-start;min-width:0;}
+.ig-n{flex:none;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--btn-ink,#fff);background:var(--e);}
+.ig-txt-b p{margin:2px 0 0;font-size:13px;line-height:1.5;color:var(--snow);}
+.ig-acts{display:flex;gap:8px;margin-top:14px;}
+.ig-acts .btn{flex:1;}
+@media (prefers-reduced-motion:reduce){.ig-ring,.ig-pop{animation:none;}.ig-ring{opacity:.8;}}
+
 /* >>> MODE SIMPLE : TEXTES AGRANDIS (généré par tools/ezscale.py, ne pas éditer à la main) >>> */
 html.easy-mode .acc-sw span{font-size:13px;}
 html.easy-mode .ap-sub{font-size:13px;}
@@ -5036,6 +5076,11 @@ html.easy-mode .gn-b span{font-size:14.5px;}
 html.easy-mode .ik-persist,html.easy-mode .ik-local{font-size:14px;}
 html.easy-mode .gm-card b{font-size:17px;}
 html.easy-mode .gm-card p{font-size:14.5px;}
+html.easy-mode .ig-hero b{font-size:17px;}
+html.easy-mode .ig-hero span{font-size:14.5px;}
+html.easy-mode .ig-warn{font-size:14.5px;}
+html.easy-mode .ig-n{font-size:14px;}
+html.easy-mode .ig-txt-b p{font-size:15px;}
 html.easy-mode [style*="font-size:9px"]{font-size:10.5px !important;}
 html.easy-mode [style*="font-size:9.5px"]{font-size:11px !important;}
 html.easy-mode [style*="font-size:10px"]{font-size:11.5px !important;}

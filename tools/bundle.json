@@ -3,6 +3,7 @@
   "app.min.js": [
     "app.js",
     "core/guest.js",
+    "ui/install.js",
     "plan/adapt.js",
     "plan/bilan.js",
     "plan/adapt-ui.js",

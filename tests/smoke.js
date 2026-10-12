@@ -1012,6 +1012,24 @@
       chk(c,'export v3 relu par l\'import (format et version vérifiés)', !p.err && p.data.sessions.length===SESS.length && p.data.run_plan && ikParseExport('{"app":"IKORUN","exportVersion":99,"data":{}}').err==='importTooNew' && ikParseExport('{"x":1}').err==='invalidFile', 'v'+p.version);
       var evil=ikParseExport(JSON.stringify({app:'IKORUN',exportVersion:3,data:{sessions:[{date:'2026-09-09',title:'<img src=x onerror=alert(1)>',km:5}]}}));
       chk(c,'import : le HTML d\'un fichier fabriqué est neutralisé', evil.data.sessions[0].title.indexOf('<')<0, evil.data.sessions[0].title);
+      // V4.0.0 : détection du navigateur pour le guide d'installation
+      var UA={
+        iosSafari:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1',
+        iosChrome:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/123.0.6312.52 Mobile/15E148 Safari/604.1',
+        iosChromeOld:'Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/110.0 Mobile/15E148 Safari/604.1',
+        andChrome:'Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36',
+        samsung:'Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/24.0 Chrome/117.0.0.0 Mobile Safari/537.36',
+        waAnd:'Mozilla/5.0 (Linux; Android 13; M2101K6G Build/TKQ1.221013.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/124.0.6367.82 Mobile Safari/537.36 WhatsApp/2.24.8.85',
+        insta:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 327.0.0.32.120 (iPhone14,2; iOS 17_4; fr_FR)',
+        fb:'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/124.0 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/460.0.0.48.109;]',
+        tiktok:'Mozilla/5.0 (Linux; Android 12; SM-A525F) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/120.0 Mobile Safari/537.36 trill_340204 JsSdk/1.0 NetType/WIFI Channel/googleplay AppName/musical_ly app_version/34.2.4 BytedanceWebview/d8a21c6',
+        snap:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Snapchat/13.20.0.39 (like Safari/8617.1.17.10.12, panda)',
+        tg:'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Mobile Safari/537.36 Telegram-Android/10.9.1',
+        desk:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'};
+      var want={iosSafari:'ios-safari',iosChrome:'ios-other',iosChromeOld:'ios-old',andChrome:'android-chrome',samsung:'samsung',waAnd:'inapp',insta:'inapp',fb:'inapp',tiktok:'inapp',snap:'inapp',tg:'inapp',desk:'desktop'};
+      var bad=Object.keys(UA).filter(function(k){ return ikPlatform(UA[k]).k!==want[k]; });
+      chk(c,'installation : 12 navigateurs reconnus (dont 6 intégrés à une app)', !bad.length, bad.map(function(k){return k+'→'+ikPlatform(UA[k]).k;}).join(', ')||'ok');
+      chk(c,'installation : lien intent:// vers Chrome', /^intent:\/\/.+#Intent;scheme=https;package=com\.android\.chrome;/.test(ikIntentUrl()), '');
     }catch(e){ ko(c,'exécution',e&&e.message); }
     finally{ restaure(); }
   }
