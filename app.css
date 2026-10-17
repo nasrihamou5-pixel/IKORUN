@@ -5482,3 +5482,33 @@ svg.bd-glyph{display:block;width:100%;height:100%}
 .ik-int-acts{display:flex;gap:8px;margin-top:12px}.ik-int-acts .btn{flex:1;min-width:0;width:auto;font-size:12.5px;padding:12px 8px;white-space:nowrap}
 .ik-today .btn{width:auto;flex:none;padding-inline:16px}
 .ik-int-links{display:flex;flex-wrap:wrap;justify-content:center;gap:0 16px;margin-top:6px}.ik-int-links .ad-histlink{margin:8px 0 0}
+
+/* V4.3 : séances à confirmer (plus de « manquée » automatique) */
+.ik-pend{margin:0 0 14px;padding:14px;border-radius:20px;border:1px solid color-mix(in srgb,var(--warn) 38%,transparent);background:var(--lg-spec),var(--lg-body),var(--lg-fill);box-shadow:var(--lg-drop),var(--lg-rim)}
+.ik-pend-h b{display:flex;align-items:center;gap:7px;font-size:13.5px;color:var(--snow)}.ik-pend-h b svg{color:var(--warn)}
+.ik-pend-h span{display:block;margin-top:3px;font-size:11.5px;color:var(--muted);line-height:1.4}
+.ik-pend-row{display:flex;align-items:center;gap:9px;padding:10px 0 0;margin-top:10px;border-top:1px solid var(--hair)}
+.ik-pend-b{flex:1;min-width:0}.ik-pend-b b{display:block;font-size:13px;color:var(--snow);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ik-pend-b span{font-size:11px;color:var(--muted)}
+.ik-pbtn{flex:none;padding:8px 11px;border-radius:99px;border:1px solid var(--hair2);background:var(--s2);color:var(--snow);font:700 11.5px Inter,system-ui,sans-serif;cursor:pointer}
+.ik-pbtn.ok{background:var(--grad-btn,var(--e));border-color:transparent;color:#fff}
+.ik-pend-more{margin-top:8px;font-size:11.5px;color:var(--muted)}
+.qbadge.pend{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent)}
+.ik-days.run>div.on{background:var(--e);color:#fff}
+/* accueil : séance de muscu du jour avec silhouette et exercices */
+.ik-mday-g{display:flex;gap:12px;align-items:stretch;margin-top:2px}
+.ik-mday-l{flex:1;min-width:0}.ik-mday-l .mus-tags{margin:6px 0 2px}
+.ik-mday-fig{flex:none;width:96px;display:flex;align-items:center}.ik-mday-fig .mus-body{width:100%;gap:2px}
+.ik-mday-ex{list-style:none;margin:8px 0 0;padding:0}
+.ik-mday-ex li{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid var(--hair);font-size:12px;color:var(--snow)}
+.ik-mday-ex li span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ik-mday-ex li em{flex:none;font-style:normal;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;color:var(--muted)}
+.ik-mday-ex li.more{color:var(--muted);border-bottom:0}
+/* accueil : jour de repos avec la semaine et la prochaine séance */
+.ik-rest-wk{display:flex;gap:5px;margin:14px 0 4px}
+.ik-rest-wk>div{flex:1;text-align:center;padding:7px 0 8px;border-radius:12px;background:rgba(var(--e-rgb),.06)}
+.ik-rest-wk em{display:block;font-style:normal;font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase}
+.ik-rest-wk span{display:block;min-height:15px}.ik-rest-wk .ik-dot{margin:5px 1px 0;width:7px;height:7px}
+.ik-rest-wk .td{background:rgba(var(--e-rgb),.16);box-shadow:inset 0 0 0 1px rgba(var(--e-rgb),.45)}.ik-rest-wk .td em{color:var(--e2)}
+.ik-rest-wk .ok em{color:var(--ok)}
+.ik-rday-next{margin-top:12px;padding:11px 12px;border-radius:14px;background:rgba(var(--e-rgb),.08);cursor:pointer}
+.ik-rday-next .lab{display:block;font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+.ik-rday-next b{display:block;margin-top:4px;font:800 15px Unbounded,system-ui,sans-serif}.ik-rday-next em{font-style:normal;font-size:12px;color:var(--muted)}

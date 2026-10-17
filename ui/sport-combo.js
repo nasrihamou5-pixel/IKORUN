@@ -95,7 +95,8 @@ function cbStripHTML(d){
 // une séance de muscu du plan, présentée comme une ligne du plan de course
 function cbStrRowHTML(s, tk){
   const qb = s.done ? '<div class="qbadge done">'+t('doneTag')+'</div>'
-    : (s.date<tk ? '<div class="qbadge missed">'+t('missedTag')+'</div>'
+    : s.skipped ? '<div class="qbadge missed">'+t('notDone')+'</div>'
+    : (s.date<tk ? '<div class="qbadge pend">'+t('toConfirmTag')+'</div>'
     : '<div class="chrome-chip" style="color:var(--maitre)">'+t('comboMuscu')+'</div>');
   const act = (!s.done && s.date===tk) ? ' onclick="startLive(\''+s.id+'\')"' : ' onclick="cbStrOpen(\''+s.id+'\')"';
   return '<div class="sess'+(s.done?' done':'')+(s.date===tk?' today':'')+'" style="--sess-c:var(--maitre)"'+act+'>'+
@@ -108,19 +109,84 @@ function cbMergedRows(run, str, tk){
   items.sort(function(a,b){ return a.d<b.d?-1:(a.d>b.d?1:a.k-b.k); });
   return items.map(function(x){ return x.k ? cbStrRowHTML(x.s, tk) : renderPlanRows([x.s], tk, {flat:true}); }).join('');
 }
-// Accueil : la séance de muscu du jour, à la place de « Jour de repos »
+/* ---------- séances passées sans réponse : « À confirmer » ----------
+   Avant, l'appli ouvrait directement « Pas faite » pour toute séance passée non cochée : une séance
+   oubliée devenait « manquée ». Maintenant elle attend une réponse, sur cette carte (Sport et Accueil). */
+function pendingRun(){
+  if(!PLAN || !PLAN.sessions) return [];
+  const tk = todayKey(), lim = cbAdd(tk,-21);
+  return PLAN.sessions.filter(function(s){ return s.date<tk && s.date>=lim && !s.done && !s.missed && s.type!=='Repos' && s.baseType!=='Repos' && (s.km||0)>0; });
+}
+function pendingStr(){
+  if(!STRENGTH) return [];
+  const tk = todayKey(), lim = cbAdd(tk,-21);
+  return STRENGTH.sessions.filter(function(s){ return s.date<tk && s.date>=lim && !s.done && !s.skipped; });
+}
+function pendingCardHTML(){
+  const run = pendingRun(), str = pendingStr();
+  if(!run.length && !str.length) return '';
+  const items = run.map(function(s){ return {d:s.date, k:0, s:s}; }).concat(str.map(function(s){ return {d:s.date, k:1, s:s}; }))
+    .sort(function(a,b){ return a.d<b.d?1:-1; });
+  const shown = items.slice(0,4);
+  let h = '<section class="ik-pend"><div class="ik-pend-h"><b>'+ICN('help',16)+' '+tp('pendTitle', items.length)+'</b><span>'+t('pendSub')+'</span></div>';
+  shown.forEach(function(x){
+    const s = x.s, isM = x.k===1;
+    const meta = fmtDate(s.date)+' · '+(isM ? s.duration+' min' : hKm(s.km)+' km');
+    h += '<div class="ik-pend-row"><div class="ik-sq '+(isM?'mu':'')+'" style="width:34px;height:34px">'+ICN(isM?'dumbbell':'run',16)+'</div>'+
+      '<div class="ik-pend-b"><b>'+escHtml(isM ? s.title : planSessTitle(s))+'</b><span>'+escHtml(meta)+'</span></div>'+
+      '<button type="button" class="ik-pbtn ok" onclick="'+(isM?"strConfirm('"+s.id+"',true)":'pendDone('+s.id+')')+'">'+t('pendDid')+'</button>'+
+      '<button type="button" class="ik-pbtn" onclick="'+(isM?"strConfirm('"+s.id+"',false)":'openMissedFlow('+s.id+')')+'">'+t('notDone')+'</button></div>';
+  });
+  if(items.length>shown.length) h += '<div class="ik-pend-more">'+tp('pendMore', items.length-shown.length)+'</div>';
+  return h+'</section>';
+}
+function pendDone(id){ curRunId=id; markRunDone(); }
+function strConfirm(id, did){
+  const s = STRENGTH && STRENGTH.sessions.find(function(x){ return x.id===id; }); if(!s) return;
+  if(did){
+    s.done = true; s.skipped = false;
+    // trace dans l'historique muscu (valeurs prévues, comme une séance cochée après coup)
+    MSESS.push({date:s.date, progName:s.title, tonnage:0, sets:s.ex.reduce(function(a,e){ return a+(+e.sets||0); },0), reps:0, duration:s.duration, calories:0,
+      muscles:[].concat.apply([], s.ex.map(function(e){ return e.muscles||[]; })), late:true});
+    try{ strengthAfterLive({prog:{_strengthId:null}}, {date:s.date, legsHeavy:!!s.legsHeavy, muscles:[]}); }catch(e){}
+  } else { s.skipped = true; }
+  DB.save('strength_plan', STRENGTH); saveAll(); haptic();
+  toast(t(did?'pendSavedDone':'sessionNotedToast'));
+  refreshScreen();
+}
+// Accueil : la séance de muscu du jour, à la place de « Jour de repos » — avec la silhouette des
+// muscles travaillés et les premiers exercices, pour qu'on voie la séance d'un coup d'œil.
 function strengthTodayHeroHTML(wdShort){
   const tk = todayKey(), s = STRENGTH && STRENGTH.sessions.find(function(x){ return x.date===tk; });
   if(!s) return '';
   const sets = s.ex.reduce(function(a,e){ return a+(+e.sets||0); }, 0);
-  let h = '<div class="hv7-day" onclick="cbStrOpen(\''+s.id+'\')">'+
+  const prog = { id:s.id, ex:s.ex };
+  const tags = (typeof progTopMuscles==='function') ? progTopMuscles(prog,3) : [];
+  const fig = (typeof progBodyMini==='function') ? progBodyMini(prog) : '';
+  let h = '<div class="hv7-day ik-mday" onclick="cbStrOpen(\''+s.id+'\')">'+
     '<div class="hv7-day-top"><span class="hv7-day-chip" style="color:var(--maitre)">'+escHtml(t('comboMuscu').toUpperCase())+'</span>'+
       '<span class="hv7-day-when">'+t('today')+' · '+escHtml(wdShort)+'</span></div>'+
-    '<div class="hv7-day-title">'+escHtml(s.title)+'</div>'+
+    '<div class="ik-mday-g"><div class="ik-mday-l">'+
+      '<div class="hv7-day-title">'+escHtml(s.title)+'</div>'+
+      (tags.length?'<div class="mus-tags">'+tags.map(function(m){ return '<span>'+escHtml(m)+'</span>'; }).join('')+'</div>':'')+
+      '<ul class="ik-mday-ex">'+s.ex.slice(0,4).map(function(e){ return '<li><span>'+escHtml(trExName(e.name))+'</span><em>'+e.sets+' × '+escHtml(String(e.reps))+'</em></li>'; }).join('')+
+        (s.ex.length>4?'<li class="more">'+tp('exMore', s.ex.length-4)+'</li>':'')+'</ul>'+
+    '</div><div class="ik-mday-fig">'+fig+'</div></div>'+
     '<div class="hv7-day-targets"><div><b>'+s.duration+'</b><span>min</span></div><div><b>'+s.ex.length+'</b><span>'+t('exercisesWord')+'</span></div><div><b>'+sets+'</b><span>'+t('setsWord')+'</span></div></div>';
   h += s.done ? '<div class="hv7-day-state ok">'+t('sessionCompleted')+'</div>'
     : '<div class="hv7-day-acts" onclick="event.stopPropagation()"><button class="hv7-act main" onclick="startLive(\''+s.id+'\')">'+t('comboStart')+'</button></div>';
   return h+'</div>';
+}
+// Accueil, jour sans séance : la semaine en points + la prochaine séance, au lieu d'une carte vide
+function homeRestWeekHTML(){
+  if(!PLAN && !STRENGTH) return '';
+  const d = cbWeekData(), L = t('dowShort').split(',');
+  return '<div class="ik-rest-wk">'+d.wk.map(function(k,i){
+    const r = d.runW.filter(function(s){ return s.date===k; })[0], m = d.strW.filter(function(s){ return s.date===k; })[0];
+    const done = (r&&r.done)||(m&&m.done);
+    return '<div class="'+(k===d.tk?'td':'')+(done?' ok':'')+'"><em>'+escHtml(L[i]||'')+'</em><span>'+
+      (r?'<i class="ik-dot run"></i>':'')+(m?'<i class="ik-dot mu"></i>':'')+(!r&&!m?'<i class="ik-dot rest"></i>':'')+'</span></div>';
+  }).join('')+'</div>';
 }
 function cbStrOpen(id){
   const s = STRENGTH && STRENGTH.sessions.find(function(x){ return x.id===id; }); if(!s) return;
@@ -133,7 +199,7 @@ function renderCombo(){
 // mode séparé : vue d'ensemble de la semaine + mes plans (chaque plan garde son onglet)
 function renderComboSplit(){
   const d = cbWeekData();
-  let h = cbHeroHTML(d) + cbStripHTML(d);
+  let h = pendingCardHTML() + cbHeroHTML(d) + cbStripHTML(d);
   const todayM = d.strW.filter(function(s){ return s.date===d.tk; })[0];
   if(todayM){
     h += '<div class="hv7-sec-lab" style="margin:14px 0 8px">'+t('comboToday')+'</div>'+
@@ -149,7 +215,7 @@ function renderComboSplit(){
 // mode intégré : une seule page, la semaine course + muscu en une liste
 function renderIntegrated(){
   const d = cbWeekData();
-  let h = cbHeroHTML(d) + cbStripHTML(d);
+  let h = pendingCardHTML() + (PLAN && typeof planHeroHTML==='function' ? planHeroHTML() : cbHeroHTML(d)) + cbStripHTML(d);
   h += '<div class="hv7-sec-lab" style="margin:16px 0 8px">'+t('thisWeek')+'</div>';
   const rows = cbMergedRows(d.runW, d.strW, d.tk);
   h += rows || '<div class="sess-m" style="padding:6px 2px">'+t('comboNothingThisWeek')+'</div>';
@@ -261,12 +327,15 @@ function wizDefaultDays(){
   return order.slice(0,3).sort();
 }
 function openWizard(){
-  wiz = { what:'both', how:'gen', days:wizDefaultDays(), perWeek:2, equip:'both' };
+  // jours de course : ceux du plan (P.days, 0 = dimanche comme Date.getDay) ; jours de muscu : 0 = lundi
+  wiz = { what:'both', how:'gen', days:wizDefaultDays(), runDays:(P.days&&P.days.length?P.days:[1,3,5,6]).slice(), perWeek:2, equip:'both' };
   const h2 = $('#ovWizard h2'); if(h2) h2.textContent = t('wizTitle');
   renderWizard(); openOv('ovWizard');
 }
 function wizSet(k,v){ wiz[k]=v; if(k==='what' && (v==='both'||v==='split')) wiz.how='gen'; renderWizard(); }
 function wizDay(i){ const a=wiz.days, p=a.indexOf(i); if(p>=0) a.splice(p,1); else a.push(i); a.sort(); renderWizard(); }
+function wizRunDay(jsDay){ const a=wiz.runDays, p=a.indexOf(jsDay); if(p>=0) a.splice(p,1); else a.push(jsDay); a.sort(); renderWizard(); }
+function wizSameDays(a,b){ return a.slice().sort().join()===b.slice().sort().join(); }
 function wizOpt(sel,key,title,sub,icn,badge){
   return '<div class="ik-opt'+(sel?' sel':'')+'" onclick="'+key+'"><div class="ik-opt-ic">'+ICN(icn,20)+'</div><div style="flex:1"><b>'+title+'</b><span class="s">'+sub+'</span></div>'+(badge?'<em class="ik-tag">'+badge+'</em>':'')+'</div>';
 }
@@ -282,6 +351,11 @@ function renderWizard(){
     h += '<div class="hv7-sec-lab" style="margin:14px 0 8px">'+t('wizHow')+'</div>'+
       wizOpt(w.how==='gen',"wizSet('how','gen')",t('wizGen'),t('wizGenSub'),'bolt')+
       wizOpt(w.how==='self',"wizSet('how','self')",t('wizSelf'),t('wizSelfSub'),'edit');
+  }
+  // jours de course (repris dans la configuration du plan) — lundi en premier, comme les jours de muscu
+  if(w.how==='gen' && w.what!=='muscu'){
+    h += '<div class="hv7-sec-lab" style="margin:14px 0 8px">'+t('wizDaysRun')+'</div><div class="ik-days run">'+
+      L.map(function(l,i){ const jd=(i+1)%7; return '<div class="'+(w.runDays.indexOf(jd)>=0?'on':'')+'" onclick="wizRunDay('+jd+')">'+escHtml(l)+'</div>'; }).join('')+'</div>';
   }
   if(w.how==='gen' && w.what!=='run'){
     h += '<div class="hv7-sec-lab" style="margin:14px 0 8px">'+t(two?'wizDaysMuscu':'wizDays')+'</div><div class="ik-days">'+
@@ -312,8 +386,15 @@ function wizGenerate(){
     else { sportTab='muscu'; renderSport(); openCreate(); }
     return;
   }
-  if(w.what==='run'){ P.sportMode='split'; DB.save('profile',P); closeOv('ovWizard'); sportTab='run'; runSub='ikorun'; renderSport(); openPlanSetup(); return; }
-  if(two && !PLAN){ wizCreateRun(); return; }   // d'abord le plan de course, puis l'assistant reprend tout seul
+  if(w.what!=='muscu' && !w.runDays.length){ toast(t('chooseAtLeastOneDay')); return; }
+  if(w.what!=='run' && !w.days.length){ toast(t('chooseAtLeastOneDay')); return; }
+  if(w.what==='run'){ P.days=w.runDays.slice(); P.sportMode='split'; DB.save('profile',P); closeOv('ovWizard'); sportTab='run'; runSub='ikorun'; renderSport(); openPlanSetup(); return; }
+  if(two && !PLAN){ P.days=w.runDays.slice(); DB.save('profile',P); wizCreateRun(); return; }   // d'abord le plan de course (jours déjà choisis), puis l'assistant reprend
+  // jours de course changés alors qu'un plan existe : on recalcule le plan de course, puis la muscu
+  if(two && PLAN && !wizSameDays(w.runDays, P.days||[])){
+    customConfirm(t('wizRunDaysChanged'), function(){ P.days=w.runDays.slice(); DB.save('profile',P); wizAfterRun=true; closeOv('ovWizard'); generatePlan(); });
+    return;
+  }
   const o = strengthOpts(w);
   // séparé : muscu indépendante, commence aujourd'hui ; ensemble : calée sur le plan de course
   const r = strengthRun(o, todayKey());
