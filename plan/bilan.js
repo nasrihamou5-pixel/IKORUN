@@ -354,13 +354,13 @@ function blSubmitMissed(repl,replData){
   setTimeout(checkMissedSessions,600);
 }
 // Fin d'un formulaire de remplacement (app.js) ouvert depuis le bilan.
-/* ---- séances passées sans réponse : UNE question pour toutes ---- */
+/* ---- séances passées sans réponse ----
+   V4.3 : plus d'ouverture automatique de « Pas faite » (une séance oubliée devenait « manquée »).
+   Elles restent « à confirmer » sur la carte de Sport et de l'Accueil (ui/sport-combo.js, pendingCardHTML) ;
+   cette fonction ne fait plus que rafraîchir l'écran pour que la carte apparaisse. */
 function checkMissedSessions(){
-  if(!PLAN || !PLAN.sessions || document.getElementById('ovProg').classList.contains('on')) return;
-  const tk=todayKey();
-  const pending=PLAN.sessions.filter(s=>s.date<tk && !s.done && !s.missed && s.type!=='Repos' && s.baseType!=='Repos' && (s.km||0)>0);
-  if(!pending.length) return;
-  openMissedFlow(pending.map(s=>s.id));
+  if(!PLAN || !PLAN.sessions) return;
+  try{ if(typeof pendingRun==='function' && pendingRun().length && document.body.dataset.scr==='home') renderHome(); }catch(e){}
 }
 function openMissedFlow(sid){
   const ids=Array.isArray(sid)?sid:[sid];

@@ -2700,7 +2700,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.2.0';
+const APP_VERSION='4.3.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -7820,7 +7820,7 @@ function homeSessMissed(id){ openMissedFlow(id); }
 function renderHome(){
   const kmW=kmThisWeek();
   // V3.14.0 : sans plan, pas d'objectif inventé (« 0/4 séances » avant même d'avoir un plan)
-  const sessW=runCountWeek()+muscuCountWeek(), sessTarget=(PLAN&&PLAN.sessions&&PLAN.sessions.length)?((P.days&&P.days.length)||4):0;
+  const sessW=runCountWeek()+muscuCountWeek(), sessTarget=(PLAN&&PLAN.sessions&&PLAN.sessions.length)?((P.days&&P.days.length)||4)+((STRENGTH&&STRENGTH.perWeek)||0):0;   // + séances de muscu du plan, comptées dans « séances »
   const form=formScore();
   const vdot=getUserVDOT();
   const ps=planSessionToday();
@@ -7878,6 +7878,7 @@ function renderHome(){
 
   // CARTE DU JOUR — pièce maîtresse : type, titre, pourquoi, cibles, et le bilan en un geste.
   {
+    if(typeof pendingCardHTML==='function') html+=pendingCardHTML();   // séances passées à confirmer (fait / pas fait)
     // pas de course aujourd'hui mais une séance de muscu du plan : c'est elle la séance du jour
     const stH=(!(ps && ps.type!=='Repos') && typeof strengthTodayHeroHTML==='function')?strengthTodayHeroHTML(wdShort):'';
     if(ps && ps.type!=='Repos'){
@@ -7907,12 +7908,16 @@ function renderHome(){
     } else if(stH){
       html+=stH;
     } else if(ps || PLAN){
-      const nxt=homeNextUpcoming();
-      html+='<div class="hv7-day" onclick="nav(\'sport\')">'+
+      const nxt=homeNextUpcoming(), ns=nxt&&nxt.session;
+      html+='<div class="hv7-day ik-rday" onclick="nav(\'sport\')">'+
         '<div class="hv7-day-top"><span class="hv7-day-chip" style="color:var(--dim)">'+escHtml(t('restTag').toUpperCase())+'</span>'+
           '<span class="hv7-day-when">'+t('today')+' · '+escHtml(wdShort)+'</span></div>'+
         '<div class="hv7-day-title">'+t('restDay')+'</div>'+
-        '<div class="hv7-day-why">'+(nxt?tp('nextSessionMeta',nxt.label):t('noSessionToday'))+'</div>'+
+        '<div class="hv7-day-why">'+t('restDayWhy')+'</div>'+
+        (typeof homeRestWeekHTML==='function'?homeRestWeekHTML():'')+
+        (ns?'<div class="ik-rday-next" onclick="event.stopPropagation();openRunSheet('+ns.id+')"><span class="lab">'+escHtml(t('nextSessionLab'))+' · '+escHtml(nxt.label)+'</span>'+
+          '<b style="color:'+baseTypeColor(ns.baseType)+'">'+escHtml(planSessTitle(ns))+'</b><em>'+escHtml(hKm(ns.km)+' km'+(ns.pace?' · '+ns.pace+'/km':''))+'</em></div>'
+           :'<div class="hv7-day-why">'+t('noSessionToday')+'</div>')+
       '</div>';
     } else {
       html+='<div class="hv7-day" onclick="nav(\'sport\');openPlanSetup()">'+
@@ -8069,6 +8074,7 @@ function renderRunning(){
       h+='<div class="card" id="tourPlanCta"><div class="empty"><div class="em-ic">'+ICN('bolt',36,'currentColor')+'</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">'+t('planIkorunTitle')+'</div><div style="font-size:13px;margin-bottom:16px">'+tp('planIkorunDescLong',(getUserVDOT()?fmt1(getUserVDOT()):t('vdotToBeCalculated')))+'</div><button class="btn" onclick="openPlanSetup()">'+t('configureGenerate')+'</button></div></div>';
     } else {
       h+=planHeroHTML();
+      if(typeof pendingCardHTML==='function') h+=pendingCardHTML();
       // Seule la semaine en cours est listée ici ; le reste du plan s'ouvre en
       // plein écran depuis le bouton « Voir le plan » de la carte ci-dessus.
       const tk=todayKey();
@@ -8108,6 +8114,7 @@ function renderPlanRows(sessions,tk,opts){
     const qb = s.done   ? '<div class="qbadge done">'+t('doneTag')+'</div>'
              : s.missed ? '<div class="qbadge missed">'+t('missedTag')+'</div>'
              : rest     ? '<div class="qbadge rest">'+t('restTag')+'</div>'
+             : (s.date<tk) ? '<div class="qbadge pend">'+t('toConfirmTag')+'</div>'
              : '<div class="chrome-chip" style="color:'+baseTypeColor(s.baseType)+'">'+escHtml(planSessLabel(s))+'</div>';
     const ssum=seriesSummary({...s,series:liveSeries(s)});
     const line2=fmtDate(s.date)+(s.km?' · '+hKm(s.km)+' km':' · '+t('restTag'))+(s.km&&!ssum?' · '+s.pace+'/km':'');
@@ -8122,6 +8129,8 @@ function renderPlanRows(sessions,tk,opts){
 /* Page plein écran affichant le programme complet (toutes les semaines) */
 function openFullPlan(){
   if(!PLAN) return;
+  // programme intégré : course + muscu, semaine par semaine (ui/sport-combo.js)
+  if(typeof sportIntegrated==='function' && sportIntegrated() && STRENGTH){ openFullIntegrated(); return; }
   $('#fullPlanBody').innerHTML=renderPlanRows(PLAN.sessions);
   openOv('ovFullPlan');
 }
@@ -8497,7 +8506,7 @@ function openRunSheet(id){
   if(s.done) h+='<div class="badge" style="background:rgba(51,211,153,.18);color:var(--ok);width:100%;justify-content:center;padding:14px;border-radius:18px;margin-bottom:12px">'+t('sessionCompleted')+'</div>'+
     '<button class="btn ghost sm" style="margin-bottom:18px" onclick="openShareCard(\'plan\','+s.id+')">'+ICN('share',15)+' '+t('shShareSession')+'</button>';
   else if(s.date>todayKey()) h+='<div class="badge" style="background:var(--lg-well);box-shadow:var(--lg-well-rim);color:var(--muted);width:100%;justify-content:center;padding:14px;border-radius:18px;margin-bottom:18px">'+t('sessionNotYetLabel')+'</div>';
-  else if(s.type!=='Repos') h+='<button class="btn" style="margin-bottom:18px" onclick="markRunDone()">'+t('markCompleted')+'</button>';
+  else if(s.type!=='Repos') h+='<button class="btn" style="margin-bottom:18px" onclick="markRunDone()">'+t(s.missed?'missedActuallyDone':'markCompleted')+'</button>';
   // Personnalisation : uniquement pour une séance future non encore validée — une fois
   // done, ou dans le passé, s.km/s.date ont déjà servi à créditer le bilan ou à détecter
   // une séance manquée, les modifier après coup désynchroniserait l'historique.
@@ -8556,6 +8565,9 @@ function markRunDone(){
   // chemin d'appel (bouton masqué côté UI, mais ce garde est celui qui compte
   // vraiment — voir openRunSheet pour l'équivalent visuel).
   if(s.date>todayKey()){ toast(t('guardFutureSession')); return; }
+  // V4.3 : marquée « manquée » par erreur (séance oubliée) : on l'annule avant de la valider
+  if(s.missed){ s.missed=false; delete s.missedReason; delete s.missedReplacement; delete s.missedReplData;
+    SESSLOG=(SESSLOG||[]).filter(e=>!(e.planSessionId===s.id && e.status==='missed')); }
   s.done=true;
   // Entrée provisoire (valeurs du plan) au cas où le bilan ne serait jamais validé —
   // elle sera écrasée par les vraies valeurs si l'athlète remplit le bilan.
@@ -9863,7 +9875,7 @@ function renderStatsSimple(){
   // simple repère en kilomètres.
   const {cur,prev}=periodRanges('week');
   const kmW=sumKmBetween(cur[0],cur[1]), kmPrev=sumKmBetween(prev[0],prev[1]);
-  const sessW=countBetween(cur[0],cur[1]), sessTarget=(PLAN&&PLAN.sessions&&PLAN.sessions.length)?((P.days&&P.days.length)||4):0;
+  const sessW=countBetween(cur[0],cur[1]), sessTarget=(PLAN&&PLAN.sessions&&PLAN.sessions.length)?((P.days&&P.days.length)||4)+((STRENGTH&&STRENGTH.perWeek)||0):0;   // + séances de muscu du plan, comptées dans « séances »
   const pct=sessTarget?Math.min(100,Math.round(sessW/sessTarget*100)):0;
   h+='<div class="next-lab">'+t('thisWeek')+'</div>';
   h+='<div class="card ez-week">'+
