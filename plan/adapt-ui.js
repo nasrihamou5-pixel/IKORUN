@@ -10,7 +10,7 @@
 const AD_ICON={pain:'warning',painRepeat:'warning',blockKeep:'warning',painLight:'warning',ill:'health',illKeep:'health',
   gap3:'moon',gap7:'refresh',acwrRisk:'warning',acwrHigh:'gauge',acwrLow:'trend',monotony:'shuffle',ready:'battery',readyNote:'battery',
   fastOnce:'bolt',fastInfo:'bolt',vdotUp:'trend',vdotDown:'trend',slowTrend:'gauge',slowOnce:'gauge',slowExplained:'sun',slowTaper:'flag',
-  good:'check',short:'check',race:'flag',missKey:'calendar',missKeyDropped:'calendar',missEasy:'calendar',missTaper:'flag',missFatigue:'moon',safetyBack:'check'};
+  good:'check',short:'check',race:'flag',missKey:'calendar',missKeyDropped:'calendar',missEasy:'calendar',missTaper:'flag',missFatigue:'moon',safetyBack:'check',legs:'bolt'};
 function adIcon(rule){ const n=AD_ICON[rule]||'gear'; return ICN((typeof ICONS!=='undefined'&&ICONS[n])?n:'gear',16); }
 function adSessLine(s,o){
   if(!s) return '—';

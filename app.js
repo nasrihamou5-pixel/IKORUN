@@ -1884,7 +1884,7 @@ function ensureLocalCacheOwnership(uid){
 }
 
 /* ---------- STATE ---------- */
-let P, SESS, MSESS, CUSTOM, PLAN, GOALS, AGENDA, XP, RECORDS, PREFS, WEIGHTLOG, TRACKER, SESSLOG, MUSCU_PR, CHECKINS, ADAPT_LOG;
+let P, SESS, MSESS, CUSTOM, PLAN, GOALS, AGENDA, XP, RECORDS, PREFS, WEIGHTLOG, TRACKER, SESSLOG, MUSCU_PR, CHECKINS, ADAPT_LOG, STRENGTH;
 
 // Retire les doublons stricts (même distance + même temps + même date) — trouvé
 // lors de l'audit du 20/09 : un seul chrono saisi à l'étape "Tes performances"
@@ -1918,6 +1918,7 @@ function reloadState(){
   MUSCU_PR = DB.load('muscu_pr') || {};
   CHECKINS = DB.load('checkins') || [];   // check du matin (plan/adapt.js)
   ADAPT_LOG = DB.load('adapt_log') || []; // ajustements du plan, avec avant → après
+  STRENGTH = DB.load('strength_plan') || null; // plan de muscu généré (plan/strength.js)
   /* Migration : les comptes créés avant l'ajout du critère "ancienneté"
      n'ont pas de joinedAt. On le reconstitue à partir de leur toute
      première séance connue (run ou muscu) pour ne pas leur faire perdre
@@ -1936,7 +1937,7 @@ window.DB_READY = DB.init().then(reloadState).catch(e=>{ console.error('[IKORUN]
 function saveAll(){
   DB.save('profile',P); DB.save('sessions',SESS); DB.save('muscu_sessions',MSESS);
   DB.save('custom_progs',CUSTOM); DB.save('run_plan',PLAN); DB.save('daily_goals',GOALS);
-  DB.save('agenda',AGENDA); DB.save('xp',XP);
+  DB.save('agenda',AGENDA); DB.save('xp',XP); DB.save('strength_plan',STRENGTH);
   DB.save('records',RECORDS); DB.save('prefs',PREFS); DB.save('weightlog',WEIGHTLOG);
   DB.save('tracker',TRACKER); DB.save('sesslog',SESSLOG);
   DB.save('checkins',CHECKINS); DB.save('adapt_log',ADAPT_LOG);
@@ -2589,7 +2590,7 @@ function openBadges(){
 function renderBadgeGallery(){
   const unlocked=unlockedBadges(); const ukeys=new Set(unlocked.map(u=>u.key));
   const list=BADGE_TIERS.filter(b=> badgeFilter==='tous' ? true : (badgeFilter==='obtenus'? ukeys.has(b.key) : !ukeys.has(b.key)));
-  let h='<div class="seg-ctrl sub">'+
+  let h=rankProgressHTML()+'<div class="seg-ctrl sub">'+
     [['tous',t('filterAll')],['obtenus',t('filterObtained')],['verrouilles',t('filterLocked')]].map(f=>'<div class="seg-btn'+(badgeFilter===f[0]?' on':'')+'" onclick="badgeFilter=\''+f[0]+'\';renderBadgeGallery()">'+f[1]+'</div>').join('')+
     '</div>';
   h+='<div style="font-size:12px;color:var(--muted);margin-bottom:10px">'+tp('badgesObtainedCount',unlocked.length,BADGE_TIERS.length)+'</div>';
@@ -2699,7 +2700,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.0.0';
+const APP_VERSION='4.1.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -5313,7 +5314,7 @@ function applyOnboardingLabels(){
    par leurs fonctions d'ouverture respectives (openXxx). */
 function applyStaticLabels(){
   if(window.ikA11yRelabel) ikA11yRelabel(); // noms des boutons-icônes dans la langue choisie (V3.14.0)
-  const map={ovSettings:'paramsTitle',ovLib:'libTitle',ovCfg:'configureTitle',ovCreate:'newProgramTitle'};
+  const map={ovSettings:'paramsTitle',ovLib:'libTitle',ovCfg:'configureTitle',ovCreate:'newProgramTitle',ovWizard:'wizTitle'};
   Object.entries(map).forEach(([id,key])=>{ const el=$('#'+id); if(el){ const h2=el.querySelector('h2'); if(h2) h2.textContent=t(key); } });
   const pkOk=$('#pkOk'); if(pkOk) pkOk.textContent=t('validateLab2');
   if(document.body.dataset.scr==='home'){ const tbTitle=$('#tbTitle'); if(tbTitle) tbTitle.textContent=t('home'); }
@@ -6055,7 +6056,7 @@ function PROGS_DEF(){ return [
  {id:'F',name:t('progF_name'),color:'--e',ex:[ex('Bar Lateral Pulldown',4,'8-10'),ex('Straight Back Seated Row',4,'6-10'),ex('Lever Lying T-bar Row',3,'10-12'),ex('Seated Shoulder Press',4,'8'),ex('Lever Seated Shoulder Press',3,'10'),ex('Cable Face Pull',3,'12'),ex('Hammer Curl',3,'6-12')]}
 ]; }
 let PROGS=PROGS_DEF();
-function allProgs(){ return [...PROGS,...CUSTOM]; }
+function allProgs(){ return [...PROGS,...CUSTOM,...(typeof strengthProgs==='function'?strengthProgs():[])]; }
 
 /* ---------- GÉNÉRATEUR DU PLAN DE COURSE ---------- */
 const TYPE_COLORS={EF:'--ok','Tempo':'--warn','Seuil':'--or','VMA':'--bad','Intervalle':'--bad','Récup':'--muted','Long':'--e','Course':'--e','Repos':'--muted'};
@@ -6831,6 +6832,7 @@ function generatePlan(){
     setTimeout(()=>toast(tp('planStartsOn',fmtDate(first.date))),r.safetyFixes?5200:2600);
   burst(); renderSport();
   try{ if(typeof installAfterPlan==='function') installAfterPlan(); }catch(e){}
+  try{ if(typeof wizResume==='function') wizResume(); }catch(e){}
 }
 /* planBuild(opts) — le générateur, sans effet de bord (V3.15.0) : rend {plan} ou {err:clé}.
    generatePlan() l'enregistre et l'annonce ; le moteur d'adaptation l'appelle pour reconstruire
@@ -7870,11 +7872,8 @@ function renderHome(){
   html+=installNudgeHTML(); // installer l'app (ui/install.js), au plus tous les 7 jours
   html+=feteCardHTML();
   html+=notifPermBubbleHTML();
-  html+=homePrayerCardHTML();
-  html+=morningCheckHTML(); // check du matin (plan/adapt-ui.js), 3 gestes, masquable
-  html+=ramadanCardHTML();  // Ramadan (ramadan/ramadan.js) : imsak, iftar, créneau, hydratation
-  html+=wxHomeCardHTML();   // météo (weather/weather.js) : maintenant + séance du jour
-  html+=raceCountdownHTML(); // course suivie à 30 jours ou moins (races/follow.js)
+  // Prière + Ramadan, Météo, Check du matin, Course suivie : une rangée de pastilles, une carte dépliée à la fois (ui/home-pills.js)
+  html+=homePillsHTML();
 
   // CARTE DU JOUR — pièce maîtresse : type, titre, pourquoi, cibles, et le bilan en un geste.
   {
@@ -8157,7 +8156,7 @@ function renderSport(){
   }
   if(sportView==='calendar'){ swapIn('s-sport',renderCalendarView()); return; }
   let h='<div class="seg-row">'+
-    '<div class="seg-ctrl"><div class="seg-btn'+(sportTab==='run'?' on':'')+'" onclick="sportTab=\'run\';curPerso=null;renderSport()">'+t('running')+'</div><div class="seg-btn'+(sportTab==='muscu'?' on':'')+'" onclick="sportTab=\'muscu\';renderSport()">'+t('muscu')+'</div></div>'+
+    '<div class="seg-ctrl">'+(P.easyMode?'':'<div class="seg-btn'+(sportTab==='combo'?' on':'')+'" onclick="sportTab=\'combo\';curPerso=null;renderSport()">'+t('tabCombo')+'</div>')+'<div class="seg-btn'+(sportTab==='run'?' on':'')+'" onclick="sportTab=\'run\';curPerso=null;renderSport()">'+t('running')+'</div><div class="seg-btn'+(sportTab==='muscu'?' on':'')+'" onclick="sportTab=\'muscu\';renderSport()">'+t('muscu')+'</div></div>'+
     '<button type="button" class="tb-gear" aria-label="'+t('racesTitle')+'" onclick="openRaces()">'+ICN('flag',17)+'</button>'+
 '<button type="button" class="tb-gear" aria-label="'+t('calendarTitle')+'" onclick="sportView=\'calendar\';renderSport()">'+ICN('calendar',17)+'</button></div>';
   if(P.easyMode){
@@ -8165,7 +8164,7 @@ function renderSport(){
     $('#s-sport').innerHTML=h; return;
   }
   if(sportTab==='run' && runSub==='perso' && curPerso){ h+=persoDetailHTML(); }
-  else h+= sportTab==='run'?renderRunning():renderMuscu();
+  else h+= sportTab==='combo'?renderCombo():(sportTab==='run'?renderRunning():renderMuscu());
   swapIn('s-sport',h);
 }
 /* ---------- SPORT — MODE SIMPLIFIÉ ----------
@@ -9615,7 +9614,9 @@ function finishLive(){
   const prevTon=prevSess?prevSess.tonnage:0;
   // muscles travaillés
   const muscles={}; LIVE.prog.ex.forEach((e,i)=>{ if(LIVE.state[i].sets.some(Boolean)) (e.muscles||[]).forEach(m=>muscles[m]=(muscles[m]||0)+1); });
-  MSESS.push({date:todayKey(),progName:LIVE.prog.name,tonnage:LIVE.tonnage,sets:LIVE.setsDone,reps:totalReps,duration:Math.round(dur/60),calories:cal,muscles:Object.keys(muscles)});
+  { const _me={date:todayKey(),progName:LIVE.prog.name,tonnage:LIVE.tonnage,sets:LIVE.setsDone,reps:totalReps,duration:Math.round(dur/60),calories:cal,muscles:Object.keys(muscles)};
+    MSESS.push(_me);
+    try{ if(typeof strengthAfterLive==='function') strengthAfterLive(LIVE,_me); }catch(e){ console.error(e); } }
   // Historique par exercice (pour les graphiques de progression)
   if(!PREFS.exHist) PREFS.exHist={};
   LIVE.prog.ex.forEach((e,i)=>{ const st=LIVE.state[i]; if(st.sets.some(Boolean)){
@@ -10471,6 +10472,7 @@ const BADGE_IMG_FILES={
   legende:'badges/rank_legende.png'
 };
 function bdGlyph(key){
+  if(window.ikIsRankKey && ikIsRankKey(key)) return ikRankSVG(key);   // 8 rangs : SVG (ui/rank-badges.js)
   const src=BADGE_IMG_FILES[key];
   if(!src) return '<span class="bd-emoji">'+ICN(badgeEmoji(key),28,'var(--e)')+'</span>';
   return '<img class="bd-glyph" src="'+src+'" alt="" draggable="false" loading="lazy" data-key="'+key+'" onerror="bdImgErr(this)">';
