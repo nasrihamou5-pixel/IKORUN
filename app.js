@@ -2700,7 +2700,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.1.1';
+const APP_VERSION='4.2.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -6832,6 +6832,7 @@ function generatePlan(){
     setTimeout(()=>toast(tp('planStartsOn',fmtDate(first.date))),r.safetyFixes?5200:2600);
   burst(); renderSport();
   try{ if(typeof installAfterPlan==='function') installAfterPlan(); }catch(e){}
+  try{ if(typeof strengthAfterRunPlan==='function') strengthAfterRunPlan(); }catch(e){}   // muscu liée : suit le nouveau calendrier
   try{ if(typeof wizResume==='function') wizResume(); }catch(e){}
 }
 /* planBuild(opts) — le générateur, sans effet de bord (V3.15.0) : rend {plan} ou {err:clé}.
@@ -7877,6 +7878,8 @@ function renderHome(){
 
   // CARTE DU JOUR — pièce maîtresse : type, titre, pourquoi, cibles, et le bilan en un geste.
   {
+    // pas de course aujourd'hui mais une séance de muscu du plan : c'est elle la séance du jour
+    const stH=(!(ps && ps.type!=='Repos') && typeof strengthTodayHeroHTML==='function')?strengthTodayHeroHTML(wdShort):'';
     if(ps && ps.type!=='Repos'){
       const isPerso=ps._source==='perso';
       const col=isPerso?'var(--e2)':baseTypeColor(ps.baseType);
@@ -7901,6 +7904,8 @@ function renderHome(){
           '<button class="hv7-act main" onclick="homeSessDone('+ps.id+')">'+t('iDidIt')+'</button>'+
           '<button class="hv7-act ghost" onclick="homeSessMissed('+ps.id+')">'+t('notDone')+'</button></div>';
       html+='</div>';
+    } else if(stH){
+      html+=stH;
     } else if(ps || PLAN){
       const nxt=homeNextUpcoming();
       html+='<div class="hv7-day" onclick="nav(\'sport\')">'+
@@ -7920,7 +7925,8 @@ function renderHome(){
     }
   }
 
-  html+=adaptCardHTML('home'); // « Ton coach a ajusté ton plan »
+  // V4.2 : plus de carte « Ton coach a ajusté ton plan » : les ajustements sont faits directement dans le plan
+  // (étiquette « Ajustée » sur la séance, détail dans l'historique des ajustements).
 
   // 3 TUILES — volume de la semaine, séances faites sur l'objectif, VDOT courant
   html+='<div class="hv7-krow3" onclick="nav(\'stats\')">'+
@@ -8063,7 +8069,6 @@ function renderRunning(){
       h+='<div class="card" id="tourPlanCta"><div class="empty"><div class="em-ic">'+ICN('bolt',36,'currentColor')+'</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">'+t('planIkorunTitle')+'</div><div style="font-size:13px;margin-bottom:16px">'+tp('planIkorunDescLong',(getUserVDOT()?fmt1(getUserVDOT()):t('vdotToBeCalculated')))+'</div><button class="btn" onclick="openPlanSetup()">'+t('configureGenerate')+'</button></div></div>';
     } else {
       h+=planHeroHTML();
-      h+=adaptCardHTML('sport');
       // Seule la semaine en cours est listée ici ; le reste du plan s'ouvre en
       // plein écran depuis le bouton « Voir le plan » de la carte ci-dessus.
       const tk=todayKey();
@@ -8109,7 +8114,7 @@ function renderPlanRows(sessions,tk,opts){
     h+='<div class="sess'+(s.done?' done':'')+(s.missed?' missed':'')+(isToday?' today':'')+'"'+
       ' style="--sess-c:'+(rest?'var(--dim)':baseTypeColor(s.baseType))+'" onclick="openRunSheet('+s.id+')">'+
       '<div class="row"><div><div class="sess-t">'+escHtml(planSessTitle(s))+'</div>'+
-      '<div class="sess-m">'+escHtml(line2)+(s.customized?' · '+t('customizedTag'):'')+'</div>'+
+      '<div class="sess-m">'+escHtml(line2)+(s.customized?' · '+t('customizedTag'):'')+(s.adj&&s.adj.r&&!s.done&&!s.missed?' · <span class="sess-adj">'+t('adjustedTag')+'</span>':'')+'</div>'+
       (ssum?'<div class="sess-s">'+escHtml(ssum)+'</div>':'')+'</div>'+qb+'</div></div>';
   });
   return h;
@@ -8152,11 +8157,15 @@ function renderSport(){
   if(sc && sc.classList.contains('on')){
     document.body.dataset.scr = sportView==='calendar' ? 'calendrier' : 'sport';
     $('#tbTitle').textContent = sportView==='calendar' ? t('calendarTitle') : t('sport');
-    $('#tbSub').textContent = sportView==='calendar' ? t('calendarSub') : (sportTab==='combo' ? t('sub_sportCombo') : t('sub_sport'));
+    $('#tbSub').textContent = sportView==='calendar' ? t('calendarSub') : ((sportTab==='combo' || (typeof sportIntegrated==='function' && sportIntegrated())) ? t('sub_sportCombo') : t('sub_sport'));
   }
   if(sportView==='calendar'){ swapIn('s-sport',renderCalendarView()); return; }
+  // Programme intégré (course + muscu) : une seule page, sans onglets ; les sous-pages ont un retour.
+  const integ=(typeof sportIntegrated==='function') && sportIntegrated();
+  if(integ && sportTab!=='combo' && !(sportTab==='run'||sportTab==='muscu')) sportTab='combo';
   let h='<div class="seg-row">'+
-    '<div class="seg-ctrl">'+(P.easyMode?'':'<div class="seg-btn'+(sportTab==='combo'?' on':'')+'" onclick="sportTab=\'combo\';curPerso=null;renderSport()">'+t('tabCombo')+'</div>')+'<div class="seg-btn'+(sportTab==='run'?' on':'')+'" onclick="sportTab=\'run\';curPerso=null;renderSport()">'+t('running')+'</div><div class="seg-btn'+(sportTab==='muscu'?' on':'')+'" onclick="sportTab=\'muscu\';renderSport()">'+t('muscu')+'</div></div>'+
+    (integ ? (sportTab==='combo' ? '<div class="seg-spacer"></div>' : '<button type="button" class="ik-back" onclick="sportTab=\'combo\';curPerso=null;renderSport()">'+ICN('chevronR',16).replace('<path','<path transform="rotate(180 12 12)"')+' '+t('tabCombo')+'</button>') :
+    '<div class="seg-ctrl">'+(P.easyMode?'':'<div class="seg-btn'+(sportTab==='combo'?' on':'')+'" onclick="sportTab=\'combo\';curPerso=null;renderSport()">'+t('tabCombo')+'</div>')+'<div class="seg-btn'+(sportTab==='run'?' on':'')+'" onclick="sportTab=\'run\';curPerso=null;renderSport()">'+t('running')+'</div><div class="seg-btn'+(sportTab==='muscu'?' on':'')+'" onclick="sportTab=\'muscu\';renderSport()">'+t('muscu')+'</div></div>')+
     '<button type="button" class="tb-gear" aria-label="'+t('racesTitle')+'" onclick="openRaces()">'+ICN('flag',17)+'</button>'+
 '<button type="button" class="tb-gear" aria-label="'+t('calendarTitle')+'" onclick="sportView=\'calendar\';renderSport()">'+ICN('calendar',17)+'</button></div>';
   if(P.easyMode){
@@ -8189,7 +8198,6 @@ function renderRunningSimple(){
     '<div class="man" style="font-weight:800;font-size:20px">'+escHtml(planRaceTitle())+'</div>'+
     '<div style="font-size:13px;color:var(--muted);margin-top:4px">'+t('objectiveCap')+' · J-'+daysLeft+'</div>'+
   '</div>';
-  h+=adaptCardHTML('simple');
   h+='<div class="hv7-sec-lab" style="margin:16px 0 10px">'+planWeekHeading(curSess.week)+'</div>';
   h+=renderPlanRows(PLAN.sessions.filter(s=>s.week===curSess.week),tk,{flat:true});
   h+='<button class="btn ghost" style="margin-top:12px" onclick="openFullPlan()">'+t('seePlan')+'</button>';

@@ -56,25 +56,6 @@ function adEntryHTML(e){
   if(acts.length) h+='<div class="ad-acts">'+acts.join('')+'</div>';
   return h+'</div></div>';
 }
-// Entrées à montrer sur la carte : 7 derniers jours, pas encore vues, qui ont changé quelque chose
-// (ou une proposition en attente, ou une alerte de sécurité).
-function adCardEntries(){
-  const lim=adKeyAdd(todayKey(),-7);
-  return (ADAPT_LOG||[]).filter(e=>e.date>=lim && !e.seen && (e.status==='applied'||e.status==='proposal'||(e.status==='note'&&e.safety))).slice(-3).reverse();
-}
-function adaptCardHTML(where){
-  if(!PLAN||!P||P.easyMode&&where==='sport') return '';
-  // onglet Programme : la règle « legs » a sa propre carte (ui/sport-combo.js)
-  const list=adCardEntries().filter(e=>!(where==='combo' && e.rule==='legs' && e.status==='applied')), k=todayKey(), st=P.adapt||{};
-  let banner='';
-  if(adBlockActive(k)) banner='<div class="ad-banner"><span>'+ICN('warning',15)+' '+adMsg({k:st.block.until?'adBlockUntil':'adBlockOpen',p:[{z:st.block.zone},st.block.until?{d:st.block.until}:'']})+'</span><button type="button" class="ad-btn" onclick="adSafetyClick(\'pain\')">'+t('adNoMorePain')+'</button></div>';
-  else if(adIllActive(k)) banner='<div class="ad-banner"><span>'+ICN('health',15)+' '+adMsg({k:'adIllUntil',p:[{d:st.ill.easyUntil}]})+'</span><button type="button" class="ad-btn" onclick="adSafetyClick(\'ill\')">'+t('adFeelBetter')+'</button></div>';
-  if(!list.length && !banner) return '';
-  let h='<section class="ad-card" aria-label="'+t('adCoachTitle')+'"><div class="ad-card-h"><b>'+ICN('gear',16)+' '+t('adCoachTitle')+'</b>'+
-    '<button type="button" class="ad-link" onclick="openAdaptHistory()">'+t('adHistory')+'</button></div>'+banner+list.map(adEntryHTML).join('');
-  if(list.length) h+='<button type="button" class="ad-ok" onclick="adMarkSeen();refreshScreen()">'+t('adGotIt')+'</button>';
-  return h+'</section>';
-}
 function adMarkSeen(){ let n=0; (ADAPT_LOG||[]).forEach(e=>{ if(!e.seen && e.status!=='proposal'){ e.seen=true; e.ut=adNowTs(); n++; } }); if(n) DB.save('adapt_log',ADAPT_LOG); }
 function adRefresh(){ try{ refreshScreen(); }catch(e){} const h=document.getElementById('adHistBody'); if(h && document.getElementById('ovProg').classList.contains('on')) openAdaptHistory(); }
 function adUndoClick(id){

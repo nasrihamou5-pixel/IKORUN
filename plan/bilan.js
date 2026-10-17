@@ -202,26 +202,34 @@ function blReplSet(a){
 }
 function blReplDur(m){ const d=debriefData; if(!d.repl) return; d.replData={kind:d.repl,dur:m,rpe:4}; renderDebrief(); haptic(); }
 /* ---- douleur : silhouette à zones ---- */
-// Zones cliquables, vue de face (F) et de dos (B). Côté de l'athlète : sur la vue de face, sa droite est à gauche.
-const BL_BODY=[
-  ['F','hip',41,116,'R'],['F','hip',59,116,'L'],['F','thighF',42,142,'R'],['F','thighF',58,142,'L'],['F','knee',42,170,'R'],['F','knee',58,170,'L'],
-  ['F','shin',42,198,'R'],['F','shin',58,198,'L'],['F','ankle',42,228,'R'],['F','ankle',58,228,'L'],['F','foot',40,249,'R'],['F','foot',60,249,'L'],
-  ['B','lowBack',50,86,null],['B','thighB',42,144,'L'],['B','thighB',58,144,'R'],['B','calf',42,194,'L'],['B','calf',58,194,'R'],
-  ['B','achilles',42,228,'L'],['B','achilles',58,228,'R']];
-// Silhouette neutre faite de formes pleines (sans trait intérieur), jambes séparées : chaque zone
-// tombe sur la partie du corps qu'elle désigne.
-const BL_SIL='<circle cx="50" cy="19" r="11"/><rect x="45" y="28" width="10" height="9" rx="3"/><rect x="33" y="35" width="34" height="62" rx="13"/>'+
-  '<rect x="22" y="38" width="10" height="52" rx="5" transform="rotate(8 27 38)"/><rect x="68" y="38" width="10" height="52" rx="5" transform="rotate(-8 73 38)"/>'+
-  '<rect x="35" y="88" width="30" height="30" rx="11"/><rect x="36" y="108" width="12" height="66" rx="6"/><rect x="52" y="108" width="12" height="66" rx="6"/>'+
-  '<rect x="37" y="166" width="10" height="66" rx="5"/><rect x="53" y="166" width="10" height="66" rx="5"/><ellipse cx="40" cy="248" rx="8" ry="5"/><ellipse cx="60" cy="248" rx="8" ry="5"/>';
+// V4.2 : même silhouette anatomique que la musculation (BODY_PARTS_FRONT / BODY_PARTS_BACK, app.js) ;
+// chaque zone de douleur est la partie du corps elle-même, à toucher. Côté de l'athlète : sur la vue
+// de face, sa droite est à gauche de l'image ; sur la vue de dos, sa gauche est à gauche.
+const BL_ZONES={
+  F:{hip:'hipFlexors',thighF:'quadriceps',knee:'knees',shin:'tibialis',ankle:'ankles',foot:'feet'},
+  B:{lowBack:'lowerBack',thighB:'hamstring',calf:'calves',achilles:'ankles'}};
+const BL_NOSIDE={lowBack:1};
+function blPathX(d){ const m=/M\s*(-?[\d.]+)/.exec(d); return m?+m[1]:0; }
 function blBodySVG(view){
-  const p=debriefData.pain;
-  let h='<svg class="bl-body" viewBox="0 0 100 260" role="group" aria-label="'+t(view==='F'?'blFront':'blBack')+'"><g class="bl-sil">'+BL_SIL+'</g>';
-  BL_BODY.filter(z=>z[0]===view).forEach(([v,z,x,y,side])=>{
-    const on=p.zone===z && (p.side||null)===side;
-    h+='<circle class="bl-z'+(on?' on':'')+'" cx="'+x+'" cy="'+y+'" r="'+(z==='lowBack'?10:7)+'" role="button" tabindex="0" aria-pressed="'+on+'" aria-label="'+escHtml(adZoneName(z+(side?'_'+side:'')))+'" onclick="blPainZone(\''+z+'\','+(side?'\''+side+'\'':'null')+')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.onclick();}"></circle>';
+  const p=debriefData.pain, PARTS=view==='F'?BODY_PARTS_FRONT:BODY_PARTS_BACK, vb=view==='F'?ANATOMY_VB_FRONT:ANATOMY_VB_BACK;
+  const mid=(+vb.split(' ')[0])+363.5, zones=BL_ZONES[view], bySlug={};
+  Object.keys(zones).forEach(z=>{ bySlug[zones[z]]=z; });
+  let base='', hit='';
+  Object.keys(PARTS).forEach(slug=>{
+    const seen=new Set(), z=bySlug[slug];
+    PARTS[slug].forEach(d=>{ if(seen.has(d)) return; seen.add(d);
+      if(!z){ base+='<path d="'+d+'" fill="'+(slug==='hair'?'var(--card2)':'var(--s3)')+'"/>'; return; }
+    });
+    if(!z) return;
+    const groups={};
+    [...seen].forEach(d=>{ const left=blPathX(d)<mid, side=BL_NOSIDE[z]?'':(view==='F'?(left?'R':'L'):(left?'L':'R')); (groups[side]=groups[side]||[]).push(d); });
+    Object.keys(groups).forEach(side=>{
+      const sd=side||null, on=p.zone===z && (p.side||null)===sd;
+      hit+='<g class="bl-z'+(on?' on':'')+'" role="button" tabindex="0" aria-pressed="'+on+'" aria-label="'+escHtml(adZoneName(z+(sd?'_'+sd:'')))+'" onclick="blPainZone(\''+z+'\','+(sd?'\''+sd+'\'':'null')+')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.onclick();}">'+
+        groups[side].map(d=>'<path d="'+d+'"/>').join('')+'</g>';
+    });
   });
-  return h+'</svg>';
+  return '<svg class="bl-body" viewBox="'+vb+'" role="group" aria-label="'+t(view==='F'?'blFront':'blBack')+'">'+base+hit+'</svg>';
 }
 function blPainZone(z,side){ const p=debriefData.pain; p.on=true; p.zone=z; p.side=side; renderDebrief(); haptic(); }
 function blPainHTML(forced){
