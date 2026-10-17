@@ -1,3 +1,13 @@
+# IKORUN 4.1.1 — Écrans alignés sur les maquettes
+
+- Onglet Programme comme la maquette Sport : carte « Programme combiné » (étiquette, semaine, chiffres séparés),
+  jour de repos visible dans la bande, carte « Jambes faites · séance de … allégée » avec Pourquoi ? / Annuler,
+  séance du jour en ligne, étiquettes Suivi / Suivre, bouton « Créer un plan » plein, sous-titre « Ton programme de la semaine ».
+- Assistant comme la maquette Créer : icônes dans un carré (pleines quand choisies), « Conseillé » en étiquette,
+  séances par semaine et matériel en sélecteur.
+- Rangs comme la maquette Rangs : « Prochain rang · … », halo à la couleur du rang.
+- Accueil comme la maquette Main : point sur la pastille Check tant que le check du matin n'est pas fait.
+
 # IKORUN 4.1.0 — Programme course + muscu, accueil à pastilles, rangs
 
 ## Nouveautés
