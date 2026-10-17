@@ -57,10 +57,10 @@ function renderCombo(){
   const total = runW.length + strW.length;
   const wn = cbWeekNumber(), wTotal = STRENGTH ? STRENGTH.weeks : (PLAN ? PLAN.weeks : 0);
   const title = (PLAN && STRENGTH) ? planRaceTitle()+' + '+t('strengthWord') : (PLAN ? planRaceTitle() : t('strengthWord'));
-  let h = '<div class="card ik-combo-head">'+
-    '<div class="lab">'+t('comboTitle')+(wn?' · '+tp('comboWeekOf',Math.min(wn,wTotal||wn),wTotal):'')+'</div>'+
-    '<div class="man" style="font-weight:800;font-size:19px;margin-top:2px">'+escHtml(title)+'</div>'+
-    ((PLAN && STRENGTH)?'<div style="font-size:12.5px;color:var(--muted);margin-top:4px">'+t('comboGenTogether')+'</div>':'')+
+  let h = '<div class="ik-combo-hero">'+
+    '<div class="ik-combo-top"><span class="ik-tag">'+t('comboTitle')+'</span>'+(wn?'<span class="ik-tag plain">'+tp('comboWeekOf',Math.min(wn,wTotal||wn),wTotal)+'</span>':'')+'</div>'+
+    '<div class="ik-combo-title">'+escHtml(title)+'</div>'+
+    ((PLAN && STRENGTH)?'<div class="ik-combo-sub">'+t('comboGenTogether')+'</div>':'')+
     '<div class="ik-stats3">'+
       '<div><b>'+runW.length+'</b><span>'+t('comboRunWord')+'</span></div>'+
       '<div><b>'+strW.length+'</b><span>'+t('comboMuscuWord')+'</span></div>'+
@@ -73,19 +73,20 @@ function renderCombo(){
     const r = runW.filter(function(s){ return s.date===k; })[0], m = strW.filter(function(s){ return s.date===k; })[0];
     const adapted = r && r.adj && r.adj.r;
     return '<div class="'+(k===tk?'td':'')+'"><em>'+escHtml(L[i]||'')+'</em>'+
-      (r?'<i class="ik-dot run'+(adapted?' adapted':'')+'"></i>':'')+(m?'<i class="ik-dot mu"></i>':'')+'</div>';
+      (r?'<i class="ik-dot run'+(adapted?' adapted':'')+'"></i>':'')+(m?'<i class="ik-dot mu"></i>':'')+(!r&&!m?'<i class="ik-dot rest"></i>':'')+'</div>';
   }).join('')+'</div>';
   h += '<div class="ik-legend"><span><i class="ik-dot run"></i>'+t('comboRun')+'</span><span><i class="ik-dot mu"></i>'+t('comboMuscu')+'</span><span><i class="ik-dot run adapted"></i>'+t('comboAdapted')+'</span></div>';
 
-  h += adaptCardHTML('combo');   // « Ton coach a ajusté ton plan » : montre aussi les allègements dus aux jambes
+  h += cbLegsCardHTML();
+  h += adaptCardHTML('combo');   // « Ton coach a ajusté ton plan » : les autres ajustements (la règle « legs » a sa carte)
 
   // aujourd'hui : séance de muscu du plan
   const todayM = strW.filter(function(s){ return s.date===tk; })[0];
   if(todayM){
     h += '<div class="hv7-sec-lab" style="margin:14px 0 8px">'+t('comboToday')+'</div>'+
-      '<div class="card ik-today"><div class="rs-ic" style="background:rgba(var(--e-rgb),.12);color:var(--e2)">'+ICN('dumbbell',18)+'</div>'+
-      '<div class="rs-row-body"><div class="rs-row-t">'+t('comboMuscu')+' · '+escHtml(todayM.title)+'</div>'+
-      '<div class="rs-row-m">'+todayM.duration+' min · '+tp('exercisesCount',todayM.ex.length)+'</div></div>'+
+      '<div class="ik-today"><div class="ik-sq mu">'+ICN('dumbbell',18)+'</div>'+
+      '<div class="ik-today-b"><b>'+t('comboMuscu')+' · '+escHtml(todayM.title)+'</b>'+
+      '<span>'+todayM.duration+' min · '+tp('exercisesCount',todayM.ex.length)+'</span></div>'+
       (todayM.done?'<span class="chrome-chip" style="color:var(--ok)">'+t('sessionCompleted')+'</span>'
         :'<button class="btn sm" onclick="startLive(\''+todayM.id+'\')">'+t('comboStart')+'</button>')+'</div>';
   }
@@ -99,13 +100,31 @@ function renderCombo(){
     h += cbPlanRow(p.name, t('comboCreatedByMe')+' · '+(isM?t('comboMuscu'):t('comboRun')).toLowerCase(), t('comboFollow'),
       isM ? "sportTab='muscu';renderSport()" : "sportTab='run';runSub='perso';openPerso('"+p.id+"')");
   });
-  h += '<button class="btn ghost" style="width:100%;margin-top:6px" onclick="openWizard()">＋ '+t('comboCreate')+'</button>';
+  h += '<button class="btn" style="width:100%;margin-top:4px" onclick="openWizard()">+ '+t('comboCreate')+'</button>';
   return h;
 }
 function cbPlanRow(name, sub, action, onclick, onDelete){
+  const followed = action===t('comboFollowed');
   return '<div class="ik-plan-row"><div class="ik-plan-b" onclick="'+onclick+'"><b>'+escHtml(name)+'</b><span>'+escHtml(sub)+'</span></div>'+
-    '<button class="btn sm ghost" onclick="'+onclick+'">'+action+'</button>'+
+    '<button type="button" class="ik-tag'+(followed?' ok':'')+'" onclick="'+onclick+'">'+action+'</button>'+
     (onDelete?'<button class="tb-gear" style="width:30px;height:30px" aria-label="'+t('strengthDeleteLab')+'" onclick="'+onDelete+'">'+ICN('trash',15)+'</button>':'')+'</div>';
+}
+// Carte dédiée à la règle « legs » (maquette Sport) : jour concerné, avant → après, Pourquoi ? / Annuler
+function cbLegsEntry(){
+  if(typeof adCardEntries!=='function') return null;
+  return adCardEntries().filter(function(e){ return e.rule==='legs' && e.status==='applied' && e.before && e.before.length; })[0] || null;
+}
+function cbKm(v){ const r=Math.round(v*10)/10; return fmtN(r, r%1?1:0); }   // 9 km, 7,3 km
+function cbLegsCardHTML(){
+  const e = cbLegsEntry(); if(!e) return '';
+  const b = e.before[0], a = (e.after||[]).filter(function(x){ return x.id===b.id; })[0] || b;
+  const day = ikDate(new Date(b.date+'T12:00:00'), '{weekday:long}', {weekday:'long'});
+  const after = a.baseType==='EF' ? tp('comboLegsToEasy', escHtml(planSessLabel(b)), fmtN(a.km,0))
+    : tp('comboLegsShorter', escHtml(planSessLabel(b)), cbKm(b.km), cbKm(a.km));
+  return '<div class="ik-legs"><div class="ik-legs-h"><div class="ik-sq warn">'+ICN('bolt',16)+'</div>'+
+    '<div><b>'+tp('comboLegsTitle', escHtml(day))+'</b><span>'+after+'</span></div></div>'+
+    '<div class="ik-legs-a"><button type="button" class="ik-act" onclick="openAdaptHistory()">'+t('comboWhy')+'</button>'+
+    '<button type="button" class="ik-act" onclick="adUndoClick(\''+e.id+'\')">'+t('comboUndo')+'</button></div></div>';
 }
 function delStrength(){
   customConfirm(t('strengthDelete'), function(){ STRENGTH=null; DB.save('strength_plan',null); renderSport(); }, {danger:true});
@@ -133,23 +152,23 @@ function openWizard(){
 function wizSet(k,v){ wiz[k]=v; renderWizard(); }
 function wizDay(i){ const a=wiz.days, p=a.indexOf(i); if(p>=0) a.splice(p,1); else a.push(i); a.sort(); renderWizard(); }
 function wizOpt(sel,key,title,sub,icn,badge){
-  return '<div class="ik-opt'+(sel?' sel':'')+'" onclick="'+key+'"><div class="ik-opt-ic">'+ICN(icn,20)+'</div><div style="flex:1"><b>'+title+'</b><span class="s">'+sub+'</span></div>'+(badge?'<em class="ik-badge">'+badge+'</em>':'')+'</div>';
+  return '<div class="ik-opt'+(sel?' sel':'')+'" onclick="'+key+'"><div class="ik-opt-ic">'+ICN(icn,20)+'</div><div style="flex:1"><b>'+title+'</b><span class="s">'+sub+'</span></div>'+(badge?'<em class="ik-tag">'+badge+'</em>':'')+'</div>';
 }
 function renderWizard(){
   const w = wiz, L = t('dowShort').split(',');
   let h = '<div class="hv7-sec-lab" style="margin:4px 0 8px">'+t('wizWhat')+'</div>'+
     wizOpt(w.what==='run',"wizSet('what','run')",t('wizRun'),t('wizRunSub'),'run')+
     wizOpt(w.what==='muscu',"wizSet('what','muscu')",t('wizMuscu'),t('wizMuscuSub'),'dumbbell')+
-    wizOpt(w.what==='both',"wizSet('what','both')",t('wizBoth'),t('wizBothSub'),'refresh',t('wizAdvised'));
+    wizOpt(w.what==='both',"wizSet('what','both')",t('wizBoth'),t('wizBothSub'),'plus',t('wizAdvised'));
   h += '<div class="hv7-sec-lab" style="margin:14px 0 8px">'+t('wizHow')+'</div>'+
     wizOpt(w.how==='gen',"wizSet('how','gen')",t('wizGen'),t('wizGenSub'),'bolt')+
     wizOpt(w.how==='self',"wizSet('how','self')",t('wizSelf'),t('wizSelfSub'),'edit');
   if(w.how==='gen' && w.what!=='run'){
     h += '<div class="hv7-sec-lab" style="margin:14px 0 8px">'+t('wizDays')+'</div><div class="ik-days">'+
       L.map(function(l,i){ return '<div class="'+(w.days.indexOf(i)>=0?'on':'')+'" onclick="wizDay('+i+')">'+escHtml(l)+'</div>'; }).join('')+'</div>'+
-      '<div class="lab" style="margin:12px 0 6px">'+t('wizPerWeek')+'</div><div class="ik-days">'+
+      '<div class="ik-wiz-lab">'+t('wizPerWeek')+'</div><div class="ik-seg">'+
       [1,2,3].map(function(n){ return '<div class="'+(w.perWeek===n?'on':'')+'" onclick="wizSet(\'perWeek\','+n+')">'+n+'</div>'; }).join('')+'</div>'+
-      '<div class="lab" style="margin:12px 0 6px">'+t('wizEquip')+'</div><div class="ik-days">'+
+      '<div class="ik-wiz-lab">'+t('wizEquip')+'</div><div class="ik-seg">'+
       [['gym','salle','wizEquipGym'],['home','maison','wizEquipHome'],['both','both','wizEquipBoth']].map(function(e){
         return '<div class="'+(w.equip===e[1]?'on':'')+'" onclick="wizSet(\'equip\',\''+e[1]+'\')">'+t(e[2])+'</div>'; }).join('')+'</div>';
   }

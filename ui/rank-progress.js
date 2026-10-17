@@ -14,7 +14,7 @@ function rankProgressHTML(){
   if(next){
     const prog = badgeProgress(next);
     h += '<div class="ik-rank-next"><div class="row" style="justify-content:space-between;margin-bottom:7px">'+
-      '<span style="font-size:12px;color:var(--muted)">'+tp('nextBadgeLab',escHtml(next.name))+'</span>'+
+      '<span style="font-size:12px;color:var(--muted)">'+tp('nextRankLab','<b class="nm">'+escHtml(next.name)+'</b>')+'</span>'+
       '<span class="mono" style="font-size:12px;color:var(--et,var(--e))">'+prog.pct+'%</span></div>'+
       '<div class="pbar" style="height:7px"><div style="width:'+prog.pct+'%"></div></div>'+
       '<div class="ik-conds">'+prog.parts.map(function(p){

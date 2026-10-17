@@ -26,7 +26,8 @@ function homePillsHTML(){
   }
   if(!items.some(function(x){ return x.d.k===sel; })) sel = items[0].d.k;
   const bar = items.map(function(x){
-    return '<button type="button" class="ik-pill'+(x.d.k===sel?' on':'')+'" onclick="homePillPick(\''+x.d.k+'\')">'+ICN(x.d.icn,15)+'<span>'+x.d.lab+'</span></button>';
+    return '<button type="button" class="ik-pill'+(x.d.k===sel?' on':'')+'" onclick="homePillPick(\''+x.d.k+'\')">'+ICN(x.d.icn,15)+'<span>'+x.d.lab+'</span>'+
+      (x.d.k==='check' && x.d.k!==sel ? '<i class="ik-pill-dot" aria-hidden="true"></i>' : '')+'</button>';   // check du matin pas encore fait
   }).join('');
   const cur = items.find(function(x){ return x.d.k===sel; });
   return '<div class="ik-pills" role="tablist">'+bar+'</div>'+cur.h;

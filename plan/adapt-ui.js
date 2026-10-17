@@ -64,7 +64,8 @@ function adCardEntries(){
 }
 function adaptCardHTML(where){
   if(!PLAN||!P||P.easyMode&&where==='sport') return '';
-  const list=adCardEntries(), k=todayKey(), st=P.adapt||{};
+  // onglet Programme : la règle « legs » a sa propre carte (ui/sport-combo.js)
+  const list=adCardEntries().filter(e=>!(where==='combo' && e.rule==='legs' && e.status==='applied')), k=todayKey(), st=P.adapt||{};
   let banner='';
   if(adBlockActive(k)) banner='<div class="ad-banner"><span>'+ICN('warning',15)+' '+adMsg({k:st.block.until?'adBlockUntil':'adBlockOpen',p:[{z:st.block.zone},st.block.until?{d:st.block.until}:'']})+'</span><button type="button" class="ad-btn" onclick="adSafetyClick(\'pain\')">'+t('adNoMorePain')+'</button></div>';
   else if(adIllActive(k)) banner='<div class="ad-banner"><span>'+ICN('health',15)+' '+adMsg({k:'adIllUntil',p:[{d:st.ill.easyUntil}]})+'</span><button type="button" class="ad-btn" onclick="adSafetyClick(\'ill\')">'+t('adFeelBetter')+'</button></div>';

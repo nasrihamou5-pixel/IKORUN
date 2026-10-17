@@ -78,7 +78,7 @@ const I18N={
     strengthErr_invalid:'Le plan n’a pas passé la vérification de sécurité.',strengthErr_noCatalog:'Catalogue d’exercices indisponible.',
     adMsgLegs:'Séance de jambes faite : {0} allégée pour que tu arrives frais.',
     ranksAll:'Les 8 rangs',
-    wizTitle:'Nouveau plan',comboPerWeek:'{0}×/sem',strengthDeleteLab:'Supprimer le plan de muscu',strengthSkipped:{one:'{0} séance n’a pas trouvé de jour sûr : ajoute des jours pour la placer.',other:'{0} séances n’ont pas trouvé de jour sûr : ajoute des jours pour les placer.'},
+    wizTitle:'Nouveau plan',comboPerWeek:'{0}×/sem',strengthDeleteLab:'Supprimer le plan de muscu',sub_sportCombo:'Ton programme de la semaine',comboLegsTitle:'Jambes faites · séance de {0} allégée',comboLegsToEasy:'{0} devient un footing de {1} km à allure facile.',comboLegsShorter:'{0} passe de {1} à {2} km.',comboWhy:'Pourquoi ?',comboUndo:'Annuler',nextRankLab:'Prochain rang · {0}',strengthSkipped:{one:'{0} séance n’a pas trouvé de jour sûr : ajoute des jours pour la placer.',other:'{0} séances n’ont pas trouvé de jour sûr : ajoute des jours pour les placer.'},
     weekPhaseLabel:'Semaine {0} · {1}',
     nextSessionMeta:'Prochaine séance · {0}',
     totalTime:'Temps total',sessionsRemainingVal:'{0} séances',
