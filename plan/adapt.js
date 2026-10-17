@@ -519,8 +519,8 @@ function adRuleExec(e){
     if(!safetyOn && !taper && !raceSoon && fastLow.length>=2 && !adCool('vdotProp',21) && !adPendingProposal()){
       adFired('vdotProp');
       const avg=fastLow.reduce((a,y)=>a+y.exec.dev,0)/fastLow.length, step=avg>=0.07?1:0.5;
-      out.push(adLog({rule:'vdotUp',safety:false,status:'proposal',step,sessIds:[],before:[],after:[],seen:false,
-        msg:{k:'adMsgVdotUp',p:[fastLow.length,fmt1(getUserVDOT()),fmt1(clampVdot(getUserVDOT()+step))]}}));
+      out.push(adAutoAccept(adLog({rule:'vdotUp',safety:false,status:'proposal',step,sessIds:[],before:[],after:[],seen:false,
+        msg:{k:'adMsgVdotUp',p:[fastLow.length,fmt1(getUserVDOT()),fmt1(clampVdot(getUserVDOT()+step))]}})));
     }
     return out;
   }
@@ -551,8 +551,8 @@ function adRuleExec(e){
       adFired('vdotPropDown');
       const devs=rec6.filter(bad).map(y=>y.exec.dev).filter(d=>d!=null);
       const avg=devs.length?devs.reduce((a,b)=>a+b,0)/devs.length:-0.05, step=avg<=-0.08?1:0.5;
-      out.push(adLog({rule:'vdotDown',safety:false,status:'proposal',step:-step,sessIds:[],before:[],after:[],seen:false,
-        msg:{k:'adMsgVdotDown',p:[fmt1(getUserVDOT()),fmt1(clampVdot(getUserVDOT()-step))]}}));
+      out.push(adAutoAccept(adLog({rule:'vdotDown',safety:false,status:'proposal',step:-step,sessIds:[],before:[],after:[],seen:false,
+        msg:{k:'adMsgVdotDown',p:[fmt1(getUserVDOT()),fmt1(clampVdot(getUserVDOT()-step))]}})));
     }
     return out;
   }
@@ -573,6 +573,8 @@ function adExplains(e){
   }
   return [];
 }
+// V4.2 : plus de carte à valider : la nouvelle allure est appliquée aussitôt (annulable depuis l'historique).
+function adAutoAccept(e){ try{ const r=adaptAcceptVdot(e.id); return (r&&r.ok&&r.entry)||e; }catch(err){ console.error('[IKORUN] adAutoAccept',err); return e; } }
 function adPendingProposal(){ return (ADAPT_LOG||[]).find(x=>x.status==='proposal'); }
 
 /* d. Séances ratées (bilan « pas fait »). */
@@ -616,6 +618,7 @@ function adPersist(){
   _lmCache=null;
   try{ DB.save('run_plan',PLAN); DB.save('profile',P); DB.save('adapt_log',ADAPT_LOG); DB.save('checkins',CHECKINS); DB.save('sesslog',SESSLOG); }catch(e){ console.error('[IKORUN] adPersist',e); }
   try{ if(typeof athleteStatusSync==='function') athleteStatusSync(); }catch(e){}
+  try{ if(typeof strengthCheckRun==='function') strengthCheckRun(); }catch(e){}   // muscu liée : recalée si le plan a bougé
 }
 // Après un bilan validé (fait ou modifié).
 function adaptAfterBilan(e){

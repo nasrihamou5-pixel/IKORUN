@@ -145,6 +145,7 @@
       for(var d=0; d<7; d++){
         if(ctx.days.length && ctx.days.indexOf(d)<0) continue;
         var dk = addDays(mondayKey,d);
+        if(ctx.minDate && dk<ctx.minDate) continue;                                  // jamais un jour déjà passé
         if(ctx.raceDate && dk>=addDays(ctx.raceDate,-1)) continue;                 // jamais la veille / le jour de la course
         var today = ctx.runByDate[dk], next = ctx.runByDate[addDays(dk,1)], prev = ctx.runByDate[addDays(dk,-1)], score = 0;
         if(legs){
@@ -207,7 +208,7 @@
       catalog: catalog, seed: seed, exFactory: opts.exFactory||null,
       levelRank: LEVEL_RANK[opts.level]==null ? 1 : LEVEL_RANK[opts.level],
       equip: opts.equip||'both', days: (opts.days||[]).filter(function(d){return d>=0&&d<=6;}),
-      raceDate: opts.raceDate||null, runByDate:{}
+      raceDate: opts.raceDate||null, minDate: opts.startDate||null, runByDate:{}
     };
     runSessions.forEach(function(s){ if(s.baseType!=='Repos' && s.km>0) ctx.runByDate[s.date]=s; });
     var runInfo = linked ? runWeekInfo(runSessions) : null;

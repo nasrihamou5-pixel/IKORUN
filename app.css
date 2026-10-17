@@ -1167,7 +1167,10 @@ html[data-mode="light"]{
    impossibles à modifier sans surprise.) */
 
 /* NAV — finition chromée (verre + métal poli), même famille que les pills */
-#nav{position:fixed;bottom:calc(10px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:calc(100% - 26px);max-width:404px;z-index:9999;
+/* V4.2 : barre du bas plus basse. Sur iPhone, elle descend dans la zone de la barre d'accueil
+   (34 px) au lieu de flotter 10 px au-dessus : 22 px du bord, 8 px minimum sans encoche. */
+:root{--nav-b:max(8px,calc(env(safe-area-inset-bottom) - 12px));}
+#nav{position:fixed;bottom:var(--nav-b);left:50%;transform:translateX(-50%);width:calc(100% - 26px);max-width:404px;z-index:9999;
   background:var(--chrome-spec),var(--chrome-base);
   backdrop-filter:blur(28px) saturate(1.4);-webkit-backdrop-filter:blur(28px) saturate(1.4);
   border:1px solid var(--chrome-border);border-radius:26px;overflow:hidden;
@@ -3302,12 +3305,12 @@ html.easy-mode .list-row .lr-sub{font-size:12px;}
    au-dessus de la barre du bas ; elle descend à sa place quand la barre se masque.
    =================================================================== */
 #ikIsland{--isl-nav:62px;position:fixed;left:50%;z-index:9999;width:calc(100% - 26px);max-width:404px;
-  bottom:calc(18px + var(--isl-nav) + env(safe-area-inset-bottom));
+  bottom:calc(var(--nav-b) + 8px + var(--isl-nav));
   display:flex;align-items:center;gap:8px;pointer-events:none;opacity:0;
   transform:translate(-50%,26px) scale(.55,.4);transform-origin:50% 100%;
   transition:transform .55s var(--ease-spring),opacity .22s ease,bottom .38s var(--ease-spring);}
 #ikIsland.on{pointer-events:auto;opacity:1;transform:translate(-50%,0) scale(1);}
-#nav.nav-hidden ~ #ikIsland{bottom:calc(10px + env(safe-area-inset-bottom));}
+#nav.nav-hidden ~ #ikIsland{bottom:var(--nav-b);}
 body.isl-on.isl-low #scroll{padding-bottom:calc(214px + env(safe-area-inset-bottom));}
 body.isl-on.isl-low #toast{bottom:172px;}
 .isl-main,.isl-mini{--isl-c:var(--e);position:relative;overflow:hidden;color:#fff;cursor:pointer;
@@ -3549,7 +3552,7 @@ html.easy-mode .fete-card *,.fete-card.off *{animation:none !important;}
 html.easy-mode #ikFete{display:none;}
 @media (prefers-reduced-motion: reduce){ #ikFete *,.fete-card *{animation:none !important;} }
 /* personnages posés sur la barre du bas ; ils descendent avec elle et s'effacent sous l'îlot */
-.fx-gnd{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 5px + var(--navh));display:flex;align-items:flex-end;gap:1px;
+.fx-gnd{position:absolute;bottom:calc(var(--nav-b) - 5px + var(--navh));display:flex;align-items:flex-end;gap:1px;
   transition:transform .38s var(--ease-spring,cubic-bezier(.3,1.3,.5,1)),opacity .3s ease;}
 .fx-gnd.l{left:max(20px,env(safe-area-inset-left));} .fx-gnd.r{right:max(20px,env(safe-area-inset-right));}
 .fx-gnd .fx-it{flex:none;filter:drop-shadow(0 6px 6px rgba(0,0,0,.28));}
@@ -4408,12 +4411,12 @@ html[dir="rtl"] .bl-range.pain::-moz-range-track{background:linear-gradient(270d
 .bl-pain-card{margin-top:12px;}
 .bl-body-wrap{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 4px;}
 .bl-body-wrap>div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:700;color:var(--muted);}
-.bl-body{width:100%;max-width:132px;height:auto;max-height:270px;overflow:visible;}
-.bl-sil{fill:color-mix(in srgb,var(--snow) 13%,transparent);}
-.bl-z{fill:color-mix(in srgb,var(--e) 14%,transparent);stroke:color-mix(in srgb,var(--e) 55%,transparent);stroke-width:1;cursor:pointer;transition:fill .15s ease;}
-.bl-z:hover{fill:color-mix(in srgb,var(--e) 30%,transparent);}
-.bl-z.on{fill:var(--bad);stroke:#fff;stroke-width:1.5;}
-.bl-z:focus-visible{outline:none;stroke:var(--e2);stroke-width:2.5;}
+.bl-body{width:100%;max-width:150px;height:auto;display:block;}
+/* zones de douleur : les parties du corps de la silhouette musculation, teintées pour montrer qu'on peut les toucher */
+.bl-z{fill:color-mix(in srgb,var(--e) 30%,var(--s3));stroke:transparent;stroke-width:6;cursor:pointer;transition:fill .15s ease;}
+.bl-z:hover{fill:color-mix(in srgb,var(--e) 50%,var(--s3));}
+.bl-z.on{fill:var(--bad);}
+.bl-z:focus-visible{outline:none;stroke:var(--e2);}
 .bl-zone-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 2px 10px;font-size:13px;color:var(--snow);}
 .bl-zone-row .chip-btn{flex:none;padding:6px 12px;border:0;border-radius:999px;font:inherit;font-size:11.5px;font-weight:700;color:var(--muted);background:var(--lg-well,var(--s2));cursor:pointer;}
 .bl-zone-row .chip-btn.on{color:#fff;background:var(--bad);}
@@ -4425,13 +4428,11 @@ html[dir="rtl"] .bl-range.pain::-moz-range-track{background:linear-gradient(270d
 .bl-mood.on{filter:none;opacity:1;transform:scale(1.06);box-shadow:inset 0 0 0 1.5px var(--e);}
 #blSubmit[disabled]{opacity:.45;pointer-events:none;}
 /* carte « Ton coach a ajusté ton plan » et historique */
-.ad-card{margin:0 0 18px;padding:14px;border-radius:22px;background:var(--lg-fill,var(--s1));box-shadow:var(--lg-rim,inset 0 0 0 1px var(--hair)),var(--float-sm,none);}
-.ad-card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
-.ad-card-h b{display:flex;align-items:center;gap:7px;font-size:13.5px;color:var(--snow);}
-.ad-card-h b svg{color:var(--e2);}
+/* séance modifiée par le moteur d'adaptation (V4.2 : plus de carte, l'étiquette suffit) */
+.sess-adj{color:var(--warn);font-weight:700;}
 .ad-link{flex:none;padding:4px 0;border:0;background:none;font:inherit;font-size:12px;font-weight:700;color:var(--e2);cursor:pointer;}
 .ad-item{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--hair);}
-.ad-card .ad-item:first-of-type,.ad-hday+.ad-item,.ca-block .ad-item:first-of-type{border-top:0;}
+.ad-hday+.ad-item,.ca-block .ad-item:first-of-type{border-top:0;}
 .ad-ic{flex:none;width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--e2);background:color-mix(in srgb,var(--e) 13%,transparent);}
 .ad-item.safe .ad-ic{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent);}
 .ad-item.ad-rejected .ad-ic,.ad-item.ad-undone .ad-ic,.ad-item.ad-declined .ad-ic{color:var(--muted);background:var(--lg-well,var(--s2));}
@@ -5245,7 +5246,6 @@ html.easy-mode .bl-zone-row{font-size:15px;}
 html.easy-mode .bl-zone-row .chip-btn{font-size:13px;}
 html.easy-mode .bl-hr label{font-size:13px;}
 html.easy-mode .bl-mood{font-size:26px;}
-html.easy-mode .ad-card-h b{font-size:15.5px;}
 html.easy-mode .ad-link{font-size:14px;}
 html.easy-mode .ad-msg{font-size:15px;}
 html.easy-mode .ad-sub{font-size:13px;}
@@ -5423,10 +5423,6 @@ html.easy-mode [style*="font-size:20px"]{font-size:23px !important;}
 .ik-sq{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex:none;background:rgba(var(--e-rgb),.12);color:var(--e2)}
 .ik-sq.mu{background:color-mix(in srgb,var(--maitre) 14%,transparent);color:var(--maitre)}
 .ik-sq.warn{width:32px;height:32px;background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--warn)}
-.ik-legs{margin-top:12px;padding:14px 16px;border-radius:18px;border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);background:var(--lg-spec),var(--lg-body),var(--lg-fill);box-shadow:var(--lg-drop),var(--lg-rim)}
-.ik-legs-h{display:flex;align-items:center;gap:10px}.ik-legs-h b{display:block;font-weight:800;font-size:13px;color:var(--snow)}.ik-legs-h span{display:block;font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4}
-.ik-legs-a{display:flex;gap:9px;margin-top:12px}
-.ik-act{flex:1;padding:9px 8px;border-radius:99px;font:700 11px Unbounded,system-ui,sans-serif;color:var(--snow);background:var(--s2);border:1px solid var(--hair2);cursor:pointer}
 .ik-today{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--hair)}
 .ik-today-b{flex:1;min-width:0}.ik-today-b b{display:block;font-size:13px;color:var(--snow)}.ik-today-b span{font-size:11px;color:var(--muted)}
 .ik-plan-row{display:flex;align-items:center;gap:8px;padding:12px 14px;margin-bottom:8px;border-radius:18px;border:1px solid rgba(var(--e-rgb),.15);background:var(--lg-spec),var(--lg-body),var(--lg-fill);box-shadow:var(--lg-drop),var(--lg-rim)}
@@ -5478,3 +5474,11 @@ svg.bd-glyph{display:block;width:100%;height:100%}
 [dir=rtl] .ik-rk span{font-family:inherit;font-size:11px;line-height:1.35}
 .bd-icon.locked svg.bd-rank{filter:grayscale(.85) brightness(.8)}
 
+
+/* V4.2 : programme intégré (une seule page) */
+.seg-row .seg-spacer{flex:1}
+.ik-back{flex:1;display:flex;align-items:center;gap:6px;height:44px;padding:0 14px;border-radius:99px;border:1px solid rgba(var(--e-rgb),.22);background:var(--lg-spec),var(--lg-body),var(--lg-fill);box-shadow:var(--lg-rim);color:var(--e2);font:700 13px Inter,system-ui,sans-serif;cursor:pointer}
+[dir=rtl] .ik-back svg{transform:scaleX(-1)}
+.ik-int-acts{display:flex;gap:8px;margin-top:12px}.ik-int-acts .btn{flex:1;min-width:0;width:auto;font-size:12.5px;padding:12px 8px;white-space:nowrap}
+.ik-today .btn{width:auto;flex:none;padding-inline:16px}
+.ik-int-links{display:flex;flex-wrap:wrap;justify-content:center;gap:0 16px;margin-top:6px}.ik-int-links .ad-histlink{margin:8px 0 0}
