@@ -231,7 +231,7 @@ function blBodySVG(view){
   });
   return '<svg class="bl-body" viewBox="'+vb+'" role="group" aria-label="'+t(view==='F'?'blFront':'blBack')+'">'+base+hit+'</svg>';
 }
-function blPainZone(z,side){ const p=debriefData.pain; p.on=true; p.zone=z; p.side=side; renderDebrief(); haptic(); }
+function blPainZone(z,side){ const p=debriefData.pain; p.on=true; p.zone=z; p.side=side; blPainRerender(); haptic(); }
 function blPainHTML(forced){
   const p=debriefData.pain;
   let h='';
@@ -241,7 +241,7 @@ function blPainHTML(forced){
     '<div class="bl-zone-row"><b>'+(p.zone?escHtml(adZoneName(p.zone+(p.side?'_'+p.side:''))):t('blPickZone'))+'</b>'+
     '<button type="button" class="chip-btn'+(p.zone==='other'?' on':'')+'" onclick="blPainZone(\'other\',null)">'+t('adZone_other')+'</button></div>'+
     '<div class="db-wlab">'+tp('blPainLevel',p.level)+'</div><input type="range" class="bl-range pain" min="0" max="10" step="1" value="'+p.level+'" aria-label="'+t('blPainLevelLab')+'" oninput="debriefData.pain.level=+this.value;this.previousElementSibling.textContent=tp(\'blPainLevel\',this.value)">'+
-    '<div class="ap-opt bl-gait"><div><b>'+t('blGait')+'</b><span>'+t('blGaitSub')+'</span></div><div class="toggle'+(p.gait?' on':'')+'" role="switch" aria-checked="'+!!p.gait+'" aria-label="'+t('blGait')+'" onclick="debriefData.pain.gait=!debriefData.pain.gait;renderDebrief()"></div></div>';
+    '<div class="ap-opt bl-gait"><div><b>'+t('blGait')+'</b><span>'+t('blGaitSub')+'</span></div><div class="toggle'+(p.gait?' on':'')+'" role="switch" aria-checked="'+!!p.gait+'" aria-label="'+t('blGait')+'" onclick="debriefData.pain.gait=!debriefData.pain.gait;blPainRerender()"></div></div>';
   return h;
 }
 function blSegPain(){ const p=debriefData.pain; return '<div class="seg-ctrl sub bl-seg" role="radiogroup"><div class="seg-btn'+(!p.on?' on':'')+'" role="radio" aria-checked="'+!p.on+'" onclick="debriefData.pain.on=false;renderDebrief()">'+t('blNo')+'</div><div class="seg-btn'+(p.on?' on':'')+'" role="radio" aria-checked="'+p.on+'" onclick="debriefData.pain.on=true;renderDebrief()">'+t('blYes')+'</div></div>'; }

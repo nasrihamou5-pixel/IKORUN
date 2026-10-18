@@ -10,7 +10,8 @@
 const AD_ICON={pain:'warning',painRepeat:'warning',blockKeep:'warning',painLight:'warning',ill:'health',illKeep:'health',
   gap3:'moon',gap7:'refresh',acwrRisk:'warning',acwrHigh:'gauge',acwrLow:'trend',monotony:'shuffle',ready:'battery',readyNote:'battery',
   fastOnce:'bolt',fastInfo:'bolt',vdotUp:'trend',vdotDown:'trend',slowTrend:'gauge',slowOnce:'gauge',slowExplained:'sun',slowTaper:'flag',
-  good:'check',short:'check',race:'flag',missKey:'calendar',missKeyDropped:'calendar',missEasy:'calendar',missTaper:'flag',missFatigue:'moon',safetyBack:'check',legs:'bolt'};
+  good:'check',short:'check',race:'flag',missKey:'calendar',missKeyDropped:'calendar',missEasy:'calendar',missTaper:'flag',missFatigue:'moon',safetyBack:'check',legs:'bolt',
+  strPain:'warning',strIll:'health',strFatigue:'moon',strMiss:'calendar',strGap:'refresh',injury:'health',injuryOn:'health',injuryP1:'health',injuryP2:'health',injuryP3:'health',injuryDone:'check',injuryRelapse:'warning'};
 function adIcon(rule){ const n=AD_ICON[rule]||'gear'; return ICN((typeof ICONS!=='undefined'&&ICONS[n])?n:'gear',16); }
 function adSessLine(s,o){
   if(!s) return '—';
@@ -39,7 +40,7 @@ function adEntryHTML(e){
   let h='<div class="ad-item ad-'+st+(e.safety?' safe':'')+'" data-id="'+escHtml(e.id)+'"><div class="ad-ic">'+adIcon(e.rule)+'</div><div class="ad-body">';
   h+='<p class="ad-msg">'+escHtml(adMsg(e.msg))+'</p>';
   if(e.rebuild && e.vdot) h+='<p class="ad-sub">'+tp('adRebuildSub',fmt1(e.vdot[0]),fmt1(e.vdot[1]))+'</p>';
-  h+=adDiffHTML(e);
+  h+=e.str?strDiffHTML(e):adDiffHTML(e);
   if(st==='rejected') h+='<p class="ad-sub">'+t('adRejected')+'</p>';
   if(st==='undone') h+='<p class="ad-sub">'+t('adUndoneTag')+'</p>';
   const acts=[];
@@ -49,15 +50,25 @@ function adEntryHTML(e){
     acts.push('<button type="button" class="ad-btn ghost" onclick="adDeclineClick(\''+e.id+'\')">'+t('adLater')+'</button>');
   } else if(st==='applied'){
     if(e.safety){
-      const kind=/^ill/.test(e.rule)?'ill':/^(pain|painRepeat|blockKeep)$/.test(e.rule)?'pain':null;
-      if(kind && (kind==='pain'?adBlockActive(todayKey()):adIllActive(todayKey()))) acts.push('<button type="button" class="ad-btn" onclick="adSafetyClick(\''+kind+'\')">'+t(kind==='pain'?'adNoMorePain':'adFeelBetter')+'</button>');
+      const kind=/^(ill|strIll)/.test(e.rule)?'ill':/^(pain|painRepeat|blockKeep|strPain|injury)/.test(e.rule)?'pain':null;
+      if(kind && (kind==='pain'?(adBlockActive(todayKey())||injActive()):adIllActive(todayKey()))) acts.push('<button type="button" class="ad-btn" onclick="adSafetyClick(\''+kind+'\')">'+t(kind==='pain'?'adNoMorePain':'adFeelBetter')+'</button>');
     } else if(e.before&&e.before.length||e.rebuild||e.vdot) acts.push('<button type="button" class="ad-btn ghost" onclick="adUndoClick(\''+e.id+'\')">'+t('adUndo')+'</button>');
   }
   if(acts.length) h+='<div class="ad-acts">'+acts.join('')+'</div>';
   return h+'</div></div>';
 }
+// Muscu : « 5 → 4 exercices » par séance (la liste détaillée est dans la séance elle-même).
+function strDiffHTML(e){
+  if(!e.before||!e.before.length) return '';
+  const A={}; (e.after||[]).forEach(s=>{ A[s.id]=s; });
+  const rows=e.before.map(b=>{ const a=A[b.id]||b; const reh=(a.ex||[]).filter(x=>x.rehab).length;
+    return '<li><span class="ad-d">'+escHtml(fmtDate(b.date))+'</span><span class="ad-b">'+escHtml(b.title||'')+'</span><span class="ad-arr" aria-hidden="true">→</span><span class="ad-a">'+(a.skipped&&!b.skipped?escHtml(t('restTag')):escHtml(tp('adStrDiff',(b.ex||[]).length,(a.ex||[]).length)+(reh?' · '+tp('adStrRehab',reh):'')))+'</span></li>'; });
+  const max=5, more=rows.length-max;
+  return '<ul class="ad-diff">'+rows.slice(0,max).join('')+'</ul>'+(more>0?'<p class="ad-sub">'+tp('adMoreSessions',more)+'</p>':'');
+}
 function adMarkSeen(){ let n=0; (ADAPT_LOG||[]).forEach(e=>{ if(!e.seen && e.status!=='proposal'){ e.seen=true; e.ut=adNowTs(); n++; } }); if(n) DB.save('adapt_log',ADAPT_LOG); }
-function adRefresh(){ try{ refreshScreen(); }catch(e){} const h=document.getElementById('adHistBody'); if(h && document.getElementById('ovProg').classList.contains('on')) openAdaptHistory(); }
+function adRefresh(){ try{ refreshScreen(); }catch(e){}
+  const pb=document.getElementById('progBody'); if(pb && pb.querySelector('.ik-inj-hero')){ if(injActive()) renderInjury(); else closeOv('ovProg'); } const h=document.getElementById('adHistBody'); if(h && document.getElementById('ovProg').classList.contains('on')) openAdaptHistory(); }
 function adUndoClick(id){
   const e=adEntry(id); if(!e) return;
   customConfirm(t('adUndoConfirm'),()=>{
@@ -70,7 +81,7 @@ function adAcceptClick(id){ const r=adaptAcceptVdot(id); toast(r.ok?adMsg(r.entr
 function adDeclineClick(id){ adaptDecline(id); adRefresh(); }
 function adTestClick(id){ adaptDecline(id); toast(t('adTestHint')); try{ openRecords(); }catch(e){} }
 function adSafetyClick(kind){
-  customConfirm(t(kind==='pain'?'adNoMorePainConfirm':'adFeelBetterConfirm'),()=>{
+  customConfirm(t(kind==='pain'?(injActive()?'injNextConfirm':'adNoMorePainConfirm'):'adFeelBetterConfirm'),()=>{
     const n=adaptClearSafety(kind);
     toast(t(n?'adSafetyCleared':'adSafetyClearedNone'));
     adRefresh();

@@ -2700,7 +2700,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.5.0';
+const APP_VERSION='4.6.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -5662,7 +5662,7 @@ const LIB=[
    muscles primaires/secondaires, fiche tutoriel complète)
    ============================================================ */
 const MUSCLE_GROUPS=['Tous','Pectoraux','Dos','Épaules','Trapèzes','Biceps','Triceps','Avant-bras','Abdominaux','Lombaires','Fessiers','Quadriceps','Ischios','Adducteurs','Abducteurs','Mollets','Cou','Corps entier'];
-const EQUIPMENT=['Tous','Haltères','Barre','Machine','Poulie','Poids du corps','Élastique','Kettlebell'];
+const EQUIPMENT=['Tous','Haltères','Barre','Machine','Poulie','Poids du corps','Élastique','Kettlebell','Accessoire'];
 const LEVELS=['Débutant','Intermédiaire','Avancé'];
 // Schéma compact : [nom, groupe, matériel, niveau, [primaires], [secondaires], emoji]
 const XDATA=[
@@ -5842,8 +5842,16 @@ const EXDB_MAP={
  'Overhead Triceps Extension':'Seated_Triceps_Press','Close Grip Bench Press':'Close-Grip_Barbell_Bench_Press','Arnold Press':'Arnold_Dumbbell_Press',
  'Shrug':'Barbell_Shrug','Wrist Curl':'Palms-Down_Wrist_Curl_Over_A_Bench'
 };
+/* Bibliothèque étendue (exercises/exdb.js) : index par nom français. Ligne = [id,nomFR,groupe,matériel,niveau,primaires,secondaires,type,imageDb,zones,nomEN,nomAR,dose] */
+const EXD_BY=(function(){ const m={}; if(typeof EXD_ROWS!=='undefined') EXD_ROWS.forEach(function(r){ m[r[1]]=r; }); return m; })();
+const EXD_ID=(function(){ const m={}; if(typeof EXD_ROWS!=='undefined') EXD_ROWS.forEach(function(r){ m[r[0]]=r; }); return m; })();
+function exdbNeed(name,cb){   // les tutos pas à pas sont dans un module chargé à la demande
+  if(!EXD_BY[name] || window.EXD_STEPS) return;
+  ikLoad('exdb').then(cb).catch(function(){});
+}
+function exdbSteps(r){ const st=window.EXD_STEPS&&window.EXD_STEPS[r[0]]; if(!st) return null; const l=curLang(); return st[l==='en'?1:l==='ar'?2:0]||st[0]; }
 function exGif(name){
-  const id=EXDB_MAP[name]; if(!id) return null;
+  const id=EXDB_MAP[name]||(EXD_BY[name]&&EXD_BY[name][8]); if(!id) return null;
   return [EXDB_BASE+id+'/0.jpg', EXDB_BASE+id+'/1.jpg'];
 }
 /* ---------- Tuiles "Muscle" en photo (style navigateur d'exercices) ---------- */
@@ -5875,8 +5883,8 @@ const MUSCLE_TR={
 };
 function trMuscle(m){ if(!m) return m; const l=curLang(); if(l==='fr'||!MUSCLE_TR[l]) return m; return MUSCLE_TR[l][m]||m; }
 const EQUIP_TR={
-  en:{'Barre':'Barbell','Haltères':'Dumbbells','Kettlebell':'Kettlebell','Machine':'Machine','Poids du corps':'Bodyweight','Poulie':'Cable','Élastique':'Resistance band'},
-  ar:{'Barre':'بار','Haltères':'دمبل','Kettlebell':'كيتل بل','Machine':'آلة','Poids du corps':'وزن الجسم','Poulie':'بكرة','Élastique':'شريط مقاومة'}
+  en:{'Barre':'Barbell','Haltères':'Dumbbells','Kettlebell':'Kettlebell','Machine':'Machine','Poids du corps':'Bodyweight','Poulie':'Cable','Élastique':'Resistance band','Accessoire':'Accessory'},
+  ar:{'Barre':'بار','Haltères':'دمبل','Kettlebell':'كيتل بل','Machine':'آلة','Poids du corps':'وزن الجسم','Poulie':'بكرة','Élastique':'شريط مقاومة','Accessoire':'أداة مساعدة'}
 };
 function trEquip(e){ if(!e) return e; const l=curLang(); if(l==='fr'||!EQUIP_TR[l]) return e; return EQUIP_TR[l][e]||e; }
 function trLevel(lv){ const map={'Débutant':'lvlBeginner','Intermédiaire':'lvlIntermediate','Avancé':'lvlAdvanced'}; return map[lv]?t(map[lv]):lv; }
@@ -5942,7 +5950,7 @@ const EX_NAME_TR={
     'Extension de cou':'تمديد الرقبة','Flexion de cou':'ثني الرقبة','Burpees':'بيربي','Thruster':'ثراستر','Clean & Press':'كلين آند بريس',
     'Kettlebell Swing':'أرجحة الكيتل بل','Snatch kettlebell':'سناتش الكيتل بل','Turkish Get-up':'النهوض التركي'}
 };
-function trExName(n){ if(!n) return n; const l=curLang(); if(l==='fr'||!EX_NAME_TR[l]) return n; return EX_NAME_TR[l][n]||n; }
+function trExName(n){ if(!n) return n; const l=curLang(); if(l==='fr') return n; const x=EXD_BY[n]; if(x&&(l==='en'||l==='ar')) return x[l==='en'?10:11]||n; if(!EX_NAME_TR[l]) return n; return EX_NAME_TR[l][n]||n; }
 const EX_TIP_TR={
   en:{'Bench Press':'Keep your shoulder blades pinched and your feet planted on the floor.','Decline Bench Press':'Targets the lower chest, lower the bar under control.',
     'Dumbbell Incline Bench Press':'Bench at 30°, use a full range of motion.','Lever Seated Fly':'Squeeze your chest at the end of the movement, hold for 1s.',
@@ -6014,6 +6022,7 @@ function exMeta(name){
   const d=XDATA.find(x=>x[0]===name);
   let base;
   if(d){ base={name:d[0],group:d[1],equip:d[2],level:d[3],primary:d[4],secondary:d[5],anim:d[6]}; }
+  else if(EXD_BY[name]){ const r=EXD_BY[name]; base={name:r[1],group:r[2],equip:r[3],level:r[4],primary:r[5],secondary:r[6],anim:'',kind:r[7],zones:r[9],dose:r[12],ownSteps:exdbSteps(r)}; }
   else { const o=LIB.find(e=>e.name===name); if(!o) return null;
     base={name:o.name,group:(o.muscles&&o.muscles[0])||'Corps entier',equip:'Machine',level:'Intermédiaire',primary:o.muscles||[],secondary:[],anim:o.anim||'',tip:o.tip}; }
   base.gif=exGif(name);
@@ -6023,24 +6032,31 @@ function enrichFiche(b){
   const g=b.group;
   const breathByGroup=t('exBreathGeneric');
   // Génère une fiche complète et cohérente
-  b.steps=[t('exStep1'),t('exStep2'),t('exStep3'),t('exStep4'),t('exStep5')];
-  b.breathing=breathByGroup;
-  b.mistakes=[t('exMistakeGeneric1'),t('exMistakeGeneric2'),t('exMistakeGeneric3'),t('exMistakeGeneric4')];
-  b.tips=[t('exTipGeneric1'),t('exTipGeneric2'),trExTip(b.name,b.tip)||t('exTipGeneric3')];
-  b.safety=[t('exSafety1'),t('exSafety2'),t('exSafety3')];
-  // variantes : autres exercices du même groupe
-  b.variants=XDATA.filter(x=>x[1]===g && x[0]!==b.name).slice(0,4).map(x=>x[0]);
+  b.steps=b.ownSteps||[t('exStep1'),t('exStep2'),t('exStep3'),t('exStep4'),t('exStep5')];
+  if(b.kind && b.kind!=='force'){   // étirement, mobilité, cardio, pliométrie, rééducation : pas de « charge » ni de série lourde
+    b.breathing=t('exBreath_'+b.kind); b.mistakes=[]; b.tips=[t('exKindTip_'+b.kind)];
+    b.safety=[t(b.kind==='rehab'?'exSafetyRehab':'exSafetyKind')];
+  } else {
+    b.breathing=breathByGroup;
+    b.mistakes=[t('exMistakeGeneric1'),t('exMistakeGeneric2'),t('exMistakeGeneric3'),t('exMistakeGeneric4')];
+    b.tips=[t('exTipGeneric1'),t('exTipGeneric2'),trExTip(b.name,b.tip)||t('exTipGeneric3')];
+    b.safety=[t('exSafety1'),t('exSafety2'),t('exSafety3')];
+  }
+  // variantes : autres exercices du même groupe et du même type
+  b.variants=allExercises().filter(x=>x.group===g && x.name!==b.name && (x.kind||'force')===(b.kind||'force')).slice(0,4).map(x=>x.name);
   return b;
 }
 // Liste unifiée (étendue + ancienne) sans doublons, pour le navigateur
 function allExercises(){
   const names=new Set();
   const out=[];
-  XDATA.forEach(x=>{ if(!names.has(x[0])){ names.add(x[0]); out.push({name:x[0],group:x[1],equip:x[2],level:x[3],primary:x[4],secondary:x[5],anim:x[6]}); } });
-  LIB.forEach(o=>{ if(!names.has(o.name)){ names.add(o.name); out.push({name:o.name,group:(o.muscles&&o.muscles[0])||'Corps entier',equip:'Machine',level:'Intermédiaire',primary:o.muscles||[],secondary:[],anim:o.anim||'',tip:o.tip}); } });
+  XDATA.forEach(x=>{ if(!names.has(x[0])){ names.add(x[0]); out.push({name:x[0],group:x[1],equip:x[2],level:x[3],primary:x[4],secondary:x[5],anim:x[6],kind:'force'}); } });
+  if(typeof EXD_ROWS!=='undefined') EXD_ROWS.forEach(r=>{ if(!names.has(r[1])){ names.add(r[1]); out.push({name:r[1],group:r[2],equip:r[3],level:r[4],primary:r[5],secondary:r[6],anim:'',kind:r[7],zones:r[9],dose:r[12]}); } });
+  LIB.forEach(o=>{ if(!names.has(o.name)){ names.add(o.name); out.push({name:o.name,group:(o.muscles&&o.muscles[0])||'Corps entier',equip:'Machine',level:'Intermédiaire',primary:o.muscles||[],secondary:[],anim:o.anim||'',tip:o.tip,kind:'force'}); } });
   return out;
 }
-function findEx(name){ return LIB.find(e=>e.name===name) || (function(){ const d=XDATA.find(x=>x[0]===name); return d?{name:d[0],muscles:d[4],anim:d[6],tip:''}:null; })(); }
+function exGroupOf(name){ const d=XDATA.find(x=>x[0]===name); if(d) return d[1]; const r=EXD_BY[name]; if(r) return r[2]; const o=LIB.find(e=>e.name===name); return (o&&o.muscles&&o.muscles[0])||null; }
+function findEx(name){ return LIB.find(e=>e.name===name) || (function(){ const d=XDATA.find(x=>x[0]===name); if(d) return {name:d[0],muscles:d[4],anim:d[6],tip:''}; const r=EXD_BY[name]; return r?{name:r[1],muscles:r[5],anim:'',tip:''}:null; })(); }
 function ex(name,sets,reps){ const e=findEx(name)||{name,muscles:[],anim:'',tip:''}; return {name:e.name,sets,reps,muscles:e.muscles,anim:e.anim,tip:e.tip||''}; }
 
 /* ---------- 6 DEFAULT PROGRAMS ---------- */
@@ -7999,6 +8015,7 @@ function renderHome(){
 
   // CARTE DU JOUR — pièce maîtresse : type, titre, pourquoi, cibles, et le bilan en un geste.
   {
+    if(typeof injuryCardHTML==='function') html+=injuryCardHTML();
     if(typeof pendingCardHTML==='function') html+=pendingCardHTML();   // séances passées à confirmer (fait / pas fait)
     // pas de course aujourd'hui mais une séance de muscu du plan : c'est elle la séance du jour
     const stH=(!(ps && ps.type!=='Repos') && typeof strengthTodayHeroHTML==='function')?strengthTodayHeroHTML(wdShort):'';
@@ -8195,6 +8212,7 @@ function renderRunning(){
       h+='<div class="card" id="tourPlanCta"><div class="empty"><div class="em-ic">'+ICN('bolt',36,'currentColor')+'</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">'+t('planIkorunTitle')+'</div><div style="font-size:13px;margin-bottom:16px">'+tp('planIkorunDescLong',(getUserVDOT()?fmt1(getUserVDOT()):t('vdotToBeCalculated')))+'</div><button class="btn" onclick="openPlanSetup()">'+t('configureGenerate')+'</button></div></div>';
     } else {
       h+=planHeroHTML();
+      if(typeof injuryCardHTML==='function') h+=injuryCardHTML();
       if(typeof pendingCardHTML==='function') h+=pendingCardHTML();
       // Seule la semaine en cours est listée ici ; le reste du plan s'ouvre en
       // plein écran depuis le bouton « Voir le plan » de la carte ci-dessus.
@@ -9197,6 +9215,7 @@ function openExDetail(progId,idx){
 function renderExDetail(){
   const p=allProgs().find(x=>x.id===exDetailCtx.progId); const e=p.ex[exDetailCtx.idx];
   const f=exMeta(e.name)||{primary:e.muscles||[],secondary:[],steps:[],tips:[],mistakes:[],safety:[],equip:'',level:''};
+  exdbNeed(e.name,()=>{ if(exDetailCtx&&exDetailCtx.progId===p.id) renderExDetail(); });
   $('#ovProgTitle').textContent=trExName(e.name);
   const g=exGif(e.name);
   let h='<div class="pills" style="margin-bottom:14px;overflow-x:auto;flex-wrap:nowrap;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent)">'+
@@ -9780,6 +9799,7 @@ function finishLive(){
   // muscles schema
   if(Object.keys(muscles).length){ h+='<div class="card-t" style="margin-top:12px">'+t('musclesWorkedLab')+'</div><div class="muscle-tags" style="margin-bottom:12px">'+Object.keys(muscles).map(m=>'<span class="mtag" style="background:var(--ed);color:var(--et,var(--e));border-color:var(--e)">'+m+'</span>').join('')+'</div>'; }
   h+='<div class="badge" style="width:100%;justify-content:center;padding:14px;margin:6px 0 14px">'+tp('xpEarnedLab',xpGain)+'</div>';
+  h+='<button class="btn ghost" style="margin-bottom:10px" onclick="openPainSheet({after:\'muscu\'})">'+ICN('warning',16)+' '+t('psAfterBtn')+'</button>';
   h+='<button class="btn" onclick="closeOv(\'ovLive\');LIVE=null;_finishingLive=false;renderSport()">'+t('closeLab')+'</button>';
   $('#liveBody').innerHTML=h;
 }
@@ -9816,12 +9836,14 @@ function saveNewProg(){
 }
 
 /* ---------- BIBLIOTHÈQUE PREMIUM ---------- */
-let libFilterEquip='Tous', libFilterLevel='Tous', libSearch='', libBrowseMode=false;
+let libFilterEquip='Tous', libFilterLevel='Tous', libFilterKind='Tous', libSearch='', libBrowseMode=false;
+const EX_KINDS=['force','etirement','mobilite','cardio','plyo','rehab'];
 let _libFromCreate=false;
 function openLibFor(cb){ libCallback=cb; libBrowseMode=false; _libFromCreate=(cb===addToNewProg); closeOv('ovCreate'); renderLib(); openOv('ovLib'); }
 function openLibBrowse(){ libCallback=null; libBrowseMode=true; renderLib(); openOv('ovLib'); }
-let libView='grid';
+let libView='grid', _ficheCur=null;
 function renderLib(){
+  _ficheCur=null;
   let h='<input class="inp" style="margin-bottom:14px" placeholder="'+t('searchExercisePlaceholder')+'" value="'+escHtml(libSearch||'')+'" oninput="libSearch=this.value;clearTimeout(_libSearchT);_libSearchT=setTimeout(renderLibList,140)">';
   // Tuiles muscle en photo — navigation visuelle rapide, comme une planche anatomique
   h+='<div class="lab" style="margin-bottom:8px">'+t('muscleLabel')+'</div><div class="mtile-row">'+MUSCLE_GROUPS.map(m=>{
@@ -9829,6 +9851,7 @@ function renderLib(){
     return '<div class="mtile '+(on?'on':'')+'" onclick="libFilter=\''+m+'\';renderLib()"><div class="mtile-img" '+(img?'style="background-image:url(\''+img+'\')"':'')+'>'+(img?'':ICN(MUSCLE_ICONS[m]||'dumbbell',24,'var(--e)'))+'</div><div class="mtile-lab">'+(m==='Tous'?t('filterAll'):trMuscle(m))+'</div></div>';
   }).join('')+'</div>';
   h+='<div class="lab" style="margin-bottom:6px">'+t('equipmentLabel')+'</div><div class="pills" style="margin-bottom:10px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent)">'+EQUIPMENT.map(m=>'<div class="pill '+(libFilterEquip===m?'on':'')+'" onclick="libFilterEquip=\''+m+'\';renderLib()">'+(m==='Tous'?t('filterAll'):trEquip(m))+'</div>').join('')+'</div>';
+  h+='<div class="lab" style="margin-bottom:6px">'+t('exKindLabel')+'</div><div class="pills" style="margin-bottom:10px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px">'+['Tous',...EX_KINDS].map(m=>'<div class="pill '+(libFilterKind===m?'on':'')+'" onclick="libFilterKind=\''+m+'\';renderLib()">'+(m==='Tous'?t('filterAll'):t('exKind_'+m))+'</div>').join('')+'</div>';
   h+='<div class="lab" style="margin-bottom:6px">'+t('levelLabel')+'</div><div class="pills" style="margin-bottom:14px">'+['Tous',...LEVELS].map(m=>'<div class="pill '+(libFilterLevel===m?'on':'')+'" onclick="libFilterLevel=\''+m+'\';renderLib()">'+(m==='Tous'?t('filterAll'):trLevel(m))+'</div>').join('')+'</div>';
   $('#libBody').innerHTML=h+'<div id="libList">'+libListHTML()+'</div>';
 }
@@ -9843,6 +9866,7 @@ function libListHTML(){
     if(libFilter!=='Tous' && e.group!==libFilter && !(e.primary||[]).some(m=>m.includes(libFilter)||libFilter.includes(m))) return false;
     if(libFilterEquip!=='Tous' && e.equip!==libFilterEquip) return false;
     if(libFilterLevel!=='Tous' && e.level!==libFilterLevel) return false;
+    if(libFilterKind!=='Tous' && (e.kind||'force')!==libFilterKind) return false;
     if(q && !e.name.toLowerCase().includes(q) && !trExName(e.name).toLowerCase().includes(q)) return false;
     return true;
   });
@@ -9869,6 +9893,7 @@ function pickEx(name){ const e=findEx(name); if(libCallback) libCallback(e); els
 /* Fiche tutoriel complète */
 function openFiche(name){
   const f=exMeta(name); if(!f) return;
+  _ficheCur=name; exdbNeed(name,()=>{ if(_ficheCur===name && $('#ovLib') && $('#ovLib').classList.contains('on')) openFiche(name); });
   const lvCol=f.level==='Débutant'?'--ok':f.level==='Avancé'?'--bad':'--warn';
   let h='<div style="text-align:center;margin-bottom:14px"><div style="animation:popIn .5s">'+exGlyph(f,64)+'</div><div class="man" style="font-weight:800;font-size:20px;margin-top:4px">'+trExName(f.name)+'</div><div style="margin-top:8px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap"><span class="badge">'+trEquip(f.equip)+'</span><span class="badge" style="background:var(--ed);color:var('+lvCol+')">'+trLevel(f.level)+'</span></div></div>';
   // visuel animé (placeholder élégant simulant un GIF/avatar)

@@ -143,6 +143,7 @@ function pendingCardHTML(){
 function pendDone(id){ curRunId=id; markRunDone(); }
 function strConfirm(id, did){
   const s = STRENGTH && STRENGTH.sessions.find(function(x){ return x.id===id; }); if(!s) return;
+  if(!did){ openStrMiss(id); return; }                  // pas fait : on demande pourquoi (douleur, maladie, fatigue…)
   if(did){
     s.done = true; s.skipped = false;
     // trace dans l'historique muscu (valeurs prévues, comme une séance cochée après coup)
@@ -199,7 +200,7 @@ function renderCombo(){
 // mode séparé : vue d'ensemble de la semaine + mes plans (chaque plan garde son onglet)
 function renderComboSplit(){
   const d = cbWeekData();
-  let h = pendingCardHTML() + cbHeroHTML(d) + cbStripHTML(d);
+  let h = injuryCardHTML() + pendingCardHTML() + cbHeroHTML(d) + cbStripHTML(d);
   const todayM = d.strW.filter(function(s){ return s.date===d.tk; })[0];
   if(todayM){
     h += '<div class="hv7-sec-lab" style="margin:14px 0 8px">'+t('comboToday')+'</div>'+
@@ -215,7 +216,7 @@ function renderComboSplit(){
 // mode intégré : une seule page, la semaine course + muscu en une liste
 function renderIntegrated(){
   const d = cbWeekData();
-  let h = pendingCardHTML() + (PLAN && typeof planHeroHTML==='function' ? planHeroHTML() : cbHeroHTML(d)) + cbStripHTML(d);
+  let h = injuryCardHTML() + pendingCardHTML() + (PLAN && typeof planHeroHTML==='function' ? planHeroHTML() : cbHeroHTML(d)) + cbStripHTML(d);
   h += '<div class="hv7-sec-lab" style="margin:16px 0 8px">'+t('thisWeek')+'</div>';
   const rows = cbMergedRows(d.runW, d.strW, d.tk);
   h += rows || '<div class="sess-m" style="padding:6px 2px">'+t('comboNothingThisWeek')+'</div>';

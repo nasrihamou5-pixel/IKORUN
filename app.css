@@ -5519,3 +5519,28 @@ svg.bd-glyph{display:block;width:100%;height:100%}
 .ik-rday-next{margin-top:12px;padding:11px 12px;border-radius:14px;background:rgba(var(--e-rgb),.08);cursor:pointer}
 .ik-rday-next .lab{display:block;font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
 .ik-rday-next b{display:block;margin-top:4px;font:800 15px Unbounded,system-ui,sans-serif}.ik-rday-next em{font-style:normal;font-size:12px;color:var(--muted)}
+
+/* ===== V4.6.0 — blessure suivie, rééducation, feuilles de douleur ===== */
+.ik-inj{display:flex;align-items:center;gap:12px;margin:0 0 14px;padding:13px 14px;border-radius:20px;cursor:pointer;border:1px solid color-mix(in srgb,var(--bad) 40%,transparent);background:var(--lg-spec),var(--lg-body),var(--lg-fill);box-shadow:var(--lg-drop),var(--lg-rim);color:var(--snow)}
+.ik-inj-ic{flex:0 0 40px;height:40px;border-radius:14px;display:grid;place-items:center;color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,transparent)}
+.ik-inj-ic.big{flex-basis:52px;height:52px;border-radius:18px}
+.ik-inj-b{flex:1;min-width:0}.ik-inj-b b{display:block;font-size:14px}.ik-inj-b span{display:block;margin-top:2px;font-size:11.5px;color:var(--muted)}
+.ik-inj-steps{display:flex;gap:5px;margin-top:8px}.ik-inj-steps i{flex:1;height:5px;border-radius:3px;background:var(--hair)}
+.ik-inj-steps i.done{background:var(--ok)}.ik-inj-steps i.cur{background:var(--bad)}
+.ik-inj-hero{display:flex;align-items:center;gap:12px;margin-bottom:14px}.ik-inj-hero b{display:block;font-size:18px}.ik-inj-hero span{font-size:12px;color:var(--muted)}
+.ik-inj-stepper{display:flex;gap:6px;margin-bottom:10px}
+.ik-inj-stepper>div{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 4px;border-radius:14px;background:var(--s2);border:1px solid var(--hair);font-size:11.5px;color:var(--muted);text-align:center}
+.ik-inj-stepper i{font-style:normal;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:12px;background:var(--s3);color:var(--muted)}
+.ik-inj-stepper .done i{background:var(--ok);color:#06210f}.ik-inj-stepper .cur{border-color:var(--bad);color:var(--snow)}.ik-inj-stepper .cur i{background:var(--bad);color:#fff}
+.ik-inj-now{margin:0 0 12px;font-size:13px;line-height:1.5;color:var(--muted)}.ik-inj-now b{color:var(--snow)}
+.ik-inj-warn{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px;padding:11px 12px;border-radius:14px;font-size:12.5px;line-height:1.45;background:color-mix(in srgb,var(--warn) 14%,transparent);border:1px solid color-mix(in srgb,var(--warn) 40%,transparent)}
+.ik-inj-sec{margin:0 0 14px}.ik-inj-sec h3{display:flex;align-items:center;gap:6px;margin:0 0 7px;font-size:13.5px}.ik-inj-sec p{margin:0;font-size:13px;line-height:1.55;color:var(--muted)}
+.ik-inj-ul{margin:0;padding:0 0 0 18px;font-size:13px;line-height:1.55;color:var(--muted)}.ik-inj-ul li{margin-bottom:4px}.ik-inj-ul.bad li::marker{color:var(--bad)}.ik-inj-ul.ok li::marker{color:var(--ok)}
+.ik-inj-ex{display:flex;flex-direction:column;gap:8px}
+.ik-inj-exr{display:flex;align-items:center;gap:11px;width:100%;padding:8px 10px;border-radius:14px;text-align:start;background:var(--s2);border:1px solid var(--hair);color:var(--snow)}
+.ik-inj-exr>div{flex:1;min-width:0}.ik-inj-exr b{display:block;font-size:13px}.ik-inj-exr span{font-size:11.5px;color:var(--muted)}
+.ik-inj-acts{display:flex;gap:10px;margin:16px 0 6px}.ik-inj-acts .btn{flex:1}
+.ik-miss{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ik-miss-b{display:flex;align-items:center;gap:9px;padding:14px 12px;border-radius:16px;font-weight:700;font-size:13.5px;text-align:start;background:var(--s2);border:1px solid var(--hair);color:var(--snow)}
+.ik-miss-b svg{color:var(--et,var(--e))}
+[dir=rtl] .ik-inj-exr svg:last-child{transform:scaleX(-1)}

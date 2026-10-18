@@ -284,6 +284,7 @@ function adRulePain(e){
   st.pains=(st.pains||[]).filter(x=>x.date>=adKeyAdd(k,-14)).concat({date:e.date,zone:zid,level:+p.level||0,gait:!!p.gait});
   const same=st.pains.filter(x=>x.zone===zid && x.date>=adKeyAdd(k,-6)).length;
   p={zone:zid,level:p.level,gait:p.gait,on:true};
+  try{ if(typeof injLog==='function') injLog(zid,+p.level||0,!!p.gait,e.date); }catch(x){}
   if(same>=3){
     // même zone trois fois en sept jours : plus d'intensité jusqu'à « je n'ai plus mal »
     st.block={since:k,until:null,zone:p.zone||'other',src:'painRepeat'};
@@ -300,6 +301,7 @@ function adRulePain(e){
   } else {
     out.push(adaptNote('painLight',{k:'adMsgPainLight',p:[+p.level||0,{z:p.zone||'other'}]}));
   }
+  try{ if(typeof injAfterPain==='function') out.push.apply(out,injAfterPain(zid,+p.level||0,!!p.gait,same>=3)); }catch(x){ console.error('[IKORUN] injury',x); }
   return out.filter(Boolean);
 }
 function adRuleIll(startKey){
@@ -312,7 +314,9 @@ function adRuleIll(startKey){
       else if(planIsHard(s)||planIsLong(s)){ adToEasy(s,Math.min(s.km,6),pc,'ill'); n++; }
       else if(adLighten(s,0.7,pc,'ill')) n++;
     }); return n; },{k:'adMsgIll',p:[{d:restUntil},{d:easyUntil}]});
-  return [r||adaptNote('ill',{k:'adMsgIll',p:[{d:restUntil},{d:easyUntil}]},{safety:true})];
+  const out=[r||adaptNote('ill',{k:'adMsgIll',p:[{d:restUntil},{d:easyUntil}]},{safety:true})];
+  try{ if(typeof strAdIll==='function'){ const m=strAdIll(restUntil,easyUntil); if(m && !m.quiet) out.push(m); } }catch(x){ console.error('[IKORUN] muscu ill',x); }
+  return out;
 }
 // Blocage en cours (douleur répétée) ou retour de maladie : la fenêtre glisse avec les jours.
 function adRuleKeepBlocks(){
@@ -649,7 +653,14 @@ function adaptAfterMissed(ids,reason,extra){
 }
 // Au lancement et à chaque changement de jour.
 function adaptDaily(){
-  if(!PLAN||!PLAN.sessions||!P) return [];
+  if(!P) return [];
+  if(!PLAN||!PLAN.sessions){                       // muscu seule : blessure, maladie et pauses suivent quand même
+    if(typeof injuryDaily!=='function' || !(STRENGTH || (P.adapt && P.adapt.painLog && P.adapt.painLog.length))) return [];
+    const s0=adState(), k0=todayKey(); if(s0.dayRun===k0 && !window.__ikSim) return [];
+    s0.dayRun=k0;
+    let o=[]; try{ o=injuryDaily(); }catch(err){ console.error('[IKORUN] adaptDaily',err); }
+    adPersist(); return o.filter(Boolean);
+  }
   const st=adState(), k=todayKey();
   if(st.dayRun===k && !window.__ikSim) return [];
   st.dayRun=k;
@@ -657,6 +668,7 @@ function adaptDaily(){
   let out=[];
   try{
     out=out.concat(adRuleKeepBlocks());
+    if(typeof injuryDaily==='function') out=out.concat(injuryDaily());
     if(typeof ramadanDaily==='function') out=out.concat(ramadanDaily());
     out=out.concat(adRuleGaps());
     out=out.concat(adRuleLoad());
@@ -697,6 +709,7 @@ function adRestore(entry,minDate){
 }
 function adaptUndo(id,opts){
   const e=adEntry(id); if(!e || e.status!=='applied') return {ok:false,why:'adUndoNothing'};
+  if(e.str && !e.safety) return strUndo(e);
   if(e.safety && !(opts&&opts.safetyOk)) return {ok:false,why:'adUndoSafety'};
   if(e.rebuild){
     const prev=window.__ikSim?window.__ikSimPrev:DB.load('plan_prev');
@@ -744,6 +757,7 @@ function adaptClearSafety(kind){
     const r=adRestore(e,adKeyAdd(k,1)); // jamais aujourd'hui : reprise progressive
     if(r.ok){ PLAN=r.plan; e.status='undone'; e.ut=adNowTs(); restored++; }
   });
+  try{ if(typeof injOnClear==='function') injOnClear(kind); }catch(e){ console.error('[IKORUN] injOnClear',e); }
   // première séance dure retrouvée : un cran plus courte
   if(restored){
     adaptApply('safetyBack',false,(pl,pc)=>{ const s=pl.sessions.filter(x=>adEd(x,k,true) && planIsHard(x)).sort((a,b)=>a.date<b.date?-1:1)[0]; return s && adLighten(s,0.85,pc,'safetyBack')?1:0; },
