@@ -5425,8 +5425,15 @@ html.easy-mode [style*="font-size:20px"]{font-size:23px !important;}
 .ik-sq.warn{width:32px;height:32px;background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--warn)}
 .ik-today{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--hair)}
 .ik-today-b{flex:1;min-width:0}.ik-today-b b{display:block;font-size:13px;color:var(--snow)}.ik-today-b span{font-size:11px;color:var(--muted)}
-.ik-plan-row{display:flex;align-items:center;gap:8px;padding:12px 14px;margin-bottom:8px;border-radius:18px;border:1px solid rgba(var(--e-rgb),.15);background:var(--lg-spec),var(--lg-body),var(--lg-fill);box-shadow:var(--lg-drop),var(--lg-rim)}
-.ik-plan-row .btn{width:auto;flex:none;padding-inline:14px}.ik-plan-b{flex:1;min-width:0;cursor:pointer}.ik-plan-b b{display:block;font:800 13.5px Unbounded,system-ui,sans-serif}.ik-plan-b span{font-size:11.5px;color:var(--muted)}
+/* V4.4 : carte de plan (Voir / Modifier / Supprimer) */
+.ik-plan-card{padding:12px 14px;margin-bottom:8px;border-radius:18px;border:1px solid rgba(var(--e-rgb),.15);background:var(--lg-spec),var(--lg-body),var(--lg-fill);box-shadow:var(--lg-drop),var(--lg-rim)}
+.ik-plan-top{display:flex;align-items:center;gap:10px}.ik-plan-top .ik-plan-b{flex:1;min-width:0}
+.ik-plan-top .ik-plan-b b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ik-plan-top .plain-ok{cursor:default;color:var(--ok)}
+.ik-plan-acts{display:flex;gap:6px;margin-top:10px}
+.ik-pact{flex:1;padding:8px 6px;border-radius:99px;border:1px solid var(--hair2);background:var(--s2);color:var(--snow);font:700 12px Inter,system-ui,sans-serif;cursor:pointer}
+.ik-pact.bad{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 35%,transparent);background:color-mix(in srgb,var(--bad) 8%,transparent)}
+.ik-plan-b{flex:1;min-width:0;cursor:pointer}.ik-plan-b b{display:block;font:800 13.5px Unbounded,system-ui,sans-serif}.ik-plan-b span{font-size:11.5px;color:var(--muted)}
 
 /* Assistant « Nouveau plan » */
 .ik-opt{border-radius:20px;padding:14px 16px;margin-bottom:9px;display:flex;align-items:center;gap:12px;cursor:pointer;border:1px solid rgba(var(--e-rgb),.15);background:var(--lg-spec),var(--lg-body),var(--lg-fill);box-shadow:var(--lg-drop),var(--lg-rim)}
