@@ -185,7 +185,7 @@ function adKeepKm0(s){ if(!(s.adj && s.adj.km0!=null)) s.adj=Object.assign({},s.
 function adDone(s,rule){ return !!(s && s.adjHist && s.adjHist.includes(rule)); }
 function adToEasy(s,km,pc,rule){
   adKeepKm0(s);
-  const L=PLAN_EASY_FLOOR.EF;
+  const L=planFloor('EF');
   Object.assign(s,{baseType:'EF',type:t('sessLabel_EF'),title:t('sessTitle_EF'),rpe:3,desc:t('bs_ef_objectif'),detail:null,series:null,genParams:null,
     km:Math.max(L,Math.round(Math.min(s.km,km||s.km)))});
   planApplySegs(s,pc); adTag(s,rule,true); return true;
@@ -203,7 +203,7 @@ function adLighten(s,f,pc,rule){
     for(let i=0;i<4 && s.km>km0*f+0.05;i++){ if(!planShrinkQuality(s,pc)) break; }
     if(s.km>=km0-0.05){ s.adj=keep; if(!keep) delete s.adj; return false; }
   } else {
-    const fl=PLAN_EASY_FLOOR[s.baseType]||3, nk=Math.max(fl,Math.round(km0*f*10)/10);
+    const fl=planFloor(s.baseType)||3, nk=Math.max(fl,Math.round(km0*f*10)/10);
     if(nk>=km0-0.05){ s.adj=keep; if(!keep) delete s.adj; return false; }
     s.km=nk; planApplySegs(s,pc);
   }

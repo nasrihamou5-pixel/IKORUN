@@ -2700,7 +2700,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.4.0';
+const APP_VERSION='4.5.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -4847,6 +4847,7 @@ function initApp(){
         planSettle(PLAN,pc); PLAN.segV=PLAN_SEG_VERSION;
       } else if(!n) return;
       DB.save('run_plan',PLAN);
+      try{ if(typeof strengthCheckRun==='function') strengthCheckRun(); }catch(e){}   // muscu liée : recalée si le plan a bougé
       if(n){ toast(t('planSafetyMigratedToast')); }
       if(document.body.dataset.scr==='sport') renderSport();
     }catch(e){ console.error('[IKORUN] planSafetyPass (migration)',e); }
@@ -6089,12 +6090,15 @@ const PHASES=[
    moment de la génération — ce qui permet au nom de suivre la langue active
    même sur un plan généré avant un changement de langue. */
 function phaseName(key){ return key ? t('phase_'+key) : ''; }
-function phaseDistribution(weeks){
+function phaseDistribution(weeks,raceM){
   // proportions par phase, ajustées au nombre de semaines
   const prop=[0.18,0.24,0.20,0.20,0.10,0.08];
+  // V4.5 : affûtage selon la distance (plans de référence) — marathon 3 semaines, semi 2, 10 km et moins 1 à 2
+  const m=raceM||5000;
+  const taperN=weeks<=3?1:m>=42000?(weeks>=12?3:weeks>=8?2:1):m>=20000?(weeks>=10?2:1):(m>=10000&&weeks>=14?2:1);
   let acc=0; const map=[];
   for(let i=0;i<PHASES.length;i++){
-    let n=Math.max(i>=4?1:1,Math.round(weeks*prop[i]));
+    let n=i===5?taperN:Math.max(1,Math.round(weeks*prop[i]));
     map.push(n); acc+=n;
   }
   // ajuste pour matcher weeks exactement
@@ -6326,12 +6330,26 @@ function addDaysKey(dateKey,n){ const d=new Date(dateKey); d.setDate(d.getDate()
         qualité la moins prioritaire devient un footing (on en garde toujours une).
    Seules les séances à venir, non faites et non personnalisées à la main
    (s.customized) sont modifiées ; les autres comptent quand même dans les totaux. */
-const SAFE_WEEKLY_INCREASE=1.10, SAFE_DELOAD_MAX=0.80, SAFE_MAX_VERY_HARD=2, PLAN_SAFETY_VERSION=1, PLAN_SEG_VERSION=1;
+// Hausse d'une semaine de charge à l'autre : +10 % ou +2 km, le plus grand des deux (V4.5) — à petit volume,
+// +10 % de 18 km (1,8 km) est moins qu'un footing et rendait toute progression impossible.
+function planNextCap(km){ return Math.max(km*SAFE_WEEKLY_INCREASE, km+2); }
+const SAFE_WEEKLY_INCREASE=1.10, SAFE_DELOAD_MAX=0.80, SAFE_MAX_VERY_HARD=2, PLAN_SAFETY_VERSION=2, PLAN_SEG_VERSION=1;
 const PLAN_VERY_HARD=['VMAc','VMAl','VO2','INTERVAL','DBLSEUIL'];
 const PLAN_HARD_Q=['VMAc','VMAl','VO2','INTERVAL','DBLSEUIL','SEUIL','SPE','SPE_COURT','TEMPO_SPE','TEMPO','PROGRESSIF','FARTLEK','COTES'];
 // Ordre de sacrifice quand une séance de qualité doit devenir un footing : les plus « annexes » d'abord.
 const PLAN_DROP_ORDER=['FARTLEK','PROGRESSIF','COTES','TEMPO','INTERVAL','VMAc','VO2','VMAl','SEUIL','TEMPO_SPE','DBLSEUIL','SPE_COURT','SPE'];
 const PLAN_EASY_FLOOR={EF:4,RECUP:4,LIGNES:4,PROGRESSIF:5,LONG:8,LONG_COURT:8};
+// V4.5 : à petit volume (débutant, reprise, beaucoup de jours pour peu de km), 4 km par footing et
+// 8 km de sortie longue dépassaient à eux seuls le km/sem maxi (5 × 4 km = 20 km pour 18 km maxi).
+// Les planchers du plan sont donc ramenés à son volume : footing 3 à 4 km, sortie longue 5 à 8 km.
+function planFloorsFor(kmMax,nDays){ return { easy:Math.max(3,Math.min(4,Math.round(kmMax/Math.max(1,nDays)*0.8*2)/2)), long:Math.max(5,Math.min(8,Math.round(kmMax*0.4))) }; }
+function planFloor(t,plan){
+  const f=PLAN_EASY_FLOOR[t]; if(f==null) return f;
+  const c=(plan&&plan.floors)||(typeof PLAN!=='undefined'&&PLAN&&PLAN.floors)||null; if(!c) return f;
+  if(t==='LONG'||t==='LONG_COURT') return Math.min(f,c.long);
+  if(t==='PROGRESSIF') return Math.min(f,c.easy+1);
+  return Math.min(f,c.easy);
+}
 /* Allures du plan, alignées sur les intensités de Daniels (V3.14.0). Audit du 11/10 : un fartlek
    affichait « Zone 2 · 70 % FCmax · 5:00/km » alors que 5:00/km est l'allure marathon d'un VDOT 45 ;
    l'« allure marathon » valait 80 % de la vVO2max (bien plus lente que le marathon prédit) et les
@@ -6497,7 +6515,7 @@ function planSafetyPass(plan,opts){
   const editable=s=>!!s && !s.done && !s.missed && !s.customized && s.date>=tk && s.baseType!=='COURSE' && s.baseType!=='Repos' && (s.km||0)>0;
   const weekOf=w=>sessions.filter(s=>s.week===w);
   const rebuild=(s,type,over)=>{
-    const built=buildSessionV2(type,Object.assign({vdot,pace,wkKm:Math.max(15,planWeekKm(weekOf(s.week))),nDays,
+    const built=buildSessionV2(type,Object.assign({vdot,pace,floors:plan.floors||null,wkKm:Math.max(15,planWeekKm(weekOf(s.week))),nDays,
       phase:{name:s.phase,key:s.phaseKey,color:s.color},rng,pick,isDeload:!!s.deload,goal:plan.goal,w:s.week,weeks:plan.weeks},over||{}));
     const durMin=built.durMin!=null?built.durMin:(built.pace==='—'?0:Math.round(built.km*parseTime(built.pace)/60));
     Object.assign(s,{type:built.label,baseType:type,title:built.title,km:built.km,duration:durMin,pace:built.pace,rpe:built.rpe,
@@ -6505,7 +6523,7 @@ function planSafetyPass(plan,opts){
     planApplySegs(s,pace);
     changes++;
   };
-  const toEasy=(s,km)=>rebuild(s,'EF',{easyKm:Math.max(4,Math.round(km))});
+  const toEasy=(s,km)=>rebuild(s,'EF',{easyKm:Math.max(planFloor('EF',plan),Math.round(km))});
   const setKm=(s,km)=>{ if(km===s.km) return; s.km=km; planApplySegs(s,pace); changes++; };
   const weeks=[...new Set(sessions.map(s=>s.week))].sort((a,b)=>a-b);
 
@@ -6528,7 +6546,8 @@ function planSafetyPass(plan,opts){
 
   // 2. Enchaînements : dur → dur, sortie longue → dur/longue, dur/longue → course.
   const byDate=()=>{ const m={}; sessions.forEach(s=>{ if(s.baseType!=='Repos' && (s.km||0)>0) m[s.date]=s; }); return m; };
-  const clash=(a,b)=>!!a && !!b && ((planIsHard(a)&&planIsHard(b)) || (planIsLong(a)&&(planIsHard(b)||planIsLong(b))) || (b.baseType==='COURSE'&&(planIsHard(a)||planIsLong(a))));
+  // V4.5 : « dur la veille de la sortie longue » compte aussi (le moteur d'adaptation l'évitait déjà)
+  const clash=(a,b)=>!!a && !!b && ((planIsHard(a)&&planIsHard(b)) || (planIsLong(a)&&(planIsHard(b)||planIsLong(b))) || (planIsHard(a)&&planIsLong(b)) || (b.baseType==='COURSE'&&(planIsHard(a)||planIsLong(a))));
   const clashesAround=(m,d)=>clash(m[addDaysKey(d,-1)],m[d]) || clash(m[d],m[addDaysKey(d,1)]);
   const trySwap=(x)=>{
     const easy=weekOf(x.week).filter(e=>e!==x && editable(e) && ['EF','RECUP','LIGNES'].includes(e.baseType));
@@ -6557,15 +6576,19 @@ function planSafetyPass(plan,opts){
   }
 
   // 3. Volume semaine par semaine.
-  const reduceWeek=(list,cap,isDeload)=>{
+  const reduceWeek=(list,cap,isDeload,isTaper)=>{
     let excess=planWeekKm(list)-cap;
-    const red=list.filter(s=>editable(s) && PLAN_EASY_FLOOR[s.baseType]!=null);
-    const avail=red.reduce((a,s)=>a+Math.max(0,s.km-PLAN_EASY_FLOOR[s.baseType]),0);
-    if(excess>0.05 && avail>0){
-      const ratio=Math.min(1,excess/avail);
-      red.forEach(s=>{ const f=PLAN_EASY_FLOOR[s.baseType]; setKm(s,Math.max(f,Math.floor(s.km-(s.km-f)*ratio))); });
-      excess=planWeekKm(list)-cap;
-    }
+    // V4.5 : footings d'abord, sortie longue en dernier — la réduire en même temps cassait sa progression
+    // (11 → 9 km une semaine, puis 13 km la suivante)
+    [s=>!planIsLong(s), s=>planIsLong(s)].forEach(grp=>{
+      const red=list.filter(s=>editable(s) && PLAN_EASY_FLOOR[s.baseType]!=null && grp(s));
+      const avail=red.reduce((a,s)=>a+Math.max(0,s.km-planFloor(s.baseType,plan)),0);
+      if(excess>0.05 && avail>0){
+        const ratio=Math.min(1,excess/avail);
+        red.forEach(s=>{ const f=planFloor(s.baseType,plan); setKm(s,Math.max(f,Math.floor((s.km-(s.km-f)*ratio)*2)/2)); });
+        excess=planWeekKm(list)-cap;
+      }
+    });
     // Séances de qualité : d'abord leur variante la plus courte (moins de répétitions,
     // tempo plus court — même type, même intensité), plus sûr que de les supprimer.
     if(excess>0.05){
@@ -6577,6 +6600,28 @@ function planSafetyPass(plan,opts){
         else { Object.assign(s,JSON.parse(keep)); changes=c0; }
       });
     }
+    // Avant tout, la qualité est raccourcie cran par cran (une répétition, 5 min de tempo…) tant que ça dépasse
+    for(let guard=0;excess>0.05 && guard<24;guard++){
+      const q=list.filter(s=>editable(s) && planIsHard(s)).sort((a,b)=>b.km-a.km).find(s=>planShrinkQuality(s,pace,!!(plan.floors&&plan.floors.easy<4)));
+      if(!q) break; changes++; excess=planWeekKm(list)-cap;
+    }
+    // Puis les footings descendent jusqu'à 3 km (plus courts que le plancher, mais mieux que de supprimer un jour)
+    if(excess>0.05) list.filter(s=>editable(s) && ['EF','RECUP','LIGNES'].includes(s.baseType) && s.km>3).sort((a,b)=>b.km-a.km).forEach(s=>{
+      if(excess<=0.05) return; const cut=Math.min(excess,s.km-3); setKm(s,Math.round((s.km-cut)*2)/2); excess=planWeekKm(list)-cap; });
+    // Dernier recours (V4.5) : trop de jours pour le volume — les footings sont déjà au plancher.
+    // Un footing devient un jour de repos plutôt que de dépasser le maximum (au moins 2 séances gardées).
+    for(let guard=0;guard<4;guard++){
+      const run=list.filter(s=>(s.km||0)>0 && s.baseType!=='Repos' && s.baseType!=='COURSE');
+      const wk=planWeekKm(list), over=Math.min(excess, wk-kmMax);
+      // au-delà du km/sem maxi (pas seulement de la progression), ou décharge / affûtage trop lourds
+      if(!((isDeload||isTaper) ? excess>1 : over>2.5)) break;
+      if(run.length<=(isTaper?2:3)) break;
+      if(run.filter(s=>!planIsHard(s)&&!planIsLong(s)).length<=1) break;   // jamais une semaine faite que de séances dures
+      const e=run.filter(s=>editable(s) && ['RECUP','EF','LIGNES'].includes(s.baseType)).sort((a,b)=>(a.baseType==='RECUP'?-1:0)-(b.baseType==='RECUP'?-1:0)||a.km-b.km)[0];
+      if(!e) break;
+      const i=sessions.indexOf(e); if(i>=0) sessions.splice(i,1); const j=list.indexOf(e); if(j>=0) list.splice(j,1);
+      changes++; excess=planWeekKm(list)-cap;
+    }
     for(let guard=0;excess>0.05 && guard<6;guard++){
       const allQ=list.filter(planIsHard);
       // On garde toujours une séance de qualité en semaine de charge ; une semaine de
@@ -6584,7 +6629,7 @@ function planSafetyPass(plan,opts){
       if(allQ.length<=(isDeload?0:1)) break;
       const q=allQ.filter(editable).sort((a,b)=>PLAN_DROP_ORDER.indexOf(a.baseType)-PLAN_DROP_ORDER.indexOf(b.baseType))[0];
       if(!q) break;
-      toEasy(q, Math.max(4,Math.min(q.km-excess,Math.round(kmMax/nDays*0.8))));
+      toEasy(q, Math.max(planFloor('EF',plan),Math.min(q.km-excess,Math.round(kmMax/nDays*0.8))));
       excess=planWeekKm(list)-cap;
     }
   };
@@ -6598,16 +6643,25 @@ function planSafetyPass(plan,opts){
     const isDeload=list.some(s=>s.deload), lite=planWeekLight(list);
     const partial=(w===firstWeek && list.filter(s=>s.baseType!=='COURSE').length<nDays);
     let cap=kmMax;
-    if(isTaper){ if(lastLoad!=null) cap=Math.min(cap,lastLoad); }
+    if(isTaper){ if(lastLoad!=null) cap=Math.min(cap,lastLoad*(hasRace?0.7:0.85)); }
     else if(lite){ /* reprise ou allègement du moteur : plafonds déjà posés, pas une base des +10 % */ }
     else if(isDeload){ if(blockPeak>0) cap=Math.min(cap,blockPeak*SAFE_DELOAD_MAX); }
-    else if(lastLoad!=null && !partial) cap=Math.min(cap,lastLoad*SAFE_WEEKLY_INCREASE);
-    if(planWeekKm(list)>cap+0.05) reduceWeek(list,cap,isDeload||isTaper);
+    else if(lastLoad!=null && !partial) cap=Math.min(cap,planNextCap(lastLoad));
+    if(planWeekKm(list)>cap+0.05) reduceWeek(list,cap,isDeload||isTaper,isTaper);
     const km=planWeekKm(list);
     if(lite){ const nom=planWeekNominalKm(list); if(nom!=null && !partial){ lastLoad=nom; blockPeak=Math.max(blockPeak,nom); } return; }
     if(isTaper) blockPeak=0;
     else if(isDeload) blockPeak=0;
     else if(!partial){ lastLoad=km; blockPeak=Math.max(blockPeak,km); }
+  });
+  // 4. Veille et avant-veille de la course (V4.5) : une séance déplacée par l'étape 2 pouvait y retomber.
+  const race=sessions.find(s=>s.baseType==='COURSE');
+  if(race) sessions.forEach(s=>{
+    if(!editable(s)) return;
+    const g=Math.round((new Date(race.date+'T12:00:00')-new Date(s.date+'T12:00:00'))/864e5);
+    if(g===1 && (planIsHard(s)||planIsLong(s))) toEasy(s,Math.min(s.km,4));
+    else if(g===2 && planIsLong(s)) toEasy(s,Math.min(s.km,easyKmDefault));
+    else if(g===2 && planIsHard(s) && s.baseType!=='SPE_COURT') rebuild(s,'SPE_COURT');
   });
   plan.safetyV=PLAN_SAFETY_VERSION;
   planSortSessions(plan);
@@ -6621,26 +6675,28 @@ function planSortSessions(plan){ if(plan&&plan.sessions) plan.sessions.sort((a,b
 // à 4 jours, elle faisait 8 km, autant que le fartlek. Le volume ajouté est repris sur les footings.
 // Raccourcit une séance de qualité d'un cran (une répétition, 5 min de tempo, deux accélérations…),
 // même type et même intensité ; faux si elle est déjà à son minimum.
-function planShrinkQuality(s,pc){
+function planShrinkQuality(s,pc,low){
   // un cran qui ne raccourcit rien (progressif déjà à son minimum…) est annulé
   const keep=JSON.stringify(s), km0=s.km;
-  if(!planShrinkStep(s,pc)) return false;
+  if(!planShrinkStep(s,pc,low)) return false;
   if(s.km<km0-0.05) return true;
   Object.assign(s,JSON.parse(keep)); return false;
 }
-function planShrinkStep(s,pc){
+// low : plan à petit volume (planchers abaissés) — minimums de répétitions plus bas (V4.5)
+function planShrinkStep(s,pc,low){
   const sr=s.series, gp=s.genParams, bt=s.baseType;
-  const MINREP={TEMPO_SPE:2,SEUIL:3,SPE:3,SPE_COURT:2,VMAl:3,VO2:3,VMAc:6};
+  const MINREP=low?{TEMPO_SPE:2,SEUIL:2,SPE:2,SPE_COURT:2,VMAl:2,VO2:2,VMAc:4}:{TEMPO_SPE:2,SEUIL:3,SPE:3,SPE_COURT:2,VMAl:3,VO2:3,VMAc:6};
+  const minN=low?4:6;
   if(sr && sr.reps && sr.dist && MINREP[bt]!=null && sr.reps>MINREP[bt]){ sr.reps--; }
   else if(bt==='TEMPO' && gp && gp.tmin>10){ gp.tmin=Math.max(10,gp.tmin-5); }
-  else if(bt==='FARTLEK' && gp && gp.n>6){ gp.n=Math.max(6,gp.n-2); }
-  else if(bt==='COTES' && sr && sr.reps>6){ sr.reps=Math.max(6,sr.reps-2); }
+  else if(bt==='FARTLEK' && gp && gp.n>minN){ gp.n=Math.max(minN,gp.n-2); }
+  else if(bt==='COTES' && sr && sr.reps>minN){ sr.reps=Math.max(minN,sr.reps-2); }
   else if((bt==='PROGRESSIF'||bt==='LIGNES') && s.km>6.5){ s.km=Math.max(6,Math.floor(s.km-1)); }
   // structures fixes : le double seuil devient un seuil simple, la pyramide des 1000 m (même zone)
   else if(bt==='DBLSEUIL'){ Object.assign(s,{baseType:'SEUIL',type:t('sessLabel_SEUIL'),title:t('sessTitle_SEUIL'),rpe:7,desc:t('bs_seuil_objectif'),detail:null,genParams:null,
       series:{reps:5,dist:1000,paceSecPerKm:pc.SEUIL,recoverySec:60,recoveryLabel:t('recovLabel_1minTrot')}}); }
   else if(bt==='INTERVAL'){ Object.assign(s,{baseType:'VMAl',type:t('sessLabel_VMAl'),title:t('sessTitle_VMAl'),rpe:9,desc:t('bs_vmal_objectif'),detail:null,genParams:{vmalBodyN:4},
-      series:{reps:5,dist:1000,paceSecPerKm:pc.VMAl,recoverySec:150,recoveryLabel:t('recovLabel_2to3minTrot')}}); }
+      series:{reps:low?3:5,dist:1000,paceSecPerKm:pc.VMAl,recoverySec:150,recoveryLabel:t('recovLabel_2to3minTrot')}}); }
   else return false;
   planApplySegs(s,pc); return true;
 }
@@ -6654,23 +6710,40 @@ function planShapeWeeks(plan,pc){
   const tk=todayKey(), since=(plan.created&&plan.created>tk)?plan.created:tk, cap=longRunCapKm(); let n=0;
   const ed=s=>!s.done && !s.missed && !s.customized && s.date>=since;
   const effKm=s=>s.baseType==='DBLSEUIL'?s.km/2:s.km, effDur=s=>s.baseType==='DBLSEUIL'?s.duration/2:s.duration;
-  [...new Set(plan.sessions.map(s=>s.week))].forEach(w=>{
+  let prevL=0;   // sortie longue de la dernière semaine de charge (hausse limitée à +3 km, V4.5)
+  [...new Set(plan.sessions.map(s=>s.week))].sort((a,b)=>a-b).forEach(w=>{
     const list=plan.sessions.filter(s=>s.week===w && s.km>0 && s.baseType!=='COURSE' && s.baseType!=='Repos');
-    const L=list.filter(planIsLong).sort((a,b)=>b.km-a.km)[0]; if(!L || !ed(L)) return;
+    const L=list.filter(planIsLong).sort((a,b)=>b.km-a.km)[0]; if(!L) return;
+    const loadWk=!list.some(s=>s.deload||s.phaseKey==='TAPER');
+    if(!ed(L)){ if(loadWk) prevL=L.km; return; }
+    const lCap=(prevL && loadWk)?Math.min(cap,Math.max(L.km,prevL+3)):cap;
     const others=list.filter(s=>s!==L), before=planWeekKm(list);
     const leads=()=>others.every(s=>effKm(s)<L.km && effDur(s)<L.duration);
     others.filter(s=>ed(s) && ['EF','RECUP','LIGNES','PROGRESSIF'].includes(s.baseType) && s.km>=L.km).forEach(s=>{ s.km=Math.max(3,Math.floor(L.km-1)); planApplySegs(s,pc); n++; });
-    for(let g=0;g<12 && !leads();g++){
+    // V4.5 : un footing plus court en km mais plus lent pouvait durer plus longtemps que la sortie longue
+    others.filter(s=>ed(s) && ['EF','RECUP','LIGNES','PROGRESSIF'].includes(s.baseType)).forEach(s=>{
+      for(let g=0;g<20 && s.duration>=L.duration && s.km>3;g++){ s.km=Math.max(3,Math.round((s.km-0.5)*2)/2); planApplySegs(s,pc); n++; } });
+    const low=!!(plan.floors&&plan.floors.easy<4);
+    const shrinkBig=lo=>{ for(let g=0;g<12 && !leads();g++){
       const big=others.filter(s=>ed(s) && planIsHard(s) && (effKm(s)>=L.km || effDur(s)>=L.duration)).sort((a,b)=>effKm(b)-effKm(a))[0];
-      if(!big || !planShrinkQuality(big,pc)) break; n++;
+      if(!big || !planShrinkQuality(big,pc,lo)) break; n++; } };
+    shrinkBig(low);
+    // ce que les footings peuvent rendre si la sortie longue s'allonge (au-dessus de leur plancher)
+    const room=()=>others.filter(s=>ed(s) && (s.baseType==='EF'||s.baseType==='RECUP')).reduce((a,s)=>a+Math.max(0,s.km-planFloor(s.baseType,plan)),0);
+    const need=()=>Math.max(0,Math.ceil(others.reduce((m,s)=>Math.max(m,effKm(s)),0)+1)-L.km);
+    // allonger dépasserait la semaine : la qualité est d'abord raccourcie plus loin (minimums des petits volumes)
+    if(!leads() && (need()>room()+0.05 || L.km+need()>lCap)) shrinkBig(true);
+    for(let g=0;g<6 && !leads() && L.km<lCap;g++){
+      const top=others.reduce((m,s)=>Math.max(m,effKm(s)),0), r=Math.floor(room()+0.05);
+      // semaine déjà à son plancher (rien à reprendre) : on n'allonge pas pour autant au-delà d'1 km
+      const add=Math.min(Math.max(1,Math.ceil(top+1)-L.km), r>=1?r:(g===0?1:0));
+      if(add<=0) break;
+      L.km=Math.min(lCap,L.km+add); planApplySegs(L,pc); n++;
     }
-    for(let g=0;g<6 && !leads() && L.km<cap;g++){
-      const top=others.reduce((m,s)=>Math.max(m,effKm(s)),0);
-      L.km=Math.min(cap,Math.max(L.km+1,Math.ceil(top+1))); planApplySegs(L,pc); n++;
-    }
+    if(loadWk) prevL=L.km;
     let extra=planWeekKm(list)-before;
     if(extra>0.05) others.filter(s=>ed(s) && (s.baseType==='EF'||s.baseType==='RECUP')).sort((a,b)=>b.km-a.km).forEach(s=>{
-      if(extra<=0.05) return; const cut=Math.min(extra,Math.max(0,s.km-3));
+      if(extra<=0.05) return; const cut=Math.min(extra,Math.max(0,s.km-Math.min(3,planFloor(s.baseType,plan))));
       if(cut>0.05){ s.km=Math.round((s.km-cut)*10)/10; planApplySegs(s,pc); extra-=cut; n++; } });
   });
   return n;
@@ -6690,14 +6763,14 @@ function planBalanceLoad(plan,pc){
     // V3.15.0 : semaine de reprise ou allégée par le moteur d'adaptation = légère (pas une base des +10 %)
     const light=deload||taper||planWeekLight(list);
     // semaine de charge : ≤ +10 % ; décharge : ≤ 80 % du pic du bloc (le pic baisse quand on l'allège)
-    const capKm=(full && !light && prev!=null)?prev*SAFE_WEEKLY_INCREASE:(deload && !taper && !planWeekLight(list) && peak>0)?peak*SAFE_DELOAD_MAX:null;
+    const capKm=(full && !light && prev!=null)?planNextCap(prev):(deload && !taper && !planWeekLight(list) && peak>0)?peak*SAFE_DELOAD_MAX:null;
     if(capKm!=null){
       const L=list.filter(planIsLong).sort((a,b)=>b.km-a.km)[0];
       for(let g=0; g<80 && planWeekKm(list)>capKm+0.05; g++){
         const over=planWeekKm(list)-capKm;
         const easy=list.filter(s=>ed(s) && (s.baseType==='EF'||s.baseType==='RECUP') && s.km>3.05).sort((a,b)=>b.km-a.km)[0];
         if(easy){ easy.km=Math.round(Math.max(3,easy.km-over)*10)/10; planApplySegs(easy,pc); n++; continue; }
-        const q=list.filter(s=>ed(s) && planIsHard(s)).sort((a,b)=>b.km-a.km).find(s=>planShrinkQuality(s,pc));
+        const q=list.filter(s=>ed(s) && planIsHard(s)).sort((a,b)=>b.km-a.km).find(s=>planShrinkQuality(s,pc,!!(plan.floors&&plan.floors.easy<4)));
         if(q){ n++; continue; }
         // trop de qualité pour la semaine : la moins prioritaire devient un footing (une au moins reste)
         const hard=list.filter(planIsHard);
@@ -6782,7 +6855,7 @@ function validatePlan(plan,opts){
     }
     if(target && list.length>=Math.max(2,(plan.nDays||4)-1) && (km>target*1.25+1 || km<target*0.6)) warnings.push('volume S'+w+' '+weeks[w].km+' km vs prévu '+target);
     const deload=list.some(s=>s.deload), taper=list.some(s=>s.phaseKey==='TAPER'), lite=planWeekLight(list);
-    if(prevLoad!=null && !deload && !taper && !lite && list.length>=(plan.nDays||4) && km>prevLoad*1.10+1.5) errors.push('progression > +10 % : S'+w+' '+weeks[w].km+' km après '+Math.round(prevLoad*10)/10);
+    if(prevLoad!=null && !deload && !taper && !lite && list.length>=(plan.nDays||4) && km>planNextCap(prevLoad)+0.5) errors.push('progression > +10 % : S'+w+' '+weeks[w].km+' km après '+Math.round(prevLoad*10)/10);
     if(deload && !taper && !lite && peakLoad>0 && km>peakLoad*SAFE_DELOAD_MAX+0.5) errors.push('décharge > 80 % du pic : S'+w+' '+weeks[w].km+' km pour un pic de '+Math.round(peakLoad*10)/10);
     if(!deload && !taper && !lite && list.length>=(plan.nDays||4)){ prevLoad=km; peakLoad=Math.max(peakLoad,km); }
     else if(lite && !deload && !taper && list.length>=(plan.nDays||4)){ const nom=planWeekNominalKm(list); if(nom!=null){ prevLoad=nom; peakLoad=Math.max(peakLoad,nom); } }
@@ -6791,7 +6864,7 @@ function validatePlan(plan,opts){
   const m={}; ss.forEach(s=>{ if(s.km>0 && s.baseType!=='Repos') m[s.date]=s; });
   Object.keys(m).sort().forEach(d=>{
     const a=m[d], b=m[addDaysKey(d,1)]; if(!b) return;
-    if((planIsHard(a)&&planIsHard(b)) || (planIsLong(a)&&(planIsHard(b)||planIsLong(b))) || (planIsHard(b)&&planIsLong(a)) || (b.baseType==='COURSE'&&(planIsHard(a)||planIsLong(a))))
+    if((planIsHard(a)&&planIsHard(b)) || (planIsLong(a)&&(planIsHard(b)||planIsLong(b))) || (planIsHard(a)&&planIsLong(b)) || (b.baseType==='COURSE'&&(planIsHard(a)||planIsLong(a))))
       errors.push('deux séances dures d’affilée : '+tag(a)+' → '+tag(b));
   });
   return {ok:!errors.length,errors,warnings,weeks};
@@ -6867,7 +6940,7 @@ function planBuild(opts){
   // pas de sortie longue, volume au-dessus du max choisi).
   let {startMonday,weeks}=planCalendar(P.compDate,days);
   const raceKey=dateKey(comp);
-  const phaseByWeek=phaseDistribution(weeks);
+  const phaseByWeek=phaseDistribution(weeks,raceMeters());
   // Reconstruction (opts.keep) : les semaines continuent la numérotation de l'ancien plan.
   const keep=opts.keep&&opts.keep.sessions&&opts.keep.sessions.length?opts.keep:null;
   let off=0, keptPast=[];
@@ -6889,8 +6962,9 @@ function planBuild(opts){
   const liked=(PREFS.likedTypes&&PREFS.likedTypes.length)?PREFS.likedTypes:null;
   const sessions=[]; let id=keptPast.reduce((m,s)=>Math.max(m,+s.id||0),0)+1;
   const goal=P.objGoal||'Record personnel';
+  const floors=planFloorsFor(kmMax,days.length), eFl=floors.easy, lFl=floors.long;
   const pushSession=(d,w,ph,type,wkKm,isDeload,extra)=>{
-    const built=buildSessionV2(type,Object.assign({vdot,pace,wkKm,nDays:days.length,phase:ph,rng,pick,isDeload,goal,w,weeks},extra||{}));
+    const built=buildSessionV2(type,Object.assign({vdot,pace,wkKm,nDays:days.length,phase:ph,rng,pick,isDeload,goal,w,weeks,floors},extra||{}));
     const durMin=built.durMin!=null?built.durMin:(built.pace==='—'?0:Math.round(built.km*parseTime(built.pace)/60));
     sessions.push(planApplySegs({ id:id++, week:w+off, phase:ph.name, phaseKey:ph.key, color:ph.color,
       date:dateKey(d), type:built.label, baseType:type, title:built.title,
@@ -6907,19 +6981,19 @@ function planBuild(opts){
     if(firstLeft<days.length) opts=Object.assign({},opts,{ramp:[opts.ramp[0]].concat(opts.ramp),rampEasy:(opts.rampEasy||1)+1});
   }
   // Reprise : la première semaine après la rampe revient au plus au volume d'avant la coupure.
-  let lastWkKm=kmMin, prevLoadTarget=opts.ramp&&opts.baseKm?Math.round(opts.baseKm/SAFE_WEEKLY_INCREASE):null, curRamp=false;
+  let lastLongKm=0, lastWkKm=kmMin, prevLoadTarget=opts.ramp&&opts.baseKm?Math.round(opts.baseKm/SAFE_WEEKLY_INCREASE):null, curRamp=false;
   for(let w=1;w<=weeks;w++){
     const ph=phaseByWeek[w];
     const prog=(w-1)/(weeks-1||1);
     let wkKm;
-    if(ph.key==='TAPER'){ const tp=(weeks-w); wkKm=Math.round(kmMax*(0.45+tp*0.12)); if(prevLoadTarget) wkKm=Math.min(wkKm,prevLoadTarget); }
+    if(ph.key==='TAPER'){ const tp=(weeks-w); wkKm=Math.round(kmMax*(0.45+tp*0.12)); if(prevLoadTarget) wkKm=Math.min(wkKm,Math.round(prevLoadTarget*(tp===0?0.6:tp===1?0.75:0.85))); }
     else wkKm=Math.round(kmMin+(kmMax-kmMin)*Math.min(1,prog*1.25));
     const isDeload=(w%4===0)&&ph.key!=='TAPER'&&w<weeks-2;
     // Progression à la source (garde-fou du 27/09) : une semaine de charge ne dépasse
     // jamais +10 % de la précédente ; une décharge vaut 75 % de la dernière semaine de
     // charge (avant : 75 % de la cible de la semaine, déjà plus haute que la précédente).
     if(isDeload) wkKm=Math.round((prevLoadTarget||wkKm)*0.75);
-    else if(ph.key!=='TAPER' && prevLoadTarget) wkKm=Math.min(wkKm,Math.round(prevLoadTarget*SAFE_WEEKLY_INCREASE));
+    else if(ph.key!=='TAPER' && prevLoadTarget) wkKm=Math.min(wkKm,Math.round(planNextCap(prevLoadTarget)));
     wkKm=Math.max(kmMin*0.7,Math.min(kmMax,wkKm));
     // Reprise après une coupure (moteur d'adaptation) : plafonds de reprise, puis +10 %/semaine.
     const rampW=!!(opts.ramp && w<=opts.ramp.length && w<weeks && ph.key!=='TAPER');
@@ -6951,6 +7025,8 @@ function planBuild(opts){
       let type=assigned[di]||'EF';
       // Veille de course : jamais de séance dure ni de sortie longue.
       if(daysBetween(d,comp)===1 && HARD.includes(type)) type='RECUP';
+      // J-2 : pas de vraie séance dure, au plus un court rappel à l'allure de course (V4.5)
+      else if(daysBetween(d,comp)===2 && HARD.includes(type)) type=isLongT(type)?'EF':'SPE_COURT';
       slots.push({d,type});
     });
     // Budget kilométrique de la semaine : les séances de qualité ont une structure
@@ -6969,7 +7045,21 @@ function planBuild(opts){
     //    Le double seuil (deux séances dans la journée) n'entre pas dans ce calcul.
     const easySlots=slots.filter(s=>isEasyT(s.type));
     const longSlots=slots.filter(s=>isLongT(s.type));
-    const longTarget=longSlots.length?Math.max(8,Math.min(longRunCapKm(),Math.round(wkKm*(longSlots[0].type==='LONG_COURT'?0.22:(ph.key==='SPE'?0.34:0.30))))):0;
+    let longTarget=longSlots.length?Math.max(lFl,Math.min(longRunCapKm(),Math.round(wkKm*(longSlots[0].type==='LONG_COURT'?0.22:(ph.key==='SPE'?0.34:0.30))))):0;
+    // V4.5 : semi et marathon — la sortie longue suit sa propre progression (de ~40 % de la distance de course
+    // jusqu'au plafond, atteint juste avant l'affûtage), +2 km par semaine au plus, 75 % en décharge, et au
+    // plus 45 % (semi) / 50 % (marathon) du volume de la semaine.
+    if(longSlots.length && longSlots[0].type==='LONG' && raceMeters()>=15000){
+      const rk=raceMeters()/1000, cap=longRunCapKm(), firstTaper=phaseByWeek.findIndex(p=>p&&p.key==='TAPER');
+      const peakW=Math.max(1,(firstTaper>0?firstTaper:weeks)-1), start=Math.min(cap,Math.max(lFl,Math.round(rk*0.42)));
+      let prog=Math.round(start+(cap-start)*Math.min(1,(w-1)/Math.max(1,peakW-1)));
+      if(isDeload) prog=Math.round((lastLongKm||prog)*0.75);
+      else if(lastLongKm) prog=Math.min(prog,lastLongKm+2);
+      prog=Math.min(prog,Math.round(wkKm*(rk>=40?0.5:0.45)));
+      longTarget=Math.max(longTarget,Math.min(cap,prog));
+    }
+    // quelle que soit la règle qui la fixe, la sortie longue ne prend pas plus de 3 km d'une semaine à l'autre
+    if(longSlots.length && lastLongKm && !isDeload) longTarget=Math.max(lFl,Math.min(longTarget,lastLongKm+3));
     //  · Plafond DUR = le km/sem maxi choisi (kmMax) ; wkKm n'est que la cible
     //    progressive de la semaine, qui dose les footings. Utiliser wkKm comme
     //    plafond supprimait toute séance de qualité dans les semaines à faible
@@ -6984,21 +7074,22 @@ function planBuild(opts){
       pushSession(s.d,w,ph,s.type,wkKm,isDeload);
       const km=sessions[sessions.length-1].km||0;
       const needLong=!longSlots.length?0:(longMustLead&&s.type!=='DBLSEUIL')?Math.max(longTarget,Math.min(longRunCapKm(),Math.ceil(Math.max(maxQ,km))+1)):longTarget;
-      if(keptQ>=1 && used+km>kmMax-needLong-4*easySlots.length){ sessions.pop(); easySlots.push({d:s.d,type:'EF'}); return; }
+      if(keptQ>=1 && used+km>kmMax-needLong-eFl*easySlots.length){ sessions.pop(); easySlots.push({d:s.d,type:'EF'}); return; }
       used+=km; keptQ++; if(s.type!=='DBLSEUIL') maxQ=Math.max(maxQ,km);
     });
     let longKm=0;
     longSlots.forEach(s=>{
-      const room=Math.floor(kmMax-used-4*easySlots.length);
-      const want=Math.max(longTarget,longMustLead?Math.ceil(maxQ)+1:0);
-      pushSession(s.d,w,ph,s.type,wkKm,isDeload,{longKm:Math.max(8,Math.min(longRunCapKm(),want,room))});
+      const room=Math.floor(kmMax-used-eFl*easySlots.length);
+      const want=Math.min(Math.max(longTarget,longMustLead?Math.ceil(maxQ)+1:0),(lastLongKm&&!isDeload)?Math.max(longTarget,lastLongKm+3):999);
+      pushSession(s.d,w,ph,s.type,wkKm,isDeload,{longKm:Math.max(lFl,Math.min(longRunCapKm(),want,room))});
       longKm=sessions[sessions.length-1].km||0; used+=longKm;
+      if(!isDeload && s.type==='LONG') lastLongKm=longKm;
     });
     if(easySlots.length){
       const weights=easySlots.reduce((a,s)=>a+(s.type==='RECUP'?0.7:1),0);
       const defaultEasy=Math.max(5,Math.round(wkKm/days.length*0.95));
-      let easyKm=Math.max(4,Math.min(defaultEasy,Math.floor((wkKm-used)/weights)));
-      if(longKm) easyKm=Math.max(4,Math.min(easyKm,longKm-1));
+      let easyKm=Math.max(eFl,Math.min(defaultEasy,Math.floor((wkKm-used)/weights*2)/2));
+      if(longKm) easyKm=Math.max(eFl,Math.min(easyKm,longKm-1));
       easySlots.forEach(s=>pushSession(s.d,w,ph,s.type,wkKm,isDeload,{easyKm}));
     }
   }
@@ -7012,7 +7103,7 @@ function planBuild(opts){
   // avant ven. 4 sept.) dès que le plan était généré un autre jour que dimanche/lundi.
   sessions.sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:0);
   if(keep) Object.keys(keep.wkKm||{}).forEach(k=>{ if(+k<=off && wkTargets[k]==null) wkTargets[k]=keep.wkKm[k]; });
-  const plan={ created:keep?keep.created:todayKey(), vdot, weeks:weeks+off, seed, sessions, goal, race:P.objRace||'5 km', kmMax, nDays:days.length, wkKm:wkTargets };
+  const plan={ created:keep?keep.created:todayKey(), vdot, weeks:weeks+off, seed, sessions, goal, race:P.objRace||'5 km', kmMax, nDays:days.length, wkKm:wkTargets, floors };
   if(keep && keep.adapt) plan.adapt=keep.adapt;
   // Une reprise ne se mesure pas aux semaines d'avant la coupure : pas d'historique pour la passe de sécurité.
   const safetyFixes=planSafetyPass(plan,{kmMax,useHistory:!opts.ramp});
@@ -7025,11 +7116,12 @@ function raceMeters(){ return raceMetersOf(P.objRace,P.objRaceKm); }
 // quand on prépare un 3000 m, et évite de plafonner à 18 km quand on prépare un semi/marathon.
 function longRunCapKm(){
   const m=raceMeters();
-  if(m<=3000) return 16;
-  if(m<=5000) return 20;
-  if(m<=10000) return 26;
-  if(m<=21097) return 32;
-  if(m<=42195) return 38;
+  // V4.5 : plafonds ramenés aux usages des plans de référence (5 km 16, 10 km 20, semi 24, marathon 35)
+  if(m<=3000) return 14;
+  if(m<=5000) return 16;
+  if(m<=10000) return 20;
+  if(m<=21097) return Math.round(20+(m-10000)/11097*4);
+  if(m<=42195) return 35;
   return 42;
 }
 
@@ -7287,24 +7379,51 @@ function composeWeek(ph,nDays,qCount,isDeload,pick,rng,liked,isRaceWeek){
   return week;
 }
 function likedToType(l){ const m={'VMA courte':'VMAc','VMA longue':'VMAl','Intervalles':'INTERVAL','Tempo':'TEMPO','Seuil':'SEUIL','Endurance fondamentale':'EF','Sortie longue':'LONG','Double seuil':'DBLSEUIL','Fartlek':'FARTLEK','Côtes':'COTES','Travail VO₂max':'VO2','Travail à l\u2019allure spécifique':'SPE','Récupération active':'RECUP'}; return m[l]; }
-// place les types sur les jours en respectant PREFS jour long/fractio/récup + espacement qualité
+// Place les types de la semaine sur les jours choisis (V4.5, au calendrier réel) :
+//  · sortie longue le jour préféré, sinon le dimanche, sinon le samedi, sinon le dernier jour ;
+//  · séances dures (qualité ET sortie longue) jamais sur deux jours qui se suivent dans le calendrier —
+//    avant, « suivre » voulait dire « voisin dans la liste des jours » : lundi-mercredi comptaient comme
+//    voisins mais pas vendredi-samedi, et tempo/fartlek/côtes ne comptaient pas comme durs ;
+//  · le dimanche d'une semaine et le lundi de la suivante comptent aussi (pénalité un peu plus faible) ;
+//  · jour de fractionné préféré respecté quand c'est possible ; récupération le lendemain d'un effort.
 function assignWeek(days,weekPlan){
-  const res=new Array(days.length).fill(null);
-  const pool=[...weekPlan];
-  const placePref=(prefDow,matchFn)=>{ if(prefDow===''||prefDow==null)return; const di=days.indexOf(+prefDow); if(di<0||res[di])return; const ti=pool.findIndex(matchFn); if(ti<0)return; res[di]=pool.splice(ti,1)[0]; };
-  placePref(PREFS.longDay, t=>t.startsWith('LONG'));
-  placePref(PREFS.fractioDay, t=>['VMAc','VMAl','VO2','INTERVAL','DBLSEUIL'].includes(t));
-  placePref(PREFS.recupDay, t=>t==='RECUP');
-  // place le reste en évitant 2 qualités consécutives si possible
-  const isHard=t=>['VMAc','VMAl','VO2','INTERVAL','DBLSEUIL','SEUIL','SPE','TEMPO_SPE'].includes(t);
-  const hard=pool.filter(isHard), easy=pool.filter(t=>!isHard(t));
-  for(let i=0;i<res.length;i++){ if(res[i])continue;
-    const prevHard=i>0&&res[i-1]&&isHard(res[i-1]);
-    if(prevHard&&easy.length) res[i]=easy.shift();
-    else if(hard.length) res[i]=hard.shift();
-    else if(easy.length) res[i]=easy.shift();
-    else res[i]='EF';
-  }
+  const n=days.length, pos=days.map(d=>(d+6)%7), res=new Array(n).fill(null);
+  const isLong=t=>t==='LONG'||t==='LONG_COURT', isQ=t=>PLAN_HARD_Q.includes(t);
+  const longT=weekPlan.filter(isLong), hardT=weekPlan.filter(isQ), easyT=weekPlan.filter(t=>!isLong(t)&&!isQ(t));
+  const FRACTIO=['VMAc','VMAl','VO2','INTERVAL','DBLSEUIL'];
+  const gap=(a,b)=>{ const d=Math.abs(pos[a]-pos[b]); return {d, wrap:7-d}; };
+  const pen=idx=>{ let p=0; for(let i=0;i<idx.length;i++) for(let j=i+1;j<idx.length;j++){ const g=gap(idx[i],idx[j]); if(g.d===1) p+=10; else if(g.wrap===1) p+=6; else if(g.d===2) p+=0.3; } return p; };
+  const combos=(arr,k)=>{ const out=[]; const rec=(st,acc)=>{ if(acc.length===k){ out.push(acc.slice()); return; } for(let i=st;i<arr.length;i++){ acc.push(arr[i]); rec(i+1,acc); acc.pop(); } }; rec(0,[]); return out; };
+  const all=[...Array(n).keys()];
+  const longPref=i=>{ if(PREFS.longDay!==''&&PREFS.longDay!=null && days[i]===+PREFS.longDay) return -3; return pos[i]===6?-2:pos[i]===5?-1.5:(pos[i]===Math.max(...pos)?-1:0); };
+  let best=null;
+  const longCands=longT.length?all:[null];
+  longCands.forEach(L=>{
+    const rest=all.filter(i=>i!==L);
+    const k=Math.min(hardT.length,rest.length);
+    combos(rest,k).forEach(H=>{
+      const idx=L==null?H:[L].concat(H);
+      let sc=pen(idx)+(L==null?0:longPref(L));
+      if(PREFS.fractioDay!==''&&PREFS.fractioDay!=null && hardT.some(t=>FRACTIO.includes(t)) && H.some(i=>days[i]===+PREFS.fractioDay)) sc-=0.5;
+      if(!best || sc<best.sc) best={sc,L,H};
+    });
+  });
+  if(best.L!=null) res[best.L]=longT[0];
+  // les séances les plus intenses vont sur le jour qui suit le plus de repos
+  const restBefore=i=>{ let b=7; for(let j=0;j<n;j++){ if(j===i) continue; const d=(pos[i]-pos[j]+7)%7; if(d>0) b=Math.min(b,d); } return b; };
+  const H=best.H.slice().sort((a,b)=>restBefore(b)-restBefore(a));
+  const order=hardT.slice().sort((a,b)=>(FRACTIO.includes(b)?1:0)-(FRACTIO.includes(a)?1:0));
+  if(PREFS.fractioDay!==''&&PREFS.fractioDay!=null){ const fi=H.findIndex(i=>days[i]===+PREFS.fractioDay), qi=order.findIndex(t=>FRACTIO.includes(t)); if(fi>0 && qi===0){ const x=H[fi]; H.splice(fi,1); H.unshift(x); } }
+  H.forEach((i,j)=>{ res[i]=order[j]; });
+  // footings : la récupération le lendemain d'un effort, le reste ensuite
+  const free=all.filter(i=>res[i]==null), easy=easyT.slice();
+  const afterEffort=i=>all.some(j=>res[j] && (isQ(res[j])||isLong(res[j])) && (pos[i]-pos[j]+7)%7===1);
+  free.sort((a,b)=>(afterEffort(b)?1:0)-(afterEffort(a)?1:0)).forEach(i=>{
+    let k=afterEffort(i)?easy.indexOf('RECUP'):-1;
+    if(k<0) k=easy.findIndex(t=>t!=='RECUP');
+    if(k<0) k=0;
+    res[i]=easy.length?easy.splice(k,1)[0]:'EF';
+  });
   return res;
 }
 /* Construit une séance V2 ULTRA détaillée selon le type scientifique */
@@ -7326,13 +7445,14 @@ function buildSessionV2(type,o){
       d={objectif:t('bs_ef_objectif'),warmup:t('bs_ef_warmup'),body:tp('bs_ef_body',km,S(pace.EF)),paces:tp('bs_ef_paces',S(pace.EF)),recovery:t('bs_ef_recovery'),cooldown:t('bs_ef_cooldown'),tips:[t('bs_ef_tip1'),t('bs_ef_tip2')],mistakes:[t('bs_ef_mistake1')],why:t('bs_ef_why')};
       break;
     case 'RECUP':
-      km=Math.max(4,Math.round(easyKm*0.7)); p=S(pace.RC); rpe=2; label=t('sessLabel_RECUP'); title=t('sessTitle_RECUP');
+      km=Math.max(o.floors?o.floors.easy:4,Math.round(easyKm*0.7)); p=S(pace.RC); rpe=2; label=t('sessLabel_RECUP'); title=t('sessTitle_RECUP');
       d={objectif:t('bs_recup_objectif'),warmup:t('bs_recup_warmup'),body:tp('bs_recup_body',km,S(pace.RC)),paces:t('bs_recup_paces'),recovery:'—',cooldown:t('bs_recup_cooldown'),tips:[t('bs_recup_tip1')],mistakes:[t('bs_recup_mistake1')],why:t('bs_recup_why')};
       break;
     case 'LONG': case 'LONG_COURT':
       km=type==='LONG_COURT'?Math.round(wkKm*0.22):Math.round(wkKm*(phase.key==='SPE'?0.34:0.30));
-      km=Math.max(8,Math.min(longRunCapKm(),km));
-      if(o.longKm!=null) km=Math.max(8,Math.min(longRunCapKm(),o.longKm)); // fixée par le budget de la semaine (generatePlan)
+      { const lf=o.floors?o.floors.long:8;
+        km=Math.max(lf,Math.min(longRunCapKm(),km));
+        if(o.longKm!=null) km=Math.max(lf,Math.min(longRunCapKm(),o.longKm)); } // fixée par le budget de la semaine (generatePlan)
       p=S(pace.EF*0.99); rpe=4; label=t('sessLabel_LONG'); title=t('sessTitle_LONG')+(phase.key==='SPE'?t('progressiveSuffix'):'');
       d={objectif:t('bs_long_objectif'),warmup:t('bs_long_warmup'),body:phase.key==='SPE'||phase.key==='PIC'?tp('bs_long_body_progressive',km,S(pace.EF),S(pace.MAR)):tp('bs_long_body_steady',km,S(pace.EF*0.99)),paces:tp('bs_long_paces',S(pace.EF),S(pace.MAR)),recovery:t('bs_long_recovery'),cooldown:CD,tips:[t('bs_long_tip1'),t('bs_long_tip2')],mistakes:[t('bs_long_mistake1')],why:t('bs_long_why')};
       break;
