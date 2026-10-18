@@ -2700,7 +2700,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.6.0';
+const APP_VERSION='4.7.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -5840,7 +5840,12 @@ const EXDB_MAP={
  // sur l'icône générique. On les relie à un id déjà utilisé et vérifié plus haut (même exercice ou variante proche).
  'Dumbbell Incline Bench Press':'Incline_Dumbbell_Press','Concentration Curl':'Concentration_Curls','Cable Curl':'Cable_Hammer_Curls_-_Rope_Attachment',
  'Overhead Triceps Extension':'Seated_Triceps_Press','Close Grip Bench Press':'Close-Grip_Barbell_Bench_Press','Arnold Press':'Arnold_Dumbbell_Press',
- 'Shrug':'Barbell_Shrug','Wrist Curl':'Palms-Down_Wrist_Curl_Over_A_Bench'
+ 'Shrug':'Barbell_Shrug','Wrist Curl':'Palms-Down_Wrist_Curl_Over_A_Bench',
+ 'Développé machine convergente':'Leverage_Chest_Press','Écarté poulie basse':'Low_Cable_Crossover','Écarté élastique':'Cable_Crossover','Rowing élastique':'Seated_Cable_Rows',
+ 'Élévations latérales élastique':'Lateral_Raise_-_With_Bands','Shrug machine':'Leverage_Shrug','Curl araignée':'Spider_Curl','21s biceps':'Barbell_Curl','Curl élastique':'Dumbbell_Bicep_Curl',
+ 'Extension élastique':'Band_Skull_Crusher','Wrist roller':'Wrist_Roller','Planche latérale':'Side_Bridge','Vacuum abdominal':'Stomach_Vacuum','Hip Thrust machine':'Barbell_Hip_Thrust',
+ 'Kickback poulie':'One-Legged_Cable_Kickback','Abduction élastique':'Thigh_Abductor','Wall Sit':'Bodyweight_Squat','Mollets unilatéral haltère':'Standing_Calf_Raises',
+ 'Extension de cou':'Lying_Face_Down_Plate_Neck_Resistance','Flexion de cou':'Lying_Face_Up_Plate_Neck_Resistance','Snatch kettlebell':'One-Arm_Kettlebell_Snatch','Turkish Get-up':'Kettlebell_Turkish_Get-Up_Squat_style'
 };
 /* Bibliothèque étendue (exercises/exdb.js) : index par nom français. Ligne = [id,nomFR,groupe,matériel,niveau,primaires,secondaires,type,imageDb,zones,nomEN,nomAR,dose] */
 const EXD_BY=(function(){ const m={}; if(typeof EXD_ROWS!=='undefined') EXD_ROWS.forEach(function(r){ m[r[1]]=r; }); return m; })();
@@ -6029,21 +6034,12 @@ function exMeta(name){
   return enrichFiche(base);
 }
 function enrichFiche(b){
-  const g=b.group;
-  const breathByGroup=t('exBreathGeneric');
-  // Génère une fiche complète et cohérente
-  b.steps=b.ownSteps||[t('exStep1'),t('exStep2'),t('exStep3'),t('exStep4'),t('exStep5')];
-  if(b.kind && b.kind!=='force'){   // étirement, mobilité, cardio, pliométrie, rééducation : pas de « charge » ni de série lourde
-    b.breathing=t('exBreath_'+b.kind); b.mistakes=[]; b.tips=[t('exKindTip_'+b.kind)];
-    b.safety=[t(b.kind==='rehab'?'exSafetyRehab':'exSafetyKind')];
-  } else {
-    b.breathing=breathByGroup;
-    b.mistakes=[t('exMistakeGeneric1'),t('exMistakeGeneric2'),t('exMistakeGeneric3'),t('exMistakeGeneric4')];
-    b.tips=[t('exTipGeneric1'),t('exTipGeneric2'),trExTip(b.name,b.tip)||t('exTipGeneric3')];
-    b.safety=[t('exSafety1'),t('exSafety2'),t('exSafety3')];
-  }
-  // variantes : autres exercices du même groupe et du même type
-  b.variants=allExercises().filter(x=>x.group===g && x.name!==b.name && (x.kind||'force')===(b.kind||'force')).slice(0,4).map(x=>x.name);
+  // Fiche minimale : démo, muscles, 3 étapes au plus. Plus de respiration, d'erreurs, de conseils génériques ni de variantes.
+  b.steps=(b.ownSteps||[]).slice(0,3);
+  b.breathing=''; b.mistakes=[]; b.variants=[];
+  const tip=trExTip(b.name,b.tip);
+  b.tips=(!b.steps.length && tip)?[tip]:[];
+  b.safety=b.kind==='rehab'?[t('exSafetyRehab')]:[];
   return b;
 }
 // Liste unifiée (étendue + ancienne) sans doublons, pour le navigateur
@@ -6913,15 +6909,17 @@ function generatePlan(){
   PLAN=r.plan;
   DB.save('run_plan',PLAN);
   ikTrack('plan_created',{race:P.objRace||'',weeks:PLAN.weeks,cal:!!P.objRaceId,days:(P.days||[]).length});
-  toast(''+tp('planGenerated',(raceLabel()||t('raceGeneric')),PLAN.weeks,PLAN.sessions.length));
+  // Assistant « course + muscu » : la muscu se génère juste après, un seul message et un seul rendu à la fin (plus rapide)
+  const cont=(typeof wizAfterRun!=='undefined' && wizAfterRun);
+  if(!cont) toast(''+tp('planGenerated',(raceLabel()||t('raceGeneric')),PLAN.weeks,PLAN.sessions.length));
   if(r.safetyFixes) setTimeout(()=>toast(t('planSafetyAdjustedToast')),2600);
   // Course à plus de 28 semaines : le plan commence plus tard qu'aujourd'hui, il
   // faut le dire, sinon l'écran Sport paraît vide sans explication.
   const first=PLAN.sessions[0], today=ikNow(); today.setHours(0,0,0,0);
   if(first && daysBetween(today,new Date(first.date+'T00:00:00'))>7)
     setTimeout(()=>toast(tp('planStartsOn',fmtDate(first.date))),r.safetyFixes?5200:2600);
-  burst(); renderSport();
-  try{ if(typeof installAfterPlan==='function') installAfterPlan(); }catch(e){}
+  if(!cont){ burst(); renderSport(); }
+  try{ if(!cont && typeof installAfterPlan==='function') installAfterPlan(); }catch(e){}
   try{ if(typeof strengthAfterRunPlan==='function') strengthAfterRunPlan(); }catch(e){}   // muscu liée : suit le nouveau calendrier
   try{ if(typeof wizResume==='function') wizResume(); }catch(e){}
 }
@@ -8652,19 +8650,7 @@ function openRunSheet(id){
   // une séance manquée, les modifier après coup désynchroniserait l'historique.
   if(!s.done && s.date>=todayKey()) h+='<button class="btn ghost sm" style="margin-bottom:14px" onclick="openPlanCustomize('+s.id+')">'+ICN('edit',15)+' '+t('customizeSessionBtn')+'</button>';
 
-  if(dt){
-    h+='<div class="rs-obj-lab">'+t('objectiveCap')+'</div><div class="rs-obj-txt">'+dt.objectif+'</div>';
-    h+='<div class="card rs-list">'
-      +'<div class="rs-row" onclick="this.nextElementSibling?.classList.toggle(\'open\')"><div class="rs-ic" style="background:rgba(var(--e-rgb),.16);color:var(--e2)">'+ICN('run',17)+'</div>'
-        +'<div class="rs-row-body"><div class="rs-row-t">'+t('warmupLabel')+'</div><div class="rs-row-m">'+rsShort(dt.warmup,54)+'</div></div>'+ICN('chevronR',16,'var(--dim)')+'</div>'
-      +'<div class="rs-row"><div class="rs-ic" style="background:rgba(242,184,75,.18);color:var(--or)">'+ICN('run',17)+'</div>'
-        +'<div class="rs-row-body"><div class="rs-row-t">'+t('sessionBodyLabel')+'</div><div class="rs-row-m">'+rsShort(dt.body,58)+'</div></div>'+ICN('chevronR',16,'var(--dim)')+'</div>'
-      +'<div class="rs-row"><div class="rs-ic" style="background:rgba(255,92,108,.16);color:var(--bad)">'+ICN('pin',16)+'</div>'
-        +'<div class="rs-row-body"><div class="rs-row-t">'+t('cooldownLabel')+'</div><div class="rs-row-m">'+rsShort(dt.cooldown,54)+'</div></div>'+ICN('chevronR',16,'var(--dim)')+'</div>'
-      +'<div class="rs-row"><div class="rs-ic" style="background:rgba(51,211,153,.16);color:var(--ok)">'+ICN('run',17)+'</div>'
-        +'<div class="rs-row-body"><div class="rs-row-t">'+t('pacesLabel')+'</div><div class="rs-row-m">'+(mainPart?planZoneLine(mainPart.pk,mainPart.pace):'—')+'</div></div>'+ICN('chevronR',16,'var(--dim)')+'</div>'
-    +'</div>';
-  }
+  if(dt) h+='<div class="rs-obj-txt" style="margin-bottom:12px">'+dt.objectif+'</div>';
 
   // ALLURE CIBLE — celle de la partie principale (± 5 s), et le profil de la séance segment par
   // segment (hauteur = vitesse, largeur = durée) au lieu d'une courbe décorative.
@@ -8675,25 +8661,18 @@ function openRunSheet(id){
       +'<div class="rs-target-spark">'+sg.map(x=>{ const v=x.sec/x.km; return '<b style="flex:'+Math.max(0.6,x.sec/tot*40).toFixed(2)+';height:'+(slow>fast?Math.round(14+((slow-v)/(slow-fast))*86):60)+'%"></b>'; }).join('')+'</div></div>';
   }
 
-  // DÉTAIL COMPLET (repliable, contenu déjà existant conservé)
-  if(dt){
-    h+=seriesTableHTML(liveSeries(s));
-    if(s.series && s.series.length) h+='<div class="pace-warn">'+t('paceWarnMsg')+'</div>';
-    if(parts.length) h+='<div class="chrome-box"><div class="cb-head">'+t('detailedPacesLabel')+'</div>'+parts.map(p=>'<div class="cb-body rs-part"><b>'+planPartLabel(p,s)+'</b><span>'+planZoneLine(p.pk,p.pace)+(p.k==='work'||p.k==='run'?' · '+hKm(Math.round(p.km*10)/10)+' km':'')+'</span></div>').join('')+'</div>';
-    else h+='<div class="chrome-box"><div class="cb-head">'+t('detailedPacesLabel')+'</div><div class="cb-body">'+dt.paces+'</div></div>';
-    h+='<div class="chrome-box"><div class="cb-head">'+t('recoveryLabel')+'</div><div class="cb-body">'+dt.recovery+'</div></div>';
-    h+='<div class="chrome-box"><div class="cb-head">'+t('adviceLabel')+'</div>'+dt.tips.map(tt=>'<div class="cb-body" style="margin-bottom:5px">• '+tt+'</div>').join('')+'</div>';
-    h+='<div class="chrome-box bad"><div class="cb-head" style="color:var(--bad)">'+t('mistakesToAvoidLabel')+'</div>'+dt.mistakes.map(tt=>'<div class="cb-body" style="margin-bottom:5px">'+tt+'</div>').join('')+'</div>';
-    h+='<div class="chrome-box"><div class="cb-head">'+t('whySessionLabel')+'</div><div class="cb-body">'+dt.why+'</div></div>';
-  } else {
-    h+=seriesTableHTML(liveSeries(s));
-    h+='<div class="chrome-box"><div class="cb-head">'+t('sessionBodyLabel')+'</div><div class="cb-body">'+escHtml(s.desc||'')+'</div></div>';
-  }
+  // LA SÉANCE : un seul tableau (échauffement, corps, retour au calme). Plus de rubriques « conseils », « erreurs » ni « pourquoi ».
+  const tbl=seriesTableHTML(liveSeries(s));
+  h+=tbl||(dt?'':'<div class="chrome-box"><div class="cb-body">'+escHtml(s.desc||'')+'</div></div>');
   $('#sheetBody').innerHTML=h;
   openOv('ovSheet');
   wxMountScenes($('#sheetBody'));
-  if(wxLoc()) wxRefresh().then(d=>{ if(d && curRunId===id && !document.querySelector('#sheetBody .wx-rs') && $('#ovSheet').classList.contains('on')) openRunSheet(id); });
+  // La météo arrive après l'ouverture : on redessine UNE fois, et seulement si elle peut vraiment s'afficher
+  // (une séance au-delà des prévisions n'a pas de météo : avant, la fiche se redessinait sans fin et l'appli restait bloquée).
+  if(_wxRetry===id){ _wxRetry=null; return; }
+  if(wxLoc()) wxRefresh().then(d=>{ if(d && curRunId===id && !document.querySelector('#sheetBody .wx-rs') && $('#ovSheet').classList.contains('on') && wxForSession(s)){ _wxRetry=id; openRunSheet(id); } });
 }
+let _wxRetry=null;
 function markRunDone(){
   const s=PLAN.sessions.find(x=>x.id===curRunId); if(!s) return;
   // Idempotence : sans ce garde, un double-tap sur « J'ai fait » (ou un appel
@@ -9910,13 +9889,9 @@ function openFiche(name){
       '<div style="position:relative;animation:demoFloat 1.5s ease-in-out infinite;filter:drop-shadow(0 6px 14px rgba(0,0,0,.4))">'+exGlyph(f,68)+'</div>'+
       '<div style="position:relative;display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:11px;color:var(--et,var(--e));font-weight:700"><span style="width:7px;height:7px;border-radius:50%;background:var(--e);animation:demoPulse 1s infinite"></span>'+t('movementDemoCap')+'</div></div>';
   }
-  h+='<div class="card-t">'+ICN('target',15,'var(--e)')+t('musclesWorked')+'</div><div style="margin-bottom:12px"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">'+t('primaryLabel')+'</div><div class="muscle-tags">'+(f.primary||[]).map(m=>'<span class="mtag" style="background:var(--ed);color:var(--et,var(--e));border-color:var(--e)">'+trMuscle(m)+'</span>').join('')+'</div>'+((f.secondary&&f.secondary.length)?'<div style="font-size:12px;color:var(--muted);margin:8px 0 4px">'+t('secondaryLabel')+'</div><div class="muscle-tags">'+f.secondary.map(m=>'<span class="mtag">'+trMuscle(m)+'</span>').join('')+'</div>':'')+'</div>';
-  h+='<div class="card-t">'+ICN('clipboard',15,'var(--e)')+t('stepByStepExecution')+'</div>'+f.steps.map((s,i)=>'<div class="tip" style="margin-bottom:6px"><b style="color:var(--et,var(--e))">'+(i+1)+'.</b> '+s+'</div>').join('');
-  h+='<div class="card-t" style="margin-top:14px">'+ICN('lung',15,'var(--e)')+t('breathingLabel')+'</div><div class="tip">'+f.breathing+'</div>';
-  h+='<div class="card-t" style="margin-top:14px;color:var(--bad)">'+ICN('warning',15,'var(--e)')+t('commonMistakesLabel')+'</div>'+f.mistakes.map(m=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(255,92,108,.3);background:rgba(255,92,108,.08)">'+m+'</div>').join('');
-  h+='<div class="card-t" style="margin-top:14px">'+ICN('check',15,'var(--e)')+t('coachTipsLabel')+'</div>'+f.tips.map(tt=>'<div class="tip" style="margin-bottom:6px">'+tt+'</div>').join('');
-  h+='<div class="card-t" style="margin-top:14px">'+ICN('shield',15,'var(--e)')+t('safetyLabel')+'</div>'+f.safety.map(s=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(51,211,153,.3);background:rgba(51,211,153,.08)">'+s+'</div>').join('');
-  if(f.variants&&f.variants.length){ h+='<div class="card-t" style="margin-top:14px">'+ICN('refresh',15,'var(--e)')+t('variantsLabel')+'</div><div class="pills">'+f.variants.map(v=>'<div class="pill" onclick=\'openFiche("'+v.replace(/"/g,'&quot;')+'")\'>'+trExName(v)+'</div>').join('')+'</div>'; }
+  h+='<div class="muscle-tags" style="justify-content:center;margin-bottom:14px">'+(f.primary||[]).map(m=>'<span class="mtag" style="background:var(--ed);color:var(--et,var(--e));border-color:var(--e)">'+trMuscle(m)+'</span>').join('')+'</div>';
+  if(f.steps.length) h+=f.steps.map((s,i)=>'<div class="tip" style="margin-bottom:6px"><b style="color:var(--et,var(--e))">'+(i+1)+'.</b> '+s+'</div>').join('');
+  h+=f.tips.concat(f.safety).map(x=>'<div class="tip" style="margin-bottom:6px">'+x+'</div>').join('');
   if(libCallback) h+='<button class="btn" style="margin-top:18px" onclick=\'pickEx("'+f.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'")\'>＋ '+t('addToProgram')+'</button>';
   $('#libBody').innerHTML=h;
 }
@@ -9962,7 +9937,7 @@ function saveCfg(){
 let statsTab='bilan';
 function statsSegHTML(){
   return '<div class="seg-ctrl">'+
-    [['bilan',t('tabBilan')],['run',t('tabRun')],['muscu',t('tabMuscu')],['medals',t('tabTrophies')]].map(tt=>'<div class="seg-btn'+(statsTab===tt[0]?' on':'')+'" onclick="statsTab=\''+tt[0]+'\';renderStats()">'+tt[1]+'</div>').join('')+
+    [['bilan',t('tabBilan')],['sante',t('tabSante')],['run',t('tabRun')],['muscu',t('tabMuscu')],['medals',t('tabTrophies')]].map(tt=>'<div class="seg-btn'+(statsTab===tt[0]?' on':'')+'" onclick="statsTab=\''+tt[0]+'\';renderStats()">'+tt[1]+'</div>').join('')+
   '</div>';
 }
 /* ---------- SKELETON SCREENS — Statistiques ----------
@@ -10057,6 +10032,7 @@ function renderStats(){
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
     let h=seg;
     if(tabAtRequest==='bilan') h+=statsBilan();
+    if(tabAtRequest==='sante') h+='<div id="santeBody">'+santeHTML()+'</div>';
     if(tabAtRequest==='run') h+=statsRun();
     if(tabAtRequest==='muscu') h+=statsMuscu();
     if(tabAtRequest==='medals') h+=statsMedals();
@@ -10067,7 +10043,7 @@ function renderStats(){
     // 3) Délai minimum anti-flash : si le calcul a été quasi instantané (peu
     //    d'historique), on évite un aller-retour squelette→contenu trop bref
     //    qui donnerait un effet de clignotement plutôt qu'un vrai chargement.
-    const elapsed=performance.now()-startT, minMs=220;
+    const elapsed=performance.now()-startT, minMs=0;   // V4.7 : plus de délai artificiel
     elapsed<minMs?setTimeout(swap,minMs-elapsed):swap();
   }));
 }
@@ -10657,7 +10633,7 @@ function bdImgErr(img){
 let outilsTab='home';
 function TOOLS_DEF(){ return {
   aio:{name:t('toolAioName'),sub:t('toolAioSub'),icon:ICN('lab'),fn:'renderAIO'},
-  sante:{name:t('toolSanteName'),sub:t('toolSanteSub'),icon:ICN('health'),fn:'renderSanteTool'},
+  sante:{name:t('toolSanteName'),sub:t('toolSanteSub'),icon:ICN('health'),fn:'renderSanteTool',hidden:true},   // V4.7 : vit dans Stats › Santé
   chrono:{name:t('toolChronoName'),sub:t('toolChronoSub'),icon:ICN('stopwatch'),fn:'renderChrono'},
   convert:{name:t('toolConvertName'),sub:t('toolConvertSub'),icon:ICN('convert'),fn:'renderConvertTool'},
   notes:{name:t('toolNotesName'),sub:t('toolNotesSub'),icon:ICN('note'),fn:'renderNotesTool'},
@@ -10681,7 +10657,7 @@ function TOOLS_DEF(){ return {
 }; }
 // TOOLS est recalculé à chaque affichage pour suivre la langue active (voir renderOutils/outilsHome)
 let TOOLS=TOOLS_DEF();
-const MAIN_TOOLS=['aio','sante','chrono'];
+const MAIN_TOOLS=['aio','chrono'];
 /* 18/09 : seuls 5 outils sur 18 etaient navigables sans passer par la
    recherche (3 MAIN_TOOLS + 2 OTHER_TOOLS) -- les 11 autres (dont les 7
    outils muscu cables plus tot dans la journee) n'existaient que si on savait
@@ -10692,7 +10668,7 @@ const MAIN_TOOLS=['aio','sante','chrono'];
    complete desormais : tout outil non cache reste a une recherche pres, mais
    plus BESOIN de chercher pour le decouvrir. */
 const OTHER_TOOLS=['convert','notes','vdot','imc','hydra','bmr','rm','tonnage','calories','prog','pomodoro','load','repos','agenda'];
-function toolFav(){ return PREFS.favTools||['aio','sante','chrono','convert']; }
+function toolFav(){ return (PREFS.favTools||['aio','chrono','convert','notes']).filter(k=>k!=='sante'); }
 function toggleFav(k){
   let f=toolFav(); f=f.includes(k)?f.filter(x=>x!==k):[...f,k]; PREFS.favTools=f; saveAll(); renderOutils();
   // La sauvegarde était bien immediate, mais si ce toggle vient de l'etoile dans
@@ -10759,7 +10735,7 @@ function outilsList(){
   // (la prière comprise, sinon seulement joignable depuis l'Accueil), le reste en tuiles
   // de trois par ligne, plus lisibles que les quatre du mode normal.
   if(P.easyMode){
-    const top=['aio','priere','sante','convert','notes'];
+    const top=['aio','priere','convert','notes'];
     h+='<div class="lab" style="margin:20px 0 12px">'+t('mainTools')+'</div>'+top.map(rowHTML).join('');
     h+='<div class="lab" style="margin:22px 0 12px">'+t('otherTools')+'</div><div class="ez-toolgrid">'+OTHER_TOOLS.filter(k=>!top.includes(k)).map(tileHTML).join('')+'</div>';
     return h;
@@ -10801,7 +10777,8 @@ function openQuickTimer(){ outilsFrom='home'; outilsTab='_timer'; renderOutilsTi
 function renderOutilsTimer(){ swapIn('s-outils','<div class="row" style="margin-bottom:14px"><button class="x" onclick="outilsTab=\'home\';renderOutils()">‹</button><div class="man" style="font-weight:800;font-size:17px;flex:1;text-align:center">'+t('quickTimer')+'</div><div style="width:34px"></div></div><div id="outBody"></div>'); renderTimer(); }
 
 /* ============ TABLEAU DE BORD SANTÉ ============ */
-function renderSanteTool(){
+function renderSanteTool(){ const sb=document.getElementById('santeBody'); if(sb){ sb.innerHTML=santeHTML(); return; } const o=$('#outBody'); if(o) o.innerHTML=santeHTML(); }
+function santeHTML(){
   const w=P.weight||62, ht=P.height||175;
   const imc=w/Math.pow(ht/100,2);
   let imcCat,imcCol; if(imc<18.5){imcCat=t('imcUnderweight');imcCol='--warn';}else if(imc<25){imcCat=t('imcNormal');imcCol='--ok';}else if(imc<30){imcCat=t('imcOverweight');imcCol='--warn';}else{imcCat=t('imcObese');imcCol='--bad';}
@@ -10851,7 +10828,7 @@ function renderSanteTool(){
   const prot=Math.round(w*1.8), carbs=Math.round(w*5), lip=Math.round(w*1);
   h+='<div class="card"><div class="card-t">'+t('nutritionTitle')+'</div>';
   h+='<div class="sgrid"><div class="sbox"><div class="v" style="font-size:18px;color:var(--ok)">'+prot+'g</div><div class="l">'+t('proteinLab')+'</div></div><div class="sbox"><div class="v" style="font-size:18px;color:var(--or)">'+carbs+'g</div><div class="l">'+t('carbsLab')+'</div></div><div class="sbox"><div class="v" style="font-size:18px;color:var(--warn)">'+lip+'g</div><div class="l">'+t('fatLab')+'</div></div><div class="sbox"><div class="v" style="font-size:18px">'+Math.round(prot*4+carbs*4+lip*9)+'</div><div class="l">'+t('kcalTarget')+'</div></div></div></div>';
-  $('#outBody').innerHTML=h;
+  return h;
 }
 function santeBar(label,val,max,col){ const pct=Math.min(100,val/max*100); const icN=['warning','close','target','check','star'][Math.max(0,Math.min(4,Math.round(val)-1))];
   const ic=val?ICN(icN,14):'';
