@@ -186,7 +186,7 @@ function wxHomeCardHTML(){
 function wxSessionHTML(s){
   if(!s||!s.km||s.type==='Repos'||P.wxOff) return '';
   const loc=wxLoc();
-  if(!loc) return '<div class="card wx-rs wx-rs-ask"><div class="row" style="gap:8px">'+ICN('sun',16)+'<span>'+t('wxSessAsk')+'</span></div><div class="wx-ask-b"><button type="button" class="ad-btn" onclick="wxLocate()">'+t('wxLocateBtn')+'</button><button type="button" class="ad-btn" onclick="wxPickPlace()">'+t('wxPickBtn')+'</button></div></div>';
+  if(!loc) return '';   // pas de ville : rien (la météo se règle depuis l'Accueil)
   const ws=wxForSession(s); if(!ws) return '';
   const pct=Math.round(ws.hc.corr*1000)/10, adv=wxAdvice(s.date,ws.h);
   let h='<div class="card wx-rs" '+wxSceneAttr(ws)+'><canvas class="wx-scene" aria-hidden="true"></canvas><div class="wx-in">'+
