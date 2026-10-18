@@ -240,27 +240,64 @@ function openFullIntegrated(){
     n++; const w = weeks[m];
     h += '<div class="lab" style="margin:12px 0 6px">'+tp('weekN',n)+'</div>'+cbMergedRows(w.run.filter(function(s){ return s.km>0; }), w.str, tk);
   });
-  $('#fullPlanBody').innerHTML = h;
+  $('#fullPlanBody').innerHTML = h; cbFullTitle(t('comboSeeAll'));
   openOv('ovFullPlan');
 }
 // « Mes plans » : en mode intégré, les deux plans liés ouvrent leur sous-page
+// « Mes plans » : chaque plan avec ce qu'il est et trois actions claires (Voir · Modifier · Supprimer).
+function cbPlanCard(o){
+  const acts = o.acts.map(function(a){ return '<button type="button" class="ik-pact'+(a[2]?' '+a[2]:'')+'" onclick="'+a[1]+'">'+a[0]+'</button>'; }).join('');
+  return '<div class="ik-plan-card"><div class="ik-plan-top"><div class="ik-sq'+(o.mu?' mu':'')+'">'+ICN(o.icn,18)+'</div>'+
+    '<div class="ik-plan-b"><b>'+escHtml(o.name)+'</b><span>'+escHtml(o.sub)+'</span></div>'+
+    (o.chip?'<span class="ik-tag ok plain-ok">'+o.chip+'</span>':'')+'</div>'+
+    '<div class="ik-plan-acts">'+acts+'</div></div>';
+}
 function cbPlansHTML(integrated){
   let h = '<div class="hv7-sec-lab" style="margin:16px 0 8px">'+t('comboMyPlans')+'</div>';
-  if(PLAN) h += cbPlanRow(planRaceTitle(), t('comboGeneratedBy'), t('comboFollowed'), "sportTab='run';runSub='ikorun';renderSport()");
-  if(STRENGTH) h += cbPlanRow(t('strengthWord')+' · '+tp('comboPerWeek',STRENGTH.perWeek), t('comboGeneratedBy')+(STRENGTH.linkedRun?' · '+t('comboLinked'):''), t('comboFollowed'), "sportTab='muscu';renderSport()", 'delStrength()');
+  const V=t('planActView'), M=t('planActEdit'), D=t('planActDelete');
+  if(PLAN){
+    const wk = PLAN.weeks||0, last = PLAN.sessions.length ? PLAN.sessions[PLAN.sessions.length-1].date : null;
+    h += cbPlanCard({ icn:'run', name:planRaceTitle(), chip:t('planActive'),
+      sub:t('comboRun')+' · '+tp('planWeeksN',wk)+' · '+tp('psDaysPerWeek',(P.days||[]).length)+(last?' · '+t('planUntil')+' '+fmtDate(last):''),
+      acts:[[V,"sportTab='run';runSub='ikorun';renderSport()"],[M,'openPlanSetup()'],[D,'delRunPlan()','bad']] });
+  }
+  if(STRENGTH){
+    h += cbPlanCard({ icn:'dumbbell', mu:true, name:t('strengthWord')+' · '+tp('comboPerWeek',STRENGTH.perWeek), chip:t('planActive'),
+      sub:t('comboMuscu')+' · '+tp('planWeeksN',STRENGTH.weeks)+' · '+(STRENGTH.linkedRun?t('comboLinked'):t('planIndependent')),
+      acts:[[V,'openStrengthPlan()'],[M,'editStrength()'],[D,'delStrength()','bad']] });
+  }
   CUSTOM.forEach(function(p){
     const isM = p.kind==='muscu';
-    h += cbPlanRow(p.name, t('comboCreatedByMe')+' · '+(isM?t('comboMuscu'):t('comboRun')).toLowerCase(), t('comboFollow'),
-      isM ? "sportTab='muscu';renderSport()" : "sportTab='run';runSub='perso';openPerso('"+p.id+"')");
+    h += cbPlanCard({ icn:isM?'dumbbell':'edit', mu:isM, name:p.name,
+      sub:t('comboCreatedByMe')+' · '+(isM ? tp('exercisesCount',(p.ex||[]).length) : tp('planSessionsN',(p.sessions||[]).length)),
+      acts: isM ? [[V,"openProg('"+p.id+"')"],[D,"delProg('"+p.id+"')",'bad']]
+                : [[V,"sportTab='run';runSub='perso';openPerso('"+p.id+"')"],[D,"delPerso('"+p.id+"')",'bad']] });
   });
   if(!integrated) h += '<button class="btn" style="width:100%;margin-top:4px" onclick="openWizard()">+ '+t('comboCreate')+'</button>';
   return h;
 }
-function cbPlanRow(name, sub, action, onclick, onDelete){
-  const followed = action===t('comboFollowed');
-  return '<div class="ik-plan-row"><div class="ik-plan-b" onclick="'+onclick+'"><b>'+escHtml(name)+'</b><span>'+escHtml(sub)+'</span></div>'+
-    '<button type="button" class="ik-tag'+(followed?' ok':'')+'" onclick="'+onclick+'">'+action+'</button>'+
-    (onDelete?'<button class="tb-gear" style="width:30px;height:30px" aria-label="'+t('strengthDeleteLab')+'" onclick="'+onDelete+'">'+ICN('trash',15)+'</button>':'')+'</div>';
+function cbFullTitle(s){ const h2=$('#ovFullPlan h2'); if(h2) h2.textContent=s; }
+function delRunPlan(){
+  customConfirm(t('runPlanDelete'), function(){
+    PLAN=null; DB.save('run_plan',null);
+    if(STRENGTH){ STRENGTH.linkedRun=false; DB.save('strength_plan',STRENGTH); }
+    if(P.sportMode==='integrated'){ P.sportMode='split'; DB.save('profile',P); }
+    sportTab='combo'; renderSport(); toast(t('planDeletedToast'));
+  }, {danger:true});
+}
+// le plan de muscu, semaine par semaine (séances faites, à venir, à confirmer)
+function openStrengthPlan(){
+  if(!STRENGTH) return;
+  const tk = todayKey(), weeks = {};
+  STRENGTH.sessions.forEach(function(s){ const m=cbMonday(s.date); (weeks[m]=weeks[m]||[]).push(s); });
+  let h = '', n = 0;
+  Object.keys(weeks).sort().forEach(function(m){ n++; h += '<div class="lab" style="margin:12px 0 6px">'+tp('weekN',n)+'</div>'+weeks[m].map(function(s){ return cbStrRowHTML(s,tk); }).join(''); });
+  $('#fullPlanBody').innerHTML = h; cbFullTitle(t('strengthPlanTitle')); openOv('ovFullPlan');
+}
+// « Modifier » le plan de muscu : l'assistant rouvert sur la muscu, avec ses réglages actuels
+function editStrength(){
+  const o = (STRENGTH && STRENGTH.opts) || {};
+  openWizard({ what:'muscu', days:(o.days||STRENGTH.days||[0,2,4]).slice(), perWeek:o.perWeek||STRENGTH.perWeek||2, equip:o.equip||STRENGTH.equip||'both' });
 }
 function delStrength(){
   customConfirm(t('strengthDelete'), function(){ STRENGTH=null; DB.save('strength_plan',null); if(P.sportMode==='integrated'){ P.sportMode='split'; DB.save('profile',P); } renderSport(); }, {danger:true});
@@ -269,9 +306,11 @@ function delStrength(){
 /* ---------- générateur : construire, puis garder la muscu accordée au plan de course ---------- */
 function strengthOpts(w){
   const lvl = (typeof LEVELS!=='undefined' && LEVELS.indexOf(P.level)>=0) ? P.level : 'Intermédiaire';
-  const linked = w.what==='both' && !!PLAN;
+  // liée à la course : « les deux ensemble », ou muscu seule refaite dans un programme intégré
+  const linked = !!PLAN && (w.what==='both' || (w.what==='muscu' && sportIntegrated()));
+  // graine nouvelle à chaque génération : un nouveau plan = d'autres exercices (stable ensuite, pour le recalage)
   return { perWeek:w.perWeek, days:w.days.slice(), equip:w.equip, level:lvl, linked:linked,
-    seed:((P.joinedAt||1)%100000)+(PLAN?PLAN.sessions.length:0) };
+    seed:((Date.now() ^ Math.floor(Math.random()*1e9))>>>0) % 1000000 };
 }
 function strengthRun(o, startDate){
   return strengthBuild({
@@ -326,22 +365,23 @@ function wizDefaultDays(){
   const order = [0,1,2,3,4,5,6].sort(function(a,b){ return hardDow[a]-hardDow[b] || a-b; });
   return order.slice(0,3).sort();
 }
-function openWizard(){
+function openWizard(preset){
   // jours de course : ceux du plan (P.days, 0 = dimanche comme Date.getDay) ; jours de muscu : 0 = lundi
-  wiz = { what:'both', how:'gen', days:wizDefaultDays(), runDays:(P.days&&P.days.length?P.days:[1,3,5,6]).slice(), perWeek:2, equip:'both' };
+  // runNew : avec un plan de course existant, « Nouveau » (par défaut) ou « Garder l'actuel »
+  wizAfterRun = false;
+  wiz = Object.assign({ what:'both', how:'gen', days:wizDefaultDays(), runDays:(P.days&&P.days.length?P.days:[1,3,5,6]).slice(), perWeek:2, equip:'both', runNew:true }, preset||{});
   const h2 = $('#ovWizard h2'); if(h2) h2.textContent = t('wizTitle');
   renderWizard(); openOv('ovWizard');
 }
 function wizSet(k,v){ wiz[k]=v; if(k==='what' && (v==='both'||v==='split')) wiz.how='gen'; renderWizard(); }
 function wizDay(i){ const a=wiz.days, p=a.indexOf(i); if(p>=0) a.splice(p,1); else a.push(i); a.sort(); renderWizard(); }
 function wizRunDay(jsDay){ const a=wiz.runDays, p=a.indexOf(jsDay); if(p>=0) a.splice(p,1); else a.push(jsDay); a.sort(); renderWizard(); }
-function wizSameDays(a,b){ return a.slice().sort().join()===b.slice().sort().join(); }
 function wizOpt(sel,key,title,sub,icn,badge){
   return '<div class="ik-opt'+(sel?' sel':'')+'" onclick="'+key+'"><div class="ik-opt-ic">'+ICN(icn,20)+'</div><div style="flex:1"><b>'+title+'</b><span class="s">'+sub+'</span></div>'+(badge?'<em class="ik-tag">'+badge+'</em>':'')+'</div>';
 }
 function renderWizard(){
   const w = wiz, L = t('dowShort').split(','), two = (w.what==='both'||w.what==='split');
-  let h = '<div class="hv7-sec-lab" style="margin:4px 0 8px">'+t('wizWhat')+'</div>'+
+  let h = wizReplaceNote(w) + '<div class="hv7-sec-lab" style="margin:4px 0 8px">'+t('wizWhat')+'</div>'+
     wizOpt(w.what==='both',"wizSet('what','both')",t('wizBoth'),t('wizBothSub'),'plus',t('wizAdvised'))+
     wizOpt(w.what==='split',"wizSet('what','split')",t('wizSplit'),t('wizSplitSub'),'shuffle')+
     wizOpt(w.what==='run',"wizSet('what','run')",t('wizRun'),t('wizRunSub'),'run')+
@@ -352,8 +392,13 @@ function renderWizard(){
       wizOpt(w.how==='gen',"wizSet('how','gen')",t('wizGen'),t('wizGenSub'),'bolt')+
       wizOpt(w.how==='self',"wizSet('how','self')",t('wizSelf'),t('wizSelfSub'),'edit');
   }
+  if(two && PLAN){
+    h += '<div class="hv7-sec-lab" style="margin:14px 0 8px">'+t('wizRunPlanLab')+'</div><div class="ik-seg">'+
+      '<div class="'+(w.runNew?'on':'')+'" onclick="wizSet(\'runNew\',true)">'+t('wizRunNew')+'</div>'+
+      '<div class="'+(!w.runNew?'on':'')+'" onclick="wizSet(\'runNew\',false)">'+t('wizRunKeep')+'</div></div>';
+  }
   // jours de course (repris dans la configuration du plan) — lundi en premier, comme les jours de muscu
-  if(w.how==='gen' && w.what!=='muscu'){
+  if(w.how==='gen' && w.what!=='muscu' && !(two && PLAN && !w.runNew)){
     h += '<div class="hv7-sec-lab" style="margin:14px 0 8px">'+t('wizDaysRun')+'</div><div class="ik-days run">'+
       L.map(function(l,i){ const jd=(i+1)%7; return '<div class="'+(w.runDays.indexOf(jd)>=0?'on':'')+'" onclick="wizRunDay('+jd+')">'+escHtml(l)+'</div>'; }).join('')+'</div>';
   }
@@ -368,39 +413,46 @@ function renderWizard(){
   }
   if(w.what==='both') h += '<div class="ik-note"><b>'+t('wizHowTitle')+'</b><span>'+t('wizHowText')+'</span></div>';
   if(w.what==='split') h += '<div class="ik-note"><span>'+t('wizSplitNote')+'</span></div>';
-  if(two && !PLAN) h += '<div class="ik-note"><span>'+t('wizNeedRun')+'</span></div>';
-  h += '<button class="btn" style="width:100%;margin-top:14px" onclick="wizGenerate()">'+t(two && !PLAN ? 'wizNeedRunBtn' : 'wizGenerate')+'</button>'+
+  const runFirst = (w.what==='run' && w.how==='gen') || (two && (!PLAN || w.runNew));
+  if(runFirst) h += '<div class="ik-note"><span>'+t(w.what==='run'?'wizRunSetupNote':'wizNeedRun')+'</span></div>';
+  h += '<button class="btn" style="width:100%;margin-top:14px" onclick="wizGenerate()">'+t(runFirst ? 'wizNeedRunBtn' : (wizHasPlans(w)?'wizReplaceBtn':'wizGenerate'))+'</button>'+
     '<div style="text-align:center;margin-top:12px;font-size:13px;color:var(--e2);font-weight:600" onclick="closeOv(\'ovWizard\');sportTab=\'run\';runSub=\'perso\';renderSport()">'+t('wizFollowExisting')+'</div>';
   $('#wizBody').innerHTML = h;
 }
 function wizCreateRun(){ wizAfterRun = true; closeOv('ovWizard'); sportTab='run'; runSub='ikorun'; renderSport(); openPlanSetup(); }
 // Appelée depuis generatePlan() quand l'utilisateur est venu de l'assistant (les deux, ensemble ou séparément).
-function wizResume(){ if(!wizAfterRun) return; wizAfterRun=false; if(wiz && PLAN) wizGenerate(); }
+function wizResume(){ if(!wizAfterRun) return; wizAfterRun=false; if(wiz && PLAN){ wiz.runNew=false; wizGenerate(); } }
+// ce que l'assistant va remplacer, dit avant de générer
+function wizHasPlans(w){ return (w.what!=='muscu' && !!PLAN && (w.what==='run' || w.runNew)) || (w.what!=='run' && !!STRENGTH); }
+function wizReplaceNote(w){
+  const r = [];
+  if(PLAN && (w.what==='run' || ((w.what==='both'||w.what==='split') && w.runNew))) r.push(planRaceTitle());
+  if(STRENGTH && w.what!=='run') r.push(t('strengthWord')+' · '+tp('comboPerWeek',STRENGTH.perWeek));
+  return r.length ? '<div class="ik-note warn" style="margin:0 0 12px"><span>'+tp('wizWillReplace', escHtml(r.join(' + ')))+'</span></div>' : '';
+}
 
 function wizGenerate(){
   const w = wiz; if(!w) return;
   const two = (w.what==='both'||w.what==='split');
   if(!two && w.how==='self'){
-    closeOv('ovWizard'); P.sportMode='split'; DB.save('profile',P);
+    closeOv('ovWizard'); if(P.sportMode!=='integrated'){ P.sportMode='split'; DB.save('profile',P); }
     if(w.what==='run'){ sportTab='run'; runSub='perso'; renderSport(); addPersoPlan(); }
     else { sportTab='muscu'; renderSport(); openCreate(); }
     return;
   }
   if(w.what!=='muscu' && !w.runDays.length){ toast(t('chooseAtLeastOneDay')); return; }
   if(w.what!=='run' && !w.days.length){ toast(t('chooseAtLeastOneDay')); return; }
-  if(w.what==='run'){ P.days=w.runDays.slice(); P.sportMode='split'; DB.save('profile',P); closeOv('ovWizard'); sportTab='run'; runSub='ikorun'; renderSport(); openPlanSetup(); return; }
-  if(two && !PLAN){ P.days=w.runDays.slice(); DB.save('profile',P); wizCreateRun(); return; }   // d'abord le plan de course (jours déjà choisis), puis l'assistant reprend
-  // jours de course changés alors qu'un plan existe : on recalcule le plan de course, puis la muscu
-  if(two && PLAN && !wizSameDays(w.runDays, P.days||[])){
-    customConfirm(t('wizRunDaysChanged'), function(){ P.days=w.runDays.slice(); DB.save('profile',P); wizAfterRun=true; closeOv('ovWizard'); generatePlan(); });
-    return;
-  }
+  // Running seul : nouveau plan de course (configuration pré-remplie) ; la muscu et le mode ne bougent pas
+  if(w.what==='run'){ P.days=w.runDays.slice(); if(!STRENGTH){ P.sportMode='split'; } DB.save('profile',P); closeOv('ovWizard'); sportTab=sportIntegrated()?'combo':'run'; runSub='ikorun'; renderSport(); openPlanSetup(); return; }
+  // les deux : d'abord un NOUVEAU plan de course (ou aucun encore), puis l'assistant reprend tout seul pour la muscu
+  if(two && (!PLAN || w.runNew)){ P.days=w.runDays.slice(); DB.save('profile',P); wizCreateRun(); return; }
   const o = strengthOpts(w);
   // séparé : muscu indépendante, commence aujourd'hui ; ensemble : calée sur le plan de course
   const r = strengthRun(o, todayKey());
   if(r.err){ toast(t('strengthErr_'+r.err)||r.err); return; }
   STRENGTH = r.plan; STRENGTH.opts = o; DB.save('strength_plan', STRENGTH);
-  P.sportMode = (w.what==='both') ? 'integrated' : 'split'; DB.save('profile', P);
+  if(w.what==='both') P.sportMode='integrated'; else if(w.what==='split' || !PLAN) P.sportMode='split';   // muscu seule : le mode reste
+  DB.save('profile', P);
   const skipped = (STRENGTH.warnings||[]).filter(function(x){ return x.indexOf('skipped:')===0; }).length;
   toast(tp('strengthGenerated', STRENGTH.sessions.length, STRENGTH.weeks)+(skipped?' '+tp('strengthSkipped', skipped):''));
   closeOv('ovWizard'); sportTab='combo'; burst(); renderSport();

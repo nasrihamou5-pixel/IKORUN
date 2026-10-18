@@ -2700,7 +2700,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.3.0';
+const APP_VERSION='4.4.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -4868,7 +4868,8 @@ function initApp(){
   }
 }
 function confirmRegenPlan(){
-  customConfirm(t('regenConfirm'),()=>{ PLAN=null; openPlanSetup(); },{danger:true});
+  // V4.4 : le plan actuel reste jusqu'à ce que le nouveau soit généré (fermer la configuration ne le perd plus)
+  customConfirm(t('regenConfirm'),()=>{ openPlanSetup(); });
 }
 
 /* ============ TOUR GUIDÉ — visite de présentation après inscription ============
@@ -8132,6 +8133,7 @@ function openFullPlan(){
   // programme intégré : course + muscu, semaine par semaine (ui/sport-combo.js)
   if(typeof sportIntegrated==='function' && sportIntegrated() && STRENGTH){ openFullIntegrated(); return; }
   $('#fullPlanBody').innerHTML=renderPlanRows(PLAN.sessions);
+  { const h2=$('#ovFullPlan h2'); if(h2) h2.textContent=planRaceTitle(); }
   openOv('ovFullPlan');
 }
 /* ---------- PLAN PERSONNEL (fonctionnel) ---------- */
