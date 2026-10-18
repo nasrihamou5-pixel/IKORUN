@@ -804,6 +804,105 @@
     });
   }
 
+
+  /* ======================= 7g. BLESSURE, MUSCU ET RÉÉDUCATION (V4.6.0) ======= */
+  function planDeTest(){            // plan de course jetable : la suite restaure PLAN, RECORDS, SESS et P à la fin
+    var vt=window.toast, vb=window.burst, vr=window.renderSport;
+    try{
+      window.toast=function(){}; window.burst=function(){}; window.renderSport=function(){};
+      if(!getUserVDOT()) RECORDS=[{dist:'5000 m',meters:5000,time:'21:00',date:todayKey()}];
+      var d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+10*7-1);
+      P.compDate=dateKey(d); P.days=[1,3,5,6]; P.objRace='10 km'; P.kmWeekMin=30; P.kmWeekMax=45; SESSLOG=[]; SESS=[];
+      generatePlan();
+    } finally { window.toast=vt; window.burst=vb; window.renderSport=vr; }
+  }
+  function testBlessureMuscu(){
+    var c='7g. Blessure et muscu';
+    if(!PLAN) planDeTest();
+    essaie(c,'bibliothèque : 6 types, noms et tutos en 3 langues, images valides',function(){
+      var all=allExercises(), k={}; all.forEach(function(e){ k[e.kind]=(k[e.kind]||0)+1; });
+      ['force','etirement','mobilite','cardio','plyo','rehab'].forEach(function(x){ if(!k[x]) throw new Error('type absent : '+x); });
+      EXD_ROWS.forEach(function(r){ if(!r[1]||!r[10]||!r[11]) throw new Error('nom manquant : '+r[0]); if(r[7]==='rehab' && !(r[12]&&r[12][1])) throw new Error('dose absente : '+r[0]); if(r[7]!=='rehab' && !r[8]) throw new Error('image absente : '+r[0]); });
+      return all.length+' exercices · '+JSON.stringify(k);
+    });
+    essaie(c,'un plan de muscu ne contient jamais étirement, cardio, pliométrie ni rééducation',function(){
+      var r=strengthRun({perWeek:3,days:[],equip:'both',level:'Intermédiaire',linked:false,seed:7},todayKey());
+      if(r.err) throw new Error(r.err);
+      r.plan.sessions.forEach(function(s){ s.ex.forEach(function(e){ var m=allExercises().find(function(x){ return x.name===e.name; }); if(m && m.kind!=='force') throw new Error(e.name+' = '+m.kind); }); });
+      return r.plan.sessions.length+' séances, 100 % force';
+    });
+    essaie(c,'blessure confirmée : 7 signalements, ou 3 sur plus de 14 jours — pas avant',function(){
+      var sv={P:JSON.stringify(P.adapt||null),I:P.injury,H:P.injuryH,L:ADAPT_LOG.slice(),S:STRENGTH,now:window.__ikSimNow,PL:JSON.stringify(PLAN)};
+      try{
+        var at=function(n){ var d=new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()+n); window.__ikSimNow=d.getTime(); };
+        P.adapt={}; P.injury=null; at(0);
+        var rep=function(day,z){ at(day); adaptAfterPainReport({zone:z,side:'R',level:2,gait:false}); };
+        [0,1,2,3,4,5].forEach(function(d){ rep(d,'knee'); });
+        if(injActive()) throw new Error('confirmée trop tôt (6 signalements en 6 jours)');
+        rep(6,'knee'); if(!injActive()||P.injury.phase!==1) throw new Error('7e signalement : blessure non confirmée');
+        P.adapt={}; P.injury=null; P.injuryHist=[];
+        rep(20,'achilles'); rep(28,'achilles'); if(injActive()) throw new Error('confirmée avec 2 signalements');
+        rep(35,'achilles'); if(!injActive()) throw new Error('3 signalements sur 15 jours : non confirmée');
+        return 'étape '+P.injury.phase+' · '+P.injury.zone;
+      } finally { P.adapt=JSON.parse(sv.P); P.injury=sv.I; P.injuryHist=sv.H; ADAPT_LOG=sv.L; STRENGTH=sv.S; PLAN=JSON.parse(sv.PL); window.__ikSimNow=sv.now; }
+    });
+    essaie(c,'même zone mais trou de plus de 10 jours : épisode séparé, pas de blessure',function(){
+      var sv={P:JSON.stringify(P.adapt||null),I:P.injury,L:ADAPT_LOG.slice(),S:STRENGTH,now:window.__ikSimNow,PL:JSON.stringify(PLAN)};
+      try{
+        var at=function(n){ var d=new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()+n); window.__ikSimNow=d.getTime(); };
+        P.adapt={}; P.injury=null;
+        [0,1,2,3,4,5,40].forEach(function(d){ at(d); adaptAfterPainReport({zone:'calf',side:'L',level:2,gait:false}); });
+        if(injActive()) throw new Error('blessure confirmée à tort');
+        return 'ancien épisode ignoré';
+      } finally { P.adapt=JSON.parse(sv.P); P.injury=sv.I; ADAPT_LOG=sv.L; STRENGTH=sv.S; PLAN=JSON.parse(sv.PL); window.__ikSimNow=sv.now; }
+    });
+    essaie(c,'blessure : la muscu reçoit de la rééducation, la zone sort, tout revient à la fin',function(){
+      var sv={P:JSON.stringify(P.adapt||null),I:P.injury,L:ADAPT_LOG.slice(),S:STRENGTH,now:window.__ikSimNow,PL:JSON.stringify(PLAN)};
+      try{
+        var at=function(n){ var d=new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()+n); window.__ikSimNow=d.getTime(); };
+        var r=strengthRun({perWeek:3,days:[],equip:'both',level:'Intermédiaire',linked:true,seed:11},todayKey()); if(r.err) throw new Error(r.err);
+        STRENGTH=r.plan; STRENGTH.linkedRun=true; var avant=JSON.stringify(STRENGTH.sessions.map(function(s){ return s.ex.map(function(e){ return e.name+e.sets; }); }));
+        P.adapt={}; P.injury=null;
+        [0,1,2,3,4,5,6].forEach(function(d){ at(d); adaptAfterPainReport({zone:'knee',side:'R',level:2,gait:false}); });
+        if(!injActive()) throw new Error('blessure non confirmée');
+        var lim=dateKey(new Date(window.__ikSimNow+21*864e5)), fut=STRENGTH.sessions.filter(function(s){ return s.date>=todayKey() && s.date<lim; });
+        if(!fut.some(function(s){ return s.ex.some(function(e){ return e.rehab; }); })) throw new Error('aucun exercice de rééducation dans la muscu');
+        fut.forEach(function(s){ s.ex.forEach(function(e){ if(!e.rehab && injExAffected(e,'knee_R')) throw new Error('exercice du genou encore présent : '+e.name); }); });
+        var v=validateStrengthPlan({sessions:fut,perWeek:STRENGTH.perWeek,raceDate:STRENGTH.raceDate},PLAN.sessions); if(!v.ok && v.errors.some(function(x){ return /^emptySession|^tooMany|^twoOnSameDay/.test(x); })) throw new Error('plan muscu invalide : '+v.errors.join(','));
+        [8,16,24].forEach(function(n){ for(var d=0;d<8;d++){ at(n+d); adState().dayRun=null; adaptDaily(); } });
+        for(var d=25;d<45;d++){ at(d); adState().dayRun=null; adaptDaily(); }
+        if(injActive()) throw new Error('blessure non terminée après 5 semaines sans douleur : étape '+P.injury.phase);
+        var rest=STRENGTH.sessions.filter(function(s){ return s.date>=todayKey() && (s.inj||s.exOrig); }).length;
+        if(rest && STRENGTH.sessions.some(function(s){ return s.date>=todayKey() && s.inj; })) throw new Error('séances encore marquées blessure');
+        return 'confirmée → étapes 1-2-3 → terminée, '+fut.length+' séances adaptées puis rendues';
+      } finally { P.adapt=JSON.parse(sv.P); P.injury=sv.I; ADAPT_LOG=sv.L; STRENGTH=sv.S; PLAN=JSON.parse(sv.PL); window.__ikSimNow=sv.now; }
+    });
+    essaie(c,'sens unique : une séance de course manquée ne touche jamais la muscu',function(){
+      var sv={L:ADAPT_LOG.slice(),S:STRENGTH,PL:JSON.stringify(PLAN),A:JSON.stringify(P.adapt||null)};
+      try{
+        var r=strengthRun({perWeek:3,days:[],equip:'both',level:'Intermédiaire',linked:true,seed:5},todayKey()); if(r.err) throw new Error(r.err);
+        STRENGTH=r.plan; var avant=JSON.stringify(STRENGTH.sessions);
+        var dure=PLAN.sessions.find(function(s){ return planIsHard(s)&&!s.done&&s.date>=todayKey(); });
+        if(dure) adaptAfterMissed([dure.id],'Fatigue');
+        if(JSON.stringify(STRENGTH.sessions)!==avant) throw new Error('la muscu a bougé');
+        return dure?'séance dure manquée : muscu intacte':'aucune séance dure à tester';
+      } finally { ADAPT_LOG=sv.L; STRENGTH=sv.S; PLAN=JSON.parse(sv.PL); P.adapt=JSON.parse(sv.A); }
+    });
+    essaie(c,'muscu sautée : fatigue = une série de moins, maladie = pause, tout est annulable',function(){
+      var sv={L:ADAPT_LOG.slice(),S:STRENGTH,PL:JSON.stringify(PLAN),A:JSON.stringify(P.adapt||null)};
+      try{
+        var r=strengthRun({perWeek:3,days:[],equip:'both',level:'Intermédiaire',linked:false,seed:9},todayKey()); if(r.err) throw new Error(r.err);
+        STRENGTH=r.plan; var sess=STRENGTH.sessions.filter(function(s){ return s.date>=todayKey(); });
+        var tot=function(s){ return s.ex.reduce(function(a,e){ return a+(+e.sets||0); },0); };
+        var t1=tot(sess[1]); var out=strAfterMissed(sess[0].id,'Fatigue'); var f=STRENGTH.sessions.find(function(s){ return s.id===sess[1].id; });
+        if(!out.length || tot(f)>=t1) throw new Error('fatigue : séance suivante non allégée');
+        var u=adaptUndo(out[0].id); if(!u.ok) throw new Error('annulation refusée : '+u.why); f=STRENGTH.sessions.find(function(s){ return s.id===sess[1].id; });
+        if(tot(f)!==t1) throw new Error('annulation : séries non rendues');
+        return 'fatigue allège puis s\'annule';
+      } finally { ADAPT_LOG=sv.L; STRENGTH=sv.S; PLAN=JSON.parse(sv.PL); P.adapt=JSON.parse(sv.A); }
+    });
+  }
+
   /* ======================= 7f. BILAN À LA MOLETTE, INTRO (V3.5.5) ========== */
   function testBilanMolette(){
     var c='7f. Bilan et intro';
@@ -1255,6 +1354,7 @@
     testTheme();
     testPetitsEcrans();
     testBilanMolette();
+    testBlessureMuscu();
     testAdaptation();
     testInvites();
     testSelecteursEtPlan();

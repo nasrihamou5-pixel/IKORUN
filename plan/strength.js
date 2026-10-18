@@ -85,6 +85,7 @@
   function filterCatalog(catalog, group, o){
     function pass(e, strictLevel, strictEquip){
       if(e.group!==group) return false;
+      if(e.kind && e.kind!=='force') return false;       // étirements, mobilité, cardio, pliométrie, rééducation : jamais dans un plan de force
       if(strictLevel && (LEVEL_RANK[e.level]==null ? 1 : LEVEL_RANK[e.level]) > o.levelRank) return false;
       if(strictEquip && o.equip==='maison' && HOME_EQUIP.indexOf(e.equip)<0) return false;
       return true;

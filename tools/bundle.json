@@ -4,6 +4,7 @@
     "i18n/fr.js",
     "i18n/i18n.js",
     "theme/theme.js",
+    "exercises/exdb.js",
     "app.js",
     "analytics/track.js",
     "core/guest.js",
@@ -17,6 +18,8 @@
     "plan/adapt-ui.js",
     "plan/strength.js",
     "plan/strength-adapt.js",
+    "plan/injury.js",
+    "plan/injury-ui.js",
     "plan/simulate.js",
     "weather/weather.js",
     "ramadan/ramadan.js",
@@ -39,6 +42,9 @@
   ],
   "method/method.min.js": [
     "method/method.js"
+  ],
+  "exercises/exdb.min.js": [
+    "exercises/exdb-steps.js"
   ],
   "i18n/en.min.js": [
     "i18n/en.js"
