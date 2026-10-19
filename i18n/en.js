@@ -237,6 +237,7 @@ window.IK_I18N_EXTRA=Object.assign(window.IK_I18N_EXTRA||{},{
     testDown:'Test saved: VDOT {0} → {1}, your upcoming paces are eased. No worry, it happens after a heavy block.',
     testAskTime:'Your time over {0}?',
     testSkip:'Later',
+    pf2SemiShort:'Half',pf2OtherShort:'Other',pf2OtherS:'You pick the exact distance next',
     pf2SitT:'Where are you right now?',pf2SitS:'The plan starts from where you really are, not from an ideal.',
     pf2SitCont:'I run regularly',pf2SitContS:'I’m already training and preparing what’s next',pf2SitRep:'I’m coming back after a break',pf2SitRepS:'Injury, holidays, time off: we restart gently',pf2SitOth:'I’m new, or not sure',pf2SitOthS:'IKORUN works from your times and history',
     pf2GapT:'Your last real run was…',pf2LvlT:'Your training level',pf2LvlS:'It sets how hard your key sessions are.',

@@ -5767,3 +5767,9 @@ html[data-mode="light"] .ikob-tag{color:var(--e)}
 .ikob-jours button[aria-checked="true"]{background:var(--e);border-color:var(--e);color:#fff;transform:scale(1.04);box-shadow:0 8px 18px -10px rgba(var(--e-rgb),.95)}
 .ikob-jours button.long{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--e2)}
 body:has(.ikflow) #toast:not(.top){bottom:150px}
+/* V4.11.2 */
+.ikflow{padding-top:max(8px,env(safe-area-inset-top,0px))}
+.ikob-bas.cache{visibility:hidden}
+.ikob-et-auto::after{content:'';display:block;height:3px;border-radius:3px;margin:34px 6px 0;background:linear-gradient(90deg,var(--e),var(--e2));transform-origin:left;animation:ikobEtBar 2.1s linear both}
+html[dir=rtl] .ikob-et-auto::after{transform-origin:right}
+@keyframes ikobEtBar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
