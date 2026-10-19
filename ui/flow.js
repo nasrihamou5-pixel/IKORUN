@@ -126,6 +126,7 @@ function ikFlow(cfg){
     el.querySelector('#ikfBarre').style.width=Math.round((Math.max(0,i)+1)/V.length*100)+'%';
     const ps=el.querySelector('#ikfPas'); if(ps) ps.textContent=(Math.max(0,i)+1)+'/'+V.length;
     const go=el.querySelector('#ikfGo'); go.disabled=cur!=='__et'&&!e.ok();
+    el.querySelector('.ikob-bas').classList.toggle('cache',cur==='__et');
     if(e.bloque&&e.bloque()) go.disabled=true;
     const lastAuto=!e.final && !V[i+1] && cfg.finalLabel;
     go.textContent=e.final?cfg.finalLabel():(lastAuto?cfg.finalLabel():(depuisRecap&&finSection()?t('ob2Done'):t('continueLab')));
@@ -146,6 +147,10 @@ function ikFlow(cfg){
     requestAnimationFrame(()=>c.querySelectorAll('.ikob-roue').forEach(r=>{ if(r._monter&&!r.scrollTop) r._monter(); }));
     if(e.auto) c.addEventListener('click',ev=>{ if(!ev.target.closest('.ikob-opt')) return; clearTimeout(autoT); autoT=setTimeout(()=>{ if(cur===id&&e.ok()) suivant(true); },320); });
     try{ if(cfg.track) ikTrack(cfg.track,{id}); }catch(_){}
+    // V4.11.2 : l'écran d'étapes entre deux parties est une simple animation, il passe tout seul
+    // (un toucher n'importe où l'accélère) ; pas de bouton « Continuer » à presser.
+    if(id==='__et'){ c.classList.add('ikob-et-auto'); c.addEventListener('click',()=>{ clearTimeout(autoT); if(cur==='__et') suivant(true); });
+      autoT=setTimeout(()=>{ if(cur==='__et'&&el) suivant(true); },2100); }
     F.maj();
   };
   F.corriger=id=>{ depuisRecap=true; F.aller(id,1); };

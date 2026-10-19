@@ -2217,7 +2217,9 @@ function recordGuard(meters,timeS,dateStr){
   const implied=vdotFromRace(meters,timeS);
   // Physiquement impossible (au-delà des meilleurs mondiaux) : refus net.
   if(implied>VDOT_MAX+ANTICHEAT_VDOT_MARGIN) return {ok:false,msg:tp('guardRecordImpossible',Math.round(implied))};
-  const currentBest=clampVdot(P.vdot)||(RECORDS&&RECORDS.length?computeVDOTfromRecords():0);
+  // V4.11.2 : une VDOT seulement estimée d'après le niveau (aucun chrono encore) n'est pas une mesure :
+  // elle ne sert pas de référence, sinon un vrai premier chrono était refusé (« VDOT de 65 trop éloigné »).
+  const currentBest=P.vdotEstimated?(RECORDS&&RECORDS.length?computeVDOTfromRecords():0):(clampVdot(P.vdot)||(RECORDS&&RECORDS.length?computeVDOTfromRecords():0));
   // Grosse progression par rapport au niveau actuel : c'était un refus sec, qui
   // bloquait un débutant progressant vite (ou ayant sous-estimé son chrono à
   // l'inscription) sans lui dire quoi faire (audit 24/09). C'est désormais une
@@ -2707,7 +2709,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.11.1';
+const APP_VERSION='4.11.2';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -4907,14 +4909,14 @@ const TOUR_STEPS=[
   { key:'welcome' },
   { key:'home', page:'home', sel:()=>P.easyMode?'#s-home .ik-greet':'#s-home .hv7-greet' },
   { key:'loop', page:'home' },
-  { key:'sport', page:'sport', sel:['#tourPlanCta','#s-sport .sp-plan','#s-sport .seg-ctrl'] },
+  { key:'sport', page:'sport', sel:['#tourPlanCta .btn','#s-sport .sp-plan .btn','#s-sport .sp-plan','#s-sport .seg-ctrl'] },
   { key:'adapt', page:'sport' },
   { key:'stats', page:'stats', sel:()=>P.easyMode?'#s-stats .stat-quatro':'#s-stats .seg-ctrl' },
   // L'onglet Outils est masqué en mode simplifié : on n'y emmène donc personne.
   { key:'outils', page:'outils', sel:'#s-outils .searchbox', skipIf:()=>!!P.easyMode },
   { key:'profil', page:'profil', sel:'#s-profil .pf-hero' },
   { key:'club', page:'profil', sel:'#s-profil .pf-club-row' },
-  { key:'final', page:'sport', sel:['#tourPlanCta','#s-sport .sp-plan'], final:true }
+  { key:'final', page:'sport', sel:['#tourPlanCta .btn','#s-sport .sp-plan .btn','#s-sport .sp-plan'], final:true }
 ];
 let _tourOn=false, _tourIdx=0, _tourBusy=false;
 
@@ -5059,6 +5061,14 @@ function resetTourVeil(){
   setTourBand($('#tbBottom'),0,0,0,0); setTourBand($('#tbLeft'),0,0,0,0); setTourBand($('#tbRight'),0,0,0,0);
   const ring=$('#tourRing'); if(ring) ring.style.display='none';
 }
+// hauteur de l'encoche / barre d'état (iPhone en plein écran) : la carte du tuto ne passe jamais dessous (V4.11.2)
+let _ikSafeTop=null;
+function ikSafeTop(){
+  if(_ikSafeTop!=null) return _ikSafeTop;
+  try{ const d=document.createElement('div'); d.style.cssText='position:fixed;top:0;height:0;padding-top:env(safe-area-inset-top,0px);visibility:hidden';
+    document.body.appendChild(d); _ikSafeTop=d.getBoundingClientRect().height||0; d.remove(); }catch(e){ _ikSafeTop=0; }
+  return _ikSafeTop;
+}
 function positionTourOn(el){
   const card=$('#tourCard');
   const z=uiZoomFactor();
@@ -5093,7 +5103,7 @@ function positionTourOn(el){
   }
   if(card){
     const cardH=card.offsetHeight||190;
-    const spaceBelow=Hcard-r.bottom, spaceAbove=r.top;
+    const spaceBelow=Hcard-r.bottom, spaceAbove=r.top-ikSafeTop();
     let top;
     if(spaceBelow>=cardH+34) top=r.bottom+pad+18;
     else if(spaceAbove>=cardH+34) top=r.top-pad-18-cardH;
@@ -5104,7 +5114,7 @@ function positionTourOn(el){
       // elle sur une bonne moitié de sa hauteur. On colle plutôt la carte contre
       // le bord du côté qui a le plus de place, ce qui réduit le recouvrement au
       // strict minimum inévitable au lieu de l'ignorer complètement.
-      top = spaceBelow>=spaceAbove ? Math.min(Hcard-cardH-14,r.bottom+pad+18) : Math.max(14,r.top-pad-18-cardH);
+      top = spaceBelow>=spaceAbove ? Math.min(Hcard-cardH-14,r.bottom+pad+18) : Math.max(14+ikSafeTop(),r.top-pad-18-cardH);
     }
     top=Math.max(14,Math.min(Hcard-cardH-14,top));
     card.style.top=top+'px';

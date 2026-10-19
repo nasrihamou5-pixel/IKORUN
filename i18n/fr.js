@@ -265,6 +265,7 @@ const I18N={
     testDown:'Test enregistré : VDOT {0} → {1}, tes allures à venir sont allégées. Pas grave, ça arrive après une charge.',
     testAskTime:'Ton chrono sur {0} ?',
     testSkip:'Plus tard',
+    pf2SemiShort:'Semi',pf2OtherShort:'Autre',pf2OtherS:'Tu choisis la distance exacte juste après',
     pf2SitT:'Où en es-tu en ce moment ?',pf2SitS:'Le plan part de ton vrai point de départ, pas d’un idéal.',
     pf2SitCont:'Je cours régulièrement',pf2SitContS:'Je m’entraîne déjà et je prépare la suite',pf2SitRep:'Je reprends après une pause',pf2SitRepS:'Blessure, vacances, coupure : on repart en douceur',pf2SitOth:'Je débute, ou c’est flou',pf2SitOthS:'IKORUN se cale sur tes chronos et ton historique',
     pf2GapT:'Ta dernière vraie sortie remonte à…',pf2LvlT:'Ton niveau d’entraînement',pf2LvlS:'Il règle la dureté de tes séances clés.',
