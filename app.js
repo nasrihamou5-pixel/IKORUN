@@ -2709,7 +2709,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.11.2';
+const APP_VERSION='4.11.3';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -10107,7 +10107,7 @@ function bodyInfoCard(){
     '<div class="card-t">'+t('completeProfileTitle')+'</div>'+
     '<div style="font-size:13px;color:var(--muted);margin-bottom:12px">'+t('completeProfileDesc')+'</div>'+
     // V3.14.0 : une seule question, dans Profil › Modifier (même P.height / P.weight)
-    '<button class="btn ghost" onclick="openProfileEdit(\'pe_h\')">'+t('completeProfileBtn')+'</button>'+
+    '<button class="btn ghost" onclick="bfFlowOpen()">'+t('completeProfileBtn')+'</button>'+
   '</div>';
 }
 function statsBilan(){

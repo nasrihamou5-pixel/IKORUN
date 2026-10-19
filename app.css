@@ -5773,3 +5773,7 @@ body:has(.ikflow) #toast:not(.top){bottom:150px}
 .ikob-et-auto::after{content:'';display:block;height:3px;border-radius:3px;margin:34px 6px 0;background:linear-gradient(90deg,var(--e),var(--e2));transform-origin:left;animation:ikobEtBar 2.1s linear both}
 html[dir=rtl] .ikob-et-auto::after{transform-origin:right}
 @keyframes ikobEtBar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+/* V4.11.3 : unités des roues en ligne (taille, poids) */
+.ikob-roue-u{position:relative;align-self:center;font-size:15px;font-weight:700;color:var(--muted);min-width:28px;pointer-events:none}
+.ikob-roue-sep{align-self:center;font-size:22px;font-weight:700;color:var(--muted);pointer-events:none}
+.ikob-roues .ikob-roue>span{font-family:'Unbounded',system-ui,sans-serif;font-weight:700}
