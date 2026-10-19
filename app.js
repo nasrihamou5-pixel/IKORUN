@@ -2700,7 +2700,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.10.0';
+const APP_VERSION='4.11.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -7116,8 +7116,8 @@ function openPlanSetup(){
   const pre=window._psRacePreset; window._psRacePreset=null;
   if(pre) psApplyRace(pre);
   else if(!fresh && P.objRaceId && P.objRaceName && P.compDate===setupTmp.compDate) Object.assign(setupTmp,{raceId:P.objRaceId,raceName:P.objRaceName,raceFor:setupTmp.objRace,raceDate:setupTmp.compDate});
-  openOv('ovProg'); $('#ovProgTitle').textContent=t('configurePlanTitle');
-  renderPlanSetup();
+  // V4.11.0 : une question par écran (ui/plan-flow.js) ; renderPlanSetup() reste pour l'ancien rendu en fiche
+  psFlowOpen();
 }
 function psPredicted(s){ const v=getUserVDOT(); return v?predictTime(v,raceMetersOf(s.objRace,s.raceKm)):0; }
 function planAutoVolume(s){
@@ -7178,7 +7178,7 @@ function psApplyRace(o){
     raceId:o.objRaceId,raceName:o.objRaceName,raceFor:o.objRace,raceDate:o.compDate,knownRace:true,editRace:false});
   setupTmp.timeS=psPredicted(setupTmp);
 }
-function racePickedForPlan(r,km){ if(!setupTmp) return; const o=raceToObjective(r,km); if(o.compDate<minRaceDate()){ toast(t('psDateSoon')); return; } raceFollowSet(r,true); psApplyRace(o); renderPlanSetup(); }
+function racePickedForPlan(r,km){ if(!setupTmp) return; const o=raceToObjective(r,km); if(o.compDate<minRaceDate()){ toast(t('psDateSoon')); return; } raceFollowSet(r,true); psApplyRace(o); if(!psFlowRacePicked()) renderPlanSetup(); }
 function psSummary(s){
   const {y,m,d}=psDateParts(s), dt=ikDate(new Date(y,m-1,d),'{day:numeric,month:short,year:numeric}',{day:'numeric',month:'short',year:'numeric'});
   return '<b>'+escHtml(psRaceName(s))+'</b> · '+dt+' · '+tp('psDaysPerWeek',s.days.length)+(s.objGoal==='Record personnel'&&s.timeS?' · '+fmtTime(s.timeS):'');
@@ -7260,9 +7260,9 @@ function psWheel(key,val){
 function toggleSetupDay(d){ const i=setupTmp.days.indexOf(d); if(i>=0)setupTmp.days.splice(i,1); else setupTmp.days.push(d); renderPlanSetup(); }
 function confirmPlanSetup(){
   const s=setupTmp;
-  if(!s.compDate){ toast(t('chooseCompDate')); return; }
-  if(s.compDate<minRaceDate()){ toast(t('psDateSoon')); return; }
-  if(!s.days.length){ toast(t('chooseAtLeastOneDay')); return; }
+  if(!s.compDate){ toast(t('chooseCompDate')); return false; }
+  if(s.compDate<minRaceDate()){ toast(t('psDateSoon')); return false; }
+  if(!s.days.length){ toast(t('chooseAtLeastOneDay')); return false; }
   const vol=planAutoVolume(s);
   const tS=s.objGoal==='Record personnel'?Math.round(s.timeS||0):0;
   const fromRace=psFromRace(s);
@@ -7272,6 +7272,7 @@ function confirmPlanSetup(){
     planSituation:s.situation,planLevel:s.level,planGap:s.gap});
   PREFS.likedTypes=[]; // le générateur compose seul ses séances
   saveAll(); closeOv('ovProg'); generatePlan();
+  return true;
 }
 // Compose la liste des types pour la semaine (variée, cohérente)
 // Nombre maximal de jours durs possibles sur les jours choisis, sans deux jours qui se suivent dans le calendrier

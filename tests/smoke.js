@@ -1108,7 +1108,7 @@
         if(!(v1.min>=8 && v1.max>v1.min)) throw new Error('bornes '+JSON.stringify(v1));
         if(trProfile('Plate')!=='Plat' && curLang()==='fr') throw new Error('« Plate » au lieu de « Plat »');
         return 'reprise '+v1.min+'→'+v1.max+' km/sem';
-      } finally { window.openOv=avO; Object.assign(P,JSON.parse(avP)); setupTmp=avS; try{ closeOv('ovProg'); }catch(e){} }
+      } finally { window.openOv=avO; Object.assign(P,JSON.parse(avP)); setupTmp=avS; try{ closeOv('ovProg'); }catch(e){} try{ if(_psFlow) _psFlow.fermer(); }catch(e){} }
     });
   }
 

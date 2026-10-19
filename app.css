@@ -5753,3 +5753,17 @@ html.easy-mode .ikob-titre{font-size:29px} html.easy-mode .ikob-sous{font-size:1
 body:has(#ob.ikob.on) #toast.top{top:calc(env(safe-area-inset-top,0px) + 70px)}
 /* chiffres et unités dans le bon sens en arabe (« 1 500 m », « 5 km 21:00 ») */
 .ikob-seg button,.ikob-val>b,.ikob-perf span,.ikob-perf b,.ikob-rl em,.ikob-age{unicode-bidi:plaintext}
+/* V4.11.0 : le même assistant pour créer un plan (course, muscu), dans sa propre couche */
+.ikflow{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg);color:var(--snow);opacity:1;transition:opacity .35s ease;animation:ikobFlowIn .35s ease both}
+.ikflow.sort{opacity:0;pointer-events:none}
+@keyframes ikobFlowIn{from{opacity:0}to{opacity:1}}
+.ikob-tag{display:inline-block;vertical-align:2px;margin-inline-start:6px;font-style:normal;font-size:11px;font-weight:800;letter-spacing:.02em;padding:4px 8px;border-radius:99px;color:var(--e2);background:rgba(var(--e-rgb),.14);border:1px solid rgba(var(--e-rgb),.3)}
+html[data-mode="light"] .ikob-tag{color:var(--e)}
+.ikob-bloc.c{text-align:center}
+.ikob-bloc .btn.ghost{width:100%}
+.ikob-jours{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.ikob-jours button{aspect-ratio:1;border-radius:50%;border:1.5px solid var(--hair2);background:var(--glass-bg);color:var(--snow);font:inherit;font-size:15px;font-weight:700;padding:0;cursor:pointer;
+  transition:all .22s cubic-bezier(.32,.72,0,1);-webkit-tap-highlight-color:transparent}
+.ikob-jours button[aria-checked="true"]{background:var(--e);border-color:var(--e);color:#fff;transform:scale(1.04);box-shadow:0 8px 18px -10px rgba(var(--e-rgb),.95)}
+.ikob-jours button.long{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--e2)}
+body:has(.ikflow) #toast:not(.top){bottom:150px}
