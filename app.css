@@ -4461,15 +4461,25 @@ html[dir="rtl"] .ad-arr{transform:scaleX(-1);display:inline-block;}
 .ad-histlink{display:flex;align-items:center;gap:6px;margin:12px auto 0;padding:8px 12px;border:0;background:none;font:inherit;font-size:12.5px;font-weight:700;color:var(--e2);cursor:pointer;}
 .ca-block .ad-item{padding:8px 0;}
 /* check du matin */
-.mc-card{margin:0 0 18px;padding:14px;border-radius:22px;background:var(--lg-fill,var(--s1));box-shadow:var(--lg-rim,inset 0 0 0 1px var(--hair));}
-.mc-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;}
-.mc-h b{font-size:13.5px;color:var(--snow);}
-.mc-row{display:grid;grid-template-columns:86px minmax(0,1fr);align-items:center;gap:8px;margin-top:6px;}
-.mc-row>span{font-size:12px;font-weight:700;color:var(--muted);}
+.mc-card{position:relative;margin:0 0 18px;padding:16px 14px 12px;border-radius:24px;overflow:hidden;background:linear-gradient(160deg,color-mix(in srgb,var(--e) 14%,var(--s1)) 0%,var(--lg-fill,var(--s1)) 62%);box-shadow:var(--lg-rim,inset 0 0 0 1px var(--hair)),0 10px 28px -16px color-mix(in srgb,var(--e) 55%,transparent);}
+.mc-card::before{content:"";position:absolute;left:0;top:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--e),transparent);opacity:.7;}
+.mc-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;}
+.mc-t{display:flex;align-items:center;gap:10px;min-width:0;}
+.mc-h b{font-size:14.5px;letter-spacing:-.01em;color:var(--snow);}
+.mc-dots{display:inline-flex;gap:4px;}
+.mc-dots i{width:7px;height:7px;border-radius:50%;background:var(--lg-well,var(--s2));box-shadow:inset 0 0 0 1px var(--hair);transition:background .25s,box-shadow .25s,transform .25s;}
+.mc-dots i.on{background:var(--e);box-shadow:0 0 8px color-mix(in srgb,var(--e) 70%,transparent);transform:scale(1.15);}
+.mc-row{display:grid;grid-template-columns:minmax(0,1fr);align-items:center;gap:7px;margin-top:8px;padding:9px 8px 8px;border-radius:16px;background:color-mix(in srgb,var(--s2) 55%,transparent);transition:background .25s;}
+.mc-row.done{background:color-mix(in srgb,var(--e) 9%,var(--s2));}
+.mc-l{display:flex;align-items:center;gap:8px;min-width:0;}
+.mc-l>span{font-size:12.5px;font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mc-row.done .mc-l>span{color:var(--snow);}
+.mc-ic{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:10px;font-style:normal;color:var(--e);background:color-mix(in srgb,var(--e) 16%,transparent);}
 .mc-opts{display:flex;gap:5px;}
-.mc-o{flex:1;min-width:0;min-height:38px;padding:6px 4px;border:0;border-radius:12px;font:inherit;font-size:12px;font-weight:700;color:var(--muted);background:var(--lg-well,var(--s2));box-shadow:var(--lg-well-rim,inset 0 0 0 1px var(--hair));cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mc-o{flex:1;min-width:0;min-height:38px;padding:6px 4px;border:0;border-radius:999px;font:inherit;font-size:12px;font-weight:700;color:var(--muted);background:var(--lg-well,var(--s2));box-shadow:var(--lg-well-rim,inset 0 0 0 1px var(--hair));cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:transform .15s,background .2s,box-shadow .2s,color .2s;}
+.mc-o:active{transform:scale(.94);}
 .mc-row:last-child .mc-o{font-size:19px;padding:4px 0;}
-.mc-o.on{color:var(--snow);background:color-mix(in srgb,var(--e) 20%,var(--s1));box-shadow:inset 0 0 0 1.5px var(--e);}
+.mc-o.on{color:var(--snow);background:linear-gradient(180deg,color-mix(in srgb,var(--e) 34%,var(--s1)),color-mix(in srgb,var(--e) 18%,var(--s1)));box-shadow:inset 0 0 0 1.5px var(--e),0 4px 14px -6px var(--e);}
 .rd-chip{display:inline-flex;align-items:baseline;gap:5px;padding:4px 10px;border-radius:999px;font-size:11.5px;background:var(--lg-well,var(--s2));}
 .rd-chip b,.rd-big{font-variant-numeric:tabular-nums;font-weight:800;}
 .rd-low{color:var(--bad);} .rd-caution{color:var(--warn);} .rd-ok{color:var(--ok);} .rd-good{color:var(--ok);}
@@ -5258,7 +5268,7 @@ html.easy-mode .ad-hday{font-size:13px;}
 html.easy-mode .ad-foot{font-size:13px;}
 html.easy-mode .ad-histlink{font-size:14.5px;}
 html.easy-mode .mc-h b{font-size:15.5px;}
-html.easy-mode .mc-row>span{font-size:14px;}
+html.easy-mode .mc-l>span{font-size:14px;}
 html.easy-mode .mc-o{font-size:14px;}
 html.easy-mode .mc-row:last-child .mc-o{font-size:22px;}
 html.easy-mode .rd-chip{font-size:13px;}

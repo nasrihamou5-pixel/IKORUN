@@ -387,12 +387,6 @@ function renderWizard(){
     wizOpt(w.what==='split',"wizSet('what','split')",t('wizSplit'),t('wizSplitSub'),'shuffle')+
     wizOpt(w.what==='run',"wizSet('what','run')",t('wizRun'),t('wizRunSub'),'run')+
     wizOpt(w.what==='muscu',"wizSet('what','muscu')",t('wizMuscu'),t('wizMuscuSub'),'dumbbell');
-  // « Je le crée moi-même » n'a de sens que pour un seul plan à la fois
-  if(!two){
-    h += '<div class="hv7-sec-lab" style="margin:14px 0 8px">'+t('wizHow')+'</div>'+
-      wizOpt(w.how==='gen',"wizSet('how','gen')",t('wizGen'),t('wizGenSub'),'bolt')+
-      wizOpt(w.how==='self',"wizSet('how','self')",t('wizSelf'),t('wizSelfSub'),'edit');
-  }
   if(two && PLAN){
     h += '<div class="hv7-sec-lab" style="margin:14px 0 8px">'+t('wizRunPlanLab')+'</div><div class="ik-seg">'+
       '<div class="'+(w.runNew?'on':'')+'" onclick="wizSet(\'runNew\',true)">'+t('wizRunNew')+'</div>'+
@@ -411,7 +405,10 @@ function renderWizard(){
   const runFirst = (w.what==='run' && w.how==='gen') || (two && (!PLAN || w.runNew));
   if(runFirst) h += '<div class="ik-note"><span>'+t(w.what==='run'?'wizRunSetupNote':'wizNeedRun')+'</span></div>';
   h += '<button class="btn" style="width:100%;margin-top:14px" onclick="wizGenerate()">'+t(runFirst ? 'wizNeedRunBtn' : (wizHasPlans(w)?'wizReplaceBtn':'wizGenerate'))+'</button>'+
-    '<div style="text-align:center;margin-top:12px;font-size:13px;color:var(--e2);font-weight:600" onclick="closeOv(\'ovWizard\');sportTab=\'run\';runSub=\'perso\';renderSport()">'+t('wizFollowExisting')+'</div>';
+    '<div style="display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-top:12px;font-size:13px;color:var(--e2);font-weight:600">'+
+      // V4.9 : l'étape « 2 · Comment ? » (deux grosses cartes) devient un simple lien discret, un seul choix à la fois à l'écran
+      (two?'':'<span onclick="wizSet(\'how\',\''+(w.how==='gen'?'self':'gen')+'\')">'+t(w.how==='gen'?'wizSelf':'wizGen')+'</span>')+
+      '<span onclick="closeOv(\'ovWizard\');sportTab=\'run\';runSub=\'perso\';renderSport()">'+t('wizFollowExisting')+'</span></div>';
   $('#wizBody').innerHTML = h;
 }
 function wizCreateRun(){ wizAfterRun = true; closeOv('ovWizard'); sportTab='run'; runSub='ikorun'; renderSport(); openPlanSetup(); }
@@ -423,7 +420,7 @@ function wizReplaceNote(w){
   const r = [];
   if(PLAN && (w.what==='run' || ((w.what==='both'||w.what==='split') && w.runNew))) r.push(planRaceTitle());
   if(STRENGTH && w.what!=='run') r.push(t('strengthWord')+' · '+tp('comboPerWeek',STRENGTH.perWeek));
-  return r.length ? '<div class="ik-note warn" style="margin:0 0 12px"><span>'+tp('wizWillReplace', escHtml(r.join(' + ')))+'</span></div>' : '';
+  return r.length ? '<div class="ik-note" style="margin:0 0 12px"><span>'+tp('wizWillReplace', escHtml(r.join(' + ')))+'</span></div>' : '';
 }
 
 function wizGenerate(){
