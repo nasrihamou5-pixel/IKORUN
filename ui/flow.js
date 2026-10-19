@@ -212,7 +212,7 @@ function ikFlow(cfg){
     if(!el) return; const x=el; el=null; cur=null; clearTimeout(autoT);
     document.removeEventListener('keydown',x._ikfKey);
     if(propre){ x.classList.add('sort'); setTimeout(()=>x.remove(),380); }
-    else x.classList.remove('ikob','ikob-q');
+    else { x.classList.remove('ikob','ikob-q'); x.innerHTML=''; }   // pas d'identifiants en double avec un autre assistant
     if(cfg.onClose) cfg.onClose();
   };
   F.ouvert=()=>!!el;
