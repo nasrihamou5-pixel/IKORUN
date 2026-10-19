@@ -969,6 +969,29 @@
     });
   }
 
+
+  /* ======================= 7i. EXERCICES : CONSIGNES PROPRES (V4.8.0) ================ */
+  function testConsignesExercices(){
+    var c='7i. Exercices';
+    return ikLoad('exdb').then(function(){
+      essaie(c,'chaque exercice de force a une consigne et 2 à 3 points d\'exécution propres, en 3 langues',function(){
+        var pas=[], doublons={}, l0=curLang();
+        allExercises().filter(function(e){ return (e.kind||'force')==='force'; }).forEach(function(e){
+          ['fr','en','ar'].forEach(function(l){
+            var st=EXD_STEPS[(EXD_BY[e.name]||[])[0]], cu=EXD_CUES[e.name];
+            var ok=(st && st[l==='en'?1:l==='ar'?2:0] && st[l==='en'?1:l==='ar'?2:0].length>=2) || (cu && cu[l==='en'?1:l==='ar'?2:0] && cu[l==='en'?1:l==='ar'?2:0][1].length>=2);
+            if(!ok) pas.push(e.name+' ('+l+')');
+          });
+          var cu2=EXD_CUES[e.name]; if(cu2) cu2[0][1].forEach(function(x){ doublons[x]=(doublons[x]||0)+1; });
+        });
+        if(pas.length) throw new Error(pas.length+' manquants : '+pas.slice(0,4).join(', '));
+        var gen=Object.keys(doublons).filter(function(k){ return doublons[k]>8; });
+        if(gen.length) throw new Error('points copiés sur plus de 8 exercices : '+gen[0]);
+        return 'toutes les consignes présentes, aucun point générique répété';
+      });
+    });
+  }
+
   /* ======================= 7f. BILAN À LA MOLETTE, INTRO (V3.5.5) ========== */
   function testBilanMolette(){
     var c='7f. Bilan et intro';
@@ -1432,6 +1455,7 @@
       .then(function(){ return testPartage(); })
       .then(function(){ return testCourses(); })
       .then(function(){ return testStatsEtMethode(); })
+      .then(function(){ return testConsignesExercices(); })
       .catch(function(e){ ko('0. Suite','exécution', e && e.message); })
       .then(function(){ debloquerEcritures(); window.__smokeState='terminé'; rapport(); });
   }

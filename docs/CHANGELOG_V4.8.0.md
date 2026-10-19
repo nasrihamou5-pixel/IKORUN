@@ -36,6 +36,6 @@ Harnais `tests/engine-harness.js` : la vraie appli dans Chromium, des milliers d
 - **Exercice** : démo, muscles, consigne clé, 3 points d'exécution **propres à l'exercice**, effort visé (RPE, répétitions en réserve, repos) ; respiration, erreurs, conseils, sécurité, variantes et muscles secondaires dans « Détails ».
 
 ## Technique
-- `tests/engine-harness.js` + `tests/engine-harness.page.js` (voir plus haut) ; 5 tests de fumée de plus (146 au total).
+- `tests/engine-harness.js` + `tests/engine-harness.page.js` (voir plus haut) ; 6 tests de fumée de plus (144 au total).
 - i18n : 2 529 clés × 3 langues. `APP_VERSION` 4.8.0, SW `ikorun-v140`.
 - Limites : le harnais tourne dans la vraie appli (Chromium) et non dans un contexte `vm` avec un DOM simulé — app.js touche au DOM dès son chargement ; 11 % des séances dures tombent encore sur un jour de jambes ou le lendemain quand les jours de course et de muscu choisis ne laissent pas d'autre place ; sur 5 jours, 3 séances de qualité + sortie longue sont impossibles sans deux jours durs consécutifs.

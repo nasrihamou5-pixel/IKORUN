@@ -17,6 +17,7 @@ EQ = {'body only':'Poids du corps','barbell':'Barre','dumbbell':'Haltères','mac
 LV = {'beginner':'Débutant','intermediate':'Intermédiaire','expert':'Avancé'}
 CARDIO = {'Bicycling_Stationary','Recumbent_Bike','Elliptical_Trainer','Rowing_Stationary'}
 PLYO = {'Front_Box_Jump','Split_Jump','Lateral_Bound','Fast_Skipping','Single-Leg_Hop_Progression','Standing_Long_Jump'}
+EN_FIX = {'One-Arm_Kettlebell_Swings': ['Stand with feet wider than shoulders, kettlebell on the floor in front of you.', 'Hinge at the hips, hike the bell back between your legs, then drive the hips forward to swing it to chest height.', 'Let it fall back with a flat back and repeat; switch hands halfway.']}
 EXISTING = {'Planche latérale','Curl barre EZ','Curl araignée','Mollets à la presse','Développé haltères assis'}   # déjà dans la bibliothèque de base
 rows = []; seen = set()
 for f in sorted(glob.glob(os.path.join(src, 'tr', '*.tsv'))):
@@ -35,6 +36,10 @@ for f in sorted(glob.glob(os.path.join(src, 'tr', '*.tsv'))):
         sec = [MUS[m] for m in e['secondaryMuscles'] if m in MUS][:3]
         grp = GRP[e['primaryMuscles'][0]] if e['primaryMuscles'] else 'Corps entier'
         sen = [s.strip() for s in e['instructions']][:5]
+        # un seul bloc de texte (ou rien) dans la base : on découpe en phrases, ou on utilise la correction rédigée à la main
+        import re as _re
+        if len(sen) < 2:
+            sen = EN_FIX.get(i) or [x.strip() for x in _re.split(r'(?<=[.!?])\s+', ' '.join(sen)) if x.strip()][:3]
         sfrl = [s.strip() for s in sfr.split(';;')]; sarl = [s.strip() for s in sar.split(';;')]
         rows.append([i, fr, grp, EQ[e['equipment']], LV.get(e['level'], 'Intermédiaire'), prim, sec, kind, i, 0, e['name'], ar, sfrl, sen, sarl, 0])
 for i, r in R.items():
