@@ -129,9 +129,15 @@
         var main = (si===0 && n===0) || (kind==='FULL' && si<4);    // exercices principaux = séries pleines
         var sets = main ? S.sets : Math.max(2, S.sets-1);
         if(main && posInBlock===2 && sc.scheme!=='TAPER' && !sc.deload) sets = Math.min(5, sets+1);   // surcharge progressive
+        // V4.8 : le niveau règle le volume des exercices principaux (débutant −1 série, avancé +1), jamais en décharge ni en affûtage
+        if(!sc.deload && sc.scheme!=='TAPER' && main){ if(ctx.levelRank===0) sets = Math.max(2, sets-1); else if(ctx.levelRank===2) sets = Math.min(5, sets+1); }
         if(sc.deload) sets = Math.max(2, Math.round(sets*0.6));
         var reps = S.reps;
-        out.push(ctx.exFactory ? ctx.exFactory(e.name, sets, reps) : { name:e.name, sets:sets, reps:reps, muscles:e.primary||[e.group] });
+        var ex = ctx.exFactory ? ctx.exFactory(e.name, sets, reps) : { name:e.name, sets:sets, reps:reps, muscles:e.primary||[e.group] };
+        // effort visé (RPE du schéma, −1 en décharge) et repos entre séries selon la fourchette de répétitions
+        ex.rpe = Math.max(4, S.rpe - (sc.deload?1:0) - (main?0:1));
+        ex.rest = /^4/.test(String(reps)) ? 150 : /^8/.test(String(reps)) ? 90 : 60;
+        out.push(ex);
       }
     });
     return out;

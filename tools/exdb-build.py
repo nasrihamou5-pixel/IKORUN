@@ -17,6 +17,7 @@ EQ = {'body only':'Poids du corps','barbell':'Barre','dumbbell':'Haltères','mac
 LV = {'beginner':'Débutant','intermediate':'Intermédiaire','expert':'Avancé'}
 CARDIO = {'Bicycling_Stationary','Recumbent_Bike','Elliptical_Trainer','Rowing_Stationary'}
 PLYO = {'Front_Box_Jump','Split_Jump','Lateral_Bound','Fast_Skipping','Single-Leg_Hop_Progression','Standing_Long_Jump'}
+EN_FIX = {'One-Arm_Kettlebell_Swings': ['Stand with feet wider than shoulders, kettlebell on the floor in front of you.', 'Hinge at the hips, hike the bell back between your legs, then drive the hips forward to swing it to chest height.', 'Let it fall back with a flat back and repeat; switch hands halfway.']}
 EXISTING = {'Planche latérale','Curl barre EZ','Curl araignée','Mollets à la presse','Développé haltères assis'}   # déjà dans la bibliothèque de base
 rows = []; seen = set()
 for f in sorted(glob.glob(os.path.join(src, 'tr', '*.tsv'))):
@@ -35,6 +36,10 @@ for f in sorted(glob.glob(os.path.join(src, 'tr', '*.tsv'))):
         sec = [MUS[m] for m in e['secondaryMuscles'] if m in MUS][:3]
         grp = GRP[e['primaryMuscles'][0]] if e['primaryMuscles'] else 'Corps entier'
         sen = [s.strip() for s in e['instructions']][:5]
+        # un seul bloc de texte (ou rien) dans la base : on découpe en phrases, ou on utilise la correction rédigée à la main
+        import re as _re
+        if len(sen) < 2:
+            sen = EN_FIX.get(i) or [x.strip() for x in _re.split(r'(?<=[.!?])\s+', ' '.join(sen)) if x.strip()][:3]
         sfrl = [s.strip() for s in sfr.split(';;')]; sarl = [s.strip() for s in sar.split(';;')]
         rows.append([i, fr, grp, EQ[e['equipment']], LV.get(e['level'], 'Intermédiaire'), prim, sec, kind, i, 0, e['name'], ar, sfrl, sen, sarl, 0])
 for i, r in R.items():
@@ -55,8 +60,21 @@ base = os.path.splitext(out)[0]
 open(out, 'w', encoding='utf8').write('\n'.join(hdr + [
  '// ligne = [id, nomFR, groupe, matériel, niveau, primaires, secondaires, type, imageDb, zonesRééduc, nomEN, nomAR, dose]',
  'const EXD_ROWS=' + j(light) + ';']) + '\n')
+# V4.8 : consignes propres à chaque exercice de la base d'origine (cues_in.json : id → noms ; cues_out.tsv : id|consigneFR|pointsFR|consigneEN|pointsEN|consigneAR|pointsAR)
+cues = {}
+cin, cout = os.path.join(src, 'cues_in.json'), os.path.join(src, 'cues_out.tsv')
+if os.path.exists(cin) and os.path.exists(cout):
+    names = {x['id']: x['names'] for x in json.load(open(cin, encoding='utf8'))}
+    for l in open(cout, encoding='utf8'):
+        l = l.rstrip('\n')
+        if not l.strip(): continue
+        c = l.split('|')
+        if len(c) != 7 or c[0] not in names: raise SystemExit('ligne de consignes invalide : ' + l[:60])
+        v = [[c[1], [x.strip() for x in c[2].split(';;')]], [c[3], [x.strip() for x in c[4].split(';;')]], [c[5], [x.strip() for x in c[6].split(';;')]]]
+        for nm in names[c[0]]: cues[nm] = v
 open(base + '-steps.js', 'w', encoding='utf8').write('\n'.join(hdr + [
  '// chargé à la demande (ikLoad("exdb")) : tutos pas à pas FR/EN/AR + programmes de rééducation',
  'window.EXD_STEPS=' + j(steps) + ';',
- 'window.EXD_REHAB=' + j({'zones': P, 'common': COMMON}) + ';']) + '\n')
+ 'window.EXD_REHAB=' + j({'zones': P, 'common': COMMON}) + ';',
+ 'window.EXD_CUES=' + j(cues) + ';']) + '\n')
 print(len(rows), 'exercices ->', out, os.path.getsize(out), 'et', base + '-steps.js', os.path.getsize(base + '-steps.js'))
