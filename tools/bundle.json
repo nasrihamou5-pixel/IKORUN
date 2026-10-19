@@ -13,6 +13,7 @@
     "ui/rank-progress.js",
     "ui/home-pills.js",
     "ui/sport-combo.js",
+    "ui/onboarding.js",
     "plan/adapt.js",
     "plan/bilan.js",
     "plan/adapt-ui.js",

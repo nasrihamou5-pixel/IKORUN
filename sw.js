@@ -32,7 +32,7 @@
 // ou immuable (app.js n'est plus retéléchargé à chaque ouverture) ; chaque fichier
 // est ajouté séparément (un seul fichier manquant ne fait pas échouer l'installation).
 // ============================================================================
-const C = 'ikorun-v144';
+const C = 'ikorun-v145';
 const STATIC = 'ikorun-static-v1';
 const EXT = 'ikorun-ext-v1';
 // Prévisions Open-Meteo : réseau d'abord, la dernière réponse sert hors ligne (24 h au plus).
