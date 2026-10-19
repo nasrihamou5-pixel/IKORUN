@@ -112,11 +112,14 @@ function morningCheckDue(){
 }
 function morningCheckHTML(){
   if(!morningCheckDue()) return '';
-  const row=(f,lab,opts)=>'<div class="mc-row"><span>'+lab+'</span><div class="mc-opts" role="radiogroup" aria-label="'+escHtml(lab)+'">'+opts.map(([v,txt,aria])=>'<button type="button" class="mc-o'+(_mc[f]===v?' on':'')+'" role="radio" aria-checked="'+(_mc[f]===v)+'"'+(aria?' aria-label="'+escHtml(aria)+'"':'')+' onclick="mcSet(\''+f+'\','+v+')">'+txt+'</button>').join('')+'</div></div>';
-  return '<section class="mc-card" aria-label="'+t('mcTitle')+'"><div class="mc-h"><b>'+t('mcTitle')+'</b><button type="button" class="ad-link" onclick="mcHide()">'+t('mcLater')+'</button></div>'+
-    row('sleep',t('mcSleep'),[[1,t('blSleepBad')],[2,t('blSleepMid')],[3,t('blSleepGood')]])+
-    row('sore',t('mcSore'),[[1,t('mcSore1')],[2,t('mcSore2')],[3,t('mcSore3')]])+
-    row('mood',t('blMood'),MOOD_FACE.map((f,i)=>[i+1,f,t('blMood'+(i+1))]))+'</section>';
+  // V4.9 : carte refaite — une icône par question, une pastille qui se remplit à chaque réponse, choix en capsules qui s'allument
+  const row=(f,ico,lab,opts)=>'<div class="mc-row'+(_mc[f]?' done':'')+'"><div class="mc-l"><i class="mc-ic">'+ICN(ico,17)+'</i><span>'+lab+'</span></div><div class="mc-opts" role="radiogroup" aria-label="'+escHtml(lab)+'">'+opts.map(([v,txt,aria])=>'<button type="button" class="mc-o'+(_mc[f]===v?' on':'')+'" role="radio" aria-checked="'+(_mc[f]===v)+'"'+(aria?' aria-label="'+escHtml(aria)+'"':'')+' onclick="mcSet(\''+f+'\','+v+')">'+txt+'</button>').join('')+'</div></div>';
+  const n=['sleep','sore','mood'].filter(k=>_mc[k]).length;
+  const dots='<span class="mc-dots" aria-hidden="true">'+[0,1,2].map(i=>'<i class="'+(i<n?'on':'')+'"></i>').join('')+'</span>';
+  return '<section class="mc-card" aria-label="'+t('mcTitle')+'"><div class="mc-h"><div class="mc-t"><b>'+t('mcTitle')+'</b>'+dots+'</div><button type="button" class="ad-link" onclick="mcHide()">'+t('mcLater')+'</button></div>'+
+    row('sleep','moon',t('mcSleep'),[[1,t('blSleepBad')],[2,t('blSleepMid')],[3,t('blSleepGood')]])+
+    row('sore','legs',t('mcSore'),[[1,t('mcSore1')],[2,t('mcSore2')],[3,t('mcSore3')]])+
+    row('mood','heart',t('blMood'),MOOD_FACE.map((f,i)=>[i+1,f,t('blMood'+(i+1))]))+'</section>';
 }
 function mcHide(){ P.mcHide=todayKey(); _mc={}; DB.save('profile',P); refreshScreen(); }
 function mcSet(f,v){
