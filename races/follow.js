@@ -62,6 +62,7 @@ function racePrepare(r,km){
 // Inscription : la course choisie remplit la date (et l'objectif s'il est vide) ; elle devient
 // l'objectif du plan à la fin de l'inscription si la date n'a pas été changée entre-temps.
 function racePickedForOnboarding(r,km){
+  if(typeof IKOB!=='undefined' && IKOB.racePicked(r,km)){ toast(tp('racePickedToast',r.name)); return; }
   window._obRace={r,km};
   const d=$('#ob_compdate'); if(d) d.value=r.date;
   const g=$('#ob_goal'); if(g && !g.value.trim()) g.value=r.name+(km?' · '+fmtKmShort(km)+' km':'');

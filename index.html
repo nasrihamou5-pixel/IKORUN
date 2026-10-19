@@ -111,12 +111,12 @@
 <!-- téléchargés dès maintenant, exécutés après la première image (voir bas de page) -->
 <link rel="preload" as="script" href="vendor/supabase.js?v=1">
 <link rel="preload" as="script" href="vendor/sb-init.js?v=3">
-<link rel="preload" as="script" href="app.min.js?v=158">
+<link rel="preload" as="script" href="app.min.js?v=160">
 <script>
 // V4.0.0 : textes anglais / arabes à la demande. Le fichier de la dernière langue utilisée
 // (ik_lang, recopie non sensible de la langue du profil) est chargé AVANT app.min.js ; en
 // autotest (?selftest=1), les deux. Les autres cas : ikLangEnsure (i18n/i18n.js).
-window.IK_LANG={en:'i18n/en.min.js?v=13',ar:'i18n/ar.min.js?v=13'};
+window.IK_LANG={en:'i18n/en.min.js?v=15',ar:'i18n/ar.min.js?v=15'};
 (function(){
   var want=[], app=document.querySelector('link[rel=preload][href^="app.min.js"]');
   try{ var l=localStorage.getItem('ik_lang'); if(l==='en'||l==='ar') want.push(l); }catch(e){}
@@ -214,9 +214,9 @@ html[data-mode="light"] .iki-word{color:#10141B;}
   #ikIntro *,#ikIntro{animation:none!important;}
 }
 </style>
-<link rel="preload" as="style" href="app.min.css?v=66">
-<link rel="stylesheet" id="ikCss" href="app.min.css?v=66" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="app.min.css?v=66"></noscript>
+<link rel="preload" as="style" href="app.min.css?v=68">
+<link rel="stylesheet" id="ikCss" href="app.min.css?v=68" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="app.min.css?v=68"></noscript>
 </head>
 <body>
 <script>
@@ -329,83 +329,7 @@ html[data-mode="light"] .iki-word{color:#10141B;}
 </div>
 
 <!-- ONBOARDING -->
-<div id="ob">
-  <div class="ikh ikh-ob"><i class="ikh-fx" aria-hidden="true"></i><div class="ikh-title">IKORUN</div><div class="ikh-sub">Elite Athletic Intelligence</div></div>
-  <div class="ob-prog" id="obProg"></div>
-  <div class="ob-step on" data-step="1">
-    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;">
-      <div class="ikh ikh-ob-big"><i class="ikh-fx" aria-hidden="true"></i><div class="login-brand man" role="img" aria-label="IKORUN">IKO<span>RUN</span></div></div>
-      <h1>Bienvenue sur IKORUN</h1>
-      <p class="intro">Elite Athletic Intelligence.<br>Ton coaching personnel, calculé scientifiquement, 100% hors-ligne.</p>
-    </div>
-    <div class="ob-pref">
-      <div class="ob-pref-lab" id="obLangLab">Langue</div>
-      <div class="pills" id="ob_lang">
-        <div class="pill" data-l="fr">FR · Français</div><div class="pill" data-l="en">EN · English</div><div class="pill" data-l="ar">AR · العربية</div>
-      </div>
-    </div>
-    <div class="ob-pref">
-      <div class="ob-pref-lab" id="obThemeLab">Thème</div>
-      <div class="ob-theme-row" id="ob_theme"></div>
-    </div>
-    <div class="ob-pref">
-      <div class="ob-pref-lab" id="obColorLab">Couleur</div>
-      <div id="ob_accent"></div>
-    </div>
-  </div>
-  <div class="ob-step" data-step="2">
-    <h1>Qui es-tu ?</h1><p class="intro">Tes informations de base.</p>
-    <div class="field"><label>Prénom *</label><input class="inp" id="ob_name" placeholder="Ton prénom"></div>
-    <div class="field"><label>Nom d'utilisateur *</label>
-      <div class="uname-wrap"><span class="uname-at">@</span><input class="inp" id="ob_username" placeholder="pseudo_unique" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
-      <div class="uname-status" id="ob_username_status">3 à 20 caractères : lettres, chiffres, _</div>
-    </div>
-    <div class="field"><label>Date de naissance *</label><input class="inp" id="ob_bday" type="date"></div>
-    <div class="field"><label>Sexe *</label><select class="inp" id="ob_sex"><option value="">Sélectionner</option><option>Homme</option><option>Femme</option></select></div>
-  </div>
-  <div class="ob-step" data-step="3">
-    <h1>Ton niveau</h1><p class="intro">Sois honnête, le plan s'adapte.</p>
-    <div class="note" style="display:flex;gap:8px;align-items:flex-start"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M9 18h6M10 22h4M12 2a6 6 0 0 0-3 11c1 .8 1 2 1 3h4c0-1 0-2.2 1-3a6 6 0 0 0-3-11z"/></svg><span>Le <b>niveau</b> ajuste l'intensité de ton plan et ton volume d'entraînement, calculés automatiquement. Pas sûr ? Touche <b>« Comment choisir ? »</b>.</span></div>
-    <div class="field"><label style="display:flex;align-items:center;justify-content:space-between">Niveau *<span style="color:var(--e);font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px" onclick="openLevelGuide()"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.7 1.2c0 1.6-2.2 1.8-2.2 3.3"/><path d="M12 17h.01"/></svg>Comment choisir ?</span></label>
-      <div class="pills" id="ob_level">
-        <div class="pill" data-v="Débutant">Débutant</div><div class="pill" data-v="Intermédiaire">Intermédiaire</div>
-        <div class="pill" data-v="Confirmé">Confirmé</div><div class="pill" data-v="Très avancé">Très avancé</div><div class="pill" data-v="Élite">Élite</div>
-      </div>
-    </div>
-  </div>
-  <div class="ob-step" data-step="4">
-    <h1>Ton affichage</h1><p class="intro">Deux façons de voir IKORUN — change d'avis à tout moment dans Profil.</p>
-    <div class="ob-mode-cards" id="ob_mode">
-      <div class="ob-mode-card" data-v="complet">
-        <div class="ob-mode-ic">◧</div>
-        <div class="ob-mode-t">Complet</div>
-        <div class="ob-mode-d">Toutes les stats, tous les détails de chaque séance, l'anatomie musculaire, les graphiques. Pour creuser.</div>
-      </div>
-      <div class="ob-mode-card" data-v="simple">
-        <div class="ob-mode-ic">◨</div>
-        <div class="ob-mode-t">Simplifié</div>
-        <div class="ob-mode-d">Une carte, l'essentiel : la séance du jour et un bouton. Rien d'autre à l'écran. Pour aller droit au but.</div>
-      </div>
-    </div>
-    <div class="ob-mode-hint" id="ob_mode_hint"></div>
-  </div>
-  <div class="ob-step" data-step="5">
-    <h1>Ton objectif</h1><p class="intro">Ce qui te fait courir.</p>
-    <div class="field"><label>Objectif *</label><input class="inp" id="ob_goal" placeholder="Ex : passer sous 20:00 au 5 km"></div>
-    <div class="field"><label>Date de compétition *</label><input class="inp" id="ob_compdate" type="date"></div>
-    <button type="button" class="btn ghost sm ob-race-pick" id="ob_racepick" onclick="openRaces({pick:'onboarding'})"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg> Choisir une course du calendrier</button>
-  </div>
-  <div class="ob-step" data-step="6">
-    <h1>Tes performances</h1><p class="intro">Ajoute tes meilleurs chronos. Au moins un est requis.</p>
-    <div class="note" style="display:flex;gap:8px;align-items:flex-start"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M9 18h6M10 22h4M12 2a6 6 0 0 0-3 11c1 .8 1 2 1 3h4c0-1 0-2.2 1-3a6 6 0 0 0-3-11z"/></svg><span>Tes chronos calculent ton <b>VDOT</b> (ta « cylindrée ») et toutes tes <b>allures d'entraînement</b>. Donne au moins un chrono récent et fiable. Choisis la distance puis le temps avec les roues.</span></div>
-    <div id="ob_perfs"></div>
-    <button class="addperf" id="ob_addperf" onclick="addPerfRow()">＋ Ajouter une autre performance</button>
-  </div>
-  <div class="ob-foot">
-    <button class="btn ghost" id="obPrev" style="flex:0 0 90px;">Retour</button>
-    <button class="btn" id="obNext">Continuer</button>
-  </div>
-</div>
+<div id="ob"></div>
 
 <!-- GENERIC OVERLAYS -->
 <div class="ov" id="ovSettings"><div class="ov-card"><div class="ov-head"><h2>Paramètres</h2><div class="x" onclick="closeOv('ovSettings')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg></div></div><div id="settingsBody"></div></div></div>

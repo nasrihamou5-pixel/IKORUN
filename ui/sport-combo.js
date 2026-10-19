@@ -373,7 +373,8 @@ function openWizard(preset){
   wizAfterRun = false;
   wiz = Object.assign({ what:'both', how:'gen', days:wizDefaultDays(), perWeek:2, equip:'both', runNew:true }, preset||{});
   const h2 = $('#ovWizard h2'); if(h2) h2.textContent = t('wizTitle');
-  renderWizard(); openOv('ovWizard');
+  // V4.11.0 : une question par écran (ui/plan-flow.js) ; renderWizard() reste pour l'ancien rendu en fiche
+  wzFlowOpen(preset && preset.what==='muscu' && preset.days ? 'w-days' : undefined);
 }
 function wizSet(k,v){ wiz[k]=v; if(k==='what' && (v==='both'||v==='split')) wiz.how='gen'; renderWizard(); }
 function wizDay(i){ const a=wiz.days, p=a.indexOf(i); if(p>=0) a.splice(p,1); else if(a.length>=3){ toast(t('wizMax3')); return; } else a.push(i); a.sort(); wiz.perWeek=Math.max(1,a.length); renderWizard(); }
