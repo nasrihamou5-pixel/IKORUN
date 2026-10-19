@@ -2700,7 +2700,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.8.0';
+const APP_VERSION='4.8.1';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -5815,8 +5815,8 @@ const EXDB_MAP={
  'Rowing haltère unilatéral':'One-Arm_Dumbbell_Row','Single Arm Dumbbell Row':'One-Arm_Dumbbell_Row','Rowing poulie basse':'Seated_Cable_Rows','Straight Back Seated Row':'Seated_Cable_Rows','Rowing machine assise':'Seated_Cable_Rows',
  'Tirage vertical poulie':'Wide-Grip_Lat_Pulldown','Bar Lateral Pulldown':'Wide-Grip_Lat_Pulldown','Tirage nuque':'Wide-Grip_Rear_Pull-Up',
  'Tractions pronation':'Pullups','Pull Up':'Pullups','Tractions supination':'Chin-Up','Pull-over poulie':'Straight-Arm_Pulldown',
- 'Good Morning':'Good_Morning','Hyperextension lombaire':'Hyperextensions_-_Back_Extensions','45° One Leg Hyperextension':'Hyperextensions_-_Back_Extensions','Superman au sol':'Superman',
- 'Développé militaire barre':'Standing_Military_Press','Développé haltères assis':'Dumbbell_Shoulder_Press','Seated Shoulder Press':'Dumbbell_Shoulder_Press','Développé Arnold':'Arnold_Dumbbell_Press','Développé machine épaules':'Machine_Shoulder_(Military)_Press','Lever Seated Shoulder Press':'Machine_Shoulder_(Military)_Press',
+ 'Good Morning':'Good_Morning','Hyperextension lombaire':'Hyperextensions_Back_Extensions','45° One Leg Hyperextension':'Hyperextensions_Back_Extensions','Superman au sol':'Superman',
+ 'Développé militaire barre':'Standing_Military_Press','Développé haltères assis':'Dumbbell_Shoulder_Press','Seated Shoulder Press':'Dumbbell_Shoulder_Press','Développé Arnold':'Arnold_Dumbbell_Press','Développé machine épaules':'Machine_Shoulder_Military_Press','Lever Seated Shoulder Press':'Machine_Shoulder_Military_Press',
  'Élévations latérales':'Side_Lateral_Raise','Lateral Raise':'Side_Lateral_Raise','Élévations latérales poulie':'Cable_Seated_Lateral_Raise',
  'Élévations frontales':'Front_Dumbbell_Raise','Front Raise':'Front_Dumbbell_Raise','Oiseau (rear delt)':'Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench','Lever Reverse Fly':'Reverse_Machine_Flyes',
  'Face Pull poulie':'Face_Pull','Cable Face Pull':'Face_Pull','Rowing menton':'Upright_Barbell_Row','Upright Row':'Upright_Barbell_Row',
@@ -5828,14 +5828,14 @@ const EXDB_MAP={
  'Curl poignets':'Palms-Down_Wrist_Curl_Over_A_Bench','Curl poignets inversé':'Palms-Up_Barbell_Wrist_Curl_Over_A_Bench','Marche du fermier':'Farmers_Walk','Farmer Walk':'Farmers_Walk',
  'Crunch':'Crunches','Crunch poulie':'Cable_Crunch','Cable Crunch':'Cable_Crunch','Relevé de jambes suspendu':'Hanging_Leg_Raise','Hanging Leg Raise':'Hanging_Leg_Raise','Relevé de jambes au sol':'Flat_Bench_Lying_Leg_Raise',
  'Planche':'Plank','Plank':'Plank','Russian Twist':'Russian_Twist','Roulette abdominale':'Ab_Roller','Ab Wheel Rollout':'Ab_Roller','Mountain Climbers':'Mountain_Climbers',
- 'Hip Thrust barre':'Barbell_Hip_Thrust','Hip Thrust':'Barbell_Hip_Thrust','Lever Hip Thrust':'Barbell_Hip_Thrust','Pont fessier':'Butt_Lift_(Bridge)','Glute Bridge':'Butt_Lift_(Bridge)',
+ 'Hip Thrust barre':'Barbell_Hip_Thrust','Hip Thrust':'Barbell_Hip_Thrust','Lever Hip Thrust':'Barbell_Hip_Thrust','Pont fessier':'Butt_Lift_Bridge','Glute Bridge':'Butt_Lift_Bridge',
  'Abduction machine':'Thigh_Abductor','Lever Seated Hip Abduction':'Thigh_Abductor','Adduction machine':'Thigh_Adductor','Lever Seated Hip Adduction':'Thigh_Adductor','Fentes bulgares':'Dumbbell_Lunges','Bulgarian Split Squat':'Dumbbell_Lunges',
  'Squat barre':'Barbell_Full_Squat','Back Squat':'Barbell_Full_Squat','Front Squat':'Front_Barbell_Squat','Squat Smith':'Smith_Machine_Squat','Smith Squat':'Smith_Machine_Squat',
  'Presse à cuisses':'Leg_Press','Sled 45° Leg Press':'Leg_Press','Sled 45° Leg Wide Press':'Leg_Press','Hack Squat':'Hack_Squat','Leg Extension':'Leg_Extensions','Lever Leg Extension':'Leg_Extensions','Lever Seated Leg Extension':'Leg_Extensions',
- 'Fentes avant':'Dumbbell_Lunges','Fentes marchées':'Dumbbell_Walking_Lunge','Walking Lunge':'Dumbbell_Walking_Lunge','Dumbbell Split Squat':'Dumbbell_Lunges','Goblet Squat':'Goblet_Squat','Squat poids du corps':'Bodyweight_Squat',
+ 'Fentes avant':'Dumbbell_Lunges','Fentes marchées':'Bodyweight_Walking_Lunge','Walking Lunge':'Bodyweight_Walking_Lunge','Dumbbell Split Squat':'Dumbbell_Lunges','Goblet Squat':'Goblet_Squat','Squat poids du corps':'Bodyweight_Squat',
  'Leg Curl allongé':'Lying_Leg_Curls','Lever Lying Leg Curl':'Lying_Leg_Curls','Leg Curl assis':'Seated_Leg_Curl','Lever Kneeling Leg Curl':'Standing_Leg_Curl','Nordic Curl':'Lying_Leg_Curls','Nordic Hamstring Curl':'Lying_Leg_Curls','Soulevé jambes tendues haltères':'Stiff-Legged_Dumbbell_Deadlift',
  'Mollets debout':'Standing_Calf_Raises','Standing Calf Raise':'Standing_Calf_Raises','Mollets assis':'Seated_Calf_Raise','Lever Seated Calf Raise':'Seated_Calf_Raise','Lever Seated One Leg Calf Raise':'Seated_Calf_Raise','Mollets à la presse':'Calf_Press_On_The_Leg_Press_Machine',
- 'Burpees':'Burpee','Thruster':'Thrusters','Clean & Press':'Clean_and_Press','Kettlebell Swing':'Kettlebell_One-Legged_Deadlift','EZ-bar 21s':'Barbell_Curl',
+ 'Thruster':'Kettlebell_Thruster','Clean & Press':'Clean_and_Press','Kettlebell Swing':'Kettlebell_One-Legged_Deadlift','EZ-bar 21s':'Barbell_Curl',
  // Alias ajoutés : ces noms (bibliothèque LIB) n'avaient pas de correspondance ci-dessus et retombaient
  // sur l'icône générique. On les relie à un id déjà utilisé et vérifié plus haut (même exercice ou variante proche).
  'Dumbbell Incline Bench Press':'Incline_Dumbbell_Press','Concentration Curl':'Concentration_Curls','Cable Curl':'Cable_Hammer_Curls_-_Rope_Attachment',
