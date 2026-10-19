@@ -265,6 +265,7 @@ const I18N={
     testDown:'Test enregistré : VDOT {0} → {1}, tes allures à venir sont allégées. Pas grave, ça arrive après une charge.',
     testAskTime:'Ton chrono sur {0} ?',
     testSkip:'Plus tard',
+    appearLangLab:'Apparence et langue',helpInfoLab:'Aide et infos',bodyRowLab:'Taille, poids et cœur',
     bf2Sec:'Ton corps',bf2SecHeart:'Ton cœur',bf2HeightT:'Ta taille',bf2HeightS:'Pour ton IMC, tes calories et tes besoins. Elle reste sur ton téléphone.',
     bf2WeightT:'Ton poids',bf2WeightS:'Ton poids du moment, sans te prendre la tête : tu pourras le suivre ensuite.',bf2Imc:'IMC {0}',bf2ImcLow:'plutôt bas',bf2ImcOk:'dans la norme',bf2ImcHigh:'un peu élevé',bf2ImcVeryHigh:'élevé',
     bf2HeartT:'Ton cœur',bf2HeartS:'Facultatif : pour des zones cardiaques plus justes.',bf2HrRestS:'Le matin au réveil, encore allongé',bf2HrMaxS:'Le plus haut vu en fin d’effort à fond',bf2Optional:'Facultatif',bf2Estimated:'≈ {0} (estimée)',

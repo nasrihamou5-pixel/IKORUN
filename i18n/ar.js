@@ -237,6 +237,7 @@ window.IK_I18N_EXTRA=Object.assign(window.IK_I18N_EXTRA||{},{
     testDown:'تم تسجيل الاختبار: VDOT {0} ← {1}، تم تخفيف سرعاتك القادمة. هذا يحدث بعد حمل ثقيل.',
     testAskTime:'ما زمنك على {0}؟',
     testSkip:'لاحقاً',
+    appearLangLab:'المظهر واللغة',helpInfoLab:'المساعدة والمعلومات',bodyRowLab:'الطول والوزن والقلب',
     bf2Sec:'جسمك',bf2SecHeart:'قلبك',bf2HeightT:'طولك',bf2HeightS:'لحساب مؤشر كتلة جسمك وسعراتك واحتياجاتك. يبقى على هاتفك.',
     bf2WeightT:'وزنك',bf2WeightS:'وزنك الحالي، دون تعقيد: يمكنك متابعته لاحقاً.',bf2Imc:'مؤشر الكتلة {0}',bf2ImcLow:'منخفض نوعاً ما',bf2ImcOk:'ضمن المعدل الطبيعي',bf2ImcHigh:'مرتفع قليلاً',bf2ImcVeryHigh:'مرتفع',
     bf2HeartT:'قلبك',bf2HeartS:'اختياري: لمناطق نبض أدق.',bf2HrRestS:'صباحاً عند الاستيقاظ وأنت مستلقٍ',bf2HrMaxS:'أعلى قيمة رأيتها في نهاية جهد أقصى',bf2Optional:'اختياري',bf2Estimated:'≈ {0} (تقديري)',
