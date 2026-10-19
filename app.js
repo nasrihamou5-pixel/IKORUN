@@ -2700,7 +2700,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.9.0';
+const APP_VERSION='4.9.1';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -7107,7 +7107,7 @@ function planCalendar(compDate,days){
 function generatePlan(){
   const r=planBuild({});
   if(r.err){ toast(t(r.err)); return; }
-  PLAN=r.plan;
+  PLAN=r.plan; P.planGenerated=true;   // V4.9 : un plan a déjà été généré, la prochaine génération repart de zéro
   DB.save('run_plan',PLAN);
   ikTrack('plan_created',{race:P.objRace||'',weeks:PLAN.weeks,cal:!!P.objRaceId,days:(P.days||[]).length});
   // Assistant « course + muscu » : la muscu se génère juste après, un seul message et un seul rendu à la fin (plus rapide)
@@ -7412,23 +7412,26 @@ function openPlanSetup(){
   if(!getUserVDOT()){ toast(t('profileIncompleteAddTime')); openRecords(); return; }
   // V3.14.0 : ce que l'inscription a déjà demandé (objectif, date de course, niveau) est repris
   // et résumé au lieu d'être redemandé ; « Modifier » rouvre les réglages.
-  const race=PS_RACES.includes(P.objRace)?P.objRace:(inferRaceFromGoal()||'5 km');
-  const goalT=parseTime(P.objTime)||goalTimeFromText(P.goal,race,P.objRaceKm);
-  const goal=P.objGoal?(P.objGoal==='Finir'?'Finir':'Record personnel'):(goalT?'Record personnel':(/finir|terminer|finish|أنهي|إنهاء/i.test(P.goal||'')?'Finir':'Record personnel'));
-  const dateOk=!!(P.compDate && P.compDate>=minRaceDate());
+  // V4.9 : à partir de la 2e génération (plan supprimé, refait ou terminé), plus rien n'est repris du plan d'avant : on repart de zéro.
+  // Seule la première génération reprend ce que l'inscription a donné. Une course choisie dans le calendrier reste pré-remplie.
+  const fresh=!!(P.planGenerated||PLAN) && !window._psRacePreset;
+  const race=(!fresh&&PS_RACES.includes(P.objRace))?P.objRace:((!fresh&&inferRaceFromGoal())||'5 km');
+  const goalT=fresh?0:(parseTime(P.objTime)||goalTimeFromText(P.goal,race,P.objRaceKm));
+  const goal=fresh?'Record personnel':P.objGoal?(P.objGoal==='Finir'?'Finir':'Record personnel'):(goalT?'Record personnel':(/finir|terminer|finish|أنهي|إنهاء/i.test(P.goal||'')?'Finir':'Record personnel'));
+  const dateOk=!fresh && !!(P.compDate && P.compDate>=minRaceDate());
   setupTmp={
-    situation:P.planSituation||'autre', level:P.planLevel||OB_LEVEL_TO_PLAN[P.level]||(getUserVDOT()<38?'deb':getUserVDOT()<50?'int':'conf'), gap:P.planGap||'m1_3',
-    objRace:race, raceKm:+P.objRaceKm||15,
-    compDate:dateOk?P.compDate:psDefaultDate(), objProfile:['Plate','Vallonnée','Montagne'].includes(P.objProfile)?P.objProfile:'Plate',
-    objGoal:goal, timeS:goalT||0, days:[...(P.days||[1,3,5,6])], info:null,
-    knownRace:dateOk && (PS_RACES.includes(P.objRace)||!!inferRaceFromGoal()),
-    knownGoal:!!(P.objGoal||goalT), knownLevel:!!(P.planLevel||OB_LEVEL_TO_PLAN[P.level])
+    situation:fresh?'autre':(P.planSituation||'autre'), level:(!fresh&&(P.planLevel||OB_LEVEL_TO_PLAN[P.level]))||(getUserVDOT()<38?'deb':getUserVDOT()<50?'int':'conf'), gap:fresh?'m1_3':(P.planGap||'m1_3'),
+    objRace:race, raceKm:(!fresh&&+P.objRaceKm)||15,
+    compDate:dateOk?P.compDate:psDefaultDate(), objProfile:(!fresh&&['Plate','Vallonnée','Montagne'].includes(P.objProfile))?P.objProfile:'Plate',
+    objGoal:goal, timeS:goalT||0, days:fresh?[1,3,5,6]:[...(P.days||[1,3,5,6])], info:null,
+    knownRace:!fresh && dateOk && (PS_RACES.includes(P.objRace)||!!inferRaceFromGoal()),
+    knownGoal:!fresh && !!(P.objGoal||goalT), knownLevel:!fresh && !!(P.planLevel||OB_LEVEL_TO_PLAN[P.level])
   };
   if(!setupTmp.timeS) setupTmp.timeS=psPredicted(setupTmp);
   // « Préparer cette course » (fiche d'une course) : la course arrive déjà remplie
   const pre=window._psRacePreset; window._psRacePreset=null;
   if(pre) psApplyRace(pre);
-  else if(P.objRaceId && P.objRaceName && P.compDate===setupTmp.compDate) Object.assign(setupTmp,{raceId:P.objRaceId,raceName:P.objRaceName,raceFor:setupTmp.objRace,raceDate:setupTmp.compDate});
+  else if(!fresh && P.objRaceId && P.objRaceName && P.compDate===setupTmp.compDate) Object.assign(setupTmp,{raceId:P.objRaceId,raceName:P.objRaceName,raceFor:setupTmp.objRace,raceDate:setupTmp.compDate});
   openOv('ovProg'); $('#ovProgTitle').textContent=t('configurePlanTitle');
   renderPlanSetup();
 }
