@@ -2700,7 +2700,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.8.0';
+const APP_VERSION='4.9.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -5815,8 +5815,8 @@ const EXDB_MAP={
  'Rowing haltère unilatéral':'One-Arm_Dumbbell_Row','Single Arm Dumbbell Row':'One-Arm_Dumbbell_Row','Rowing poulie basse':'Seated_Cable_Rows','Straight Back Seated Row':'Seated_Cable_Rows','Rowing machine assise':'Seated_Cable_Rows',
  'Tirage vertical poulie':'Wide-Grip_Lat_Pulldown','Bar Lateral Pulldown':'Wide-Grip_Lat_Pulldown','Tirage nuque':'Wide-Grip_Rear_Pull-Up',
  'Tractions pronation':'Pullups','Pull Up':'Pullups','Tractions supination':'Chin-Up','Pull-over poulie':'Straight-Arm_Pulldown',
- 'Good Morning':'Good_Morning','Hyperextension lombaire':'Hyperextensions_-_Back_Extensions','45° One Leg Hyperextension':'Hyperextensions_-_Back_Extensions','Superman au sol':'Superman',
- 'Développé militaire barre':'Standing_Military_Press','Développé haltères assis':'Dumbbell_Shoulder_Press','Seated Shoulder Press':'Dumbbell_Shoulder_Press','Développé Arnold':'Arnold_Dumbbell_Press','Développé machine épaules':'Machine_Shoulder_(Military)_Press','Lever Seated Shoulder Press':'Machine_Shoulder_(Military)_Press',
+ 'Good Morning':'Good_Morning','Hyperextension lombaire':'Hyperextensions_Back_Extensions','45° One Leg Hyperextension':'Hyperextensions_Back_Extensions','Superman au sol':'Superman',
+ 'Développé militaire barre':'Standing_Military_Press','Développé haltères assis':'Dumbbell_Shoulder_Press','Seated Shoulder Press':'Dumbbell_Shoulder_Press','Développé Arnold':'Arnold_Dumbbell_Press','Développé machine épaules':'Machine_Shoulder_Military_Press','Lever Seated Shoulder Press':'Machine_Shoulder_Military_Press',
  'Élévations latérales':'Side_Lateral_Raise','Lateral Raise':'Side_Lateral_Raise','Élévations latérales poulie':'Cable_Seated_Lateral_Raise',
  'Élévations frontales':'Front_Dumbbell_Raise','Front Raise':'Front_Dumbbell_Raise','Oiseau (rear delt)':'Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench','Lever Reverse Fly':'Reverse_Machine_Flyes',
  'Face Pull poulie':'Face_Pull','Cable Face Pull':'Face_Pull','Rowing menton':'Upright_Barbell_Row','Upright Row':'Upright_Barbell_Row',
@@ -5828,14 +5828,14 @@ const EXDB_MAP={
  'Curl poignets':'Palms-Down_Wrist_Curl_Over_A_Bench','Curl poignets inversé':'Palms-Up_Barbell_Wrist_Curl_Over_A_Bench','Marche du fermier':'Farmers_Walk','Farmer Walk':'Farmers_Walk',
  'Crunch':'Crunches','Crunch poulie':'Cable_Crunch','Cable Crunch':'Cable_Crunch','Relevé de jambes suspendu':'Hanging_Leg_Raise','Hanging Leg Raise':'Hanging_Leg_Raise','Relevé de jambes au sol':'Flat_Bench_Lying_Leg_Raise',
  'Planche':'Plank','Plank':'Plank','Russian Twist':'Russian_Twist','Roulette abdominale':'Ab_Roller','Ab Wheel Rollout':'Ab_Roller','Mountain Climbers':'Mountain_Climbers',
- 'Hip Thrust barre':'Barbell_Hip_Thrust','Hip Thrust':'Barbell_Hip_Thrust','Lever Hip Thrust':'Barbell_Hip_Thrust','Pont fessier':'Butt_Lift_(Bridge)','Glute Bridge':'Butt_Lift_(Bridge)',
+ 'Hip Thrust barre':'Barbell_Hip_Thrust','Hip Thrust':'Barbell_Hip_Thrust','Lever Hip Thrust':'Barbell_Hip_Thrust','Pont fessier':'Butt_Lift_Bridge','Glute Bridge':'Butt_Lift_Bridge',
  'Abduction machine':'Thigh_Abductor','Lever Seated Hip Abduction':'Thigh_Abductor','Adduction machine':'Thigh_Adductor','Lever Seated Hip Adduction':'Thigh_Adductor','Fentes bulgares':'Dumbbell_Lunges','Bulgarian Split Squat':'Dumbbell_Lunges',
  'Squat barre':'Barbell_Full_Squat','Back Squat':'Barbell_Full_Squat','Front Squat':'Front_Barbell_Squat','Squat Smith':'Smith_Machine_Squat','Smith Squat':'Smith_Machine_Squat',
  'Presse à cuisses':'Leg_Press','Sled 45° Leg Press':'Leg_Press','Sled 45° Leg Wide Press':'Leg_Press','Hack Squat':'Hack_Squat','Leg Extension':'Leg_Extensions','Lever Leg Extension':'Leg_Extensions','Lever Seated Leg Extension':'Leg_Extensions',
- 'Fentes avant':'Dumbbell_Lunges','Fentes marchées':'Dumbbell_Walking_Lunge','Walking Lunge':'Dumbbell_Walking_Lunge','Dumbbell Split Squat':'Dumbbell_Lunges','Goblet Squat':'Goblet_Squat','Squat poids du corps':'Bodyweight_Squat',
+ 'Fentes avant':'Dumbbell_Lunges','Fentes marchées':'Bodyweight_Walking_Lunge','Walking Lunge':'Bodyweight_Walking_Lunge','Dumbbell Split Squat':'Dumbbell_Lunges','Goblet Squat':'Goblet_Squat','Squat poids du corps':'Bodyweight_Squat',
  'Leg Curl allongé':'Lying_Leg_Curls','Lever Lying Leg Curl':'Lying_Leg_Curls','Leg Curl assis':'Seated_Leg_Curl','Lever Kneeling Leg Curl':'Standing_Leg_Curl','Nordic Curl':'Lying_Leg_Curls','Nordic Hamstring Curl':'Lying_Leg_Curls','Soulevé jambes tendues haltères':'Stiff-Legged_Dumbbell_Deadlift',
  'Mollets debout':'Standing_Calf_Raises','Standing Calf Raise':'Standing_Calf_Raises','Mollets assis':'Seated_Calf_Raise','Lever Seated Calf Raise':'Seated_Calf_Raise','Lever Seated One Leg Calf Raise':'Seated_Calf_Raise','Mollets à la presse':'Calf_Press_On_The_Leg_Press_Machine',
- 'Burpees':'Burpee','Thruster':'Thrusters','Clean & Press':'Clean_and_Press','Kettlebell Swing':'Kettlebell_One-Legged_Deadlift','EZ-bar 21s':'Barbell_Curl',
+ 'Thruster':'Kettlebell_Thruster','Clean & Press':'Clean_and_Press','Kettlebell Swing':'Kettlebell_One-Legged_Deadlift','EZ-bar 21s':'Barbell_Curl',
  // Alias ajoutés : ces noms (bibliothèque LIB) n'avaient pas de correspondance ci-dessus et retombaient
  // sur l'icône générique. On les relie à un id déjà utilisé et vérifié plus haut (même exercice ou variante proche).
  'Dumbbell Incline Bench Press':'Incline_Dumbbell_Press','Concentration Curl':'Concentration_Curls','Cable Curl':'Cable_Hammer_Curls_-_Rope_Attachment',
@@ -6108,7 +6108,7 @@ const TYPE_COLORS={EF:'--ok','Tempo':'--warn','Seuil':'--or','VMA':'--bad','Inte
 // Couleur par baseType brut (codes générés par buildSessionV2) — utilisée pour la puce de type
 // affichée AVANT clic sur la carte de séance (aperçu rapide).
 const BASETYPE_COLORS={EF:'--ok',RECUP:'--muted',LIGNES:'--ok',LONG:'--e',LONG_COURT:'--e',TEMPO:'--warn',TEMPO_SPE:'--warn',FARTLEK:'--warn',PROGRESSIF:'--warn',COTES:'--bad',SPE:'--e2',SPE_COURT:'--e2',
-  SEUIL:'--or',DBLSEUIL:'--or',VMAc:'--bad',VMAl:'--bad',VO2:'--bad',INTERVAL:'--bad',COURSE:'--e',Repos:'--muted'};
+  SEUIL:'--or',DBLSEUIL:'--or',VMAc:'--bad',VMAl:'--bad',VO2:'--bad',INTERVAL:'--bad',TEST:'--bad',COURSE:'--e',Repos:'--muted'};
 // --e passe par --et : en mode simple l'accent est une couleur de remplissage, trop sombre pour
 // écrire « Long » ou « Course » sur le fond (--et n'existe qu'en mode simple).
 function baseTypeColor(bt){ const v=BASETYPE_COLORS[bt]||'--e'; return v==='--e'?'var(--et,var(--e))':'var('+v+')'; }
@@ -6209,7 +6209,7 @@ function trSessType(ty){
 // active au moment de la génération. On les recalcule à l'affichage à partir de s.baseType
 // (clé stable) pour qu'elles suivent la langue courante. s.title/s.type restent utilisés
 // tels quels pour les séances perso (pas de baseType), qui contiennent du texte libre.
-const PLAN_SESSTYPE_KEYS=['EF','RECUP','LONG','TEMPO','TEMPO_SPE','SEUIL','DBLSEUIL','VMAc','VMAl','VO2','INTERVAL','SPE','PROGRESSIF','FARTLEK','COTES','LIGNES','COURSE','default'];
+const PLAN_SESSTYPE_KEYS=['TEST','EF','RECUP','LONG','TEMPO','TEMPO_SPE','SEUIL','DBLSEUIL','VMAc','VMAl','VO2','INTERVAL','SPE','PROGRESSIF','FARTLEK','COTES','LIGNES','COURSE','default'];
 function planSessTitle(s){
   const bt=s&&s.baseType; if(!bt) return s?s.title:'';
   if(bt==='LONG'||bt==='LONG_COURT') return t('sessTitle_LONG')+(s.phaseKey==='SPE'?t('progressiveSuffix'):'');
@@ -6284,15 +6284,17 @@ function liveDetail(s){
       case 'VMAc': {
         const n=s.series?.reps, dist=s.series?.dist||300; if(!n) return s.detail;
         const vmac30m=Math.round(distKmFromTime(30,pace.VMAc)*1000);
-        d={objectif:t('bs_vmac_objectif'),warmup:tp('bs_vmac_warmup',WU),body:planRepsBodyText(s.series,'VMAc',pace),paces:tp('bs_vmac_paces',fmtSplit(splitSecFromPace(pace.VMAc,dist)),dist,S(pace.VMAc)),recovery:tp('bs_vmac_recovery',dist),cooldown:CD,tips:[tp('bs_vmac_tip1',fmtSplit(splitSecFromPace(pace.VMAc,dist)),dist)],mistakes:[t('bs_vmac_mistake1'),tp('bs_vmac_mistake2',dist)],why:t('bs_vmac_why')};
+        const pcR=(s.series.variant==='3030'||s.series.variant==='1515')?pace:Object.assign({},pace,{VMAc:planRepPaceAt(pace,dist,'VMAc',s.rs)});   // V4.9 : allure selon la distance
+        d={objectif:t('bs_vmac_objectif'),warmup:tp('bs_vmac_warmup',WU),body:planRepsBodyText(s.series,'VMAc',pcR),paces:tp('bs_vmac_paces',fmtSplit(splitSecFromPace(pcR.VMAc,dist)),dist,S(pcR.VMAc)),recovery:tp('bs_vmac_recovery',dist),cooldown:CD,tips:[tp('bs_vmac_tip1',fmtSplit(splitSecFromPace(pcR.VMAc,dist)),dist)],mistakes:[t('bs_vmac_mistake1'),tp('bs_vmac_mistake2',dist)],why:t('bs_vmac_why')};
         break; }
       case 'VMAl': case 'VO2': {
         const n=s.series?.reps, dist=s.series?.dist||1000; if(!n) return s.detail;
-        d={objectif:t('bs_vmal_objectif'),warmup:WU,body:planRepsBodyText(s.series,'VMAl',pace),paces:tp('bs_vmal_paces',S(pace.VMAl)),recovery:liveSeries(s).recoveryLabel,cooldown:CD,tips:[t('bs_vmal_tip1'),t('bs_vmal_tip2')],mistakes:[t('bs_vmal_mistake1')],why:t('bs_vmal_why')};
+        const pcR=Object.assign({},pace,{VMAl:planRepPaceAt(pace,dist,'VMAl',s.rs)});   // V4.9 : allure selon la distance
+        d={objectif:t('bs_vmal_objectif'),warmup:WU,body:planRepsBodyText(s.series,'VMAl',pcR),paces:tp('bs_vmal_paces',S(pcR.VMAl)),recovery:liveSeries(s).recoveryLabel,cooldown:CD,tips:[t('bs_vmal_tip1'),t('bs_vmal_tip2')],mistakes:[t('bs_vmal_mistake1')],why:t('bs_vmal_why')};
         break; }
       case 'INTERVAL': {
         const sg=(s.series&&s.series.segments)||PLAN_PYRAMID.map(dist=>({dist,pk:dist<=400?'VMAc':'VMAl'}));   // plans d'avant la V4.8 : pyramide d'origine
-        const px=sg.map(x=>({dist:x.dist,pa:pace[x.pk||(x.dist<=400?'VMAc':'VMAl')]}));
+        const px=sg.map(x=>({dist:x.dist,pa:planRepPaceAt(pace,x.dist,x.pk||(x.dist<=400?'VMAc':'VMAl'),s.rs)}));   // V4.9 : allure selon la distance
         const detailSegs=px.map(x=>x.dist+' m ('+fmtSplit(splitSecFromPace(x.pa,x.dist))+')').join(' · ');
         d={objectif:t('bs_interval_objectif'),warmup:WU,body:tp('bs_interval_body',detailSegs),paces:tp('bs_interval_paces2',S(Math.min(...px.map(x=>x.pa))),S(Math.max(...px.map(x=>x.pa)))),recovery:liveSeries(s).recoveryLabel,cooldown:CD,tips:[t('bs_interval_tip1')],mistakes:[t('bs_interval_mistake1')],why:t('bs_interval_why')};
         break; }
@@ -6313,6 +6315,7 @@ function liveDetail(s){
       case 'LIGNES':
         d={objectif:t('bs_lignes_objectif'),warmup:tp('bs_10min_warmup',S(pace.EF)),body:tp('bs_lignes_body',round1(planSegs(s,pace).filter(x=>x.k==='run').reduce((a,x)=>a+x.km,0)),gp.lignesN),paces:t('bs_lignes_paces'),recovery:t('bs_lignes_recovery'),cooldown:t('bs_lignes_cooldown'),tips:[t('bs_lignes_tip1')],mistakes:[t('bs_lignes_mistake1')],why:t('bs_lignes_why')};
         break;
+      case 'TEST': { const td=gp.testDist||planTestDist(); d=planTestDetail(td,planTestPace(vdot,td),WU,CD); break; }   // V4.9
       case 'COURSE':
         d={objectif:tp('bs_course_objectif',(P.objTime||goal)),warmup:t('bs_course_warmup'),body:tp('bs_course_body',s.km,s.pace),paces:tp('bs_course_paces',s.pace),recovery:'—',cooldown:t('bs_course_cooldown'),tips:[t('bs_course_tip1'),t('bs_course_tip2')],mistakes:[t('bs_course_mistake1')],why:t('bs_course_why')};
         break;
@@ -6463,6 +6466,19 @@ function planPaces(vdot,vq){
 // Allures d'UNE séance : les séances du plan portent leur écart de VDOT de travail (s.pvo, en points) ; le plan lui garde le VDOT mesuré,
 // si bien que l'ajustement de VDOT du moteur d'adaptation déplace aussi ces séances.
 function planPcFor(s,pc){ return (s && s.pvo && pc && pc.v)?planPaces(pc.v,pc.v+s.pvo):pc; }
+/* ===== ALLURE DES RÉPÉTITIONS SELON LEUR DISTANCE (V4.9.0) =====
+   Avant : trois allures de zone seulement (VMAc 105 %, VMAl 98 %, seuil 88 % de la vVO2max), donc un 200 m et un 600 m,
+   ou un 800 m et un 2000 m, sortaient à la même allure. La courbe REP_INTENSITY_CURVE (calibrée sur de vraies séances de piste :
+   30×200 m en 26-28 s, 20×400 m en 60 s, 10×1000 m en 2:40-2:50, 4×2000 m en moins de 6 min, 3000 m en 9:10) existait déjà
+   mais ne servait qu'au contrôle anti-triche. Elle fixe maintenant l'allure de chaque répétition rapide.
+   Elle est mélangée à l'allure de zone selon le niveau (rs, 0 → 1) : un débutant garde l'allure de zone, un bon coureur suit la courbe.
+   Les séances en temps (30/30, 15/15), le seuil, l'allure spécifique et les footings restent aux allures de zone. */
+function planRs(lv){ return Math.round(Math.max(0,Math.min(1,(lv-0.15)/0.6))*100)/100; }
+function planRepPaceAt(pc,dist,pk,rs){
+  if(!pc || !(rs>0) || !(dist>0) || (pk!=='VMAc' && pk!=='VMAl')) return pc?pc[pk]:0;
+  const zone=pk==='VMAc'?105:98, pct=zone+(repIntensityPct(dist)-zone)*rs;
+  return paceFromPct(pc.vq||pc.v,pct/100);
+}
 /* ===== UNE SÉANCE = LA SOMME DE SES SEGMENTS (V3.14.0) =====
    Distance, durée et allure moyenne étaient calculées chacune de son côté : « 8 km · 5:00/km moy.
    · 44 min » (8 × 5:00 = 40 min), l'allure « moyenne » étant en fait celle du corps de séance.
@@ -6509,18 +6525,60 @@ function planPickPyramid(rng,lv,phaseKey,raceM,mem,capKm){
   if(mem){ mem.pyr=ch.id; mem.pyrSeen=mem.pyrSeen||{}; mem.pyrSeen[ch.id]=(mem.pyrSeen[ch.id]||0)+1; }
   return ch;
 }
-function planPyrSegments(struct,lv,phaseKey,pace){
-  return struct.d.map(dist=>{ const pk=planPyrPk(dist,phaseKey); return {dist,pk,rec:planPyrRec(dist,lv),paceSecPerKm:pace[pk],splitSec:splitSecFromPace(pace[pk],dist)}; });
+function planPyrSegments(struct,lv,phaseKey,pace,rs){
+  return struct.d.map(dist=>{ const pk=planPyrPk(dist,phaseKey), pp=planRepPaceAt(pace,dist,pk,rs); return {dist,pk,rec:planPyrRec(dist,lv),paceSecPerKm:pp,splitSec:splitSecFromPace(pp,dist)}; });
 }
 function planRecLabel(sec){ return sec<60?sec+' s':(Math.floor(sec/60)+' min'+(sec%60?' '+String(sec%60).padStart(2,'0'):'')); }
+/* ===== TEST DE FIN DE BLOC (V4.9.0) =====
+   Un bloc = 3 semaines de charge + 1 semaine de décharge. La semaine de décharge (4, 8, 12…) remplace sa séance de qualité par un TEST :
+   une distance plus COURTE que la course (jamais le 21 km d'une prépa semi), courue à fond après échauffement. Le chrono redonne une VDOT
+   (vdotFromRace), donc de nouvelles allures pour toutes les séances à venir. Cible de test : 3000 m → 1500 m ; 5 km → 3000 m ; 10 km → 5000 m ;
+   semi → 8 km ; marathon → 10 km. */
+function planTestDist(){
+  const m=raceMeters();
+  return m<=3000?1500:m<=5000?3000:m<=10000?5000:m<=21100?8000:10000;
+}
+function planTestPace(vdot,dist){ return predictTime(vdot,dist)/(dist/1000); }
+function planTestDetail(dist,pSec,WU,CD){
+  const lab=dist+' m', tm=fmtSplit(pSec*dist/1000), S=spkToStr;
+  return {objectif:tp('bs_test_objectif',lab),warmup:WU,body:tp('bs_test_body',lab,tm,S(pSec)),paces:tp('bs_test_paces',tm,S(pSec)),recovery:'—',cooldown:CD,
+    tips:[t('bs_test_tip1'),t('bs_test_tip2')],mistakes:[t('bs_test_mis1')],why:t('bs_test_why')};
+}
+// Chrono du test → nouvelle VDOT (pas plus de 3 points d'un coup) → allures de toutes les séances à venir.
+function planTestResult(s,txt){
+  const dist=(s.genParams&&s.genParams.testDist)||planTestDist(), sec=parseTime(txt);
+  if(!(sec>0)){ toast(t('testBadTime')); return false; }
+  const g=(typeof recordGuard==='function')?recordGuard(dist,sec,todayKey()):{ok:true};
+  if(g && !g.ok && !g.soft){ toast(g.msg); return false; }
+  const v0=getUserVDOT(), vm=vdotFromRace(dist,sec);
+  if(!(vm>0)) { toast(t('testBadTime')); return false; }
+  const v1=clampVdot(v0+Math.max(-3,Math.min(3,vm-v0)));
+  P.testLog=(P.testLog||[]).concat([{date:todayKey(),dist,sec:Math.round(sec),vdot:v1,from:v0}]).slice(-30);
+  if(Math.abs(v1-v0)<0.05){ toast(tp('testSame',fmt1(v1))); return true; }
+  const msg={k:v1>=v0?'adMsgVdotUpDone':'adMsgVdotDownDone',p:[fmt1(v0),fmt1(v1)]};
+  const prevAdj=P.vdotAdj?Object.assign({},P.vdotAdj):null;
+  const repace=(pl,pc0,k)=>{ pl.vdot=v1; const pc=planPaces(v1); let n=0;
+    pl.sessions.forEach(x=>{ if(x.id!==s.id && !x.done && !x.missed && x.date>=k && x.km>0 && x.baseType!=='Repos'){ planApplySegs(x,pc); x.detail=null; n++; } });
+    return n||1; };
+  let r=null;
+  try{ if(typeof adaptApply==='function') r=adaptApply('testBlock',false,repace,msg,{vdot:[v0,v1],prevAdj}); }catch(e){ console.error('[IKORUN] test',e); }
+  if(!r && PLAN && PLAN.sessions){ repace(PLAN,null,todayKey()); }
+  P.vdotAdj={v:v1,date:todayKey(),why:'test'};
+  toast(tp(v1>=v0?'testUp':'testDown',fmt1(v0),fmt1(v1)));
+  return true;
+}
+function planTestAsk(s,then){
+  const dist=(s.genParams&&s.genParams.testDist)||planTestDist();
+  customPrompt(tp('testAskTime',dist+' m'),'',v=>{ planTestResult(s,v); then(); },{placeholder:'mm:ss',yesLabel:t('validate'),noLabel:t('testSkip'),onCancel:then});
+}
 function planSegs(s,pc){
   if(!s||!s.baseType||s.baseType==='Repos') return [];
   pc=planPcFor(s,pc||planPaces((PLAN&&PLAN.vdot)||getUserVDOT()||45));
   const bt=s.baseType, sr=s.series||{}, gp=s.genParams||{}, out=[];
   const T=(k,sec,pk)=>{ if(sec>0) out.push({k,sec,km:sec/pc[pk],pk}); };
-  const D=(k,km,pk)=>{ if(km>0) out.push({k,km,sec:km*pc[pk],pk}); };
+  const D=(k,km,pk,pp)=>{ if(km>0) out.push({k,km,sec:km*(pp||pc[pk]),pk}); };
   const WU=()=>T('wu',(gp.wu||17.5)*60,'EF'), CD=()=>T('cd',(gp.cd||12.5)*60,'RC');   // V4.8 : proportionnels au niveau (gp.wu / gp.cd, en min)
-  const reps=(n,dist,pk,rec)=>{ for(let i=0;i<n;i++){ D('work',dist/1000,pk); if(i<n-1) T('rec',rec,'RC'); } };
+  const reps=(n,dist,pk,rec,pp)=>{ for(let i=0;i<n;i++){ D('work',dist/1000,pk,pp); if(i<n-1) T('rec',rec,'RC'); } };
   const total=+s.km||0;
   switch(bt){
     case 'EF': D('run',total,'EF'); break;
@@ -6535,11 +6593,11 @@ function planSegs(s,pc){
     case 'DBLSEUIL':
       WU(); for(let i=0;i<5;i++){ T('work',6*60,'SEUIL'); if(i<4) T('rec',60,'RC'); } CD();
       WU(); reps(sr.reps||10,sr.dist||400,'SEUIL',sr.recoverySec||30); CD(); break;
-    case 'VMAc': WU(); reps(sr.reps||10,sr.dist||300,'VMAc',sr.recoverySec||60); CD(); break;
-    case 'VMAl': case 'VO2': WU(); reps(sr.reps||6,sr.dist||1000,'VMAl',sr.recoverySec||150); CD(); break;
+    case 'VMAc': WU(); reps(sr.reps||10,sr.dist||300,'VMAc',sr.recoverySec||60,sr.variant==='3030'||sr.variant==='1515'?null:planRepPaceAt(pc,sr.dist||300,'VMAc',s.rs)); CD(); break;
+    case 'VMAl': case 'VO2': WU(); reps(sr.reps||6,sr.dist||1000,'VMAl',sr.recoverySec||150,planRepPaceAt(pc,sr.dist||1000,'VMAl',s.rs)); CD(); break;
     case 'INTERVAL':
       { const sg=sr.segments||PLAN_PYRAMID.map(dist=>({dist}));
-        WU(); sg.forEach((x,i)=>{ const pk=x.pk||(x.dist<=400?'VMAc':'VMAl'); D('work',x.dist/1000,pk); if(i<sg.length-1) T('rec',x.rec!=null?x.rec:x.dist/1000*pc[pk],'RC'); }); CD(); }
+        WU(); sg.forEach((x,i)=>{ const pk=x.pk||(x.dist<=400?'VMAc':'VMAl'); D('work',x.dist/1000,pk,planRepPaceAt(pc,x.dist,pk,s.rs)); if(i<sg.length-1) T('rec',x.rec!=null?x.rec:x.dist/1000*pc[pk],'RC'); }); CD(); }
       break;
     case 'SPE': case 'SPE_COURT': WU(); reps(sr.reps||5,sr.dist||1000,'SPE',sr.recoverySec||90); CD(); break;
     case 'PROGRESSIF': {
@@ -6561,6 +6619,7 @@ function planSegs(s,pc){
       // 30-45 s en côte (allure de référence : seuil, plus lente en montée à effort égal), descente au trot
       const n=sr.reps||10, eff=sr.eff||37.5, back=sr.effRec||eff;   // V4.8 : côtes courtes en sprint (sr.eff = durée de l'effort en s)
       WU(); for(let i=0;i<n;i++){ T('work',eff,'HILL'); T('rec',back,'RC'); } CD(); break; }
+    case 'TEST': { const td=gp.testDist||planTestDist(); WU(); D('work',td/1000,'SPE',planTestPace(pc.v,td)); CD(); break; }   // V4.9
     case 'COURSE': D('run',raceMeters()/1000,'SPE'); break;
     default: D('run',total,'EF');
   }
@@ -6576,7 +6635,7 @@ function planApplySegs(s,pc){
   const w=sg.find(x=>x.k==='work');
   if(s.series && s.series.reps && s.series.dist && w) s.series.paceSecPerKm=w.sec/w.km;
   if(s.series && s.series.segments){ const pcs=planPcFor(s,pc||planPaces((PLAN&&PLAN.vdot)||getUserVDOT()||45));
-    s.series.segments.forEach(x=>{ const pk=x.pk||(x.dist<=400?'VMAc':'VMAl'); x.paceSecPerKm=pcs[pk]; x.splitSec=splitSecFromPace(pcs[pk],x.dist); }); }
+    s.series.segments.forEach(x=>{ const pk=x.pk||(x.dist<=400?'VMAc':'VMAl'), pp=planRepPaceAt(pcs,x.dist,pk,s.rs); x.paceSecPerKm=pp; x.splitSec=splitSecFromPace(pp,x.dist); }); }
   return s;
 }
 // Les allures de chaque partie, regroupées dans l'ordre : [{k, pk, pace, km, sec}].
@@ -6618,7 +6677,7 @@ function planMainPart(s){
 }
 function planKmMax(){ return P.kmWeekMax||Math.round((P.kmWeek||35)*1.6); }
 function planIsLong(s){ return !!s && (s.baseType==='LONG'||s.baseType==='LONG_COURT'); }
-function planIsHard(s){ return !!s && PLAN_HARD_Q.includes(s.baseType); }
+function planIsHard(s){ return !!s && (PLAN_HARD_Q.includes(s.baseType) || s.baseType==='TEST'); }   // V4.9 : le test compte comme jour dur, mais reste hors du suivi d'écart d'allure
 // Semaine « légère » hors décharge : reprise après une coupure (s.ramp) ou séances allégées par
 // le moteur d'adaptation (s.adj.light). Elle ne sert jamais de base à la progression de +10 %.
 function planWeekLight(list){ return list.some(s=>s.ramp || (s.adj && s.adj.light)); }
@@ -6652,7 +6711,7 @@ function planSafetyPass(plan,opts){
   const editable=s=>!!s && !s.done && !s.missed && !s.customized && s.date>=tk && s.baseType!=='COURSE' && s.baseType!=='Repos' && (s.km||0)>0;
   const weekOf=w=>sessions.filter(s=>s.week===w);
   const rebuild=(s,type,over)=>{
-    const built=buildSessionV2(type,Object.assign({vdot,pace:planPcFor(s,pace),lv:plan.lv,tun,mem:plan._mem||(plan._mem={}),floors:plan.floors||null,wkKm:Math.max(15,planWeekKm(weekOf(s.week))),nDays,
+    const built=buildSessionV2(type,Object.assign({vdot,pace:planPcFor(s,pace),lv:plan.lv,rs:s.rs||0,tun,mem:plan._mem||(plan._mem={}),floors:plan.floors||null,wkKm:Math.max(15,planWeekKm(weekOf(s.week))),nDays,
       phase:{name:s.phase,key:s.phaseKey,color:s.color},rng,pick,isDeload:!!s.deload,goal:plan.goal,w:s.week,weeks:plan.weeks},over||{}));
     const durMin=built.durMin!=null?built.durMin:(built.pace==='—'?0:Math.round(built.km*parseTime(built.pace)/60));
     Object.assign(s,{type:built.label,baseType:type,title:built.title,km:built.km,duration:durMin,pace:built.pace,rpe:built.rpe,
@@ -6986,7 +7045,9 @@ function validatePlan(plan,opts){
     if(!(sp>0) || Math.abs(s.km*sp/60-s.duration)>1) errors.push('distance × allure ≠ durée : '+tag(s)+' '+s.km+' km × '+s.pace+' ≠ '+s.duration+' min');
     planPaceParts(s,pc).forEach(p=>{
       if(p.pk==='WALK'||p.pk==='HILL') return; // marche ; côtes : à l'effort, l'allure en montée ne dit pas la zone
-      const easyPk=['EF','RC','LONG','LONGP','MAR','WALK'].includes(p.pk), z=planZoneOf(p.pk)[0], f=(60000/p.pace)/(easyPk?vmax:vVO2max(vdot+(s.pvo||0))), r=PLAN_ZONE_FRAC[z];   // V4.8 : % de la vVO2max de travail pour les allures de qualité
+      let easyPk=['EF','RC','LONG','LONGP','MAR','WALK'].includes(p.pk), z=planZoneOf(p.pk)[0], f=(60000/p.pace)/(easyPk?vmax:vVO2max(vdot+(s.pvo||0))), r=PLAN_ZONE_FRAC[z];
+      // V4.9 : répétitions courtes selon la courbe de distance (jusqu'à ~134 % de la vVO2max sur 200 m) ; le test suit la distance du test
+      if(r && s.baseType==='TEST' && p.k==='work') r=[0.80,1.06]; else if(r && (p.pk==='VMAc'||p.pk==='VMAl')) r=[r[0],1.34];   // V4.8 : % de la vVO2max de travail pour les allures de qualité
       if(r && (f<r[0]-1e-3 || f>r[1]+1e-3)) errors.push('allure hors zone : '+tag(s)+' '+p.k+' '+spkToStr(p.pace)+' = '+Math.round(f*100)+' % vVO2max, zone '+z);
     });
   });
@@ -7132,9 +7193,9 @@ function planBuild(opts){
     sessions.push(planApplySegs({ id:id++, week:w+off, phase:ph.name, phaseKey:ph.key, color:ph.color,
       date:dateKey(d), type:built.label, baseType:type, title:built.title,
       km:built.km, duration:durMin, pace:built.pace, rpe:built.rpe, series:built.series||null,
-      desc:built.detail.objectif, detail:built.detail, genParams:built.genParams||null, deload:isDeload, done:false, ramp:curRamp||undefined, pvo:curPvo||undefined },pace));
+      desc:built.detail.objectif, detail:built.detail, genParams:built.genParams||null, deload:isDeload, done:false, ramp:curRamp||undefined, pvo:curPvo||undefined, rs:planRs(lvScore) },pace));
   };
-  const HARD=['VMAc','VMAl','VO2','INTERVAL','DBLSEUIL','SEUIL','SPE','SPE_COURT','TEMPO_SPE','TEMPO','PROGRESSIF','FARTLEK','COTES','LONG','LONG_COURT'];
+  const HARD=['VMAc','VMAl','VO2','INTERVAL','DBLSEUIL','SEUIL','SPE','SPE_COURT','TEMPO_SPE','TEMPO','PROGRESSIF','FARTLEK','COTES','TEST','LONG','LONG_COURT'];
   const isEasyT=t=>t==='EF'||t==='RECUP', isLongT=t=>t==='LONG'||t==='LONG_COURT';
   const repriseWeeks=({lt1:1,m1_3:2,m3_6:3,gt6:4})[P.planGap]||0;
   // Reprise après une coupure : comptée en jours réels. Une première semaine entamée (moins de jours
@@ -7197,6 +7258,11 @@ function planBuild(opts){
       else if(daysBetween(d,comp)===2 && HARD.includes(type)) type=isLongT(type)?'EF':'SPE_COURT';
       slots.push({d,type});
     });
+    // V4.9 : test de fin de bloc — la séance de qualité de la semaine de décharge devient un test (au moins 8 jours avant la course, jamais en reprise)
+    if(isDeload && !reprise && weeks>=6){
+      const tq=slots.find(x=>PLAN_HARD_Q.includes(x.type) && x.type!=='DBLSEUIL' && daysBetween(x.d,comp)>=8);
+      if(tq){ tq.orig=tq.type; tq.type='TEST'; }
+    }
     // Budget kilométrique de la semaine : les séances de qualité ont une structure
     // fixe (échauffement + bloc + retour au calme) et les footings s'ajoutaient
     // par-dessus, si bien que le « km/sem maxi » choisi était dépassé (jusqu'à
@@ -7241,6 +7307,8 @@ function planBuild(opts){
     // V4.8 : le fractionné rapide est budgété en premier — si le volume ne laisse place qu'à une séance de qualité, c'est lui qui reste
     slots.filter(s=>!isEasyT(s.type)&&!isLongT(s.type)).sort((x,y)=>(PLAN_FAST_Q.includes(y.type)?1:0)-(PLAN_FAST_Q.includes(x.type)?1:0)).forEach(s=>{
       pushSession(s.d,w,ph,s.type,wkKm,isDeload);
+      // V4.9 : un test trop long pour le volume de la semaine (échauffement + distance + retour au calme) laisse sa place à la séance prévue
+      if(s.type==='TEST' && s.orig && (sessions[sessions.length-1].km||0)>Math.max(8,Math.min(longRunCapKm()*0.92,wkKm*0.29))){ sessions.pop(); s.type=s.orig; pushSession(s.d,w,ph,s.type,wkKm,isDeload); }
       const km=sessions[sessions.length-1].km||0;
       const needLong=!longSlots.length?0:(longMustLead&&s.type!=='DBLSEUIL')?Math.max(longTarget,Math.min(longRunCapKm(),Math.ceil(Math.max(maxQ,km))+1)):longTarget;
       if(keptQ>=1 && used+km>kmMax-needLong-eFl*easySlots.length){ sessions.pop(); easySlots.push({d:s.d,type:'EF'}); return; }
@@ -7636,6 +7704,7 @@ function buildSessionV2(type,o){
   const vary=(a,b)=>a+Math.round(rng()*(b-a)); // variabilité contrôlée
   // V4.8 : niveau (0-1), seuils de progression et mémoire des variantes ; tout le dimensionnement en dépend.
   const lv=o.lv!=null?o.lv:planLevelScore(vdot,wkKm), mem=o.mem||null, tun=o.tun||PLAN_TUN_DEFAULT;
+  const rsB=o.rs!=null?o.rs:planRs(lv);   // V4.9 : force de la courbe d'allure par distance (0 = allures de zone d'avant la V4.9)
   const r15=x=>Math.max(15,Math.round(x/15)*15);
   const pickV=(key,list)=>{   // tirage pondéré avec mémoire : la variante de la fois d'avant pèse 7 fois moins
     let c=list.filter(v=>lv>=(v.lo||0)-0.001 && lv<=(v.hi==null?1:v.hi)+0.001 && (!v.ok||v.ok())); if(!c.length) c=[list[0]];
@@ -7721,14 +7790,15 @@ function buildSessionV2(type,o){
         {id:'c600',w:0.9,lo:0.55,mk:()=>({n:vary(5,7),dist:600,rec:120})}]).mk();
       const dist=V.dist, recSecEach=V.rec, n=fitN(V.n,dist,recSecEach,6), recN=Math.max(0,n-1);
       const mainKm=n*dist/1000, recKm=distKmFromTime(recN*recSecEach,pace.RC);
-      km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*splitSecFromPace(pace.VMAc,dist)/60+recN*recSecEach/60+CD_MIN);
-      p=S(pace.VMAc); rpe=9; label=t('sessLabel_VMAc'); title=t('sessTitle_VMAc');
-      series={reps:n,dist,paceSecPerKm:pace.VMAc,recoverySec:recSecEach,recoveryLabel:tp('recovTrotTemplate',planRecLabel(recSecEach))};
+      const pr=V.variant==='3030'||V.variant==='1515'?pace:Object.assign({},pace,{VMAc:planRepPaceAt(pace,dist,'VMAc',rsB)});   // V4.9 : allure selon la distance (les 30/30 et 15/15 restent à l'allure de zone)
+      km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*splitSecFromPace(pr.VMAc,dist)/60+recN*recSecEach/60+CD_MIN);
+      p=S(pr.VMAc); rpe=9; label=t('sessLabel_VMAc'); title=t('sessTitle_VMAc');
+      series={reps:n,dist,paceSecPerKm:pr.VMAc,recoverySec:recSecEach,recoveryLabel:tp('recovTrotTemplate',planRecLabel(recSecEach))};
       if(V.variant) series.variant=V.variant;
       const vmac30m=Math.round(distKmFromTime(30,pace.VMAc)*1000);
       const vmacBodyN=vary(12,16);
-      d={objectif:t('bs_vmac_objectif'),warmup:tp('bs_vmac_warmup',WU),body:tp('bs_vmac_body',repsText(n,dist,pace.VMAc),vmacBodyN,vmac30m,vmac30m),paces:tp('bs_vmac_paces',fmtSplit(splitSecFromPace(pace.VMAc,dist)),dist,S(pace.VMAc)),recovery:tp('bs_vmac_recovery',dist),cooldown:CD,tips:[tp('bs_vmac_tip1',fmtSplit(splitSecFromPace(pace.VMAc,dist)),dist)],mistakes:[t('bs_vmac_mistake1'),tp('bs_vmac_mistake2',dist)],why:t('bs_vmac_why')};
-      d.body=planRepsBodyText(series,'VMAc',pace); d.recovery=series.recoveryLabel;
+      d={objectif:t('bs_vmac_objectif'),warmup:tp('bs_vmac_warmup',WU),body:tp('bs_vmac_body',repsText(n,dist,pr.VMAc),vmacBodyN,vmac30m,vmac30m),paces:tp('bs_vmac_paces',fmtSplit(splitSecFromPace(pr.VMAc,dist)),dist,S(pr.VMAc)),recovery:tp('bs_vmac_recovery',dist),cooldown:CD,tips:[tp('bs_vmac_tip1',fmtSplit(splitSecFromPace(pr.VMAc,dist)),dist)],mistakes:[t('bs_vmac_mistake1'),tp('bs_vmac_mistake2',dist)],why:t('bs_vmac_why')};
+      d.body=planRepsBodyText(series,'VMAc',pr); d.recovery=series.recoveryLabel;
       genParams={vmacBodyN};
       break; }
     case 'VMAl': case 'VO2': {
@@ -7740,18 +7810,19 @@ function buildSessionV2(type,o){
         {id:'k1600',w:0.8,lo:0.65,mk:()=>({n:vary(3,4),dist:1600,rec:180})}]).mk();
       const dist=V.dist, recSecEach=V.rec, n=fitN(V.n,dist,recSecEach,3), recN=Math.max(0,n-1);
       const mainKm=n*dist/1000, recKm=distKmFromTime(recN*recSecEach,pace.RC);
-      km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*splitSecFromPace(pace.VMAl,dist)/60+recN*recSecEach/60+CD_MIN);
-      p=S(pace.VMAl); rpe=9; label=type==='VO2'?t('sessLabel_VO2'):t('sessLabel_VMAl'); title=type==='VO2'?t('sessTitle_VO2'):t('sessTitle_VMAl');
-      series={reps:n,dist,paceSecPerKm:pace.VMAl,recoverySec:recSecEach,recoveryLabel:tp('recovTrotTemplate',planRecLabel(recSecEach))};
+      const pr=Object.assign({},pace,{VMAl:planRepPaceAt(pace,dist,'VMAl',rsB)});   // V4.9 : allure selon la distance
+      km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+n*splitSecFromPace(pr.VMAl,dist)/60+recN*recSecEach/60+CD_MIN);
+      p=S(pr.VMAl); rpe=9; label=type==='VO2'?t('sessLabel_VO2'):t('sessLabel_VMAl'); title=type==='VO2'?t('sessTitle_VO2'):t('sessTitle_VMAl');
+      series={reps:n,dist,paceSecPerKm:pr.VMAl,recoverySec:recSecEach,recoveryLabel:tp('recovTrotTemplate',planRecLabel(recSecEach))};
       const vmalBodyN=vary(4,5);
-      d={objectif:t('bs_vmal_objectif'),warmup:WU,body:tp('bs_vmal_body',repsText(n,dist,pace.VMAl),vmalBodyN),paces:tp('bs_vmal_paces',S(pace.VMAl)),recovery:t('recovLabel_2to3minTrot'),cooldown:CD,tips:[t('bs_vmal_tip1'),t('bs_vmal_tip2')],mistakes:[t('bs_vmal_mistake1')],why:t('bs_vmal_why')};
-      d.body=planRepsBodyText(series,'VMAl',pace); d.recovery=series.recoveryLabel;
+      d={objectif:t('bs_vmal_objectif'),warmup:WU,body:tp('bs_vmal_body',repsText(n,dist,pr.VMAl),vmalBodyN),paces:tp('bs_vmal_paces',S(pr.VMAl)),recovery:t('recovLabel_2to3minTrot'),cooldown:CD,tips:[t('bs_vmal_tip1'),t('bs_vmal_tip2')],mistakes:[t('bs_vmal_mistake1')],why:t('bs_vmal_why')};
+      d.body=planRepsBodyText(series,'VMAl',pr); d.recovery=series.recoveryLabel;
       genParams={vmalBodyN};
       break; }
     case 'INTERVAL': {
       // V4.8 : une structure de la bibliothèque (planPickPyramid) au lieu de la pyramide figée 200-400-600-800-600-400-200
       const st=planPickPyramid(rng,lv,phase.key,raceM,mem,Math.max(2.5,(qCap-wuKm-cdKm)*0.6)*(isDeload?0.75:1));
-      const segsX=planPyrSegments(st,lv,phase.key,pace);
+      const segsX=planPyrSegments(st,lv,phase.key,pace,rsB);
       const mainSec=segsX.reduce((a,x)=>a+x.splitSec,0), mainKm=st.d.reduce((a,x)=>a+x,0)/1000;
       const recSec=segsX.slice(0,-1).reduce((a,x)=>a+x.rec,0), recKm=distKmFromTime(recSec,pace.RC);
       km=round1(wuKm+mainKm+recKm+cdKm); durMin=Math.round(WU_MIN+mainSec/60+recSec/60+CD_MIN);
@@ -7759,7 +7830,7 @@ function buildSessionV2(type,o){
       const recs=segsX.slice(0,-1).map(x=>x.rec);
       series={segments:segsX,pyr:st.id,recoveryLabel:tp('recovRangeTemplate',planRecLabel(Math.min(...recs)),planRecLabel(Math.max(...recs)))};
       const detailSegs=segsX.map(x=>x.dist+' m ('+fmtSplit(x.splitSec)+')').join(' · ');
-      const paceFor=dist=>pace[planPyrPk(dist,phase.key)];
+      const paceFor=dist=>planRepPaceAt(pace,dist,planPyrPk(dist,phase.key),rsB);
       d={objectif:t('bs_interval_objectif'),warmup:WU,body:tp('bs_interval_body',detailSegs),paces:tp('bs_interval_paces',S(paceFor(200)),S(paceFor(800))),recovery:t('bs_interval_recovery'),cooldown:CD,tips:[t('bs_interval_tip1')],mistakes:[t('bs_interval_mistake1')],why:t('bs_interval_why')};
       d.body=tp('bs_interval_body',detailSegs); d.paces=tp('bs_interval_paces2',S(Math.min(...segsX.map(x=>x.paceSecPerKm))),S(Math.max(...segsX.map(x=>x.paceSecPerKm)))); d.recovery=series.recoveryLabel;
       break; }
@@ -7821,6 +7892,12 @@ function buildSessionV2(type,o){
         d={objectif:t('bs_lignes_objectif'),warmup:tp('bs_10min_warmup',S(pace.EF)),body:tp('bs_lignes_body',Math.round(km*0.7),lignesN),paces:t('bs_lignes_paces'),recovery:t('bs_lignes_recovery'),cooldown:t('bs_lignes_cooldown'),tips:[t('bs_lignes_tip1')],mistakes:[t('bs_lignes_mistake1')],why:t('bs_lignes_why')};
         genParams={lignesN}; }
       break;
+    case 'TEST': {   // V4.9 : test de fin de bloc, plus court que la course
+      const td=planTestDist(), pT=planTestPace(vdot,td);
+      km=round1(wuKm+td/1000+cdKm); durMin=Math.round(WU_MIN+predictTime(vdot,td)/60+CD_MIN);
+      p=S(pT); rpe=9; label=t('sessLabel_TEST'); title=t('sessTitle_TEST'); genParams={testDist:td};
+      d=planTestDetail(td,pT,WU,CD);
+      break; }
     case 'COURSE':
       const m=raceMeters(); km=Math.round(m/1000); p=S(pace.SPE); rpe=10; label=t('sessLabel_COURSE'); title=t('sessTitle_COURSE')+' — '+(raceLabel()||t('competitionDefault'));
       d={objectif:tp('bs_course_objectif',(P.objTime||goal)),warmup:t('bs_course_warmup'),body:tp('bs_course_body',km,S(pace.SPE)),paces:tp('bs_course_paces',S(pace.SPE)),recovery:'—',cooldown:t('bs_course_cooldown'),tips:[t('bs_course_tip1'),t('bs_course_tip2')],mistakes:[t('bs_course_mistake1')],why:t('bs_course_why')};
@@ -7830,7 +7907,7 @@ function buildSessionV2(type,o){
       d={objectif:t('bs_default_objectif'),warmup:'-',body:tp('bs_default_body',km),paces:S(pace.EF)+'/km',recovery:'-',cooldown:'-',tips:[],mistakes:[],why:t('bs_default_why')};
   }
   if(isDeload && km>0){ d.objectif=tp('deloadPrefixTemplate',d.objectif); }
-  if(['TEMPO','TEMPO_SPE','SEUIL','VMAc','VMAl','VO2','INTERVAL','SPE','SPE_COURT','COTES','DBLSEUIL'].includes(type)) genParams=Object.assign({wu:WU_MIN,cd:CD_MIN},genParams||{});
+  if(['TEMPO','TEMPO_SPE','SEUIL','VMAc','VMAl','VO2','INTERVAL','SPE','SPE_COURT','COTES','DBLSEUIL','TEST'].includes(type)) genParams=Object.assign({wu:WU_MIN,cd:CD_MIN},genParams||{});
   else if(type==='FARTLEK') genParams=Object.assign({cd:CD_MIN},genParams||{});
   return {km,pace:p,rpe,title,label,detail:d,durMin,series,genParams};
 }
@@ -8961,6 +9038,8 @@ function markRunDone(){
   // V4.3 : marquée « manquée » par erreur (séance oubliée) : on l'annule avant de la valider
   if(s.missed){ s.missed=false; delete s.missedReason; delete s.missedReplacement; delete s.missedReplData;
     SESSLOG=(SESSLOG||[]).filter(e=>!(e.planSessionId===s.id && e.status==='missed')); }
+  // V4.9 : test de fin de bloc — on demande le chrono d'abord, il met à jour la VDOT et les allures à venir
+  if(s.baseType==='TEST' && !s.testAsked){ s.testAsked=true; planTestAsk(s,()=>markRunDone()); return; }
   s.done=true;
   // Entrée provisoire (valeurs du plan) au cas où le bilan ne serait jamais validé —
   // elle sera écrasée par les vraies valeurs si l'athlète remplit le bilan.

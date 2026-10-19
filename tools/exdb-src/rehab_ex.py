@@ -75,7 +75,7 @@ add('rh_step_down', None, ['knee','hip'], 2, 3, '10 lent', 'Poids du corps', 'D�
  ['Debout sur une marche, une jambe sur le bord, l\'autre dans le vide.','Fléchis lentement la jambe d\'appui en gardant le genou aligné sur le pied, talon libre touche le sol.','Remonte sans élan. 3 séries de 10 par jambe, marche basse puis plus haute.'],
  ['Stand on a step with one leg at the edge and the other hanging.','Slowly bend the standing leg, keeping the knee over the foot, until the free heel touches the floor.','Rise without momentum. 3 sets of 10 per leg, low step first then higher.'],
  ['قف على درجة وساق عند الحافة والأخرى معلقة.','ثنِ ساق الارتكاز ببطء مع محاذاة الركبة للقدم حتى يلامس الكعب الحر الأرض.','اصعد دون زخم. 3 مجموعات من 10 لكل ساق بدرجة منخفضة ثم أعلى.'])
-add('rh_ham_iso_bridge', 'Butt_Lift_(Bridge)', ['thighB'], 1, 4, '30 s', 'Poids du corps', 'Débutant', ['Ischios','Fessiers'],
+add('rh_ham_iso_bridge', 'Butt_Lift_Bridge', ['thighB'], 1, 4, '30 s', 'Poids du corps', 'Débutant', ['Ischios','Fessiers'],
  'Pont isométrique (ischios)', 'Isometric hamstring bridge', 'جسر بالثبات (الفخذ الخلفي)',
  ['Allongé sur le dos, talons posés au sol genoux fléchis à ~60°.','Monte le bassin en poussant dans les talons et maintiens.','Tiens 30 s sans douleur vive, 4 séries.'],
  ['Lie on your back with heels on the floor and knees bent to about 60°.','Lift the hips by pressing through the heels and hold.','Hold 30 seconds without sharp pain, 4 sets.'],
@@ -130,7 +130,7 @@ add('rh_single_rdl', 'Romanian_Deadlift', ['thighB','hip','ankle'], 3, 3, '8', '
  ['Debout sur une jambe, genou légèrement fléchi, mains devant toi.','Penche le buste en envoyant l\'autre jambe vers l\'arrière, dos plat.','Reviens en contractant le fessier. 3 séries de 8 par jambe, sans charge d\'abord.'],
  ['Stand on one leg with a slightly bent knee, hands in front.','Hinge forward sending the other leg back, back flat.','Return by squeezing the glute. 3 sets of 8 per leg, bodyweight first.'],
  ['قف على ساق واحدة والركبة مثنية قليلاً واليدان أمامك.','أمِل الجذع للأمام مع إرسال الساق الأخرى للخلف والظهر مستوٍ.','ارجع بشدّ الأرداف. 3 مجموعات من 8 لكل ساق بوزن الجسم أولاً.'])
-add('rh_march_run', None, ['knee','hip','shin','foot','ankle','achilles','calf','thighB','thighF'], 3, 3, '20 m', 'Poids du corps', 'Débutant', ['Quadriceps'],
+add('rh_march_run', 'Trail_Running_Walking', ['knee','hip','shin','foot','ankle','achilles','calf','thighB','thighF'], 3, 3, '20 m', 'Poids du corps', 'Débutant', ['Quadriceps'],
  'Marche-course : 1 min de course / 2 min de marche', 'Walk-run: 1 min run / 2 min walk', 'مشي-جري: دقيقة جري / دقيقتا مشي',
  ['Sur terrain plat et souple, marche 5 min pour t\'échauffer.','Alterne 1 min de petite foulée facile et 2 min de marche, 6 à 8 fois.','Si la douleur reste ≤ 2/10 et disparaît dans les 24 h, passe à 2 min de course / 1 min de marche la fois suivante.'],
  ['On flat, soft ground, walk 5 minutes to warm up.','Alternate 1 minute of easy short strides and 2 minutes of walking, 6 to 8 times.','If pain stays ≤ 2/10 and settles within 24 hours, move to 2 minutes run / 1 minute walk next time.'],
