@@ -2709,7 +2709,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.11.3';
+const APP_VERSION='4.11.4';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -12291,14 +12291,14 @@ function renderProfile(){
     '<div class="pf-edit" onclick="openProfileEdit()" title="'+t('editInfos')+'">'+ICN('edit',16)+'</div></div>';
   h+='<div style="font-size:12.5px;color:var(--muted);margin-top:3px" onclick="editBio()">'+escHtml(window.currentUserEmail||P.bio||t('addBioPrompt'))+'</div>';
   h+='<div class="rankchip" style="margin-top:11px;background:'+rk.bg+';color:#fff">'+t('level')+' '+XP.level+' · '+rk.name+' · '+XP.total+' XP</div>';
-  h+='</div>';
-  // ===== APERÇU RAPIDE — carte unique, une ligne par info (au lieu d'une grille + bannière séparées) =====
-  h+='<div class="grp-card stag" style="animation-delay:.04s">'+
-    '<div class="grp-row" onclick="openProfileEdit()"><div class="lr-icon">'+ICN('scale',20,'currentColor')+'</div><div class="lr-title">'+t('heightWeight')+'</div><div class="lr-val">'+escHtml(P.height||'—')+' cm · '+escHtml(P.weight||'—')+' kg</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileEdit()"><div class="lr-icon">'+ICN('calendar',20,'currentColor')+'</div><div class="lr-title">'+t('age')+'</div><div class="lr-val">'+age()+' '+(curLang()==='en'?'yo':curLang()==='ar'?'سنة':'ans')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('chart',20,'currentColor')+'</div><div class="lr-title">VDOT</div><div class="lr-val">'+(getUserVDOT()?fmt1(getUserVDOT()):'—')+'</div></div>'+
-    '<div class="grp-row" onclick="nav(\'sport\');sportTab=\'run\';runSub=\'ikorun\';renderSport()"><div class="lr-icon">'+ICN('target',20,'currentColor')+'</div><div class="lr-title">'+t('objective')+'</div><div class="lr-val">'+escHtml(raceLabel()||P.goal||t('noObjective'))+(compDays!==null&&compDays>=0?' · J-'+compDays:'')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+  // V4.11.4 : l'aperçu tient dans le héros, en trois tuiles (avant : une carte de 4 lignes dont 3
+  // ouvraient la même fiche, et un « Objectif » qui doublonnait l'onglet Sport).
+  h+='<div class="pf-tiles">'+
+    '<button type="button" class="pf-tile" onclick="bfFlowOpen()"><b>'+(P.height?escHtml(P.height)+' <small>cm</small>':'—')+'</b><span>'+(P.weight?escHtml(String(P.weight).replace('.',curLang()==='en'?'.':','))+' kg':t('heightWeight'))+'</span></button>'+
+    '<button type="button" class="pf-tile" onclick="openProfileEdit()"><b>'+age()+'</b><span>'+t('age')+'</span></button>'+
+    '<button type="button" class="pf-tile" onclick="openRecords()"><b>'+(getUserVDOT()?fmt1(getUserVDOT()):'—')+'</b><span>VDOT'+(P.vdotEstimated?' ≈':'')+'</span></button>'+
   '</div>';
+  h+='</div>';
   // ===== PROGRESSION — badges intégrés directement au profil =====
   // Un palier atteint depuis la dernière vérification (le temps qui passe, par exemple) est
   // débloqué ici : avant, la carte disait « aucun badge » puis « palier atteint · 100 % ».
@@ -12323,29 +12323,27 @@ function renderProfile(){
   // · le Thème est réglé sur la fiche Apparence, avec la couleur et la matière ;
   // · Mot de passe et Données ouvrent une seule fiche « Compte et données » ;
   // · Conditions et Confidentialité, une seule fiche (avec un sélecteur). =====
+  // V4.11.4 : trois groupes courts. Langue rangée avec l'Apparence, l'aide (tutoriel, méthode,
+  // installation, commentaire, conditions) dans une seule fiche « Aide et infos », les courses avec le suivi.
+  const row=(icon,label,onclick,val,cls)=>'<div class="grp-row'+(cls?' '+cls:'')+'" onclick="'+onclick+'"><div class="lr-icon">'+ICN(icon,20,'currentColor')+'</div><div class="lr-title">'+label+'</div>'+(val?'<div class="lr-val">'+val+'</div>':'')+'<span class="lr-chev">'+ICN('chevronR',16)+'</span></div>';
   h+='<div class="grp-lab stag" style="animation-delay:.09s">'+t('trackingLab')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.10s">'+
-    '<div class="grp-row" onclick="openRecords()"><div class="lr-icon">'+ICN('medal',20,'currentColor')+'</div><div class="lr-title">'+t('historyRecords')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openFriends()"><div class="lr-icon">'+ICN('users',20,'currentColor')+'</div><div class="lr-title">'+t('friendsRanking')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row pf-club-row" onclick="openClub()"><div class="lr-icon">'+ICN('flag',20,'currentColor')+'</div><div class="lr-title">'+t('myClubLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    row('medal',t('historyRecords'),'openRecords()')+
+    row('users',t('friendsRanking'),'openFriends()')+
+    row('flag',t('myClubLab'),'openClub()','','pf-club-row')+
+    row('calendar',t('racesTitle'),'openRaces()')+
   '</div>';
   h+='<div class="grp-lab stag" style="animation-delay:.12s">'+t('prefsLab')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.13s">'+
-    '<div class="grp-row" onclick="openProfileSection(\'appearance\')"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('appearance')+'</div><div class="lr-val">'+colorDotNow()+colorNameNow()+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'lang\')"><div class="lr-icon">'+ICN('globe',20,'currentColor')+'</div><div class="lr-title">'+t('language')+'</div><div class="lr-val">'+langInfo[1]+' '+langInfo[2]+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'notif\')"><div class="lr-icon">'+ICN('bell',20,'currentColor')+'</div><div class="lr-title">'+t('notifLabel')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    row('palette',t('appearLangLab'),"openProfileSection('appearance')",colorDotNow()+colorNameNow()+' · '+langInfo[1])+
+    row('bell',t('notifsApp'),"openProfileSection('notif')")+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('heart',20,'currentColor')+'</div><div><div class="lr-title">'+t('simplifiedMode')+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px;max-width:200px">'+t('simplifiedModeDesc')+'</div></div><div class="toggle'+(P.easyMode?' on':'')+'" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
   '</div>';
   h+='<div class="grp-lab stag" style="animation-delay:.15s">'+t('accountHelpLab')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.16s">'+
-    '<div class="grp-row" onclick="openProfileSection(\'account\')"><div class="lr-icon">'+ICN('lock',20,'currentColor')+'</div><div class="lr-title">'+t('accountDataLab')+'</div><div class="lr-val">'+escHtml(window.currentUserEmail||(window.isGuestUser?t('guestModeLabel'):t('notConnected')))+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openFeedback()"><div class="lr-icon">'+ICN('comment',20,'currentColor')+'</div><div class="lr-title">'+t('sendFeedbackLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="startAppTour()"><div class="lr-icon">'+ICN('flag',20,'currentColor')+'</div><div class="lr-title">'+t('replayTourBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    (isStandalone()?'':'<div class="grp-row" onclick="installApp()"><div class="lr-icon">'+ICN('download',20,'currentColor')+'</div><div class="lr-title">'+t('installAppBtn')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>')+
-    '<div class="grp-row" onclick="openMethod()"><div class="lr-icon">'+ICN('bulb',20,'currentColor')+'</div><div class="lr-title">'+t('mtTitle')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
-    '<div class="grp-row" onclick="openRaces()"><div class="lr-icon">'+ICN('calendar',20,'currentColor')+'</div><div class="lr-title">'+t('racesTitle')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
+    row('lock',t('accountDataLab'),"openProfileSection('account')",escHtml(window.currentUserEmail||(window.isGuestUser?t('guestModeLabel'):t('notConnected'))))+
+    row('help',t('helpInfoLab'),"openProfileSection('help')")+
     '<div id="pfAdminRows"></div>'+
-    '<div class="grp-row" onclick="openProfileSection(\'legal\')"><div class="lr-icon">'+ICN('shield',20,'currentColor')+'</div><div class="lr-title">'+t('legalLab')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>'+
   '</div>';
   // (le numéro de version est désormais dans la signature IKORUN en bas de chaque écran)
   swapIn('s-profil',h);
@@ -12371,37 +12369,39 @@ function renderProfileSimple(){
   h+='<div class="grp-lab">'+t('yourSpace')+'</div>';
   h+='<div class="grp-card">'+
     row('edit',t('editMyProfile'),'openProfileEdit()')+
+    row('scale',t('bodyRowLab'),'bfFlowOpen()',P.height&&P.weight?escHtml(P.height)+' cm · '+escHtml(P.weight)+' kg':'')+
     row('medal',t('historyRecords'),'openRecords()')+
-    row('calculator',t('toolsCalc'),"nav('outils')")+
     row('star',t('badgesLabel'),'openBadges()')+
     row('users',t('friendsRanking'),'openFriends()')+
     row('flag',t('myClubLab'),'openClub()').replace('class="grp-row"','class="grp-row pf-club-row"')+
   '</div>';
-
   h+='<div class="grp-lab">'+t('settings')+'</div>';
   h+='<div class="grp-card">'+
     '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('heart',20,'currentColor')+'</div><div class="lr-txt"><div class="lr-title">'+t('simplifiedMode')+'</div><div class="lr-sub">'+t('simplifiedModeDesc')+'</div></div><div class="toggle on" onclick="event.stopPropagation();toggleEasyMode()"></div></div>'+
-    '<div class="grp-row no-chev"><div class="lr-icon">'+ICN('palette',20,'currentColor')+'</div><div class="lr-title">'+t('theme')+'</div>'+pfThemeSwitchHTML()+'</div>'+
-    row('palette',t('appColor'),"openProfileSection('appearance')",colorNameNow())+
-    row('globe',t('language'),"openProfileSection('lang')",langInfo[2])+
-    row('bell',t('notifLabel'),"openProfileSection('notif')")+
-    row('flag',t('replayTourBtn'),'startAppTour()')+
+    row('palette',t('appearLangLab'),"openProfileSection('appearance')",colorNameNow()+' · '+langInfo[1])+
+    row('bell',t('notifsApp'),"openProfileSection('notif')")+
   '</div>';
-
   h+='<div class="grp-lab">'+t('support')+'</div>';
   h+='<div class="grp-card">'+
     row('lock',t('accountDataLab'),"openProfileSection('account')")+
-    row('comment',t('sendFeedbackLab'),'openFeedback()')+
-    (isStandalone()?'':row('download',t('installAppBtn'),'installApp()'))+
-    row('bulb',t('mtTitle'),'openMethod()')+
-    row('calendar',t('racesTitle'),'openRaces()')+
-    row('shield',t('legalLab'),"openProfileSection('legal')")+
+    row('help',t('helpInfoLab'),"openProfileSection('help')")+
   '</div>';
   // La signature de bas d'écran est masquée en mode simplifié : la version reste lisible ici.
   h+='<div class="ez-ver">IKORUN · V'+APP_VERSION+'</div>';
   return h;
 }
 /* ---- Fiches de réglages du profil, ouvertes dans l'overlay générique ---- */
+// V4.11.4 : « Aide et infos » réunit ce qui ne sert qu'une fois de temps en temps
+function pfHelpHTML(){
+  const row=(icon,label,onclick)=>'<div class="grp-row" onclick="'+onclick+'"><div class="lr-icon">'+ICN(icon,20,'currentColor')+'</div><div class="lr-title">'+label+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div>';
+  return '<div class="grp-card">'+
+    row('comment',t('sendFeedbackLab'),"closeOv('ovProg');openFeedback()")+
+    row('flag',t('replayTourBtn'),"closeOv('ovProg');startAppTour()")+
+    row('bulb',t('mtTitle'),"closeOv('ovProg');openMethod()")+
+    (isStandalone()?'':row('download',t('installAppBtn'),"closeOv('ovProg');installApp()"))+
+    row('shield',t('legalLab'),"openProfileSection('legal')")+
+  '</div>';
+}
 let _pfSheet=null;
 let _legalTab='terms';
 function openProfileSection(key){
@@ -12410,7 +12410,7 @@ function openProfileSection(key){
   if(key==='data') key='account';
   if(key==='terms'||key==='privacy'){ _legalTab=key; key='legal'; }
   _pfSheet=key;
-  const titles={account:t('accountDataLab'),lang:''+t('language'),appearance:''+t('appearance'),theme:t('txTitle'),notif:''+t('notifsApp'),legal:t('legalLab')};
+  const titles={help:t('helpInfoLab'),account:t('accountDataLab'),lang:''+t('language'),appearance:''+t('appearLangLab'),theme:t('txTitle'),notif:''+t('notifsApp'),legal:t('legalLab')};
   $('#ovProgTitle').textContent=titles[key]||t('settings');
   $('#progBody').innerHTML=pfSectionHTML(key);
   { const sc=$('#ovProg .ov-body-scroll'); if(sc && !toColor) sc.scrollTop=0; } // V3.14.0 : une nouvelle fiche s'ouvre en haut (elle gardait le défilement de la précédente)
@@ -12421,7 +12421,8 @@ function refreshPfSheet(){ if(_pfSheet && $('#ovProg').classList.contains('on'))
 function pfSectionHTML(key){
   if(key==='account') return pfAccountHTML()+pfDataHTML();
   if(key==='lang') return pfLangHTML();
-  if(key==='appearance') return pfAppearanceHTML();
+  if(key==='appearance') return '<div class="lab ap-lab">'+t('language')+'</div>'+pfLangHTML()+pfAppearanceHTML();
+  if(key==='help') return pfHelpHTML();
   if(key==='theme') return pfThemeEditorHTML();
   if(key==='notif') return pfNotifHTML();
   if(key==='legal') return '<div class="seg-ctrl sub" data-seg="legal" style="margin-bottom:6px">'+
@@ -13241,12 +13242,10 @@ function openProfileEdit(focusId){
   $('#ovProfile').querySelector('h2').textContent=t('editProfileTitle');
   const f=(l,id,v,ty)=>'<div class="field"><label>'+l+'</label><input class="inp" id="'+id+'" value="'+escHtml(v||'')+'" '+(ty?'type="'+ty+'"':'')+'></div>';
   let h='<div class="field"><label>'+t('usernameLab')+'</label><div class="uname-wrap"><span class="uname-at">@</span><input class="inp" id="pe_username" value="'+escHtml(P.username||'')+'" autocapitalize="off" autocorrect="off" spellcheck="false"></div><div class="uname-status" id="pe_username_status">'+t('usernameHint')+'</div></div>';
+  // V4.11.4 : l'identité seulement. Taille, poids et cœur ont leur assistant ; objectif, km/sem et
+  // date de course se règlent dans la création du plan ; les chronos dans « Historique & records ».
   h+=f(t('firstNameLab'),'pe_name',P.name)+f(t('cityLab'),'pe_city',P.city)+f(t('birthDateLab'),'pe_bday',P.bday,'date')+
-    f(t('heightCmLab'),'pe_h',P.height,'number')+f(t('weightKgLab'),'pe_w',P.weight,'number')+
-    f(t('hrMaxLab'),'pe_hrmax',P.hrMax,'number')+f(t('hrRestLab'),'pe_hrrest',P.hrRest,'number')+
-    f(t('kmWeekLab'),'pe_km',P.kmWeek,'number')+f(t('objective'),'pe_goal',P.goal)+f(t('compDateLab'),'pe_comp',P.compDate,'date')+
-    // V3.14.0 : les chronos ne se saisissent plus ici (doublon de « Mes records », la seule source de la VDOT)
-    '<div class="grp-card" style="margin-top:6px"><div class="grp-row" role="button" onclick="openRecords()"><div class="lr-icon">'+ICN('medal',20,'currentColor')+'</div><div class="lr-title">'+t('historyRecords')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div></div>';
+    '<div class="grp-card" style="margin-top:6px"><div class="grp-row" role="button" onclick="closeOv(\'ovProfile\');bfFlowOpen()"><div class="lr-icon">'+ICN('scale',20,'currentColor')+'</div><div class="lr-title">'+t('bodyRowLab')+'</div><div class="lr-val">'+(P.height?escHtml(P.height)+' cm':'—')+' · '+(P.weight?escHtml(P.weight)+' kg':'—')+'</div><span class="lr-chev">'+ICN('chevronR',16)+'</span></div></div>';
   $('#profileEditBody').innerHTML=h;
   $('#profileEditFoot').innerHTML='<button class="btn" onclick="saveProfileEdit()">'+t('saveBtn')+'</button>';
   openOv('ovProfile');
@@ -13259,7 +13258,7 @@ async function saveProfileEdit(){
   // Bornes réalistes (audit 24/09) : 5000 kg, -5 cm, FC max 999 ou une FC de repos
   // au-dessus de la FC max étaient enregistrés tels quels et faussaient IMC,
   // calories, métabolisme, zones cardiaques et volume du plan.
-  { const num=id=>{ const v=$('#'+id).value.trim(); return v===''?null:+v; };
+  { const num=id=>{ const e=$('#'+id); const v=e?e.value.trim():''; return v===''?null:+v; };
     const h=num('pe_h'), w=num('pe_w'), hm=num('pe_hrmax'), hr=num('pe_hrrest'), km=num('pe_km');
     const bad=(v,a,b)=>v!=null && !(v>=a && v<=b);
     if(bad(h,100,250)||bad(w,25,250)||bad(hm,120,230)||bad(hr,30,120)||bad(km,0,250)||(hm!=null&&hr!=null&&hr>=hm)){ toast(t('profileValuesInvalid')); return; }
@@ -13276,9 +13275,9 @@ async function saveProfileEdit(){
     toast(t('usernameUpdated'));
   }
   P.name=$('#pe_name').value.trim()||P.name; P.city=$('#pe_city').value.trim(); P.bday=$('#pe_bday').value;
-  P.height=+$('#pe_h').value||P.height; P.weight=+$('#pe_w').value||P.weight;
-  P.hrMax=+$('#pe_hrmax').value||P.hrMax; P.hrRest=+$('#pe_hrrest').value||P.hrRest;
-  P.kmWeek=+$('#pe_km').value||P.kmWeek; P.goal=$('#pe_goal').value.trim(); P.compDate=$('#pe_comp').value;
+  { const v=id=>{ const e=$('#'+id); return e?e.value.trim():null; };   // champs présents seulement dans d'anciennes versions de la fiche
+    if(v('pe_h')) P.height=+v('pe_h'); if(v('pe_w')) P.weight=+v('pe_w'); if(v('pe_hrmax')) P.hrMax=+v('pe_hrmax'); if(v('pe_hrrest')) P.hrRest=+v('pe_hrrest');
+    if(v('pe_km')) P.kmWeek=+v('pe_km'); if(v('pe_goal')!=null) P.goal=v('pe_goal'); if(v('pe_comp')!=null) P.compDate=v('pe_comp'); }
   // Records d'abord, comme au démarrage (initApp) : computeVDOT() seul ne lit que
   // les chronos du formulaire et remettait la VDOT à 0 pour qui avait saisi ses
   // performances à l'onboarding (qui les range dans RECORDS).

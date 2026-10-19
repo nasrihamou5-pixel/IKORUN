@@ -237,6 +237,7 @@ window.IK_I18N_EXTRA=Object.assign(window.IK_I18N_EXTRA||{},{
     testDown:'Test saved: VDOT {0} → {1}, your upcoming paces are eased. No worry, it happens after a heavy block.',
     testAskTime:'Your time over {0}?',
     testSkip:'Later',
+    appearLangLab:'Appearance and language',helpInfoLab:'Help and info',bodyRowLab:'Height, weight and heart',
     bf2Sec:'Your body',bf2SecHeart:'Your heart',bf2HeightT:'Your height',bf2HeightS:'For your BMI, calories and needs. It stays on your phone.',
     bf2WeightT:'Your weight',bf2WeightS:'Your current weight, no stress: you can track it later.',bf2Imc:'BMI {0}',bf2ImcLow:'rather low',bf2ImcOk:'in the normal range',bf2ImcHigh:'a bit high',bf2ImcVeryHigh:'high',
     bf2HeartT:'Your heart',bf2HeartS:'Optional: for more accurate heart-rate zones.',bf2HrRestS:'In the morning, still lying down',bf2HrMaxS:'The highest you’ve seen at the end of an all-out effort',bf2Optional:'Optional',bf2Estimated:'≈ {0} (estimated)',
