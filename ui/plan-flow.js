@@ -60,20 +60,27 @@ function psFlowOpen(){
         const zone=document.createElement('div');
         const dessiner=()=>{ zone.innerHTML='';
           const recs=pfRecs(), p=recs.find(r=>r.meters===s.refM);
-          zone.appendChild(F.bloc(t('ob2Dist'),F.seg(PF_REF.map(r=>({v:String(r[0]),t:pfRefLab(r[0])})),v=>String(s.refM)===v,v=>{ s.refM=+v; dessiner(); },3)));
+          // V4.11.2 : « Autre » = distance exacte (15 km, 8 km…), choisie à la roue ; 1 500 m minimum (VDOT)
+          const std=PF_REF.some(r=>r[0]===s.refM);
+          zone.appendChild(F.bloc(t('ob2Dist'),F.seg(PF_REF.map(r=>({v:String(r[0]),t:r[1]==='semi'?t('pf2SemiShort'):pfRefLab(r[0])})).concat([{v:'autre',t:std?t('pf2OtherShort'):pfRefLab(s.refM)}]),
+            v=>v==='autre'?!std:String(s.refM)===v,
+            v=>{ if(v!=='autre'){ s.refM=+v; dessiner(); return; }
+              pickDistance(t('customDistance'),std?15:s.refM/1000,km=>{ const m=Math.round(km*1000); if(m<VDOT_MIN_M){ toast(t('perfMin1500')); return; } s.refM=m; dessiner(); F.maj(); }); dessiner(); },4)));
           zone.appendChild(F.bloc('',F.champs([{t:tp('ob2RefTimeFor',pfRefLab(s.refM)),vide:()=>!p,aff:()=>p?ikfEsc(p.time):t('chooseWord'),
             ouvre:fin=>pickTime(tp('timeForLab',pfRefLab(s.refM)),p?parseTime(p.time):Math.round(predictTime(getUserVDOT()||40,s.refM)/5)*5,v=>{
-              const g=recordGuard(s.refM,v); if(!g.ok){ toast(g.msg); return; }
-              pfSaveRec(s.refM,v); s.noRef=false; if(!s.knownGoal||s.editGoal) s.timeS=psPredicted(s); fin(); dessiner(); F.maj(); },s.refM>=15000)}])));
+              const poser=()=>{ pfSaveRec(s.refM,v); s.noRef=false; if(!s.knownGoal||s.editGoal) s.timeS=psPredicted(s); fin(); dessiner(); F.maj(); };
+              const g=recordGuard(s.refM,v);
+              if(!g.ok){ if(g.soft) customConfirm(tp('recordBigJumpConfirm',Math.round(g.current*10)/10,Math.round(g.implied*10)/10),poser); else toast(g.msg); return; }
+              poser(); },s.refM>=15000)}])));
           const autres=recs.filter(r=>r.meters!==s.refM);
-          if(autres.length) zone.appendChild(F.bloc(t('ob2RefOthers'),ikfMk(autres.map(r=>`<div class="ikob-perf"><span>${ikfEsc(r.dist)}</span><b>${ikfEsc(r.time)}</b></div>`).join(''),'ikob-perfs')));
+          if(autres.length) zone.appendChild(F.bloc(t('ob2RefOthers'),ikfMk(autres.map(r=>`<div class="ikob-perf"><span>${ikfEsc(PF_REF.some(x=>x[0]===r.meters)?pfRefLab(r.meters):r.dist)}</span><b>${ikfEsc(r.time)}</b></div>`).join(''),'ikob-perfs')));
           zone.appendChild(F.note(recs.length?t('ob2RefMoreNote'):t('ob2RefWhy')));
         };
         dessiner(); c.appendChild(zone); },
       lien:{si:()=>!pfHasRec(),t:()=>t('ob2RefNone'),f:()=>{ s.noRef=true; toast(t('ob2RefNoneToast')); _psFlow.suivant(true); }},
       ok:()=>pfHasRec()||!!s.noRef},
     {id:'p-race',sec:'race',auto:true,si:raceVue,titre:()=>t('pf2RaceT'),sous:()=>t('pf2RaceS'),
-      corps(c,F){ c.appendChild(F.liste(PS_RACES.map(r=>({v:r,t:trRace(r),s:r==='Semi-marathon'?'21,1 km':r==='Marathon'?'42,2 km':''})),v=>s.objRace===v,
+      corps(c,F){ c.appendChild(F.liste(PS_RACES.map(r=>({v:r,t:trRace(r),s:r==='Semi-marathon'?'21,1 km':r==='Marathon'?'42,2 km':r==='Autre'?t('pf2OtherS'):''})),v=>s.objRace===v,
         v=>{ if(s.objRace!==v){ s.objRace=v; s.timeS=psPredicted(s); } })); },
       lien:{t:()=>t('racePickFromCal'),f:()=>{ try{ openRaces({pick:'plan'}); }catch(e){} }},
       ok:()=>!!s.objRace},
