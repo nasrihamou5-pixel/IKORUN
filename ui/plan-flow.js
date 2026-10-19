@@ -207,3 +207,63 @@ function wzFlowOpen(start){
   }).start(start);
   return _wzFlow;
 }
+
+/* ---------------- 3. TON CORPS (taille, poids, cœur) — V4.11.3 ----------------
+   Même assistant que l'inscription pour « Complète ton profil » (Stats) : une question par écran,
+   des roues comme sur iPhone, l'IMC en direct, puis la construction. Écrit P.height, P.weight,
+   P.hrRest, P.hrMax comme la fiche « Modifier le profil ». */
+let _bfFlow=null;
+function bfFlowOpen(){
+  if(_bfFlow&&_bfFlow.ouvert()) _bfFlow.fermer();
+  const F_=P.sex==='Femme';
+  const b={h:Math.round(+P.height||(F_?165:176)), w:+P.weight||(F_?60:72), hr:+P.hrRest||0, hm:+P.hrMax||0};
+  b.wi=Math.floor(b.w); b.wd=Math.round((b.w-b.wi)*10)%10;
+  const poids=()=>b.wi+b.wd/10;
+  const virg=x=>curLang()==='en'?String(x):String(x).replace('.',',');
+  const imc=()=>{ const v=poids()/Math.pow(b.h/100,2); return Math.round(v*10)/10; };
+  const imcLab=v=>t(v<18.5?'bf2ImcLow':v<25?'bf2ImcOk':v<30?'bf2ImcHigh':'bf2ImcVeryHigh');
+  const age=()=>{ if(!P.bday) return 30; return Math.floor((ikNow()-new Date(P.bday+'T00:00:00'))/31557600000); };
+  const hmEst=()=>Math.round(208-0.7*age());
+  const SC=[
+    {id:'b-taille',sec:'corps',titre:()=>t('bf2HeightT'),sous:()=>t('bf2HeightS'),
+      corps(c,F){ const W=ikfMk('','ikob-roues'); W.dir='ltr';
+        W.appendChild(F.roue(ikfRange(120,220),b.h,v=>v,v=>{ b.h=v; },t('heightCmLab'))); W.appendChild(ikfMk('cm','ikob-roue-u'));
+        c.appendChild(W); },
+      ok:()=>b.h>=120&&b.h<=220},
+    {id:'b-poids',sec:'corps',titre:()=>t('bf2WeightT'),sous:()=>t('bf2WeightS'),
+      corps(c,F){ const W=ikfMk('','ikob-roues'); W.dir='ltr';
+        const lab=ikfMk('','ikob-age');
+        const peindre=()=>{ const v=imc(); lab.innerHTML=tp('bf2Imc',virg(v))+' · '+imcLab(v); };
+        W.appendChild(F.roue(ikfRange(30,200),b.wi,v=>v,v=>{ b.wi=v; peindre(); },t('weightKgLab')));
+        W.appendChild(ikfMk(curLang()==='en'?'.':',','ikob-roue-sep'));
+        W.appendChild(F.roue(ikfRange(0,9),b.wd,v=>v,v=>{ b.wd=v; peindre(); }));
+        W.appendChild(ikfMk('kg','ikob-roue-u'));
+        c.appendChild(W); c.appendChild(lab); peindre(); },
+      ok:()=>poids()>=30&&poids()<=200},
+    {id:'b-coeur',sec:'coeur',titre:()=>t('bf2HeartT'),sous:()=>t('bf2HeartS'),
+      corps(c,F){
+        c.appendChild(F.champs([
+          {t:t('hrRestLab'),s:t('bf2HrRestS'),vide:()=>!b.hr,aff:()=>b.hr?b.hr+' bpm':t('bf2Optional'),ouvre:fin=>pickInt(t('hrRestLab'),35,100,b.hr||60,'bpm',v=>{ b.hr=v; fin(); })},
+          {t:t('hrMaxLab'),s:t('bf2HrMaxS'),vide:()=>!b.hm,aff:()=>b.hm?b.hm+' bpm':tp('bf2Estimated',hmEst()),ouvre:fin=>pickInt(t('hrMaxLab'),150,220,b.hm||hmEst(),'bpm',v=>{ b.hm=v; fin(); })}]));
+        c.appendChild(F.note(t('bf2HeartNote'))); },
+      lien:{t:()=>t('bf2Skip'),f:()=>{ _bfFlow.suivant(true); }},
+      ok:()=>!(b.hr&&b.hm&&b.hr>=b.hm)},
+    {id:'b-recap',sec:'recap',final:true,titre:()=>t('bf2RecapT'),sous:()=>t('ob2RecapS'),
+      corps(c,F){ const v=imc();
+        c.appendChild(F.recap([
+          {ic:'user',t:t('bf2HeightT'),v:b.h+' cm',go:'b-taille'},
+          {ic:'scale',t:t('bf2WeightT'),v:virg(poids())+' kg · '+tp('bf2Imc',virg(v))+' ('+imcLab(v)+')',go:'b-poids'},
+          {ic:'heart',t:t('bf2HeartT'),v:(b.hr?t('bf2Rest')+' '+b.hr+' bpm':t('bf2RestNone'))+' · '+(b.hm?t('bf2Max')+' '+b.hm+' bpm':tp('bf2MaxEst',hmEst())),go:'b-coeur'}]));
+        c.appendChild(F.note(t('bf2Private'))); },
+      ok:()=>true}
+  ];
+  _bfFlow=ikFlow({screens:SC, closable:true, track:'bf_step',
+    secs:{corps:()=>t('bf2Sec'),coeur:()=>t('bf2SecHeart'),recap:()=>t('ob2SecRecap')},
+    finalLabel:()=>t('saveBtn'),
+    build:{titre:()=>t('bf2BuildT'), steps:()=>[t('bf2B1'),t('bf2B2'),t('bf2B3'),t('bf2B4')],
+      run:()=>{ P.height=b.h; P.weight=Math.round(poids()*10)/10; if(b.hr) P.hrRest=b.hr; if(b.hm) P.hrMax=b.hm; saveAll(); return true; },
+      pret:()=>t('bf2Ready')},
+    onFinish:()=>{ try{ const a=document.querySelector('.nb.on'); if(a) nav(a.dataset.s); }catch(e){} toast(t('profileUpdated')); }
+  }).start();
+  return _bfFlow;
+}
