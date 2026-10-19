@@ -2130,6 +2130,13 @@ function getUserVDOT(){
   }
   return base;
 }
+/* V4.11.1 : VDOT d'après les chronos ; sans aucun chrono, l'estimation posée à l'inscription
+   selon le niveau (P.vdotEstimated) est gardée jusqu'au premier chrono, au lieu de retomber à 0. */
+function vdotRefresh(){
+  const v=computeVDOTfromRecords()||computeVDOT();
+  if(v){ delete P.vdotEstimated; return v; }
+  return P.vdotEstimated?clampVdot(P.vdot):0;
+}
 function computeVDOT(){
   if(!P) return 0;
   const races=[];
@@ -2700,7 +2707,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.11.0';
+const APP_VERSION='4.11.1';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -4817,7 +4824,7 @@ function initApp(){
   document.documentElement.lang=curLang();
   document.documentElement.dir=(curLang()==='ar')?'rtl':'ltr';
   applyNavLabels();
-  P.vdot=computeVDOTfromRecords()||computeVDOT();
+  P.vdot=vdotRefresh();
   getDailyGoals();
   _lastDayKey=todayKey(); // repere pour la detection de changement de jour (checkDayRollover)
   refreshXP();
@@ -4999,7 +5006,7 @@ async function showTourStep(startI){
         }
       }
       $('#tourT').textContent = step.key==='welcome' ? tp('tour_welcome_t',P.name?P.name.split(' ')[0]:t('you')) : t('tour_'+step.key+'_t');
-      $('#tourD').textContent=t('tour_'+step.key+'_d');
+      $('#tourD').textContent=step.key==='welcome'?tp('tour_welcome_d',TOUR_STEPS.filter(x=>!(x.skipIf&&x.skipIf())).length):t('tour_'+step.key+'_d');
       $('#tourTab').textContent = step.page?t('nav_'+step.page):'';
       $('#tourNext').textContent = step.final?t('tourFinalBtn'):(i===0?t('tourStartBtn'):t('tourNextBtn'));
       $('#tourSkip').style.visibility = step.final?'hidden':'visible';
@@ -13201,7 +13208,7 @@ function commitRecord(form){
   RECORDS.push({dist:recTmp.dist,meters:recTmp.meters,time,date:rcDate,place:form.place,feel:form.feel,competition:!!recTmp.competition});
   if(rcDate===todayKey() && prevBest<Infinity && recTmp.timeS<prevBest) setTimeout(()=>feteRecord(tp('recRunTime',recTmp.dist,time)),900);
   if(recTmp.dist==='5000 m')P.pb5k=time; if(recTmp.dist==='3000 m')P.pb3k=time; if(recTmp.dist==='1500 m')P.pb1500=time; if(recTmp.dist==='10 km')P.pb10k=time;
-  P.vdot=computeVDOTfromRecords();
+  P.vdot=vdotRefresh();
   saveAll(); refreshXP({animate:true}); openRecords(); toast(recTmp.competition?t('perfAddedComp'):t('perfAdded')); burst();
 }
 // Ajouter un record de 1500/3000/5000 m ou 10 km écrit AUSSI P.pbXX (compatibilité
@@ -13214,7 +13221,7 @@ function syncPbFromRecords(dist){
   const best=RECORDS.filter(x=>x.dist===dist && x.time).sort((a,b)=>parseTime(a.time)-parseTime(b.time))[0];
   P[f[0]]=best?best.time:(P[f[1]]||'');
 }
-function delRecord(i){ const sorted=[...RECORDS].sort((a,b)=>(a.meters||0)-(b.meters||0)); const r=sorted[i]; RECORDS=RECORDS.filter(x=>x!==r); if(r) syncPbFromRecords(r.dist); P.vdot=computeVDOTfromRecords()||computeVDOT(); saveAll(); openRecords(); }
+function delRecord(i){ const sorted=[...RECORDS].sort((a,b)=>(a.meters||0)-(b.meters||0)); const r=sorted[i]; RECORDS=RECORDS.filter(x=>x!==r); if(r) syncPbFromRecords(r.dist); P.vdot=vdotRefresh(); saveAll(); openRecords(); }
 function computeVDOTfromRecords(){
   let best=computeVDOT();
   RECORDS.forEach(r=>{ if(r.meters>=VDOT_MIN_M&&r.time){ const v=vdotFromRace(r.meters,parseTime(r.time)); if(v>best)best=v; }});
@@ -13265,7 +13272,7 @@ async function saveProfileEdit(){
   // Records d'abord, comme au démarrage (initApp) : computeVDOT() seul ne lit que
   // les chronos du formulaire et remettait la VDOT à 0 pour qui avait saisi ses
   // performances à l'onboarding (qui les range dans RECORDS).
-  P.vdot=computeVDOTfromRecords()||computeVDOT();
+  P.vdot=vdotRefresh();
   saveAll(); closeOv('ovProfile'); renderProfile(); toast(t('profileUpdated'));
 }
 
