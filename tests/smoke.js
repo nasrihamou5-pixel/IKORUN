@@ -343,8 +343,8 @@
           var dech=l.some(function(s){return s.deload;});
           var partielle=(i===0 && l.length<sc[1].length);
           if(km>sc[3]+1) bilan.max.push(nom+' S'+w+' '+Math.round(km)+' km');
-          if(affut||dech){ if(dech && pic && km>pic*0.8+0.5) bilan.decharge.push(nom+' S'+w+' '+Math.round(km/pic*100)+' %'); pic=0; return; }
-          if(!partielle){ if(derniere && km>derniere*1.1+0.5) bilan.saut.push(nom+' S'+w+' +'+Math.round((km/derniere-1)*100)+' %'); derniere=km; pic=Math.max(pic,km); }
+          if(affut||dech){ if(dech && pic && km>pic*planTunOf(PLAN).deloadMax+0.5) bilan.decharge.push(nom+' S'+w+' '+Math.round(km/pic*100)+' %'); pic=0; return; }
+          if(!partielle){ if(derniere && km>planNextCap(derniere,planTunOf(PLAN))+0.5) bilan.saut.push(nom+' S'+w+' +'+Math.round((km/derniere-1)*100)+' %'); derniere=km; pic=Math.max(pic,km); }
         });
         var parDate={}; PLAN.sessions.forEach(function(s){ if(s.km>0) parDate[s.date]=s; });
         PLAN.sessions.forEach(function(s){
@@ -357,8 +357,8 @@
         var apres={}; PLAN.sessions.forEach(function(s){ apres[s.week]=(apres[s.week]||0)+(s.baseType==='COURSE'?0:(s.km||0)); });
         Object.keys(apres).forEach(function(w){ if(apres[w]>sc[3]+1) bilan.regen.push(nom+' S'+w+' '+Math.round(apres[w])+' km'); });
       });
-      chk(c,'aucune semaine de charge au-delà de +10 %', !bilan.saut.length, bilan.saut.slice(0,4).join(' | ')||'3 plans types vérifiés');
-      chk(c,'une décharge pèse au plus 80 % du pic', !bilan.decharge.length, bilan.decharge.slice(0,4).join(' | '));
+      chk(c,'aucune semaine de charge au-delà de la hausse autorisée (+10 % à +14 % selon le niveau)', !bilan.saut.length, bilan.saut.slice(0,4).join(' | ')||'3 plans types vérifiés');
+      chk(c,'une décharge pèse au plus 80 à 85 % du pic (selon le niveau)', !bilan.decharge.length, bilan.decharge.slice(0,4).join(' | '));
       chk(c,'jamais deux séances dures d\'affilée ni dure le lendemain d\'une sortie longue', !bilan.enchaine.length, bilan.enchaine.slice(0,3).join(' | '));
       chk(c,'aucune semaine au-dessus du km/sem maxi', !bilan.max.length, bilan.max.slice(0,4).join(' | '));
       chk(c,'un ajustement du moteur ne dépasse pas le km/sem maxi', !bilan.regen.length, bilan.regen.slice(0,4).join(' | ')||'3 plans allégés');
@@ -903,6 +903,72 @@
     });
   }
 
+
+  /* ======================= 7h. MOTEUR DE COURSE EXIGEANT ET ACCORD MUSCU (V4.8.0) ===== */
+  function testMoteurV48(){
+    var c='7h. Moteur exigeant';
+    essaie(c,'allure : 239,6 s/km s\'écrit 4:00 (jamais 3:60)',function(){
+      if(spkToStr(239.6)!=='4:00' || spkToStr(179.5)!=='3:00' || spkToStr(299.4)!=='4:59') throw new Error(spkToStr(239.6)+' '+spkToStr(179.5)+' '+spkToStr(299.4));
+      return '239,6 → 4:00';
+    });
+    essaie(c,'objectif chrono : allures de travail tirées vers l\'objectif, plafonnées, footings inchangés',function(){
+      var sv={P:JSON.stringify(P),R:RECORDS,PL:PLAN};
+      try{
+        var d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+13*7+3);
+        P.compDate=dateKey(d); P.objRace='10 km'; P.objGoal='Record personnel'; P.objTime='32:00'; P.days=[1,2,4,5,6]; P.kmWeekMin=45; P.kmWeekMax=90; P.planSituation='continue';
+        RECORDS=[{dist:'5000 m',meters:5000,time:'17:30',date:todayKey()}];
+        var r=planBuild({seed:5}); if(r.err) throw new Error(r.err);
+        var pl=r.plan, v0=getUserVDOT(), mx=Math.max.apply(null,pl.sessions.map(function(s){ return s.pvo||0; }));
+        if(!(pl.vdotT>v0)) throw new Error('VDOT visé absent');
+        if(!(mx>1) || mx>planTunOf(pl).targetCap+0.01) throw new Error('écart de VDOT de travail '+mx+' (plafond '+planTunOf(pl).targetCap+')');
+        var ef=pl.sessions.filter(function(s){ return s.baseType==='EF'; }); var pc=planPaces(pl.vdot);
+        if(ef.some(function(s){ return Math.abs(planSegs(s,pc).filter(function(x){ return x.k==='run'; })[0].sec/ s.km - pc.EF)>1; })) throw new Error('un footing a changé d\'allure');
+        var v=validatePlan(pl); if(!v.ok) throw new Error(v.errors.slice(0,2).join(' ; '));
+        return 'VDOT '+fmt1(v0)+' → '+fmt1(pl.vdotT)+', écart max +'+mx;
+      } finally { P=JSON.parse(sv.P); RECORDS=sv.R; PLAN=sv.PL; }
+    });
+    essaie(c,'qualité garantie : un fractionné rapide par semaine de la phase VO2 au pic, 3 structures de pyramide au moins',function(){
+      var sv={P:JSON.stringify(P),R:RECORDS,PL:PLAN}, pyr={};
+      try{
+        var d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+13*7+3);
+        P.compDate=dateKey(d); P.objRace='10 km'; P.objGoal='Record personnel'; P.objTime='32:00'; P.days=[1,2,4,5,6]; P.kmWeekMin=45; P.kmWeekMax=90; P.planSituation='continue';
+        RECORDS=[{dist:'5000 m',meters:5000,time:'17:30',date:todayKey()}];
+        for(var g=0;g<12;g++){
+          var pl=planBuild({seed:g*977+3}).plan, by={}; pl.sessions.forEach(function(s){ (by[s.week]=by[s.week]||[]).push(s); if(s.series&&s.series.pyr) pyr[s.series.pyr]=1; });
+          Object.keys(by).forEach(function(w){ var l=by[w]; if(['VO2','SPE','PIC'].indexOf(l[0].phaseKey)>=0 && !l.some(function(s){ return s.deload; }) && !l.some(function(s){ return ['VMAc','VMAl','VO2','INTERVAL'].indexOf(s.baseType)>=0; })) throw new Error('génération '+g+' semaine '+w+' sans fractionné rapide'); });
+        }
+        if(Object.keys(pyr).length<3) throw new Error('seulement '+Object.keys(pyr).length+' structure(s) de pyramide');
+        return Object.keys(pyr).length+' structures : '+Object.keys(pyr).join(', ');
+      } finally { P=JSON.parse(sv.P); RECORDS=sv.R; PLAN=sv.PL; }
+    });
+    essaie(c,'jambes lourdes la veille d\'une séance dure : la séance est allégée ET dite dans le journal ; deux jours après : intacte',function(){
+      var sv={PL:JSON.stringify(PLAN),L:ADAPT_LOG.slice(),A:JSON.stringify(P.adapt||null)};
+      try{
+        if(!PLAN||!PLAN.sessions||!PLAN.sessions.length) planDeTest();
+        P.adapt={}; ADAPT_LOG=[];
+        var hard=PLAN.sessions.filter(function(s){ return planIsHard(s) && s.date>todayKey() && !s.done; })[0]; if(!hard) throw new Error('aucune séance dure à tester');
+        var before=hard.baseType+hard.km, veille=addDaysKey(hard.date,-1);
+        if(veille<=todayKey()) return 'séance dure trop proche pour le test';
+        var out=adaptAfterMuscu({date:veille,legsHeavy:true,muscles:[]});
+        var h=PLAN.sessions.find(function(s){ return s.id===hard.id; });
+        if(h.baseType+h.km===before) throw new Error('la séance dure n\'a pas été allégée');
+        if(!ADAPT_LOG.some(function(e){ return e.rule==='legs' && e.status==='applied'; })) throw new Error('allègement sans message dans le journal');
+        // deux jours après : rien
+        PLAN=JSON.parse(sv.PL); P.adapt={}; ADAPT_LOG=[]; var h2=PLAN.sessions.find(function(s){ return s.id===hard.id; }), b2=h2.baseType+h2.km;
+        var l2=addDaysKey(h2.date,-2); if(l2>todayKey()){ adaptAfterMuscu({date:l2,legsHeavy:true,muscles:[]}); h2=PLAN.sessions.find(function(s){ return s.id===hard.id; }); if(h2.baseType+h2.km!==b2) throw new Error('séance dure à J+2 allégée à tort'); }
+        return 'veille : allégée et notée · J+2 : intacte';
+      } finally { PLAN=JSON.parse(sv.PL); ADAPT_LOG=sv.L; P.adapt=JSON.parse(sv.A); }
+    });
+    essaie(c,'séance de course : ouverture sans boucle de météo, sections « Détails » repliées',function(){
+      if(!PLAN||!PLAN.sessions||!PLAN.sessions.length) planDeTest();
+      var s=PLAN.sessions.filter(function(x){ return x.km>0 && x.baseType!=='COURSE'; })[0], avO=window.openOv, n=0;
+      window.openOv=function(){ n++; };
+      try{ openRunSheet(s.id); if(n!==1) throw new Error('ouvertures : '+n); var d=document.querySelector('#sheetBody details.ex-det'); if(!d) throw new Error('pas de section Détails'); if(d.open) throw new Error('Détails ouverte par défaut'); }
+      finally{ window.openOv=avO; }
+      return 'une ouverture, Détails repliée';
+    });
+  }
+
   /* ======================= 7f. BILAN À LA MOLETTE, INTRO (V3.5.5) ========== */
   function testBilanMolette(){
     var c='7f. Bilan et intro';
@@ -1355,6 +1421,7 @@
     testPetitsEcrans();
     testBilanMolette();
     testBlessureMuscu();
+    testMoteurV48();
     testAdaptation();
     testInvites();
     testSelecteursEtPlan();

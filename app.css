@@ -5545,3 +5545,10 @@ svg.bd-glyph{display:block;width:100%;height:100%}
 .ik-miss-b svg{color:var(--et,var(--e))}
 [dir=rtl] .ik-inj-exr svg:last-child{transform:scaleX(-1)}
 .ik-wiz-hint{margin:8px 2px 0;font-size:12px;color:var(--muted)}
+.ex-cue{margin:0 0 10px;font-size:13px;font-style:italic;color:var(--muted);text-align:center}
+.ex-effort{display:flex;align-items:center;gap:8px;margin:10px 0;padding:10px 12px;border-radius:14px;font-size:12.5px;background:var(--s2);border:1px solid var(--hair)}
+.ex-det{margin:12px 0 0;border-top:1px solid var(--hair);padding-top:8px}.ex-det summary{cursor:pointer;font-weight:700;font-size:13px;color:var(--et,var(--e));padding:6px 0;list-style:none}.ex-det summary::-webkit-details-marker{display:none}.ex-det summary::after{content:' ▾';opacity:.7}
+.ex-d-row{margin:8px 0 5px;font-size:12.5px;color:var(--muted)}.ex-d-row b{color:var(--snow)}.ex-d-row.bad b{color:var(--bad)}
+.rs-fl{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 10px;padding:11px 14px;border-radius:14px;font-size:13px;background:var(--s2);border:1px solid var(--hair)}.rs-fl b{color:var(--snow)}.rs-fl span{color:var(--muted);font-variant-numeric:tabular-nums}
+.rs-why{margin:0 0 8px;font-size:12.5px;line-height:1.5;color:var(--muted)}.rs-why b{color:var(--snow)}
+.rs-d{margin-top:8px}.rs-d b{color:var(--snow)}.rs-d.bad b{color:var(--bad)}

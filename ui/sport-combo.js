@@ -339,6 +339,7 @@ function strengthRelink(){
   STRENGTH.sessions = kept.concat(fresh).sort(function(a,b){ return a.date<b.date?-1:1; });
   STRENGTH.weeks = Math.max(STRENGTH.weeks||0, r.plan.weeks); STRENGTH.raceDate = r.plan.raceDate;
   DB.save('strength_plan', STRENGTH);
+  try{ if(typeof injActive==='function' && injActive()) injApplyAll(true); }catch(e){}   // blessure en cours : les nouvelles séances reprennent leur rééducation
   return true;
 }
 // Après chaque ajustement du plan de course (adPersist) : si une séance de jambes à venir tombe
