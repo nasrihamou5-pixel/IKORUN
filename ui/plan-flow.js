@@ -15,6 +15,19 @@ let _psFlow=null, _wzFlow=null;
 /* ---------------- 1. PLAN DE COURSE ---------------- */
 // jours : P.days compte 0 = dimanche (Date.getDay) ; les pastilles, 0 = lundi
 const pfJs=i=>(i+1)%7, pfMon=d=>(d+6)%7;
+// chronos (V4.11.1 : demandés à la création du plan, plus à l'inscription)
+const PF_REF=[[1500,'1 500 m','1500 m'],[3000,'3 000 m','3000 m'],[5000,'5 km','5000 m'],[10000,'10 km','10 km'],[21097,'semi','Semi-marathon'],[42195,'marathon','Marathon']];
+function pfRefLab(m){ const r=PF_REF.find(x=>x[0]===m); if(!r) return fmtKmShort(m/1000)+' km'; return r[1]==='semi'?t('ob2Half'):r[1]==='marathon'?t('ob2Marathon'):r[1]; }
+function pfRecs(){ return [...(RECORDS||[])].filter(r=>r&&r.time&&r.meters>=VDOT_MIN_M).sort((a,b)=>(a.meters||0)-(b.meters||0)); }
+function pfHasRec(){ return pfRecs().length>0; }
+function pfSaveRec(m,sec){
+  const r=PF_REF.find(x=>x[0]===m), dist=r?r[2]:fmtKmShort(m/1000)+' km', tk=todayKey();
+  RECORDS=dedupeRecords((RECORDS||[]).filter(x=>!(x&&x.meters===m&&x.date===tk)).concat([{dist,meters:m,time:fmtTime(sec),date:tk}]));
+  const k={5000:'t5k',3000:'t3k',1500:'t1500',10000:'t10k'}[m]; if(k) P[k]=fmtTime(sec);
+  const v=computeVDOTfromRecords(); if(v){ P.vdot=v; delete P.vdotEstimated; }
+  DB.save('records',RECORDS); saveAll();
+}
+
 function psFlowOpen(){
   if(_psFlow&&_psFlow.ouvert()) _psFlow.fermer();
   const s=setupTmp;
@@ -40,6 +53,25 @@ function psFlowOpen(){
       corps(c,F){ c.appendChild(F.liste([{v:'deb',ic:'seedling',t:t('lvlDeb'),s:t('pf2LvlDebS')},{v:'int',ic:'run',t:t('lvlInt'),s:t('pf2LvlIntS')},{v:'conf',ic:'bolt',t:t('lvlConf'),s:t('pf2LvlConfS')}],
         v=>s.level===v,v=>{ s.level=v; })); },
       ok:()=>!!s.level},
+    /* V4.11.1 : les chronos ne sont plus demandés à l'inscription. Sans chrono enregistré, on le demande ici
+       (il fixe toutes les allures) ; « Je n'ai pas de chrono » garde l'estimation selon le niveau. */
+    {id:'p-chrono',sec:'sit',si:()=>!pfHasRec()||s.editChrono,titre:()=>t('ob2RefT'),sous:()=>t('ob2RefS'),
+      corps(c,F){ if(!s.refM) s.refM=5000; s.editChrono=true;   // reste affiché une fois le 1er chrono posé
+        const zone=document.createElement('div');
+        const dessiner=()=>{ zone.innerHTML='';
+          const recs=pfRecs(), p=recs.find(r=>r.meters===s.refM);
+          zone.appendChild(F.bloc(t('ob2Dist'),F.seg(PF_REF.map(r=>({v:String(r[0]),t:pfRefLab(r[0])})),v=>String(s.refM)===v,v=>{ s.refM=+v; dessiner(); },3)));
+          zone.appendChild(F.bloc('',F.champs([{t:tp('ob2RefTimeFor',pfRefLab(s.refM)),vide:()=>!p,aff:()=>p?ikfEsc(p.time):t('chooseWord'),
+            ouvre:fin=>pickTime(tp('timeForLab',pfRefLab(s.refM)),p?parseTime(p.time):Math.round(predictTime(getUserVDOT()||40,s.refM)/5)*5,v=>{
+              const g=recordGuard(s.refM,v); if(!g.ok){ toast(g.msg); return; }
+              pfSaveRec(s.refM,v); s.noRef=false; if(!s.knownGoal||s.editGoal) s.timeS=psPredicted(s); fin(); dessiner(); F.maj(); },s.refM>=15000)}])));
+          const autres=recs.filter(r=>r.meters!==s.refM);
+          if(autres.length) zone.appendChild(F.bloc(t('ob2RefOthers'),ikfMk(autres.map(r=>`<div class="ikob-perf"><span>${ikfEsc(r.dist)}</span><b>${ikfEsc(r.time)}</b></div>`).join(''),'ikob-perfs')));
+          zone.appendChild(F.note(recs.length?t('ob2RefMoreNote'):t('ob2RefWhy')));
+        };
+        dessiner(); c.appendChild(zone); },
+      lien:{si:()=>!pfHasRec(),t:()=>t('ob2RefNone'),f:()=>{ s.noRef=true; toast(t('ob2RefNoneToast')); _psFlow.suivant(true); }},
+      ok:()=>pfHasRec()||!!s.noRef},
     {id:'p-race',sec:'race',auto:true,si:raceVue,titre:()=>t('pf2RaceT'),sous:()=>t('pf2RaceS'),
       corps(c,F){ c.appendChild(F.liste(PS_RACES.map(r=>({v:r,t:trRace(r),s:r==='Semi-marathon'?'21,1 km':r==='Marathon'?'42,2 km':''})),v=>s.objRace===v,
         v=>{ if(s.objRace!==v){ s.objRace=v; s.timeS=psPredicted(s); } })); },
@@ -79,13 +111,6 @@ function psFlowOpen(){
         };
         dessiner(); c.appendChild(zone); },
       ok:()=>s.days.length>0},
-    {id:'p-recs',sec:'recs',si:()=>false,titre:()=>t('pf2RecsT'),sous:()=>t('pf2RecsS'),
-      corps(c,F){ const recs=[...(RECORDS||[])].filter(r=>r&&r.time).sort((a,b)=>(a.meters||0)-(b.meters||0));
-        if(recs.length){ const L=ikfMk(recs.map(r=>`<div class="ikob-perf"><span>${ikfEsc(r.dist)}</span><b>${ikfEsc(r.time)}</b></div>`).join(''),'ikob-perfs'); c.appendChild(L); }
-        else c.appendChild(F.note(t('psRecNone')));
-        const b=ikfMk(`<button type="button" class="btn ghost">${ICN('stopwatch',16)} ${t('psRecEdit')}</button>`,'ikob-bloc');
-        b.querySelector('button').onclick=()=>{ try{ openRecords(); }catch(e){} }; c.appendChild(b); },
-      ok:()=>true},
     {id:'p-recap',sec:'recap',final:true,titre:()=>t('pf2RecapT'),sous:()=>t('ob2RecapS'),
       corps(c,F){
         const sit=sitLab(s.situation)+(s.situation==='reprise'?' · '+gapLab(s.gap):s.situation==='continue'?' · '+lvlLab(s.level):'');
@@ -96,14 +121,14 @@ function psFlowOpen(){
           {ic:'flag',t:t('psCardRace'),v:psRaceName(s)+' · '+ikfDate(s.compDate)+' · '+tp('psDateIn',semaines()),go:'p-race',pre:()=>{ s.editRace=true; }},
           {ic:'target',t:t('psCardGoal'),v:goalTxt(),go:'p-goal',pre:()=>{ s.editGoal=true; }},
           {ic:'calendar',t:t('psCardWeek'),v:joursTxt()+' · '+vol.min+'→'+vol.max+' km',go:'p-days'},
-          {ic:'stopwatch',t:t('psRecLab'),v:recs.length?recs.map(r=>r.dist+' '+r.time).join(' · '):t('psRecNone'),go:'p-recs'}]));
+          {ic:'stopwatch',t:t('psRecLab'),v:recs.length?recs.map(r=>r.dist+' '+r.time).join(' · '):t('ob2RefEstimated'),go:'p-chrono',pre:()=>{ s.editChrono=true; }}]));
         if(s.knownRace&&!s.editRace) c.appendChild(F.note(ICN('check',13)+' '+t(psFromRace(s)?'psFromCalendar':'psFromSignup')));
         const m=ikfMk(`<button type="button" class="ikob-lien">${ICN('bulb',14)} ${t('mtLink')}</button>`,'ikob-bloc c');
         m.querySelector('button').onclick=()=>{ try{ openMethod(); }catch(e){} }; c.appendChild(m); },
       ok:()=>true}
   ];
   _psFlow=ikFlow({screens:SC, closable:true, track:'ps_step',
-    secs:{sit:()=>t('psSitLab'),race:()=>t('psCardRace'),goal:()=>t('psCardGoal'),week:()=>t('psCardWeek'),recs:()=>t('psRecLab'),recap:()=>t('ob2SecRecap')},
+    secs:{sit:()=>t('psSitLab'),race:()=>t('psCardRace'),goal:()=>t('psCardGoal'),week:()=>t('psCardWeek'),recap:()=>t('ob2SecRecap')},
     finalLabel:()=>t('generateMyPlanBtn'),
     onCancel:()=>{ try{ if(typeof wizAfterRun!=='undefined') wizAfterRun=false; }catch(e){} },
     build:()=>({titre:()=>t('pf2BuildT'),
