@@ -12,7 +12,7 @@ const N = +process.argv[2] || 2000, NL = +process.argv[3] || 300;
   await ctx.route(/vendor\/sb-init\.js/, r => r.fulfill({ contentType: 'text/javascript', body: '' }));
   await ctx.route(/supabase\.co|accounts\.google|githubusercontent|open-meteo/, r => r.abort());
   const page = await ctx.newPage(); const errs = []; page.on('pageerror', e => errs.push(e.message));
-  await page.goto('http://127.0.0.1:8137/index.html');
+  await page.goto((process.env.BASE||'http://127.0.0.1:8137')+'/index.html');
   await page.waitForFunction(() => typeof initApp === 'function' && window.DB_READY); await page.evaluate(() => window.DB_READY); await page.waitForTimeout(2000);
   await page.evaluate(() => { P = { setupDone: true, name: 'T', lang: 'fr', mode: 'dark', theme: 'blue', joinedAt: Date.now() - 9e9 }; PREFS = {}; window.currentUserId = null; });
   await page.evaluate(fs.readFileSync(path.join(__dirname, 'engine-harness.page.js'), 'utf8'));

@@ -55,8 +55,21 @@ base = os.path.splitext(out)[0]
 open(out, 'w', encoding='utf8').write('\n'.join(hdr + [
  '// ligne = [id, nomFR, groupe, matériel, niveau, primaires, secondaires, type, imageDb, zonesRééduc, nomEN, nomAR, dose]',
  'const EXD_ROWS=' + j(light) + ';']) + '\n')
+# V4.8 : consignes propres à chaque exercice de la base d'origine (cues_in.json : id → noms ; cues_out.tsv : id|consigneFR|pointsFR|consigneEN|pointsEN|consigneAR|pointsAR)
+cues = {}
+cin, cout = os.path.join(src, 'cues_in.json'), os.path.join(src, 'cues_out.tsv')
+if os.path.exists(cin) and os.path.exists(cout):
+    names = {x['id']: x['names'] for x in json.load(open(cin, encoding='utf8'))}
+    for l in open(cout, encoding='utf8'):
+        l = l.rstrip('\n')
+        if not l.strip(): continue
+        c = l.split('|')
+        if len(c) != 7 or c[0] not in names: raise SystemExit('ligne de consignes invalide : ' + l[:60])
+        v = [[c[1], [x.strip() for x in c[2].split(';;')]], [c[3], [x.strip() for x in c[4].split(';;')]], [c[5], [x.strip() for x in c[6].split(';;')]]]
+        for nm in names[c[0]]: cues[nm] = v
 open(base + '-steps.js', 'w', encoding='utf8').write('\n'.join(hdr + [
  '// chargé à la demande (ikLoad("exdb")) : tutos pas à pas FR/EN/AR + programmes de rééducation',
  'window.EXD_STEPS=' + j(steps) + ';',
- 'window.EXD_REHAB=' + j({'zones': P, 'common': COMMON}) + ';']) + '\n')
+ 'window.EXD_REHAB=' + j({'zones': P, 'common': COMMON}) + ';',
+ 'window.EXD_CUES=' + j(cues) + ';']) + '\n')
 print(len(rows), 'exercices ->', out, os.path.getsize(out), 'et', base + '-steps.js', os.path.getsize(base + '-steps.js'))
