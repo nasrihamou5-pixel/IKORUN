@@ -2700,7 +2700,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.9.1';
+const APP_VERSION='4.11.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -5186,134 +5186,11 @@ function maybeResumeLive(){
   },{yesLabel:t('resumeBtn'),noLabel:t('discardBtn'),onNo:()=>{ DB.remove('live_active'); }});
 }
 
-/* ---------- ONBOARDING ---------- */
-let obStep=1; const OB_MAX=6;
-let obMode=null; // 'simple' | 'complet' — choisi explicitement à l'étape 4, jamais imposé
-function startOnboarding(){
-  obMode=null;
-  applyOnboardingLabels();
-  $('#ob').classList.add('on');
-  const prog=$('#obProg'); prog.innerHTML='';
-  for(let i=1;i<=OB_MAX;i++){ const d=document.createElement('div'); if(i===1)d.classList.add('on'); prog.appendChild(d); }
-  // pill selectors
-  $('#ob_level').querySelectorAll('.pill').forEach(p=>p.onclick=()=>{ $('#ob_level').querySelectorAll('.pill').forEach(x=>x.classList.remove('on')); p.classList.add('on'); });
-  // Langue et couleur : préférences appliquées EN DIRECT (applyTheme/setLang
-  // s'exécutent immédiatement) pour que le reste de l'onboarding s'affiche
-  // déjà dans la langue et la couleur choisies, au lieu de les découvrir
-  // seulement après la création du compte.
-  obRenderLangPicker();
-  obRenderThemePicker();
-  obRenderAccentPicker();
-  $('#ob_mode').querySelectorAll('.ob-mode-card').forEach(c=>c.onclick=()=>obPickMode(c.dataset.v));
-  OB_PERFS=[{dist:null,meters:null,timeS:null}];
-  renderPerfRows();
-  obUsernameOk=false;
-  obUsernameAuto=true;
-  wireUsernameField('ob_username','ob_username_status',ok=>{ obUsernameOk=ok; });
-  wireAutoUsername();
-  obShow(1);
-}
-/* Langue et couleur choisies dès l'écran de bienvenue plutôt que devinées
-   (langue) ou laissées par défaut (couleur, toujours bleu jusqu'ici). setLang
-   et setAccent existent déjà (utilisées dans Profil) : on les réutilise telles
-   quelles, P étant déjà un objet valide (même sparse) avant la fin de
-   l'onboarding — voir reloadState(). */
-function obRenderLangPicker(){
-  const box=$('#ob_lang'); if(!box) return;
-  box.querySelectorAll('.pill').forEach(p=>{
-    p.classList.toggle('on', p.dataset.l===curLang());
-    p.onclick=()=>{ setLang(p.dataset.l); applyOnboardingLabels(); };
-  });
-}
-function obRenderThemePicker(){
-  const box=$('#ob_theme'); if(!box) return;
-  box.innerHTML=pfThemeSwitchHTML();
-}
-function obRenderAccentPicker(){
-  const box=$('#ob_accent'); if(!box) return;
-  box.innerHTML=pfAccentPickerHTML();
-  box.querySelectorAll('.accent-dot').forEach(d=>{
-    // pfAccentPickerHTML() pose déjà onclick="setAccent(...)" ; on ajoute
-    // juste le rafraîchissement visuel propre à l'onboarding par-dessus.
-    d.addEventListener('click',()=>setTimeout(obRenderAccentPicker,0));
-  });
-}
-// Mode d'affichage : deux cartes, aucune présélection imposée — seule une
-// suggestion textuelle apparaît une fois la date de naissance connue (l'âge
-// n'est qu'un indice, jamais une décision prise à la place de la personne).
-function obPickMode(v){
-  obMode=v;
-  $('#ob_mode').querySelectorAll('.ob-mode-card').forEach(c=>c.classList.toggle('on',c.dataset.v===v));
-  $('#ob_mode_hint').textContent='';
-}
-function obModeSuggestion(){
-  const bday=$('#ob_bday')?.value; if(!bday) return null;
-  const ageYears=Math.floor((Date.now()-new Date(bday))/31557600000);
-  return ageYears>26?'simple':'complet';
-}
-/* Traduit le HTML statique de l'onboarding (index.html) selon curLang().
-   Les data-v des pills de niveau restent en français en interne (utilisés
-   comme clés par kmWeekFromLevel/finishOnboarding) — seul l'affichage change. */
-function applyOnboardingLabels(){
-  const step1=$('.ob-step[data-step="1"]');
-  if(step1){
-    const h1=step1.querySelector('h1'),p=step1.querySelector('.intro');
-    if(h1)h1.textContent=t('obWelcomeTitle'); if(p)p.innerHTML=t('obWelcomeIntro');
-    $('#obLangLab').textContent=t('langLab'); $('#obThemeLab').textContent=t('theme'); $('#obColorLab').textContent=t('colorLab');
-    obRenderLangPicker();
-  }
-  const step2=$('.ob-step[data-step="2"]');
-  if(step2){
-    step2.querySelector('h1').textContent=t('obWhoTitle'); step2.querySelector('.intro').textContent=t('obWhoIntro');
-    $('#ob_name').placeholder=t('firstNamePh'); $('#ob_name').closest('.field').querySelector('label').textContent=t('firstNameReq');
-    $('#ob_username').placeholder=t('usernamePh'); $('#ob_username_status').textContent=t('usernameFormatHint');
-    step2.querySelectorAll('.field label')[1].textContent=t('usernameReq');
-    step2.querySelectorAll('.field label')[2].textContent=t('birthDateReq');
-    step2.querySelectorAll('.field label')[3].textContent=t('sexReq');
-    const sexSel=$('#ob_sex'); sexSel.options[0].textContent=t('selectLab'); sexSel.options[1].textContent=t('maleLab'); sexSel.options[2].textContent=t('femaleLab');
-  }
-  const step3=$('.ob-step[data-step="3"]');
-  if(step3){
-    step3.querySelector('h1').textContent=t('obLevelTitle'); step3.querySelector('.intro').textContent=t('obLevelIntro');
-    step3.querySelector('.note span').innerHTML=t('levelNote');
-    const lvLabel=step3.querySelector('.field > label'); lvLabel.childNodes[0].textContent=t('levelReq')+' '; lvLabel.querySelector('span').textContent=t('howChooseLab');
-    const pills=$('#ob_level').querySelectorAll('.pill');
-    const map={'Débutant':'lvlBeginner','Intermédiaire':'lvlIntermediate','Confirmé':'lvlAdvanced','Très avancé':'lvlVeryAdvanced','Élite':'lvlElite'};
-    pills.forEach(p=>{ const k=map[p.dataset.v]; if(k) p.textContent=t(k); });
-  }
-  const step4=$('.ob-step[data-step="4"]');
-  if(step4){
-    step4.querySelector('h1').textContent=t('obModeTitle'); step4.querySelector('.intro').textContent=t('obModeIntro');
-    const cards=$('#ob_mode').querySelectorAll('.ob-mode-card');
-    cards[0].querySelector('.ob-mode-t').textContent=t('obModeFullT'); cards[0].querySelector('.ob-mode-d').textContent=t('obModeFullD');
-    cards[1].querySelector('.ob-mode-t').textContent=t('obModeSimpleT'); cards[1].querySelector('.ob-mode-d').textContent=t('obModeSimpleD');
-  }
-  const step5=$('.ob-step[data-step="5"]');
-  if(step5){
-    step5.querySelector('h1').textContent=t('obGoalTitle'); step5.querySelector('.intro').textContent=t('obGoalIntro');
-    const labels=step5.querySelectorAll('.field label');
-    labels[0].textContent=t('goalReq'); $('#ob_goal').placeholder=t('goalPh');
-    labels[1].textContent=t('compDateReq');
-    const rp=$('#ob_racepick'); if(rp) rp.lastChild.textContent=' '+t('racePickFromCal');
-    // Empêche de choisir une date passée dans le sélecteur natif (le champ
-    // n'avait aucun `min`, donc une date déjà passée générait un plan de
-    // 2 semaines sans avertir personne — voir aussi la garde dans generatePlan()).
-    const minD=new Date(); minD.setDate(minD.getDate()+7);
-    $('#ob_compdate').min=minD.toISOString().slice(0,10);
-  }
-  const step6=$('.ob-step[data-step="6"]');
-  if(step6){
-    step6.querySelector('h1').textContent=t('obPerfTitle'); step6.querySelector('.intro').textContent=t('obPerfIntro');
-    step6.querySelector('.note span').innerHTML=t('perfNote');
-    $('#ob_addperf').textContent=t('addAnotherPerf');
-  }
-  $('#obPrev').textContent=t('backLab');
-  $('#obNext').textContent=obStep===OB_MAX?t('finishLab'):t('continueLab');
-  renderPerfRows();
-}
-/* Traduit les titres statiques des overlays génériques + le picker à roues.
-   Les titres dynamiques (Profil, Badges, Amis, Outils...) sont déjà gérés
-   par leurs fonctions d'ouverture respectives (openXxx). */
+/* ---------- ONBOARDING ----------
+   V4.10.0 : l'inscription est l'assistant « une question par écran » de ui/onboarding.js (IKOB),
+   repris de KORE et adapté à IKORUN. Ne restent ici que les outils qu'il partage avec l'app. */
+function startOnboarding(){ IKOB.ouvrir(); }
+/* Traduit les titres statiques des overlays génériques + le picker à roues. */
 function applyStaticLabels(){
   if(window.ikA11yRelabel) ikA11yRelabel(); // noms des boutons-icônes dans la langue choisie (V3.14.0)
   const map={ovSettings:'paramsTitle',ovLib:'libTitle',ovCfg:'configureTitle',ovCreate:'newProgramTitle',ovWizard:'wizTitle'};
@@ -5321,8 +5198,7 @@ function applyStaticLabels(){
   const pkOk=$('#pkOk'); if(pkOk) pkOk.textContent=t('validateLab2');
   if(document.body.dataset.scr==='home'){ const tbTitle=$('#tbTitle'); if(tbTitle) tbTitle.textContent=t('home'); }
 }
-let obUsernameOk=false;
-let obUsernameAuto=true; // tant que vrai, le pseudo se génère automatiquement à partir du prénom
+/* Pseudo : on propose d'abord le prénom tel quel, avec un suffixe seulement s'il est pris. */
 async function isUsernameAvailableRaw(v){
   if(!usernameFormatOk(v)) return false;
   if(!window.supabaseClient) return true;
@@ -5332,8 +5208,6 @@ async function isUsernameAvailableRaw(v){
     return !!data;
   }catch(e){ console.error('username_available exception',e); return false; }
 }
-// Propose d'abord le pseudo le plus simple et le plus proche du prénom donné
-// (le prénom tel quel), et ne rajoute un suffixe que si c'est vraiment nécessaire.
 async function suggestAvailableUsername(name){
   let base=slugifyUsername(name);
   if(base.length<3) base=(base||'runner').padEnd(3,'0');
@@ -5345,205 +5219,15 @@ async function suggestAvailableUsername(name){
   }
   return (base+Math.floor(Math.random()*900+100)).slice(0,20);
 }
-let _autoUnameGen=0;
-function wireAutoUsername(){
-  const nameInp=$('#ob_name'); if(!nameInp) return;
-  let deb=null;
-  nameInp.oninput=()=>{
-    if(!obUsernameAuto) return;
-    clearTimeout(deb);
-    deb=setTimeout(async ()=>{
-      const name=nameInp.value.trim();
-      if(!name) return;
-      const mySeq=++_autoUnameGen;
-      const uInp=$('#ob_username'); if(!uInp) return;
-      const stEl=$('#ob_username_status');
-      if(stEl){ stEl.textContent=t('checkingLab'); stEl.className='uname-status checking'; }
-      const u=await suggestAvailableUsername(name);
-      if(mySeq!==_autoUnameGen || !obUsernameAuto) return; // le prénom a changé ou l'utilisateur a repris la main entretemps
-      uInp.value=u;
-      checkUsernameLive(u,stEl,uInp).then(ok=>{ if(ok!==null) obUsernameOk=ok; });
-    },350);
-  };
-  const uInp=$('#ob_username');
-  if(uInp) uInp.addEventListener('input',()=>{ obUsernameAuto=false; },{once:true});
-}
 function slugifyUsername(name){
   let s=(name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   s=s.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
   if(s.length>14) s=s.slice(0,14);
   return s;
 }
-/* ===== Étape Performances : lignes Distance | Temps ===== */
-let OB_PERFS=[{dist:null,meters:null,timeS:null}];
-function renderPerfRows(){
-  const box=$('#ob_perfs'); if(!box) return;
-  let h='';
-  OB_PERFS.forEach((p,i)=>{
-    h+='<div class="perfrow">';
-    h+='<div class="perfcard" onclick="pickPerfDist('+i+')"><div class="pcl">'+t('distanceLab2')+'</div><div class="pcv '+(p.dist?'':'empty')+'">'+(p.dist||t('chooseWord'))+'</div></div>';
-    h+='<div class="perfcard" onclick="pickPerfTime('+i+')"><div class="pcl">'+t('timeField')+'</div><div class="pcv '+(p.timeS!=null?'':'empty')+'">'+(p.timeS!=null?fmtTime(p.timeS):t('chooseWord'))+'</div></div>';
-    if(OB_PERFS.length>1) h+='<div class="perfdel" onclick="delPerfRow('+i+')">'+ICN('trash',16)+'</div>';
-    h+='</div>';
-  });
-  box.innerHTML=h;
-}
-function addPerfRow(){ OB_PERFS.push({dist:null,meters:null,timeS:null}); renderPerfRows(); }
-function openLevelGuide(){
-  const lv=[
-    ['seedling',t('lvlBeginner'),t('lvlBeginnerDesc')],
-    ['run',t('lvlIntermediate'),t('lvlIntermediateDesc')],
-    ['bolt',t('lvlAdvanced'),t('lvlAdvancedDesc')],
-    ['fire',t('lvlVeryAdvanced'),t('lvlVeryAdvancedDesc')],
-    ['medal',t('lvlElite'),t('lvlEliteDesc')]
-  ];
-  let h=lv.map(x=>'<div class="card" style="margin-bottom:10px;padding:14px"><div style="font-weight:700;font-size:15px;margin-bottom:5px;display:flex;align-items:center;gap:8px">'+ICN(x[0],18,'var(--e)')+x[1]+'</div><div style="font-size:13px;color:var(--muted);line-height:1.5">'+x[2]+'</div></div>').join('');
-  h+='<button class="btn" onclick="closeOv(\'ovProg\')">'+t('understoodLab')+'</button>';
-  $('#ovProgTitle').textContent=t('howChooseLevelTitle'); $('#progBody').innerHTML=h;
-  // place l'overlay au-dessus de l'onboarding
-  $('#ovProg').style.zIndex='13700'; openOv('ovProg');
-}
-function delPerfRow(i){ OB_PERFS.splice(i,1); renderPerfRows(); }
-function pickPerfDist(i){
-  // V3.14.0 : ces chronos servent à calculer la VDOT → 1 500 m minimum, 5 000 m proposé d'abord
-  // (la roue s'ouvrait sur « 100 m »).
-  const list=REC_DISTANCES.filter(d=>d[1]>=VDOT_MIN_M);
-  const names=list.map(d=>d[0]).concat([t('otherDist')]);
-  const cur=names.indexOf(OB_PERFS[i].dist);
-  openPicker({title:t('distanceLab2'),cols:[{values:names,sel:cur>=0?cur:Math.max(0,names.indexOf('5000 m')),wide:true}],onOk:idx=>{
-    const name=names[idx[0]];
-    if(name===t('otherDist')){ pickDistance(t('customDistance'),OB_PERFS[i].meters?OB_PERFS[i].meters/1000:5,km=>{
-      if(km*1000<VDOT_MIN_M){ toast(t('perfMin1500')); return; }
-      OB_PERFS[i].dist=(km>=1?km+' km':Math.round(km*1000)+' m'); OB_PERFS[i].meters=Math.round(km*1000); renderPerfRows(); }); }
-    else { const d=list[idx[0]]; OB_PERFS[i].dist=d[0]; OB_PERFS[i].meters=d[1]; renderPerfRows(); }
-  }});
-}
-function pickPerfTime(i){
-  const m=OB_PERFS[i].meters||5000; const longRace=m>=15000;
-  // Valeur de départ de la roue = temps d'un coureur loisir (VDOT 35) sur cette
-  // distance. Avant : 45:00 pour TOUT ce qui dépassait 10 km, semi et marathon
-  // compris (plus rapide que le record du monde) — valider sans tourner la roue
-  // donnait un VDOT de 114 et des allures d'élite (audit 24/09).
-  const defS=m>=800 ? Math.round(predictTime(35,m)/5)*5 : Math.round(m*0.3);
-  pickTime(tp('timeForLab',OB_PERFS[i].dist||''),OB_PERFS[i].timeS!=null?OB_PERFS[i].timeS:defS,v=>{ OB_PERFS[i].timeS=v; renderPerfRows(); },longRace);
-}
-function obShow(n){
-  ikTrack('ob_step',{n:+n||0});
-  obStep=n;
-  $$('.ob-step').forEach(s=>s.classList.toggle('on',+s.dataset.step===n));
-  $('#obProg').querySelectorAll('div').forEach((d,i)=>d.classList.toggle('on',i<n));
-  $('#obPrev').style.visibility=n===1?'hidden':'visible';
-  $('#obNext').textContent=n===OB_MAX?t('finishLab'):t('continueLab');
-  $('#ob').scrollTop=0;
-  // Étape "Ton affichage" : un simple indice textuel basé sur l'âge déjà
-  // saisi, jamais une présélection — la carte reste vide tant que personne
-  // n'a tapé dessus.
-  if(n===4 && !obMode){
-    const sugg=obModeSuggestion();
-    if(sugg) $('#ob_mode_hint').textContent=tp('obModeSuggestion',t(sugg==='simple'?'obModeSimpleT':'obModeFullT'));
-  }
-}
-$('#obPrev').onclick=()=>{
-  if(obStep<=1) return;
-  obShow(obStep-1);
-};
-// V3.14.0 : « Disponible » s'affichait puis « Continuer » répondait « pas disponible » — le
-// drapeau obUsernameOk pouvait dater d'une autre valeur (saisie en cours, suggestion automatique,
-// réponse réseau en retard). On attend désormais le résultat de LA valeur affichée ; le bouton
-// reste inactif (« Vérification… ») le temps de la réponse.
-async function obUsernameSettled(){
-  const u=$('#ob_username'), v=((u&&u.value)||'').trim();
-  if(!u || !v || !usernameFormatOk(v)) return; // obValidate affiche le bon message
-  let st=u._uname;
-  if(!st || st.v!==v || st.ok===null){
-    const btn=$('#obNext'), lab=btn.innerHTML; btn.disabled=true; btn.setAttribute('aria-busy','true'); btn.textContent=t('checkingEllipsis');
-    try{ await checkUsernameLive(v,$('#ob_username_status'),u); }
-    finally{ btn.disabled=false; btn.removeAttribute('aria-busy'); btn.innerHTML=lab; }
-    st=u._uname;
-  }
-  // panne réseau : on laisse passer, la réservation finale (claim_username) reste l'arbitre
-  obUsernameOk = !!st && st.v===v && (st.ok===true || st.ok==='error');
-}
-$('#obNext').onclick=async ()=>{
-  if($('#obNext').disabled) return;
-  if(obStep===2) await obUsernameSettled();
-  if(!obValidate(obStep)) return;
-  if(obStep===OB_MAX){ finishOnboarding(); return; }
-  obShow(obStep+1);
-};
-function obValidate(n){
-  if(n===2){
-    if(!$('#ob_name').value.trim()||!$('#ob_bday').value||!$('#ob_sex').value){ toast(t('fillRequiredFields')); return false; }
-    // Aucune borne sur le champ : une date future ou un âge absurde faussaient
-    // FC max, zones et BMR sans aucun message.
-    { const b=new Date($('#ob_bday').value+'T00:00:00'), age=(Date.now()-b)/31557600000;
-      if(!(age>=6 && age<=100)){ toast(t('bdayInvalid')); return false; } }
-    if(!$('#ob_username').value.trim()){ toast(t('chooseUsernameLab')); return false; }
-    if(!obUsernameOk){ toast(t('usernameUnavailable')); return false; }
-  }
-  if(n===3){ if(!$('#ob_level').querySelector('.pill.on')){ toast(t('chooseLevelLab')); return false; } }
-  if(n===4){ if(!obMode){ toast(t('chooseModeLab')); return false; } }
-  if(n===5){
-    if(!$('#ob_goal').value.trim()||!$('#ob_compdate').value){ toast(t('goalDateRequired')); return false; }
-    // L'attribut min du champ ne bloque que le calendrier natif : une date tapée
-    // au clavier passait (course déjà passée acceptée).
-    if($('#ob_compdate').value<minRaceDate()){ toast(t('raceDateInvalid')); return false; }
-  }
-  if(n===6){
-    const valid=OB_PERFS.filter(p=>p.meters&&p.timeS); if(!valid.length){ toast(t('addAtLeastOnePerf')); return false; }
-    // Même garde-fou que l'ajout d'un record depuis le Profil (un chrono
-    // impossible faussait tout le plan dès la création du compte).
-    for(const p of valid){ const g=recordGuard(p.meters,p.timeS); if(!g.ok){ toast(g.msg); return false; } }
-  }
-  return true;
-}
-/* Volume hebdo initial déduit du niveau déclaré (l'utilisateur n'a plus à
-   deviner un chiffre) : affiné ensuite automatiquement par le moteur au fil
-   des séances réelles, et ajustable dans Profil / lors de la génération d'un plan. */
+/* Volume hebdo de départ quand on ne le connaît pas : déduit du niveau, affiné ensuite par le moteur. */
 function kmWeekFromLevel(level){
   return ({'Débutant':20,'Intermédiaire':35,'Confirmé':50,'Très avancé':70,'Élite':90})[level]||35;
-}
-function finishOnboarding(){
-  // Les jours d'entraînement ne sont plus demandés ici : ils sont choisis
-  // au moment de la génération du plan (openPlanSetup), pour rester à jour.
-  // Enregistre les performances saisies
-  const valid=OB_PERFS.filter(p=>p.meters&&p.timeS!=null);
-  RECORDS=dedupeRecords(valid.map(p=>({dist:p.dist,meters:p.meters,time:fmtTime(p.timeS),date:todayKey()})));
-  const find=m=>{ const r=valid.find(x=>x.meters===m); return r?fmtTime(r.timeS):''; };
-  const level=$('#ob_level').querySelector('.pill.on').dataset.v;
-  // Langue, thème clair/sombre et couleur ont déjà été appliqués en direct
-  // (obRenderLangPicker/toggleThemeSwitch/setAccent) : on préserve simplement
-  // ce qui a été choisi avant l'écrasement de P ci-dessous, plutôt que de
-  // revenir à une langue détectée ou des valeurs par défaut qui ignoreraient
-  // le choix fait à l'étape 1.
-  const chosenLang=P.lang, chosenMode=P.mode||'dark', chosenTheme=P.theme||'blue';
-  P={
-    setupDone:true, joinedAt:Date.now(), lang:chosenLang, mode:chosenMode,
-    name:$('#ob_name').value.trim(), username:$('#ob_username').value.trim(), bday:$('#ob_bday').value, sex:$('#ob_sex').value,
-    level, kmWeek:kmWeekFromLevel(level),
-    goal:$('#ob_goal').value.trim(), compDate:$('#ob_compdate').value,
-    t5k:find(5000), t3k:find(3000), t1500:find(1500), t10k:find(10000),
-    theme:chosenTheme, pb5k:find(5000), pb1500:find(1500), pb10k:find(10000),
-    easyMode:obMode==='simple' // choisi explicitement à l'étape 4 — jamais deviné (modifiable ensuite dans Profil > Mode simplifié)
-  };
-  P.vdot=computeVDOTfromRecords()||computeVDOT();
-  // V4.0.0 : course choisie dans le calendrier à l'étape « objectif » (si sa date est restée la même)
-  const obR=window._obRace; window._obRace=null;
-  ikTrack('ob_done',{simple:!!(typeof obMode!=='undefined'&&obMode==='simple'),cal:!!obR,guest:!!window.isGuestUser});
-  if(obR && obR.r.date===P.compDate){ Object.assign(P,raceToObjective(obR.r,obR.km)); P.raceFollows=[]; raceFollowSet(obR.r,true); }
-  DB.save('profile',P); DB.save('records',RECORDS); DB.save('xp',XP);
-  burst();
-  if(P.username){
-    claimUsername(P.username).then(ok=>{
-      if(!ok) toast(t('usernameTakenMeanwhile'));
-    });
-  }
-  // Drapeau consommé une seule fois par initApp() juste après le premier
-  // rendu de l'accueil : lance le tour guidé uniquement pour un compte qui
-  // vient de terminer l'onboarding (inscription classique OU invité), jamais
-  // pour un compte existant qui rouvre l'app normalement.
-  window._launchTourAfterInit=true;
-  setTimeout(initApp,400);
 }
 
 /* ---------- INSTALLATION (Ajouter à l'écran d'accueil) ----------
@@ -7432,8 +7116,8 @@ function openPlanSetup(){
   const pre=window._psRacePreset; window._psRacePreset=null;
   if(pre) psApplyRace(pre);
   else if(!fresh && P.objRaceId && P.objRaceName && P.compDate===setupTmp.compDate) Object.assign(setupTmp,{raceId:P.objRaceId,raceName:P.objRaceName,raceFor:setupTmp.objRace,raceDate:setupTmp.compDate});
-  openOv('ovProg'); $('#ovProgTitle').textContent=t('configurePlanTitle');
-  renderPlanSetup();
+  // V4.11.0 : une question par écran (ui/plan-flow.js) ; renderPlanSetup() reste pour l'ancien rendu en fiche
+  psFlowOpen();
 }
 function psPredicted(s){ const v=getUserVDOT(); return v?predictTime(v,raceMetersOf(s.objRace,s.raceKm)):0; }
 function planAutoVolume(s){
@@ -7494,7 +7178,7 @@ function psApplyRace(o){
     raceId:o.objRaceId,raceName:o.objRaceName,raceFor:o.objRace,raceDate:o.compDate,knownRace:true,editRace:false});
   setupTmp.timeS=psPredicted(setupTmp);
 }
-function racePickedForPlan(r,km){ if(!setupTmp) return; const o=raceToObjective(r,km); if(o.compDate<minRaceDate()){ toast(t('psDateSoon')); return; } raceFollowSet(r,true); psApplyRace(o); renderPlanSetup(); }
+function racePickedForPlan(r,km){ if(!setupTmp) return; const o=raceToObjective(r,km); if(o.compDate<minRaceDate()){ toast(t('psDateSoon')); return; } raceFollowSet(r,true); psApplyRace(o); if(!psFlowRacePicked()) renderPlanSetup(); }
 function psSummary(s){
   const {y,m,d}=psDateParts(s), dt=ikDate(new Date(y,m-1,d),'{day:numeric,month:short,year:numeric}',{day:'numeric',month:'short',year:'numeric'});
   return '<b>'+escHtml(psRaceName(s))+'</b> · '+dt+' · '+tp('psDaysPerWeek',s.days.length)+(s.objGoal==='Record personnel'&&s.timeS?' · '+fmtTime(s.timeS):'');
@@ -7576,9 +7260,9 @@ function psWheel(key,val){
 function toggleSetupDay(d){ const i=setupTmp.days.indexOf(d); if(i>=0)setupTmp.days.splice(i,1); else setupTmp.days.push(d); renderPlanSetup(); }
 function confirmPlanSetup(){
   const s=setupTmp;
-  if(!s.compDate){ toast(t('chooseCompDate')); return; }
-  if(s.compDate<minRaceDate()){ toast(t('psDateSoon')); return; }
-  if(!s.days.length){ toast(t('chooseAtLeastOneDay')); return; }
+  if(!s.compDate){ toast(t('chooseCompDate')); return false; }
+  if(s.compDate<minRaceDate()){ toast(t('psDateSoon')); return false; }
+  if(!s.days.length){ toast(t('chooseAtLeastOneDay')); return false; }
   const vol=planAutoVolume(s);
   const tS=s.objGoal==='Record personnel'?Math.round(s.timeS||0):0;
   const fromRace=psFromRace(s);
@@ -7588,6 +7272,7 @@ function confirmPlanSetup(){
     planSituation:s.situation,planLevel:s.level,planGap:s.gap});
   PREFS.likedTypes=[]; // le générateur compose seul ses séances
   saveAll(); closeOv('ovProg'); generatePlan();
+  return true;
 }
 // Compose la liste des types pour la semaine (variée, cohérente)
 // Nombre maximal de jours durs possibles sur les jours choisis, sans deux jours qui se suivent dans le calendrier
