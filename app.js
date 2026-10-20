@@ -2709,7 +2709,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.12.0';
+const APP_VERSION='4.12.1';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -6280,6 +6280,8 @@ function planTestResult(s,txt){
 }
 function planTestAsk(s,then){
   const dist=(s.genParams&&s.genParams.testDist)||planTestDist();
+  // Test des 25 semaines : sans chrono il n'est pas validé (il reste à faire), contrairement à un test de bloc
+  if(s.bigTest){ customPrompt(tp('testAskTime',dist+' m'),'',v=>{ if(planTestResult(s,v)) then(); else s.testAsked=false; },{placeholder:'mm:ss',yesLabel:t('validate'),noLabel:t('testSkip'),onCancel:()=>{ s.testAsked=false; toast(t('bigTestSkipped')); }}); return; }
   customPrompt(tp('testAskTime',dist+' m'),'',v=>{ planTestResult(s,v); then(); },{placeholder:'mm:ss',yesLabel:t('validate'),noLabel:t('testSkip'),onCancel:then});
 }
 function planSegs(s,pc){
@@ -6419,7 +6421,7 @@ function planSafetyPass(plan,opts){
   const rng=mulberry32(((plan.seed||1)^0x5AFE)>>>0), pick=arr=>arr[Math.floor(rng()*arr.length)];
   const sessions=plan.sessions, tun=planTunOf(plan);
   let changes=0;
-  const editable=s=>!!s && !s.done && !s.missed && !s.customized && s.date>=tk && s.baseType!=='COURSE' && s.baseType!=='Repos' && (s.km||0)>0;
+  const editable=s=>!!s && !s.bigTest && !s.done && !s.missed && !s.customized && s.date>=tk && s.baseType!=='COURSE' && s.baseType!=='Repos' && (s.km||0)>0;
   const weekOf=w=>sessions.filter(s=>s.week===w);
   const rebuild=(s,type,over)=>{
     const built=buildSessionV2(type,Object.assign({vdot,pace:planPcFor(s,pace),lv:plan.lv,rs:s.rs||0,tun,mem:plan._mem||(plan._mem={}),floors:plan.floors||null,wkKm:Math.max(15,planWeekKm(weekOf(s.week))),nDays,
@@ -6598,6 +6600,7 @@ function planShrinkQuality(s,pc,low){
 }
 // low : plan à petit volume (planchers abaissés) — minimums de répétitions plus bas (V4.5)
 function planShrinkStep(s,pc,low){
+  if(s.bigTest) return false;   // V4.12 : le test des 25 semaines garde sa distance, on ne le raccourcit jamais
   const sr=s.series, gp=s.genParams, bt=s.baseType;
   const MINREP=low?{TEMPO_SPE:2,SEUIL:2,SPE:2,SPE_COURT:2,VMAl:2,VO2:2,VMAc:4}:{TEMPO_SPE:2,SEUIL:3,SPE:3,SPE_COURT:2,VMAl:3,VO2:3,VMAc:6};
   const minN=low?4:6;
@@ -6628,7 +6631,7 @@ function planShapeWeeks(plan,pc){
   if(!plan||!plan.sessions) return 0;
   pc=pc||planPaces(plan.vdot||getUserVDOT()||45);
   const tk=todayKey(), since=(plan.created&&plan.created>tk)?plan.created:tk, cap=longRunCapKm(); let n=0;
-  const ed=s=>!s.done && !s.missed && !s.customized && s.date>=since;
+  const ed=s=>!s.bigTest && !s.done && !s.missed && !s.customized && s.date>=since;
   const effKm=s=>s.baseType==='DBLSEUIL'?s.km/2:s.km, effDur=s=>s.baseType==='DBLSEUIL'?s.duration/2:s.duration;
   let prevL=0;   // sortie longue de la dernière semaine de charge (hausse limitée à +3 km, V4.5)
   [...new Set(plan.sessions.map(s=>s.week))].sort((a,b)=>a-b).forEach(w=>{
@@ -6676,7 +6679,7 @@ function planBalanceLoad(plan,pc){
   if(!plan||!plan.sessions) return 0;
   pc=pc||planPaces(plan.vdot||getUserVDOT()||45);
   const tk=todayKey(), nDays=plan.nDays||4, tunB=planTunOf(plan); let prev=null, peak=0, n=0;
-  const ed=s=>!s.done && !s.missed && !s.customized && s.date>=tk;
+  const ed=s=>!s.bigTest && !s.done && !s.missed && !s.customized && s.date>=tk;
   [...new Set(plan.sessions.map(s=>s.week))].sort((a,b)=>a-b).forEach(w=>{
     const list=plan.sessions.filter(s=>s.week===w && s.km>0 && s.baseType!=='COURSE' && s.baseType!=='Repos');
     const full=list.length>=nDays, deload=list.some(s=>s.deload), taper=list.some(s=>s.phaseKey==='TAPER');
@@ -6931,7 +6934,7 @@ function planBuild(opts){
     if(ph.key==='TAPER'){ const tp=(weeks-w); wkKm=Math.round(kmMax*(0.45+tp*0.12)); if(prevLoadTarget) wkKm=Math.min(wkKm,Math.round(prevLoadTarget*(tp===0?0.6:tp===1?0.75:0.85))); }
     else wkKm=Math.round(kmMin+(kmMax-kmMin)*Math.min(1,prog*tun.ramp));
     // V4.12 : plan long — à la fin de chaque tranche de 25 semaines, une semaine TEST (allégée) : un test à fond, vécu comme un jour J
-    const bigW=(w%PLAN_BIGTEST_EVERY===0) && (weeks-w>=5) && ph.key!=='TAPER';
+    const bigW=((w+off)%PLAN_BIGTEST_EVERY===0) && (weeks-w>=5) && ph.key!=='TAPER' && !keptPast.some(x=>x.bigTest);   // (w+off) : la numérotation continue après une reconstruction
     const isDeload=((w%4===0)&&ph.key!=='TAPER'&&w<weeks-2) || bigW;
     // Progression à la source (garde-fou du 27/09) : une semaine de charge ne dépasse
     // jamais +10 % de la précédente ; une décharge vaut 75 % de la dernière semaine de
@@ -6979,7 +6982,7 @@ function planBuild(opts){
     });
     // V4.9 : test de fin de bloc — la séance de qualité de la semaine de décharge devient un test (au moins 8 jours avant la course, jamais en reprise)
     // (pas le test de bloc de la semaine qui précède le test des 25 semaines : deux tests d'affilée)
-    if(isDeload && !reprise && weeks>=6 && !(((w+1)%PLAN_BIGTEST_EVERY===0) && (weeks-(w+1)>=5))){
+    if(isDeload && !reprise && weeks>=6 && !((((w+1+off)%PLAN_BIGTEST_EVERY)===0) && (weeks-(w+1)>=5))){
       const tq=slots.find(x=>PLAN_HARD_Q.includes(x.type) && x.type!=='DBLSEUIL' && daysBetween(x.d,comp)>=8);
       if(tq){ tq.orig=tq.type; tq.type='TEST'; if(bigW) tq.big=true; }
     }
@@ -7029,7 +7032,8 @@ function planBuild(opts){
       pushSession(s.d,w,ph,s.type,wkKm,isDeload);
       // V4.9 : un test trop long pour le volume de la semaine (échauffement + distance + retour au calme) laisse sa place à la séance prévue
       if(s.type==='TEST' && s.big){   // test des 25 semaines : présenté comme un jour J, jamais remplacé
-        const bt=sessions[sessions.length-1]; bt.bigTest=true; bt.title=tp('bigTestTitle',w+off); bt.detail=Object.assign({},bt.detail,{objectif:t('bigTestObjectif'),why:t('bigTestWhy')}); bt.desc=bt.detail.objectif;
+        const bt=sessions[sessions.length-1]; bt.bigTest=true; bt.bigWeek=w+off; bt.title=tp('bigTestTitle',w+off); bt.detail=Object.assign({},bt.detail,{objectif:t('bigTestObjectif'),why:t('bigTestWhy')}); bt.desc=bt.detail.objectif;
+        bt.bigSnap=JSON.parse(JSON.stringify(['type','baseType','title','km','duration','pace','rpe','series','desc','detail','genParams'].reduce((o,f)=>{ o[f]=bt[f]===undefined?null:bt[f]; return o; },{})));   // copie : le moteur d'adaptation la repose ailleurs si le test est reporté
       }
       if(s.type==='TEST' && s.orig && !s.big && (sessions[sessions.length-1].km||0)>Math.max(8,Math.min(longRunCapKm()*0.92,wkKm*0.29))){ sessions.pop(); s.type=s.orig; pushSession(s.d,w,ph,s.type,wkKm,isDeload); }
       const km=sessions[sessions.length-1].km||0;
