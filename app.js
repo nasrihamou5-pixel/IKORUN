@@ -2709,7 +2709,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.11.5';
+const APP_VERSION='4.12.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -6263,7 +6263,7 @@ function planTestResult(s,txt){
   if(g && !g.ok && !g.soft){ toast(g.msg); return false; }
   const v0=getUserVDOT(), vm=vdotFromRace(dist,sec);
   if(!(vm>0)) { toast(t('testBadTime')); return false; }
-  const v1=clampVdot(v0+Math.max(-3,Math.min(3,vm-v0)));
+  const lim=s.bigTest?6:3, v1=clampVdot(v0+Math.max(-lim,Math.min(lim,vm-v0)));   // V4.12 : le test des 25 semaines peut recaler de 6 points
   P.testLog=(P.testLog||[]).concat([{date:todayKey(),dist,sec:Math.round(sec),vdot:v1,from:v0}]).slice(-30);
   if(Math.abs(v1-v0)<0.05){ toast(tp('testSame',fmt1(v1))); return true; }
   const msg={k:v1>=v0?'adMsgVdotUpDone':'adMsgVdotDownDone',p:[fmt1(v0),fmt1(v1)]};
@@ -6799,7 +6799,7 @@ function minRaceDate(){ const d=ikNow(); d.setDate(d.getDate()+7); return d.toIS
    cours n'a plus au moins la moitié des jours d'entraînement devant elle, le plan démarre le lundi
    suivant : avant, un plan généré un dimanche s'ouvrait sur « Semaine 2/15 », la semaine 1 (vide)
    semblait avoir disparu. */
-const PLAN_MAX_WEEKS=52, PLAN_CORE_WEEKS=28;
+const PLAN_MAX_WEEKS=52, PLAN_CORE_WEEKS=28, PLAN_BIGTEST_EVERY=25;   // V4.12 : test « jour J » toutes les 25 semaines (plans longs)
 function planCalendar(compDate,days){
   days=(days&&days.length)?days:[1,3,5,6];
   const today=ikNow(); today.setHours(0,0,0,0);
@@ -6830,6 +6830,7 @@ function generatePlan(){
   const cont=(typeof wizAfterRun!=='undefined' && wizAfterRun);
   if(!cont) toast(''+tp('planGenerated',(raceLabel()||t('raceGeneric')),PLAN.weeks,PLAN.sessions.length));
   if(r.safetyFixes) setTimeout(()=>toast(t('planSafetyAdjustedToast')),2600);
+  { const bt=PLAN.sessions.find(x=>x.bigTest); if(bt && !(typeof wizAfterRun!=='undefined' && wizAfterRun)) setTimeout(()=>toast(tp('bigTestPlanned',fmtDate(bt.date))),r.safetyFixes?7800:5200); }
   // Course à plus de 28 semaines : le plan commence plus tard qu'aujourd'hui, il
   // faut le dire, sinon l'écran Sport paraît vide sans explication.
   const first=PLAN.sessions[0], today=ikNow(); today.setHours(0,0,0,0);
@@ -6929,7 +6930,9 @@ function planBuild(opts){
     let wkKm;
     if(ph.key==='TAPER'){ const tp=(weeks-w); wkKm=Math.round(kmMax*(0.45+tp*0.12)); if(prevLoadTarget) wkKm=Math.min(wkKm,Math.round(prevLoadTarget*(tp===0?0.6:tp===1?0.75:0.85))); }
     else wkKm=Math.round(kmMin+(kmMax-kmMin)*Math.min(1,prog*tun.ramp));
-    const isDeload=(w%4===0)&&ph.key!=='TAPER'&&w<weeks-2;
+    // V4.12 : plan long — à la fin de chaque tranche de 25 semaines, une semaine TEST (allégée) : un test à fond, vécu comme un jour J
+    const bigW=(w%PLAN_BIGTEST_EVERY===0) && (weeks-w>=5) && ph.key!=='TAPER';
+    const isDeload=((w%4===0)&&ph.key!=='TAPER'&&w<weeks-2) || bigW;
     // Progression à la source (garde-fou du 27/09) : une semaine de charge ne dépasse
     // jamais +10 % de la précédente ; une décharge vaut 75 % de la dernière semaine de
     // charge (avant : 75 % de la cible de la semaine, déjà plus haute que la précédente).
@@ -6975,9 +6978,10 @@ function planBuild(opts){
       slots.push({d,type});
     });
     // V4.9 : test de fin de bloc — la séance de qualité de la semaine de décharge devient un test (au moins 8 jours avant la course, jamais en reprise)
-    if(isDeload && !reprise && weeks>=6){
+    // (pas le test de bloc de la semaine qui précède le test des 25 semaines : deux tests d'affilée)
+    if(isDeload && !reprise && weeks>=6 && !(((w+1)%PLAN_BIGTEST_EVERY===0) && (weeks-(w+1)>=5))){
       const tq=slots.find(x=>PLAN_HARD_Q.includes(x.type) && x.type!=='DBLSEUIL' && daysBetween(x.d,comp)>=8);
-      if(tq){ tq.orig=tq.type; tq.type='TEST'; }
+      if(tq){ tq.orig=tq.type; tq.type='TEST'; if(bigW) tq.big=true; }
     }
     // Budget kilométrique de la semaine : les séances de qualité ont une structure
     // fixe (échauffement + bloc + retour au calme) et les footings s'ajoutaient
@@ -7024,7 +7028,10 @@ function planBuild(opts){
     slots.filter(s=>!isEasyT(s.type)&&!isLongT(s.type)).sort((x,y)=>(PLAN_FAST_Q.includes(y.type)?1:0)-(PLAN_FAST_Q.includes(x.type)?1:0)).forEach(s=>{
       pushSession(s.d,w,ph,s.type,wkKm,isDeload);
       // V4.9 : un test trop long pour le volume de la semaine (échauffement + distance + retour au calme) laisse sa place à la séance prévue
-      if(s.type==='TEST' && s.orig && (sessions[sessions.length-1].km||0)>Math.max(8,Math.min(longRunCapKm()*0.92,wkKm*0.29))){ sessions.pop(); s.type=s.orig; pushSession(s.d,w,ph,s.type,wkKm,isDeload); }
+      if(s.type==='TEST' && s.big){   // test des 25 semaines : présenté comme un jour J, jamais remplacé
+        const bt=sessions[sessions.length-1]; bt.bigTest=true; bt.title=tp('bigTestTitle',w+off); bt.detail=Object.assign({},bt.detail,{objectif:t('bigTestObjectif'),why:t('bigTestWhy')}); bt.desc=bt.detail.objectif;
+      }
+      if(s.type==='TEST' && s.orig && !s.big && (sessions[sessions.length-1].km||0)>Math.max(8,Math.min(longRunCapKm()*0.92,wkKm*0.29))){ sessions.pop(); s.type=s.orig; pushSession(s.d,w,ph,s.type,wkKm,isDeload); }
       const km=sessions[sessions.length-1].km||0;
       const needLong=!longSlots.length?0:(longMustLead&&s.type!=='DBLSEUIL')?Math.max(longTarget,Math.min(longRunCapKm(),Math.ceil(Math.max(maxQ,km))+1)):longTarget;
       if(keptQ>=1 && used+km>kmMax-needLong-eFl*easySlots.length){ sessions.pop(); easySlots.push({d:s.d,type:'EF'}); return; }
