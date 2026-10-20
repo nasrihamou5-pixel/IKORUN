@@ -587,6 +587,7 @@ function adRuleMissed(ids,reason){
   if(!PLAN) return out;
   ids.forEach(id=>{
     const s=PLAN.sessions.find(x=>x.id===id); if(!s) return;
+    if(s.bigTest||s.bigMoved) return;   // le test des 25 semaines a sa propre règle (adRuleBigTestFix)
     if(!(planIsHard(s)||planIsLong(s))){ out.push(adaptNote('missEasy',{k:'adMsgMissEasy',p:[{bt:s.baseType}]})); return; }
     if(s.phaseKey==='TAPER'){ out.push(adaptNote('missTaper',{k:'adMsgMissTaper',p:[{bt:s.baseType}]})); return; }
     if(reason==='Douleur'||reason==='Maladie') return; // la sécurité passe avant le rattrapage
@@ -614,6 +615,58 @@ function adRuleMissed(ids,reason){
     if(r) out.push(r);
   }
   return out;
+}
+
+
+/* V4.12 — Test des 25 semaines : s'il n'est pas fait, il est reporté, jamais perdu.
+   · simple empêchement (ou oubli) : reporté de quelques jours, sur la prochaine séance facile qui ne touche aucun jour dur ;
+   · maladie ou blessure : reporté APRÈS la récupération (les séances d'ici là sont déjà allégées par les règles de santé) ;
+   · plus de place avant la course (8 jours minimum) ou 4 reports : il est annulé, les allures restent celles du dernier chrono. */
+function adSickEnd(k){
+  const st=adState(); let e='';
+  if(st.ill && st.ill.easyUntil && st.ill.easyUntil>=k) e=st.ill.easyUntil;
+  if(adBlockActive(k)){ const b=st.block.until||adKeyAdd(k,7); if(b>e) e=b; }
+  return e;
+}
+function adRuleBigTestFix(reason){
+  if(!PLAN||!PLAN.sessions) return [];
+  const k=todayKey(), sick=adSickEnd(k), raceKey=P.compDate||'9999-12-31';
+  const bad=PLAN.sessions.filter(s=>s.bigTest && !s.done && (s.baseType!=='TEST' || s.missed || s.date<k || (sick && s.date<=sick)));
+  if(!bad.length) return [];
+  const src0=bad[0], isSick=!!sick || reason==='Maladie' || reason==='Douleur';
+  const earliest=isSick?adKeyAdd(sick||k,2):(src0.date<k?k:adKeyAdd(k,1));
+  let moved=null; const skip=new Set(); let r=null;
+  const F=['type','baseType','title','km','duration','pace','rpe','series','desc','detail','genParams'];
+  for(let tries=0;tries<4;tries++){
+  moved=null;
+  r=adaptApply('bigTest',true,(pl,pc)=>{
+    const src=pl.sessions.find(x=>x.id===src0.id); if(!src) return 0;
+    const snap=src.bigSnap; const post=(src.bigPostp||0)+1;
+    src.bigTest=false; src.bigMoved=true; delete src.bigSnap;
+    if(!snap || post>4) return 1;   // plus de report : le test est abandonné (message dédié)
+    const cands=pl.sessions.filter(y=>y.id!==src.id && y.date>=earliest && adEd(y,k,true) && (y.baseType==='EF'||y.baseType==='RECUP') && !y.bigTest && !skip.has(y.date)
+        && adDaysBetweenKeys(y.date,raceKey)>=8).sort((a,b)=>a.date<b.date?-1:1);
+    for(const y of cands){
+      const keep={}; F.forEach(f=>{ keep[f]=y[f]; }); keep.adj=y.adj;
+      adKeepKm0(y);
+      F.forEach(f=>{ y[f]=JSON.parse(JSON.stringify(snap[f]===undefined?null:snap[f])); });
+      if(!adClashAround(pl,y.date)){
+        y.bigTest=true; y.bigSnap=JSON.parse(JSON.stringify(snap)); y.bigPostp=post;
+        y.bigWeek=src.bigWeek; y.title=tp('bigTestTitle',src.bigWeek||y.week); planApplySegs(y,pc); adTag(y,'bigTest',false); moved=y.date; return 1;
+      }
+      Object.assign(y,keep); if(!keep.adj) delete y.adj;
+    }
+    return 1;
+  },{k:'adMsgBigDropped',p:[]});
+  if(r||!moved) break;     // placé, ou rien à placer
+  skip.add(moved);        // refusé par le contrôle du plan : on essaie le créneau suivant
+  }
+  if(!r) moved=null;
+  const msg=moved?{k:isSick?'adMsgBigIll':'adMsgBigMoved',p:[{d:moved}]}:{k:'adMsgBigDropped',p:[]};
+  if(r){ r.msg=msg; return [r]; }
+  // rien n'a pu être replacé : on ferme quand même le dossier (sinon la règle reviendrait chaque jour)
+  const o=PLAN.sessions.find(x=>x.id===src0.id); if(o){ o.bigTest=false; o.bigMoved=true; delete o.bigSnap; }
+  return [adaptNote('bigTest',msg,{safety:true})];
 }
 
 /* ---------- 7. POINTS D'ENTRÉE ---------- */
@@ -645,6 +698,7 @@ function adaptAfterMissed(ids,reason,extra){
   try{
     if(reason==='Maladie') out=out.concat(adRuleIll(extra&&extra.since));
     if(reason==='Douleur' && extra && extra.pain && extra.pain.on) out=out.concat(adRulePain({date:todayKey(),pain:extra.pain}));
+    out=out.concat(adRuleBigTestFix(reason));
     out=out.concat(adRuleGaps(reason));
     if(!out.some(x=>x && x.rule==='gap7')) out=out.concat(adRuleMissed(ids,reason));
   }catch(err){ console.error('[IKORUN] adaptAfterMissed',err); }
@@ -668,6 +722,7 @@ function adaptDaily(){
   let out=[];
   try{
     out=out.concat(adRuleKeepBlocks());
+    out=out.concat(adRuleBigTestFix());   // V4.12 : test des 25 semaines oublié, ou tombé dans une période de maladie / blessure
     if(typeof injuryDaily==='function') out=out.concat(injuryDaily());
     if(typeof ramadanDaily==='function') out=out.concat(ramadanDaily());
     out=out.concat(adRuleGaps());
