@@ -2709,7 +2709,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.11.4';
+const APP_VERSION='4.11.5';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -5835,6 +5835,16 @@ const PHASES=[
    même sur un plan généré avant un changement de langue. */
 function phaseName(key){ return key ? t('phase_'+key) : ''; }
 function phaseDistribution(weeks,raceM){
+  // V4.11.5 : course lointaine (plus de 28 semaines) — le cœur du plan garde ses 28 semaines
+  // telles quelles ; les semaines en plus vont, moitié-moitié, à la préparation générale et à l'aérobie.
+  if(weeks>PLAN_CORE_WEEKS){
+    const inner=phaseDistribution(PLAN_CORE_WEEKS,raceM), extra=weeks-PLAN_CORE_WEEKS, addPG=Math.ceil(extra/2), addAE=extra-addPG;
+    const keys=inner.slice(1).map(p=>p.key), nPG=keys.filter(k=>k==='PG').length, nAE=keys.filter(k=>k==='AERO').length;
+    const out=[undefined]; const push=(ph,n)=>{ for(let k=0;k<n;k++) out.push(ph); };
+    push(PHASES[0],nPG+addPG); push(PHASES[1],nAE+addAE);
+    inner.slice(1+nPG+nAE).forEach(ph=>out.push(ph));
+    return out;
+  }
   // proportions par phase, ajustées au nombre de semaines
   const prop=(raceM||5000)<=10000?[0.14,0.20,0.24,0.22,0.12,0.08]:[0.18,0.24,0.20,0.20,0.10,0.08];   // V4.8 : ≤ 10 km → VO2 (24 %), spécifique (22 %) et pic (12 %) plus longs
   // V4.5 : affûtage selon la distance (plans de référence) — marathon 3 semaines, semi 2, 10 km et moins 1 à 2
@@ -6789,6 +6799,7 @@ function minRaceDate(){ const d=ikNow(); d.setDate(d.getDate()+7); return d.toIS
    cours n'a plus au moins la moitié des jours d'entraînement devant elle, le plan démarre le lundi
    suivant : avant, un plan généré un dimanche s'ouvrait sur « Semaine 2/15 », la semaine 1 (vide)
    semblait avoir disparu. */
+const PLAN_MAX_WEEKS=52, PLAN_CORE_WEEKS=28;
 function planCalendar(compDate,days){
   days=(days&&days.length)?days:[1,3,5,6];
   const today=ikNow(); today.setHours(0,0,0,0);
@@ -6798,7 +6809,11 @@ function planCalendar(compDate,days){
   const raceMonday=mondayOf(comp);
   let startMonday=mondayOf(today);
   let weeks=Math.floor(daysBetween(startMonday,raceMonday)/7)+1;
-  if(weeks>28){ weeks=28; startMonday=new Date(raceMonday); startMonday.setDate(raceMonday.getDate()-27*7); }
+  // V4.11.5 : jusqu'à 52 semaines le plan commence TOUT DE SUITE (avant : au-delà de 28 semaines il ne
+  // démarrait que 28 semaines avant la course, l'écran Sport restait vide des mois). Les semaines en plus
+  // allongent la préparation générale et l'aérobie (voir phaseDistribution). Au-delà d'un an seulement,
+  // le plan démarre 52 semaines avant la course.
+  if(weeks>PLAN_MAX_WEEKS){ weeks=PLAN_MAX_WEEKS; startMonday=new Date(raceMonday); startMonday.setDate(raceMonday.getDate()-(PLAN_MAX_WEEKS-1)*7); }
   else if(weeks>2){
     const left=days.filter(dow=>{ const d=new Date(startMonday); d.setDate(startMonday.getDate()+((dow+6)%7)); return d>=today && dateKey(d)<raceKey; }).length;
     if(left<Math.ceil(days.length/2)){ startMonday.setDate(startMonday.getDate()+7); weeks--; }
