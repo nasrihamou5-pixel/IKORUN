@@ -2709,7 +2709,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.13.7';
+const APP_VERSION='4.14.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -9069,7 +9069,11 @@ function renderMuscu(){
   PROGS=PROGS_DEF();
   let h='';
   if(DB.load('live_paused')){ const sv=DB.load('live_paused'); h+='<div class="card" style="border-color:var(--warn);background:linear-gradient(rgba(255,180,84,.09),rgba(255,180,84,.09)),var(--lg-fill)"><div class="row"><div><div style="font-weight:700">'+t('sessionPausedLab')+'</div><div style="font-size:12px;color:var(--muted)">'+escHtml(sv.prog.name)+'</div></div><button class="btn sm" style="width:auto;padding:8px 14px" onclick="resumeLive()">'+t('resumeBtn')+'</button></div></div>'; }
-  h+='<div class="row" style="gap:10px;margin-bottom:16px"><button class="btn" onclick="openCreate()">＋ '+t('createBtn')+'</button><button class="btn ghost" onclick="openLibBrowse()">'+t('libraryLab')+'</button></div>';
+  h+='<div class="row" style="gap:10px;margin-bottom:10px"><button class="btn" onclick="openCreate()">＋ '+t('createBtn')+'</button><button class="btn ghost" onclick="openLibBrowse()">'+t('libraryLab')+'</button></div>';
+  // V4.14.0 : générateur et programmes tout faits (repris de KORE)
+  h+='<div class="ik-grp" style="margin-bottom:18px">'+
+    '<div class="ik-row ik-link" role="button" onclick="openMuscuGen()"><span class="tx-open-ic">'+ICN('bolt',19,'currentColor')+'</span><div class="ik-row-t"><b>'+t('genTitle')+'</b><small>'+t('genRowSub')+'</small></div>'+ICN('chevronR',16)+'</div>'+
+    '<div class="ik-row ik-link" role="button" onclick="openPtfList()"><span class="tx-open-ic">'+ICN('dumbbell',19,'currentColor')+'</span><div class="ik-row-t"><b>'+t('ptfTitle')+'</b><small>'+t('ptfRowSub')+'</small></div>'+ICN('chevronR',16)+'</div></div>';
   const custs=CUSTOM.filter(p=>p.kind==='muscu');
   if(custs.length){
     h+='<div class="hv7-sec-lab" style="margin-bottom:10px">'+t('myCreationsLab')+'</div>';
@@ -9324,10 +9328,9 @@ function renderExDetail(){
     const vol=(e.sets||3)*(parseInt(e.reps)||10)*(e.weight||0);
     h+='<div class="card" style="padding:0;overflow:hidden"><div style="display:flex;text-align:center"><div style="flex:1;padding:13px 4px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0">'+t('setsCap')+'</div><div class="man" style="font-weight:800;font-size:18px">'+e.sets+'</div></div><div style="flex:1;padding:13px 4px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0">'+t('volumeCap')+'</div><div class="man" style="font-weight:800;font-size:18px">'+vol+' kg</div></div><div style="flex:1;padding:13px 4px"><div class="lab" style="margin:0">'+t('durationCap')+'</div><div class="man" style="font-weight:800;font-size:18px">~'+Math.round(e.sets*1.8)+'min</div></div></div></div>';
   } else if(exDetailTab==='muscles'){
-    const zoneInfo=anatomyZonesFor(f);
-    h+='<div class="card"><div class="card-t">'+t('targetedMusclesTitle')+'</div>'+
-       bodyAnatomyDualSVG(zoneInfo)+
-       '</div>';
+    // V4.14.0 : corps 2D zoomable (repris de KORE) — chaque partie du muscle, la plus travaillée en premier
+    h+='<div class="card"><div class="card-t">'+t('targetedMusclesTitle')+'</div><div id="exBody2d"><div class="c2d"><div class="c2d-scene"></div></div></div></div>';
+    setTimeout(()=>ikLoad('anat').then(()=>{ const box=$('#exBody2d'); if(!box) return; const z=ikZonesFor(e.name,f); box.innerHTML=ikBody2DHTML(z)+ikZoneChips(z); ikBody2DMount(box,z,{}); }).catch(()=>{ const box=$('#exBody2d'); if(box) box.innerHTML=bodyAnatomyDualSVG(anatomyZonesFor(f)); }),0);
     h+='<div class="card">'+
        '<div class="row" style="gap:8px;margin-bottom:6px"><span style="width:9px;height:9px;border-radius:50%;background:var(--bad);flex:0 0 9px"></span><span style="font-weight:800;font-size:14px">'+t('primaryMusclesLabel')+'</span></div>'+
        '<div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:'+(f.secondary&&f.secondary.length?'14px':'0')+'">'+((f.primary||[]).map(trMuscle).join(', ')||'—')+'</div>'+
@@ -9384,7 +9387,9 @@ function startLive(id,startIdx){
   // On clone le tableau d'exercices (pas les objets exercice eux-mêmes) : ajouter/retirer un exo
   // en pleine séance ne modifie donc que cette séance, jamais la routine enregistrée.
   LIVE={prog:{...p,ex:p.ex.slice()},idx:startIdx||0,start:Date.now(),
-    state:p.ex.map(e=>({weight:e.weight||20,reps:parseInt(e.reps)||10,sets:Array.from({length:e.sets},()=>false),log:[]})),
+    state:p.ex.map(e=>({weight:e.weight||20,reps:parseInt(e.reps)||10,sets:Array.from({length:e.sets},()=>false),
+      // V4.14.0 : chaque série démarre sur ce que tu as vraiment fait la dernière fois (ou l'objectif du jour)
+      log:Array.from({length:e.sets},(_,j)=>{ const st=(typeof ikStartSet==='function')?ikStartSet(e,j):null; return st?{kg:st.kg,reps:st.reps,rpe:8,done:false,t:st.t}:{kg:e.weight||20,reps:parseInt(e.reps)||10,rpe:8,done:false}; })})),
     tonnage:0,setsDone:0};
   liveOpenEx=startIdx||0;
   renderLive(); openOv('ovLive');
@@ -9448,7 +9453,7 @@ function renderLive(){
     h+='<div class="card ex-swipe-card" data-i="'+i+'" style="padding:14px'+(allDone?';border-color:rgba(51,211,153,.35)':'')+'">';
     // Entête exercice (tapable) : vignette, nom, chevron, "..." (options)
     h+='<div class="row" style="align-items:flex-start;cursor:pointer" onclick="toggleLiveEx('+i+')">'+exThumb(e.name,48)+
-      '<div style="flex:1;min-width:0;margin-left:10px"><div style="font-weight:700;font-size:15.5px;line-height:1.25">'+escHtml(e.name)+'</div>'+
+      '<div style="flex:1;min-width:0;margin-left:10px">'+(e.ss?'<span class="ss-tag">'+t('ssTag')+'</span>':'')+'<div style="font-weight:700;font-size:15.5px;line-height:1.25">'+escHtml(trExName(e.name))+'</div>'+
       '<div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+(allDone?t('exerciseDoneLab'):tp('setsDoneCount',st.sets.filter(Boolean).length,st.sets.length))+'</div></div>'+
       '<span id="exChev'+i+'" style="color:var(--muted);font-size:14px;padding:6px 4px;transition:transform .25s ease;transform:rotate('+(open?'180':'0')+'deg)">⌄</span>'+
       '<span onclick="event.stopPropagation();openLiveExOptions('+i+')" style="color:var(--muted);font-size:20px;padding:4px 4px 4px 8px;cursor:pointer;letter-spacing:1px">⋯</span></div>';
@@ -9476,6 +9481,8 @@ function liveExBodyHTML(i){
   // toggleSet() lance bien 90 s dans ce cas (et changeRest ne propose que 15-300 s) :
   // l'étiquette montre désormais la durée réellement appliquée (audit 24/09).
   let h='<div class="live-rest" onclick="changeRest('+i+')">'+ICN('stopwatch',15)+'<span>'+tp('restTimerLab',fmtRest(e.rest||90))+'</span></div>';
+  { const o=(typeof ikExObjective==='function')?ikExObjective(e):null;
+    if(o) h+='<div class="exo-obj'+(o.up?' up':'')+'"><span class="eo-ic">'+ICN(o.up?'trend':'target',14)+'</span><span class="eo-t">'+escHtml(o.txt)+'</span><button type="button" class="eo-b" onclick="ikFillObjective('+i+')">'+t('objFillBtn')+'</button></div>'; }
   h+='<div style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:8px;text-align:center">'+
     '<div>'+t('setCol')+'</div><div>'+t('prevCol')+'</div><div>'+t('kgCol')+'</div><div>'+t('repsCol')+'</div><div></div></div>';
   st.log.forEach((s,j)=>{
@@ -9483,8 +9490,8 @@ function liveExBodyHTML(i){
       '<div class="set-swipe-action left" onclick="deleteLiveSet('+i+','+j+')"><span>'+ICN('trash',16)+'</span></div>'+
       '<div class="set-swipe-action right" onclick="deleteLiveSet('+i+','+j+')"><span>'+ICN('trash',16)+'</span></div>'+
       '<div class="set-swipe-row" data-i="'+i+'" data-j="'+j+'" style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;align-items:center">'+
-      '<div style="text-align:center;font-weight:700;color:var(--muted)">'+(j+1)+'</div>'+
-      '<div style="text-align:center;font-size:11px;color:var(--dim)">'+(e.weight||20)+'kg×'+(parseInt(e.reps)||10)+'</div>'+
+      '<div class="set-n" role="button" onclick="ikSetMenu('+i+','+j+')">'+((typeof ikSetBadge==='function')?ikSetBadge(s,j):(j+1))+(s.rpe&&s.rpeU?'<small>@'+String(s.rpe).replace('.',',')+'</small>':'')+'</div>'+
+      '<div style="text-align:center;font-size:11px;color:var(--dim)">'+((typeof ikPrevCell==='function')?ikPrevCell(e,j):'—')+'</div>'+
       '<input class="setcell" type="number" inputmode="decimal" value="'+s.kg+'" onchange="setLog('+i+','+j+',\'kg\',this.value)">'+
       '<input class="setcell" type="number" inputmode="numeric" value="'+s.reps+'" onchange="setLog('+i+','+j+',\'reps\',this.value)">'+
       '<div class="setcheck'+(s.done?' on':'')+'" onclick="toggleSet('+i+','+j+')">'+ICN('check',16)+'</div></div>'+
@@ -9664,6 +9671,12 @@ function toggleLiveEx(i){
   }
   const c=$('#exChev'+i); if(c) c.style.transform=willOpen?'rotate(180deg)':'rotate(0deg)';
 }
+// V4.14.0 : tonnage et séries recalculés depuis les séries cochées (avant : additionnés au moment
+// de cocher — modifier la charge d'une série déjà cochée, puis la décocher, faussait le total).
+function ikLiveTotals(){
+  let ton=0,n=0; LIVE.state.forEach(st=>{ (st.log||[]).forEach((s,j)=>{ if(st.sets[j]){ n++; if(s.t!=='w') ton+=(+s.kg||0)*(+s.reps||0); } }); });
+  LIVE.tonnage=ton; LIVE.setsDone=n;
+}
 // Plafonds larges mais réels (record du monde en deadlift ~500 kg, personne
 // ne fait 100 répétitions d'une série de musculation) : sans ça, une valeur
 // tapée par erreur ou en test (99999) gonflait le tonnage sans limite et
@@ -9672,7 +9685,7 @@ function setLog(i,j,k,v){
   const st=LIVE.state[i]; let n=+v||0;
   if(k==='kg') n=Math.min(500,Math.max(0,n));
   else if(k==='reps') n=Math.min(100,Math.max(0,Math.round(n)));
-  st.log[j][k]=n; if(k==='kg')st.weight=n||st.weight; persistLive();
+  st.log[j][k]=n; if(k==='kg')st.weight=n||st.weight; if(st.sets[j]){ ikLiveTotals(); const v=$('#liveVol'); if(v) v.textContent=Math.round(LIVE.tonnage)+' kg'; } persistLive();
 }
 function changeRest(i){ const e=LIVE.prog.ex[i]; pickInt(t('restSeconds'),15,300,e.rest||90,'s',v=>{ e.rest=v; renderLive(); },15); }
 function addLiveSet(i){ const st=LIVE.state[i]; const last=st.log[st.log.length-1]||{kg:20,reps:10,rpe:8}; st.sets.push(false); st.log.push({kg:last.kg,reps:last.reps,rpe:last.rpe,done:false}); persistLive(); renderLive(); }
@@ -9680,7 +9693,7 @@ function deleteLiveSet(i,j){
   const st=LIVE.state[i];
   if(st.log.length<=1){ toast(t('minOneSetRemain')); return; }
   st.sets.splice(j,1); st.log.splice(j,1);
-  persistLive(); renderLive();
+  ikLiveTotals(); persistLive(); renderLive();
 }
 
 /* ---------- LIVE : options par exercice ("⋯") — voir la démo, modifier le repos, retirer ---------- */
@@ -9690,9 +9703,10 @@ function openLiveExOptions(i){
   const ov=document.createElement('div'); ov.className='ov on'; ov.id='liveExOptOv'; ov.style.zIndex=topZ();
   const g=exGif(e.name);
   let h='<div class="ov-card" style="text-align:center">';
-  h+='<div class="card-t" style="justify-content:center;margin-bottom:14px">'+escHtml(e.name)+'</div>';
+  h+='<div class="card-t" style="justify-content:center;margin-bottom:14px">'+escHtml(trExName(e.name))+'</div>';
   if(g) h+='<img src="'+g[0]+'" style="width:100%;border-radius:14px;margin-bottom:14px;aspect-ratio:16/10;object-fit:cover">';
   h+='<button class="btn ghost" style="margin-bottom:8px" onclick="document.getElementById(\'liveExOptOv\').remove();changeRest('+i+')">'+t('changeRestLab')+'</button>';
+  h+='<button class="btn ghost" style="margin-bottom:8px" onclick="document.getElementById(\'liveExOptOv\').remove();ikSupersetToggle('+i+')">'+t(e.ss?'ssUnlinkBtn':'ssLinkBtn')+'</button>';
   h+='<button class="btn ghost" style="margin-bottom:8px;color:var(--bad)" onclick="document.getElementById(\'liveExOptOv\').remove();confirmDeleteLiveEx('+i+')">'+t('removeExLab')+'</button>';
   h+='<button class="btn ghost" onclick="document.getElementById(\'liveExOptOv\').remove()">'+t('cancelLab')+'</button>';
   h+='</div>';
@@ -9759,14 +9773,13 @@ function toggleSet(exIdx,setIdx){
   if(!st.log) st.log=st.sets.map(()=>({kg:st.weight,reps:st.reps,rpe:8}));
   const s=st.log[setIdx]||{kg:st.weight,reps:st.reps};
   st.sets[setIdx]=!st.sets[setIdx]; st.log[setIdx].done=st.sets[setIdx];
-  const vol=(s.kg||0)*(s.reps||0);
+  ikLiveTotals();
   if(st.sets[setIdx]){
-    LIVE.setsDone++; LIVE.tonnage+=vol;
-    const restS=st.log[setIdx].rest||LIVE.prog.ex[exIdx].rest||90, live=LIVE;
-    setTimeout(()=>{ if(LIVE===live && st.sets[setIdx]) openRest(restS); }, ikMotionOff()?0:420);
-    sfx('tick'); toast(t('xpGain'));
+    const nx=(typeof ikAfterSet==='function')?ikAfterSet(exIdx,setIdx):{};
+    const restS=nx.rest||st.log[setIdx].rest||LIVE.prog.ex[exIdx].rest||90, live=LIVE;
+    if(!nx.skipRest) setTimeout(()=>{ if(LIVE===live && st.sets[setIdx]) openRest(restS); }, ikMotionOff()?0:420);
+    sfx('tick');
   }
-  else { LIVE.setsDone--; LIVE.tonnage-=vol; }
   persistLive(); renderLive(); ikSetFx(exIdx,setIdx,st.sets[setIdx],st.sets.every(Boolean));
 }
 // Série validée : la ligne s'illumine, la coche éclate ; exercice terminé : la carte rayonne.
@@ -9850,10 +9863,12 @@ function finishLive(){
   // 12 reps affichaient « 24 » ; audit 24/09).
   const totalReps=LIVE.state.reduce((a,st)=>a+(st.log||[]).reduce((b,lg,j)=>b+(st.sets[j]?(+lg.reps||0):0),0),0);
   const xpBefore=(XP&&XP.total)||0;
-  // PR : compare au meilleur tonnage par exercice (records charge)
+  // V4.14.0 : records sur le 1RM estimé des séries RÉELLEMENT faites (avant : la dernière charge
+  // tapée, cochée ou non, et même un échauffement — un record pouvait tomber sans avoir rien soulevé).
   const prs=[]; let beaten='';
-  LIVE.state.forEach((st,i)=>{ if(st.sets.some(Boolean)){ const name=LIVE.prog.ex[i].name;
-    const prev=MUSCU_PR[name]||0; if(st.weight>prev){ MUSCU_PR[name]=st.weight; prs.push(name+' : '+st.weight+'kg'); if(prev>0 && !beaten) beaten=name+' · '+st.weight+' kg'; } }});
+  ikLiveTotals();
+  ikRecordsAfter(LIVE).forEach(r=>{ const line=trExName(r.name)+' : '+fmtKgI(r.kg)+' kg × '+r.reps+' · '+tp('e1rmLab',Math.round(r.e1)); prs.push(line); if(!r.first && !beaten) beaten=trExName(r.name)+' · '+fmtKgI(r.kg)+' kg'; });
+  ikSaveExSets(LIVE);
   DB.save('muscu_pr',MUSCU_PR);
   if(beaten) feteRecord(beaten); // un record battu (pas une première charge) : journée en fête
   // progression vs séance précédente du même programme
@@ -9867,7 +9882,7 @@ function finishLive(){
   // Historique par exercice (pour les graphiques de progression)
   if(!PREFS.exHist) PREFS.exHist={};
   LIVE.prog.ex.forEach((e,i)=>{ const st=LIVE.state[i]; if(st.sets.some(Boolean)){
-    const vol=(st.log||[]).reduce((a,s)=>a+(s.done?(s.kg||0)*(s.reps||0):0),0);
+    const vol=(st.log||[]).reduce((a,s,j)=>a+(st.sets[j]&&s.t!=='w'?(s.kg||0)*(s.reps||0):0),0);
     if(vol>0){ if(!PREFS.exHist[e.name])PREFS.exHist[e.name]=[]; PREFS.exHist[e.name].push({date:todayKey(),vol}); PREFS.exHist[e.name]=PREFS.exHist[e.name].slice(-30); }
   }});
   DB.remove('live_active');
@@ -9883,11 +9898,14 @@ function finishLive(){
   // PR
   if(prs.length) h+='<div class="card-t">'+t('newRecordsLab')+'</div>'+prs.map(p=>'<div class="tip" style="margin-bottom:6px;border-color:rgba(242,184,75,.4);background:rgba(242,184,75,.1)">'+p+'</div>').join('');
   // muscles schema
-  if(Object.keys(muscles).length){ h+='<div class="card-t" style="margin-top:12px">'+t('musclesWorkedLab')+'</div><div class="muscle-tags" style="margin-bottom:12px">'+Object.keys(muscles).map(m=>'<span class="mtag" style="background:var(--ed);color:var(--et,var(--e));border-color:var(--e)">'+m+'</span>').join('')+'</div>'; }
+  if(Object.keys(muscles).length){ h+='<div class="card-t" style="margin-top:12px">'+t('musclesWorkedLab')+'</div><div id="liveBody2d"></div>'; }
   h+='<div class="badge" style="width:100%;justify-content:center;padding:14px;margin:6px 0 14px">'+tp('xpEarnedLab',xpGain)+'</div>';
   h+='<button class="btn ghost" style="margin-bottom:10px" onclick="openPainSheet({after:\'muscu\'})">'+ICN('warning',16)+' '+t('psAfterBtn')+'</button>';
   h+='<button class="btn" onclick="closeOv(\'ovLive\');LIVE=null;_finishingLive=false;renderSport()">'+t('closeLab')+'</button>';
   $('#liveBody').innerHTML=h;
+  // V4.14.0 : le corps 2D (repris de KORE) montre les zones travaillées pendant la séance
+  { const names=LIVE.prog.ex.filter((e,i)=>LIVE.state[i].sets.some(Boolean)).map(e=>e.name);
+    if(names.length) ikLoad('anat').then(()=>{ const box=$('#liveBody2d'); if(!box) return; const z=ikZonesSum(names); box.innerHTML=ikBody2DHTML(z,{compact:true})+ikZoneChips(z,8); ikBody2DMount(box,z,{auto:false}); }).catch(()=>{}); }
 }
 
 /* ---------- CRÉER UN PROGRAMME ---------- */
