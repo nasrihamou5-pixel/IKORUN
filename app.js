@@ -2709,7 +2709,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.14.0';
+const APP_VERSION='4.14.1';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -5197,7 +5197,7 @@ function maybeResumeLive(){
   const mins=Math.round((Date.now()-snap.start)/60000);
   if(mins>180){ DB.remove('live_active'); return; } // trop vieux
   customConfirm(tp('resumeSessionConfirm',prog.name,mins),()=>{
-    LIVE={prog,idx:snap.idx,start:snap.start,state:snap.state,tonnage:snap.tonnage,setsDone:snap.setsDone};
+    LIVE={prog,idx:snap.idx,start:snap.start,state:snap.state,tonnage:snap.tonnage,setsDone:snap.setsDone,restSw:snap.restSw||null};
     liveOpenEx=snap.idx||0;
     renderLive(); openOv('ovLive'); clearInterval(liveTimer); liveTimer=setInterval(updateLiveTimer,500); startBgActivity(tp('sessionColonName',prog.name),'muscu');
   },{yesLabel:t('resumeBtn'),noLabel:t('discardBtn'),onNo:()=>{ DB.remove('live_active'); }});
@@ -5660,7 +5660,9 @@ const EX_NAME_TR={
     'Extension de cou':'تمديد الرقبة','Flexion de cou':'ثني الرقبة','Burpees':'بيربي','Thruster':'ثراستر','Clean & Press':'كلين آند بريس',
     'Kettlebell Swing':'أرجحة الكيتل بل','Snatch kettlebell':'سناتش الكيتل بل','Turkish Get-up':'النهوض التركي'}
 };
-function trExName(n){ if(!n) return n; const l=curLang(); if(l==='fr') return n; const x=EXD_BY[n]; if(x&&(l==='en'||l==='ar')) return x[l==='en'?10:11]||n; if(!EX_NAME_TR[l]) return n; return EX_NAME_TR[l][n]||n; }
+// V4.14.1 : les 64 exercices des programmes par défaut avaient un nom anglais même en français et en arabe
+const LIB_NAME_TR={fr:{'Bench Press':'Développé couché barre','Decline Bench Press':'Développé décliné barre','Dumbbell Incline Bench Press':'Développé incliné haltères','Lever Seated Fly':'Écarté assis à la machine','Cable Crossover':'Crossover poulie','Push Up':'Pompes','Dumbbell Pullover':'Pullover haltère','Lever Lying T-bar Row':'Rowing T-bar allongé (machine)','Straight Back Seated Row':'Rowing assis dos droit','Bar Lateral Pulldown':'Tirage vertical à la barre','Pull Up':'Tractions','Deadlift':'Soulevé de terre','Bent Over Row':'Rowing buste penché','Single Arm Dumbbell Row':'Rowing haltère un bras','Lever Reverse Fly':'Oiseau à la machine','EZ-bar 21s':'21s barre EZ','Hammer Curl':'Curl marteau','Biceps Curl':'Curl biceps','Lever Preacher Curl':'Curl pupitre à la machine','Concentration Curl':'Curl concentré','Cable Curl':'Curl poulie','Skull Crusher':'Barre au front','Elbow Dips':'Dips','Triceps Pushdown':'Extension triceps poulie haute','Overhead Triceps Extension':'Extension triceps au-dessus de la tête','Close Grip Bench Press':'Développé couché prise serrée','Seated Shoulder Press':'Développé épaules assis','Lever Seated Shoulder Press':'Développé épaules à la machine','Lateral Raise':'Élévations latérales','Front Raise':'Élévations frontales','Cable Face Pull':'Face pull poulie','Arnold Press':'Développé Arnold','Upright Row':'Rowing menton','Shrug':'Shrug','Lever Leg Extension':'Leg extension','Lever Seated Leg Extension':'Leg extension assis','Lever Lying Leg Curl':'Leg curl allongé','Lever Kneeling Leg Curl':'Leg curl à genoux','Sled 45° Leg Wide Press':'Presse 45° pieds écartés','Sled 45° Leg Press':'Presse à cuisses 45°','Smith Squat':'Squat Smith','Back Squat':'Squat barre','Front Squat':'Front squat','Bulgarian Split Squat':'Fentes bulgares','Dumbbell Split Squat':'Squat fendu haltères','Walking Lunge':'Fentes marchées','Lever Seated Calf Raise':'Mollets assis à la machine','Lever Seated One Leg Calf Raise':'Mollets assis une jambe','Standing Calf Raise':'Mollets debout','Nordic Hamstring Curl':'Nordic curl','45° One Leg Hyperextension':'Hyperextension 45° une jambe','Hip Thrust':'Hip thrust','Lever Hip Thrust':'Hip thrust à la machine','Lever Seated Hip Abduction':'Abduction assis à la machine','Lever Seated Hip Adduction':'Adduction assis à la machine','Glute Bridge':'Pont fessier','Cable Kickback':'Kickback poulie','Plank':'Planche','Hanging Leg Raise':'Relevé de jambes suspendu','Cable Crunch':'Crunch poulie','Russian Twist':'Russian twist','Ab Wheel Rollout':'Roulette abdominale','Wrist Curl':'Curl poignets','Farmer Walk':'Marche du fermier'},ar:{'Bench Press':'ضغط البنش بالبار','Decline Bench Press':'ضغط الصدر المنحدر','Dumbbell Incline Bench Press':'ضغط الصدر المائل بالدمبلز','Lever Seated Fly':'فتح الصدر جالساً بالآلة','Cable Crossover':'تقاطع الكابل','Push Up':'الضغط','Dumbbell Pullover':'بول أوفر بالدمبل','Lever Lying T-bar Row':'تجديف T-bar مستلقياً','Straight Back Seated Row':'تجديف جالس بظهر مستقيم','Bar Lateral Pulldown':'السحب العلوي بالبار','Pull Up':'العقلة','Deadlift':'الرفعة الميتة','Bent Over Row':'التجديف منحنياً','Single Arm Dumbbell Row':'تجديف بالدمبل بذراع واحدة','Lever Reverse Fly':'فتح عكسي بالآلة','EZ-bar 21s':'21 بالبار EZ','Hammer Curl':'تمرين المطرقة','Biceps Curl':'ثني البايسبس','Lever Preacher Curl':'ثني على المسند بالآلة','Concentration Curl':'ثني التركيز','Cable Curl':'ثني بالكابل','Skull Crusher':'كسارة الجمجمة','Elbow Dips':'الغطس','Triceps Pushdown':'دفع الترايسبس بالكابل','Overhead Triceps Extension':'تمديد الترايسبس فوق الرأس','Close Grip Bench Press':'ضغط البنش بقبضة ضيقة','Seated Shoulder Press':'ضغط الكتف جالساً','Lever Seated Shoulder Press':'ضغط الكتف بالآلة','Lateral Raise':'الرفرفة الجانبية','Front Raise':'الرفع الأمامي','Cable Face Pull':'سحب للوجه بالكابل','Arnold Press':'ضغط أرنولد','Upright Row':'التجديف العمودي','Shrug':'هز الكتفين','Lever Leg Extension':'تمديد الساقين بالآلة','Lever Seated Leg Extension':'تمديد الساقين جالساً','Lever Lying Leg Curl':'ثني الساقين مستلقياً','Lever Kneeling Leg Curl':'ثني الساق راكعاً','Sled 45° Leg Wide Press':'مكبس الأرجل 45° بقدمين متباعدتين','Sled 45° Leg Press':'مكبس الأرجل 45°','Smith Squat':'سكوات سميث','Back Squat':'السكوات بالبار','Front Squat':'السكوات الأمامي','Bulgarian Split Squat':'السكوات البلغاري','Dumbbell Split Squat':'سكوات منقسم بالدمبلز','Walking Lunge':'الطعنات بالمشي','Lever Seated Calf Raise':'رفع الساقين جالساً بالآلة','Lever Seated One Leg Calf Raise':'رفع الساق جالساً بساق واحدة','Standing Calf Raise':'رفع الساقين وقوفاً','Nordic Hamstring Curl':'الثني النوردي','45° One Leg Hyperextension':'تمديد الظهر 45° بساق واحدة','Hip Thrust':'دفع الورك','Lever Hip Thrust':'دفع الورك بالآلة','Lever Seated Hip Abduction':'إبعاد الورك جالساً','Lever Seated Hip Adduction':'تقريب الورك جالساً','Glute Bridge':'جسر الألوية','Cable Kickback':'الركلة الخلفية بالكابل','Plank':'البلانك','Hanging Leg Raise':'رفع الساقين معلقاً','Cable Crunch':'الكرانش بالكابل','Russian Twist':'اللف الروسي','Ab Wheel Rollout':'عجلة البطن','Wrist Curl':'ثني الرسغ','Farmer Walk':'مشية المزارع'}};
+function trExName(n){ if(!n) return n; const l=curLang(); if(l!=='en'&&LIB_NAME_TR[l]&&LIB_NAME_TR[l][n]) return LIB_NAME_TR[l][n]; if(l==='fr') return n; const x=EXD_BY[n]; if(x&&(l==='en'||l==='ar')) return x[l==='en'?10:11]||n; if(!EX_NAME_TR[l]) return n; return EX_NAME_TR[l][n]||n; }
 const EX_TIP_TR={
   en:{'Bench Press':'Keep your shoulder blades pinched and your feet planted on the floor.','Decline Bench Press':'Targets the lower chest, lower the bar under control.',
     'Dumbbell Incline Bench Press':'Bench at 30°, use a full range of motion.','Lever Seated Fly':'Squeeze your chest at the end of the movement, hold for 1s.',
@@ -9122,8 +9124,8 @@ function openProg(id){
   p.ex.forEach((e,i)=>{
     h+='<div class="card" style="padding:13px;margin-bottom:10px;cursor:pointer" onclick="openExDetail(\''+p.id+'\','+i+')"><div class="row" style="align-items:flex-start"><div style="position:relative;margin-right:12px">'+exThumb(e.name,64)+
       '<div style="position:absolute;top:-6px;left:-6px;width:22px;height:22px;border-radius:50%;background:var(--fill-accent);color:var(--accent-ink);text-shadow:var(--accent-ink-shadow);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800">'+(i+1)+'</div></div>'+
-      '<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15px;line-height:1.25">'+escHtml(e.name)+'</div>'+
-      '<div class="muscle-tags" style="margin-top:5px">'+(e.muscles||[]).slice(0,2).map(m=>'<span class="mtag">'+m+'</span>').join('')+'</div>'+
+      '<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15px;line-height:1.25">'+escHtml(trExName(e.name))+'</div>'+
+      '<div class="muscle-tags" style="margin-top:5px">'+(e.muscles||[]).slice(0,2).map(m=>'<span class="mtag">'+trMuscle(m)+'</span>').join('')+'</div>'+
       '<div style="font-size:12px;color:var(--muted);margin-top:6px">'+tp('setsRepsLine',e.sets,e.reps)+'</div>'+
       '<div style="font-size:11px;color:var(--dim);margin-top:3px">~'+Math.round(e.sets*1.8)+' min</div></div>'+
       '<span style="color:var(--dim);font-size:18px;align-self:center">›</span></div></div>';
@@ -9306,46 +9308,42 @@ function openExDetail(progId,idx){
   exDetailCtx={progId,idx}; exDetailTab='exo'; exAnatomyView=null;
   renderExDetail();
 }
+// V4.14.1 : UNE seule page, sans onglets — la démo, les réglages du programme (modifiables
+// sur place), les muscles sur le corps 2D, puis comment faire. Le reste est replié.
 function renderExDetail(){
-  const p=allProgs().find(x=>x.id===exDetailCtx.progId); const e=p.ex[exDetailCtx.idx];
+  const p=allProgs().find(x=>x.id===exDetailCtx.progId); const e=p&&p.ex[exDetailCtx.idx]; if(!e) return;
   const f=exMeta(e.name)||{primary:e.muscles||[],secondary:[],steps:[],tips:[],mistakes:[],safety:[],equip:'',level:''};
   exdbNeed(e.name,()=>{ if(exDetailCtx&&exDetailCtx.progId===p.id) renderExDetail(); });
   $('#ovProgTitle').textContent=trExName(e.name);
-  const g=exGif(e.name);
-  let h='<div class="pills" style="margin-bottom:14px;overflow-x:auto;flex-wrap:nowrap;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent)">'+
-    [['exo',t('exTabExercise')],['muscles',t('exTabMuscles')],['instr',t('exTabInstructions')]].map(tb=>'<div class="pill '+(exDetailTab===tb[0]?'on':'')+'" onclick="exDetailTab=\''+tb[0]+'\';renderExDetail()">'+tb[1]+'</div>').join('')+'</div>';
-  if(exDetailTab==='exo'){
-    // Média animé — démarre directement le tuto, sans bouton lecture/pause
-    if(g){
-      h+=exDemoMediaHTML(g,'16/11');
-    } else {
-      h+='<div style="background:linear-gradient(135deg,var(--s2),var(--s1));border:1px solid var(--hair);border-radius:16px;padding:36px;text-align:center;margin-bottom:14px"><div style="animation:demoFloat 1.5s infinite">'+exGlyph(e,64)+'</div></div>';
-    }
-    h+='<div class="card"><div class="card-t">'+t('aboutExerciseTitle')+'</div><div style="font-size:13px;color:var(--muted);line-height:1.55">'+tp('exWorksMainly',trExName(e.name),((f.primary||[]).map(trMuscle).join(', ')||t('severalMuscleGroups')))+(f.secondary&&f.secondary.length?tp('exWorksAlsoSecondary',f.secondary.map(trMuscle).join(', ')):'')+'.</div></div>';
-    // Repos
-    h+='<div class="card"><div class="row"><div class="row" style="gap:10px"><span style="color:var(--e2);display:flex">'+ICN('stopwatch',18)+'</span><div><div style="font-size:11px;color:var(--muted)">'+t('restBetweenSetsLabel')+'</div><div style="font-weight:700">'+(e.rest||90)+'s</div></div></div></div></div>';
-    // mini stats
-    const vol=(e.sets||3)*(parseInt(e.reps)||10)*(e.weight||0);
-    h+='<div class="card" style="padding:0;overflow:hidden"><div style="display:flex;text-align:center"><div style="flex:1;padding:13px 4px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0">'+t('setsCap')+'</div><div class="man" style="font-weight:800;font-size:18px">'+e.sets+'</div></div><div style="flex:1;padding:13px 4px;border-right:1px solid var(--hair)"><div class="lab" style="margin:0">'+t('volumeCap')+'</div><div class="man" style="font-weight:800;font-size:18px">'+vol+' kg</div></div><div style="flex:1;padding:13px 4px"><div class="lab" style="margin:0">'+t('durationCap')+'</div><div class="man" style="font-weight:800;font-size:18px">~'+Math.round(e.sets*1.8)+'min</div></div></div></div>';
-  } else if(exDetailTab==='muscles'){
-    // V4.14.0 : corps 2D zoomable (repris de KORE) — chaque partie du muscle, la plus travaillée en premier
-    h+='<div class="card"><div class="card-t">'+t('targetedMusclesTitle')+'</div><div id="exBody2d"><div class="c2d"><div class="c2d-scene"></div></div></div></div>';
-    setTimeout(()=>ikLoad('anat').then(()=>{ const box=$('#exBody2d'); if(!box) return; const z=ikZonesFor(e.name,f); box.innerHTML=ikBody2DHTML(z)+ikZoneChips(z); ikBody2DMount(box,z,{}); }).catch(()=>{ const box=$('#exBody2d'); if(box) box.innerHTML=bodyAnatomyDualSVG(anatomyZonesFor(f)); }),0);
-    h+='<div class="card">'+
-       '<div class="row" style="gap:8px;margin-bottom:6px"><span style="width:9px;height:9px;border-radius:50%;background:var(--bad);flex:0 0 9px"></span><span style="font-weight:800;font-size:14px">'+t('primaryMusclesLabel')+'</span></div>'+
-       '<div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:'+(f.secondary&&f.secondary.length?'14px':'0')+'">'+((f.primary||[]).map(trMuscle).join(', ')||'—')+'</div>'+
-       (f.secondary&&f.secondary.length?('<div class="row" style="gap:8px;margin-bottom:6px"><span style="width:9px;height:9px;border-radius:50%;background:var(--e);flex:0 0 9px"></span><span style="font-weight:800;font-size:14px">'+t('secondaryMusclesLabel')+'</span></div>'+
-       '<div style="font-size:13px;color:var(--muted);line-height:1.6">'+f.secondary.map(trMuscle).join(', ')+'</div>'):'')+
-       '</div>';
-    if(f.equip) h+='<div class="card"><div class="row"><span class="lab">'+t('equipmentLabel')+'</span><span style="font-weight:600">'+trEquip(f.equip)+'</span></div></div>';
-  } else {
-    // V4.8 : consigne, 3 points d'exécution, effort visé ; le reste dans « Détails »
-    h+='<div class="card">'+exCoreHTML(f,e)+'</div>';
-  }
-  h+='<div class="row" style="gap:10px;margin-top:8px"><button class="btn ghost" onclick="openProg(\''+exDetailCtx.progId+'\')">‹ '+t('back')+'</button><button class="btn" onclick="startLive(\''+exDetailCtx.progId+'\','+exDetailCtx.idx+')">▶ '+t('startLabel')+'</button></div>';
+  const g=exGif(e.name), mine=CUSTOM.some(x=>x.id===p.id);
+  let h=g?exDemoMediaHTML(g,'16/11'):'';
+  h+='<div class="ex1-meta">'+(f.primary||[]).slice(0,3).map(m=>'<span class="ex1-chip">'+escHtml(trMuscle(m))+'</span>').join('')+(f.equip?'<span class="ex1-chip soft">'+escHtml(trEquip(f.equip))+'</span>':'')+'</div>';
+  // réglages : modifiables directement (programmes perso) — sinon une simple ligne
+  const step=(k,d)=>'<button type="button" class="ex1-st" onclick="exDetailAdj(\''+k+'\','+d+')">'+(d<0?'−':'+')+'</button>';
+  h+='<div class="ik-grp ex1-set">'+
+    '<div class="ex1-c"><small>'+t('setsLab')+'</small><div>'+(mine?step('sets',-1):'')+'<b>'+e.sets+'</b>'+(mine?step('sets',1):'')+'</div></div>'+
+    '<div class="ex1-c"><small>'+t('repsLab')+'</small><div>'+(mine?step('reps',-1):'')+'<b>'+escHtml(String(e.reps))+'</b>'+(mine?step('reps',1):'')+'</div></div>'+
+    (P.restMode==='timer'?'<div class="ex1-c" '+(mine?'role="button" onclick="exDetailRest()"':'')+'><small>'+t('restLab2')+'</small><div><b>'+fmtRest(e.rest||90)+'</b></div></div>':'')+
+  '</div>';
+  { const o=(typeof ikExObjective==='function')?ikExObjective(e):null; if(o) h+='<div class="exo-obj'+(o.up?' up':'')+'"><span class="eo-ic">'+ICN(o.up?'trend':'target',14)+'</span><span class="eo-t">'+escHtml(o.txt)+'</span></div>'; }
+  h+='<div id="exBody2d" class="ex1-body"></div>';
+  h+='<div class="lab ap-lab">'+t('exHowLab')+'</div><div class="ik-grp ex1-how">'+exCoreHTML(f,e)+'</div>';
+  h+='<button class="btn ex1-go" onclick="startLive(\''+exDetailCtx.progId+'\','+exDetailCtx.idx+')">'+ICN('play',15)+' '+t('startWorkout')+'</button>';
   $('#progBody').innerHTML=h;
   openOv('ovProg');
-  if(exDetailTab==='exo' && g){ startExDemoAuto(g); } else if(_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; }
+  if(g) startExDemoAuto(g); else if(_exDemo2){ clearInterval(_exDemo2); _exDemo2=null; }
+  setTimeout(()=>ikLoad('anat').then(()=>{ const box=$('#exBody2d'); if(!box) return; const z=ikZonesFor(e.name,f); if(!Object.keys(z).length){ box.remove(); return; } box.innerHTML=ikBody2DHTML(z,{compact:true})+ikZoneChips(z,4); ikBody2DMount(box,z,{}); }).catch(()=>{}),0);
+}
+function exDetailAdj(k,d){
+  const p=CUSTOM.find(x=>x.id===exDetailCtx.progId); if(!p) return; const e=p.ex[exDetailCtx.idx]; if(!e) return;
+  if(k==='sets') e.sets=Math.max(1,Math.min(12,(e.sets||3)+d));
+  else { const r=String(e.reps||'10'), m=r.match(/^(\d+)\s*-\s*(\d+)$/);
+    e.reps=m?(Math.max(1,+m[1]+d)+'-'+Math.max(1,+m[2]+d)):String(Math.max(1,Math.min(100,(parseInt(r)||10)+d))); }
+  saveAll(); try{ haptic(); }catch(_){} renderExDetail();
+}
+function exDetailRest(){
+  const p=CUSTOM.find(x=>x.id===exDetailCtx.progId); if(!p) return; const e=p.ex[exDetailCtx.idx]; if(!e) return;
+  pickInt(t('restSeconds'),0,300,e.rest||90,'s',v=>{ e.rest=v; saveAll(); renderExDetail(); },15);
 }
 // Paire d'images superposées + fondu enchaîné (crossfade) entre les 2 frames de free-exercise-db,
 // pour simuler le mouvement bien plus proprement qu'un remplacement brut de src (qui saccadait).
@@ -9401,6 +9399,7 @@ function startLive(id,startIdx){
 function updateLiveTimer(){
   if(!LIVE) return;
   const el=$('#liveTime'); if(el) el.textContent=fmtTime((Date.now()-LIVE.start)/1000);
+  if(LIVE.restSw){ const r=$('#restSwT'); if(r) r.textContent=fmtTime((Date.now()-LIVE.restSw)/1000); }
   // Sauvegarde continue → la séance survit même si l'app est fermée/rechargée
   persistLive();
 }
@@ -9408,7 +9407,7 @@ function persistLive(){
   if(!LIVE) return;
   // On sauvegarde aussi la liste d'exercices de la séance (LIVE.prog.ex) et pas que le progId :
   // sinon un exo ajouté/retiré en pleine séance serait perdu si l'app se recharge (iOS aime bien le faire).
-  const snap={progId:LIVE.prog.id,progName:LIVE.prog.name,progEx:LIVE.prog.ex,idx:LIVE.idx,start:LIVE.start,state:LIVE.state,tonnage:LIVE.tonnage,setsDone:LIVE.setsDone};
+  const snap={progId:LIVE.prog.id,progName:LIVE.prog.name,progEx:LIVE.prog.ex,idx:LIVE.idx,start:LIVE.start,state:LIVE.state,tonnage:LIVE.tonnage,setsDone:LIVE.setsDone,restSw:LIVE.restSw||null};
   DB.save('live_active',snap);
 }
 function renderLive(){
@@ -9429,7 +9428,7 @@ function renderLive(){
     '<button class="live-ic ik-min-btn" onclick="minimizeLive()" aria-label="'+t('minimizeLab')+'" title="'+t('minimizeLab')+'">'+ICN('chevronD',19)+'</button>'+
     '<button class="live-ic" onclick="pauseLive()" aria-label="'+t('pauseLab')+'" title="'+t('pauseLab')+'">'+ICN('pause',17)+'</button>'+
     '<div style="flex:1"></div>'+
-    '<button class="live-ic" onclick="openRest(90)" aria-label="'+t('restTimerBtn')+'" title="'+t('restTimerBtn')+'">'+ICN('stopwatch',17)+'</button>'+
+    '<button class="live-ic" onclick="restModeMenu()" aria-label="'+t('restTimerBtn')+'" title="'+t('restTimerBtn')+'">'+ICN('stopwatch',17)+'</button>'+
     '<button class="btn sm" style="width:auto;padding:8px 18px" onclick="finishLive()">'+t('liveFinishBtn')+'</button>'+
     '</div>';
   // Stats : Durée / Volume / Séries
@@ -9439,7 +9438,9 @@ function renderLive(){
     '<div style="flex:1"><div class="lab" style="margin:0 0 4px">'+t('setsLab')+'</div><div id="liveSets" style="font-weight:800;font-size:16px">'+LIVE.setsDone+'/'+totalSets+'</div></div>'+
     '</div>'+
     // progression de la séance : barre lumineuse (partie de la valeur précédente, voir plus bas)
-    '<div class="ik-live-prog" aria-hidden="true"><i id="liveProg" style="width:'+(LIVE._progPrev||0)+'%"></i></div></div>';
+    '<div class="ik-live-prog" aria-hidden="true"><i id="liveProg" style="width:'+(LIVE._progPrev||0)+'%"></i></div>'+
+    // V4.14.1 : chronomètre de repos — part quand une série est cochée, compte jusqu'à la suivante
+    '<div class="rest-sw'+(LIVE.restSw?' on':'')+'" id="restSw">'+ICN('stopwatch',14)+'<span>'+t('restSwLab')+'</span><b id="restSwT">'+fmtTime(LIVE.restSw?(Date.now()-LIVE.restSw)/1000:0)+'</b><button type="button" onclick="restSwStop()" aria-label="'+t('closeLab')+'">×</button></div></div>';
   // Une carte par exercice, repliée sur le nom par défaut — on tape dessus pour dérouler les séries.
   // Un seul exercice ouvert à la fois (accordéon), et tout est animé en douceur (transition CSS).
   p.ex.forEach((e,i)=>{
@@ -9480,7 +9481,8 @@ function liveExBodyHTML(i){
   // Affichait « Désactivé » quand l'exercice n'avait pas de repos défini, alors que
   // toggleSet() lance bien 90 s dans ce cas (et changeRest ne propose que 15-300 s) :
   // l'étiquette montre désormais la durée réellement appliquée (audit 24/09).
-  let h='<div class="live-rest" onclick="changeRest('+i+')">'+ICN('stopwatch',15)+'<span>'+tp('restTimerLab',fmtRest(e.rest||90))+'</span></div>';
+  // en mode chronomètre (par défaut), pas de durée de repos à régler : le chrono compte
+  let h=P.restMode==='timer'?'<div class="live-rest" onclick="changeRest('+i+')">'+ICN('stopwatch',15)+'<span>'+tp('restTimerLab',fmtRest(e.rest||90))+'</span></div>':'';
   { const o=(typeof ikExObjective==='function')?ikExObjective(e):null;
     if(o) h+='<div class="exo-obj'+(o.up?' up':'')+'"><span class="eo-ic">'+ICN(o.up?'trend':'target',14)+'</span><span class="eo-t">'+escHtml(o.txt)+'</span><button type="button" class="eo-b" onclick="ikFillObjective('+i+')">'+t('objFillBtn')+'</button></div>'; }
   h+='<div style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:8px;text-align:center">'+
@@ -9673,6 +9675,17 @@ function toggleLiveEx(i){
 }
 // V4.14.0 : tonnage et séries recalculés depuis les séries cochées (avant : additionnés au moment
 // de cocher — modifier la charge d'une série déjà cochée, puis la décocher, faussait le total).
+// Repos : chronomètre (par défaut) ou minuteur à rebours (réglage du bouton ⏱ de la séance)
+function restSwStart(){ if(!LIVE) return; LIVE.restSw=Date.now(); const b=$('#restSw'); if(b) b.classList.add('on'); const r=$('#restSwT'); if(r) r.textContent='0:00'; persistLive(); }
+function restSwStop(quiet){ if(!LIVE) return; LIVE.restSw=null; const b=$('#restSw'); if(b) b.classList.remove('on'); persistLive(); }
+function restModeMenu(){
+  const tm=P.restMode==='timer';
+  ikPick(t('restModeTitle'),[
+    {label:t('restModeSw'),sub:t('restModeSwSub'),on:!tm,cb:()=>{ P.restMode='sw'; saveAll(); toast(t('restModeSw')); }},
+    {label:t('restModeTimer'),sub:t('restModeTimerSub'),on:tm,cb:()=>{ P.restMode='timer'; restSwStop(); saveAll(); toast(t('restModeTimer')); }},
+    {label:t('restModeNow'),sub:t('restModeNowSub'),cb:()=>openRest(90)}
+  ]);
+}
 function ikLiveTotals(){
   let ton=0,n=0; LIVE.state.forEach(st=>{ (st.log||[]).forEach((s,j)=>{ if(st.sets[j]){ n++; if(s.t!=='w') ton+=(+s.kg||0)*(+s.reps||0); } }); });
   LIVE.tonnage=ton; LIVE.setsDone=n;
@@ -9777,7 +9790,9 @@ function toggleSet(exIdx,setIdx){
   if(st.sets[setIdx]){
     const nx=(typeof ikAfterSet==='function')?ikAfterSet(exIdx,setIdx):{};
     const restS=nx.rest||st.log[setIdx].rest||LIVE.prog.ex[exIdx].rest||90, live=LIVE;
-    if(!nx.skipRest) setTimeout(()=>{ if(LIVE===live && st.sets[setIdx]) openRest(restS); }, ikMotionOff()?0:420);
+    if(nx.skipRest) restSwStop(true);
+    else if(P.restMode==='timer') setTimeout(()=>{ if(LIVE===live && st.sets[setIdx]) openRest(restS); }, ikMotionOff()?0:420);
+    else restSwStart();
     sfx('tick');
   }
   persistLive(); renderLive(); ikSetFx(exIdx,setIdx,st.sets[setIdx],st.sets.every(Boolean));
@@ -9855,7 +9870,7 @@ function finishLive(){
   // enregistré une 2e séance et crédité l'XP deux fois.
   if(_finishingLive || !LIVE) return;
   _finishingLive=true;
-  clearInterval(liveTimer); skipRest();
+  clearInterval(liveTimer); skipRest(); LIVE.restSw=null;
   const dur=Math.round((Date.now()-LIVE.start)/1000);
   const cal=Math.round(LIVE.tonnage*0.05+dur/60*6);
   // Répétitions RÉELLEMENT saisies sur les séries validées (avant : séries × reps
@@ -9925,7 +9940,7 @@ function renderCreate(){
   h+='<div class="lab" style="margin:10px 0 8px">'+tp('exercisesCountLab',newProg.ex.length)+'</div>';
   if(!newProg.ex.length) h+='<div class="tip" style="margin-bottom:12px">'+t('addExFromLib')+'</div>';
   newProg.ex.forEach((e,i)=>{
-    h+='<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:8px"><span style="font-size:22px">'+e.anim+'</span><div><div style="font-weight:700;font-size:14px">'+escHtml(e.name)+'</div><div class="num" style="font-size:12px;color:var(--et,var(--e))">'+e.sets+'×'+e.reps+(e.rest?' · '+e.rest+'s':'')+'</div></div></div><button class="x" onclick="newProg.ex.splice('+i+',1);renderCreate()">'+ICN('trash',16)+'</button></div></div>';
+    h+='<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:8px"><span style="font-size:22px">'+e.anim+'</span><div><div style="font-weight:700;font-size:14px">'+escHtml(trExName(e.name))+'</div><div class="num" style="font-size:12px;color:var(--et,var(--e))">'+e.sets+'×'+e.reps+(e.rest?' · '+e.rest+'s':'')+'</div></div></div><button class="x" onclick="newProg.ex.splice('+i+',1);renderCreate()">'+ICN('trash',16)+'</button></div></div>';
   });
   h+='<button class="btn ghost" style="margin-bottom:12px" onclick="openLibFor(addToNewProg)">'+t('addFromLibBtn')+'</button>';
   h+='<button class="btn" onclick="saveNewProg()">'+t('saveProgramBtn')+'</button>';
@@ -10034,10 +10049,13 @@ function startExDemo(frames){
 
 /* ---------- RÉGLER UN EXERCICE ---------- */
 let cfgEx=null,cfgState=null,cfgCallback=null;
+// V4.14.1 : plus d'écran « Configurer » — l'exercice s'ajoute tout de suite (3 × 10, charge de ta
+// dernière fois). Séries, reps, charge et repos se changent ensuite n'importe quand, même en pleine séance.
 function openCfg(e,cb){
   cfgEx=e; cfgCallback=cb;
-  cfgState={name:e.name,anim:e.anim,muscles:e.muscles,tip:e.tip,sets:e.sets||3,reps:String(e.reps||10),weight:20,rest:90,amrap:false,note:''};
-  renderCfg(); openOv('ovCfg');
+  const last=(typeof ikExLast==='function')?ikExLast(e.name):null, w=last&&last.sets.length?(+last.sets[last.sets.length-1].kg||0):0;
+  cfgState={name:e.name,anim:e.anim,muscles:e.muscles,tip:e.tip,sets:e.sets||3,reps:String(e.reps||10),weight:w,rest:90,amrap:false,note:''};
+  saveCfg(); toast(tp('exAddedToast',trExName(e.name)));
 }
 function renderCfg(){
   const s=cfgState;
