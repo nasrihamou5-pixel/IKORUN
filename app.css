@@ -5816,3 +5816,27 @@ html[dir=rtl] .ikob-et-auto::after{transform-origin:right}
 .sess{padding:11px 14px 11px 17px;margin-bottom:10px;border-radius:18px}
 .ex-det .rs-part{margin:6px 0 0}.ex-det .rs-d .rs-part:first-of-type{margin-top:8px}
 .ex-det .rs-part b{display:inline;margin:0;font-size:inherit;font-weight:700;letter-spacing:0;text-transform:none;color:var(--snow)}
+
+/* V4.13.3 — réglages : cartes groupées, boutons doux, langue en segment */
+.ik-grp{margin:0 0 16px;border-radius:20px;background:var(--glass-bg);border:1px solid var(--glass-border-soft);overflow:hidden}
+.ik-row{display:flex;align-items:center;gap:14px;padding:14px 16px;min-height:56px}
+.ik-row+.ik-row,.ik-sub{border-top:1px solid var(--hair)}
+.ik-row-t{flex:1;min-width:0}
+.ik-row-t b{display:block;font-size:15px;font-weight:700;line-height:1.3}
+.ik-row-t small{display:block;margin-top:3px;font-size:12.5px;line-height:1.45;color:var(--muted)}
+.ik-link{cursor:pointer}.ik-link:active{background:rgba(var(--e-rgb),.07)}
+.ik-link .tx-open-ic{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;color:var(--e2);background:linear-gradient(145deg,rgba(var(--e-rgb),.24),rgba(var(--e-rgb),.08));border:1px solid rgba(var(--e-rgb),.25);flex:none}
+.ik-sub{padding:14px 16px 16px}
+.ik-sub-lab{font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:9px}
+.ik-sub-hint{margin-top:8px;font-size:12.5px;line-height:1.45;color:var(--muted)}
+.btn-soft{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;padding:0 16px;border-radius:16px;border:1px solid var(--hair2);background:var(--glass-bg);color:var(--snow);font:inherit;font-size:15px;font-weight:700;box-shadow:none;text-shadow:none}
+.btn-soft:active{background:rgba(var(--e-rgb),.09)}
+.btn-soft.btn-danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 35%,var(--hair2))}
+.ap-intro.btn-soft{margin-top:6px}
+.ap-lang .seg-btn{flex:1;text-align:center}
+.rc-empty{margin:14px 0;padding:26px 18px;border-radius:20px;background:var(--glass-bg);border:1px solid var(--glass-border-soft)}
+.rc-empty b{color:var(--snow);font-size:15px}
+.btn.btn-soft,.btn.btn-soft:active{background:var(--glass-bg);background-image:none;color:var(--snow);border:1px solid var(--hair2);box-shadow:none;text-shadow:none;filter:none;font-size:15px;font-weight:700}
+.btn.btn-soft::before,.btn.btn-soft::after{display:none}
+.btn.btn-soft.btn-danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 35%,var(--hair2))}
+.btn.btn-soft:active{background:rgba(var(--e-rgb),.09);transform:scale(.985)}
