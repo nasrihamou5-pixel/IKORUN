@@ -21,6 +21,7 @@
     "plan/adapt-ui.js",
     "plan/strength.js",
     "plan/strength-adapt.js",
+    "muscu/muscu.js",
     "plan/injury.js",
     "plan/injury-ui.js",
     "plan/simulate.js",
@@ -54,5 +55,8 @@
   ],
   "i18n/ar.min.js": [
     "i18n/ar.js"
+  ],
+  "muscu/anat2d.min.js": [
+    "muscu/anat2d.js"
   ]
 }
