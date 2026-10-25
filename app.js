@@ -2709,7 +2709,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.13.6';
+const APP_VERSION='4.13.7';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -6876,6 +6876,10 @@ function planBuild(opts){
   let {startMonday,weeks}=planCalendar(P.compDate,days);
   const raceKey=dateKey(comp);
   const phaseByWeek=phaseDistribution(weeks,raceMeters());
+  // V4.13.7 : course en début de semaine (lundi, mardi…) — la semaine de la course ne contient presque aucune séance avant le Jour J,
+  // l'affûtage doit donc commencer la semaine d'avant (sinon la dernière semaine pleine reste en plein travail dur, veille de course comprise).
+  { const rIdx=(comp.getDay()+6)%7, before=days.filter(dow=>((dow+6)%7)<rIdx).length;
+    if(weeks>=3 && before<2 && phaseByWeek[weeks-1] && phaseByWeek[weeks-1].key!=='TAPER') phaseByWeek[weeks-1]=PHASES[5]; }
   // Reconstruction (opts.keep) : les semaines continuent la numérotation de l'ancien plan.
   const keep=opts.keep&&opts.keep.sessions&&opts.keep.sessions.length?opts.keep:null;
   let off=0, keptPast=[];
