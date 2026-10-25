@@ -2709,7 +2709,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.13.0';
+const APP_VERSION='4.13.1';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -8316,7 +8316,8 @@ function renderPlanRows(sessions,tk,opts){
   sessions.forEach(s=>{
     if(!opts.flat){
       if(s.phaseKey!==curPhase){ curPhase=s.phaseKey; h+='<div class="phase-head" style="color:'+phaseColor(s.phaseKey)+'">'+phaseName(s.phaseKey)+'</div>'; }
-      if(s.week!==curWeek){ curWeek=s.week; h+='<div class="lab" style="margin:8px 0 6px">'+tp('weekN',s.week)+(s.deload?t('deloadTag'):'')+'</div>'; }
+      if(s.week!==curWeek){ curWeek=s.week; const wk=sessions.filter(x=>x.week===s.week&&x.km>0), wkKm=Math.round(wk.reduce((a,x)=>a+(+x.km||0),0));
+        h+='<div class="wk-head"><span class="wk-t">'+tp('weekN',s.week)+(s.deload?t('deloadTag'):'')+'</span><span class="wk-m">'+tp('wkSum',wk.length,wkKm)+'</span></div>'; }
     }
     const isToday=s.date===tk;
     const rest=(!s.km || s.type==='Repos');
@@ -8326,10 +8327,11 @@ function renderPlanRows(sessions,tk,opts){
              : (s.date<tk) ? '<div class="qbadge pend">'+t('toConfirmTag')+'</div>'
              : '<div class="chrome-chip" style="color:'+baseTypeColor(s.baseType)+'">'+escHtml(planSessLabel(s))+'</div>';
     const ssum=seriesSummary({...s,series:liveSeries(s)});
-    const line2=fmtDate(s.date)+(s.km?' · '+hKm(s.km)+' km':' · '+t('restTag'))+(s.km&&!ssum?' · '+s.pace+'/km':'');
+    const line2=(s.km?hKm(s.km)+' km':t('restTag'))+(s.km&&!ssum?' · '+s.pace+'/km':'');
+    const dd=new Date(s.date+'T12:00:00'), dBlock='<div class="sess-d"><b>'+dd.getDate()+'</b><span>'+escHtml(ikDate(dd,'wd',{weekday:'short'}))+'</span></div>';
     h+='<div class="sess'+(s.done?' done':'')+(s.missed?' missed':'')+(isToday?' today':'')+'"'+
       ' style="--sess-c:'+(rest?'var(--dim)':baseTypeColor(s.baseType))+'" onclick="openRunSheet('+s.id+')">'+
-      '<div class="row"><div><div class="sess-t">'+escHtml(planSessTitle(s))+'</div>'+
+      '<div class="row">'+dBlock+'<div class="sess-body"><div class="sess-t">'+escHtml(planSessTitle(s))+'</div>'+
       '<div class="sess-m">'+escHtml(line2)+(s.customized?' · '+t('customizedTag'):'')+(s.adj&&s.adj.r&&!s.done&&!s.missed?' · <span class="sess-adj">'+t('adjustedTag')+'</span>':'')+'</div>'+
       (ssum?'<div class="sess-s">'+escHtml(ssum)+'</div>':'')+'</div>'+qb+'</div></div>';
   });
@@ -8692,8 +8694,8 @@ function openRunSheet(id){
   const parts=planPaceParts(s), mainPart=planMainPart(s);
   let h='';
 
-  // EN-TÊTE — badge type, titre, sous-titre semaine/objectif
-  h+='<div class="rs-badge" style="background:color-mix(in srgb,'+col+' 13%,transparent);color:'+col+'">'+escHtml(planSessLabel(s)||'')+'</div>';
+  // EN-TÊTE — badge type, titre, sous-titre semaine/objectif (V4.13.1 : tout dans une carte « hero »)
+  h+='<div class="rs-hero"><div class="rs-badge" style="background:color-mix(in srgb,'+col+' 13%,transparent);color:'+col+'">'+escHtml(planSessLabel(s)||'')+'</div>';
   h+='<div class="rs-title">'+planSessTitle(s)+(s.customized?' <span class="chrome-chip" style="font-size:10px;vertical-align:middle">'+t('customizedTag')+'</span>':'')+'</div>';
   h+='<span class="rs-sub">'+(PLAN.weekLabel?PLAN.weekLabel:t('weekLabelWithNum')+' '+s.week)+' · '+(raceLabel()||t('objectiveWord'))+'</span>';
 
@@ -8703,6 +8705,7 @@ function openRunSheet(id){
       +'<div class="rs-stat"><div class="v" style="font-size:17px">'+s.pace+'</div><div class="l">'+t('avgPerKmLabel')+'</div></div><div class="rs-div"></div>'
       +'<div class="rs-stat"><div class="v">'+s.duration+'</div><div class="l">min</div></div></div>';
   }
+  h+='</div>';   // fin de la carte hero
 
   // MÉTÉO à l'heure habituelle de la séance : correction chaleur des allures et conseils (V4.0.0)
   if(s.date>=todayKey()) h+=wxSessionHTML(s);
@@ -8722,7 +8725,7 @@ function openRunSheet(id){
   // une séance manquée, les modifier après coup désynchroniserait l'historique.
   if(!s.done && s.date>=todayKey()) h+='<button class="btn ghost sm" style="margin-bottom:14px" onclick="openPlanCustomize('+s.id+')">'+ICN('edit',15)+' '+t('customizeSessionBtn')+'</button>';
 
-  if(dt) h+='<div class="rs-obj-txt" style="margin-bottom:12px">'+dt.objectif+'</div>';
+  if(dt) h+='<div class="rs-sec"><div class="rs-sec-lab">'+t('rsObjLab')+'</div><div class="rs-obj-txt" style="margin:0">'+dt.objectif+'</div></div>';
 
   // ALLURE CIBLE — celle de la partie principale (± 5 s), et le profil de la séance segment par
   // segment (hauteur = vitesse, largeur = durée) au lieu d'une courbe décorative.
@@ -8738,24 +8741,27 @@ function openRunSheet(id){
   { const sgs=planSegs(s), wuS=sgs.find(x=>x.k==='wu'), cdS=sgs.find(x=>x.k==='cd');
     const fl=(lab,sg)=>'<div class="rs-fl"><b>'+lab+'</b><span>'+tp('rsMinPace',Math.round(sg.sec/60),spkToStr(sg.sec/sg.km))+'</span></div>';
     const tbl=seriesTableHTML(liveSeries(s));
+    h+='<div class="rs-sec"><div class="rs-sec-lab">'+t('rsYourSession')+'</div>';
     if(wuS) h+=fl(t('warmupLabel'),wuS);
     if(tbl) h+=tbl;
     else if(!dt) h+='<div class="chrome-box"><div class="cb-body">'+escHtml(s.desc||'')+'</div></div>';
-    else { const run=sgs.filter(x=>x.k==='run'||x.k==='work'); if(run.length&&!wuS){ const tk=run.reduce((a,x)=>a+x.km,0), ts=run.reduce((a,x)=>a+x.sec,0); h+='<div class="rs-fl"><b>'+t('rsContinuous')+'</b><span>'+tp('rsKmPace',hKm(Math.round(tk*10)/10),spkToStr(ts/tk))+'</span></div>'; } }
+    else { const run=sgs.filter(x=>x.k==='run'||x.k==='work'); if(run.length){ const tk=run.reduce((a,x)=>a+x.km,0), ts=run.reduce((a,x)=>a+x.sec,0); h+='<div class="rs-fl"><b>'+t('rsContinuous')+'</b><span>'+tp('rsKmPace',hKm(Math.round(tk*10)/10),spkToStr(ts/tk))+'</span></div>'; } }
     if(cdS) h+=fl(t('cooldownLabel'),cdS);
+    h+='</div>';
     if(dt){
       const one=x=>String(x||'').split(/(?<=[.!?])\s/)[0];
-      if(dt.why) h+='<div class="rs-why"><b>'+t('whySessionLabel')+'</b> '+escHtml(one(dt.why))+'</div>';
-      if(dt.tips&&dt.tips[0]) h+='<div class="rs-why"><b>'+t('adviceLabel')+'</b> '+escHtml(String(dt.tips[0]))+'</div>';
+      { let inf=''; if(dt.why) inf+='<div class="rs-why"><b>'+t('whySessionLabel')+'</b> '+escHtml(one(dt.why))+'</div>';
+        if(dt.tips&&dt.tips[0]) inf+='<div class="rs-why"><b>'+t('adviceLabel')+'</b> '+escHtml(String(dt.tips[0]))+'</div>';
+        if(inf) h+='<div class="rs-sec rs-info">'+inf+'</div>'; }
       let d='';
       d+='<div class="cb-body rs-d"><b>'+t('warmupLabel')+'</b> '+escHtml(dt.warmup||'')+'</div>';
       d+='<div class="cb-body rs-d"><b>'+t('sessionBodyLabel')+'</b> '+escHtml(dt.body||'')+'</div>';
       d+='<div class="cb-body rs-d"><b>'+t('cooldownLabel')+'</b> '+escHtml(dt.cooldown||'')+'</div>';
       const pts=planPaceParts(s);
-      if(pts.length) d+='<div class="cb-body rs-d"><b>'+t('detailedPacesLabel')+'</b></div>'+pts.map(p=>'<div class="cb-body rs-part"><b>'+planPartLabel(p,s)+'</b><span>'+planZoneLine(p.pk,p.pace)+(p.k==='work'||p.k==='run'?' · '+hKm(Math.round(p.km*10)/10)+' km':'')+'</span></div>').join('');
+      if(pts.length) d+='<div class="cb-body rs-d"><b>'+t('detailedPacesLabel')+'</b>'+pts.map(p=>'<div class="rs-part"><b>'+planPartLabel(p,s)+'</b><span>'+planZoneLine(p.pk,p.pace)+(p.k==='work'||p.k==='run'?' · '+hKm(Math.round(p.km*10)/10)+' km':'')+'</span></div>').join('')+'</div>';
       d+='<div class="cb-body rs-d"><b>'+t('recoveryLabel')+'</b> '+escHtml(dt.recovery||'')+'</div>';
-      if(dt.tips&&dt.tips.length>1) d+='<div class="cb-body rs-d"><b>'+t('adviceLabel')+'</b></div>'+dt.tips.slice(1).map(tt=>'<div class="cb-body">• '+escHtml(String(tt))+'</div>').join('');
-      if(dt.mistakes&&dt.mistakes.length) d+='<div class="cb-body rs-d bad"><b>'+t('mistakesToAvoidLabel')+'</b></div>'+dt.mistakes.map(tt=>'<div class="cb-body">'+escHtml(String(tt))+'</div>').join('');
+      if(dt.tips&&dt.tips.length>1) d+='<div class="cb-body rs-d"><b>'+t('adviceLabel')+'</b>'+dt.tips.slice(1).map(tt=>'<div>• '+escHtml(String(tt))+'</div>').join('')+'</div>';
+      if(dt.mistakes&&dt.mistakes.length) d+='<div class="cb-body rs-d bad"><b>'+t('mistakesToAvoidLabel')+'</b>'+dt.mistakes.map(tt=>'<div>'+escHtml(String(tt))+'</div>').join('')+'</div>';
       if(dt.why) d+='<div class="cb-body rs-d"><b>'+t('whySessionLabel')+'</b> '+escHtml(dt.why)+'</div>';
       h+='<details class="ex-det"><summary>'+t('rsDetails')+'</summary>'+d+'</details>';
     }
