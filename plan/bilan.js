@@ -136,7 +136,7 @@ function renderDebrief(){
   if(debriefStep===2) return renderDebriefDetails();
   const ps=blPlanSess(), sc=document.getElementById('progBody');
   let h='<div class="bl-head"><b>'+escHtml(ps?planSessTitle(ps):(c.title||''))+'</b><span>'+(d.ids&&d.ids.length>1?tp('blMissedMany',d.ids.length,fmtDate(c.date)):fmtDate(c.date))+'</span></div>';
-  if(!(d.ids&&d.ids.length>1)){
+  if(!(d.ids&&d.ids.length>1) && !c.free){   // V4.13 : une séance libre n'a rien « de prévu » à comparer
     h+='<div class="bl-q">'+t('blHowWent')+'</div><div class="bl-status" role="radiogroup">'+
       [['done','check','blAsPlanned'],['modified','edit','blModified'],['missed','close','blNotDone']].map(([k,ic,lab])=>
         '<button type="button" class="bl-st bl-st-'+k+(d.status===k?' on':'')+'" role="radio" aria-checked="'+(d.status===k)+'" onclick="blSetStatus(\''+k+'\')">'+ICN(ic,20)+'<span>'+t(lab)+'</span></button>').join('')+'</div>';
