@@ -308,17 +308,19 @@ function pfThemeEditorHTML(){
     '<div class="card tx-prev-card"><div class="tx-prev-top"><span class="pill on">'+t('today')+'</span><span class="tx-prev-meta">8 km · 5:37/km</span></div>'+
     '<div class="tx-prev-t">'+t('txPreviewTitle')+'</div><div class="pbar"><div style="width:62%"></div></div>'+
     '<button type="button" class="btn sm" tabindex="-1">'+t('txPreviewBtn')+'</button></div></div>';
-  h+='<div class="lab ap-lab">'+t('txColorLab')+'</div>'+
-    txRow('h',t('txHue'),0,360,p.h)+txRow('s',t('txSat'),0,100,p.s)+txRow('l',t('txLight'),0,100,p.l);
-  h+='<div class="lab ap-lab">'+t('txBgLab')+'</div>'+
-    txRow('bg',t('txBgLevel'),0,100,p.bg,light?[t('txBgWhite'),t('txBgSoftGrey')]:[t('txBgOled'),t('txBgAnthracite')])+
-    txRow('tint',t('txBgTint'),0,100,p.tint,[t('txNeutral'),t('txTinted')]);
-  h+='<div class="lab ap-lab">'+t('txGlassLab')+'</div>'+
+  // V4.13.4 : l'essentiel d'abord (teinte + fond), le reste dans « Réglages avancés »
+  let adv='';
+  h+='<div class="lab ap-lab">'+t('txColorLab')+'</div><div class="ik-grp tx-grp">'+txRow('h',t('txHue'),0,360,p.h)+'</div>'+
+    '<div class="lab ap-lab">'+t('txBgLab')+'</div><div class="ik-grp tx-grp">'+
+    txRow('bg',t('txBgLevel'),0,100,p.bg,light?[t('txBgWhite'),t('txBgSoftGrey')]:[t('txBgOled'),t('txBgAnthracite')])+'</div>';
+  adv+=txRow('s',t('txSat'),0,100,p.s)+txRow('l',t('txLight'),0,100,p.l)+txRow('tint',t('txBgTint'),0,100,p.tint,[t('txNeutral'),t('txTinted')]);
+  adv+='<div class="ik-sub-lab">'+t('txGlassLab')+'</div>'+
     '<div class="ap-opt"><div><b>'+t('txGlassOn')+'</b><span>'+t('txGlassDesc')+'</span></div><div class="toggle'+(p.gOn?' on':'')+'" role="switch" aria-checked="'+p.gOn+'" aria-label="'+t('txGlassOn')+'" onclick="txGlassToggle()"></div></div>'+
     txRow('blur',t('txBlur'),0,40,p.blur,null,{off:!p.gOn})+txRow('op',t('txOpacity'),15,100,p.op,null,{off:!p.gOn})+txRow('shine',t('txShine'),0,100,p.shine,null,{off:!p.gOn});
-  h+='<div class="lab ap-lab">'+t('txTiltLab')+'</div>'+
+  adv+='<div class="ik-sub-lab">'+t('txTiltLab')+'</div>'+
     '<div class="ap-opt"><div><b>'+t('txTiltOn')+'</b><span>'+t(reduce?'txTiltReduced':'txTiltDesc')+'</span></div><div class="toggle'+(P.tiltOn?' on':'')+'" role="switch" aria-checked="'+!!P.tiltOn+'" aria-label="'+t('txTiltOn')+'" onclick="txTiltToggle()"></div></div>'+
     txRow('tk',t('txTiltK'),0,100,tiltK,null,{off:!P.tiltOn});
+  h+='<details class="ik-grp tx-adv"'+(window._txAdvOpen?' open':'')+' ontoggle="window._txAdvOpen=this.open"><summary>'+t('txAdvanced')+'</summary><div class="tx-adv-b">'+adv+'</div></details>';
   h+='<div class="tx-acts"><button type="button" class="btn ghost" onclick="txReset()">'+t('txReset')+'</button><button type="button" class="btn" onclick="closeOv(\'ovProg\')">'+t('txDone')+'</button></div></div>';
   return h;
 }

@@ -252,6 +252,7 @@ window.IK_I18N_EXTRA=Object.assign(window.IK_I18N_EXTRA||{},{
     ntGrpRemind:'Reminders',
     ntGrpSocial:'Friends and club',
     ntGrpSound:'Sounds',
+    txAdvanced:'Advanced settings',
     bigTestTitle:'25-week test (week {0})',
     bigTestObjectif:'Level test: treat it like race day. Easy day before, proper warm-up, then give your maximum over the planned distance. Your time recalculates your level and adapts every coming week.',
     bigTestWhy:'Every 25 weeks a real test measures your progress and resets the paces of all following sessions. The week is lighter so you arrive fresh.',

@@ -5840,3 +5840,14 @@ html[dir=rtl] .ikob-et-auto::after{transform-origin:right}
 .btn.btn-soft::before,.btn.btn-soft::after{display:none}
 .btn.btn-soft.btn-danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 35%,var(--hair2))}
 .btn.btn-soft:active{background:rgba(var(--e-rgb),.09);transform:scale(.985)}
+
+/* V4.13.4 — éditeur de thème : l'essentiel + réglages avancés repliés */
+.tx-grp .tx-row{padding:14px 16px 16px;margin:0}
+.tx-adv summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:16px;font-size:15px;font-weight:700}
+.tx-adv summary::-webkit-details-marker{display:none}
+.tx-adv summary::after{content:'';width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s}
+.tx-adv[open] summary::after{transform:rotate(-135deg)}
+.tx-adv-b{border-top:1px solid var(--hair);padding:6px 0 10px}
+.tx-adv-b .tx-row{padding:12px 16px 14px}
+.tx-adv-b .ik-sub-lab{padding:14px 16px 0}
+.tx-adv-b .ap-opt{margin:6px 16px}
