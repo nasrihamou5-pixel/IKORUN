@@ -2709,7 +2709,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.12.1';
+const APP_VERSION='4.13.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -4909,14 +4909,14 @@ const TOUR_STEPS=[
   { key:'welcome' },
   { key:'home', page:'home', sel:()=>P.easyMode?'#s-home .ik-greet':'#s-home .hv7-greet' },
   { key:'loop', page:'home' },
-  { key:'sport', page:'sport', sel:['#tourPlanCta .btn','#s-sport .sp-plan .btn','#s-sport .sp-plan','#s-sport .seg-ctrl'] },
+  { key:'sport', page:'sport', sel:['#tourPlanCta','#s-sport .sp-plan .btn','#s-sport .sp-plan','#s-sport .seg-ctrl'] },
   { key:'adapt', page:'sport' },
   { key:'stats', page:'stats', sel:()=>P.easyMode?'#s-stats .stat-quatro':'#s-stats .seg-ctrl' },
   // L'onglet Outils est masqué en mode simplifié : on n'y emmène donc personne.
   { key:'outils', page:'outils', sel:'#s-outils .searchbox', skipIf:()=>!!P.easyMode },
   { key:'profil', page:'profil', sel:'#s-profil .pf-hero' },
   { key:'club', page:'profil', sel:'#s-profil .pf-club-row' },
-  { key:'final', page:'sport', sel:['#tourPlanCta .btn','#s-sport .sp-plan .btn','#s-sport .sp-plan'], final:true }
+  { key:'final', page:'sport', sel:['#tourPlanCta','#s-sport .sp-plan .btn','#s-sport .sp-plan'], final:true }
 ];
 let _tourOn=false, _tourIdx=0, _tourBusy=false;
 
@@ -5027,7 +5027,7 @@ async function showTourStep(startI){
 function tourNext(){
   if(_tourBusy) return;
   const step=TOUR_STEPS[_tourIdx];
-  if(step && step.final){ endTour(); openPlanSetup(); return; }
+  if(step && step.final){ endTour(); nav('sport'); return; }
   showTourStep(_tourIdx+1);
 }
 function endTour(){
@@ -8261,11 +8261,25 @@ function planHeroHTML(){
   h+='</div>';
   return h;
 }
+/* V4.13 — Sport sans plan : trois choix de même poids, aucun n'est imposé. */
+function sportStartHTML(){
+  const row=(ic,tk,sk,fn)=>'<button type="button" class="ikob-opt ico" onclick="'+fn+'">'+ikfTile(ic,38)+'<span class="ikob-opt-t"><b>'+t(tk)+'</b><small>'+t(sk)+'</small></span></button>';
+  return '<div class="card sp-start" id="tourPlanCta" style="padding:0;overflow:hidden"><div class="ikob-liste" style="border:0;border-radius:0;background:none">'
+    +row('bolt','spStartPlanT','spStartPlanS','openPlanSetup()')
+    +row('edit','spStartMineT','spStartMineS',"runSub='perso';renderSport()")
+    +row('run','spStartFreeT','spStartFreeS','freeRunOpen()')
+    +'</div></div>';
+}
+// « Juste courir » : une séance hors plan, saisie avec le même bilan que les autres.
+function freeRunOpen(){
+  const sessRef=Date.now()+Math.random();
+  openSessionDebrief({date:todayKey(),title:t('freeRunTitle'),km:0,pace:'',type:t('sessLabel_EF'),duration:0,plannedRpe:4,sessRef,free:true},'modified');
+}
 function renderRunning(){
   let h='<div class="seg-ctrl sub"><div class="seg-btn'+(runSub==='ikorun'?' on':'')+'" onclick="runSub=\'ikorun\';renderSport()">'+t('planIkorunPill')+'</div><div class="seg-btn'+(runSub==='perso'?' on':'')+'" onclick="runSub=\'perso\';renderSport()">'+t('myPlanPill')+'</div></div>';
   if(runSub==='ikorun'){
     if(!PLAN){
-      h+='<div class="card" id="tourPlanCta"><div class="empty"><div class="em-ic">'+ICN('bolt',36,'currentColor')+'</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">'+t('planIkorunTitle')+'</div><div style="font-size:13px;margin-bottom:16px">'+tp('planIkorunDescLong',(getUserVDOT()?fmt1(getUserVDOT()):t('vdotToBeCalculated')))+'</div><button class="btn" onclick="openPlanSetup()">'+t('configureGenerate')+'</button></div></div>';
+      h+=sportStartHTML();
     } else {
       h+=planHeroHTML();
       if(typeof injuryCardHTML==='function') h+=injuryCardHTML();
@@ -8390,7 +8404,7 @@ function renderSport(){
    rien à simplifier de plus. */
 function renderRunningSimple(){
   if(!PLAN){
-    return '<div class="card" id="tourPlanCta"><div class="empty"><div class="em-ic">'+ICN('bolt',36,'currentColor')+'</div><div style="font-weight:700;margin-bottom:6px;color:var(--snow)">'+t('planIkorunTitle')+'</div><div style="font-size:13px;margin-bottom:16px">'+t('planIkorunDescSimple')+'</div><button class="btn" onclick="openPlanSetup()">'+t('configureGenerate')+'</button></div></div>';
+    return sportStartHTML();
   }
   const tk=todayKey();
   const todaySess=PLAN.sessions.find(s=>s.date===tk);
