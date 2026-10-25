@@ -5851,3 +5851,8 @@ html[dir=rtl] .ikob-et-auto::after{transform-origin:right}
 .tx-adv-b .tx-row{padding:12px 16px 14px}
 .tx-adv-b .ik-sub-lab{padding:14px 16px 0}
 .tx-adv-b .ap-opt{margin:6px 16px}
+/* V4.13.5 — séparateur de phase : une ligne lumineuse qui s'efface, étiquette en couleur */
+.phase-head{display:flex;align-items:center;gap:12px;margin:34px 2px 6px;padding:0;border-radius:0;background:none;font-size:12px;letter-spacing:1.4px;white-space:nowrap}
+.phase-head::before{content:'';width:9px;height:9px;border-radius:50%;background:currentColor;flex:none;box-shadow:0 0 0 4px color-mix(in srgb,currentColor 18%,transparent),0 0 14px currentColor}
+.phase-head::after{content:'';flex:1;height:2px;border-radius:2px;background:linear-gradient(90deg,currentColor,color-mix(in srgb,currentColor 35%,transparent) 45%,transparent);opacity:.85;box-shadow:0 0 10px color-mix(in srgb,currentColor 55%,transparent)}
+html[dir="rtl"] .phase-head::after{background:linear-gradient(270deg,currentColor,color-mix(in srgb,currentColor 35%,transparent) 45%,transparent)}
