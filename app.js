@@ -2709,7 +2709,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.13.2';
+const APP_VERSION='4.13.3';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -12746,7 +12746,7 @@ async function convertGuestAccount(){
   _guestAuthing=false;
 }
 function pfLangHTML(){
-  return '<div class="pills">'+LANGS.map(l=>'<div class="pill '+(curLang()===l[0]?'on':'')+'" onclick="setLang(\''+l[0]+'\')">'+l[1]+' '+l[2]+'</div>').join('')+'</div>';
+  return '<div class="seg-ctrl sub ap-lang">'+LANGS.map(l=>'<div class="seg-btn'+(curLang()===l[0]?' on':'')+'" role="button" onclick="setLang(\''+l[0]+'\')">'+l[2]+'</div>').join('')+'</div>';
 }
 /* Petit switch soleil/lune utilisé directement dans la ligne "Thème" du profil */
 function pfThemeSwitchHTML(){
@@ -12781,13 +12781,17 @@ function pfAppearanceTail(lum){
   let s='<div class="lab ap-lab">'+t('theme')+'</div>'+
     '<div class="iks iks-lum"><input type="range" min="0" max="100" step="1" value="'+Math.round(lum)+'" aria-label="'+t('theme')+'" oninput="lumInput(this)" onchange="lumCommit(this)">'+
     '<div class="iks-ends"><span>'+ICN('moon',14)+t('modeDarkLab')+'</span><b id="lumNote">'+lumNote(lum)+'</b><span>'+t('modeLightLab')+ICN('sun',14)+'</span></div></div>';
-  s+='<div class="lab ap-lab">'+t('optionsLab')+'</div>'+
-     '<div class="ap-opt"><div><b>'+t('feteLab')+'</b><span>'+t('feteDesc')+'</span></div>'+
+  // V4.13.3 : le Ramadan et le réglage des fêtes musulmanes n'apparaissent que quand ils servent (Ramadan et ses jours voisins) — sauf pour le compte de développement
+  const hj=hijriToday()||{}, showRm=feteDevMode()||(hj.m===9)||(hj.m===8&&hj.d>=15),
+        showHij=showRm||(hj.m===10&&hj.d<=3)||(hj.m===12&&hj.d<=12)||(hj.m===11&&hj.d>=20);
+  s+='<div class="lab ap-lab">'+t('optionsLab')+'</div><div class="ik-grp">'+
+     '<div class="ik-row"><div class="ik-row-t"><b>'+t('feteLab')+'</b><small>'+t('feteDesc')+'</small></div>'+
      '<div class="toggle'+(feteEnabled()?' on':'')+'" onclick="P.fetes=!feteEnabled();saveAll();applyTheme();refreshPfSheet()"></div></div>'+
-     (feteEnabled()?'<button type="button" class="tx-open" style="margin:10px 0" onclick="openRamadan()"><span class="tx-open-ic">'+ICN('moon',20,'currentColor')+'</span><span><b>'+t('fete_ramadan')+'</b><small>'+t('rmProfileSub')+'</small></span>'+ICN('chevronR',16)+'</button>':'')+
-     (feteEnabled()?'<div class="fete-hij"><span>'+t('hijriAdjLab')+'</span><div class="ap-hint" style="margin:2px 0 8px">'+t('hijriAdjDesc')+'</div><div class="pills sub">'+[[1,'hijriAdjEarly'],[0,'hijriAdjStd'],[-1,'hijriAdjLate']].map(([v,k])=>'<div class="pill'+(hijriAdj()===v?' on':'')+'" role="button" onclick="setHijriAdj('+v+')">'+t(k)+'</div>').join('')+'</div></div>':'')+
+     (feteEnabled()&&showRm?'<div class="ik-row ik-link" role="button" onclick="openRamadan()"><span class="tx-open-ic">'+ICN('moon',20,'currentColor')+'</span><div class="ik-row-t"><b>'+t('fete_ramadan')+'</b><small>'+t('rmProfileSub')+'</small></div>'+ICN('chevronR',16)+'</div>':'')+
+     '</div>'+
+     (feteEnabled()&&showHij?'<div class="lab ap-lab">'+t('hijriAdjLab')+'</div><div class="ap-hint" style="margin:-4px 2px 10px">'+t('hijriAdjDesc')+'</div><div class="seg-ctrl sub">'+[[1,'hijriAdjEarly'],[0,'hijriAdjStd'],[-1,'hijriAdjLate']].map(([v,k])=>'<div class="seg-btn'+(hijriAdj()===v?' on':'')+'" role="button" onclick="setHijriAdj('+v+')">'+t(k)+'</div>').join('')+'</div>':'')+
      (feteDevMode()?'<div class="fete-try"><span>'+t('fetePreviewLab')+'</span><div class="pills sub">'+FETE_KEYS.map(k=>'<div class="pill" role="button" onclick="feteTry(\''+k+'\')">'+t('fete_'+k)+'</div>').join('')+'</div></div>':'')+
-     '<button class="btn ghost sm ap-intro" onclick="closeOv(\'ovProg\');setTimeout(()=>{ if(window.ikIntro) ikIntro(\'full\'); },260)">'+t('introReplayBtn')+'</button>';
+     '<button class="btn btn-soft ap-intro" onclick="closeOv(\'ovProg\');setTimeout(()=>{ if(window.ikIntro) ikIntro(\'full\'); },260)">'+t('introReplayBtn')+'</button>';
   return s;
 }
 /* ---------- MOLETTES LIBRES : MATIÈRE ET LUMINOSITÉ (V3.5.0) ----------
@@ -13026,29 +13030,33 @@ function pfNotifHTML(){
   } else if('Notification'in window && Notification.permission==='denied'){
     h+='<div class="tip" style="margin-bottom:16px">'+t('notifBlockedTip')+'</div>';
   }
-  h+='<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('trainReminders')+'</span><div class="toggle'+(P.notif!==false?' on':'')+'" onclick="toggleNotif(this)"></div></div>'+
-    '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('prayerNotifLabel')+'</span><div class="toggle'+(P.prayerNotif!==false?' on':'')+'" onclick="togglePrayerNotif(this)"></div></div>'+
-    '<div class="row" style="margin-bottom:4px"><span style="font-size:14px">'+t('socialNotifLabel')+'</span><div class="toggle'+(P.socialNotif===true?' on':'')+'" onclick="toggleSocialNotif(this)"></div></div>'+
-    '<div style="font-size:11.5px;color:var(--muted);line-height:1.45;margin-bottom:14px">'+t('socialNotifDesc')+'</div>'+
-    '<div class="row" style="margin-bottom:4px"><span style="font-size:14px">'+t('mcSetting')+'</span><div class="toggle'+(P.morningCheck!==false?' on':'')+'" role="switch" aria-checked="'+(P.morningCheck!==false)+'" aria-label="'+t('mcSetting')+'" onclick="P.morningCheck=(P.morningCheck===false);this.classList.toggle(\'on\',P.morningCheck);this.setAttribute(\'aria-checked\',P.morningCheck);DB.save(\'profile\',P);haptic()"></div></div>'+
-    '<div style="font-size:11.5px;color:var(--muted);line-height:1.45;margin-bottom:14px">'+t('mcSettingDesc')+'</div>'+
-    '<div class="row" style="margin-bottom:14px"><span style="font-size:14px">'+t('sounds')+'</span><div class="toggle'+(P.sounds!==false?' on':'')+'" onclick="toggleSounds(this)"></div></div>'+
-    // Le volume et l'écoute n'apparaissent que si les sons sont actifs : un
-    // curseur sur un réglage éteint ne veut rien dire.
+  // V4.13.3 : réglages regroupés en cartes (une ligne = un titre, une phrase, un interrupteur)
+  const nrow=(ti,de,tg)=>'<div class="ik-row"><div class="ik-row-t"><b>'+ti+'</b>'+(de?'<small>'+de+'</small>':'')+'</div>'+tg+'</div>';
+  h+='<div class="lab ap-lab" style="margin-top:0">'+t('ntGrpRemind')+'</div><div class="ik-grp">'+
+    nrow(t('trainReminders'),'','<div class="toggle'+(P.notif!==false?' on':'')+'" onclick="toggleNotif(this)"></div>')+
+    nrow(t('prayerNotifLabel'),'','<div class="toggle'+(P.prayerNotif!==false?' on':'')+'" onclick="togglePrayerNotif(this)"></div>')+
+    nrow(t('mcSetting'),t('mcSettingDesc'),'<div class="toggle'+(P.morningCheck!==false?' on':'')+'" role="switch" aria-checked="'+(P.morningCheck!==false)+'" aria-label="'+t('mcSetting')+'" onclick="P.morningCheck=(P.morningCheck===false);this.classList.toggle(\'on\',P.morningCheck);this.setAttribute(\'aria-checked\',P.morningCheck);DB.save(\'profile\',P);haptic()"></div>')+
+  '</div>'+
+  '<div class="lab ap-lab">'+t('ntGrpSocial')+'</div><div class="ik-grp">'+
+    nrow(t('socialNotifLabel'),t('socialNotifDesc'),'<div class="toggle'+(P.socialNotif===true?' on':'')+'" onclick="toggleSocialNotif(this)"></div>')+
+  '</div>'+
+  '<div class="lab ap-lab">'+t('ntGrpSound')+'</div><div class="ik-grp">'+
+    nrow(t('sounds'),'','<div class="toggle'+(P.sounds!==false?' on':'')+'" onclick="toggleSounds(this)"></div>')+
+    // Le volume et l'écoute n'apparaissent que si les sons sont actifs : un curseur sur un réglage éteint ne veut rien dire.
     (P.sounds!==false
-      ? '<div style="margin-bottom:14px"><div style="font-size:13px;color:var(--muted);margin-bottom:8px">'+t('sndPackLab')+'</div>'+
+      ? '<div class="ik-sub"><div class="ik-sub-lab">'+t('sndPackLab')+'</div>'+
           '<div class="seg-ctrl sub">'+[['soft','sndPackSoft'],['signature','sndPackSig']].map(([k,l])=>'<div class="seg-btn'+(sndPack()===k?' on':'')+'" onclick="setSndPack(\''+k+'\')">'+t(l)+'</div>').join('')+'</div>'+
-          '<div style="font-size:11.5px;color:var(--muted);line-height:1.45;margin-top:7px">'+t(sndPack()==='signature'?'sndPackSigDesc':'sndPackSoftDesc')+'</div></div>'+
-        '<div style="margin-bottom:14px">'+
-          '<div class="row" style="margin-bottom:7px"><span style="font-size:13px;color:var(--muted)">'+t('soundVolumeLab')+'</span>'+
-            '<span class="num" style="font-size:12px;color:var(--et,var(--e))" id="sndVolVal">'+Math.round(soundVol()*100)+'%</span></div>'+
+          '<div class="ik-sub-hint">'+t(sndPack()==='signature'?'sndPackSigDesc':'sndPackSoftDesc')+'</div></div>'+
+        '<div class="ik-sub"><div class="row" style="margin-bottom:8px"><span class="ik-sub-lab" style="margin:0">'+t('soundVolumeLab')+'</span>'+
+            '<span class="num" style="font-size:12.5px;font-weight:700;color:var(--et,var(--e))" id="sndVolVal">'+Math.round(soundVol()*100)+'%</span></div>'+
           '<input type="range" min="0" max="100" step="5" value="'+Math.round(soundVol()*100)+'" style="width:100%" oninput="setSoundVol(this.value)">'+
-          '<div class="pills" style="margin-top:10px;flex-wrap:wrap">'+
+          '<div class="pills" style="margin-top:12px;flex-wrap:wrap">'+
             [['start','sndTest1'],['tick','sndTest2'],['goal','sndTest3'],['medal','sndTest4'],['finish','sndTest5']]
               .map(x=>'<div class="pill" onclick="previewSfx(\''+x[0]+'\')">'+t(x[1])+'</div>').join('')+
           '</div>'+
         '</div>'
-      : '');
+      : '')+
+  '</div>';
   return h;
 }
 /* ---------- COMMENTAIRE / AVIS ----------
@@ -13083,15 +13091,15 @@ function sendFeedback(){
 function pfDataHTML(){
   return '<div class="lab" style="margin:20px 2px 10px">'+t('dataLab')+'</div><div class="card" style="padding:16px">'+
       '<div style="font-size:11.5px;color:var(--muted);margin-bottom:14px;line-height:1.5">'+t('exportImportDesc')+'</div>'+
-      '<button class="btn ghost sm" style="width:100%;margin-bottom:8px" onclick="exportData()">'+t('exportData')+'</button>'+
-      '<button class="btn ghost sm" style="width:100%" onclick="importData()">'+t('importData')+'</button>'+
+      '<button class="btn btn-soft" style="margin-bottom:8px" onclick="exportData()">'+t('exportData')+'</button>'+
+      '<button class="btn btn-soft" onclick="importData()">'+t('importData')+'</button>'+
       (window.isGuestUser?'':storageStatusHTML())+
     '</div>'+
     ikAnalyticsCardHTML()+ // V4.0.0 : statistiques anonymes, refus possible (analytics/track.js)
     '<div class="card" style="padding:16px;margin-top:12px;border-color:rgba(255,92,108,.35);background:linear-gradient(rgba(255,92,108,.07),rgba(255,92,108,.07)),var(--lg-fill)">'+
       '<div class="card-t" style="color:var(--bad)">'+ICN('warning',15,'var(--bad)')+t('dangerZoneLab')+'</div>'+
       '<div style="font-size:11.5px;color:var(--muted);margin-bottom:12px;line-height:1.5">'+t('resetDesc')+'</div>'+
-      '<button class="btn ghost sm" style="width:100%;color:var(--bad)" onclick="resetAll()">'+t('resetApp')+'</button>'+
+      '<button class="btn btn-soft btn-danger" onclick="resetAll()">'+t('resetApp')+'</button>'+
     '</div>';
 }
 /* ---- Photo & Bio ---- */

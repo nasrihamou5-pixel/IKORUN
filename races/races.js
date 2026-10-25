@@ -112,7 +112,7 @@
       (RC.view==='list'?chip(t('rcPast'),RC.f.past,'racesFilter(\'past\','+(!RC.f.past)+')'):'')+'</div>';
     h+='<div id="rcRes" aria-live="polite">'+resultsHTML()+'</div>';
     h+='<div class="rc-foot">';
-    if(!RC.pick) h+='<button type="button" class="btn ghost" onclick="raceProposeOpen()">'+ICN('plus',16)+' '+t('rcPropose')+'</button>';
+    if(!RC.pick) h+='<button type="button" class="btn btn-soft" onclick="raceProposeOpen()">'+ICN('plus',16)+' '+t('rcPropose')+'</button>';
     if(RC.admin) h+='<button type="button" class="btn ghost" onclick="raceAdminOpen()">'+ICN('gear',16)+' '+t('rcAdmin')+'</button>';
     h+='<p class="ad-foot">'+t('rcSourcesNote')+'</p></div>';
     body.innerHTML=h;
