@@ -2709,7 +2709,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.13.5';
+const APP_VERSION='4.13.6';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -8718,14 +8718,14 @@ function openRunSheet(id){
   // en dur — celui-ci n'est que l'état visuel correspondant).
   if(s.done) h+='<div class="badge" style="background:rgba(51,211,153,.18);color:var(--ok);width:100%;justify-content:center;padding:14px;border-radius:18px;margin-bottom:12px">'+t('sessionCompleted')+'</div>'+
     '<button class="btn ghost sm" style="margin-bottom:18px" onclick="openShareCard(\'plan\','+s.id+')">'+ICN('share',15)+' '+t('shShareSession')+'</button>';
-  else if(s.date>todayKey()) h+='<div class="badge" style="background:var(--lg-well);box-shadow:var(--lg-well-rim);color:var(--muted);width:100%;justify-content:center;padding:14px;border-radius:18px;margin-bottom:18px">'+t('sessionNotYetLabel')+'</div>';
+  else if(s.date>todayKey()){ /* V4.13.6 : séance à venir — rien à dire, le bouton « terminé » n'apparaît simplement pas */ }
   else if(s.type!=='Repos') h+='<button class="btn" style="margin-bottom:18px" onclick="markRunDone()">'+t(s.missed?'missedActuallyDone':'markCompleted')+'</button>';
   // Personnalisation : uniquement pour une séance future non encore validée — une fois
   // done, ou dans le passé, s.km/s.date ont déjà servi à créditer le bilan ou à détecter
   // une séance manquée, les modifier après coup désynchroniserait l'historique.
-  if(!s.done && s.date>=todayKey()) h+='<button class="btn ghost sm" style="margin-bottom:14px" onclick="openPlanCustomize('+s.id+')">'+ICN('edit',15)+' '+t('customizeSessionBtn')+'</button>';
 
-  if(dt) h+='<div class="rs-sec"><div class="rs-sec-lab">'+t('rsObjLab')+'</div><div class="rs-obj-txt" style="margin:0">'+dt.objectif+'</div></div>';
+
+
 
   // ALLURE CIBLE — celle de la partie principale (± 5 s), et le profil de la séance segment par
   // segment (hauteur = vitesse, largeur = durée) au lieu d'une courbe décorative.
@@ -8733,7 +8733,7 @@ function openRunSheet(id){
     const sg=planSegs(s), fast=Math.min(...sg.map(x=>x.sec/x.km)), slow=Math.max(...sg.map(x=>x.sec/x.km));
     const tot=sg.reduce((q,x)=>q+x.sec,0)||1;
     h+='<div class="card rs-target"><div class="rs-target-lab">'+t('targetPaceLabel')+'</div><div class="rs-target-v">'+spkToStr(mainPart.pace-5)+' – '+spkToStr(mainPart.pace+5)+' /km</div>'
-      +'<div class="rs-target-spark">'+sg.map(x=>{ const v=x.sec/x.km; return '<b style="flex:'+Math.max(0.6,x.sec/tot*40).toFixed(2)+';height:'+(slow>fast?Math.round(14+((slow-v)/(slow-fast))*86):60)+'%"></b>'; }).join('')+'</div></div>';
+      +(sg.length>1?'<div class="rs-target-spark">'+sg.map(x=>{ const v=x.sec/x.km; return '<b style="flex:'+Math.max(0.6,x.sec/tot*40).toFixed(2)+';height:'+(slow>fast?Math.round(14+((slow-v)/(slow-fast))*86):60)+'%"></b>'; }).join('')+'</div>':'')+'</div>';
   }
 
   // LA SÉANCE (V4.8) : échauffement chiffré (durée + allure), tableau des répétitions (allure et temps de chaque segment, récupération),
@@ -8741,16 +8741,18 @@ function openRunSheet(id){
   { const sgs=planSegs(s), wuS=sgs.find(x=>x.k==='wu'), cdS=sgs.find(x=>x.k==='cd');
     const fl=(lab,sg)=>'<div class="rs-fl"><b>'+lab+'</b><span>'+tp('rsMinPace',Math.round(sg.sec/60),spkToStr(sg.sec/sg.km))+'</span></div>';
     const tbl=seriesTableHTML(liveSeries(s));
-    h+='<div class="rs-sec"><div class="rs-sec-lab">'+t('rsYourSession')+'</div>';
+    const structured=!!(wuS||cdS||tbl||!dt);
+    if(structured) h+='<div class="rs-sec"><div class="rs-sec-lab">'+t('rsYourSession')+'</div>';
+    if(structured){
     if(wuS) h+=fl(t('warmupLabel'),wuS);
     if(tbl) h+=tbl;
     else if(!dt) h+='<div class="chrome-box"><div class="cb-body">'+escHtml(s.desc||'')+'</div></div>';
     else { const run=sgs.filter(x=>x.k==='run'||x.k==='work'); if(run.length){ const tk=run.reduce((a,x)=>a+x.km,0), ts=run.reduce((a,x)=>a+x.sec,0); h+='<div class="rs-fl"><b>'+t('rsContinuous')+'</b><span>'+tp('rsKmPace',hKm(Math.round(tk*10)/10),spkToStr(ts/tk))+'</span></div>'; } }
     if(cdS) h+=fl(t('cooldownLabel'),cdS);
-    h+='</div>';
+    h+='</div>'; }
     if(dt){
       const one=x=>String(x||'').split(/(?<=[.!?])\s/)[0];
-      { let inf=''; if(dt.why) inf+='<div class="rs-why"><b>'+t('whySessionLabel')+'</b> '+escHtml(one(dt.why))+'</div>';
+      { let inf=''; if(dt.objectif) inf+='<div class="rs-why"><b>'+t('rsObjLab')+'</b> '+escHtml(String(dt.objectif))+'</div>';
         if(dt.tips&&dt.tips[0]) inf+='<div class="rs-why"><b>'+t('adviceLabel')+'</b> '+escHtml(String(dt.tips[0]))+'</div>';
         if(inf) h+='<div class="rs-sec rs-info">'+inf+'</div>'; }
       let d='';
@@ -8766,6 +8768,7 @@ function openRunSheet(id){
       h+='<details class="ex-det"><summary>'+t('rsDetails')+'</summary>'+d+'</details>';
     }
   }
+  if(!s.done && s.date>=todayKey()) h+='<button class="btn btn-soft" style="margin-top:14px" onclick="openPlanCustomize('+s.id+')">'+ICN('edit',15)+' '+t('customizeSessionBtn')+'</button>';
   $('#sheetBody').innerHTML=h;
   openOv('ovSheet');
   wxMountScenes($('#sheetBody'));
