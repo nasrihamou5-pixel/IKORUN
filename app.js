@@ -2709,7 +2709,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.13.1';
+const APP_VERSION='4.13.2';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -9864,7 +9864,7 @@ function finishLive(){
     if(vol>0){ if(!PREFS.exHist[e.name])PREFS.exHist[e.name]=[]; PREFS.exHist[e.name].push({date:todayKey(),vol}); PREFS.exHist[e.name]=PREFS.exHist[e.name].slice(-30); }
   }});
   DB.remove('live_active');
-  saveAll(); refreshXP({animate:true}); burst(); sfx('finish'); stopBgActivity();
+  saveAll(); refreshXP({animate:true}); sfx('finish'); stopBgActivity();
   // XP réellement gagnée (le plafond quotidien peut en retirer une partie) au lieu
   // d'un « +50 XP » écrit en dur dans la traduction.
   const xpGain=Math.max(0,Math.round(((XP&&XP.total)||0)-xpBefore));
@@ -11174,7 +11174,7 @@ function pomoToggle(){
       const r=$('#pmRing'),n=$('#pmNum'); const col=pomoState.phase==='work'?'var(--bad)':'var(--ok)';
       ringSet(r,180,pomoState.left/pomoLen(pomoState.phase)*100,12,col); orbSet('pmOrb',pomoState.left/pomoLen(pomoState.phase),col); if(n)n.textContent=fmtMS(pomoState.left);
     }
-    if(pomoState.left<=0){ clearInterval(pomoState.iv); pomoState.running=false; pomoState.endAt=null; burst(); sfx('finish');
+    if(pomoState.left<=0){ clearInterval(pomoState.iv); pomoState.running=false; pomoState.endAt=null; sfx('finish');
       try{ if(navigator.vibrate) navigator.vibrate([120,80,120]); }catch(e){}
       if(pomoState.phase==='work'){ pomoState.count++; pomoState.phase=(pomoState.count%4===0)?'long':'short'; toast(t('deservedBreak')); }
       else { pomoState.phase='work'; toast(t('backToWork')); }
@@ -11465,7 +11465,7 @@ function timerToggle(){
     ringSet(r,180,pct,12,col); orbSet('tmOrb',pct/100,col); if(n){ if(n.textContent!==txt && timer.left>0 && timer.left<=10) ikBump(n); n.textContent=txt; }
     if(timer.left>0 && timer.left<=3){ try{ if(navigator.vibrate) navigator.vibrate(28); }catch(e){} }
     if(r&&r.parentElement) r.parentElement.classList.toggle('ik-urgent',timer.left>0&&timer.left<=10);
-    if(timer.left<=0){ const w=r&&r.parentElement; clearInterval(timer.iv); timer.running=false; timer.endAt=null; burst(); stopBgActivity(); startAlarm(t('timerDoneTitle'),t('timeUpMsg')); renderTimerIfVisible(); ikShock(document.querySelector('#tmRing')&&document.querySelector('#tmRing').parentElement||w); }
+    if(timer.left<=0){ const w=r&&r.parentElement; clearInterval(timer.iv); timer.running=false; timer.endAt=null; stopBgActivity(); startAlarm(t('timerDoneTitle'),t('timeUpMsg')); renderTimerIfVisible(); ikShock(document.querySelector('#tmRing')&&document.querySelector('#tmRing').parentElement||w); }
   },250);
 }
 function resetTimer(){ clearInterval(timer.iv); timer.running=false; timer.endAt=null; stopAlarm(); stopBgActivity(); timer.left=timer.total=timer.m*60+timer.s||300; renderTimerIfVisible(); ikIslandKick(); }
@@ -11811,7 +11811,7 @@ function toggleFeteToday(){
 // Première ouverture de la journée : un feu de confettis aux couleurs de la fête et sa mélodie.
 // Les nuits spirituelles (Nuit du Destin, Isra wal Mi'raj) restent sobres : pas de confettis,
 // juste la mélodie et une vibration légère — ce ne sont pas des fêtes à confettis.
-const FETE_QUIET=['qadr','isra'];
+const FETE_QUIET=['qadr','isra','record'];   // V4.13.2 : un record battu en séance ne lance plus de confettis
 function celebrateFete(force){
   if(!feteOn()) return;
   const k=feteToday(), key='ik_fete_'+k+'_'+todayKey();
