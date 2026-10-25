@@ -5784,3 +5784,35 @@ html[dir=rtl] .ikob-et-auto::after{transform-origin:right}
 .pf-tile b{font-family:'Unbounded',system-ui,sans-serif;font-size:17px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
 .pf-tile b small{font-size:11px;font-weight:700;color:var(--muted)}
 .pf-tile span{font-size:11.5px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+
+/* V4.13.1 — fiche séance et liste du plan : des blocs bien délimités */
+.rs-hero{padding:18px 16px 8px;margin:0 0 14px;border-radius:22px;background:var(--glass-bg);border:1px solid var(--glass-border-soft);box-shadow:var(--sh-sm)}
+.rs-hero .rs-stats{margin:16px 0 8px;padding-top:16px;border-top:1px solid var(--hair)}
+.rs-sec{margin:0 0 12px;padding:14px;border-radius:18px;background:var(--s2);border:1px solid var(--hair)}
+.rs-sec-lab{margin:0 0 10px;font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.rs-sec .rs-fl{background:var(--s1,var(--bg));margin:0 0 8px}
+.rs-sec .rs-fl:last-child{margin-bottom:0}
+.rs-info{position:relative;overflow:hidden}
+.rs-info::before{content:'';position:absolute;inset-block:0;inset-inline-start:0;width:3px;background:var(--e)}
+.rs-info .rs-why:last-child{margin-bottom:0}
+.rs-target{border-radius:18px}
+.ex-det{margin:12px 0 0;padding:4px 14px 6px;border:1px solid var(--hair);border-radius:18px;background:var(--s2)}
+.ex-det summary{padding:10px 0}
+.ex-det .rs-d{margin:0;padding:11px 0;border-top:1px solid var(--hair);line-height:1.5}
+.ex-det .rs-d b{display:block;margin-bottom:3px;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ex-det .rs-d.bad{margin:6px -6px 6px;padding:11px 10px;border:1px solid color-mix(in srgb,var(--bad) 30%,transparent);border-radius:14px;background:color-mix(in srgb,var(--bad) 8%,transparent)}
+.ex-det .rs-d.bad b{color:var(--bad)}
+.ex-det .cb-body{font-size:13px}
+.wk-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:20px 2px 10px;padding-bottom:8px;border-bottom:1px solid var(--hair)}
+.wk-t{font-size:13px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--snow)}
+.wk-m{font-size:12px;font-weight:600;color:var(--muted)}
+.phase-head{margin:28px 0 2px;padding:9px 14px;border-radius:14px;background:color-mix(in srgb,currentColor 12%,transparent)}
+.phase-head::before{content:'';width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}
+.sess .row{align-items:center;gap:12px}
+.sess-d{flex:none;width:46px;padding:7px 0;border-radius:13px;text-align:center;background:color-mix(in srgb,var(--sess-c,var(--e)) 15%,transparent)}
+.sess-d b{display:block;font-size:18px;font-weight:800;line-height:1.1;color:var(--snow)}
+.sess-d span{display:block;margin-top:2px;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.sess-body{flex:1;min-width:0}
+.sess{padding:11px 14px 11px 17px;margin-bottom:10px;border-radius:18px}
+.ex-det .rs-part{margin:6px 0 0}.ex-det .rs-d .rs-part:first-of-type{margin-top:8px}
+.ex-det .rs-part b{display:inline;margin:0;font-size:inherit;font-weight:700;letter-spacing:0;text-transform:none;color:var(--snow)}
