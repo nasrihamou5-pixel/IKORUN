@@ -194,9 +194,10 @@ function wxSessionHTML(s){
     '<div class="wx-main"><b class="wx-t">'+Math.round(ws.t)+'°</b><div class="wx-meta"><span>'+tp('wxFeels',Math.round(ws.feel!=null?ws.feel:ws.t))+'</span><span>'+tp('wxDew',Math.round(ws.dew))+'</span><span>'+ICN('wind',12)+' '+Math.round(ws.wind||0)+' km/h</span></div></div>';
   if(pct>=0.5){
     const parts=planPaceParts(s).filter(p=>p.k==='work'||p.k==='run');
-    h+='<div class="wx-corr"><b>'+tp('wxCorrTitle',fmt1(pct))+'</b><span>'+parts.map(p=>escHtml(planPartLabel(p,s))+' <bdi dir="ltr">'+spkToStr(p.pace)+' → '+spkToStr(wxPace(p.pace,ws.hc.corr))+'/km</bdi>').join(' · ')+'</span><small>'+tp('wxCorrWhy',ws.hc.sum)+'</small></div>';
+    h+='<div class="wx-corr"><b>'+tp('wxCorrTitle',fmt1(pct))+'</b><span>'+parts.map(p=>escHtml(planPartLabel(p,s))+' <bdi dir="ltr">'+spkToStr(p.pace)+' → '+spkToStr(wxPace(p.pace,ws.hc.corr))+'/km</bdi>').join(' · ')+'</span></div>';
   }
-  if(adv.length) h+='<ul class="wx-adv">'+adv.map(a=>'<li class="'+a.lvl+'">'+escHtml(tp(a.k,...a.p))+'</li>').join('')+'</ul>';
+  const advS=adv.filter(a=>!(pct>=0.5&&a.k==='wxAdvHeat')).slice(0,2);
+  if(advS.length) h+='<ul class="wx-adv">'+advS.map(a=>'<li class="'+a.lvl+'">'+escHtml(tp(a.k,...a.p))+'</li>').join('')+'</ul>';
   return h+'</div></div>';
 }
 /* ---------- fiche météo ---------- */

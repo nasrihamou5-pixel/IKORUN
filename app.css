@@ -5856,3 +5856,9 @@ html[dir=rtl] .ikob-et-auto::after{transform-origin:right}
 .phase-head::before{content:'';width:9px;height:9px;border-radius:50%;background:currentColor;flex:none;box-shadow:0 0 0 4px color-mix(in srgb,currentColor 18%,transparent),0 0 14px currentColor}
 .phase-head::after{content:'';flex:1;height:2px;border-radius:2px;background:linear-gradient(90deg,currentColor,color-mix(in srgb,currentColor 35%,transparent) 45%,transparent);opacity:.85;box-shadow:0 0 10px color-mix(in srgb,currentColor 55%,transparent)}
 html[dir="rtl"] .phase-head::after{background:linear-gradient(270deg,currentColor,color-mix(in srgb,currentColor 35%,transparent) 45%,transparent)}
+/* V4.13.6 — le bouton doux reste doux quelle que soit la matière choisie */
+html .btn.btn-soft{background:var(--glass-bg)!important;background-image:none!important;box-shadow:none!important;color:var(--snow)!important;text-shadow:none!important}
+html .btn.btn-soft.btn-danger{color:var(--bad)!important}
+html[data-mode] .btn.btn-soft:not(#_):not(#__){background:var(--glass-bg) !important;background-image:none !important;border:1px solid var(--hair2) !important;box-shadow:none !important;color:var(--snow) !important}
+html[data-mode] .btn.btn-soft.btn-danger:not(#_):not(#__){color:var(--bad) !important}
+html[data-mode] .btn.btn-soft:not(#_)::before,html[data-mode] .btn.btn-soft:not(#_)::after{display:none !important}
