@@ -6039,3 +6039,60 @@ html[dir="rtl"] .sn-scale{direction:ltr}
 .sn-note{display:flex;align-items:center;gap:10px;padding:13px 16px;border-radius:16px;background:var(--glass-bg);border:1px solid var(--hair2);font-size:13px;color:var(--muted);line-height:1.4}
 .sn-note svg{flex:none;color:var(--e2)}
 .sn-tr,.sn-r b,.sn-v,.sn-big{unicode-bidi:isolate;direction:ltr}
+/* ===================================================================
+   V4.16.0 — STYLE « ÉPURÉ » (Profil › Apparence › Style). Même couleurs, même verre de fond,
+   mais des surfaces plates : pas de reflet, pas de liseré lumineux, pas d'ombre portée, des
+   boutons pleins sans dégradé. Tout passe par les jetons de matière (--lg-*) : chaque écran suit.
+   =================================================================== */
+html[data-flat]:not(#_){
+  --lg-fill:rgba(var(--s1-rgb),.84);
+  --lg-body:linear-gradient(transparent,transparent);
+  --lg-spec:linear-gradient(transparent,transparent);
+  --lg-spec-sm:linear-gradient(transparent,transparent);
+  --lg-rim:inset 0 0 0 1px rgba(255,255,255,.07);
+  --lg-tint-rim:inset 0 0 0 1px rgba(255,255,255,.1);
+  --lg-drop:none; --lg-drop-sm:none;
+  --lg-blur:blur(14px) saturate(140%);
+  --lg-ctl:rgba(255,255,255,.045);
+  --lg-well:rgba(0,0,0,.22); --lg-well-rim:inset 0 0 0 1px rgba(255,255,255,.06);
+  --glass-bg:var(--lg-fill); --glass-shine:var(--lg-spec); --grad-card:var(--lg-body);
+  --glass-shadow:none; --ring-soft:var(--lg-rim);
+  --grad-btn:linear-gradient(var(--e),var(--e));
+  --sh-e:none; --sh-sm:none; --sh-md:none;
+  --r-lg:20px; --r-md:16px;
+}
+html[data-flat][data-mode="light"]:not(#_){
+  --lg-fill:rgba(255,255,255,.9);
+  --lg-rim:inset 0 0 0 1px rgba(20,30,50,.08);
+  --lg-tint-rim:inset 0 0 0 1px rgba(255,255,255,.2);
+  --lg-ctl:rgba(255,255,255,.8);
+  --lg-well:rgba(20,30,50,.05); --lg-well-rim:inset 0 0 0 1px rgba(20,30,50,.06);
+}
+html[data-flat]:not(#_) .btn::before,html[data-flat]:not(#_) .btn::after,
+html[data-flat]:not(#_) .card::before,html[data-flat]:not(#_) .card::after{display:none !important}
+html[data-flat]:not(#_) .btn{text-shadow:none !important;box-shadow:none !important;filter:none !important}
+html[data-flat]:not(#_) .btn:not(.ghost):not(.btn-soft):not(.danger){background:var(--e) !important;color:var(--accent-ink,#fff) !important}
+html[data-flat]:not(#_) .btn.ghost{background:var(--lg-fill) !important;background-image:none !important;border:1px solid var(--hair2) !important;color:var(--snow) !important}
+html[data-flat]:not(#_) .pill,html[data-flat]:not(#_) .seg-btn,html[data-flat]:not(#_) .live-ic,html[data-flat]:not(#_) .hv7-icon-btn,html[data-flat]:not(#_) .hv7-people,html[data-flat]:not(#_) .ik-back,html[data-flat]:not(#_) .ov-head .x{background-image:none !important;box-shadow:inset 0 0 0 1px var(--hair2) !important;text-shadow:none !important}
+html[data-flat]:not(#_) .pill.on,html[data-flat]:not(#_) .seg-btn.on{background:var(--e) !important;color:var(--accent-ink,#fff) !important;box-shadow:none !important}
+html[data-flat]:not(#_) .card,html[data-flat]:not(#_) .hv7-day,html[data-flat]:not(#_) .mus-card,html[data-flat]:not(#_) .sbox,html[data-flat]:not(#_) .kduo-card,html[data-flat]:not(#_) .grp-card,html[data-flat]:not(#_) .exg-card,html[data-flat]:not(#_) .hv7-ktile{box-shadow:inset 0 0 0 1px rgba(255,255,255,.07) !important;background-image:none !important}
+html[data-flat][data-mode="light"]:not(#_) .card,html[data-flat][data-mode="light"]:not(#_) .hv7-day,html[data-flat][data-mode="light"]:not(#_) .mus-card,html[data-flat][data-mode="light"]:not(#_) .sbox,html[data-flat][data-mode="light"]:not(#_) .kduo-card,html[data-flat][data-mode="light"]:not(#_) .grp-card,html[data-flat][data-mode="light"]:not(#_) .exg-card,html[data-flat][data-mode="light"]:not(#_) .hv7-ktile{box-shadow:inset 0 0 0 1px rgba(20,30,50,.08) !important}
+html[data-flat]:not(#_) .setcheck{box-shadow:none !important;background-image:none !important}
+html[data-flat]:not(#_) .toggle{box-shadow:none !important}
+/* aperçu dans Apparence */
+.ap-style{display:flex;gap:10px;margin:0 0 12px}
+.ap-style-t{flex:1;padding:12px;border-radius:18px;border:1px solid var(--hair2);background:var(--glass-bg);cursor:pointer;text-align:start;font:inherit;color:var(--snow)}
+.ap-style-t.on{border-color:var(--e);box-shadow:0 0 0 1px var(--e) inset}
+.ap-style-t b{display:block;font-size:14px;font-weight:800;margin-top:9px}
+.ap-style-t small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.35}
+.ap-st-prev{height:54px;border-radius:12px;padding:9px;display:flex;flex-direction:column;gap:6px;justify-content:center}
+.ap-st-prev i{display:block;height:7px;border-radius:4px;background:rgba(255,255,255,.22)}
+.ap-st-prev i:nth-child(2){width:60%}
+.ap-st-prev em{display:block;height:12px;width:46%;border-radius:999px;background:var(--e)}
+.ap-st-prev.glass{background:radial-gradient(130% 80% at 10% -18%,rgba(255,255,255,.22),transparent 55%),linear-gradient(160deg,rgba(var(--e-rgb),.25),rgba(var(--s1-rgb),.6));box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 8px 18px -10px rgba(0,0,0,.6)}
+.ap-st-prev.glass em{background:linear-gradient(180deg,rgba(255,255,255,.4),var(--e) 45%);box-shadow:0 4px 10px -4px rgba(var(--e-rgb),.8)}
+.ap-st-prev.flat{background:rgba(var(--s1-rgb),.9);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+html[data-flat]:not(#_) #nav>div:not(.nb){background:color-mix(in srgb,var(--e) 20%,transparent) !important;background-image:none !important;box-shadow:none !important}
+html[data-flat]:not(#_) #nav::before{display:none !important}
+html[data-flat]:not(#_) .sp-acts button:not(.lnk),html[data-flat]:not(#_) .tb-gear,html[data-flat]:not(#_) .chbtn,html[data-flat]:not(#_) .hv7-act.ghost,html[data-flat]:not(#_) .ik-pbtn:not(.ok),html[data-flat]:not(#_) .mini-ic{background:var(--lg-fill) !important;background-image:none !important;box-shadow:inset 0 0 0 1px var(--hair2) !important;text-shadow:none !important}
+html[data-flat]:not(#_) .hv7-act.main,html[data-flat]:not(#_) .ik-pbtn.ok,html[data-flat]:not(#_) .eo-b{background:var(--e) !important;background-image:none !important;box-shadow:none !important;text-shadow:none !important}
