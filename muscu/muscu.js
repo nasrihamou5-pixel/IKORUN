@@ -291,12 +291,21 @@ function IK_PTF(){ return [
 /* V4.25.0 — les programmes par défaut et les programmes tout faits deviennent de vrais programmes
    (copiés une fois dans CUSTOM, marqués def) : on peut les ouvrir, modifier, renommer, supprimer.
    « Restaurer » remet ceux qui ont été supprimés. */
-function ikDefCount(){ return PROGS_DEF().length+IK_PTF().reduce((a,p)=>a+1+p.s.length,0); }
+// V4.25.3 : les séances de base (Poitrine & Triceps, Dos & Biceps…) sont rangées dans deux programmes
+const IK_DEFSETS=[{id:'split3',days:3,lv:2,eq:'genEqGym',s:['A','B','C']},{id:'split4',days:4,lv:2,eq:'genEqGym',s:['A','D','F','E']}];
+function ikDefCount(){ return IK_DEFSETS.reduce((a,p)=>a+1+p.s.length,0)+IK_PTF().reduce((a,p)=>a+1+p.s.length,0); }
 function ikSeedDefaults(force){
-  if(!PREFS||(PREFS.defSeeded&&!force)) return;
-  const have=new Set(CUSTOM.filter(x=>x.def).map(x=>x.def));
-  PROGS_DEF().forEach(p=>{ const k='prog:'+p.id; if(have.has(k)) return;
-    CUSTOM.push(Object.assign(JSON.parse(JSON.stringify(p)),{id:'D_'+p.id,kind:'muscu',def:k})); });
+  if(!PREFS) return;
+  // séances de base restées seules (avant V4.25.3) : retirées si tu ne les as pas modifiées
+  if(!PREFS.defSets){ const P0={}; PROGS_DEF().forEach(p=>{ P0['prog:'+p.id]=JSON.stringify(p.ex); });
+    CUSTOM=CUSTOM.filter(x=>!(x.def&&/^prog:/.test(x.def)&&!x.plan&&P0[x.def]===JSON.stringify(x.ex)));
+    PREFS.defSets=1; if(PREFS.defSeeded) force=true; }
+  if(PREFS.defSeeded&&!force){ try{ DB.save('prefs',PREFS); }catch(_){} return; }
+  const have=new Set(CUSTOM.filter(x=>x.def).map(x=>x.def)), PD=PROGS_DEF();
+  IK_DEFSETS.forEach(d=>{ const k='set:'+d.id, pid='D_'+d.id;
+    if(!have.has(k)) CUSTOM.push({id:pid,kind:'muscuplan',name:t('defSet_'+d.id),def:k});
+    d.s.forEach((sid,i)=>{ const ks=k+':'+i, p=PD.find(x=>x.id===sid); if(have.has(ks)||!p) return;
+      CUSTOM.push(Object.assign(JSON.parse(JSON.stringify(p)),{id:pid+'_'+i,kind:'muscu',plan:pid,def:ks})); }); });
   IK_PTF().forEach(p=>{ const k='ptf:'+p.id, pid='D_'+p.id, obj={genGoalForce:'Force',genGoalFit:'Maintien'}[p.goal]||'Masse';
     if(!have.has(k)) CUSTOM.push({id:pid,kind:'muscuplan',name:t('ptf_'+p.id),def:k});
     p.s.forEach(([title,xs],i)=>{ const ks=k+':'+i; if(have.has(ks)) return;
@@ -364,7 +373,7 @@ function ikMigratePlans(){
   }catch(e){}
 }
 // V4.25.1 : programme par défaut — jours par semaine, niveau, matériel
-function ikDefPlanInfo(pl){ return (pl&&pl.def&&/^ptf:[^:]+$/.test(pl.def))?IK_PTF().find(p=>'ptf:'+p.id===pl.def):null; }
+function ikDefPlanInfo(pl){ if(!pl||!pl.def) return null; if(/^ptf:[^:]+$/.test(pl.def)) return IK_PTF().find(p=>'ptf:'+p.id===pl.def)||null; if(/^set:[^:]+$/.test(pl.def)) return IK_DEFSETS.find(p=>'set:'+p.id===pl.def)||null; return null; }
 function ikDefPlanTags(pl){ const p=ikDefPlanInfo(pl); if(!p) return '';
   return '<div class="ptf-tags def-tags"><span>'+tp('ptfDaysWk',p.days)+'</span><span>'+t(['','lvlBeginner','lvlIntermediate','lvlAdvanced'][p.lv])+'</span><span>'+t(p.eq)+'</span></div>'; }
 function planCardHTML(pl){

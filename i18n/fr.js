@@ -429,6 +429,7 @@ const I18N={
     replaceExLab:'Remplacer l\u2019exercice',pinNoteLab:'Note épinglée',exNotesPh:'Notes…',
     restoreDefaultsBtn:'Restaurer les programmes par défaut',defRestoredToast:'Programmes par défaut restaurés',
     defPlansLab:'Programmes complets',defSessionsLab:'Séances par muscle',
+    defSet_split3:'Split classique 3 jours',defSet_split4:'Split 4 jours haut / bas',
     bigTestTitle:'Test des 25 semaines (semaine {0})',
     bigTestObjectif:'Test de niveau : fais-le comme un jour J. Veille tranquille, échauffement sérieux, puis donne ton maximum sur la distance prévue. Ton chrono recalcule ton niveau et adapte toutes les semaines à venir.',
     bigTestWhy:'Toutes les 25 semaines, un vrai test mesure ton progrès et recale les allures de toutes les séances suivantes. Semaine allégée avant : arrive frais.',
