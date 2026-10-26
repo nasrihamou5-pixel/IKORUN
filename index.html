@@ -16,6 +16,7 @@
       if(tp.easyMode) document.documentElement.classList.add('easy-mode');
       if(tp.easyMode && typeof tp.ez === 'string' && /^[a-z]{2,12}$/.test(tp.ez)) document.documentElement.setAttribute('data-ez', tp.ez);
       if(tp.glass === 'std' || tp.glass === 'max' || tp.glass === 'wrap') document.documentElement.setAttribute('data-glass', tp.glass);
+      if(tp.flat === true) document.documentElement.setAttribute('data-flat', '');
       if(tp.glass === 'wrap' && typeof tp.wrap === 'string' && /^[a-z]{2,12}$/.test(tp.wrap)) document.documentElement.setAttribute('data-wrap', tp.wrap);
       // thème personnalisé (V3.14.0, voir txApply dans app.js) : posé avant la première image.
       // Seules des déclarations de variables CSS sont acceptées (ni balise, ni url, ni @).
@@ -111,12 +112,12 @@
 <!-- téléchargés dès maintenant, exécutés après la première image (voir bas de page) -->
 <link rel="preload" as="script" href="vendor/supabase.js?v=1">
 <link rel="preload" as="script" href="vendor/sb-init.js?v=3">
-<link rel="preload" as="script" href="app.min.js?v=181">
+<link rel="preload" as="script" href="app.min.js?v=182">
 <script>
 // V4.0.0 : textes anglais / arabes à la demande. Le fichier de la dernière langue utilisée
 // (ik_lang, recopie non sensible de la langue du profil) est chargé AVANT app.min.js ; en
 // autotest (?selftest=1), les deux. Les autres cas : ikLangEnsure (i18n/i18n.js).
-window.IK_LANG={en:'i18n/en.min.js?v=30',ar:'i18n/ar.min.js?v=30'};
+window.IK_LANG={en:'i18n/en.min.js?v=31',ar:'i18n/ar.min.js?v=31'};
 (function(){
   var want=[], app=document.querySelector('link[rel=preload][href^="app.min.js"]');
   try{ var l=localStorage.getItem('ik_lang'); if(l==='en'||l==='ar') want.push(l); }catch(e){}
@@ -214,9 +215,9 @@ html[data-mode="light"] .iki-word{color:#10141B;}
   #ikIntro *,#ikIntro{animation:none!important;}
 }
 </style>
-<link rel="preload" as="style" href="app.min.css?v=83">
-<link rel="stylesheet" id="ikCss" href="app.min.css?v=83" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="app.min.css?v=83"></noscript>
+<link rel="preload" as="style" href="app.min.css?v=84">
+<link rel="stylesheet" id="ikCss" href="app.min.css?v=84" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="app.min.css?v=84"></noscript>
 </head>
 <body>
 <script>

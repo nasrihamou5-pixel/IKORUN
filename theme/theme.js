@@ -25,7 +25,9 @@ function applyTheme(){
     if(matNearest(matValue())!==(P.glass||'std')) P.mat=Math.max(0,MAT_ANCHORS.indexOf(P.glass||'std'));
     if((lumValue()>=50)!==(mode==='light')) P.lum=mode==='light'?100:0;
   }
-  document.documentElement.setAttribute('data-glass',wrap?'wrap':P.glass==='max'?'max':'std'); // matière : Liquid Glass (std), Ultime (max) ou Covering (wrap)
+  document.documentElement.setAttribute('data-glass',wrap?'wrap':P.glass==='max'?'max':'std');
+  // V4.16.0 : style épuré (surfaces plates) — sans objet en mode simple et en Covering
+  if(P.flat && !P.easyMode && !wrap) document.documentElement.setAttribute('data-flat',''); else document.documentElement.removeAttribute('data-flat'); // matière : Liquid Glass (std), Ultime (max) ou Covering (wrap)
   { const k=(typeof feteOn==='function' && feteOn())?feteToday():null;
     if(k) document.documentElement.setAttribute('data-fete',k); else document.documentElement.removeAttribute('data-fete');
     if(document.body) feteSync(); }
@@ -40,7 +42,7 @@ function applyTheme(){
   // paint au prochain chargement, sans attendre le déchiffrement async du profil.
   // + les couleurs de l'intro, qui s'affiche avant app.css (voir <style id="ikiCss">)
   try{ const cs=getComputedStyle(document.documentElement), v=n=>cs.getPropertyValue(n).trim();
-    localStorage.setItem('ik_theme_prefs', JSON.stringify({mode, accent:acc, easyMode:!!P.easyMode, ez:P.easyMode?ezKey():null, glass:wrap?'wrap':P.glass==='max'?'max':'std',wrap:wrap?wrapKey():null,
+    localStorage.setItem('ik_theme_prefs', JSON.stringify({mode, accent:acc, easyMode:!!P.easyMode, ez:P.easyMode?ezKey():null, glass:wrap?'wrap':P.glass==='max'?'max':'std',wrap:wrap?wrapKey():null,flat:!!(P.flat&&!P.easyMode&&!wrap),
       iki:{e:v('--e'),e2:v('--e2'),er:v('--e-rgb'),bg:v('--bg'),mu:v('--muted')}, css:txCss||null,
       fete:document.documentElement.getAttribute('data-fete')||null, feteDay:todayKey()})); }catch(e){}
 }

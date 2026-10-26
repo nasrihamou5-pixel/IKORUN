@@ -2709,7 +2709,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.15.3';
+const APP_VERSION='4.16.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -12826,7 +12826,7 @@ function pfThemeSwitchHTML(){
     '<div class="ts-ray"></div>'+
     '<div class="ts-thumb">'+(isLight?ICN_SUN:ICN_MOON)+'</div></div>';
 }
-function apDemoText(v){ return matName(v)+' · '+colorNameNow(); }
+function apDemoText(v){ return (P.flat?t('styleFlat'):matName(v))+' · '+colorNameNow(); }
 function pfAppearanceHTML(){
   // V3.10.2 : une seule fiche pour tout l'aspect de l'app, dans l'ordre où on le règle :
   // l'aperçu, la matière, la couleur (ou la teinte du film en Covering), le thème clair ou
@@ -12837,6 +12837,11 @@ function pfAppearanceHTML(){
   // thème et les options, rien d'autre.
   if(P.easyMode) return '<div class="lab ap-lab" id="apColor">'+t('ezColorLab')+'</div>'+pfColorHTML()+pfAppearanceTail(lum);
   let s='<div class="glass-demo ap-demo" aria-hidden="true"><div class="glass-demo-card card"><div class="glass-demo-t">IKORUN</div><div class="glass-demo-s" id="matDemo">'+apDemoText(mv)+'</div></div></div>';
+  // V4.16.0 : le style — Classique (verre, reflets) ou Épuré (surfaces plates). La matière ne règle que le style classique.
+  s+='<div class="lab ap-lab">'+t('styleLab')+'</div><div class="ap-style">'+
+    '<button type="button" class="ap-style-t'+(P.flat?'':' on')+'" onclick="setFlat(false)"><div class="ap-st-prev glass"><i></i><i></i><em></em></div><b>'+t('styleClassic')+'</b><small>'+t('styleClassicSub')+'</small></button>'+
+    '<button type="button" class="ap-style-t'+(P.flat?' on':'')+'" onclick="setFlat(true)"><div class="ap-st-prev flat"><i></i><i></i><em></em></div><b>'+t('styleFlat')+'</b><small>'+t('styleFlatSub')+'</small></button></div>';
+  if(P.flat){ s+='<div class="lab ap-lab" id="apColor">'+t('appColor')+'</div>'+pfColorHTML(); return s+pfAppearanceTail(lum); }
   s+='<div class="lab ap-lab">'+t('matLab')+'</div>';
   if(P.easyMode) s+='<div class="ap-hint">'+t('glassEasyNote')+'</div>';
   else s+='<div class="iks iks-mat"><input type="range" min="0" max="'+(MAT_N-1)*100+'" step="1" value="'+Math.round(mv*100)+'" aria-label="'+t('matLab')+'" oninput="matInput(this)" onchange="matCommit(this)">'+
@@ -12972,6 +12977,7 @@ function matInput(el){
   });
 }
 function matCommit(el){ el.value=Math.round(matValue()*100); _iksNotch=null; saveAll(); applyTheme(); refreshPfSheet(); if(document.body.dataset.scr==='profil') renderProfile(); }
+function setFlat(on){ P.flat=!!on; if(on){ P.glass='std'; P.mat=0; } saveAll(); applyTheme(); refreshPfSheet(); try{ haptic(); }catch(e){} if(document.body.dataset.scr==='profil') renderProfile(); }
 function matSet(i){ P.mat=i; P.glass=MAT_ANCHORS[i]; saveAll(); applyTheme(); refreshPfSheet(); sfx&&sfx('tap'); if(document.body.dataset.scr==='profil') renderProfile(); }
 function lumInput(el){
   let v=+el.value; if(v<=3) v=0; else if(v>=97) v=100; iksNotch(v===0||v===100||v===50?v:null);
