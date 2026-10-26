@@ -6096,3 +6096,6 @@ html[data-flat]:not(#_) #nav>div:not(.nb){background:color-mix(in srgb,var(--e) 
 html[data-flat]:not(#_) #nav::before{display:none !important}
 html[data-flat]:not(#_) .sp-acts button:not(.lnk),html[data-flat]:not(#_) .tb-gear,html[data-flat]:not(#_) .chbtn,html[data-flat]:not(#_) .hv7-act.ghost,html[data-flat]:not(#_) .ik-pbtn:not(.ok),html[data-flat]:not(#_) .mini-ic{background:var(--lg-fill) !important;background-image:none !important;box-shadow:inset 0 0 0 1px var(--hair2) !important;text-shadow:none !important}
 html[data-flat]:not(#_) .hv7-act.main,html[data-flat]:not(#_) .ik-pbtn.ok,html[data-flat]:not(#_) .eo-b{background:var(--e) !important;background-image:none !important;box-shadow:none !important;text-shadow:none !important}
+
+/* v4.16.1 — légende des totaux (Stats) */
+.sgrid-cap{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:2px 2px 8px;}

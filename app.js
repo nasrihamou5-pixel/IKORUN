@@ -2709,7 +2709,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.16.0';
+const APP_VERSION='4.16.1';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -10309,7 +10309,7 @@ function heatmap13(){
 }
 function statsRun(){
   const vdot=getUserVDOT();
-  let h='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+(vdot?fmt1(vdot):'—')+'</div><div class="l">'+t('vdotReal')+'</div></div><div class="sbox"><div class="v">'+SESS.length+'</div><div class="l">'+t('sessionsRun')+'</div></div><div class="sbox"><div class="v">'+totalKm().toFixed(0)+'</div><div class="l">'+t('kmTotal')+'</div></div><div class="sbox"><div class="v">'+fmtHM(Math.round(SESS.reduce((a,s)=>a+(+s.duration||0),0)))+'</div><div class="l">'+t('totalTime')+'</div></div></div>';
+  let h='<div class="sgrid-cap">'+t('sinceStartLab')+'</div><div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+(vdot?fmt1(vdot):'—')+'</div><div class="l">'+t('vdotReal')+'</div></div><div class="sbox"><div class="v">'+SESS.length+'</div><div class="l">'+t('sessionsRun')+'</div></div><div class="sbox"><div class="v">'+totalKm().toFixed(0)+'</div><div class="l">'+t('kmTotal')+'</div></div><div class="sbox"><div class="v">'+fmtHM(Math.round(SESS.reduce((a,s)=>a+(+s.duration||0),0)))+'</div><div class="l">'+t('totalTime')+'</div></div></div>';
   if(SESS.length) h+='<button class="btn ghost sm" style="margin:-4px 0 14px" onclick="openShareCard(\'progress\')">'+ICN('share',15)+' '+t('shShareProgress')+'</button>';
   // zones
   if(vdot){
@@ -10356,7 +10356,7 @@ function formChart(){
 let muscuBilanPeriod='week';
 function statsMuscu(){
   const pr=MSESS.reduce((a,s)=>Math.max(a,s.tonnage||0),0);
-  let h='<div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+MSESS.length+'</div><div class="l">'+t('sessionsCap')+'</div></div><div class="sbox"><div class="v">'+fmt1(totalTonnage()/1000)+' t</div><div class="l">'+t('tonnageLab')+'</div></div><div class="sbox"><div class="v">'+(pr?fmt1(pr/1000)+' t':'—')+'</div><div class="l">'+t('prPerSession')+'</div></div><div class="sbox"><div class="v">'+MSESS.reduce((a,s)=>a+(s.sets||0),0)+'</div><div class="l">'+t('totalSets')+'</div></div></div>';
+  let h='<div class="sgrid-cap">'+t('sinceStartLab')+'</div><div class="sgrid" style="margin-bottom:14px"><div class="sbox"><div class="v">'+MSESS.length+'</div><div class="l">'+t('sessionsCap')+'</div></div><div class="sbox"><div class="v">'+fmt1(totalTonnage()/1000)+' t</div><div class="l">'+t('tonnageLab')+'</div></div><div class="sbox"><div class="v">'+(pr?fmt1(pr/1000)+' t':'—')+'</div><div class="l">'+t('prPerSession')+'</div></div><div class="sbox"><div class="v">'+MSESS.reduce((a,s)=>a+(s.sets||0),0)+'</div><div class="l">'+t('totalSets')+'</div></div></div>';
   if(!MSESS.length){ h+='<div class="card"><div class="empty"><div class="em-ic">'+ICN('dumbbell',36,'currentColor')+'</div><div style="font-size:13px">'+t('startFirstMuscu')+'</div></div></div>'; return h; }
 
   // BILAN DE PROGRESSION — même structure que l'onglet Bilan course (chiffre
