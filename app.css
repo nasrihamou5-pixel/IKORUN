@@ -6137,10 +6137,9 @@ html[data-flat]:not(#_) .hv7-day-title{font-size:21px !important}
 html[data-flat]:not(#_) .lr-title,html[data-flat]:not(#_) .mus-name,html[data-flat]:not(#_) .grp-card .gr-t{font-family:inherit !important;font-size:15.5px !important;font-weight:800 !important;letter-spacing:0 !important}
 
 /* ===================================================================
-   V4.18.0 — L'APP SUIT L'ÉCRAN. Téléphone (quelle que soit sa taille) : colonne pleine largeur,
-   comme avant. Tablette et ordinateur (≥ 700 px) : plus de colonne de 430 px au milieu — l'app
-   occupe toute la fenêtre, le contenu se répartit en colonnes qui s'ajoutent avec la largeur
-   (cartes de 380 px minimum), les titres et les onglets gardent toute la ligne.
+   V4.18.1 — L'APP SUIT L'ÉCRAN. Même mise en page partout (une colonne) : sur téléphone elle prend
+   la largeur de l'écran ; sur tablette et ordinateur (≥ 700 px) elle n'est plus enfermée dans 430 px
+   et occupe toute la fenêtre.
    =================================================================== */
 @media (min-width:700px){
   body{max-width:none}
@@ -6150,28 +6149,8 @@ html[data-flat]:not(#_) .lr-title,html[data-flat]:not(#_) .mus-name,html[data-fl
   .topbar{padding-left:clamp(20px,3.2vw,56px) !important;padding-right:clamp(20px,3.2vw,56px) !important}
   #ikHead{margin-left:clamp(20px,3.2vw,56px);margin-right:clamp(20px,3.2vw,56px)}
   #nav,#ikIsland{max-width:520px}
-  /* colonnes : les cartes se répartissent côte à côte, tout le reste prend la ligne entière */
-  .scr.on:not(#s-home),#santeBody,#toolRes{display:block;column-width:380px;column-gap:clamp(14px,1.6vw,24px);column-fill:balance}
-  .scr.on:not(#s-home)>*,#santeBody>*,#toolRes>*{column-span:all}
-  .scr.on:not(#s-home)>:is(.card,.kchart-card,.kduo,.sp-plan,.sess,.grp-card,.hv7-day,.sn-card,.krow3,.sgrid,.sn-note),
-  #santeBody>:is(.card,.sn-card,.sn-note),#toolRes>:is(.card,.grp-card){column-span:none;break-inside:avoid}
-  .scr .seg-ctrl:not(.sub){max-width:640px}.scr .seg-ctrl.sub{max-width:480px}.scr .seg-row{max-width:760px}
-  /* profil : liste de réglages, une seule colonne de lecture confortable */
-  #s-profil.on{display:block;columns:auto;column-width:auto;max-width:760px;margin-left:auto;margin-right:auto}
-  /* accueil : deux colonnes de grille */
-  #s-home .hv7-content{display:grid;grid-template-columns:minmax(0,1fr);align-items:start}
-  #s-home .hv7-content>*{grid-column:1/-1;min-width:0}
-  /* pages plein écran et fenêtres : plus larges, centrées */
   .exg-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
   .ov-card{max-width:600px}
   .ov.ov-push{max-width:860px}
 }
 @media (min-width:1500px){ .scr{padding-left:72px;padding-right:72px} .topbar{padding-left:72px !important;padding-right:72px !important} #ikHead{margin-left:72px;margin-right:72px} }
-/* Accueil sur grand écran : séance du jour et indicateurs à gauche, « Ensuite » à droite */
-@media (min-width:900px){
-  #s-home .hv7-content{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);column-gap:24px}
-  #s-home .hv7-content>.hv7-day{grid-column:1;grid-row:4}
-  #s-home .hv7-content>.hv7-krow3{grid-column:1;grid-row:5}
-  #s-home .hv7-content>.hv7-sec-lab{grid-column:2;grid-row:4;align-self:start}
-  #s-home .hv7-content>.hv7-sec-lab+div{grid-column:2;grid-row:4 / span 2;align-self:start;margin-top:38px}
-}
