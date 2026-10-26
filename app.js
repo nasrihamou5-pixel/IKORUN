@@ -2710,7 +2710,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.21.0';
+const APP_VERSION='4.22.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -9455,11 +9455,12 @@ function renderLive(){
     h+='<div class="ex-swipe-wrap" data-i="'+i+'">'+
       '<div class="ex-swipe-action left" onclick="confirmDeleteLiveEx('+i+')"><span>'+ICN('trash',16)+'</span>'+t('deleteLab2')+'</div>'+
       '<div class="ex-swipe-action right" onclick="confirmDeleteLiveEx('+i+')"><span>'+ICN('trash',16)+'</span>'+t('deleteLab2')+'</div>';
-    h+='<div class="card ex-swipe-card" data-i="'+i+'" style="padding:14px'+(allDone?';border-color:rgba(51,211,153,.35)':'')+'">';
+    h+='<div class="card ex-swipe-card'+(open?' exc-open':'')+(allDone?' exc-done':'')+'" data-i="'+i+'" style="padding:14px 14px 14px 18px'+(allDone?';border-color:rgba(51,211,153,.35)':'')+'"><i class="exc-bar"></i>';
     // Entête exercice (tapable) : vignette, nom, chevron, "..." (options)
     h+='<div class="row" style="align-items:flex-start;cursor:pointer" onclick="toggleLiveEx('+i+')">'+exThumb(e.name,48)+
       '<div style="flex:1;min-width:0;margin-left:10px">'+(e.ss?'<span class="ss-tag">'+t('ssTag')+'</span>':'')+'<div style="font-weight:700;font-size:15.5px;line-height:1.25">'+escHtml(trExName(e.name))+'</div>'+
-      '<div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+(allDone?t('exerciseDoneLab'):tp('setsDoneCount',st.sets.filter(Boolean).length,st.sets.length))+'</div></div>'+
+      '<div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+(allDone?t('exerciseDoneLab'):tp('setsDoneCount',st.sets.filter(Boolean).length,st.sets.length))+'</div>'+
+      '<div class="ex-segs" aria-hidden="true">'+st.sets.map(x=>'<i'+(x?' on':'')+'></i>').join('')+'</div></div>'+
       '<span id="exChev'+i+'" style="color:var(--muted);font-size:14px;padding:6px 4px;transition:transform .25s ease;transform:rotate('+(open?'180':'0')+'deg)">⌄</span>'+
       '<span onclick="event.stopPropagation();openLiveExOptions('+i+')" style="color:var(--e);font-size:22px;font-weight:800;padding:4px 4px 4px 8px;cursor:pointer;letter-spacing:1px">⋯</span></div>';
     // Contenu repliable : notes, repos, tableau des séries. Seul l'exercice ouvert est
@@ -9488,7 +9489,7 @@ function liveExBodyHTML(i){
   // toggleSet() lance bien 90 s dans ce cas (et changeRest ne propose que 15-300 s) :
   // l'étiquette montre désormais la durée réellement appliquée (audit 24/09).
   // en mode chronomètre (par défaut), pas de durée de repos à régler : le chrono compte
-  let h='<input class="inp live-note" id="liveNote'+i+'" placeholder="'+t('exNotesPh')+'" value="'+escHtml(e.note||'')+'" oninput="liveSetNote('+i+',this.value)">'+(P.restMode==='timer'?'<div class="live-rest" onclick="changeRest('+i+')">'+ICN('stopwatch',15)+'<span>'+tp('restTimerLab',fmtRest(e.rest||90))+'</span></div>':'');
+  let h='<div class="ex-sep"></div><input class="inp live-note" id="liveNote'+i+'" placeholder="'+t('exNotesPh')+'" value="'+escHtml(e.note||'')+'" oninput="liveSetNote('+i+',this.value)">'+(P.restMode==='timer'?'<div class="live-rest" onclick="changeRest('+i+')">'+ICN('stopwatch',15)+'<span>'+tp('restTimerLab',fmtRest(e.rest||90))+'</span></div>':'');
   { const o=(typeof ikExObjective==='function')?ikExObjective(e):null;
     if(o) h+='<div class="exo-obj'+(o.up?' up':'')+'"><span class="eo-ic">'+ICN(o.up?'trend':'target',14)+'</span><span class="eo-t">'+escHtml(o.txt)+'</span><button type="button" class="eo-b" onclick="ikFillObjective('+i+')">'+t('objFillBtn')+'</button></div>'; }
   h+='<div style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:8px;text-align:center">'+
@@ -9576,9 +9577,14 @@ function liveSwipeMove(e){
   // les mélanger faisait filer la carte 16% plus vite que le doigt et faussait
   // le clamp sur la largeur de la zone révélée.
   let x=s.baseX+dx/uiZoomFactor();
-  x=Math.max(-s.w,Math.min(s.w,x));
+  const W=s.el.offsetWidth||320; x=Math.max(-W,Math.min(W,x));   // V4.22.0 : on peut aller jusqu'au bout = supprimer
   s.curX=x;
   s.el.style.transform='translateX('+x+'px)';
+  const wrap=s.el.parentElement, kind=s.el.classList.contains('ex-swipe-card')?'ex':'set';
+  const act=wrap&&wrap.querySelector('.'+kind+'-swipe-action.'+(x>0?'left':'right'));
+  if(act) act.style.width=Math.max(s.w,Math.abs(x))+'px';
+  const ready=Math.abs(x)>=W*0.5;
+  if(ready!==!!s.ready){ s.ready=ready; if(wrap) wrap.classList.toggle('del-ready',ready); if(ready){ try{ haptic(); }catch(_){} } }
 }
 function liveSwipeUp(e){
   if(exDrag) return;
@@ -9586,13 +9592,28 @@ function liveSwipeUp(e){
   const s=liveSwipe; if(!s.el){ liveSwipe={el:null}; return; }
   if(s.dragging){
     s.el.classList.remove('dragging');
+    const W=s.el.offsetWidth||320, wrap=s.el.parentElement;
+    if(wrap) wrap.classList.remove('del-ready');
+    if(Math.abs(s.curX)>=W*0.5){ liveSwipeDelete(s.el,s.curX>0?1:-1); liveSwipe={el:null}; return; }
+    if(wrap) wrap.querySelectorAll('.ex-swipe-action,.set-swipe-action').forEach(x=>x.style.width='');
     if(s.curX<=-40){ s.el.style.transform='translateX(-'+s.w+'px)'; s.el.classList.add('open'); s.el._openDir='left'; }
     else if(s.curX>=40){ s.el.style.transform='translateX('+s.w+'px)'; s.el.classList.add('open'); s.el._openDir='right'; }
     else { s.el.style.transform='translateX(0px)'; s.el.classList.remove('open'); s.el._openDir=null; }
   }
   liveSwipe={el:null};
 }
-function closeSwipeCard(card){ card.style.transform='translateX(0px)'; card.classList.remove('open'); card._openDir=null; }
+// V4.22.0 : glissé jusqu'au bout → la ligne sort de l'écran puis est supprimée, sans second appui
+function liveSwipeDelete(el,dir){
+  const isEx=el.classList.contains('ex-swipe-card'), wrap=el.parentElement;
+  let ok=true;
+  if(isEx){ ok=LIVE.prog.ex.length>1; if(!ok) toast(t('minOneExRemain')); }
+  else { const r=el.closest('.set-swipe-wrap'); ok=LIVE.state[+r.dataset.i].log.length>1; if(!ok) toast(t('minOneSetRemain')); }
+  if(!ok){ if(wrap) wrap.querySelectorAll('.ex-swipe-action,.set-swipe-action').forEach(x=>x.style.width=''); el.style.transform='translateX(0px)'; return; }
+  el.classList.add('open'); el.style.transform='translateX('+(dir*(el.offsetWidth+30))+'px)';
+  setTimeout(()=>{ const r=isEx?el:el.closest('.set-swipe-wrap');
+    if(isEx) doDeleteLiveEx(+el.dataset.i); else deleteLiveSet(+r.dataset.i,+r.dataset.j); },190);
+}
+function closeSwipeCard(card){ const w=card.parentElement; if(w) w.querySelectorAll('.ex-swipe-action,.set-swipe-action').forEach(x=>x.style.width=''); card.style.transform='translateX(0px)'; card.classList.remove('open'); card._openDir=null; }
 /* ---------- LIVE : réorganiser en glissant la carte directement (appui long) ----------
    Contrairement à un écran dédié, la carte se soulève et se déplace là où elle
    est affichée, exactement comme un reorder natif iOS/Android. Les autres
