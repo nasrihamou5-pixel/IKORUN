@@ -5942,3 +5942,21 @@ html[data-mode] .btn.btn-soft:not(#_)::before,html[data-mode] .btn.btn-soft:not(
 .ex1-c b{white-space:nowrap}
 .ex1-c div{flex-wrap:nowrap}
 @media (max-width:400px){.ex1-c b{font-size:16px;min-width:0}.ex1-st{width:26px;height:26px}}
+/* V4.15.0 — accueil allégé : une ligne de pastilles, la carte du jour d'abord, « à confirmer » en une ligne */
+.hm-line{display:flex;gap:8px;margin:2px 0 16px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.hm-line::-webkit-scrollbar{display:none}
+.hm-chip{flex:none;display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border-radius:999px;background:var(--glass-bg);border:1px solid var(--hair2);font:inherit;font-size:13.5px;font-weight:700;color:var(--snow);white-space:nowrap;position:relative;cursor:pointer}
+.hm-chip svg{color:var(--e2);flex:none}
+.hm-chip small{color:var(--muted);font-weight:600;font-size:12.5px}
+.hm-chip i{position:absolute;top:6px;inset-inline-end:7px;width:7px;height:7px;border-radius:50%;background:var(--e2)}
+.hm-chip:active{background:rgba(var(--e-rgb),.1)}
+.hm-pend{display:flex;align-items:center;gap:10px;margin:12px 0 0;padding:14px 16px;border-radius:18px;background:color-mix(in srgb,var(--warn) 9%,var(--glass-bg));border:1px solid color-mix(in srgb,var(--warn) 30%,transparent);font-weight:800;font-size:14.5px;cursor:pointer}
+.hm-pend>svg:first-child{color:var(--warn);flex:none}
+.hm-pend span{flex:1;min-width:0}
+.hm-pend small{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-top:2px}
+.hm-pend+.hv7-krow3{margin-top:14px}
+.hm-pend-row{gap:10px;padding:12px 12px}
+.hm-pend-row .ik-pbtn{flex:none}
+.hm-pend-row{flex-wrap:wrap}
+.hm-pend-acts{display:flex;gap:8px;width:100%;padding-inline-start:44px}
+.hm-pend-acts .ik-pbtn{flex:1;justify-content:center;text-align:center}

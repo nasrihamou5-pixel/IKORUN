@@ -2709,7 +2709,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.14.1';
+const APP_VERSION='4.15.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -8038,9 +8038,8 @@ function renderHome(){
     homeHdr='<div class="hv7-header"><div class="hv7-header-left"><div class="hv7-logo">'+
       '<div class="ik-logo-mark" role="img" aria-label="IKORUN"></div><span>IKORUN</span></div></div>'+
       '<div class="hv7-header-right">'+
-        '<div class="hv7-icon-btn" onclick="shareApp()" title="'+t('share')+'">'+ICN('share',17)+'</div>'+
+        // V4.15.0 : deux icônes seulement (le partage et les clubs sont dans Profil)
         '<div class="hv7-icon-btn" onclick="openProfileSection(\'notif\')" title="'+t('notifLabel')+'">'+ICN('bell',17)+(hasReminderDot?'<span class="dot"></span>':'')+'</div>'+
-        '<div class="hv7-icon-btn" onclick="openClub()" title="'+t('myClubLab')+'">'+ICN('flag',17)+'</div>'+
         '<div class="hv7-people" onclick="openFriends()">'+ICN('users',18)+'</div>'+
       '</div></div>';
   }
@@ -8078,7 +8077,7 @@ function renderHome(){
   // CARTE DU JOUR — pièce maîtresse : type, titre, pourquoi, cibles, et le bilan en un geste.
   {
     if(typeof injuryCardHTML==='function') html+=injuryCardHTML();
-    if(typeof pendingCardHTML==='function') html+=pendingCardHTML();   // séances passées à confirmer (fait / pas fait)
+    // V4.15.0 : les séances à confirmer passent APRÈS la carte du jour, sur une seule ligne (voir plus bas)
     // pas de course aujourd'hui mais une séance de muscu du plan : c'est elle la séance du jour
     const stH=(!(ps && ps.type!=='Repos') && typeof strengthTodayHeroHTML==='function')?strengthTodayHeroHTML(wdShort):'';
     if(ps && ps.type!=='Repos'){
@@ -8130,6 +8129,7 @@ function renderHome(){
     }
   }
 
+  if(typeof pendingLineHTML==='function') html+=pendingLineHTML();
   // V4.2 : plus de carte « Ton coach a ajusté ton plan » : les ajustements sont faits directement dans le plan
   // (étiquette « Ajustée » sur la séance, détail dans l'historique des ajustements).
 
@@ -12421,6 +12421,7 @@ function renderProfile(){
     row('users',t('friendsRanking'),'openFriends()')+
     row('flag',t('myClubLab'),'openClub()','','pf-club-row')+
     row('calendar',t('racesTitle'),'openRaces()')+
+    row('share',t('shareAppRow'),'shareApp()')+
   '</div>';
   h+='<div class="grp-lab stag" style="animation-delay:.12s">'+t('prefsLab')+'</div>';
   h+='<div class="grp-card stag" style="animation-delay:.13s">'+
