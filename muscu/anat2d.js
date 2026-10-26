@@ -312,9 +312,38 @@ function ikBodyPickHTML(sel){
       h+=grp?'<path class="bp-m'+(grp===sel?' bp-on':'')+'" data-mg="'+grp+'" d="'+d+'"/>':'<path class="'+(g?'bp-x':'bp-n')+'" d="'+d+'"/>';
     });
   });
-  return '<svg class="bp-svg" viewBox="0 70 1448 1320" preserveAspectRatio="xMidYMid meet" role="img" aria-label="'+t('bpHint')+'">'+h+'</svg>'+
+  _ikVB=_IK_VB0.slice(); return '<svg class="bp-svg" viewBox="0 70 1448 1320" preserveAspectRatio="xMidYMid meet" role="img" aria-label="'+t('bpHint')+'">'+h+'</svg>'+
     '<div class="bp-faces"><span>'+t('frontViewLabel')+'</span><span>'+t('backViewLabel')+'</span></div>';
+}
+const _IK_VB0=[0,70,1448,1320]; let _ikVB=_IK_VB0.slice(), _ikVBraf=0;
+function _ikVBset(svg,v){ _ikVB=v; svg.setAttribute('viewBox',v.map(n=>Math.round(n*10)/10).join(' ')); }
+// V4.20.0 : le corps s'agrandit sur le muscle choisi (comme la fiche d'un exercice) ; sans muscle, retour au corps entier
+function ikBodyZoom(sel,instant){
+  const svg=document.querySelector('#libBP .bp-svg'); if(!svg) return;
+  let to=_IK_VB0.slice();
+  if(sel&&sel!=='Tous'){
+    const ps=[...svg.querySelectorAll('.bp-m')].filter(el=>el.dataset.mg===sel);
+    if(ps.length){
+      const F=[null,null]; // [face avant, face dos] : on cadre la face où le muscle est le plus grand
+      ps.forEach(el=>{ const b=el.getBBox(); const fi=(b.x+b.width/2)<724?0:1; const o=F[fi]||(F[fi]={x0:1e9,y0:1e9,x1:-1e9,y1:-1e9,a:0});
+        o.x0=Math.min(o.x0,b.x); o.y0=Math.min(o.y0,b.y); o.x1=Math.max(o.x1,b.x+b.width); o.y1=Math.max(o.y1,b.y+b.height); o.a+=b.width*b.height; });
+      const bb=(F[0]&&F[1])?(F[0].a>=F[1].a?F[0]:F[1]):(F[0]||F[1]);
+      const r=_IK_VB0[2]/_IK_VB0[3], bw=bb.x1-bb.x0, bh=bb.y1-bb.y0;
+      let w=Math.max(bw*1.7,bh*1.7*r,440); let h=w/r;
+      let x=(bb.x0+bb.x1)/2-w/2, y=(bb.y0+bb.y1)/2-h/2;
+      x=Math.max(0,Math.min(x,_IK_VB0[2]-w)); y=Math.max(70,Math.min(y,70+_IK_VB0[3]-h));
+      to=[x,y,w,h];
+    }
+  }
+  cancelAnimationFrame(_ikVBraf);
+  const from=_ikVB.slice(), reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
+  if(instant||reduce){ _ikVBset(svg,to); return; }
+  const t0=performance.now(), D=320;
+  const step=now=>{ let k=Math.min(1,(now-t0)/D); k=1-Math.pow(1-k,3);
+    _ikVBset(svg,from.map((v,i)=>v+(to[i]-v)*k)); if(k<1) _ikVBraf=requestAnimationFrame(step); };
+  _ikVBraf=requestAnimationFrame(step);
 }
 function ikBodyPickSet(sel){
   document.querySelectorAll('#libBP .bp-m').forEach(el=>el.classList.toggle('bp-on',el.dataset.mg===sel));
+  ikBodyZoom(sel);
 }

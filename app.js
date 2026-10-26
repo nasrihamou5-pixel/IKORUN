@@ -2710,7 +2710,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.19.0';
+const APP_VERSION='4.20.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -9975,7 +9975,7 @@ function renderLib(){
     fch(t('exKindLabel'),libFilterKind==='Tous'?t('filterAll'):t('exKind_'+libFilterKind),'libPickKind')+
     fch(t('levelLabel'),libFilterLevel==='Tous'?t('filterAll'):trLevel(libFilterLevel),'libPickLevel')+'</div>';
   $('#libBody').innerHTML=h+'<div id="libList">'+libListHTML()+'</div>'+(libMulti?'<div class="lib-done-bar"><button class="btn" onclick="libMultiDone()">'+((newProg&&newProg.ex.length)?tp('libAddN',newProg.ex.length):t('back'))+'</button></div>':'');
-  ikLoad('anat').then(()=>{ const bp=$('#libBP'); if(bp) bp.innerHTML=ikBodyPickHTML(libFilter); libBPbar(); }).catch(()=>{});
+  ikLoad('anat').then(()=>{ const bp=$('#libBP'); if(bp){ bp.innerHTML=ikBodyPickHTML(libFilter); if(libFilter!=='Tous') ikBodyZoom(libFilter,true); } libBPbar(); }).catch(()=>{});
 }
 // V4.19.0 : on choisit le muscle sur le corps 2D complet ; retoucher le même muscle l'enlève
 function libBPbar(){

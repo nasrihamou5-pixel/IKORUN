@@ -6172,3 +6172,10 @@ html[data-flat]:not(#_) .lr-title,html[data-flat]:not(#_) .mus-name,html[data-fl
 .bp-hint{font-size:12.5px;color:var(--muted)}
 .bp-chip{border:none;font:inherit;font-size:13px;padding:7px 14px;border-radius:999px;background:var(--e);color:var(--accent-ink,#fff);cursor:pointer}
 .bp-chip b{font-weight:800}
+
+/* V4.20.0 — corps 2D plus grand, zoom sur le muscle choisi */
+.bp{max-width:520px;margin:0 auto 4px;overflow:hidden;border-radius:18px}
+.bp-svg{touch-action:manipulation}
+.bp-faces{transition:opacity .2s ease}
+.bp:has(.bp-on) .bp-faces{opacity:0}
+.bp-m{stroke-width:2}
