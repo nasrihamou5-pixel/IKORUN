@@ -2710,7 +2710,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.22.0';
+const APP_VERSION='4.23.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -9017,7 +9017,7 @@ function _figRaster(key,url,vb){
 }
 // Prépare les silhouettes des programmes pendant que le téléphone est libre, après l'accueil :
 // le premier passage sur Musculation affiche alors directement les PNG.
-function warmFigures(){ [...PROGS,...CUSTOM.filter(p=>p.kind==='muscu')].slice(0,30).forEach(p=>{ try{ progBodyMini(p); }catch(e){} }); }
+function warmFigures(){ ikLoad('anat').then(()=>{ [...PROGS,...CUSTOM.filter(p=>p.kind==='muscu')].slice(0,30).forEach(p=>{ try{ ikProgFigHTML(p); }catch(e){} }); }).catch(()=>{}); }
 function anatomyImg(zoneInfo,PARTS,viewBox){
   const cs=getComputedStyle(document.documentElement);
   const col=v=>{ const m=/^var\((--[\w-]+)\)$/.exec(v); return m?(cs.getPropertyValue(m[1]).trim()||'#888'):v; };
@@ -9043,9 +9043,14 @@ function anatomyImg(zoneInfo,PARTS,viewBox){
   if(!_figPng.has(key)){ _figPng.set(key,null); const job=()=>_figRaster(key,url,vb); if(window.requestIdleCallback) requestIdleCallback(job,{timeout:3000}); else setTimeout(job,300); }
   return '<img class="mus-fig" src="'+url+'" alt="" decoding="async" draggable="false" style="aspect-ratio:'+vb[2]+'/'+vb[3]+'">';
 }
+// V4.23.0 : le même corps 2D que la bibliothèque (module anat chargé à la demande)
 function progBodyMini(p){
-  const zi=progZones(p);
-  return '<div class="mus-body">'+anatomyImg(zi,BODY_PARTS_FRONT,ANATOMY_VB_FRONT)+anatomyImg(zi,BODY_PARTS_BACK,ANATOMY_VB_BACK)+'</div>';
+  if(typeof ikProgFigHTML==='function'){ try{ return '<div class="mus-body mus-body2">'+ikProgFigHTML(p)+'</div>'; }catch(_){} }
+  ikLoad('anat').then(ikFillProgFigs).catch(()=>{});
+  return '<div class="mus-body mus-body2" data-pfig="'+escHtml(p.id)+'"></div>';
+}
+function ikFillProgFigs(){
+  document.querySelectorAll('[data-pfig]').forEach(el=>{ const p=allProgs().find(x=>x.id===el.dataset.pfig); el.removeAttribute('data-pfig'); if(p) try{ el.innerHTML=ikProgFigHTML(p); }catch(_){} });
 }
 function muscuCardHTML(p,opts){
   opts=opts||{};
@@ -9288,14 +9293,13 @@ function bodyHeatmapCard(){
   const entries=Object.entries(counts);
   if(!entries.length) return '<div class="card"><div class="empty"><div class="em-ic">'+ICN('run',36,'currentColor')+'</div><div style="font-size:13px">'+t('noMuscleDataLab')+'</div></div></div>';
   const max=Math.max(...entries.map(e=>e[1]));
-  const front=bodyHeatmapSVGView(counts,max,BODY_PARTS_FRONT,ANATOMY_VB_FRONT);
-  const back=bodyHeatmapSVGView(counts,max,BODY_PARTS_BACK,ANATOMY_VB_BACK);
   const top=entries.sort((a,b)=>b[1]-a[1]).slice(0,3).map(e=>zoneLabel(e[0]));
+  // V4.23.0 : même corps 2D que le reste de l'app (groupes musculaires, face + dos)
+  const groups={}; MSESS.forEach(s=>{ const ms=s.muscles||[]; if(!ms.length) return; const per=(s.sets||ms.length)/ms.length; ms.forEach(m=>{ groups[m]=(groups[m]||0)+per; }); });
+  const fill=()=>{ const el=$('#heat2d'); if(el&&typeof ikHeatFigHTML==='function') el.innerHTML=ikHeatFigHTML(groups,HEAT_TIERS); };
+  setTimeout(()=>ikLoad('anat').then(fill).catch(()=>{}),0);
   let h='<div class="card"><div class="card-t">'+t('muscleHeatmapTitle')+'</div>';
-  h+='<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:12px">'+
-     '<div style="flex:1;min-width:0;text-align:center"><div class="lab" style="margin-bottom:2px">'+t('frontViewLabel')+'</div>'+front+'</div>'+
-     '<div style="flex:1;min-width:0;text-align:center"><div class="lab" style="margin-bottom:2px">'+t('backViewLabel')+'</div>'+back+'</div>'+
-     '</div>';
+  h+='<div class="heat2d"><div class="heat2d-faces"><span>'+t('frontViewLabel')+'</span><span>'+t('backViewLabel')+'</span></div><div id="heat2d">'+(typeof ikHeatFigHTML==='function'?ikHeatFigHTML(groups,HEAT_TIERS):'')+'</div></div>';
   h+='<div style="display:flex;align-items:center;gap:5px;justify-content:center;margin-bottom:10px">'+
      '<span style="font-size:10px;color:var(--muted)">'+t('lessLab')+'</span>'+
      ['var(--s3)'].concat(HEAT_TIERS).map(c=>'<span style="width:15px;height:8px;border-radius:3px;background:'+c+';display:inline-block"></span>').join('')+
@@ -10051,9 +10055,30 @@ function libPickGroup(g){
   if(typeof ikBodyPickSet==='function') ikBodyPickSet(libFilter);
   libBPbar(); renderLibList();
 }
-function libPickEquip(){ const L=['Tous',...new Set(allExercises().map(e=>e.equip).filter(Boolean))]; ikPick(t('equipmentLabel'),L.map(v=>({label:v==='Tous'?t('filterAll'):trEquip(v),on:libFilterEquip===v,cb:()=>{ libFilterEquip=v; renderLib(); }}))); }
-function libPickKind(){ ikPick(t('exKindLabel'),['Tous',...EX_KINDS].map(v=>({label:v==='Tous'?t('filterAll'):t('exKind_'+v),on:libFilterKind===v,cb:()=>{ libFilterKind=v; renderLib(); }}))); }
-function libPickLevel(){ ikPick(t('levelLabel'),['Tous',...LEVELS].map(v=>({label:v==='Tous'?t('filterAll'):trLevel(v),on:libFilterLevel===v,cb:()=>{ libFilterLevel=v; renderLib(); }}))); }
+// V4.23.0 : petits dessins à côté de chaque choix des filtres (matériel, type, niveau)
+const IK_FIC={
+ 'Tous':'<rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/>',
+ 'Barre':'<path d="M2 12h20"/><rect x="5" y="7" width="2.6" height="10" rx="1"/><rect x="16.4" y="7" width="2.6" height="10" rx="1"/><rect x="2.6" y="9" width="2" height="6" rx=".8"/><rect x="19.4" y="9" width="2" height="6" rx=".8"/>',
+ 'Haltères':'<path d="M8 12h8"/><rect x="3.5" y="8" width="4.5" height="8" rx="1.6"/><rect x="16" y="8" width="4.5" height="8" rx="1.6"/>',
+ 'Machine':'<path d="M5 21V3M5 4h12M17 4v5"/><rect x="14.5" y="9" width="5" height="7" rx="1"/><path d="M15 12h4M5 15h6l2 6"/>',
+ 'Poulie':'<circle cx="12" cy="4.5" r="2"/><path d="M12 6.5v10M4 2v20M20 2v20"/><path d="M9 17h6"/><path d="M9.5 17l-1 3M14.5 17l1 3"/>',
+ 'Poids du corps':'<circle cx="12" cy="4.5" r="2"/><path d="M12 7v7M7 9.5l5 1.5 5-1.5M9 21l3-7 3 7"/>',
+ 'Élastique':'<path d="M7 4v4M17 4v4"/><rect x="5" y="2.5" width="4" height="3" rx="1.2"/><rect x="15" y="2.5" width="4" height="3" rx="1.2"/><path d="M7 8c0 7 3 11 5 11s5-4 5-11"/>',
+ 'Kettlebell':'<path d="M9 8a3 3 0 0 1 6 0"/><path d="M8.2 8h7.6M12 8c-4.4 0-7 3.3-7 6.6C5 18.5 8 21 12 21s7-2.5 7-6.4C19 11.3 16.4 8 12 8z"/>',
+ 'Accessoire':'<circle cx="12" cy="12" r="8.5"/><path d="M3.8 10.5c5 2.6 11.4 2.6 16.4 0M12 3.5v17"/>',
+ 'force':'<path d="M8 12h8"/><rect x="3.5" y="8" width="4.5" height="8" rx="1.6"/><rect x="16" y="8" width="4.5" height="8" rx="1.6"/>',
+ 'etirement':'<circle cx="16" cy="4.5" r="2"/><path d="M15.5 7.5l-3.5 5.5 5 2.5v5.5M12 13l-6.5 4M14 8.5l5.5-4"/>',
+ 'mobilite':'<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v4h-4"/><circle cx="12" cy="12" r="2.2"/>',
+ 'cardio':'<path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z"/><path d="M5 12h3.2l1.6-2.6 2.4 5 1.6-2.4H19"/>',
+ 'plyo':'<circle cx="12" cy="4" r="2"/><path d="M12 6.5v6M8 9l4 2 4-2M9 17l3-4.5 3 4.5"/><path d="M5 21h14"/><path d="M8 19.5l-1 1.5M16 19.5l1 1.5" opacity=".6"/>',
+ 'rehab':'<path d="M12 21s-8-4.8-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 6.2-8 11-8 11z"/><path d="M12 9.5v6M9 12.5h6"/>',
+ 'lv1':'<path d="M6 19v-4"/><path d="M12 19v-8" opacity=".25"/><path d="M18 19V7" opacity=".25"/>',
+ 'lv2':'<path d="M6 19v-4M12 19v-8"/><path d="M18 19V7" opacity=".25"/>',
+ 'lv3':'<path d="M6 19v-4M12 19v-8M18 19V7"/>'};
+function ikFic(k){ const p=IK_FIC[k]; return p?'<span class="fic">'+'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="'+(/^lv/.test(k)?2.6:1.7)+'" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg></span>':''; }
+function libPickEquip(){ const L=['Tous',...new Set(allExercises().map(e=>e.equip).filter(Boolean))]; ikPick(t('equipmentLabel'),L.map(v=>({ic:ikFic(v),label:v==='Tous'?t('filterAll'):trEquip(v),on:libFilterEquip===v,cb:()=>{ libFilterEquip=v; renderLib(); }}))); }
+function libPickKind(){ ikPick(t('exKindLabel'),['Tous',...EX_KINDS].map(v=>({ic:ikFic(v),label:v==='Tous'?t('filterAll'):t('exKind_'+v),on:libFilterKind===v,cb:()=>{ libFilterKind=v; renderLib(); }}))); }
+function libPickLevel(){ ikPick(t('levelLabel'),['Tous',...LEVELS].map((v,k)=>({ic:ikFic(v==='Tous'?'Tous':'lv'+k),label:v==='Tous'?t('filterAll'):trLevel(v),on:libFilterLevel===v,cb:()=>{ libFilterLevel=v; renderLib(); }}))); }
 // Recherche (V3.12.2) : chaque lettre redessinait toute la bibliothèque (filtres, tuiles
 // photo et 177 cartes) ; seule la liste change désormais, 140 ms après la dernière frappe.
 let _libSearchT=null;
