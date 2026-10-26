@@ -2710,7 +2710,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.25.1';
+const APP_VERSION='4.25.2';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -4299,7 +4299,9 @@ function askGlassTilt(){
     const vite=dx>36 && dx/Math.max(1,performance.now()-t0)>0.45; // petit geste rapide = retour aussi
     // Fermeture : la sortie animée part de là où est le doigt (avant, la page
     // revenait d'abord à sa place puis disparaissait d'un coup).
-    if(dx>THRESH || vite) closeOv(ovId);
+    // V4.25.2 : dans la bibliothèque, glisser depuis une fiche revient à la liste (pas hors de la bibliothèque)
+    if((dx>THRESH || vite) && ovId==='ovLib' && _ficheCur){ if(card) card.style.transform=''; libBack(); }
+    else if(dx>THRESH || vite) closeOv(ovId);
     else if(card) card.style.transform='';
     dx=0; ovEl=null; ovId=null;
   });
@@ -10134,8 +10136,16 @@ function pickEx(name){
 let libMulti=false;
 function libMultiDone(){ libMulti=false; closeOv('ovLib'); renderCreate(); openOv('ovCreate'); }
 /* Fiche tutoriel complète */
+// V4.25.2 : retour depuis une fiche = retour à la liste, au même endroit
+let _libScroll=0;
+function libBack(){
+  if(!_ficheCur){ closeOv('ovLib'); return; }
+  _ficheCur=null; renderLib();
+  const sc=document.querySelector('#ovLib .ov-body-scroll'); if(sc) requestAnimationFrame(()=>{ sc.scrollTop=_libScroll; });
+}
 function openFiche(name){
   const f=exMeta(name); if(!f) return;
+  if(!_ficheCur){ const sc=document.querySelector('#ovLib .ov-body-scroll'); _libScroll=sc?sc.scrollTop:0; }
   _ficheCur=name; exdbNeed(name,()=>{ if(_ficheCur===name && $('#ovLib') && $('#ovLib').classList.contains('on')) openFiche(name); });
   const lvCol=f.level==='Débutant'?'--ok':f.level==='Avancé'?'--bad':'--warn';
   let h='<div style="text-align:center;margin-bottom:14px"><div style="animation:popIn .5s">'+exGlyph(f,64)+'</div><div class="man" style="font-weight:800;font-size:20px;margin-top:4px">'+trExName(f.name)+'</div><div style="margin-top:8px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap"><span class="badge">'+trEquip(f.equip)+'</span><span class="badge" style="background:var(--ed);color:var('+lvCol+')">'+trLevel(f.level)+'</span></div></div>';
