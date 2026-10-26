@@ -35,6 +35,7 @@ for f in sorted(glob.glob(os.path.join(src, 'tr', '*.tsv'))):
         seen.add(fr)
         if i in CARDIO: kind = 'cardio'
         elif i in PLYO or e['category'] == 'plyometrics': kind = 'plyo'
+        elif e['category'] == 'cardio': kind = 'cardio'
         elif e['category'] == 'stretching':
             kind = 'mobilite' if ('SMR' in i or 'Circles' in i or i in MOBI) else 'etirement'
         else: kind = 'force'
