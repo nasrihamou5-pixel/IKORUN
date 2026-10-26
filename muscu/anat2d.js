@@ -271,3 +271,23 @@ function ikBody2DMount(root,zones,o){
     tic();
   }));
 }
+
+/* V4.15.2 — petite silhouette (une face) avec un groupe musculaire en couleur : tuiles de la bibliothèque */
+const IK_MG_ZONES={'Pectoraux':['f',['pec_h','pec_m','pec_b']],'Dos':['b',['lats','rhomb']],'Épaules':['f',['del_a','del_l','del_p']],'Trapèzes':['b',['trap']],
+  'Biceps':['f',['bi_l','bi_c','brach']],'Triceps':['b',['tri_lo','tri_la','tri_me']],'Avant-bras':['f',['fa_f','fa_br','fa_e']],'Abdominaux':['f',['abs_h','abs_b','obl']],
+  'Lombaires':['b',['lomb']],'Fessiers':['b',['gfes','mfes']],'Quadriceps':['f',['vex','drf','vin']],'Ischios':['b',['isch']],'Adducteurs':['f',['add']],
+  'Abducteurs':['b',['mfes']],'Mollets':['b',['gastro','sol']],'Cou':['f',['trap']],'Corps entier':['f',null]};
+function ikBodyMiniSVG(group){
+  const m=IK_MG_ZONES[group]; if(!m) return '';
+  const face=m[0], zs=m[1], fi=face==='f'?0:1;
+  let h='<path class="bm-bord" d="'+ANAT.bord[fi]+'"/>';
+  ANAT[face].forEach(([g,d,z])=>{
+    const on=g&&(zs===null||z.some(q=>zs.includes(q[0])));
+    h+='<path class="'+(on?'bm-on':g?'bm-m':'bm-n')+'" d="'+d+'"/>';
+  });
+  // cadrage sur la région du muscle (haut du corps, tronc, cuisses, mollets) : le muscle se voit en grand
+  const reg={'Pectoraux':'u','Dos':'u','Épaules':'u','Trapèzes':'u','Biceps':'u','Triceps':'u','Avant-bras':'a','Abdominaux':'t','Lombaires':'t','Fessiers':'h','Quadriceps':'l','Ischios':'l','Adducteurs':'l','Abducteurs':'h','Mollets':'c','Cou':'u','Corps entier':'w'}[group]||'w';
+  const R={u:[92,170,540,540],a:[40,330,644,644],t:[140,330,444,444],h:[110,560,504,504],l:[110,640,504,504],c:[130,950,464,464],w:[0,0,724,1448]}[reg];
+  const vb=(R[0]+(face==='f'?0:724))+' '+R[1]+' '+R[2]+' '+R[3];
+  return '<svg class="bm-svg" viewBox="'+vb+'" preserveAspectRatio="xMidYMid meet" aria-hidden="true">'+h+'</svg>';
+}

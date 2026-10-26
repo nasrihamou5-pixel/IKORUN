@@ -2709,7 +2709,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.15.1';
+const APP_VERSION='4.15.2';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -3830,7 +3830,7 @@ function closeOv(id){ const el=$('#'+id); if(!el) return; ovLeave(el); el.classL
   // bas). Sans ce bloc, annuler depuis la bibliothèque ou depuis "Configurer" (X, pas
   // "Ajouter") fermait tout et faisait perdre le programme en cours de création — bug
   // signalé par un utilisateur ("petit bug lors de la création d'un programme de muscu").
-  if((id==='ovLib'||id==='ovCfg') && _libFromCreate && typeof newProg!=='undefined' && newProg){ _libFromCreate=false; renderCreate(); openOv('ovCreate'); }
+  if((id==='ovLib'||id==='ovCfg') && _libFromCreate && typeof newProg!=='undefined' && newProg){ _libFromCreate=false; if(typeof libMulti!=='undefined') libMulti=false; renderCreate(); openOv('ovCreate'); }
   // Garde-fou : si ovLive se ferme par un chemin qui n'est pas pauseLive/doCancelLive/finishLive,
   // on ne laisse jamais liveTimer/restTimer tourner en fond perdu.
   // Le repos part avec (minuteur, fenêtre ET état) : avant, sa fenêtre restait affichée,
@@ -9929,28 +9929,27 @@ function finishLive(){
 let newProg=null,libFilter='Tous',libCallback=null;
 const PROG_ICONS=['arms','dumbbell','fire','bolt','back','target','medal','legs','abs','run'];
 const PROG_COLORS=[['--e','colBlue'],['--bad','colRed'],['--ok','colGreen'],['--or','colGold'],['--maitre','colPurple'],['--diamant','colCyan']];
+// V4.15.2 : un nom et des exercices, c'est tout (plus de description, d'objectif, d'icône ni de couleur)
 function openCreate(){
-  newProg={name:'',description:'',objective:'Masse',color:'--e',icon:'arms',ex:[]};
+  newProg={name:'',description:'',objective:'Masse',color:'--e',icon:'dumbbell',ex:[]};
   renderCreate(); openOv('ovCreate');
 }
 function renderCreate(){
-  let h='<div class="field"><label>'+t('programNameLab')+'</label><input class="inp" id="npName" value="'+escHtml(newProg.name||'')+'" oninput="newProg.name=this.value" placeholder="'+t('programNamePh')+'"></div>';
-  h+='<div class="field"><label>'+t('descriptionLab')+'</label><textarea class="inp" rows="2" oninput="newProg.description=this.value" placeholder="'+t('descriptionPh')+'">'+escHtml(newProg.description||'')+'</textarea></div>';
-  h+='<div class="field"><label>'+t('objectiveLab2')+'</label><div class="pills">'+[['Force','objForce'],['Masse','objMass'],['Endurance','objEndurance'],['Perte poids','objWeightLoss'],['Maintien','objMaintain']].map(o=>'<div class="pill '+(newProg.objective===o[0]?'on':'')+'" onclick="newProg.objective=\''+o[0]+'\';renderCreate()">'+t(o[1])+'</div>').join('')+'</div></div>';
-  h+='<div class="field"><label>'+t('iconLab')+'</label><div class="pills">'+PROG_ICONS.map(ic=>'<div class="pill '+(newProg.icon===ic?'on':'')+'" onclick="newProg.icon=\''+ic+'\';renderCreate()">'+ICN(ic,18)+'</div>').join('')+'</div></div>';
-  h+='<div class="field"><label>'+t('colorLab')+'</label><div class="pills">'+PROG_COLORS.map(c=>'<div class="pill '+(newProg.color===c[0]?'on':'')+'" onclick="newProg.color=\''+c[0]+'\';renderCreate()"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var('+c[0]+');margin-right:6px"></span>'+t(c[1])+'</div>').join('')+'</div></div>';
-  h+='<div class="lab" style="margin:10px 0 8px">'+tp('exercisesCountLab',newProg.ex.length)+'</div>';
-  if(!newProg.ex.length) h+='<div class="tip" style="margin-bottom:12px">'+t('addExFromLib')+'</div>';
-  newProg.ex.forEach((e,i)=>{
-    h+='<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:8px"><span style="font-size:22px">'+e.anim+'</span><div><div style="font-weight:700;font-size:14px">'+escHtml(trExName(e.name))+'</div><div class="num" style="font-size:12px;color:var(--et,var(--e))">'+e.sets+'×'+e.reps+(e.rest?' · '+e.rest+'s':'')+'</div></div></div><button class="x" onclick="newProg.ex.splice('+i+',1);renderCreate()">'+ICN('trash',16)+'</button></div></div>';
-  });
-  h+='<button class="btn ghost" style="margin-bottom:12px" onclick="openLibFor(addToNewProg)">'+t('addFromLibBtn')+'</button>';
-  h+='<button class="btn" onclick="saveNewProg()">'+t('saveProgramBtn')+'</button>';
+  let h='<input class="inp np-name" id="npName" value="'+escHtml(newProg.name||'')+'" oninput="newProg.name=this.value" placeholder="'+t('programNamePh')+'">';
+  if(!newProg.ex.length){
+    h+='<div class="np-empty ik-in">'+ICN('dumbbell',30,'var(--e)')+'<b>'+t('npEmptyTitle')+'</b><span>'+t('npEmptySub')+'</span></div>';
+  } else {
+    h+='<div class="lab ap-lab">'+tp('exercisesCountLab',newProg.ex.length)+'</div><div class="ik-grp">'+newProg.ex.map((e,i)=>
+      '<div class="ik-row np-row ik-in" style="--i:'+Math.min(i,10)+'"><div style="flex:none">'+exThumb(e.name,44)+'</div><div class="ik-row-t"><b>'+escHtml(trExName(e.name))+'</b><small>'+tp('setsRepsLine',e.sets,e.reps)+'</small></div>'+
+      '<button type="button" class="np-x" aria-label="'+t('removeLab2')+'" onclick="newProg.ex.splice('+i+',1);renderCreate()">×</button></div>').join('')+'</div>';
+  }
+  h+='<button class="btn btn-soft" style="margin:4px 0 10px" onclick="libMulti=true;openLibFor(addToNewProg)">＋ '+t('npAddEx')+'</button>';
+  h+='<button class="btn" onclick="saveNewProg()"'+(newProg.ex.length?'':' disabled')+'>'+t('npCreateBtn')+'</button>';
   $('#createBody').innerHTML=h;
 }
 function addToNewProg(e){ closeOv('ovLib'); openCfg(e,(cfg)=>{ newProg.ex.push(cfg); renderCreate(); openOv('ovCreate'); }); }
 function saveNewProg(){
-  if(!newProg.name.trim()){ toast(t('giveNameLab')); return; }
+  if(!newProg.name.trim()) newProg.name=t('npDefaultName')+' '+(CUSTOM.filter(p=>p.kind==='muscu').length+1);
   if(!newProg.ex.length){ toast(t('addExercisesLab')); return; }
   CUSTOM.push({id:'C'+Date.now(),kind:'muscu',name:newProg.name,description:newProg.description,objective:newProg.objective,color:newProg.color,icon:newProg.icon,ex:newProg.ex});
   saveAll(); closeOv('ovCreate'); renderSport(); toast(t('programCreated'));
@@ -9965,17 +9964,23 @@ function openLibBrowse(){ libCallback=null; libBrowseMode=true; renderLib(); ope
 let libView='grid', _ficheCur=null;
 function renderLib(){
   _ficheCur=null;
-  let h='<input class="inp" style="margin-bottom:14px" placeholder="'+t('searchExercisePlaceholder')+'" value="'+escHtml(libSearch||'')+'" oninput="libSearch=this.value;clearTimeout(_libSearchT);_libSearchT=setTimeout(renderLibList,140)">';
-  // Tuiles muscle en photo — navigation visuelle rapide, comme une planche anatomique
-  h+='<div class="lab" style="margin-bottom:8px">'+t('muscleLabel')+'</div><div class="mtile-row">'+MUSCLE_GROUPS.map(m=>{
-    const img=muscleRepImg(m); const on=libFilter===m;
-    return '<div class="mtile '+(on?'on':'')+'" onclick="libFilter=\''+m+'\';renderLib()"><div class="mtile-img" '+(img?'style="background-image:url(\''+img+'\')"':'')+'>'+(img?'':ICN(MUSCLE_ICONS[m]||'dumbbell',24,'var(--e)'))+'</div><div class="mtile-lab">'+(m==='Tous'?t('filterAll'):trMuscle(m))+'</div></div>';
+  let h='<input class="inp lib-search" placeholder="'+t('searchExercisePlaceholder')+'" value="'+escHtml(libSearch||'')+'" oninput="libSearch=this.value;clearTimeout(_libSearchT);_libSearchT=setTimeout(renderLibList,140)">';
+  // V4.15.2 : chaque muscle est montré sur la silhouette 2D (le muscle en couleur), plus en photo
+  h+='<div class="mtile-row lib-mus">'+MUSCLE_GROUPS.map((m,i)=>{
+    const on=libFilter===m;
+    return '<div class="mtile ik-in'+(on?' on':'')+'" style="--i:'+i+'" onclick="libFilter=\''+m+'\';renderLib()"><div class="mtile-img bm" data-mg="'+escHtml(m)+'">'+(m==='Tous'?ICN('search',24,'var(--e)'):'')+'</div><div class="mtile-lab">'+(m==='Tous'?t('filterAll'):trMuscle(m))+'</div></div>';
   }).join('')+'</div>';
-  h+='<div class="lab" style="margin-bottom:6px">'+t('equipmentLabel')+'</div><div class="pills" style="margin-bottom:10px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent)">'+EQUIPMENT.map(m=>'<div class="pill '+(libFilterEquip===m?'on':'')+'" onclick="libFilterEquip=\''+m+'\';renderLib()">'+(m==='Tous'?t('filterAll'):trEquip(m))+'</div>').join('')+'</div>';
-  h+='<div class="lab" style="margin-bottom:6px">'+t('exKindLabel')+'</div><div class="pills" style="margin-bottom:10px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px">'+['Tous',...EX_KINDS].map(m=>'<div class="pill '+(libFilterKind===m?'on':'')+'" onclick="libFilterKind=\''+m+'\';renderLib()">'+(m==='Tous'?t('filterAll'):t('exKind_'+m))+'</div>').join('')+'</div>';
-  h+='<div class="lab" style="margin-bottom:6px">'+t('levelLabel')+'</div><div class="pills" style="margin-bottom:14px">'+['Tous',...LEVELS].map(m=>'<div class="pill '+(libFilterLevel===m?'on':'')+'" onclick="libFilterLevel=\''+m+'\';renderLib()">'+(m==='Tous'?t('filterAll'):trLevel(m))+'</div>').join('')+'</div>';
-  $('#libBody').innerHTML=h+'<div id="libList">'+libListHTML()+'</div>';
+  // matériel, type, niveau : trois menus sur une ligne au lieu de trois rangées de boutons
+  const fch=(lab,val,fn)=>'<button type="button" class="lib-f'+(val!=='Tous'?' on':'')+'" onclick="'+fn+'()"><small>'+lab+'</small><b>'+val+'</b>'+ICN('chevronD',13)+'</button>';
+  h+='<div class="lib-fs">'+fch(t('equipmentLabel'),libFilterEquip==='Tous'?t('filterAll'):trEquip(libFilterEquip),'libPickEquip')+
+    fch(t('exKindLabel'),libFilterKind==='Tous'?t('filterAll'):t('exKind_'+libFilterKind),'libPickKind')+
+    fch(t('levelLabel'),libFilterLevel==='Tous'?t('filterAll'):trLevel(libFilterLevel),'libPickLevel')+'</div>';
+  $('#libBody').innerHTML=h+'<div id="libList">'+libListHTML()+'</div>'+(libMulti?'<div class="lib-done-bar"><button class="btn" onclick="libMultiDone()">'+((newProg&&newProg.ex.length)?tp('libAddN',newProg.ex.length):t('back'))+'</button></div>':'');
+  ikLoad('anat').then(()=>{ document.querySelectorAll('#libBody .mtile-img[data-mg]').forEach(el=>{ const g=el.dataset.mg; if(g!=='Tous'&&!el.firstChild) el.innerHTML=ikBodyMiniSVG(g); }); }).catch(()=>{});
 }
+function libPickEquip(){ const L=['Tous',...new Set(allExercises().map(e=>e.equip).filter(Boolean))]; ikPick(t('equipmentLabel'),L.map(v=>({label:v==='Tous'?t('filterAll'):trEquip(v),on:libFilterEquip===v,cb:()=>{ libFilterEquip=v; renderLib(); }}))); }
+function libPickKind(){ ikPick(t('exKindLabel'),['Tous',...EX_KINDS].map(v=>({label:v==='Tous'?t('filterAll'):t('exKind_'+v),on:libFilterKind===v,cb:()=>{ libFilterKind=v; renderLib(); }}))); }
+function libPickLevel(){ ikPick(t('levelLabel'),['Tous',...LEVELS].map(v=>({label:v==='Tous'?t('filterAll'):trLevel(v),on:libFilterLevel===v,cb:()=>{ libFilterLevel=v; renderLib(); }}))); }
 // Recherche (V3.12.2) : chaque lettre redessinait toute la bibliothèque (filtres, tuiles
 // photo et 177 cartes) ; seule la liste change désormais, 140 ms après la dernière frappe.
 let _libSearchT=null;
@@ -9994,11 +9999,12 @@ function libListHTML(){
   h+='<div class="row" style="margin-bottom:8px"><div class="lab" style="flex:1">'+tp('exercisesCount',list.length)+'</div><div style="display:flex;gap:6px"><span class="mini-ic" style="'+(libView==='grid'?'color:var(--et,var(--e));border-color:var(--e)':'')+'" onclick="libView=\'grid\';renderLib()">▦</span><span class="mini-ic" style="'+(libView==='list'?'color:var(--et,var(--e));border-color:var(--e)':'')+'" onclick="libView=\'list\';renderLib()"></span></div></div>';
   if(libView==='grid'){
     h+='<div class="exg-grid">';
-    list.forEach(e=>{
+    list.forEach((e,i)=>{
       const nm=e.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;'); const g=exGif(e.name); const lvCol=e.level==='Débutant'?'--ok':e.level==='Avancé'?'--bad':'--warn';
-      h+='<div class="exg-card" onclick=\'openFiche("'+nm+'")\'>'+
+      const sel=libMulti&&newProg&&newProg.ex.some(x=>x.name===e.name);
+      h+='<div class="exg-card ik-in'+(sel?' sel':'')+'" style="--i:'+Math.min(i,12)+'" onclick=\'openFiche("'+nm+'")\'>'+
         '<div class="exg-img">'+(g?'<img class="exg-ph" src="'+g[0]+'" alt="" loading="lazy" decoding="async" onload="this.classList.add(\'on\')" onerror="this.remove()">':'<span style="display:inline-flex">'+exGlyph(e,22)+'</span>')+
-        (libBrowseMode?'':'<span class="exg-add" onclick=\'event.stopPropagation();pickEx("'+nm+'")\'>＋</span>')+
+        (libBrowseMode?'':'<span class="exg-add'+(sel?' on':'')+'" onclick=\'event.stopPropagation();pickEx("'+nm+'")\'>'+(sel?'✓':'＋')+'</span>')+
         '</div><div class="exg-body"><div class="exg-name">'+trExName(e.name)+'</div><div class="exg-sub">'+trEquip(e.equip)+' · <span style="color:var('+lvCol+')">'+trLevel(e.level)+'</span></div></div></div>';
     });
     h+='</div>';
@@ -10010,7 +10016,14 @@ function libListHTML(){
   }
   return h;
 }
-function pickEx(name){ const e=findEx(name); if(libCallback) libCallback(e); else openFiche(name); }
+function pickEx(name){
+  // V4.15.2 : création d'un programme — on coche plusieurs exercices d'affilée, sans quitter la bibliothèque
+  if(libMulti&&newProg){ const k=newProg.ex.findIndex(x=>x.name===name);
+    if(k>=0) newProg.ex.splice(k,1); else newProg.ex.push(Object.assign(ex(name,3,'10'),{rest:90}));
+    try{ haptic(); }catch(_){} renderLibList(); const bb=document.querySelector('.lib-done-bar .btn'); if(bb) bb.textContent=newProg.ex.length?tp('libAddN',newProg.ex.length):t('back'); return; }
+  const e=findEx(name); if(libCallback) libCallback(e); else openFiche(name); }
+let libMulti=false;
+function libMultiDone(){ libMulti=false; closeOv('ovLib'); renderCreate(); openOv('ovCreate'); }
 /* Fiche tutoriel complète */
 function openFiche(name){
   const f=exMeta(name); if(!f) return;
