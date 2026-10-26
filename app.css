@@ -6199,3 +6199,24 @@ html[data-flat]:not(#_) .lr-title,html[data-flat]:not(#_) .mus-name,html[data-fl
 html[data-flat]:not(#_):not(#_) .card.ex-swipe-card{background:var(--bg) !important}
 html[data-flat]:not(#_):not(#_) .set-swipe-row{background:var(--bg)}
 html[data-flat]:not(#_):not(#_) .set-swipe-row:has(.setcheck.on){background:color-mix(in srgb,var(--ok) 16%,var(--bg))}
+
+/* V4.22.0 — séance en cours plus lisible : barre d'état, segments de séries, traits de séparation */
+.ex-swipe-card{overflow:hidden}
+.exc-bar{position:absolute;left:0;top:0;bottom:0;width:4px;background:color-mix(in srgb,var(--snow) 14%,transparent);transition:background .25s ease}
+.exc-open>.exc-bar{background:linear-gradient(var(--e),var(--e2,var(--e)))}
+.exc-done>.exc-bar{background:var(--ok)}
+.ex-segs{display:flex;gap:4px;margin-top:7px;max-width:150px}
+.ex-segs i{flex:1;height:4px;border-radius:3px;background:color-mix(in srgb,var(--snow) 14%,transparent);transition:background .25s ease}
+.ex-segs i.on{background:var(--ok)}
+.ex-sep{height:1px;margin:0 0 10px;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--snow) 24%,transparent),transparent)}
+.live-note{border-bottom-color:color-mix(in srgb,var(--snow) 14%,transparent)}
+.set-swipe-wrap{position:relative;overflow:hidden;border-bottom:1px solid color-mix(in srgb,var(--snow) 9%,transparent)}
+.set-swipe-row{padding:6px 0}
+.set-swipe-wrap:last-of-type{border-bottom:0}
+.set-swipe-row .set-n{width:28px;height:28px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;background:color-mix(in srgb,var(--e) 16%,transparent);color:var(--e)}
+.set-swipe-row:has(.setcheck.on) .set-n{background:color-mix(in srgb,var(--ok) 22%,transparent);color:var(--ok)}
+html:not(#_):not(#_) .set-swipe-row{border:0;border-radius:12px}
+.ex-swipe-wrap.del-ready .ex-swipe-action,.set-swipe-wrap.del-ready .set-swipe-action{filter:brightness(1.18) saturate(1.2)}
+.ex-swipe-wrap.del-ready .ex-swipe-action span,.set-swipe-wrap.del-ready .set-swipe-action span{transform:scale(1.25);transition:transform .15s ease}
+.ex-swipe-action,.set-swipe-action{opacity:0;transition:opacity .12s ease}
+.ex-swipe-wrap:has(.ex-swipe-card.dragging,.ex-swipe-card.open) .ex-swipe-action,.set-swipe-wrap:has(.set-swipe-row.dragging,.set-swipe-row.open) .set-swipe-action{opacity:1}
