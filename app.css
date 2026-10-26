@@ -6232,28 +6232,56 @@ html:not(#_):not(#_) .set-swipe-row{border:0;border-radius:12px}
 .heat2d-faces{display:flex;justify-content:space-around;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:4px}
 .heat2d-svg{display:block;width:100%;height:auto}
 
-/* V4.23.1 — séance en cours : surfaces plates et nettes (Classique comme Épuré) */
-html:not(#_):not(#_):not(#_) #liveBody .card.ex-swipe-card{background:rgb(var(--s1-rgb)) !important;box-shadow:none !important;border:1px solid color-mix(in srgb,var(--snow) 8%,transparent) !important;border-radius:20px}
-html:not(#_):not(#_):not(#_) #liveBody .ex-swipe-wrap{border-radius:20px}
-#liveBody .exc-bar{top:18px;bottom:auto;height:30px;width:4px;border-radius:0 4px 4px 0}
-#liveBody .exc-open>.exc-bar{height:calc(100% - 36px)}
-#liveBody .ex-thumb{border:0 !important;border-radius:14px !important;box-shadow:none !important;overflow:hidden}
-#liveBody .ex-segs{gap:5px;max-width:170px;margin-top:8px}
-#liveBody .ex-segs i{height:5px;border-radius:5px}
-#liveBody .ex-sep{margin:2px 0 12px;background:color-mix(in srgb,var(--snow) 8%,transparent)}
-html:not(#_):not(#_):not(#_) #liveBody .live-note{background:transparent !important;border:0 !important;border-bottom:1px solid color-mix(in srgb,var(--snow) 10%,transparent) !important;border-radius:0 !important;box-shadow:none !important;padding:6px 2px 10px;margin-bottom:12px;font-size:14px}
-#liveBody .live-sets-h{padding-bottom:8px;border-bottom:1px solid color-mix(in srgb,var(--snow) 8%,transparent);margin-bottom:4px !important;letter-spacing:.06em}
-html:not(#_):not(#_):not(#_) #liveBody .set-swipe-wrap{border-bottom:1px solid color-mix(in srgb,var(--snow) 6%,transparent)}
-html:not(#_):not(#_):not(#_) #liveBody .set-swipe-wrap:last-of-type{border-bottom:0}
-html:not(#_):not(#_):not(#_) #liveBody .set-swipe-row{background:rgb(var(--s1-rgb)) !important;box-shadow:none !important;border:0 !important;border-radius:0;padding:7px 0}
-html:not(#_):not(#_):not(#_) #liveBody .set-swipe-row:has(.setcheck.on){background:color-mix(in srgb,var(--ok) 13%,rgb(var(--s1-rgb))) !important}
-html:not(#_):not(#_):not(#_) #liveBody .set-swipe-row .set-n{background:none;width:auto;height:auto;font-size:16px;font-weight:800;color:var(--e)}
-html:not(#_):not(#_):not(#_) #liveBody .set-swipe-row:has(.setcheck.on) .set-n{color:var(--ok);background:none}
-html:not(#_):not(#_):not(#_) #liveBody .setcell{background:color-mix(in srgb,var(--snow) 7%,transparent) !important;border:0 !important;box-shadow:none !important;border-radius:11px;height:40px;padding:0 4px;font-size:16px;font-weight:700}
-html:not(#_):not(#_):not(#_) #liveBody .setcell:focus{box-shadow:0 0 0 2px var(--e) !important}
-html:not(#_):not(#_):not(#_) #liveBody .set-swipe-row:has(.setcheck.on) .setcell{background:transparent !important}
-html:not(#_):not(#_):not(#_) #liveBody .setcheck{width:34px;height:34px;background:transparent !important;border:1.5px solid color-mix(in srgb,var(--snow) 22%,transparent) !important;box-shadow:none !important;color:color-mix(in srgb,var(--snow) 45%,transparent)}
-html:not(#_):not(#_):not(#_) #liveBody .setcheck.on{background:var(--ok) !important;border-color:var(--ok) !important;color:#08201A}
-html:not(#_):not(#_):not(#_) #liveBody .live-addset{background:color-mix(in srgb,var(--snow) 6%,transparent) !important;border:0 !important;box-shadow:none !important;color:var(--snow);font-weight:700;margin-top:10px !important;border-radius:14px;min-height:44px}
-html:not(#_):not(#_):not(#_) #liveBody .live-addset::before,html:not(#_):not(#_):not(#_) #liveBody .live-addset::after{display:none}
-#liveBody .ex-segs i.on{background:var(--ok)}
+
+
+/* V4.24.0 — séance en cours, style Santé : cartes simples, pastille de progression, séries en lignes */
+html:not(#_):not(#_):not(#_) #liveBody .card.lv-card{background:rgb(var(--s1-rgb)) !important;background-image:none !important;box-shadow:none !important;border:1px solid color-mix(in srgb,var(--snow) 8%,transparent) !important;border-radius:22px;padding:14px 16px !important;-webkit-backdrop-filter:none !important;backdrop-filter:none !important}
+html:not(#_):not(#_):not(#_) #liveBody .card.lv-card::before,html:not(#_):not(#_):not(#_) #liveBody .card.lv-card::after{display:none !important}
+html:not(#_):not(#_):not(#_) #liveBody .ex-swipe-wrap{border-radius:22px;margin-bottom:10px}
+#liveBody .lv-card.lv-done{border-color:color-mix(in srgb,var(--ok) 35%,transparent) !important}
+.lv-h{display:flex;align-items:center;gap:12px;cursor:pointer}
+.lv-h .ex-thumb{border:0 !important;border-radius:13px !important;box-shadow:none !important;overflow:hidden;flex:none}
+.lv-ht{flex:1;min-width:0}
+.lv-ht b{display:block;font-size:16px;font-weight:700;line-height:1.25;color:var(--snow)}
+.lv-ht small{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.lv-pill{flex:none;display:inline-flex;align-items:center;gap:3px;font-size:12.5px;font-weight:800;padding:5px 10px;border-radius:999px;background:color-mix(in srgb,var(--snow) 8%,transparent);color:var(--muted);font-variant-numeric:tabular-nums}
+.lv-pill.on{background:color-mix(in srgb,var(--e) 16%,transparent);color:var(--e)}
+.lv-pill.ok{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.lv-more{flex:none;border:0;background:none;color:var(--e);font-size:22px;font-weight:800;letter-spacing:1px;padding:2px 0 2px 4px;cursor:pointer;line-height:1}
+.lv-body{border-top:1px solid transparent}
+.lv-open .lv-body{border-top-color:color-mix(in srgb,var(--snow) 8%,transparent);padding-top:4px}
+.lv-note{display:block;width:100%;background:transparent;border:0;border-bottom:1px solid color-mix(in srgb,var(--snow) 10%,transparent);color:var(--snow);font:inherit;font-size:14px;padding:10px 2px;margin:2px 0 6px;outline:none}
+.lv-obj{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid color-mix(in srgb,var(--snow) 8%,transparent);color:var(--muted);font-size:13px}
+.lv-obj svg{flex:none;color:var(--e)}
+.lv-obj.up svg{color:var(--ok)}
+.lv-obj span{flex:1;min-width:0}
+html:not(#_):not(#_):not(#_) #liveBody .set-swipe-wrap{border-bottom:1px solid color-mix(in srgb,var(--snow) 7%,transparent);border-radius:0}
+html:not(#_):not(#_):not(#_) #liveBody .set-swipe-wrap:last-child{border-bottom:0}
+html:not(#_):not(#_):not(#_) #liveBody .set-swipe-row.lv-set{display:flex !important;align-items:center;gap:10px;padding:10px 0;background:rgb(var(--s1-rgb)) !important;box-shadow:none !important;border:0 !important;border-radius:0}
+.lv-n{flex:0 0 52px;display:flex;flex-direction:column;align-items:flex-start;cursor:pointer;line-height:1.1}
+.lv-n b{font-size:20px;font-weight:800;color:var(--e);font-variant-numeric:tabular-nums}
+.lv-n small{font-size:11px;color:var(--dim);margin-top:2px;white-space:nowrap}
+.lv-f{flex:1;min-width:0;position:relative;display:block}
+html:not(#_):not(#_):not(#_) #liveBody .lv-f .setcell{width:100%;height:44px;border:0 !important;box-shadow:none !important;border-radius:12px;background:color-mix(in srgb,var(--snow) 7%,transparent) !important;color:var(--snow);font-size:18px;font-weight:800;text-align:left;padding:0 38px 0 12px}
+html:not(#_):not(#_):not(#_) #liveBody .lv-f .setcell:focus{box-shadow:0 0 0 2px var(--e) !important}
+.lv-f span{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11.5px;font-weight:700;color:var(--muted);pointer-events:none}
+html:not(#_):not(#_):not(#_) #liveBody .lv-set .setcheck{flex:none;margin:0;width:40px;height:40px;border-radius:50%;background:transparent !important;border:1.5px solid color-mix(in srgb,var(--snow) 20%,transparent) !important;box-shadow:none !important;color:color-mix(in srgb,var(--snow) 40%,transparent)}
+html:not(#_):not(#_):not(#_) #liveBody .lv-set .setcheck.on{background:var(--ok) !important;border-color:var(--ok) !important;color:#06251a}
+html:not(#_):not(#_):not(#_) #liveBody .lv-set.is-done .lv-n b{color:var(--ok)}
+html:not(#_):not(#_):not(#_) #liveBody .lv-set.is-done .setcell{background:color-mix(in srgb,var(--ok) 10%,transparent) !important;color:var(--snow)}
+.lv-foot{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid color-mix(in srgb,var(--snow) 7%,transparent)}
+.lv-link{border:0;background:none;font:inherit;font-size:14px;font-weight:700;color:var(--e);cursor:pointer;padding:6px 0;display:inline-flex;align-items:center;gap:6px}
+.lv-link.mute{color:var(--muted);font-weight:600}
+html:not(#_):not(#_):not(#_) #liveBody .lv-set .set-n.lv-n{background:none !important;width:auto;height:auto;border-radius:0;margin:0;display:flex;align-items:flex-start;justify-content:center;box-shadow:none !important}
+html:not(#_):not(#_):not(#_) #liveBody .lv-h .ex-thumb{border:0 !important;outline:0;padding:0 !important;background:color-mix(in srgb,var(--snow) 7%,transparent) !important;box-shadow:none !important}
+html:not(#_):not(#_):not(#_) #liveBody .lv-h .ex-thumb img{border-radius:13px}
+html:not(#_):not(#_):not(#_) #liveBody .lv-f .setcell{padding:0 30px 0 10px;font-size:17px}
+.lv-f span{right:9px;font-size:11px}
+.lv-n{flex-basis:40px}
+html:not(#_):not(#_):not(#_) #liveBody .set-swipe-row.lv-set{gap:8px}
+.ex-thumb.ex-thumb-fig{background:color-mix(in srgb,var(--snow) 5%,transparent)}
+.ex-thumb-fig .mus-fig2{width:100%;height:100%;object-fit:contain;padding:3px;box-sizing:border-box}
+.exg-img.exg-fig{display:flex;align-items:center;justify-content:center}
+.exg-img.exg-fig .mus-fig2{width:88%;height:88%;object-fit:contain}
+.ex-fiche-fig{position:relative;max-width:300px;margin:0 auto}
+.ex-fiche-fig .mus-fig2{width:100%;height:auto;display:block}

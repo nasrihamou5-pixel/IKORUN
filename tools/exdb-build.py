@@ -18,6 +18,12 @@ LV = {'beginner':'Débutant','intermediate':'Intermédiaire','expert':'Avancé'}
 CARDIO = {'Bicycling_Stationary','Recumbent_Bike','Elliptical_Trainer','Rowing_Stationary','Rope_Jumping','Running_Treadmill','Jogging_Treadmill','Walking_Treadmill','Stairmaster','Trail_Running_Walking'}
 PLYO = {'Front_Box_Jump','Split_Jump','Lateral_Bound','Fast_Skipping','Single-Leg_Hop_Progression','Standing_Long_Jump'}
 EN_FIX = {'One-Arm_Kettlebell_Swings': ['Stand with feet wider than shoulders, kettlebell on the floor in front of you.', 'Hinge at the hips, hike the bell back between your legs, then drive the hips forward to swing it to chest height.', 'Let it fall back with a flat back and repeat; switch hands halfway.']}
+LEGS = ['Quadriceps','Ischios','Fessiers','Mollets']
+CARDIO_MUS = {'Bicycling_Stationary':['Quadriceps','Fessiers','Ischios','Mollets'],'Recumbent_Bike':['Quadriceps','Fessiers','Ischios'],
+ 'Elliptical_Trainer':LEGS+['Épaules'],'Rowing_Stationary':['Dos','Quadriceps','Fessiers','Biceps','Lombaires','Épaules'],
+ 'Rope_Jumping':['Mollets','Quadriceps','Épaules','Avant-bras'],'Running_Treadmill':LEGS,'Jogging_Treadmill':LEGS,'Walking_Treadmill':LEGS,
+ 'Stairmaster':['Fessiers','Quadriceps','Mollets','Ischios'],'Trail_Running_Walking':LEGS}
+MOBI = {'Dynamic_Chest_Stretch','Dynamic_Back_Stretch','Shoulder_Raise','Side_Leg_Raises','Front_Leg_Raises','Rear_Leg_Raises','Iron_Crosses_stretch','Groiners','Lower_Back_Curl','Cat_Stretch','Worlds_Greatest_Stretch','Pelvic_Tilt_Into_Bridge','Torso_Rotation','Windmills'}
 EXISTING = {'Planche latérale','Curl barre EZ','Curl araignée','Mollets à la presse','Développé haltères assis'}   # déjà dans la bibliothèque de base
 rows = []; seen = set()
 for f in sorted(glob.glob(os.path.join(src, 'tr', '*.tsv'))):
@@ -30,9 +36,9 @@ for f in sorted(glob.glob(os.path.join(src, 'tr', '*.tsv'))):
         if i in CARDIO: kind = 'cardio'
         elif i in PLYO or e['category'] == 'plyometrics': kind = 'plyo'
         elif e['category'] == 'stretching':
-            kind = 'mobilite' if ('SMR' in i or 'Circles' in i) else 'etirement'
+            kind = 'mobilite' if ('SMR' in i or 'Circles' in i or i in MOBI) else 'etirement'
         else: kind = 'force'
-        prim = [MUS[m] for m in e['primaryMuscles']]
+        prim = CARDIO_MUS.get(i) or [MUS[m] for m in e['primaryMuscles']]
         sec = [MUS[m] for m in e['secondaryMuscles'] if m in MUS][:3]
         grp = GRP[e['primaryMuscles'][0]] if e['primaryMuscles'] else 'Corps entier'
         sen = [s.strip() for s in e['instructions']][:5]
@@ -42,6 +48,13 @@ for f in sorted(glob.glob(os.path.join(src, 'tr', '*.tsv'))):
             sen = EN_FIX.get(i) or [x.strip() for x in _re.split(r'(?<=[.!?])\s+', ' '.join(sen)) if x.strip()][:3]
         sfrl = [s.strip() for s in sfr.split(';;')]; sarl = [s.strip() for s in sar.split(';;')]
         rows.append([i, fr, grp, EQ[e['equipment']], LV.get(e['level'], 'Intermédiaire'), prim, sec, kind, i, 0, e['name'], ar, sfrl, sen, sarl, 0])
+# exercices rédigés pour IKORUN (sans photo) : étirements et mobilité qui manquaient dans la base
+OP = os.path.join(src, 'orig_ex.py')
+if os.path.exists(OP):
+    g3 = {}; exec(open(OP, encoding='utf8').read(), g3)
+    for i, o in g3['O'].items():
+        rows.append([i, o['fr'], o['group'], o.get('equip', 'Poids du corps'), o.get('level', 'Débutant'), o['primary'], o.get('sec', []), o['kind'], '', 0,
+                     o['en'], o['ar'], o['sfr'], o['sen'], o['sar'], 0])
 for i, r in R.items():
     img = r['img']
     rows.append([i, r['name']['fr'], 'Corps entier' if len(r['zones']) > 6 else GRP.get('quadriceps'), r['equip'], r['level'], r['primary'], [], 'rehab', img, r['zones'],

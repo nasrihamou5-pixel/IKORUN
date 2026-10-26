@@ -359,17 +359,30 @@ function ikBodyFillSVG(colorOf,o){
       h+='<path d="'+d+'" fill="'+(c||(g?o.base:o.bg)||'#333')+'" stroke="'+(o.line||'none')+'" stroke-width="2.5"/>';
     });
   });
-  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 70 1448 1320" preserveAspectRatio="xMidYMid meet">'+h+'</svg>';
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="'+(o.vb||'0 70 1448 1320')+'" preserveAspectRatio="xMidYMid meet">'+h+'</svg>';
 }
 // codes de zones d'un groupe musculaire (Pectoraux, Dos…)
 function ikGroupCodes(g){ const m=IK_MG_ZONES[g]; return m&&m[1]?m[1]:[]; }
 const _ikFigUrl=new Map();
 // carte de programme : image (blob) du corps, muscles principaux en plein, secondaires plus clairs
-function ikProgFigHTML(p){
-  const z=ikZonesSum((p.ex||[]).map(e=>e.name));
+function ikProgFigHTML(p){ return _ikFigHTML(ikZonesSum((p.ex||[]).map(e=>e.name))); }
+// exercice sans photo : le corps 2D avec ses muscles (1er groupe en plein, les autres plus clairs)
+function _ikRegVB(group,face){
+  const reg={'Pectoraux':'u','Dos':'u','Épaules':'u','Trapèzes':'u','Biceps':'u','Triceps':'u','Avant-bras':'a','Abdominaux':'t','Lombaires':'t','Fessiers':'h','Quadriceps':'l','Ischios':'l','Adducteurs':'l','Abducteurs':'h','Mollets':'c','Cou':'u','Corps entier':'w'}[group]||'w';
+  const R={u:[92,170,540,540],a:[40,330,644,644],t:[140,330,444,444],h:[110,560,504,504],l:[110,640,504,504],c:[130,950,464,464],w:[0,70,724,1320]}[reg||'w'];
+  return (R[0]+(face==='f'?0:724))+' '+R[1]+' '+R[2]+' '+R[3];
+}
+function ikExFigHTML(e,crop){
+  const z={}; (e&&e.primary||[]).forEach((g,k)=>{ ikGroupCodes(g).forEach(c=>{ const v=k?.5:1; if(!(z[c]>=v)) z[c]=v; }); });
+  (e&&e.secondary||[]).forEach(g=>ikGroupCodes(g).forEach(c=>{ if(!z[c]) z[c]=.25; }));
+  // une seule face (celle du muscle principal) : le corps est deux fois plus grand dans la vignette
+  const m=IK_MG_ZONES[(e&&e.primary&&e.primary[0])||''], face=m?m[0]:'f';
+  return _ikFigHTML(z,crop?_ikRegVB(e.primary&&e.primary[0],face):(face==='b'?'724 70 724 1320':'0 70 724 1320'));
+}
+function _ikFigHTML(z,vb){
   const cs=getComputedStyle(document.documentElement), v=n=>cs.getPropertyValue(n).trim();
   const e=v('--e')||'#4f8dff', base=v('--s3')||'#2a2f3a', bg=v('--s2')||'#1b1f27';
-  const key=Object.keys(z).sort().map(k=>k+z[k]).join(',')+'|'+e+base;
+  const key=Object.keys(z).sort().map(k=>k+z[k]).join(',')+'|'+e+base+'|'+(vb||'');
   let url=_ikFigUrl.get(key);
   if(!url){
     const col=c=>{ const x=z[c]; return x>=1?e:x>=.5?'color-mix(in srgb,'+e+' 62%,'+base+')':x>=.25?'color-mix(in srgb,'+e+' 32%,'+base+')':null; };
@@ -377,7 +390,7 @@ function ikProgFigHTML(p){
     const mix=(a,b,t)=>{ const p=h=>{ h=h.replace('#',''); if(h.length===3) h=h.split('').map(x=>x+x).join(''); return [0,2,4].map(i=>parseInt(h.substr(i,2),16)); };
       try{ const A=p(a),B=p(b); if(A.some(isNaN)||B.some(isNaN)) return a; return 'rgb('+A.map((x,i)=>Math.round(x*t+B[i]*(1-t))).join(',')+')'; }catch(_){ return a; } };
     const col2=c=>{ const x=z[c]; return x>=1?e:x>=.5?mix(e,base,.62):x>=.25?mix(e,base,.32):null; };
-    const svg=ikBodyFillSVG(/^#/.test(e)&&/^#/.test(base)?col2:col,{base,bg,line:bg});
+    const svg=ikBodyFillSVG(/^#/.test(e)&&/^#/.test(base)?col2:col,{base,bg,line:bg,vb});
     url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'})); _ikFigUrl.set(key,url);
   }
   return '<img class="mus-fig2" src="'+url+'" alt="" decoding="async" draggable="false">';
