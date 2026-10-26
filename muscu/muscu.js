@@ -288,6 +288,22 @@ function IK_PTF(){ return [
     ['Fessiers B',[['Squat fendu avec haltères',3,'10-12'],['Presse à cuisses',4,'12-15'],['Leg Curl allongé',3,'12-15'],['Pont fessier une jambe',3,'12-15'],['Mollets debout',3,'15-20']]],
     ['Fessiers C',[['Squat sumo avec haltère',3,'6-8'],['Montées sur banc avec haltères',3,'10-12'],['Leg Extension',3,'12-15'],['Marche du monstre (élastique)',3,'20'],['Crunch poulie',3,'15']]]]}
 ]; }
+/* V4.25.0 — les programmes par défaut et les programmes tout faits deviennent de vrais programmes
+   (copiés une fois dans CUSTOM, marqués def) : on peut les ouvrir, modifier, renommer, supprimer.
+   « Restaurer » remet ceux qui ont été supprimés. */
+function ikDefCount(){ return PROGS_DEF().length+IK_PTF().reduce((a,p)=>a+1+p.s.length,0); }
+function ikSeedDefaults(force){
+  if(!PREFS||(PREFS.defSeeded&&!force)) return;
+  const have=new Set(CUSTOM.filter(x=>x.def).map(x=>x.def));
+  PROGS_DEF().forEach(p=>{ const k='prog:'+p.id; if(have.has(k)) return;
+    CUSTOM.push(Object.assign(JSON.parse(JSON.stringify(p)),{id:'D_'+p.id,kind:'muscu',def:k})); });
+  IK_PTF().forEach(p=>{ const k='ptf:'+p.id, pid='D_'+p.id, obj={genGoalForce:'Force',genGoalFit:'Maintien'}[p.goal]||'Masse';
+    if(!have.has(k)) CUSTOM.push({id:pid,kind:'muscuplan',name:t('ptf_'+p.id),def:k});
+    p.s.forEach(([title,xs],i)=>{ const ks=k+':'+i; if(have.has(ks)) return;
+      CUSTOM.push({id:pid+'_'+i,kind:'muscu',name:title,description:t('ptf_'+p.id),objective:obj,color:'--e',icon:'dumbbell',ex:xs.map(([n,s,r])=>ex_(n,s,r)),plan:pid,def:ks}); }); });
+  PREFS.defSeeded=1; try{ DB.save('prefs',PREFS); }catch(_){} saveAll();
+}
+function ikRestoreDefaults(){ ikSeedDefaults(true); renderSport(); toast(t('defRestoredToast')); }
 function openPtfList(){
   $('#ovProgTitle').textContent=t('ptfTitle');
   let h='<p class="ap-hint" style="margin:0 2px 14px">'+t('ptfIntro')+'</p>';

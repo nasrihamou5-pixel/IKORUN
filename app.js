@@ -2710,7 +2710,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.24.0';
+const APP_VERSION='4.25.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -5786,7 +5786,8 @@ function allExercises(){
   XDATA.forEach(x=>{ if(!names.has(x[0])){ names.add(x[0]); out.push({name:x[0],group:x[1],equip:x[2],level:x[3],primary:x[4],secondary:x[5],anim:x[6],kind:'force'}); } });
   if(typeof EXD_ROWS!=='undefined') EXD_ROWS.forEach(r=>{ if(!names.has(r[1])){ names.add(r[1]); out.push({name:r[1],group:r[2],equip:r[3],level:r[4],primary:r[5],secondary:r[6],anim:'',kind:r[7],zones:r[9],dose:r[12]}); } });
   LIB.forEach(o=>{ if(!names.has(o.name)){ names.add(o.name); out.push({name:o.name,group:(o.muscles&&o.muscles[0])||'Corps entier',equip:'Machine',level:'Intermédiaire',primary:o.muscles||[],secondary:[],anim:o.anim||'',tip:o.tip,kind:'force'}); } });
-  return out;
+  // V4.25.0 : la bibliothèque ne montre que les exercices avec une démonstration en photo
+  return out.filter(e=>exGif(e.name));
 }
 function exGroupOf(name){ const d=XDATA.find(x=>x[0]===name); if(d) return d[1]; const r=EXD_BY[name]; if(r) return r[2]; const o=LIB.find(e=>e.name===name); return (o&&o.muscles&&o.muscles[0])||null; }
 function findEx(name){ return LIB.find(e=>e.name===name) || (function(){ const d=XDATA.find(x=>x[0]===name); if(d) return {name:d[0],muscles:d[4],anim:d[6],tip:''}; const r=EXD_BY[name]; return r?{name:r[1],muscles:r[5],anim:'',tip:''}:null; })(); }
@@ -9083,14 +9084,21 @@ function renderMuscu(){
   // V4.14.0 : générateur et programmes tout faits (repris de KORE)
   h+='<div class="ik-grp" style="margin-bottom:18px">'+
     '<div class="ik-row ik-link" role="button" onclick="openMuscuGen()"><span class="tx-open-ic">'+ICN('bolt',19,'currentColor')+'</span><div class="ik-row-t"><b>'+t('genTitle')+'</b><small>'+t('genRowSub')+'</small></div>'+ICN('chevronR',16)+'</div>'+
-    '<div class="ik-row ik-link" role="button" onclick="openPtfList()"><span class="tx-open-ic">'+ICN('dumbbell',19,'currentColor')+'</span><div class="ik-row-t"><b>'+t('ptfTitle')+'</b><small>'+t('ptfRowSub')+'</small></div>'+ICN('chevronR',16)+'</div></div>';
+'</div>';
+  if(typeof ikSeedDefaults==='function') ikSeedDefaults();
   const custs=CUSTOM.filter(p=>(p.kind==='muscu'&&!p.plan)||p.kind==='muscuplan');
-  if(custs.length){
+  const card=p=>(p.kind==='muscuplan'?planCardHTML(p):muscuCardHTML(p,{del:true}));
+  const mine=custs.filter(p=>!p.def), defs=custs.filter(p=>p.def);
+  if(mine.length){
     h+='<div class="hv7-sec-lab" style="margin-bottom:10px">'+t('myCreationsLab')+'</div>';
-    custs.forEach(p=>{ h+=(p.kind==='muscuplan'?planCardHTML(p):muscuCardHTML(p,{del:true})); });
+    mine.forEach(p=>{ h+=card(p); });
   }
+  // V4.25.0 : programmes par défaut + programmes tout faits, modifiables et supprimables
   h+='<div class="hv7-sec-lab" style="margin-bottom:10px">'+t('defaultProgramsLab')+'</div>';
-  PROGS.forEach(p=>{ h+=muscuCardHTML(p); });
+  defs.filter(p=>p.kind==='muscuplan').forEach(p=>{ h+=card(p); });
+  defs.filter(p=>p.kind!=='muscuplan').forEach(p=>{ h+=card(p); });
+  if(typeof ikDefCount==='function' && CUSTOM.filter(x=>x.def).length<ikDefCount())
+    h+='<button type="button" class="lv-link" style="margin:2px auto 10px;display:flex" onclick="ikRestoreDefaults()">'+ICN('refresh',15)+' '+t('restoreDefaultsBtn')+'</button>';
   return h;
 }
 function delProg(id){ const _pl=(CUSTOM.find(p=>p.id===id)||{}).plan; customConfirm(t('confirmDeleteProgram'),()=>{ CUSTOM=CUSTOM.filter(p=>p.id!==id); saveAll(); renderSport(); if(_pl&&typeof openPlan==='function') openPlan(_pl); },{danger:true}); }
