@@ -13,27 +13,33 @@ function homePillDefs(){ return [
   { k:'check', icn:'check', lab:t('homePillCheck'), html:function(){ return morningCheckHTML(); } },
   { k:'race',  icn:'flag',  lab:t('homePillRace'),  html:function(){ return raceCountdownHTML(); } }
 ]; }
+/* V4.15.0 : une seule LIGNE fine de pastilles (prière avec l'heure, météo avec la température,
+   check, course). Plus de carte dépliée sous la rangée : toucher une pastille ouvre sa carte
+   dans une fenêtre. Le Ramadan, saisonnier, garde sa carte sous la ligne pendant le mois. */
+function homePillLabel(k){
+  try{
+    if(k==='pray'){ const np=nextPrayerInfo(); return trPrayer(np.name)+' <small>'+np.time+'</small>'; }
+    if(k==='wx'){ const w=(typeof wxNow==='function')?wxNow():null; return w?Math.round(w.t)+'°'+((typeof wxLoc==='function'&&wxLoc())?' <small>'+escHtml(wxLoc().name.split(',')[0])+'</small>':''):t('homePillWx'); }
+  }catch(e){}
+  return t(k==='pray'?'homePillPray':k==='wx'?'homePillWx':k==='check'?'homePillCheck':'homePillRace');
+}
 function homePillsHTML(){
-  const items = [];
+  const items=[];
   homePillDefs().forEach(function(d){
-    let h=''; try{ h = d.html() || ''; }catch(e){ console.error('[IKORUN] pill', d.k, e); }
-    if(h.trim()) items.push({ d:d, h:h });
+    let h=''; try{ h=(d.k==='pray'?homePrayerCardHTML():d.html())||''; }catch(e){ console.error('[IKORUN] pill', d.k, e); }
+    if(h.trim()) items.push(d);
   });
-  if(!items.length) return '';
-  let sel = homePillSel;
-  if(!items.some(function(x){ return x.d.k===sel; })){
-    try{ sel = localStorage.getItem('ik_home_pill'); }catch(e){}
-  }
-  if(!items.some(function(x){ return x.d.k===sel; })) sel = items[0].d.k;
-  const bar = items.map(function(x){
-    return '<button type="button" class="ik-pill'+(x.d.k===sel?' on':'')+'" onclick="homePillPick(\''+x.d.k+'\')">'+ICN(x.d.icn,15)+'<span>'+x.d.lab+'</span>'+
-      (x.d.k==='check' && x.d.k!==sel ? '<i class="ik-pill-dot" aria-hidden="true"></i>' : '')+'</button>';   // check du matin pas encore fait
-  }).join('');
-  const cur = items.find(function(x){ return x.d.k===sel; });
-  return '<div class="ik-pills" role="tablist">'+bar+'</div>'+cur.h;
+  let rm=''; try{ rm=(typeof ramadanCardHTML==='function')?ramadanCardHTML():''; }catch(e){}
+  if(!items.length) return rm;
+  return '<div class="hm-line">'+items.map(function(d){
+    return '<button type="button" class="hm-chip" onclick="homePillPick(\''+d.k+'\')">'+ICN(d.icn,15)+'<span>'+homePillLabel(d.k)+'</span>'+(d.k==='check'?'<i aria-hidden="true"></i>':'')+'</button>';
+  }).join('')+'</div>'+rm;
 }
 function homePillPick(k){
-  homePillSel = k;
-  try{ localStorage.setItem('ik_home_pill', k); }catch(e){}
-  renderHome();
+  if(k==='pray'){ openPrayerFromHome(); return; }
+  if(k==='wx' && typeof openWeather==='function'){ openWeather(); return; }
+  const d=homePillDefs().find(function(x){ return x.k===k; }); if(!d) return;
+  let h=''; try{ h=d.html()||''; }catch(e){}
+  $('#ovProgTitle').textContent=d.lab; $('#progBody').innerHTML=h; openOv('ovProg');
+  try{ haptic(); }catch(e){}
 }

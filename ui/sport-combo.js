@@ -114,12 +114,12 @@ function cbMergedRows(run, str, tk){
    oubliée devenait « manquée ». Maintenant elle attend une réponse, sur cette carte (Sport et Accueil). */
 function pendingRun(){
   if(!PLAN || !PLAN.sessions) return [];
-  const tk = todayKey(), lim = cbAdd(tk,-21);
+  const tk = todayKey(), lim = cbAdd(tk,-7);   // V4.15.0 : 7 jours (au-delà, on ne demande plus)
   return PLAN.sessions.filter(function(s){ return s.date<tk && s.date>=lim && !s.done && !s.missed && s.type!=='Repos' && s.baseType!=='Repos' && (s.km||0)>0; });
 }
 function pendingStr(){
   if(!STRENGTH) return [];
-  const tk = todayKey(), lim = cbAdd(tk,-21);
+  const tk = todayKey(), lim = cbAdd(tk,-7);
   return STRENGTH.sessions.filter(function(s){ return s.date<tk && s.date>=lim && !s.done && !s.skipped; });
 }
 function pendingCardHTML(){
@@ -139,6 +139,34 @@ function pendingCardHTML(){
   });
   if(items.length>shown.length) h += '<div class="ik-pend-more">'+tp('pendMore', items.length-shown.length)+'</div>';
   return h+'</section>';
+}
+/* V4.15.0 : sur l'Accueil, une seule ligne ; la liste complète s'ouvre dans une fenêtre */
+function pendItems(){
+  return pendingRun().map(function(s){ return {d:s.date, k:0, s:s}; }).concat(pendingStr().map(function(s){ return {d:s.date, k:1, s:s}; }))
+    .sort(function(a,b){ return a.d<b.d?1:-1; });
+}
+function pendingLineHTML(){
+  const n=pendItems().length; if(!n) return '';
+  return '<div class="hm-pend" role="button" onclick="openPendSheet()">'+ICN('help',18)+'<span>'+tp('pendTitle',n)+'<small>'+t('pendLineSub')+'</small></span>'+ICN('chevronR',16)+'</div>';
+}
+function openPendSheet(){
+  const items=pendItems();
+  if(!items.length){ closeOv('ovProg'); if(document.body.dataset.scr==='home') renderHome(); return; }
+  $('#ovProgTitle').textContent=tp('pendTitle',items.length);
+  let h='<p class="ap-hint" style="margin:0 2px 14px">'+t('pendSub')+'</p><div class="ik-grp">';
+  items.forEach(function(x){
+    const s=x.s, isM=x.k===1, meta=fmtDate(s.date)+' · '+(isM?s.duration+' min':hKm(s.km)+' km');
+    h+='<div class="ik-row hm-pend-row"><div class="ik-sq '+(isM?'mu':'')+'" style="width:34px;height:34px;flex:none">'+ICN(isM?'dumbbell':'run',16)+'</div>'+
+      '<div class="ik-row-t"><b>'+escHtml(isM?s.title:planSessTitle(s))+'</b><small>'+escHtml(meta)+'</small></div>'+
+      '<div class="hm-pend-acts"><button type="button" class="ik-pbtn ok" onclick="pendAnswer('+(isM?"'"+s.id+"'":s.id)+','+(isM?1:0)+',true)">'+t('pendDid')+'</button>'+
+      '<button type="button" class="ik-pbtn" onclick="pendAnswer('+(isM?"'"+s.id+"'":s.id)+','+(isM?1:0)+',false)">'+t('notDone')+'</button></div></div>';
+  });
+  $('#progBody').innerHTML=h+'</div>'; openOv('ovProg');
+}
+function pendAnswer(id,isM,did){
+  closeOv('ovProg');
+  if(isM) strConfirm(id,did); else if(did) pendDone(id); else openMissedFlow(id);
+  if(document.body.dataset.scr==='home') setTimeout(function(){ try{ renderHome(); }catch(e){} },60);
 }
 function pendDone(id){ curRunId=id; markRunDone(); }
 function strConfirm(id, did){

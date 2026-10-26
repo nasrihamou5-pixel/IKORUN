@@ -366,6 +366,8 @@ window.IK_I18N_EXTRA=Object.assign(window.IK_I18N_EXTRA||{},{
     restModeTimerSub:'Counts down the exercise\'s rest time',
     restModeNow:'Start a 1:30 timer',
     restModeNowSub:'Right now, just once',
+    shareAppRow:'Share IKORUN',
+    pendLineSub:'Tap to answer one by one',
     bigTestTitle:'25-week test (week {0})',
     bigTestObjectif:'Level test: treat it like race day. Easy day before, proper warm-up, then give your maximum over the planned distance. Your time recalculates your level and adapts every coming week.',
     bigTestWhy:'Every 25 weeks a real test measures your progress and resets the paces of all following sessions. The week is lighter so you arrive fresh.',

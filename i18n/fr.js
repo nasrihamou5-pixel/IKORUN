@@ -394,6 +394,8 @@ const I18N={
     restModeTimerSub:'Compte à rebours selon le repos de l\'exercice',
     restModeNow:'Lancer un minuteur 1 min 30',
     restModeNowSub:'Tout de suite, une seule fois',
+    shareAppRow:'Partager IKORUN',
+    pendLineSub:'Touche pour répondre une par une',
     bigTestTitle:'Test des 25 semaines (semaine {0})',
     bigTestObjectif:'Test de niveau : fais-le comme un jour J. Veille tranquille, échauffement sérieux, puis donne ton maximum sur la distance prévue. Ton chrono recalcule ton niveau et adapte toutes les semaines à venir.',
     bigTestWhy:'Toutes les 25 semaines, un vrai test mesure ton progrès et recale les allures de toutes les séances suivantes. Semaine allégée avant : arrive frais.',
