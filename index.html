@@ -112,7 +112,7 @@
 <!-- téléchargés dès maintenant, exécutés après la première image (voir bas de page) -->
 <link rel="preload" as="script" href="vendor/supabase.js?v=1">
 <link rel="preload" as="script" href="vendor/sb-init.js?v=3">
-<link rel="preload" as="script" href="app.min.js?v=195">
+<link rel="preload" as="script" href="app.min.js?v=196">
 <script>
 // V4.0.0 : textes anglais / arabes à la demande. Le fichier de la dernière langue utilisée
 // (ik_lang, recopie non sensible de la langue du profil) est chargé AVANT app.min.js ; en
@@ -335,7 +335,7 @@ html[data-mode="light"] .iki-word{color:#10141B;}
 <!-- GENERIC OVERLAYS -->
 <div class="ov" id="ovSettings"><div class="ov-card"><div class="ov-head"><h2>Paramètres</h2><div class="x" onclick="closeOv('ovSettings')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg></div></div><div id="settingsBody"></div></div></div>
 <div class="ov" id="ovProfile"><div class="ov-card"><div class="ov-head"><h2>Modifier le profil</h2><div class="x" onclick="closeOv('ovProfile')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg></div></div><div id="profileEditBody"></div><div class="ov-foot-save" id="profileEditFoot"></div></div></div>
-<div class="ov ov-push" id="ovLib"><div class="ov-card"><div class="ov-push-edge" data-ovid="ovLib"></div><div class="ov-head"><div class="x" onclick="closeOv('ovLib')">‹</div><h2>Bibliothèque</h2></div><div class="ov-body-scroll"><div id="libBody"></div></div></div></div>
+<div class="ov ov-push" id="ovLib"><div class="ov-card"><div class="ov-push-edge" data-ovid="ovLib"></div><div class="ov-head"><div class="x" onclick="libBack()">‹</div><h2>Bibliothèque</h2></div><div class="ov-body-scroll"><div id="libBody"></div></div></div></div>
 <div class="ov" id="ovCfg"><div class="ov-card"><div class="ov-head"><h2>Configurer</h2><div class="x" onclick="closeOv('ovCfg')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg></div></div><div id="cfgBody"></div></div></div>
 <div class="ov ov-push" id="ovProg"><div class="ov-card"><div class="ov-push-edge" data-ovid="ovProg"></div><div class="ov-head"><div class="x" onclick="closeOv('ovProg')">‹</div><h2 id="ovProgTitle">Programme</h2></div><div class="ov-body-scroll"><div id="progBody"></div></div></div></div>
 <div class="ov" id="ovLive"><div class="ov-card"><div class="ov-head"><h2 id="liveTitle">Séance</h2><div class="x" onclick="confirmCloseLive()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg></div></div><div id="liveBody"></div></div></div>
