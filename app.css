@@ -6231,3 +6231,29 @@ html:not(#_):not(#_) .set-swipe-row{border:0;border-radius:12px}
 .heat2d{max-width:420px;margin:0 auto 12px}
 .heat2d-faces{display:flex;justify-content:space-around;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:4px}
 .heat2d-svg{display:block;width:100%;height:auto}
+
+/* V4.23.1 — séance en cours : surfaces plates et nettes (Classique comme Épuré) */
+html:not(#_):not(#_):not(#_) #liveBody .card.ex-swipe-card{background:rgb(var(--s1-rgb)) !important;box-shadow:none !important;border:1px solid color-mix(in srgb,var(--snow) 8%,transparent) !important;border-radius:20px}
+html:not(#_):not(#_):not(#_) #liveBody .ex-swipe-wrap{border-radius:20px}
+#liveBody .exc-bar{top:18px;bottom:auto;height:30px;width:4px;border-radius:0 4px 4px 0}
+#liveBody .exc-open>.exc-bar{height:calc(100% - 36px)}
+#liveBody .ex-thumb{border:0 !important;border-radius:14px !important;box-shadow:none !important;overflow:hidden}
+#liveBody .ex-segs{gap:5px;max-width:170px;margin-top:8px}
+#liveBody .ex-segs i{height:5px;border-radius:5px}
+#liveBody .ex-sep{margin:2px 0 12px;background:color-mix(in srgb,var(--snow) 8%,transparent)}
+html:not(#_):not(#_):not(#_) #liveBody .live-note{background:transparent !important;border:0 !important;border-bottom:1px solid color-mix(in srgb,var(--snow) 10%,transparent) !important;border-radius:0 !important;box-shadow:none !important;padding:6px 2px 10px;margin-bottom:12px;font-size:14px}
+#liveBody .live-sets-h{padding-bottom:8px;border-bottom:1px solid color-mix(in srgb,var(--snow) 8%,transparent);margin-bottom:4px !important;letter-spacing:.06em}
+html:not(#_):not(#_):not(#_) #liveBody .set-swipe-wrap{border-bottom:1px solid color-mix(in srgb,var(--snow) 6%,transparent)}
+html:not(#_):not(#_):not(#_) #liveBody .set-swipe-wrap:last-of-type{border-bottom:0}
+html:not(#_):not(#_):not(#_) #liveBody .set-swipe-row{background:rgb(var(--s1-rgb)) !important;box-shadow:none !important;border:0 !important;border-radius:0;padding:7px 0}
+html:not(#_):not(#_):not(#_) #liveBody .set-swipe-row:has(.setcheck.on){background:color-mix(in srgb,var(--ok) 13%,rgb(var(--s1-rgb))) !important}
+html:not(#_):not(#_):not(#_) #liveBody .set-swipe-row .set-n{background:none;width:auto;height:auto;font-size:16px;font-weight:800;color:var(--e)}
+html:not(#_):not(#_):not(#_) #liveBody .set-swipe-row:has(.setcheck.on) .set-n{color:var(--ok);background:none}
+html:not(#_):not(#_):not(#_) #liveBody .setcell{background:color-mix(in srgb,var(--snow) 7%,transparent) !important;border:0 !important;box-shadow:none !important;border-radius:11px;height:40px;padding:0 4px;font-size:16px;font-weight:700}
+html:not(#_):not(#_):not(#_) #liveBody .setcell:focus{box-shadow:0 0 0 2px var(--e) !important}
+html:not(#_):not(#_):not(#_) #liveBody .set-swipe-row:has(.setcheck.on) .setcell{background:transparent !important}
+html:not(#_):not(#_):not(#_) #liveBody .setcheck{width:34px;height:34px;background:transparent !important;border:1.5px solid color-mix(in srgb,var(--snow) 22%,transparent) !important;box-shadow:none !important;color:color-mix(in srgb,var(--snow) 45%,transparent)}
+html:not(#_):not(#_):not(#_) #liveBody .setcheck.on{background:var(--ok) !important;border-color:var(--ok) !important;color:#08201A}
+html:not(#_):not(#_):not(#_) #liveBody .live-addset{background:color-mix(in srgb,var(--snow) 6%,transparent) !important;border:0 !important;box-shadow:none !important;color:var(--snow);font-weight:700;margin-top:10px !important;border-radius:14px;min-height:44px}
+html:not(#_):not(#_):not(#_) #liveBody .live-addset::before,html:not(#_):not(#_):not(#_) #liveBody .live-addset::after{display:none}
+#liveBody .ex-segs i.on{background:var(--ok)}

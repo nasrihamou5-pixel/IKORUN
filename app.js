@@ -2710,7 +2710,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.23.0';
+const APP_VERSION='4.23.1';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -9464,7 +9464,7 @@ function renderLive(){
     h+='<div class="row" style="align-items:flex-start;cursor:pointer" onclick="toggleLiveEx('+i+')">'+exThumb(e.name,48)+
       '<div style="flex:1;min-width:0;margin-left:10px">'+(e.ss?'<span class="ss-tag">'+t('ssTag')+'</span>':'')+'<div style="font-weight:700;font-size:15.5px;line-height:1.25">'+escHtml(trExName(e.name))+'</div>'+
       '<div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+(allDone?t('exerciseDoneLab'):tp('setsDoneCount',st.sets.filter(Boolean).length,st.sets.length))+'</div>'+
-      '<div class="ex-segs" aria-hidden="true">'+st.sets.map(x=>'<i'+(x?' on':'')+'></i>').join('')+'</div></div>'+
+      '<div class="ex-segs" aria-hidden="true">'+st.sets.map(x=>'<i'+(x?' class="on"':'')+'></i>').join('')+'</div></div>'+
       '<span id="exChev'+i+'" style="color:var(--muted);font-size:14px;padding:6px 4px;transition:transform .25s ease;transform:rotate('+(open?'180':'0')+'deg)">⌄</span>'+
       '<span onclick="event.stopPropagation();openLiveExOptions('+i+')" style="color:var(--e);font-size:22px;font-weight:800;padding:4px 4px 4px 8px;cursor:pointer;letter-spacing:1px">⋯</span></div>';
     // Contenu repliable : notes, repos, tableau des séries. Seul l'exercice ouvert est
@@ -9496,7 +9496,7 @@ function liveExBodyHTML(i){
   let h='<div class="ex-sep"></div><input class="inp live-note" id="liveNote'+i+'" placeholder="'+t('exNotesPh')+'" value="'+escHtml(e.note||'')+'" oninput="liveSetNote('+i+',this.value)">'+(P.restMode==='timer'?'<div class="live-rest" onclick="changeRest('+i+')">'+ICN('stopwatch',15)+'<span>'+tp('restTimerLab',fmtRest(e.rest||90))+'</span></div>':'');
   { const o=(typeof ikExObjective==='function')?ikExObjective(e):null;
     if(o) h+='<div class="exo-obj'+(o.up?' up':'')+'"><span class="eo-ic">'+ICN(o.up?'trend':'target',14)+'</span><span class="eo-t">'+escHtml(o.txt)+'</span><button type="button" class="eo-b" onclick="ikFillObjective('+i+')">'+t('objFillBtn')+'</button></div>'; }
-  h+='<div style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:8px;text-align:center">'+
+  h+='<div class="live-sets-h" style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:8px;text-align:center">'+
     '<div>'+t('setCol')+'</div><div>'+t('prevCol')+'</div><div>'+t('kgCol')+'</div><div>'+t('repsCol')+'</div><div></div></div>';
   st.log.forEach((s,j)=>{
     h+='<div class="set-swipe-wrap" data-i="'+i+'" data-j="'+j+'">'+
@@ -9510,7 +9510,7 @@ function liveExBodyHTML(i){
       '<div class="setcheck'+(s.done?' on':'')+'" onclick="toggleSet('+i+','+j+')">'+ICN('check',16)+'</div></div>'+
       '</div>'; // fin .set-swipe-wrap
   });
-  h+='<button class="btn ghost sm" style="margin-top:4px" onclick="addLiveSet('+i+')">'+t('addSetBtn')+'</button>';
+  h+='<button class="btn ghost sm live-addset" style="margin-top:4px" onclick="addLiveSet('+i+')">＋ '+t('addSetBtn')+'</button>';
   return h;
 }
 /* ---------- LIVE : swipe gauche/droite sur une carte exercice pour révéler "Supprimer" ---------- */
