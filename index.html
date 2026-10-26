@@ -112,12 +112,12 @@
 <!-- téléchargés dès maintenant, exécutés après la première image (voir bas de page) -->
 <link rel="preload" as="script" href="vendor/supabase.js?v=1">
 <link rel="preload" as="script" href="vendor/sb-init.js?v=3">
-<link rel="preload" as="script" href="app.min.js?v=196">
+<link rel="preload" as="script" href="app.min.js?v=197">
 <script>
 // V4.0.0 : textes anglais / arabes à la demande. Le fichier de la dernière langue utilisée
 // (ik_lang, recopie non sensible de la langue du profil) est chargé AVANT app.min.js ; en
 // autotest (?selftest=1), les deux. Les autres cas : ikLangEnsure (i18n/i18n.js).
-window.IK_LANG={en:'i18n/en.min.js?v=37',ar:'i18n/ar.min.js?v=37'};
+window.IK_LANG={en:'i18n/en.min.js?v=38',ar:'i18n/ar.min.js?v=38'};
 (function(){
   var want=[], app=document.querySelector('link[rel=preload][href^="app.min.js"]');
   try{ var l=localStorage.getItem('ik_lang'); if(l==='en'||l==='ar') want.push(l); }catch(e){}
