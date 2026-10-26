@@ -398,6 +398,7 @@ window.IK_I18N_EXTRA=Object.assign(window.IK_I18N_EXTRA||{},{
     sinceStartLab:'Since the start',
   newPlanBtn:'Create',planTitle:'Program',planNameLabel:'Program name',planNamePh:'E.g. Muscle gain',planDefaultName:'Program',seanceNameLabel:'Workout name',seanceNamePh:'E.g. Push, Pull, Legs…',seanceDefaultName:'Workout',seancesCount:{one:'{0} workout',other:'{0} workouts'},addSeance:'Add a workout',planEmptyTitle:'Add your first workout',planEmptySub:'A workout is one training day: Push, Pull, Legs…',renamePlan:'Rename program',deletePlan:'Delete program',confirmDeletePlanM:'Delete this program and all its workouts?',
     bpHint:'Tap a muscle to see its exercises',
+    replaceExLab:'Replace exercise',pinNoteLab:'Pinned note',exNotesPh:'Notes…',
     bigTestTitle:'25-week test (week {0})',
     bigTestObjectif:'Level test: treat it like race day. Easy day before, proper warm-up, then give your maximum over the planned distance. Your time recalculates your level and adapts every coming week.',
     bigTestWhy:'Every 25 weeks a real test measures your progress and resets the paces of all following sessions. The week is lighter so you arrive fresh.',
