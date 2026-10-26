@@ -2710,7 +2710,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.23.1';
+const APP_VERSION='4.24.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -9103,7 +9103,7 @@ function exThumb(name,size){
   size=size||64;
   const g=exGif(name), e=findEx(name);
   const box='width:'+size+'px;height:'+size+'px;';
-  if(!g) return '<div class="ex-thumb" style="'+box+'">'+exGlyph(e,Math.round(size*0.55))+'</div>';
+  if(!g) return '<div class="ex-thumb'+(typeof ikExFigHTML==='function'&&e?' ex-thumb-fig':'')+'" style="'+box+'">'+(typeof ikExFigHTML==='function'&&e?ikExFigHTML(e,1):exGlyph(e,Math.round(size*0.55)))+'</div>';
   // opacity:0 + fade au onload : sans ça, la photo (chargée depuis GitHub, donc
   // jamais instantanée) apparaissait d'un coup par-dessus l'icône de repli, un
   // petit "pop" visible à chaque nouvel exercice affiché dans la liste.
@@ -9451,30 +9451,23 @@ function renderLive(){
     '<div class="rest-sw'+(LIVE.restSw?' on':'')+'" id="restSw">'+ICN('stopwatch',14)+'<span>'+t('restSwLab')+'</span><b id="restSwT">'+fmtTime(LIVE.restSw?(Date.now()-LIVE.restSw)/1000:0)+'</b><button type="button" onclick="restSwStop()" aria-label="'+t('closeLab')+'">×</button></div></div>';
   // Une carte par exercice, repliée sur le nom par défaut — on tape dessus pour dérouler les séries.
   // Un seul exercice ouvert à la fois (accordéon), et tout est animé en douceur (transition CSS).
+  // V4.24.0 : une carte par exercice, dans le style de Stats › Santé — nom en gras, pastille « 1/3 »,
+  // séries en lignes séparées par un trait fin. Tap sur l'en-tête : déplier / replier.
   p.ex.forEach((e,i)=>{
     const st=LIVE.state[i];
-    const allDone=st.sets.length&&st.sets.every(x=>x);
-    const open=liveOpenEx===i;
-    // Swipe à gauche OU à droite pour révéler "Supprimer" — wrap + 2 actions rouges dessous, carte au-dessus qui glisse.
+    const nd=st.sets.filter(Boolean).length, allDone=st.sets.length&&nd===st.sets.length;
+    const open=liveOpenEx===i, f=(typeof exMeta==='function'&&exMeta(e.name))||{};
+    const sub=[(f.primary&&f.primary[0])?trMuscle(f.primary[0]):((e.muscles&&e.muscles[0])?trMuscle(e.muscles[0]):''),tp('setsCount',st.sets.length)].filter(Boolean).join(' · ');
     h+='<div class="ex-swipe-wrap" data-i="'+i+'">'+
       '<div class="ex-swipe-action left" onclick="confirmDeleteLiveEx('+i+')"><span>'+ICN('trash',16)+'</span>'+t('deleteLab2')+'</div>'+
       '<div class="ex-swipe-action right" onclick="confirmDeleteLiveEx('+i+')"><span>'+ICN('trash',16)+'</span>'+t('deleteLab2')+'</div>';
-    h+='<div class="card ex-swipe-card'+(open?' exc-open':'')+(allDone?' exc-done':'')+'" data-i="'+i+'" style="padding:14px 14px 14px 18px'+(allDone?';border-color:rgba(51,211,153,.35)':'')+'"><i class="exc-bar"></i>';
-    // Entête exercice (tapable) : vignette, nom, chevron, "..." (options)
-    h+='<div class="row" style="align-items:flex-start;cursor:pointer" onclick="toggleLiveEx('+i+')">'+exThumb(e.name,48)+
-      '<div style="flex:1;min-width:0;margin-left:10px">'+(e.ss?'<span class="ss-tag">'+t('ssTag')+'</span>':'')+'<div style="font-weight:700;font-size:15.5px;line-height:1.25">'+escHtml(trExName(e.name))+'</div>'+
-      '<div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+(allDone?t('exerciseDoneLab'):tp('setsDoneCount',st.sets.filter(Boolean).length,st.sets.length))+'</div>'+
-      '<div class="ex-segs" aria-hidden="true">'+st.sets.map(x=>'<i'+(x?' class="on"':'')+'></i>').join('')+'</div></div>'+
-      '<span id="exChev'+i+'" style="color:var(--muted);font-size:14px;padding:6px 4px;transition:transform .25s ease;transform:rotate('+(open?'180':'0')+'deg)">⌄</span>'+
-      '<span onclick="event.stopPropagation();openLiveExOptions('+i+')" style="color:var(--e);font-size:22px;font-weight:800;padding:4px 4px 4px 8px;cursor:pointer;letter-spacing:1px">⋯</span></div>';
-    // Contenu repliable : notes, repos, tableau des séries. Seul l'exercice ouvert est
-    // construit (V3.4.0) : les autres restent vides jusqu'à leur ouverture (voir
-    // toggleLiveEx). Toute la séance faisait ~800 éléments à recalculer à chaque série
-    // cochée — d'où l'ouverture et les coches qui accrochaient sur téléphone.
-    h+='<div id="exBody'+i+'"'+(open?'':' data-lazy="1"')+' style="max-height:'+(open?'1400px':'0px')+';opacity:'+(open?'1':'0')+';overflow:hidden;transition:max-height .32s ease,opacity .22s ease,margin-top .32s ease;margin-top:'+(open?'12':'0')+'px">'+(open?liveExBodyHTML(i):'');
-    h+='</div>'; // fin exBody
-    h+='</div>'; // fin .ex-swipe-card
-    h+='</div>'; // fin .ex-swipe-wrap
+    h+='<div class="card ex-swipe-card lv-card'+(open?' lv-open':'')+(allDone?' lv-done':'')+'" data-i="'+i+'">';
+    h+='<div class="lv-h" onclick="toggleLiveEx('+i+')">'+exThumb(e.name,46)+
+      '<div class="lv-ht">'+(e.ss?'<span class="ss-tag">'+t('ssTag')+'</span>':'')+'<b>'+escHtml(trExName(e.name))+'</b><small>'+escHtml(sub)+'</small></div>'+
+      '<span class="lv-pill'+(allDone?' ok':nd?' on':'')+'">'+(allDone?ICN('check',13)+' ':'')+nd+'/'+st.sets.length+'</span>'+
+      '<button type="button" class="lv-more" aria-label="'+t('moreLab')+'" onclick="event.stopPropagation();openLiveExOptions('+i+')">⋯</button></div>';
+    h+='<div id="exBody'+i+'"'+(open?'':' data-lazy="1"')+' class="lv-body" style="max-height:'+(open?'1400px':'0px')+';opacity:'+(open?'1':'0')+';overflow:hidden;transition:max-height .32s ease,opacity .22s ease,margin-top .32s ease;margin-top:'+(open?'12':'0')+'px">'+(open?liveExBodyHTML(i):'');
+    h+='</div></div></div>';
   });
   h+='<button class="btn" style="margin:10px 0 8px" onclick="liveAddExercise()">'+t('addExerciseBtn')+'</button>';
   h+='<button class="btn btn-soft" style="margin-bottom:8px" onclick="liveMore()">'+t('moreLab')+'</button>';
@@ -9489,28 +9482,26 @@ let _liveNoteT=0;
 function liveSetNote(i,v){ const e=LIVE.prog.ex[i]; e.note=v; clearTimeout(_liveNoteT); _liveNoteT=setTimeout(()=>{ try{ persistLive(); saveAll(); }catch(_){} },600); }
 function liveExBodyHTML(i){
   const e=LIVE.prog.ex[i], st=LIVE.state[i];
-  // Affichait « Désactivé » quand l'exercice n'avait pas de repos défini, alors que
-  // toggleSet() lance bien 90 s dans ce cas (et changeRest ne propose que 15-300 s) :
-  // l'étiquette montre désormais la durée réellement appliquée (audit 24/09).
-  // en mode chronomètre (par défaut), pas de durée de repos à régler : le chrono compte
-  let h='<div class="ex-sep"></div><input class="inp live-note" id="liveNote'+i+'" placeholder="'+t('exNotesPh')+'" value="'+escHtml(e.note||'')+'" oninput="liveSetNote('+i+',this.value)">'+(P.restMode==='timer'?'<div class="live-rest" onclick="changeRest('+i+')">'+ICN('stopwatch',15)+'<span>'+tp('restTimerLab',fmtRest(e.rest||90))+'</span></div>':'');
+  let h='';
+  // note épinglée : seulement si elle existe (ou ouverte depuis « ⋯ »)
+  if(e.note||(LIVE&&LIVE._noteOpen===i)) h+='<input class="lv-note" id="liveNote'+i+'" placeholder="'+t('exNotesPh')+'" value="'+escHtml(e.note||'')+'" oninput="liveSetNote('+i+',this.value)">';
   { const o=(typeof ikExObjective==='function')?ikExObjective(e):null;
-    if(o) h+='<div class="exo-obj'+(o.up?' up':'')+'"><span class="eo-ic">'+ICN(o.up?'trend':'target',14)+'</span><span class="eo-t">'+escHtml(o.txt)+'</span><button type="button" class="eo-b" onclick="ikFillObjective('+i+')">'+t('objFillBtn')+'</button></div>'; }
-  h+='<div class="live-sets-h" style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:8px;text-align:center">'+
-    '<div>'+t('setCol')+'</div><div>'+t('prevCol')+'</div><div>'+t('kgCol')+'</div><div>'+t('repsCol')+'</div><div></div></div>';
+    if(o) h+='<div class="lv-obj'+(o.up?' up':'')+'">'+ICN(o.up?'trend':'target',15)+'<span>'+escHtml(o.txt)+'</span><button type="button" class="lv-link" onclick="ikFillObjective('+i+')">'+t('objFillBtn')+'</button></div>'; }
+  h+='<div class="lv-sets">';
   st.log.forEach((s,j)=>{
+    const prev=(typeof ikPrevCell==='function')?ikPrevCell(e,j):'—';
     h+='<div class="set-swipe-wrap" data-i="'+i+'" data-j="'+j+'">'+
       '<div class="set-swipe-action left" onclick="deleteLiveSet('+i+','+j+')"><span>'+ICN('trash',16)+'</span></div>'+
       '<div class="set-swipe-action right" onclick="deleteLiveSet('+i+','+j+')"><span>'+ICN('trash',16)+'</span></div>'+
-      '<div class="set-swipe-row" data-i="'+i+'" data-j="'+j+'" style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;align-items:center">'+
-      '<div class="set-n" role="button" onclick="ikSetMenu('+i+','+j+')">'+((typeof ikSetBadge==='function')?ikSetBadge(s,j):(j+1))+(s.rpe&&s.rpeU?'<small>@'+String(s.rpe).replace('.',',')+'</small>':'')+'</div>'+
-      '<div style="text-align:center;font-size:11px;color:var(--dim)">'+((typeof ikPrevCell==='function')?ikPrevCell(e,j):'—')+'</div>'+
-      '<input class="setcell" type="number" inputmode="decimal" value="'+s.kg+'" onchange="setLog('+i+','+j+',\'kg\',this.value)">'+
-      '<input class="setcell" type="number" inputmode="numeric" value="'+s.reps+'" onchange="setLog('+i+','+j+',\'reps\',this.value)">'+
-      '<div class="setcheck'+(s.done?' on':'')+'" onclick="toggleSet('+i+','+j+')">'+ICN('check',16)+'</div></div>'+
-      '</div>'; // fin .set-swipe-wrap
+      '<div class="set-swipe-row lv-set'+(s.done?' is-done':'')+'" data-i="'+i+'" data-j="'+j+'">'+
+      '<div class="set-n lv-n" role="button" onclick="ikSetMenu('+i+','+j+')"><b>'+((typeof ikSetBadge==='function')?ikSetBadge(s,j):(j+1))+'</b>'+(prev!=='—'?'<small>'+prev+'</small>':'')+(s.rpe&&s.rpeU?'<small>@'+String(s.rpe).replace('.',',')+'</small>':'')+'</div>'+
+      '<label class="lv-f"><input class="setcell" type="number" inputmode="decimal" value="'+s.kg+'" onchange="setLog('+i+','+j+',\'kg\',this.value)"><span>'+t('kgCol').toLowerCase()+'</span></label>'+
+      '<label class="lv-f"><input class="setcell" type="number" inputmode="numeric" value="'+s.reps+'" onchange="setLog('+i+','+j+',\'reps\',this.value)"><span>'+t('repsCol').toLowerCase()+'</span></label>'+
+      '<div class="setcheck'+(s.done?' on':'')+'" onclick="toggleSet('+i+','+j+')">'+ICN('check',17)+'</div></div>'+
+      '</div>';
   });
-  h+='<button class="btn ghost sm live-addset" style="margin-top:4px" onclick="addLiveSet('+i+')">＋ '+t('addSetBtn')+'</button>';
+  h+='</div><div class="lv-foot"><button type="button" class="lv-link" onclick="addLiveSet('+i+')">＋ '+t('addSetBtn')+'</button>'+
+    (P.restMode==='timer'?'<button type="button" class="lv-link mute" onclick="changeRest('+i+')">'+ICN('stopwatch',14)+' '+fmtRest(e.rest||90)+'</button>':'')+'</div>';
   return h;
 }
 /* ---------- LIVE : swipe gauche/droite sur une carte exercice pour révéler "Supprimer" ---------- */
@@ -9746,7 +9737,7 @@ function openLiveExOptions(i){
   ikPick(escHtml(trExName(e.name)),[
     {ic:ICN('plus',18),label:t(e.ss?'ssUnlinkBtn':'ssLinkBtn'),cb:()=>ikSupersetToggle(i)},
     {ic:ICN('shuffle',18),label:t('replaceExLab'),cb:()=>liveReplaceEx(i)},
-    {ic:ICN('note',18),label:t('pinNoteLab'),cb:()=>{ ikOpenLiveEx(i); setTimeout(()=>{ const n=document.getElementById('liveNote'+i); if(n) n.focus(); },420); }},
+    {ic:ICN('note',18),label:t('pinNoteLab'),cb:()=>{ LIVE._noteOpen=i; if(liveOpenEx===i) ikReLiveEx(i); else ikOpenLiveEx(i); setTimeout(()=>{ const n=document.getElementById('liveNote'+i); if(n) n.focus(); },420); }},
     {ic:ICN('stopwatch',18),label:t('changeRestLab'),cb:()=>changeRest(i)},
     {ic:ICN('trash',18),label:t('removeExLab'),danger:true,cb:()=>confirmDeleteLiveEx(i)}
   ]);
@@ -10101,7 +10092,7 @@ function libListHTML(){
       const nm=e.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;'); const g=exGif(e.name); const lvCol=e.level==='Débutant'?'--ok':e.level==='Avancé'?'--bad':'--warn';
       const sel=libMulti&&newProg&&newProg.ex.some(x=>x.name===e.name);
       h+='<div class="exg-card ik-in'+(sel?' sel':'')+'" style="--i:'+Math.min(i,12)+'" onclick=\'openFiche("'+nm+'")\'>'+
-        '<div class="exg-img">'+(g?'<img class="exg-ph" src="'+g[0]+'" alt="" loading="lazy" decoding="async" onload="this.classList.add(\'on\')" onerror="this.remove()">':'<span style="display:inline-flex">'+exGlyph(e,22)+'</span>')+
+        '<div class="exg-img'+(!g&&typeof ikExFigHTML==='function'?' exg-fig':'')+'">'+(g?'<img class="exg-ph" src="'+g[0]+'" alt="" loading="lazy" decoding="async" onload="this.classList.add(\'on\')" onerror="this.remove()">':(typeof ikExFigHTML==='function'?ikExFigHTML(e,1):'<span style="display:inline-flex">'+exGlyph(e,22)+'</span>'))+
         (libBrowseMode?'':'<span class="exg-add'+(sel?' on':'')+'" onclick=\'event.stopPropagation();pickEx("'+nm+'")\'>'+(sel?'✓':'＋')+'</span>')+
         '</div><div class="exg-body"><div class="exg-name">'+trExName(e.name)+'</div><div class="exg-sub">'+trEquip(e.equip)+' · <span style="color:var('+lvCol+')">'+trLevel(e.level)+'</span></div></div></div>';
     });
@@ -10139,8 +10130,9 @@ function openFiche(name){
   } else {
     h+='<div style="position:relative;background:linear-gradient(135deg,var(--s2),var(--s1));border:1px solid var(--hair);border-radius:18px;padding:34px 16px;text-align:center;margin-bottom:14px;overflow:hidden">'+
       '<div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 40%,var(--ed),transparent 70%)"></div>'+
+      (typeof ikExFigHTML==='function'?'<div class="ex-fiche-fig">'+ikExFigHTML(f)+'</div><div style="position:relative;margin-top:8px;font-size:11px;color:var(--et,var(--e));font-weight:800;letter-spacing:.08em;text-transform:uppercase">'+t('musclesWorkedLab')+'</div></div>':
       '<div style="position:relative;animation:demoFloat 1.5s ease-in-out infinite;filter:drop-shadow(0 6px 14px rgba(0,0,0,.4))">'+exGlyph(f,68)+'</div>'+
-      '<div style="position:relative;display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:11px;color:var(--et,var(--e));font-weight:700"><span style="width:7px;height:7px;border-radius:50%;background:var(--e);animation:demoPulse 1s infinite"></span>'+t('movementDemoCap')+'</div></div>';
+      '<div style="position:relative;display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:11px;color:var(--et,var(--e));font-weight:700"><span style="width:7px;height:7px;border-radius:50%;background:var(--e);animation:demoPulse 1s infinite"></span>'+t('movementDemoCap')+'</div></div>');
   }
   h+='<div class="muscle-tags" style="justify-content:center;margin-bottom:14px">'+(f.primary||[]).map(m=>'<span class="mtag" style="background:var(--ed);color:var(--et,var(--e));border-color:var(--e)">'+trMuscle(m)+'</span>').join('')+'</div>';
   h+=exCoreHTML(f,null);
