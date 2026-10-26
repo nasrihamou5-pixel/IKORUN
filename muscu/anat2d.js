@@ -291,3 +291,30 @@ function ikBodyMiniSVG(group){
   const vb=(R[0]+(face==='f'?0:724))+' '+R[1]+' '+R[2]+' '+R[3];
   return '<svg class="bm-svg" viewBox="'+vb+'" preserveAspectRatio="xMidYMid meet" aria-hidden="true">'+h+'</svg>';
 }
+
+
+/* ============================================================================
+   CHOISIR UN MUSCLE SUR LE CORPS (V4.19.0) — corps complet face + dos : on touche un muscle,
+   la bibliothèque n'affiche que les exercices qui le ciblent.
+   ============================================================================ */
+let _ikRev=null;
+function _ikRevZones(){
+  if(_ikRev) return _ikRev; _ikRev={};
+  Object.keys(IK_MG_ZONES).forEach(g=>{ const m=IK_MG_ZONES[g]; if(!m[1]) return; m[1].forEach(c=>{ const k=m[0]+':'+c; if(!_ikRev[k]) _ikRev[k]=g; }); });
+  return _ikRev;
+}
+function ikBodyPickHTML(sel){
+  const rev=_ikRevZones(); let h='';
+  [['f',0],['b',1]].forEach(([face,fi])=>{
+    h+='<path class="bp-bord" d="'+ANAT.bord[fi]+'"/>';
+    ANAT[face].forEach(([g,d,zs])=>{
+      let grp=null; if(g) for(const z of zs){ const k=face+':'+z[0]; if(rev[k]){ grp=rev[k]; break; } }
+      h+=grp?'<path class="bp-m'+(grp===sel?' bp-on':'')+'" data-mg="'+grp+'" d="'+d+'"/>':'<path class="'+(g?'bp-x':'bp-n')+'" d="'+d+'"/>';
+    });
+  });
+  return '<svg class="bp-svg" viewBox="0 70 1448 1320" preserveAspectRatio="xMidYMid meet" role="img" aria-label="'+t('bpHint')+'">'+h+'</svg>'+
+    '<div class="bp-faces"><span>'+t('frontViewLabel')+'</span><span>'+t('backViewLabel')+'</span></div>';
+}
+function ikBodyPickSet(sel){
+  document.querySelectorAll('#libBP .bp-m').forEach(el=>el.classList.toggle('bp-on',el.dataset.mg===sel));
+}

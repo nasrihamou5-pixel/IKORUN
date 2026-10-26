@@ -253,7 +253,8 @@ function renderMuscuGen(){
 function ikGenApply(){
   const prev=ikGenMuscu(ikGen), grp='G'+Date.now();
   const obj={muscle:'Masse',force:'Force',seche:'Perte poids',forme:'Maintien'}[ikGen.goal];
-  prev.forEach((s,i)=>{ CUSTOM.push({id:'C'+Date.now()+'_'+i,kind:'muscu',name:t('gen_'+s.key)+(s.suffix?' '+s.suffix:''),description:t('genDescAuto'),objective:obj,color:'--e',icon:'dumbbell',ex:s.ex,gen:grp}); });
+  const plId='PL'+Date.now(); CUSTOM.push({id:plId,kind:'muscuplan',name:t('planDefaultName')+' '+(CUSTOM.filter(x=>x.kind==='muscuplan').length+1)});
+  prev.forEach((s,i)=>{ CUSTOM.push({id:'C'+Date.now()+'_'+i,kind:'muscu',name:t('gen_'+s.key)+(s.suffix?' '+s.suffix:''),description:t('genDescAuto'),objective:obj,color:'--e',icon:'dumbbell',ex:s.ex,gen:grp,plan:plId}); });
   saveAll(); closeOv('ovProg'); renderSport(); toast(tp('genDoneToast',prev.length)); try{ sfx('finish'); }catch(_){}
 }
 
@@ -320,6 +321,72 @@ function openPtf(id){
 function ikPtfAdd(id){
   const p=IK_PTF().find(x=>x.id===id); if(!p) return;
   const grp='P'+Date.now(), obj={genGoalForce:'Force',genGoalFit:'Maintien'}[p.goal]||'Masse';
-  p.s.forEach(([title,xs],i)=>{ CUSTOM.push({id:'C'+Date.now()+'_'+i,kind:'muscu',name:title,description:t('ptf_'+p.id),objective:obj,color:'--e',icon:'dumbbell',ex:xs.map(([n,s,r])=>ex_(n,s,r)),gen:grp}); });
+  const plId='PL'+Date.now(); CUSTOM.push({id:plId,kind:'muscuplan',name:t('ptf_'+p.id)});
+  p.s.forEach(([title,xs],i)=>{ CUSTOM.push({id:'C'+Date.now()+'_'+i,kind:'muscu',name:title,description:t('ptf_'+p.id),objective:obj,color:'--e',icon:'dumbbell',ex:xs.map(([n,s,r])=>ex_(n,s,r)),gen:grp,plan:plId}); });
   saveAll(); closeOv('ovProg'); renderSport(); toast(tp('genDoneToast',p.s.length)); try{ sfx('finish'); }catch(_){}
+}
+
+
+/* ============================================================================
+   PROGRAMME › SÉANCES › EXERCICES (V4.19.0)
+   Un programme (« Prise de masse ») contient ses séances (Push, Pull, Legs…), chaque séance
+   contient ses exercices. Une séance est un programme de musculation ordinaire marqué plan:<id> :
+   tout ce qui existait (lancer, modifier, historique, records) marche donc tel quel.
+   Les programmes créés avant restent seuls, comme des programmes à une séance.
+   ============================================================================ */
+let curPlan=null;
+function planSessions(id){ return CUSTOM.filter(p=>p.kind==='muscu'&&p.plan===id); }
+// les séances générées avant la 4.19 (champ gen) sont regroupées en un programme
+function ikMigratePlans(){
+  try{
+    const lone=CUSTOM.filter(p=>p.kind==='muscu'&&p.gen&&!p.plan); if(!lone.length) return;
+    const by={}; lone.forEach(p=>{ (by[p.gen]=by[p.gen]||[]).push(p); });
+    let n=CUSTOM.filter(x=>x.kind==='muscuplan').length;
+    Object.keys(by).forEach(g=>{ const id='PL'+g.replace(/\D/g,'')+Math.floor(Math.random()*1000); n++;
+      CUSTOM.push({id,kind:'muscuplan',name:t('planDefaultName')+' '+n}); by[g].forEach(p=>{ p.plan=id; }); });
+    saveAll();
+  }catch(e){}
+}
+function planCardHTML(pl){
+  const ss=planSessions(pl.id), nEx=ss.reduce((a,s)=>a+(s.ex||[]).length,0);
+  return '<div class="mus-card" onclick="openPlan(\''+pl.id+'\')"><div class="mus-card-b">'+
+    '<div class="mus-name">'+escHtml(pl.name)+'</div>'+
+    (ss.length?'<div class="mus-tags">'+ss.slice(0,5).map(s=>'<span>'+escHtml(s.name)+'</span>').join('')+(ss.length>5?'<span>+'+(ss.length-5)+'</span>':'')+'</div>':'')+
+    '<div class="mus-meta">'+tp('seancesCount',ss.length)+' · '+tp('exercisesCount',nEx)+'</div></div>'+
+    '<button class="x mus-del" onclick="event.stopPropagation();delPlan(\''+pl.id+'\')">'+ICN('trash',16)+'</button></div>';
+}
+function openCreatePlan(){
+  customPrompt(t('planNameLabel'),'',n=>{
+    const name=(n||'').trim().slice(0,60)||(t('planDefaultName')+' '+(CUSTOM.filter(x=>x.kind==='muscuplan').length+1));
+    const id='PL'+Date.now(); CUSTOM.push({id,kind:'muscuplan',name}); saveAll(); renderSport(); openPlan(id);
+  },{maxLength:60,placeholder:t('planNamePh')});
+}
+function openPlan(id){
+  const pl=CUSTOM.find(x=>x.id===id&&x.kind==='muscuplan'); if(!pl) return; curPlan=id;
+  const bx=document.querySelector('#ovProg .ov-head .x'); if(bx) bx.onclick=function(){ closeOv('ovProg'); };
+  $('#ovProgTitle').textContent=t('planTitle');
+  const ss=planSessions(id);
+  let h='<div class="np-name-t">'+escHtml(pl.name)+'</div><div class="pl-sub">'+tp('seancesCount',ss.length)+'</div>';
+  if(!ss.length) h+='<div class="np-empty ik-in">'+ICN('dumbbell',30,'var(--e)')+'<b>'+t('planEmptyTitle')+'</b><span>'+t('planEmptySub')+'</span></div>';
+  else ss.forEach(s=>{ h+=muscuCardHTML(s,{del:true}); });
+  h+='<button class="btn'+(ss.length?' btn-soft':'')+'" style="margin:4px 0 14px" onclick="planAddSession()">＋ '+t('addSeance')+'</button>';
+  h+='<div class="ik-grp"><div class="ik-row ik-link" role="button" onclick="renamePlan()"><span class="tx-open-ic">'+ICN('edit',19,'currentColor')+'</span><div class="ik-row-t"><b>'+t('renamePlan')+'</b></div>'+ICN('chevronR',16)+'</div>'+
+    '<div class="ik-row ik-link" role="button" onclick="delPlan(\''+id+'\',true)"><span class="tx-open-ic">'+ICN('trash',19,'currentColor')+'</span><div class="ik-row-t"><b>'+t('deletePlan')+'</b></div>'+ICN('chevronR',16)+'</div></div>';
+  $('#progBody').innerHTML=h; openOv('ovProg');
+}
+function planAddSession(){
+  const id=curPlan; if(!id) return;
+  customPrompt(t('seanceNameLabel'),'',n=>{
+    const k=planSessions(id).length+1;
+    newProg={name:(n||'').trim().slice(0,60)||(t('seanceDefaultName')+' '+k),description:'',objective:'Masse',color:'--e',icon:'dumbbell',ex:[],plan:id};
+    renderCreate(); openOv('ovCreate');
+  },{maxLength:60,placeholder:t('seanceNamePh')});
+}
+function renamePlan(){ const pl=CUSTOM.find(x=>x.id===curPlan); if(!pl) return;
+  customPrompt(t('planNameLabel'),pl.name,n=>{ pl.name=((n||'').trim()||pl.name).slice(0,60); saveAll(); renderSport(); openPlan(pl.id); },{maxLength:60}); }
+function delPlan(id,fromPage){
+  customConfirm(t('confirmDeletePlanM'),()=>{
+    CUSTOM=CUSTOM.filter(x=>x.id!==id&&!(x.kind==='muscu'&&x.plan===id)); curPlan=null; saveAll();
+    if(fromPage) closeOv('ovProg'); renderSport();
+  },{danger:true});
 }

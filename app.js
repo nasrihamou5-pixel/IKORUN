@@ -1906,6 +1906,7 @@ function reloadState(){
   SESS = DB.load('sessions') || [];
   MSESS = DB.load('muscu_sessions') || [];
   CUSTOM = DB.load('custom_progs') || [];
+  try{ if(typeof ikMigratePlans==='function') setTimeout(ikMigratePlans,0); }catch(_){}
   PLAN = DB.load('run_plan') || null;
   GOALS = DB.load('daily_goals') || {};
   AGENDA = DB.load('agenda') || [];
@@ -2709,7 +2710,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.18.1';
+const APP_VERSION='4.19.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -9073,21 +9074,21 @@ function renderMuscu(){
   PROGS=PROGS_DEF();
   let h='';
   if(DB.load('live_paused')){ const sv=DB.load('live_paused'); h+='<div class="card" style="border-color:var(--warn);background:linear-gradient(rgba(255,180,84,.09),rgba(255,180,84,.09)),var(--lg-fill)"><div class="row"><div><div style="font-weight:700">'+t('sessionPausedLab')+'</div><div style="font-size:12px;color:var(--muted)">'+escHtml(sv.prog.name)+'</div></div><button class="btn sm" style="width:auto;padding:8px 14px" onclick="resumeLive()">'+t('resumeBtn')+'</button></div></div>'; }
-  h+='<div class="row" style="gap:10px;margin-bottom:10px"><button class="btn" onclick="openCreate()">＋ '+t('createBtn')+'</button><button class="btn ghost" onclick="openLibBrowse()">'+t('libraryLab')+'</button></div>';
+  h+='<div class="row" style="gap:10px;margin-bottom:10px"><button class="btn" onclick="openCreatePlan()">＋ '+t('newPlanBtn')+'</button><button class="btn ghost" onclick="openLibBrowse()">'+t('libraryLab')+'</button></div>';
   // V4.14.0 : générateur et programmes tout faits (repris de KORE)
   h+='<div class="ik-grp" style="margin-bottom:18px">'+
     '<div class="ik-row ik-link" role="button" onclick="openMuscuGen()"><span class="tx-open-ic">'+ICN('bolt',19,'currentColor')+'</span><div class="ik-row-t"><b>'+t('genTitle')+'</b><small>'+t('genRowSub')+'</small></div>'+ICN('chevronR',16)+'</div>'+
     '<div class="ik-row ik-link" role="button" onclick="openPtfList()"><span class="tx-open-ic">'+ICN('dumbbell',19,'currentColor')+'</span><div class="ik-row-t"><b>'+t('ptfTitle')+'</b><small>'+t('ptfRowSub')+'</small></div>'+ICN('chevronR',16)+'</div></div>';
-  const custs=CUSTOM.filter(p=>p.kind==='muscu');
+  const custs=CUSTOM.filter(p=>(p.kind==='muscu'&&!p.plan)||p.kind==='muscuplan');
   if(custs.length){
     h+='<div class="hv7-sec-lab" style="margin-bottom:10px">'+t('myCreationsLab')+'</div>';
-    custs.forEach(p=>{ h+=muscuCardHTML(p,{del:true}); });
+    custs.forEach(p=>{ h+=(p.kind==='muscuplan'?planCardHTML(p):muscuCardHTML(p,{del:true})); });
   }
   h+='<div class="hv7-sec-lab" style="margin-bottom:10px">'+t('defaultProgramsLab')+'</div>';
   PROGS.forEach(p=>{ h+=muscuCardHTML(p); });
   return h;
 }
-function delProg(id){ customConfirm(t('confirmDeleteProgram'),()=>{ CUSTOM=CUSTOM.filter(p=>p.id!==id); saveAll(); renderSport(); },{danger:true}); }
+function delProg(id){ const _pl=(CUSTOM.find(p=>p.id===id)||{}).plan; customConfirm(t('confirmDeleteProgram'),()=>{ CUSTOM=CUSTOM.filter(p=>p.id!==id); saveAll(); renderSport(); if(_pl&&typeof openPlan==='function') openPlan(_pl); },{danger:true}); }
 /* ===== VUE ROUTINE (style Hevy) ===== */
 /* Vignette d'exercice. Le pictogramme du groupe musculaire est TOUJOURS dessiné
    dessous : la photo (dépôt free-exercise-db, donc réseau) vient le recouvrir
@@ -9108,7 +9109,8 @@ function exThumb(name,size){
 function progDuration(p){ return p.ex.reduce((a,e)=>a+e.sets*1.8,0); } // estimation min
 function openProg(id){
   const p=allProgs().find(x=>x.id===id); if(!p) return;
-  $('#ovProgTitle').textContent=t('routineTitle');
+  $('#ovProgTitle').textContent=p.plan?((CUSTOM.find(x=>x.id===p.plan)||{}).name||t('routineTitle')):t('routineTitle');
+  { const bx=document.querySelector('#ovProg .ov-head .x'); if(bx) bx.onclick=p.plan?function(){ openPlan(p.plan); }:function(){ closeOv('ovProg'); }; }
   const totalSets=p.ex.reduce((a,e)=>a+(e.sets||0),0);
   const dur=Math.round(progDuration(p));
   const lvl=p.objective||t('lvlIntermediate');
@@ -9951,8 +9953,8 @@ function addToNewProg(e){ closeOv('ovLib'); openCfg(e,(cfg)=>{ newProg.ex.push(c
 function saveNewProg(){
   if(!newProg.name.trim()) newProg.name=t('npDefaultName')+' '+(CUSTOM.filter(p=>p.kind==='muscu').length+1);
   if(!newProg.ex.length){ toast(t('addExercisesLab')); return; }
-  CUSTOM.push({id:'C'+Date.now(),kind:'muscu',name:newProg.name,description:newProg.description,objective:newProg.objective,color:newProg.color,icon:newProg.icon,ex:newProg.ex});
-  saveAll(); closeOv('ovCreate'); renderSport(); toast(t('programCreated'));
+  CUSTOM.push({id:'C'+Date.now(),kind:'muscu',name:newProg.name,description:newProg.description,objective:newProg.objective,color:newProg.color,icon:newProg.icon,ex:newProg.ex,plan:newProg.plan||undefined});
+  const _pl=newProg.plan; saveAll(); closeOv('ovCreate'); renderSport(); toast(t('programCreated')); if(_pl) openPlan(_pl);
 }
 
 /* ---------- BIBLIOTHÈQUE PREMIUM ---------- */
@@ -9966,17 +9968,27 @@ function renderLib(){
   _ficheCur=null;
   let h='<input class="inp lib-search" placeholder="'+t('searchExercisePlaceholder')+'" value="'+escHtml(libSearch||'')+'" oninput="libSearch=this.value;clearTimeout(_libSearchT);_libSearchT=setTimeout(renderLibList,140)">';
   // V4.15.2 : chaque muscle est montré sur la silhouette 2D (le muscle en couleur), plus en photo
-  h+='<div class="mtile-row lib-mus">'+MUSCLE_GROUPS.map((m,i)=>{
-    const on=libFilter===m;
-    return '<div class="mtile ik-in'+(on?' on':'')+'" style="--i:'+i+'" onclick="libFilter=\''+m+'\';renderLib()"><div class="mtile-img bm" data-mg="'+escHtml(m)+'">'+(m==='Tous'?ICN('search',24,'var(--e)'):'')+'</div><div class="mtile-lab">'+(m==='Tous'?t('filterAll'):trMuscle(m))+'</div></div>';
-  }).join('')+'</div>';
+  h+='<div class="bp" id="libBP" onclick="libBodyClick(event)"></div><div class="bp-bar" id="libBPbar"></div>';
   // matériel, type, niveau : trois menus sur une ligne au lieu de trois rangées de boutons
   const fch=(lab,val,fn)=>'<button type="button" class="lib-f'+(val!=='Tous'?' on':'')+'" onclick="'+fn+'()"><small>'+lab+'</small><b>'+val+'</b>'+ICN('chevronD',13)+'</button>';
   h+='<div class="lib-fs">'+fch(t('equipmentLabel'),libFilterEquip==='Tous'?t('filterAll'):trEquip(libFilterEquip),'libPickEquip')+
     fch(t('exKindLabel'),libFilterKind==='Tous'?t('filterAll'):t('exKind_'+libFilterKind),'libPickKind')+
     fch(t('levelLabel'),libFilterLevel==='Tous'?t('filterAll'):trLevel(libFilterLevel),'libPickLevel')+'</div>';
   $('#libBody').innerHTML=h+'<div id="libList">'+libListHTML()+'</div>'+(libMulti?'<div class="lib-done-bar"><button class="btn" onclick="libMultiDone()">'+((newProg&&newProg.ex.length)?tp('libAddN',newProg.ex.length):t('back'))+'</button></div>':'');
-  ikLoad('anat').then(()=>{ document.querySelectorAll('#libBody .mtile-img[data-mg]').forEach(el=>{ const g=el.dataset.mg; if(g!=='Tous'&&!el.firstChild) el.innerHTML=ikBodyMiniSVG(g); }); }).catch(()=>{});
+  ikLoad('anat').then(()=>{ const bp=$('#libBP'); if(bp) bp.innerHTML=ikBodyPickHTML(libFilter); libBPbar(); }).catch(()=>{});
+}
+// V4.19.0 : on choisit le muscle sur le corps 2D complet ; retoucher le même muscle l'enlève
+function libBPbar(){
+  const el=$('#libBPbar'); if(!el) return;
+  el.innerHTML=libFilter==='Tous'?'<span class="bp-hint">'+t('bpHint')+'</span>':
+    '<button type="button" class="bp-chip" onclick="libPickGroup(\''+libFilter+'\')"><b>'+trMuscle(libFilter)+'</b> ×</button>';
+}
+function libBodyClick(ev){ const g=ev.target&&ev.target.closest?ev.target.closest('[data-mg]'):null; if(g) libPickGroup(g.dataset.mg); }
+function libPickGroup(g){
+  libFilter=(libFilter===g)?'Tous':g;
+  try{ haptic(); }catch(_){}
+  if(typeof ikBodyPickSet==='function') ikBodyPickSet(libFilter);
+  libBPbar(); renderLibList();
 }
 function libPickEquip(){ const L=['Tous',...new Set(allExercises().map(e=>e.equip).filter(Boolean))]; ikPick(t('equipmentLabel'),L.map(v=>({label:v==='Tous'?t('filterAll'):trEquip(v),on:libFilterEquip===v,cb:()=>{ libFilterEquip=v; renderLib(); }}))); }
 function libPickKind(){ ikPick(t('exKindLabel'),['Tous',...EX_KINDS].map(v=>({label:v==='Tous'?t('filterAll'):t('exKind_'+v),on:libFilterKind===v,cb:()=>{ libFilterKind=v; renderLib(); }}))); }
