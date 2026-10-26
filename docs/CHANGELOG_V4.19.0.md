@@ -1,0 +1,3 @@
+# IKORUN 4.19.0
+- **Programme › Séances › Exercices** : « Créer » (Sport › Musculation) crée un programme avec son nom ; dedans on ajoute ses séances (Push, Pull, Legs…), chaque séance a ses exercices. On lance, modifie et supprime chaque séance depuis la page du programme. Les programmes créés avant restent tels quels ; les séances déjà générées sont regroupées automatiquement en programme. Le générateur et les programmes tout faits créent maintenant un programme avec ses séances.
+- **Corps 2D complet pour choisir un muscle** : dans la bibliothèque (« Ajouter un exercice »), on touche un muscle sur le corps face/dos et la liste n'affiche que les exercices qui le ciblent ; retoucher le même muscle l'enlève.
