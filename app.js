@@ -2709,7 +2709,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.15.0';
+const APP_VERSION='4.15.1';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -3777,7 +3777,9 @@ document.addEventListener('click',e=>{ const b=e.target.closest('.btn'); if(b) r
 })();
 
 /* ---------- CONFETTI ---------- */
-function burst(colors){
+// V4.15.1 : confettis supprimés partout (demande explicite) — burst() ne fait plus rien.
+function burst(colors){ return; }
+function _burstOld(colors){
   if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const c=$('#confetti'), ctx=c.getContext('2d');
   c.width=innerWidth; c.height=innerHeight;
