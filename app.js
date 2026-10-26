@@ -2710,7 +2710,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.20.0';
+const APP_VERSION='4.21.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -9391,7 +9391,7 @@ function startLive(id,startIdx){
   LIVE={prog:{...p,ex:p.ex.slice()},idx:startIdx||0,start:Date.now(),
     state:p.ex.map(e=>({weight:e.weight||20,reps:parseInt(e.reps)||10,sets:Array.from({length:e.sets},()=>false),
       // V4.14.0 : chaque série démarre sur ce que tu as vraiment fait la dernière fois (ou l'objectif du jour)
-      log:Array.from({length:e.sets},(_,j)=>{ const st=(typeof ikStartSet==='function')?ikStartSet(e,j):null; return st?{kg:st.kg,reps:st.reps,rpe:8,done:false,t:st.t}:{kg:e.weight||20,reps:parseInt(e.reps)||10,rpe:8,done:false}; })})),
+      log:Array.from({length:e.sets},(_,j)=>{ const st=(typeof ikStartSet==='function')?ikStartSet(e,j):null; if(st) return {kg:st.kg,reps:st.reps,rpe:8,done:false,t:st.t}; const sd=e.sd&&e.sd[j]; return sd?{kg:sd.kg||e.weight||20,reps:sd.reps||parseInt(e.reps)||10,rpe:8,done:false}:{kg:e.weight||20,reps:parseInt(e.reps)||10,rpe:8,done:false}; })})),
     tonnage:0,setsDone:0};
   liveOpenEx=startIdx||0;
   renderLive(); openOv('ovLive');
@@ -9461,7 +9461,7 @@ function renderLive(){
       '<div style="flex:1;min-width:0;margin-left:10px">'+(e.ss?'<span class="ss-tag">'+t('ssTag')+'</span>':'')+'<div style="font-weight:700;font-size:15.5px;line-height:1.25">'+escHtml(trExName(e.name))+'</div>'+
       '<div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+(allDone?t('exerciseDoneLab'):tp('setsDoneCount',st.sets.filter(Boolean).length,st.sets.length))+'</div></div>'+
       '<span id="exChev'+i+'" style="color:var(--muted);font-size:14px;padding:6px 4px;transition:transform .25s ease;transform:rotate('+(open?'180':'0')+'deg)">⌄</span>'+
-      '<span onclick="event.stopPropagation();openLiveExOptions('+i+')" style="color:var(--muted);font-size:20px;padding:4px 4px 4px 8px;cursor:pointer;letter-spacing:1px">⋯</span></div>';
+      '<span onclick="event.stopPropagation();openLiveExOptions('+i+')" style="color:var(--e);font-size:22px;font-weight:800;padding:4px 4px 4px 8px;cursor:pointer;letter-spacing:1px">⋯</span></div>';
     // Contenu repliable : notes, repos, tableau des séries. Seul l'exercice ouvert est
     // construit (V3.4.0) : les autres restent vides jusqu'à leur ouverture (voir
     // toggleLiveEx). Toute la séance faisait ~800 éléments à recalculer à chaque série
@@ -9471,8 +9471,8 @@ function renderLive(){
     h+='</div>'; // fin .ex-swipe-card
     h+='</div>'; // fin .ex-swipe-wrap
   });
-  h+='<button class="btn ghost" style="margin:6px 0 10px" onclick="liveAddExercise()">'+t('addExerciseBtn')+'</button>';
-  h+='<button class="btn ghost sm" style="margin-bottom:8px;color:var(--bad)" onclick="confirmCloseLive()">'+t('cancelSessionBtn')+'</button>';
+  h+='<button class="btn" style="margin:10px 0 8px" onclick="liveAddExercise()">'+t('addExerciseBtn')+'</button>';
+  h+='<button class="btn btn-soft" style="margin-bottom:8px" onclick="liveMore()">'+t('moreLab')+'</button>';
   $('#liveBody').innerHTML=h;
   { const now=totalSets?Math.round(LIVE.setsDone/totalSets*100):0, bar=$('#liveProg');
     if(bar){ requestAnimationFrame(()=>{ bar.style.width=now+'%'; }); if(now===100 && LIVE._progPrev!==100) ikShock(bar.parentElement); }
@@ -9480,13 +9480,15 @@ function renderLive(){
   initLiveSwipe();
 }
 // Tableau des séries d'un exercice de la séance en cours (repos, en-têtes, lignes, « + série »).
+let _liveNoteT=0;
+function liveSetNote(i,v){ const e=LIVE.prog.ex[i]; e.note=v; clearTimeout(_liveNoteT); _liveNoteT=setTimeout(()=>{ try{ persistLive(); saveAll(); }catch(_){} },600); }
 function liveExBodyHTML(i){
   const e=LIVE.prog.ex[i], st=LIVE.state[i];
   // Affichait « Désactivé » quand l'exercice n'avait pas de repos défini, alors que
   // toggleSet() lance bien 90 s dans ce cas (et changeRest ne propose que 15-300 s) :
   // l'étiquette montre désormais la durée réellement appliquée (audit 24/09).
   // en mode chronomètre (par défaut), pas de durée de repos à régler : le chrono compte
-  let h=P.restMode==='timer'?'<div class="live-rest" onclick="changeRest('+i+')">'+ICN('stopwatch',15)+'<span>'+tp('restTimerLab',fmtRest(e.rest||90))+'</span></div>':'';
+  let h='<input class="inp live-note" id="liveNote'+i+'" placeholder="'+t('exNotesPh')+'" value="'+escHtml(e.note||'')+'" oninput="liveSetNote('+i+',this.value)">'+(P.restMode==='timer'?'<div class="live-rest" onclick="changeRest('+i+')">'+ICN('stopwatch',15)+'<span>'+tp('restTimerLab',fmtRest(e.rest||90))+'</span></div>':'');
   { const o=(typeof ikExObjective==='function')?ikExObjective(e):null;
     if(o) h+='<div class="exo-obj'+(o.up?' up':'')+'"><span class="eo-ic">'+ICN(o.up?'trend':'target',14)+'</span><span class="eo-t">'+escHtml(o.txt)+'</span><button type="button" class="eo-b" onclick="ikFillObjective('+i+')">'+t('objFillBtn')+'</button></div>'; }
   h+='<div style="display:grid;grid-template-columns:30px 64px 1fr 1fr 38px;gap:6px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:8px;text-align:center">'+
@@ -9716,19 +9718,27 @@ function deleteLiveSet(i,j){
 /* ---------- LIVE : options par exercice ("⋯") — voir la démo, modifier le repos, retirer ---------- */
 function openLiveExOptions(i){
   const e=LIVE.prog.ex[i];
-  const old=$('#liveExOptOv'); if(old) old.remove();
-  const ov=document.createElement('div'); ov.className='ov on'; ov.id='liveExOptOv'; ov.style.zIndex=topZ();
-  const g=exGif(e.name);
-  let h='<div class="ov-card" style="text-align:center">';
-  h+='<div class="card-t" style="justify-content:center;margin-bottom:14px">'+escHtml(trExName(e.name))+'</div>';
-  if(g) h+='<img src="'+g[0]+'" style="width:100%;border-radius:14px;margin-bottom:14px;aspect-ratio:16/10;object-fit:cover">';
-  h+='<button class="btn ghost" style="margin-bottom:8px" onclick="document.getElementById(\'liveExOptOv\').remove();changeRest('+i+')">'+t('changeRestLab')+'</button>';
-  h+='<button class="btn ghost" style="margin-bottom:8px" onclick="document.getElementById(\'liveExOptOv\').remove();ikSupersetToggle('+i+')">'+t(e.ss?'ssUnlinkBtn':'ssLinkBtn')+'</button>';
-  h+='<button class="btn ghost" style="margin-bottom:8px;color:var(--bad)" onclick="document.getElementById(\'liveExOptOv\').remove();confirmDeleteLiveEx('+i+')">'+t('removeExLab')+'</button>';
-  h+='<button class="btn ghost" onclick="document.getElementById(\'liveExOptOv\').remove()">'+t('cancelLab')+'</button>';
-  h+='</div>';
-  ov.innerHTML=h;
-  document.body.appendChild(ov);
+  ikPick(escHtml(trExName(e.name)),[
+    {ic:ICN('plus',18),label:t(e.ss?'ssUnlinkBtn':'ssLinkBtn'),cb:()=>ikSupersetToggle(i)},
+    {ic:ICN('shuffle',18),label:t('replaceExLab'),cb:()=>liveReplaceEx(i)},
+    {ic:ICN('note',18),label:t('pinNoteLab'),cb:()=>{ ikOpenLiveEx(i); setTimeout(()=>{ const n=document.getElementById('liveNote'+i); if(n) n.focus(); },420); }},
+    {ic:ICN('stopwatch',18),label:t('changeRestLab'),cb:()=>changeRest(i)},
+    {ic:ICN('trash',18),label:t('removeExLab'),danger:true,cb:()=>confirmDeleteLiveEx(i)}
+  ]);
+}
+function liveReplaceEx(i){
+  libCallback=(x)=>{ closeOv('ovLib'); const o=LIVE.prog.ex[i];
+    LIVE.prog.ex[i]=Object.assign({},o,{name:x.name,anim:x.anim,muscles:x.muscles,tip:x.tip,note:''});
+    const n=o.sets||3; LIVE.state[i]={weight:o.weight||20,reps:parseInt(o.reps)||10,sets:Array.from({length:n},()=>false),log:[]};
+    persistLive(); renderLive(); toast(t('exerciseAdded')); };
+  libBrowseMode=false; libMulti=false; renderLib();
+  $('#ovLib').style.zIndex='13700'; openOv('ovLib');
+}
+function liveMore(){
+  ikPick(t('moreLab'),[
+    {ic:ICN('stopwatch',18),label:t('restTimerBtn'),cb:()=>restModeMenu()},
+    {ic:ICN('trash',18),label:t('cancelSessionBtn'),danger:true,cb:()=>confirmCloseLive()}
+  ]);
 }
 function confirmDeleteLiveEx(i){
   if(LIVE.prog.ex.length<=1){ toast(t('minOneExRemain')); return; }
@@ -9936,14 +9946,44 @@ function openCreate(){
   newProg={name:'',description:'',objective:'Masse',color:'--e',icon:'dumbbell',ex:[]};
   renderCreate(); openOv('ovCreate');
 }
+let npOpen=-1;
+function npSd(e){ if(!e.sd||e.sd.length!==e.sets){ const k=e.sd&&e.sd[e.sd.length-1]; e.sd=Array.from({length:e.sets||3},(_,j)=>(e.sd&&e.sd[j])||{kg:+(k?k.kg:e.weight)||0,reps:+(k?k.reps:parseInt(e.reps))||10}); } return e.sd; }
+function npSync(e){ const s=e.sd; e.sets=s.length; e.reps=String(s[0]?s[0].reps:10); e.weight=s[0]?s[0].kg:0; }
+function npToggle(i){ npOpen=(npOpen===i)?-1:i; renderCreate(); }
+function npSet(i,j,k,v){ const e=newProg.ex[i]; npSd(e)[j][k]=Math.max(0,parseFloat(String(v).replace(',','.'))||0); npSync(e); }
+function npAddSet(i){ const e=newProg.ex[i], s=npSd(e), l=s[s.length-1]||{kg:0,reps:10}; s.push({kg:l.kg,reps:l.reps}); npSync(e); renderCreate(); }
+function npDelSet(i,j){ const e=newProg.ex[i], s=npSd(e); if(s.length<=1) return; s.splice(j,1); npSync(e); renderCreate(); }
+function npRest(i){ const e=newProg.ex[i]; pickInt(t('restSeconds'),15,300,e.rest||90,'s',v=>{ e.rest=v; renderCreate(); },15); }
+function npMenu(i){
+  const e=newProg.ex[i];
+  ikPick(escHtml(trExName(e.name)),[
+    {ic:ICN('shuffle',18),label:t('replaceExLab'),cb:()=>{ libMulti=false; openLibFor(x=>{ closeOv('ovLib'); const o=newProg.ex[i]; newProg.ex[i]=Object.assign({},o,{name:x.name,anim:x.anim,muscles:x.muscles,tip:x.tip}); renderCreate(); openOv('ovCreate'); }); }},
+    {ic:ICN('note',18),label:t('pinNoteLab'),cb:()=>{ npOpen=i; renderCreate(); setTimeout(()=>{ const n=document.getElementById('npNote'+i); if(n) n.focus(); },60); }},
+    {ic:ICN('stopwatch',18),label:t('changeRestLab'),cb:()=>npRest(i)},
+    {ic:ICN('trash',18),label:t('removeExLab'),danger:true,cb:()=>{ newProg.ex.splice(i,1); if(npOpen>=newProg.ex.length) npOpen=-1; renderCreate(); }}
+  ]);
+}
+function npExBody(e,i){
+  const sd=npSd(e);
+  let h='<input class="inp np-note" id="npNote'+i+'" placeholder="'+t('exNotesPh')+'" value="'+escHtml(e.note||'')+'" oninput="newProg.ex['+i+'].note=this.value">'+
+    '<div class="live-rest" onclick="npRest('+i+')">'+ICN('stopwatch',15)+'<span>'+tp('restTimerLab',fmtRest(e.rest||90))+'</span></div>'+
+    '<div class="np-sets np-sets-h"><div>'+t('setCol')+'</div><div>'+t('prevCol')+'</div><div>'+t('kgCol')+'</div><div>'+t('repsCol')+'</div><div></div></div>';
+  sd.forEach((s,j)=>{ h+='<div class="np-sets"><div class="set-n">'+(j+1)+'</div><div class="np-prev">'+((typeof ikPrevCell==='function')?ikPrevCell(e,j):'—')+'</div>'+
+    '<input class="setcell" type="number" inputmode="decimal" value="'+s.kg+'" onchange="npSet('+i+','+j+',\'kg\',this.value)">'+
+    '<input class="setcell" type="number" inputmode="numeric" value="'+s.reps+'" onchange="npSet('+i+','+j+',\'reps\',this.value)">'+
+    '<button type="button" class="np-x" aria-label="'+t('removeLab2')+'" onclick="npDelSet('+i+','+j+')"'+(sd.length<=1?' disabled':'')+'>×</button></div>'; });
+  return h+'<button class="btn btn-soft sm" style="margin-top:6px" onclick="npAddSet('+i+')">'+t('addSetBtn')+'</button>';
+}
 function renderCreate(){
   let h='<input class="inp np-name" id="npName" value="'+escHtml(newProg.name||'')+'" oninput="newProg.name=this.value" placeholder="'+t('programNamePh')+'">';
   if(!newProg.ex.length){
     h+='<div class="np-empty ik-in">'+ICN('dumbbell',30,'var(--e)')+'<b>'+t('npEmptyTitle')+'</b><span>'+t('npEmptySub')+'</span></div>';
   } else {
-    h+='<div class="lab ap-lab">'+tp('exercisesCountLab',newProg.ex.length)+'</div><div class="ik-grp">'+newProg.ex.map((e,i)=>
-      '<div class="ik-row np-row ik-in" style="--i:'+Math.min(i,10)+'"><div style="flex:none">'+exThumb(e.name,44)+'</div><div class="ik-row-t"><b>'+escHtml(trExName(e.name))+'</b><small>'+tp('setsRepsLine',e.sets,e.reps)+'</small></div>'+
-      '<button type="button" class="np-x" aria-label="'+t('removeLab2')+'" onclick="newProg.ex.splice('+i+',1);renderCreate()">×</button></div>').join('')+'</div>';
+    h+='<div class="lab ap-lab">'+tp('exercisesCountLab',newProg.ex.length)+'</div><div class="np-list">'+newProg.ex.map((e,i)=>{
+      const open=npOpen===i;
+      return '<div class="np-ex'+(open?' open':'')+'"><div class="np-ex-h" onclick="npToggle('+i+')">'+exThumb(e.name,48)+'<div class="ik-row-t"><b>'+escHtml(trExName(e.name))+'</b><small>'+tp('setsCount',e.sets)+'</small></div>'+
+        '<button type="button" class="np-more" aria-label="'+t('moreLab')+'" onclick="event.stopPropagation();npMenu('+i+')">⋯</button></div>'+
+        (open?'<div class="np-ex-b">'+npExBody(e,i)+'</div>':'')+'</div>'; }).join('')+'</div>';
   }
   h+='<button class="btn btn-soft" style="margin:4px 0 10px" onclick="libMulti=true;openLibFor(addToNewProg)">＋ '+t('npAddEx')+'</button>';
   h+='<button class="btn" onclick="saveNewProg()"'+(newProg.ex.length?'':' disabled')+'>'+t('npCreateBtn')+'</button>';

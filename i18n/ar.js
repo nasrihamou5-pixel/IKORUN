@@ -398,6 +398,7 @@ window.IK_I18N_EXTRA=Object.assign(window.IK_I18N_EXTRA||{},{
     sinceStartLab:'منذ البداية',
   newPlanBtn:'إنشاء',planTitle:'البرنامج',planNameLabel:'اسم البرنامج',planNamePh:'مثال: زيادة الكتلة',planDefaultName:'برنامج',seanceNameLabel:'اسم الحصة',seanceNamePh:'مثال: دفع، سحب، أرجل…',seanceDefaultName:'حصة',seancesCount:{zero:'{0} حصة',one:'حصة واحدة',two:'حصتان',few:'{0} حصص',many:'{0} حصة',other:'{0} حصة'},addSeance:'إضافة حصة',planEmptyTitle:'أضف حصتك الأولى',planEmptySub:'الحصة هي يوم تدريب واحد: دفع، سحب، أرجل…',renamePlan:'إعادة تسمية البرنامج',deletePlan:'حذف البرنامج',confirmDeletePlanM:'حذف هذا البرنامج وكل حصصه؟',
     bpHint:'المس عضلة لعرض تماريناتها',
+    replaceExLab:'استبدال التمرين',pinNoteLab:'ملاحظة مثبّتة',exNotesPh:'ملاحظات…',
     bigTestTitle:'اختبار الأسبوع الـ25 (الأسبوع {0})',
     bigTestObjectif:'اختبار المستوى: اعتبره يوم سباق. يوم راحة قبله، إحماء جيد، ثم قدّم أقصى ما لديك على المسافة المحددة. زمنك يعيد حساب مستواك ويعدّل كل الأسابيع القادمة.',
     bigTestWhy:'كل 25 أسبوعًا يقيس اختبار حقيقي تقدمك ويعيد ضبط سرعات الحصص التالية. الأسبوع أخف لتصل منتعشًا.',

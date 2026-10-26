@@ -6179,3 +6179,23 @@ html[data-flat]:not(#_) .lr-title,html[data-flat]:not(#_) .mus-name,html[data-fl
 .bp-faces{transition:opacity .2s ease}
 .bp:has(.bp-on) .bp-faces{opacity:0}
 .bp-m{stroke-width:2}
+
+/* V4.21.0 — création de programme et séance en cours, plus proches de Lyfta */
+.np-list{display:flex;flex-direction:column;gap:2px;margin-bottom:6px}
+.np-ex-h{display:flex;align-items:center;gap:12px;padding:10px 2px;cursor:pointer}
+.np-ex-h .ik-row-t{flex:1;min-width:0}
+.np-ex-h .ik-row-t b{display:block;font-size:15.5px}
+.np-ex-h .ik-row-t small{color:var(--muted);font-size:12.5px}
+.np-more{border:none;background:none;color:var(--e);font-size:24px;font-weight:800;letter-spacing:1px;padding:4px 6px;cursor:pointer}
+.np-ex.open{background:color-mix(in srgb,var(--snow) 4%,transparent);border-radius:16px;padding:0 10px;margin:4px 0}
+.np-ex-b{padding:2px 0 12px}
+.np-note,.live-note{background:transparent;border:none;border-bottom:1px solid var(--hair);border-radius:0;padding:8px 2px;margin-bottom:6px;font-size:14px}
+.np-sets{display:grid;grid-template-columns:30px 64px 1fr 1fr 32px;gap:6px;align-items:center;margin-bottom:6px;text-align:center}
+.np-sets-h{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase}
+.np-prev{font-size:11px;color:var(--dim)}
+.np-sets .np-x:disabled{opacity:.25}
+.set-swipe-row:has(.setcheck.on){background:color-mix(in srgb,var(--ok) 16%,var(--s1))}
+/* V4.21.0 — en Épuré la carte exercice était transparente : le rouge « Supprimer » du swipe se voyait derrière */
+html[data-flat]:not(#_):not(#_) .card.ex-swipe-card{background:var(--bg) !important}
+html[data-flat]:not(#_):not(#_) .set-swipe-row{background:var(--bg)}
+html[data-flat]:not(#_):not(#_) .set-swipe-row:has(.setcheck.on){background:color-mix(in srgb,var(--ok) 16%,var(--bg))}
