@@ -6220,3 +6220,14 @@ html:not(#_):not(#_) .set-swipe-row{border:0;border-radius:12px}
 .ex-swipe-wrap.del-ready .ex-swipe-action span,.set-swipe-wrap.del-ready .set-swipe-action span{transform:scale(1.25);transition:transform .15s ease}
 .ex-swipe-action,.set-swipe-action{opacity:0;transition:opacity .12s ease}
 .ex-swipe-wrap:has(.ex-swipe-card.dragging,.ex-swipe-card.open) .ex-swipe-action,.set-swipe-wrap:has(.set-swipe-row.dragging,.set-swipe-row.open) .set-swipe-action{opacity:1}
+
+/* V4.23.0 — dessins des filtres */
+.ik-pick-ic .fic{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:color-mix(in srgb,var(--e) 14%,transparent);color:var(--e)}
+.ik-pick-ic{width:38px}
+.ik-row.on .ik-pick-ic .fic{background:var(--e);color:var(--accent-ink,#fff)}
+.mus-body.mus-body2{width:104px;display:block}
+.mus-body2 .mus-fig2{width:100%;height:auto;display:block;pointer-events:none;-webkit-user-select:none;user-select:none}
+.prog-stats .mus-body.mus-body2{width:96px}
+.heat2d{max-width:420px;margin:0 auto 12px}
+.heat2d-faces{display:flex;justify-content:space-around;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:4px}
+.heat2d-svg{display:block;width:100%;height:auto}

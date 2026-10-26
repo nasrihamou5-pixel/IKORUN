@@ -15,7 +15,7 @@ MUS = dict(GRP); MUS['lats'] = 'Grand dorsal'
 EQ = {'body only':'Poids du corps','barbell':'Barre','dumbbell':'Haltères','machine':'Machine','cable':'Poulie','bands':'Élastique','kettlebells':'Kettlebell',
  'e-z curl bar':'Barre','foam roll':'Accessoire','exercise ball':'Accessoire','medicine ball':'Accessoire','other':'Accessoire', None:'Poids du corps'}
 LV = {'beginner':'Débutant','intermediate':'Intermédiaire','expert':'Avancé'}
-CARDIO = {'Bicycling_Stationary','Recumbent_Bike','Elliptical_Trainer','Rowing_Stationary'}
+CARDIO = {'Bicycling_Stationary','Recumbent_Bike','Elliptical_Trainer','Rowing_Stationary','Rope_Jumping','Running_Treadmill','Jogging_Treadmill','Walking_Treadmill','Stairmaster','Trail_Running_Walking'}
 PLYO = {'Front_Box_Jump','Split_Jump','Lateral_Bound','Fast_Skipping','Single-Leg_Hop_Progression','Standing_Long_Jump'}
 EN_FIX = {'One-Arm_Kettlebell_Swings': ['Stand with feet wider than shoulders, kettlebell on the floor in front of you.', 'Hinge at the hips, hike the bell back between your legs, then drive the hips forward to swing it to chest height.', 'Let it fall back with a flat back and repeat; switch hands halfway.']}
 EXISTING = {'Planche latérale','Curl barre EZ','Curl araignée','Mollets à la presse','Développé haltères assis'}   # déjà dans la bibliothèque de base
@@ -28,7 +28,7 @@ for f in sorted(glob.glob(os.path.join(src, 'tr', '*.tsv'))):
         if fr in seen or fr in EXISTING: continue
         seen.add(fr)
         if i in CARDIO: kind = 'cardio'
-        elif i in PLYO: kind = 'plyo'
+        elif i in PLYO or e['category'] == 'plyometrics': kind = 'plyo'
         elif e['category'] == 'stretching':
             kind = 'mobilite' if ('SMR' in i or 'Circles' in i) else 'etirement'
         else: kind = 'force'

@@ -347,3 +347,45 @@ function ikBodyPickSet(sel){
   document.querySelectorAll('#libBP .bp-m').forEach(el=>el.classList.toggle('bp-on',el.dataset.mg===sel));
   ikBodyZoom(sel);
 }
+
+/* V4.23.0 — le même corps 2D partout : cartes de programmes et carte « Muscles les plus sollicités ».
+   colorOf(code) → couleur (ou null) ; chaque muscle prend la couleur de sa zone la plus forte. */
+function ikBodyFillSVG(colorOf,o){
+  o=o||{}; let h='';
+  ['f','b'].forEach((face,fi)=>{
+    h+='<path d="'+ANAT.bord[fi]+'" fill="'+(o.bord||'none')+'" stroke="'+(o.stroke||'none')+'" stroke-width="3"/>';
+    ANAT[face].forEach(([g,d,zs])=>{
+      let c=null; if(g) for(const z of zs){ const v=colorOf(z[0]); if(v){ c=v; break; } }
+      h+='<path d="'+d+'" fill="'+(c||(g?o.base:o.bg)||'#333')+'" stroke="'+(o.line||'none')+'" stroke-width="2.5"/>';
+    });
+  });
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 70 1448 1320" preserveAspectRatio="xMidYMid meet">'+h+'</svg>';
+}
+// codes de zones d'un groupe musculaire (Pectoraux, Dos…)
+function ikGroupCodes(g){ const m=IK_MG_ZONES[g]; return m&&m[1]?m[1]:[]; }
+const _ikFigUrl=new Map();
+// carte de programme : image (blob) du corps, muscles principaux en plein, secondaires plus clairs
+function ikProgFigHTML(p){
+  const z=ikZonesSum((p.ex||[]).map(e=>e.name));
+  const cs=getComputedStyle(document.documentElement), v=n=>cs.getPropertyValue(n).trim();
+  const e=v('--e')||'#4f8dff', base=v('--s3')||'#2a2f3a', bg=v('--s2')||'#1b1f27';
+  const key=Object.keys(z).sort().map(k=>k+z[k]).join(',')+'|'+e+base;
+  let url=_ikFigUrl.get(key);
+  if(!url){
+    const col=c=>{ const x=z[c]; return x>=1?e:x>=.5?'color-mix(in srgb,'+e+' 62%,'+base+')':x>=.25?'color-mix(in srgb,'+e+' 32%,'+base+')':null; };
+    // color-mix n'est pas compris partout dans une image SVG : on mélange nous-mêmes
+    const mix=(a,b,t)=>{ const p=h=>{ h=h.replace('#',''); if(h.length===3) h=h.split('').map(x=>x+x).join(''); return [0,2,4].map(i=>parseInt(h.substr(i,2),16)); };
+      try{ const A=p(a),B=p(b); if(A.some(isNaN)||B.some(isNaN)) return a; return 'rgb('+A.map((x,i)=>Math.round(x*t+B[i]*(1-t))).join(',')+')'; }catch(_){ return a; } };
+    const col2=c=>{ const x=z[c]; return x>=1?e:x>=.5?mix(e,base,.62):x>=.25?mix(e,base,.32):null; };
+    const svg=ikBodyFillSVG(/^#/.test(e)&&/^#/.test(base)?col2:col,{base,bg,line:bg});
+    url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'})); _ikFigUrl.set(key,url);
+  }
+  return '<img class="mus-fig2" src="'+url+'" alt="" decoding="async" draggable="false">';
+}
+// carte « Muscles les plus sollicités » : intensité par groupe (counts = {groupe: valeur})
+function ikHeatFigHTML(counts,tiers){
+  const max=Math.max(0,...Object.values(counts)); const byCode={};
+  Object.keys(counts).forEach(g=>{ const r=max?counts[g]/max:0; if(r<=0) return; const c=tiers[Math.min(tiers.length-1,Math.floor(r*tiers.length))];
+    ikGroupCodes(g).forEach(k=>{ if(!byCode[k]||r>byCode[k].r) byCode[k]={r,c}; }); });
+  return ikBodyFillSVG(k=>byCode[k]?byCode[k].c:null,{base:'var(--s3)',bg:'var(--s2)',line:'var(--card,var(--s1))'}).replace('<svg ','<svg class="heat2d-svg" ');
+}
