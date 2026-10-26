@@ -2710,7 +2710,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.25.0';
+const APP_VERSION='4.25.1';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -5787,7 +5787,16 @@ function allExercises(){
   if(typeof EXD_ROWS!=='undefined') EXD_ROWS.forEach(r=>{ if(!names.has(r[1])){ names.add(r[1]); out.push({name:r[1],group:r[2],equip:r[3],level:r[4],primary:r[5],secondary:r[6],anim:'',kind:r[7],zones:r[9],dose:r[12]}); } });
   LIB.forEach(o=>{ if(!names.has(o.name)){ names.add(o.name); out.push({name:o.name,group:(o.muscles&&o.muscles[0])||'Corps entier',equip:'Machine',level:'Intermédiaire',primary:o.muscles||[],secondary:[],anim:o.anim||'',tip:o.tip,kind:'force'}); } });
   // V4.25.0 : la bibliothèque ne montre que les exercices avec une démonstration en photo
-  return out.filter(e=>exGif(e.name));
+  // V4.25.1 : et chaque exercice une seule fois — même photo et même type = même exercice.
+  // On garde la fiche de base, sinon la fiche étendue ; les doublons anglais (LIB) disparaissent.
+  const src=e=>XDATA.some(x=>x[0]===e.name)?0:(typeof EXD_BY!=='undefined'&&EXD_BY[e.name])?1:2;
+  const best={}, ph=out.filter(e=>exGif(e.name));
+  const baseImg=new Set(ph.filter(e=>src(e)===0).map(e=>exGif(e.name)[0]));
+  ph.forEach(e=>{ const k=exGif(e.name)[0]+'|'+e.kind, s=src(e); if(!(k in best)||s<best[k]) best[k]=s; });
+  return ph.filter(e=>{ const s=src(e), b=best[exGif(e.name)[0]+'|'+e.kind];
+    if(s!==b) return false;
+    if(s>0 && e.kind!=='rehab' && baseImg.has(exGif(e.name)[0])) return false;   // même photo qu'une fiche de base
+    return true; });
 }
 function exGroupOf(name){ const d=XDATA.find(x=>x[0]===name); if(d) return d[1]; const r=EXD_BY[name]; if(r) return r[2]; const o=LIB.find(e=>e.name===name); return (o&&o.muscles&&o.muscles[0])||null; }
 function findEx(name){ return LIB.find(e=>e.name===name) || (function(){ const d=XDATA.find(x=>x[0]===name); if(d) return {name:d[0],muscles:d[4],anim:d[6],tip:''}; const r=EXD_BY[name]; return r?{name:r[1],muscles:r[5],anim:'',tip:''}:null; })(); }
@@ -9095,8 +9104,11 @@ function renderMuscu(){
   }
   // V4.25.0 : programmes par défaut + programmes tout faits, modifiables et supprimables
   h+='<div class="hv7-sec-lab" style="margin-bottom:10px">'+t('defaultProgramsLab')+'</div>';
-  defs.filter(p=>p.kind==='muscuplan').forEach(p=>{ h+=card(p); });
-  defs.filter(p=>p.kind!=='muscuplan').forEach(p=>{ h+=card(p); });
+  // rangés : programmes complets (du plus simple au plus avancé), puis les séances par muscle
+  const dPl=defs.filter(p=>p.kind==='muscuplan'), dSe=defs.filter(p=>p.kind!=='muscuplan');
+  const ord=p=>{ const i=(typeof ikDefPlanInfo==='function')&&ikDefPlanInfo(p); return i?i.lv*10+i.days:99; };
+  if(dPl.length){ h+='<div class="def-sub">'+t('defPlansLab')+'</div>'; dPl.slice().sort((a,b)=>ord(a)-ord(b)).forEach(p=>{ h+=card(p); }); }
+  if(dSe.length){ h+='<div class="def-sub">'+t('defSessionsLab')+'</div>'; dSe.forEach(p=>{ h+=card(p); }); }
   if(typeof ikDefCount==='function' && CUSTOM.filter(x=>x.def).length<ikDefCount())
     h+='<button type="button" class="lv-link" style="margin:2px auto 10px;display:flex" onclick="ikRestoreDefaults()">'+ICN('refresh',15)+' '+t('restoreDefaultsBtn')+'</button>';
   return h;

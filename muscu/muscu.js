@@ -363,12 +363,16 @@ function ikMigratePlans(){
     saveAll();
   }catch(e){}
 }
+// V4.25.1 : programme par défaut — jours par semaine, niveau, matériel
+function ikDefPlanInfo(pl){ return (pl&&pl.def&&/^ptf:[^:]+$/.test(pl.def))?IK_PTF().find(p=>'ptf:'+p.id===pl.def):null; }
+function ikDefPlanTags(pl){ const p=ikDefPlanInfo(pl); if(!p) return '';
+  return '<div class="ptf-tags def-tags"><span>'+tp('ptfDaysWk',p.days)+'</span><span>'+t(['','lvlBeginner','lvlIntermediate','lvlAdvanced'][p.lv])+'</span><span>'+t(p.eq)+'</span></div>'; }
 function planCardHTML(pl){
   const ss=planSessions(pl.id), nEx=ss.reduce((a,s)=>a+(s.ex||[]).length,0);
   return '<div class="mus-card" onclick="openPlan(\''+pl.id+'\')"><div class="mus-card-b">'+
     '<div class="mus-name">'+escHtml(pl.name)+'</div>'+
     (ss.length?'<div class="mus-tags">'+ss.slice(0,5).map(s=>'<span>'+escHtml(s.name)+'</span>').join('')+(ss.length>5?'<span>+'+(ss.length-5)+'</span>':'')+'</div>':'')+
-    '<div class="mus-meta">'+tp('seancesCount',ss.length)+' · '+tp('exercisesCount',nEx)+'</div></div>'+
+    '<div class="mus-meta">'+tp('seancesCount',ss.length)+' · '+tp('exercisesCount',nEx)+'</div>'+ikDefPlanTags(pl)+'</div>'+
     '<button class="x mus-del" onclick="event.stopPropagation();delPlan(\''+pl.id+'\')">'+ICN('trash',16)+'</button></div>';
 }
 function openCreatePlan(){

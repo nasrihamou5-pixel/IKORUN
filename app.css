@@ -6285,3 +6285,5 @@ html:not(#_):not(#_):not(#_) #liveBody .set-swipe-row.lv-set{gap:8px}
 .exg-img.exg-fig .mus-fig2{width:88%;height:88%;object-fit:contain}
 .ex-fiche-fig{position:relative;max-width:300px;margin:0 auto}
 .ex-fiche-fig .mus-fig2{width:100%;height:auto;display:block}
+.def-sub{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 4px 8px}
+.def-tags{margin-top:8px}
