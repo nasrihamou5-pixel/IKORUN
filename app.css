@@ -6099,3 +6099,39 @@ html[data-flat]:not(#_) .hv7-act.main,html[data-flat]:not(#_) .ik-pbtn.ok,html[d
 
 /* v4.16.1 — légende des totaux (Stats) */
 .sgrid-cap{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:2px 2px 8px;}
+
+/* ===================================================================
+   V4.17.0 — « ÉPURÉ » = le style de l'onglet Stats › Santé, partout : cartes unies (fond verre,
+   liseré fin, pas de reflet ni de halo), titres de carte en texte simple, intitulés de section
+   en petites capitales grises sans trait lumineux, barres pleines.
+   =================================================================== */
+html[data-flat]:not(#_){--ik-line-glow:none}
+/* cartes : même matière que .sn-card */
+html[data-flat]:not(#_) .hv7-day,html[data-flat]:not(#_) .sp-plan,html[data-flat]:not(#_) .sess,html[data-flat]:not(#_) .sess.today,
+html[data-flat]:not(#_) .kchart-card,html[data-flat]:not(#_) .ktile,html[data-flat]:not(#_) .kduo-card,html[data-flat]:not(#_) .favtile,
+html[data-flat]:not(#_) .mus-card,html[data-flat]:not(#_) .hv7-ktile,html[data-flat]:not(#_) .card,html[data-flat]:not(#_) .sbox,
+html[data-flat]:not(#_) .grp-card,html[data-flat]:not(#_) .exg-card{
+  background:var(--glass-bg) !important;background-image:none !important;border:1px solid var(--glass-border-soft) !important;
+  box-shadow:none !important;border-radius:22px;backdrop-filter:none;-webkit-backdrop-filter:none}
+html[data-flat]:not(#_) .sess,html[data-flat]:not(#_) .favtile{border-radius:18px}
+html[data-flat]:not(#_) .sp-plan::before,html[data-flat]:not(#_) .hv7-day::before,html[data-flat]:not(#_) .hv7-day::after{display:none !important}
+html[data-flat]:not(#_) .sess::before{width:3px;opacity:.9}
+/* titres de carte : texte simple comme « Corps » */
+html[data-flat]:not(#_) .card-t,html[data-flat]:not(#_) .sec-head h3,html[data-flat]:not(#_) .kinsights-head,html[data-flat]:not(#_) .hv7-day-title{
+  font-family:inherit !important;font-size:15px !important;font-weight:800 !important;letter-spacing:0 !important}
+html[data-flat]:not(#_) .kchart-lab,html[data-flat]:not(#_) .kduo-lab,html[data-flat]:not(#_) .ktile-lab{font-weight:700}
+/* intitulés de section : petites capitales grises, sans trait */
+html[data-flat]:not(#_) .grp-lab,html[data-flat]:not(#_) .sec-lab,html[data-flat]:not(#_) .hv7-sec-lab,html[data-flat]:not(#_) .sgrid-cap,html[data-flat]:not(#_) #toolRes>.lab,html[data-flat]:not(#_) #progBody>.lab{
+  font-family:inherit;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-shadow:none}
+html[data-flat]:not(#_) .grp-lab::after,html[data-flat]:not(#_) .sec-lab::before,html[data-flat]:not(#_) .hv7-sec-lab::before,
+html[data-flat]:not(#_) #toolRes>.lab::after,html[data-flat]:not(#_) #toolRes>.row>.lab:first-child::after,html[data-flat]:not(#_) #progBody>.lab::after,
+html[data-flat]:not(#_) .ov.ov-push .ov-head::before{display:none !important}
+html[data-flat]:not(#_) .sec-head .see{font-weight:800;font-size:13px}
+/* barres pleines */
+html[data-flat]:not(#_) .pbar{box-shadow:none}
+html[data-flat]:not(#_) .pbar>div{background:var(--e)}
+html[data-flat]:not(#_) *{text-shadow:none !important}
+html[data-flat]:not(#_) .sp-rail i.now{box-shadow:none}
+html[data-flat]:not(#_) .seg-ctrl{box-shadow:none}
+html[data-flat]:not(#_) .hv7-day-title{font-size:21px !important}
+html[data-flat]:not(#_) .lr-title,html[data-flat]:not(#_) .mus-name,html[data-flat]:not(#_) .grp-card .gr-t{font-family:inherit !important;font-size:15.5px !important;font-weight:800 !important;letter-spacing:0 !important}
