@@ -2710,7 +2710,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.26.2';
+const APP_VERSION='4.26.3';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -10158,9 +10158,9 @@ const IK_FIC={
  'lv3':'<path d="M6 19v-4M12 19v-8M18 19V7"/>'};
 // V4.26.2 : vrais dessins (pictogrammes d'athlètes et matériel en deux tons) sur une grille 32 ; niveaux (lv*) restent en 24
 function ikFic(k){ const p=IK_FIC[k], lv=/^lv/.test(k); return p?'<span class="fic">'+'<svg viewBox="0 0 '+(lv?24:32)+' '+(lv?24:32)+'" width="'+(lv?20:27)+'" height="'+(lv?20:27)+'" fill="none" stroke="currentColor" stroke-width="'+(lv?2.6:2)+'" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg></span>':''; }
-function libPickEquip(){ const L=['Tous',...new Set(allExercises().map(e=>e.equip).filter(Boolean))]; ikPick(t('equipmentLabel'),L.map(v=>({ic:ikFic(v),label:v==='Tous'?t('filterAll'):trEquip(v),on:libFilterEquip===v,cb:()=>{ libFilterEquip=v; renderLib(); }}))); }
-function libPickKind(){ ikPick(t('exKindLabel'),['Tous',...EX_KINDS].map(v=>({ic:ikFic(v),label:v==='Tous'?t('filterAll'):t('exKind_'+v),on:libFilterKind===v,cb:()=>{ libFilterKind=v; renderLib(); }}))); }
-function libPickLevel(){ ikPick(t('levelLabel'),['Tous',...LEVELS].map((v,k)=>({ic:ikFic(v==='Tous'?'Tous':'lv'+k),label:v==='Tous'?t('filterAll'):trLevel(v),on:libFilterLevel===v,cb:()=>{ libFilterLevel=v; renderLib(); }}))); }
+function libPickEquip(){ const L=['Tous',...new Set(allExercises().map(e=>e.equip).filter(Boolean))]; ikPick(t('equipmentLabel'),L.map(v=>({ic:ikFic(v),label:v==='Tous'?t('filterAll'):trEquip(v),on:libFilterEquip===v,cb:()=>{ libFilterEquip=v; renderLib(); }})),null,3); }
+function libPickKind(){ ikPick(t('exKindLabel'),['Tous',...EX_KINDS].map(v=>({ic:ikFic(v),label:v==='Tous'?t('filterAll'):t('exKind_'+v),on:libFilterKind===v,cb:()=>{ libFilterKind=v; renderLib(); }})),null,3); }
+function libPickLevel(){ ikPick(t('levelLabel'),['Tous',...LEVELS].map((v,k)=>({ic:ikFic(v==='Tous'?'Tous':'lv'+k),label:v==='Tous'?t('filterAll'):trLevel(v),on:libFilterLevel===v,cb:()=>{ libFilterLevel=v; renderLib(); }})),null,2); }
 // Recherche (V3.12.2) : chaque lettre redessinait toute la bibliothèque (filtres, tuiles
 // photo et 177 cartes) ; seule la liste change désormais, 140 ms après la dernière frappe.
 let _libSearchT=null;
