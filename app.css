@@ -6316,3 +6316,9 @@ html:not(#_):not(#_):not(#_) #liveBody .set-swipe-row.lv-set{gap:8px}
 .ik-tile-ic .fic svg{width:34px;height:34px}
 .ik-tile.on{border-color:var(--e);background:color-mix(in srgb,var(--e) 10%,transparent)}
 .ik-tile.on .ik-tile-ic .fic{background:var(--e);color:var(--accent-ink,#fff)}
+
+/* V4.26.4 : bas de la liste de la bibliotheque (chargement progressif) */
+.lib-more{display:flex;align-items:center;justify-content:center;gap:8px;margin:12px 0 4px;padding:13px;border-radius:14px;cursor:pointer;
+  font-size:13px;font-weight:700;color:var(--muted);background:color-mix(in srgb,var(--snow) 5%,transparent);
+  border:1.5px solid color-mix(in srgb,var(--snow) 10%,transparent)}
+.lib-more:active{transform:scale(.98)}

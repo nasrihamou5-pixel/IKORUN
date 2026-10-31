@@ -538,7 +538,7 @@ window.IK_I18N_EXTRA=Object.assign(window.IK_I18N_EXTRA||{},{
     namePromptLabel:'Name:',copySuffix:'(copy)',confirmDeletePlan:'Delete this plan?',
     addAtLeastOneRepTime:'Add at least one rep time',sessionAdded:'Session added',
     myPlanColon:'My plan: {0}',shareNotSupported:'Sharing not supported',confirmDeleteProgram:'Delete this program?',
-    routineTitle:'Routine',exercisesCount:{one:'{0} exercise',other:'{0} exercises'},setsCap:'Sets',estDurationCap:'Est. duration',
+    libMore:'Show more exercises',routineTitle:'Routine',exercisesCount:{one:'{0} exercise',other:'{0} exercises'},setsCap:'Sets',estDurationCap:'Est. duration',
     setsRepsLine:'{0} sets · {1} reps',addExercise:'Add an exercise',startWorkout:'Start workout',
     defaultProgramsNotEditable:'Default programs can\u2019t be edited',
     

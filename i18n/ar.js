@@ -538,7 +538,7 @@ window.IK_I18N_EXTRA=Object.assign(window.IK_I18N_EXTRA||{},{
     namePromptLabel:'الاسم:',copySuffix:'(نسخة)',confirmDeletePlan:'حذف هذه الخطة؟',
     addAtLeastOneRepTime:'أضف زمنًا واحدًا على الأقل للتكرار',sessionAdded:'تمت إضافة الحصة',
     myPlanColon:'خطتي: {0}',shareNotSupported:'المشاركة غير مدعومة',confirmDeleteProgram:'حذف هذا البرنامج؟',
-    routineTitle:'روتين',exercisesCount:{zero:'{0} تمرين',one:'تمرين واحد',two:'تمرينان',few:'{0} تمارين',many:'{0} تمرينًا',other:'{0} تمرين'},setsCap:'مجموعات',estDurationCap:'المدة التقديرية',
+    libMore:'عرض المزيد من التمارين',routineTitle:'روتين',exercisesCount:{zero:'{0} تمرين',one:'تمرين واحد',two:'تمرينان',few:'{0} تمارين',many:'{0} تمرينًا',other:'{0} تمرين'},setsCap:'مجموعات',estDurationCap:'المدة التقديرية',
     setsRepsLine:'{0} مجموعات · {1} تكرار',addExercise:'إضافة تمرين',startWorkout:'بدء التمرين',
     defaultProgramsNotEditable:'لا يمكن تعديل البرامج الافتراضية',
     
