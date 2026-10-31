@@ -2710,7 +2710,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.25.3';
+const APP_VERSION='4.26.0';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -8031,6 +8031,47 @@ function homeNextRows(n){
 // « Pas faite » ouvre le flux séance manquée (raison → remplacement → ajustement du plan).
 function homeSessDone(id){ curRunId=id; markRunDone(); renderHome(); }
 function homeSessMissed(id){ openMissedFlow(id); }
+/* ---------- CHECK-IN BIEN-ÊTRE DU MATIN (sommeil + forme, 2 taps, manuel) ----------
+   Indépendant du plan de course (contrairement au « Check du matin » de plan/adapt-ui.js,
+   lié à l'adaptation du plan) : juste un ressenti du jour avec un message adapté, visible
+   pour tout le monde sur l'Accueil. Manuel car une app web ne peut pas lire le sommeil
+   dans Santé sur iPhone. */
+let _wb={};
+function wbCheckDue(){
+  if(!P) return false;
+  const k=todayKey();
+  if(P.wbHide===k) return false;
+  if(PREFS && PREFS.wbLog && PREFS.wbLog[k]) return false;
+  return true;
+}
+function wbCheckHTML(){
+  if(!wbCheckDue()) return '';
+  const row=(f,ico,lab,opts)=>'<div class="wb-row'+(_wb[f]?' done':'')+'"><div class="wb-l"><i class="wb-ic">'+ICN(ico,17)+'</i><span>'+lab+'</span></div><div class="wb-opts" role="radiogroup" aria-label="'+escHtml(lab)+'">'+opts.map(([v,txt,aria])=>'<button type="button" class="wb-o'+(_wb[f]===v?' on':'')+'" role="radio" aria-checked="'+(_wb[f]===v)+'"'+(aria?' aria-label="'+escHtml(aria)+'"':'')+' onclick="wbSet(\''+f+'\','+v+')">'+txt+'</button>').join('')+'</div></div>';
+  const n=['sleep','form'].filter(k=>_wb[k]).length;
+  const dots='<span class="wb-dots" aria-hidden="true">'+[0,1].map(i=>'<i class="'+(i<n?'on':'')+'"></i>').join('')+'</span>';
+  return '<section class="mc-card wb-card" aria-label="'+t('wbTitle')+'"><div class="wb-h"><div class="wb-t"><b>'+t('wbTitle')+'</b>'+dots+'</div><button type="button" class="ad-link" onclick="wbHide()">'+t('mcLater')+'</button></div>'+
+    row('sleep','moon',t('mcSleep'),[[1,t('blSleepBad')],[2,t('blSleepMid')],[3,t('blSleepGood')]])+
+    row('form','bolt',t('wbForm'),[[1,'😴',t('wbForm1')],[2,'😐',t('wbForm2')],[3,'💪',t('wbForm3')]])+'</section>';
+}
+function wbHide(){ P.wbHide=todayKey(); _wb={}; DB.save('profile',P); refreshScreen(); }
+function wbSet(f,v){
+  _wb[f]=v; haptic();
+  if(_wb.sleep && _wb.form){
+    const k=todayKey();
+    if(!PREFS.wbLog) PREFS.wbLog={};
+    PREFS.wbLog[k]={sleep:_wb.sleep,form:_wb.form};
+    // ne garde que les 60 derniers jours
+    const keys=Object.keys(PREFS.wbLog).sort(); if(keys.length>60) keys.slice(0,keys.length-60).forEach(x=>delete PREFS.wbLog[x]);
+    DB.save('prefs',PREFS);
+    try{ if(typeof ikTrack==='function') ikTrack('wb_check',{}); }catch(e){}
+    const sum=_wb.sleep+_wb.form, msg=sum<=2?t('wbMsgLow'):sum<=4?t('wbMsgMid'):t('wbMsgHigh');
+    _wb={};
+    toast(msg);
+    refreshScreen();
+    return;
+  }
+  const card=document.querySelector('.wb-card'); if(card) card.outerHTML=wbCheckHTML();
+}
 function renderHome(){
   const kmW=kmThisWeek();
   // V3.14.0 : sans plan, pas d'objectif inventé (« 0/4 séances » avant même d'avoir un plan)
@@ -8082,6 +8123,7 @@ function renderHome(){
   // Pas de grande illustration ici : le logo IKORUN est déjà en tête de la bannière (27/09).
   html+='<div class="ikh ikh-home">'+homeHdr+
     '<div class="hv7-greet"><h1>'+t('greet')+' '+escHtml(first||t('you'))+'</h1><p>'+sub+'</p></div></div>';
+  html+=wbCheckHTML();      // check-in bien-être du matin (sommeil + forme, 2 taps) — voir plus bas
   html+=guestNudgeHTML();   // invité : créer un compte (core/guest.js), au plus tous les 3 jours
   html+=installNudgeHTML(); // installer l'app (ui/install.js), au plus tous les 7 jours
   html+=feteCardHTML();
@@ -8196,6 +8238,7 @@ function renderHomeSimple(ps,sessW,sessTarget,kmW,first){
   // deviner « touchable ») ; puis la prière, la semaine, l'objectif. La série de jours et
   // la bulle de notifications passent en bas : moins de petits éléments en tête d'écran.
   h+='<div class="ik-greet"><h1>'+t('greet')+' '+escHtml(first||t('you'))+'</h1></div>';
+  h+=wbCheckHTML();
   h+=feteCardHTML();
 
   h+='<div class="next-lab">'+t('ezToday')+'</div>';
@@ -9447,7 +9490,10 @@ function renderLive(){
     if(!st.log||st.log.length!==st.sets.length){ st.log=st.sets.map((d,j)=>(st.log&&st.log[j])||{kg:e.weight||st.weight||20,reps:parseInt(e.reps)||st.reps||10,rpe:8,done:!!d}); }
   });
   $('#liveTitle').textContent=p.name;
-  const totalSets=p.ex.reduce((a,x)=>a+x.sets,0);
+  // V4.26.0 : le total doit suivre les séries réellement présentes (ajoutées/supprimées
+  // en cours de séance), pas le nombre figé au départ du programme — sinon la barre et
+  // le compteur (ex. 22/18) dépassent le total d'origine au lieu de grandir avec lui.
+  const totalSets=LIVE.state.reduce((a,st)=>a+(st.sets?st.sets.length:0),0);
   const dur=fmtTime((Date.now()-LIVE.start)/1000);
   // Barre du haut façon Hevy : chevron (mettre de côté) / minuteur rapide / Terminer
   // Le bouton minuteur était rendu vide (aucun contenu dans le span) : il occupait
@@ -9475,26 +9521,33 @@ function renderLive(){
   // Un seul exercice ouvert à la fois (accordéon), et tout est animé en douceur (transition CSS).
   // V4.24.0 : une carte par exercice, dans le style de Stats › Santé — nom en gras, pastille « 1/3 »,
   // séries en lignes séparées par un trait fin. Tap sur l'en-tête : déplier / replier.
+  // V4.26.0 : superset — les exercices qui partagent le même e.ss se fusionnent visuellement
+  // en un seul bloc (un en-tête « Superset » commun, les cartes collées sans espace entre
+  // elles), tout en gardant le compteur de progression propre à chaque exercice (lv-pill).
+  let ssOpenGrp=null;
   p.ex.forEach((e,i)=>{
     const st=LIVE.state[i];
     const nd=st.sets.filter(Boolean).length, allDone=st.sets.length&&nd===st.sets.length;
     const open=liveOpenEx===i, f=(typeof exMeta==='function'&&exMeta(e.name))||{};
     const sub=[(f.primary&&f.primary[0])?trMuscle(f.primary[0]):((e.muscles&&e.muscles[0])?trMuscle(e.muscles[0]):''),tp('setsCount',st.sets.length)].filter(Boolean).join(' · ');
-    h+='<div class="ex-swipe-wrap" data-i="'+i+'">'+
+    const inGrp=!!e.ss, grpStart=inGrp&&ssOpenGrp!==e.ss, grpEnd=inGrp&&(i===p.ex.length-1||p.ex[i+1].ss!==e.ss);
+    if(grpStart){ ssOpenGrp=e.ss; h+='<div class="lv-ss-group"><div class="lv-ss-h">'+ICN('plus',13)+'<span>'+t('ssTag')+'</span></div>'; }
+    h+='<div class="ex-swipe-wrap'+(inGrp?' lv-ss-item':'')+'" data-i="'+i+'">'+
       '<div class="ex-swipe-action left" onclick="confirmDeleteLiveEx('+i+')"><span>'+ICN('trash',16)+'</span>'+t('deleteLab2')+'</div>'+
       '<div class="ex-swipe-action right" onclick="confirmDeleteLiveEx('+i+')"><span>'+ICN('trash',16)+'</span>'+t('deleteLab2')+'</div>';
     h+='<div class="card ex-swipe-card lv-card'+(open?' lv-open':'')+(allDone?' lv-done':'')+'" data-i="'+i+'">';
     h+='<div class="lv-h" onclick="toggleLiveEx('+i+')">'+exThumb(e.name,46)+
-      '<div class="lv-ht">'+(e.ss?'<span class="ss-tag">'+t('ssTag')+'</span>':'')+'<b>'+escHtml(trExName(e.name))+'</b><small>'+escHtml(sub)+'</small></div>'+
+      '<div class="lv-ht"><b>'+escHtml(trExName(e.name))+'</b><small>'+escHtml(sub)+'</small></div>'+
       '<span class="lv-pill'+(allDone?' ok':nd?' on':'')+'">'+(allDone?ICN('check',13)+' ':'')+nd+'/'+st.sets.length+'</span>'+
       '<button type="button" class="lv-more" aria-label="'+t('moreLab')+'" onclick="event.stopPropagation();openLiveExOptions('+i+')">⋯</button></div>';
     h+='<div id="exBody'+i+'"'+(open?'':' data-lazy="1"')+' class="lv-body" style="max-height:'+(open?'1400px':'0px')+';opacity:'+(open?'1':'0')+';overflow:hidden;transition:max-height .32s ease,opacity .22s ease,margin-top .32s ease;margin-top:'+(open?'12':'0')+'px">'+(open?liveExBodyHTML(i):'');
     h+='</div></div></div>';
+    if(grpEnd){ h+='</div>'; ssOpenGrp=null; }
   });
   h+='<button class="btn" style="margin:10px 0 8px" onclick="liveAddExercise()">'+t('addExerciseBtn')+'</button>';
   h+='<button class="btn btn-soft" style="margin-bottom:8px" onclick="liveMore()">'+t('moreLab')+'</button>';
   $('#liveBody').innerHTML=h;
-  { const now=totalSets?Math.round(LIVE.setsDone/totalSets*100):0, bar=$('#liveProg');
+  { const now=totalSets?Math.min(100,Math.round(LIVE.setsDone/totalSets*100)):0, bar=$('#liveProg');
     if(bar){ requestAnimationFrame(()=>{ bar.style.width=now+'%'; }); if(now===100 && LIVE._progPrev!==100) ikShock(bar.parentElement); }
     LIVE._progPrev=now; }
   initLiveSwipe();
@@ -9509,6 +9562,7 @@ function liveExBodyHTML(i){
   if(e.note||(LIVE&&LIVE._noteOpen===i)) h+='<input class="lv-note" id="liveNote'+i+'" placeholder="'+t('exNotesPh')+'" value="'+escHtml(e.note||'')+'" oninput="liveSetNote('+i+',this.value)">';
   { const o=(typeof ikExObjective==='function')?ikExObjective(e):null;
     if(o) h+='<div class="lv-obj'+(o.up?' up':'')+'">'+ICN(o.up?'trend':'target',15)+'<span>'+escHtml(o.txt)+'</span><button type="button" class="lv-link" onclick="ikFillObjective('+i+')">'+t('objFillBtn')+'</button></div>'; }
+  if(ikIsDumbbellEx(e.name)) h+='<button type="button" class="lv-x2'+(ikX2(e)?' on':'')+'" onclick="toggleX2('+i+')">×2<small>'+t('x2DumbbellLab')+'</small></button>';
   h+='<div class="lv-sets">';
   st.log.forEach((s,j)=>{
     const prev=(typeof ikPrevCell==='function')?ikPrevCell(e,j):'—';
@@ -9517,8 +9571,8 @@ function liveExBodyHTML(i){
       '<div class="set-swipe-action right" onclick="deleteLiveSet('+i+','+j+')"><span>'+ICN('trash',16)+'</span></div>'+
       '<div class="set-swipe-row lv-set'+(s.done?' is-done':'')+'" data-i="'+i+'" data-j="'+j+'">'+
       '<div class="set-n lv-n" role="button" onclick="ikSetMenu('+i+','+j+')"><b>'+((typeof ikSetBadge==='function')?ikSetBadge(s,j):(j+1))+'</b>'+(prev!=='—'?'<small>'+prev+'</small>':'')+(s.rpe&&s.rpeU?'<small>@'+String(s.rpe).replace('.',',')+'</small>':'')+'</div>'+
-      '<label class="lv-f"><input class="setcell" type="number" inputmode="decimal" value="'+s.kg+'" onchange="setLog('+i+','+j+',\'kg\',this.value)"><span>'+t('kgCol').toLowerCase()+'</span></label>'+
-      '<label class="lv-f"><input class="setcell" type="number" inputmode="numeric" value="'+s.reps+'" onchange="setLog('+i+','+j+',\'reps\',this.value)"><span>'+t('repsCol').toLowerCase()+'</span></label>'+
+      '<label class="lv-f"><input class="setcell" type="text" inputmode="decimal" value="'+String(s.kg).replace('.',',')+'" onfocus="this.select()" onchange="setLog('+i+','+j+',\'kg\',this.value)"><span>'+t('kgCol').toLowerCase()+'</span></label>'+
+      '<label class="lv-f"><input class="setcell" type="text" inputmode="numeric" value="'+s.reps+'" onfocus="this.select()" onchange="setLog('+i+','+j+',\'reps\',this.value)"><span>'+t('repsCol').toLowerCase()+'</span></label>'+
       '<div class="setcheck'+(s.done?' on':'')+'" onclick="toggleSet('+i+','+j+')">'+ICN('check',17)+'</div></div>'+
       '</div>';
   });
@@ -9731,15 +9785,28 @@ function restModeMenu(){
   ]);
 }
 function ikLiveTotals(){
-  let ton=0,n=0; LIVE.state.forEach(st=>{ (st.log||[]).forEach((s,j)=>{ if(st.sets[j]){ n++; if(s.t!=='w') ton+=(+s.kg||0)*(+s.reps||0); } }); });
+  let ton=0,n=0; LIVE.state.forEach((st,i)=>{ const e=LIVE.prog.ex[i], mul=(e&&ikX2(e))?2:1; (st.log||[]).forEach((s,j)=>{ if(st.sets[j]){ n++; if(s.t!=='w') ton+=(+s.kg||0)*mul*(+s.reps||0); } }); });
   LIVE.tonnage=ton; LIVE.setsDone=n;
+}
+// V4.26.0 : exercices haltères — le champ kg reste le poids d'UN haltère ; la charge totale
+// (affichée dans « Volume » et dans l'historique) compte les deux. Auto-détecté sur l'équipement
+// de l'exercice, mais modifiable au cas par cas (ex. travail unilatéral à un seul haltère).
+function ikIsDumbbellEx(name){ const f=(typeof exMeta==='function'&&exMeta(name))||{}; return f.equip==='Haltères'; }
+function ikX2(e){ return e.x2!=null?!!e.x2:ikIsDumbbellEx(e.name); }
+function toggleX2(i){
+  const e=LIVE.prog.ex[i]; e.x2=!ikX2(e);
+  ikLiveTotals(); persistLive();
+  const v=$('#liveVol'); if(v) v.textContent=Math.round(LIVE.tonnage)+' kg';
+  // ikReLiveEx() est défini dans muscu/muscu.js (chargé après app.js dans le bundle) :
+  // il réaffiche juste le corps de cette carte sans tout reconstruire.
+  if(typeof ikReLiveEx==='function') ikReLiveEx(i); else renderLive();
 }
 // Plafonds larges mais réels (record du monde en deadlift ~500 kg, personne
 // ne fait 100 répétitions d'une série de musculation) : sans ça, une valeur
 // tapée par erreur ou en test (99999) gonflait le tonnage sans limite et
 // débloquait instantanément le trophée "Force" (20 000 kg cumulés / semaine).
 function setLog(i,j,k,v){
-  const st=LIVE.state[i]; let n=+v||0;
+  const st=LIVE.state[i]; let n=parseFloat(String(v).replace(',','.'))||0;
   if(k==='kg') n=Math.min(500,Math.max(0,n));
   else if(k==='reps') n=Math.min(100,Math.max(0,Math.round(n)));
   st.log[j][k]=n; if(k==='kg')st.weight=n||st.weight; if(st.sets[j]){ ikLiveTotals(); const v=$('#liveVol'); if(v) v.textContent=Math.round(LIVE.tonnage)+' kg'; } persistLive();
@@ -9949,7 +10016,8 @@ function finishLive(){
   // Historique par exercice (pour les graphiques de progression)
   if(!PREFS.exHist) PREFS.exHist={};
   LIVE.prog.ex.forEach((e,i)=>{ const st=LIVE.state[i]; if(st.sets.some(Boolean)){
-    const vol=(st.log||[]).reduce((a,s,j)=>a+(st.sets[j]&&s.t!=='w'?(s.kg||0)*(s.reps||0):0),0);
+    const mul=ikX2(e)?2:1;
+    const vol=(st.log||[]).reduce((a,s,j)=>a+(st.sets[j]&&s.t!=='w'?(s.kg||0)*mul*(s.reps||0):0),0);
     if(vol>0){ if(!PREFS.exHist[e.name])PREFS.exHist[e.name]=[]; PREFS.exHist[e.name].push({date:todayKey(),vol}); PREFS.exHist[e.name]=PREFS.exHist[e.name].slice(-30); }
   }});
   DB.remove('live_active');
@@ -10007,8 +10075,8 @@ function npExBody(e,i){
     '<div class="live-rest" onclick="npRest('+i+')">'+ICN('stopwatch',15)+'<span>'+tp('restTimerLab',fmtRest(e.rest||90))+'</span></div>'+
     '<div class="np-sets np-sets-h"><div>'+t('setCol')+'</div><div>'+t('prevCol')+'</div><div>'+t('kgCol')+'</div><div>'+t('repsCol')+'</div><div></div></div>';
   sd.forEach((s,j)=>{ h+='<div class="np-sets"><div class="set-n">'+(j+1)+'</div><div class="np-prev">'+((typeof ikPrevCell==='function')?ikPrevCell(e,j):'—')+'</div>'+
-    '<input class="setcell" type="number" inputmode="decimal" value="'+s.kg+'" onchange="npSet('+i+','+j+',\'kg\',this.value)">'+
-    '<input class="setcell" type="number" inputmode="numeric" value="'+s.reps+'" onchange="npSet('+i+','+j+',\'reps\',this.value)">'+
+    '<input class="setcell" type="text" inputmode="decimal" value="'+String(s.kg).replace('.',',')+'" onfocus="this.select()" onchange="npSet('+i+','+j+',\'kg\',this.value)">'+
+    '<input class="setcell" type="text" inputmode="numeric" value="'+s.reps+'" onfocus="this.select()" onchange="npSet('+i+','+j+',\'reps\',this.value)">'+
     '<button type="button" class="np-x" aria-label="'+t('removeLab2')+'" onclick="npDelSet('+i+','+j+')"'+(sd.length<=1?' disabled':'')+'>×</button></div>'; });
   return h+'<button class="btn btn-soft sm" style="margin-top:6px" onclick="npAddSet('+i+')">'+t('addSetBtn')+'</button>';
 }
@@ -10071,14 +10139,14 @@ function libPickGroup(g){
 // V4.23.0 : petits dessins à côté de chaque choix des filtres (matériel, type, niveau)
 const IK_FIC={
  'Tous':'<rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/>',
- 'Barre':'<path d="M2 12h20"/><rect x="5" y="7" width="2.6" height="10" rx="1"/><rect x="16.4" y="7" width="2.6" height="10" rx="1"/><rect x="2.6" y="9" width="2" height="6" rx=".8"/><rect x="19.4" y="9" width="2" height="6" rx=".8"/>',
+ 'Barre':'<rect x="2" y="10" width="2.4" height="4" rx="1"/><rect x="19.6" y="10" width="2.4" height="4" rx="1"/><rect x="5" y="7.5" width="3" height="9" rx="1.2"/><rect x="16" y="7.5" width="3" height="9" rx="1.2"/><path d="M8 12h8"/>',
  'Haltères':'<path d="M8 12h8"/><rect x="3.5" y="8" width="4.5" height="8" rx="1.6"/><rect x="16" y="8" width="4.5" height="8" rx="1.6"/>',
- 'Machine':'<path d="M5 21V3M5 4h12M17 4v5"/><rect x="14.5" y="9" width="5" height="7" rx="1"/><path d="M15 12h4M5 15h6l2 6"/>',
- 'Poulie':'<circle cx="12" cy="4.5" r="2"/><path d="M12 6.5v10M4 2v20M20 2v20"/><path d="M9 17h6"/><path d="M9.5 17l-1 3M14.5 17l1 3"/>',
+ 'Machine':'<rect x="4" y="3" width="8" height="18" rx="1.3"/><path d="M4 8h8M4 12.5h8M4 17h8"/><circle cx="18" cy="6" r="2.1"/><path d="M18 8.1v4.2l-4.5 4.5"/>',
+ 'Poulie':'<circle cx="12" cy="4.8" r="2.1"/><path d="M12 6.9v7.6"/><path d="M8 16h8l-1.6 4.5h-4.8z"/>',
  'Poids du corps':'<circle cx="12" cy="4.5" r="2"/><path d="M12 7v7M7 9.5l5 1.5 5-1.5M9 21l3-7 3 7"/>',
- 'Élastique':'<path d="M7 4v4M17 4v4"/><rect x="5" y="2.5" width="4" height="3" rx="1.2"/><rect x="15" y="2.5" width="4" height="3" rx="1.2"/><path d="M7 8c0 7 3 11 5 11s5-4 5-11"/>',
+ 'Élastique':'<path d="M3 12c1.6-5 3.2-5 4.8 0s3.2 5 4.8 0 3.2-5 4.8 0 3.2 5 4.8 0"/>',
  'Kettlebell':'<path d="M9 8a3 3 0 0 1 6 0"/><path d="M8.2 8h7.6M12 8c-4.4 0-7 3.3-7 6.6C5 18.5 8 21 12 21s7-2.5 7-6.4C19 11.3 16.4 8 12 8z"/>',
- 'Accessoire':'<circle cx="12" cy="12" r="8.5"/><path d="M3.8 10.5c5 2.6 11.4 2.6 16.4 0M12 3.5v17"/>',
+ 'Accessoire':'<circle cx="12" cy="12" r="8.5"/><path d="M3.8 12h16.4M12 3.5c3 2.5 3 15 0 17M12 3.5c-3 2.5-3 15 0 17" opacity=".55"/>',
  'force':'<path d="M8 12h8"/><rect x="3.5" y="8" width="4.5" height="8" rx="1.6"/><rect x="16" y="8" width="4.5" height="8" rx="1.6"/>',
  'etirement':'<circle cx="16" cy="4.5" r="2"/><path d="M15.5 7.5l-3.5 5.5 5 2.5v5.5M12 13l-6.5 4M14 8.5l5.5-4"/>',
  'mobilite':'<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v4h-4"/><circle cx="12" cy="12" r="2.2"/>',
@@ -12175,9 +12243,9 @@ function ikActivities(){
       time:fmtMS(pLeft),f:pLen?pLeft/pLen:0,c:work?'var(--bad)':'var(--ok)',acts:'toggle',on:pomoState.running,mine:()=>ikScrIs('pomodoro')});
   }
   if(LIVE && !_finishingLive && LIVE.prog){
-    const tot=LIVE.prog.ex.reduce((a,x)=>a+(x.sets||0),0);
+    const tot=LIVE.state.reduce((a,st)=>a+(st.sets?st.sets.length:0),0);
     out.push({k:'live',icon:'dumbbell',title:LIVE.prog.name,sub:tp('islandSets',LIVE.setsDone,tot),time:fmtTime((now-LIVE.start)/1000),
-      f:tot?LIVE.setsDone/tot:0,c:'var(--e)',acts:'open',live:true,
+      f:tot?Math.min(1,LIVE.setsDone/tot):0,c:'var(--e)',acts:'open',live:true,
       mine:()=>{ const o=$('#ovLive'); return !!(o&&o.classList.contains('on')); }});
   }
   const cTot=chrono.elapsed+(chrono.running?now-chrono.start:0);
