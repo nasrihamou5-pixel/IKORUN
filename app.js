@@ -2710,7 +2710,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.26.0';
+const APP_VERSION='4.26.1';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -10140,18 +10140,18 @@ function libPickGroup(g){
 const IK_FIC={
  'Tous':'<rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/>',
  'Barre':'<rect x="2" y="10" width="2.4" height="4" rx="1"/><rect x="19.6" y="10" width="2.4" height="4" rx="1"/><rect x="5" y="7.5" width="3" height="9" rx="1.2"/><rect x="16" y="7.5" width="3" height="9" rx="1.2"/><path d="M8 12h8"/>',
- 'Haltères':'<path d="M8 12h8"/><rect x="3.5" y="8" width="4.5" height="8" rx="1.6"/><rect x="16" y="8" width="4.5" height="8" rx="1.6"/>',
- 'Machine':'<rect x="4" y="3" width="8" height="18" rx="1.3"/><path d="M4 8h8M4 12.5h8M4 17h8"/><circle cx="18" cy="6" r="2.1"/><path d="M18 8.1v4.2l-4.5 4.5"/>',
- 'Poulie':'<circle cx="12" cy="4.8" r="2.1"/><path d="M12 6.9v7.6"/><path d="M8 16h8l-1.6 4.5h-4.8z"/>',
- 'Poids du corps':'<circle cx="12" cy="4.5" r="2"/><path d="M12 7v7M7 9.5l5 1.5 5-1.5M9 21l3-7 3 7"/>',
+ 'Haltères':'<rect x="2.3" y="9.3" width="3.2" height="5.4" rx="1.2"/><rect x="18.5" y="9.3" width="3.2" height="5.4" rx="1.2"/><rect x="6" y="7.6" width="2.8" height="8.8" rx="1"/><rect x="15.2" y="7.6" width="2.8" height="8.8" rx="1"/><path d="M8.8 12h6.4"/>',
+ 'Machine':'<rect x="5" y="4" width="14" height="2.6" rx="1"/><rect x="5" y="8" width="14" height="2.6" rx="1"/><rect x="5" y="12" width="14" height="2.6" rx="1"/><rect x="5" y="16" width="14" height="2.6" rx="1"/><path d="M12 2v2M12 20v2"/>',
+ 'Poulie':'<circle cx="17" cy="4.3" r="2"/><path d="M17 6.3c0 3-2 4.5-5 5.3"/><path d="M9.5 12.2v3.6"/><path d="M7 15.8h5l-1 4.4h-3z"/>',
+ 'Poids du corps':'<circle cx="12" cy="4.3" r="2"/><path d="M12 6.3v5.2"/><path d="M8.3 8.3l3.7 1.2 3.7-1.2"/><path d="M9 20.5l3-6 3 6"/>',
  'Élastique':'<path d="M3 12c1.6-5 3.2-5 4.8 0s3.2 5 4.8 0 3.2-5 4.8 0 3.2 5 4.8 0"/>',
- 'Kettlebell':'<path d="M9 8a3 3 0 0 1 6 0"/><path d="M8.2 8h7.6M12 8c-4.4 0-7 3.3-7 6.6C5 18.5 8 21 12 21s7-2.5 7-6.4C19 11.3 16.4 8 12 8z"/>',
- 'Accessoire':'<circle cx="12" cy="12" r="8.5"/><path d="M3.8 12h16.4M12 3.5c3 2.5 3 15 0 17M12 3.5c-3 2.5-3 15 0 17" opacity=".55"/>',
- 'force':'<path d="M8 12h8"/><rect x="3.5" y="8" width="4.5" height="8" rx="1.6"/><rect x="16" y="8" width="4.5" height="8" rx="1.6"/>',
- 'etirement':'<circle cx="16" cy="4.5" r="2"/><path d="M15.5 7.5l-3.5 5.5 5 2.5v5.5M12 13l-6.5 4M14 8.5l5.5-4"/>',
+ 'Kettlebell':'<path d="M9 8c0-1.7 1.3-3 3-3s3 1.3 3 3"/><path d="M9 8v1.8M15 8v1.8"/><circle cx="12" cy="15.5" r="6"/>',
+ 'Accessoire':'<rect x="3" y="7.5" width="18" height="9" rx="4.3"/><path d="M3 12h18"/>',
+ 'force':'<rect x="2.6" y="13.2" width="3.4" height="6" rx="1.3" transform="rotate(-35 4.3 16.2)"/><rect x="17.9" y="4.8" width="3.4" height="6" rx="1.3" transform="rotate(-35 19.6 7.8)"/><path d="M7.8 15L16.2 9"/>',
+ 'etirement':'<circle cx="12" cy="4.3" r="2"/><path d="M12 6.3c-1.8 1-2.6 2.8-2 5.2"/><path d="M10 11.5l6-2.5"/><path d="M10 11.5l-1.5 8"/><path d="M10 11.5l4 2 1 6"/>',
  'mobilite':'<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v4h-4"/><circle cx="12" cy="12" r="2.2"/>',
  'cardio':'<path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z"/><path d="M5 12h3.2l1.6-2.6 2.4 5 1.6-2.4H19"/>',
- 'plyo':'<circle cx="12" cy="4" r="2"/><path d="M12 6.5v6M8 9l4 2 4-2M9 17l3-4.5 3 4.5"/><path d="M5 21h14"/><path d="M8 19.5l-1 1.5M16 19.5l1 1.5" opacity=".6"/>',
+ 'plyo':'<circle cx="12" cy="4" r="2"/><path d="M12 6v6"/><path d="M12 8l-4.5-3M12 8l4.5-3"/><path d="M12 12l-4 7M12 12l4 7"/>',
  'rehab':'<path d="M12 21s-8-4.8-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 6.2-8 11-8 11z"/><path d="M12 9.5v6M9 12.5h6"/>',
  'lv1':'<path d="M6 19v-4"/><path d="M12 19v-8" opacity=".25"/><path d="M18 19V7" opacity=".25"/>',
  'lv2':'<path d="M6 19v-4M12 19v-8"/><path d="M18 19V7" opacity=".25"/>',
