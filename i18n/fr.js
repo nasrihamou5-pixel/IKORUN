@@ -566,7 +566,7 @@ const I18N={
     namePromptLabel:'Nom :',copySuffix:'(copie)',confirmDeletePlan:'Supprimer ce plan ?',
     addAtLeastOneRepTime:'Ajoute au moins un temps de répétition',sessionAdded:'Séance ajoutée',
     myPlanColon:'Mon plan : {0}',shareNotSupported:'Partage non supporté',confirmDeleteProgram:'Supprimer ce programme ?',
-    routineTitle:'Routine',exercisesCount:{one:'{0} exercice',other:'{0} exercices'},setsCap:'Séries',estDurationCap:'Durée est.',
+    libMore:'Voir plus d’exercices',routineTitle:'Routine',exercisesCount:{one:'{0} exercice',other:'{0} exercices'},setsCap:'Séries',estDurationCap:'Durée est.',
     setsRepsLine:'{0} séries · {1} reps',addExercise:'Ajouter un exercice',startWorkout:'Commencer l\u2019entraînement',
     defaultProgramsNotEditable:'Les programmes par défaut ne sont pas modifiables',
     

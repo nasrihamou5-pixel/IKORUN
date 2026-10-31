@@ -2710,7 +2710,7 @@ const $$=s=>document.querySelectorAll(s);
 // exposait le numéro technique de cache (?v=N d'index.html). Dernier chiffre : correctif ;
 // chiffre du milieu : nouveautés. Le pre-commit refuse une nouvelle version d'app.js (?v=N)
 // si ce numéro n'a pas bougé — les deux ne peuvent donc plus diverger en silence.
-const APP_VERSION='4.26.3';
+const APP_VERSION='4.26.4';
 // Rejoue une légère animation d'entrée (.pagein, cf index.html) sur un remplacement
 // de contenu interne — jusqu'ici seul le changement d'onglet principal (nav(), via
 // .scr.on) redémarrait une animation ; naviguer À L'INTÉRIEUR d'un onglet (ouvrir
@@ -3856,7 +3856,7 @@ function ovDismiss(ov){
 function customConfirm(msg,onYes,opts){
   opts=opts||{};
   const old=$('#genConfirmOv'); if(old) old.remove();
-  const ov=document.createElement('div'); ov.className='ov on'; ov.id='genConfirmOv'; ov.style.zIndex=topZ();
+  const ov=document.createElement('div'); ov.className='ov on ov-dismiss'; ov.id='genConfirmOv'; ov.style.zIndex=topZ();
   // msg et opts.title sont injectés en innerHTML. La quasi-totalité des appels
   // passe un t()/tp() de confiance, mais au moins un interpole une donnée
   // utilisateur (nom de plan, cf. maybeResumeLive) : sans échappement, un nom de
@@ -4270,8 +4270,17 @@ function askGlassTilt(){
   let ovEl=null, ovId=null, startX=0, startY=0, dx=0, dragging=false, t0=0, engaged=false;
   const THRESH=90;
   document.addEventListener('touchstart',e=>{
-    const edge=e.target.closest('.ov-push-edge'); if(!edge) return;
-    ovId=edge.dataset.ovid; ovEl=document.getElementById(ovId); if(!ovEl) return;
+    const edge=e.target.closest('.ov-push-edge');
+    if(edge){ ovId=edge.dataset.ovid; ovEl=document.getElementById(ovId); }
+    else {
+      // V4.26.4 : le geste "retour" depuis le bord gauche ne marchait que sur les pages
+      // plein ecran. Sur une fenetre du bas (menus de choix, confirmations), il ne se
+      // passait rien ; il la ferme maintenant comme le glissement vers le bas.
+      if(e.touches[0].clientX>26) return;
+      const sheets=[...document.querySelectorAll('.ov.on')].filter(o=>!o.classList.contains('ov-push')&&window.ikFermable&&window.ikFermable(o));
+      ovEl=sheets.length?sheets[sheets.length-1]:null; ovId=ovEl?ovEl.id:null;
+    }
+    if(!ovEl) return;
     startX=e.touches[0].clientX; startY=e.touches[0].clientY; dx=0; dragging=true; engaged=false; t0=performance.now();
   },{passive:true});
   document.addEventListener('touchmove',e=>{
@@ -4301,6 +4310,7 @@ function askGlassTilt(){
     // revenait d'abord à sa place puis disparaissait d'un coup).
     // V4.25.2 : dans la bibliothèque, glisser depuis une fiche revient à la liste (pas hors de la bibliothèque)
     if((dx>THRESH || vite) && ovId==='ovLib' && _ficheCur){ if(card) card.style.transform=''; libBack(); }
+    else if((dx>THRESH || vite) && !ovEl.classList.contains('ov-push')){ if(card) card.style.transform=''; window.ikFerme(ovEl); }
     else if(dx>THRESH || vite) closeOv(ovId);
     else if(card) card.style.transform='';
     dx=0; ovEl=null; ovId=null;
@@ -4339,8 +4349,20 @@ function askGlassTilt(){
   const FERMABLES=new Set(['ovSettings','ovBadges','ovFullPlan','ovPicker']);
   const REDUCTIBLES={ovLive:()=>minimizeLive(),restOv:()=>minimizeRest()};
   let s=null;
-  const fermable=ov=>ov && ov.id && (FERMABLES.has(ov.id)||REDUCTIBLES[ov.id]) && ov.classList.contains('on');
-  const ferme=id=>{ if(REDUCTIBLES[id]) REDUCTIBLES[id](); else closeOv(id); };
+  // V4.26.4 : les fenetres creees a la volee (menus de choix Materiel/Type/Niveau,
+  // confirmations) ne figuraient dans aucune des deux listes : glisser vers le bas
+  // n'y faisait rien. Elles portent maintenant la classe ov-dismiss et se ferment
+  // comme les autres. Les formulaires (profil, programme, saisie) restent exclus :
+  // fermeture volontaire uniquement, pour ne jamais perdre une saisie.
+  window.ikFermable=ov=>!!ov && ov.classList.contains('on') && ((ov.id&&(FERMABLES.has(ov.id)||REDUCTIBLES[ov.id]))||ov.classList.contains('ov-dismiss'));
+  window.ikFerme=ov=>{
+    if(!ov) return;
+    if(REDUCTIBLES[ov.id]){ REDUCTIBLES[ov.id](); return; }
+    if(ov.id&&FERMABLES.has(ov.id)){ closeOv(ov.id); return; }
+    ovLeave(ov); ov.classList.remove('on'); setTimeout(()=>ov.remove(),ikMotionOff()?0:260); // fenetre creee a la volee
+  };
+  const fermable=ov=>window.ikFermable(ov);
+  const ferme=id=>{ const ov=typeof id==='string'?document.getElementById(id):id; window.ikFerme(ov); };
   document.addEventListener('touchstart',e=>{
     s=null;
     const card=e.target.closest('.ov-card'); if(!card) return;
@@ -9849,7 +9871,7 @@ function confirmDeleteLiveEx(i){
   if(LIVE.prog.ex.length<=1){ toast(t('minOneExRemain')); return; }
   const name=LIVE.prog.ex[i].name;
   const old=$('#delExOv'); if(old) old.remove();
-  const ov=document.createElement('div'); ov.className='ov on'; ov.id='delExOv'; ov.style.zIndex=topZ();
+  const ov=document.createElement('div'); ov.className='ov on ov-dismiss'; ov.id='delExOv'; ov.style.zIndex=topZ();
   ov.innerHTML='<div class="ov-card" style="text-align:center">'+
     '<div class="card-t" style="justify-content:center;margin-bottom:10px">'+t('removeExConfirmTitle')+'</div>'+
     '<div style="font-size:13px;color:var(--muted);margin-bottom:18px">'+name+'</div>'+
@@ -9964,7 +9986,7 @@ function skipRest(){ clearInterval(restTimer); _rest=null; const o=$('#restOv');
 function confirmCloseLive(){
   // Popup "maison" à la place de confirm() natif, qui ne fonctionne pas dans une app ajoutée à l'écran d'accueil (iOS)
   const old=$('#cancelLiveOv'); if(old) old.remove();
-  const ov=document.createElement('div'); ov.className='ov on'; ov.id='cancelLiveOv'; ov.style.zIndex=topZ();
+  const ov=document.createElement('div'); ov.className='ov on ov-dismiss'; ov.id='cancelLiveOv'; ov.style.zIndex=topZ();
   ov.innerHTML='<div class="ov-card" style="text-align:center">'+
     '<div class="card-t" style="justify-content:center;margin-bottom:10px">'+t('cancelSessionTitle')+'</div>'+
     '<div style="font-size:13px;color:var(--muted);margin-bottom:18px">'+t('progressLostText')+'</div>'+
@@ -10121,6 +10143,7 @@ function renderLib(){
     fch(t('exKindLabel'),libFilterKind==='Tous'?t('filterAll'):t('exKind_'+libFilterKind),'libPickKind')+
     fch(t('levelLabel'),libFilterLevel==='Tous'?t('filterAll'):trLevel(libFilterLevel),'libPickLevel')+'</div>';
   $('#libBody').innerHTML=h+'<div id="libList">'+libListHTML()+'</div>'+(libMulti?'<div class="lib-done-bar"><button class="btn" onclick="libMultiDone()">'+((newProg&&newProg.ex.length)?tp('libAddN',newProg.ex.length):t('back'))+'</button></div>':'');
+  libWatchMore();
   ikLoad('anat').then(()=>{ const bp=$('#libBP'); if(bp){ bp.innerHTML=ikBodyPickHTML(libFilter); if(libFilter!=='Tous') ikBodyZoom(libFilter,true); } libBPbar(); }).catch(()=>{});
 }
 // V4.19.0 : on choisit le muscle sur le corps 2D complet ; retoucher le même muscle l'enlève
@@ -10164,11 +10187,18 @@ function libPickLevel(){ ikPick(t('levelLabel'),['Tous',...LEVELS].map((v,k)=>({
 // Recherche (V3.12.2) : chaque lettre redessinait toute la bibliothèque (filtres, tuiles
 // photo et 177 cartes) ; seule la liste change désormais, 140 ms après la dernière frappe.
 let _libSearchT=null;
-function renderLibList(){ const el=$('#libList'); if(el) el.innerHTML=libListHTML(); }
-function libListHTML(){
-  let h='';
+function renderLibList(){ const el=$('#libList'); if(el){ el.innerHTML=libListHTML(); libWatchMore(); } }
+/* V4.26.4 : la liste n'est plus construite d'un bloc. Avec 887 exercices, le code
+   d'avant posait 540 Ko de HTML et 887 <img> d'un coup dans la page : sur iPhone,
+   le pic de memoire faisait tuer l'onglet par iOS — l'app "redemarrait" en entrant
+   dans la bibliotheque (et en boucle hors ligne, les 887 images echouant ensemble).
+   On affiche LIB_PAGE cartes, puis la suite arrive au defilement (ou au clic sur
+   la barre "voir plus", filet de securite si l'observateur ne se declenche pas). */
+const LIB_PAGE=60;
+let libShown=0, _libObs=null;
+function libFilteredList(){
   const q=libSearch.toLowerCase().trim();
-  const list=allExercises().filter(e=>{
+  return allExercises().filter(e=>{
     if(libFilter!=='Tous' && e.group!==libFilter && !(e.primary||[]).some(m=>m.includes(libFilter)||libFilter.includes(m))) return false;
     if(libFilterEquip!=='Tous' && e.equip!==libFilterEquip) return false;
     if(libFilterLevel!=='Tous' && e.level!==libFilterLevel) return false;
@@ -10176,25 +10206,43 @@ function libListHTML(){
     if(q && !e.name.toLowerCase().includes(q) && !trExName(e.name).toLowerCase().includes(q)) return false;
     return true;
   });
-  h+='<div class="row" style="margin-bottom:8px"><div class="lab" style="flex:1">'+tp('exercisesCount',list.length)+'</div><div style="display:flex;gap:6px"><span class="mini-ic" style="'+(libView==='grid'?'color:var(--et,var(--e));border-color:var(--e)':'')+'" onclick="libView=\'grid\';renderLib()">▦</span><span class="mini-ic" style="'+(libView==='list'?'color:var(--et,var(--e));border-color:var(--e)':'')+'" onclick="libView=\'list\';renderLib()"></span></div></div>';
-  if(libView==='grid'){
-    h+='<div class="exg-grid">';
-    list.forEach((e,i)=>{
-      const nm=e.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;'); const g=exGif(e.name); const lvCol=e.level==='Débutant'?'--ok':e.level==='Avancé'?'--bad':'--warn';
-      const sel=libMulti&&newProg&&newProg.ex.some(x=>x.name===e.name);
-      h+='<div class="exg-card ik-in'+(sel?' sel':'')+'" style="--i:'+Math.min(i,12)+'" onclick=\'openFiche("'+nm+'")\'>'+
-        '<div class="exg-img'+(!g&&typeof ikExFigHTML==='function'?' exg-fig':'')+'">'+(g?'<img class="exg-ph" src="'+g[0]+'" alt="" loading="lazy" decoding="async" onload="this.classList.add(\'on\')" onerror="this.remove()">':(typeof ikExFigHTML==='function'?ikExFigHTML(e,1):'<span style="display:inline-flex">'+exGlyph(e,22)+'</span>'))+
-        (libBrowseMode?'':'<span class="exg-add'+(sel?' on':'')+'" onclick=\'event.stopPropagation();pickEx("'+nm+'")\'>'+(sel?'✓':'＋')+'</span>')+
-        '</div><div class="exg-body"><div class="exg-name">'+trExName(e.name)+'</div><div class="exg-sub">'+trEquip(e.equip)+' · <span style="color:var('+lvCol+')">'+trLevel(e.level)+'</span></div></div></div>';
-    });
-    h+='</div>';
-  } else {
-  list.forEach(e=>{
-    const lvCol=e.level==='Débutant'?'--ok':e.level==='Avancé'?'--bad':'--warn';
-    h+='<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:10px;flex:1;cursor:pointer" onclick=\'openFiche("'+e.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'")\'>'+exThumb(e.name,48)+'<div><div style="font-weight:700;font-size:14px">'+trExName(e.name)+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+trEquip(e.equip)+' · <span style="color:var('+lvCol+')">'+trLevel(e.level)+'</span></div><div class="muscle-tags">'+(e.primary||[]).map(m=>'<span class="mtag">'+trMuscle(m)+'</span>').join('')+'</div></div></div>'+(libBrowseMode?'<button class="x" onclick=\'openFiche("'+e.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'")\'>›</button>':'<button class="x" style="color:var(--et,var(--e))" onclick=\'pickEx("'+e.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;')+'")\'>＋</button>')+'</div></div>';
-  });
-  }
+}
+function libCardHTML(e,i){
+  const nm=e.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;'), g=exGif(e.name);
+  const lvCol=e.level==='Débutant'?'--ok':e.level==='Avancé'?'--bad':'--warn';
+  const sel=libMulti&&newProg&&newProg.ex.some(x=>x.name===e.name);
+  return '<div class="exg-card ik-in'+(sel?' sel':'')+'" style="--i:'+Math.min(i,12)+'" onclick=\'openFiche("'+nm+'")\'>'+
+    '<div class="exg-img'+(!g&&typeof ikExFigHTML==='function'?' exg-fig':'')+'">'+(g?'<img class="exg-ph" src="'+g[0]+'" alt="" loading="lazy" decoding="async" onload="this.classList.add(\'on\')" onerror="this.remove()">':(typeof ikExFigHTML==='function'?ikExFigHTML(e,1):'<span style="display:inline-flex">'+exGlyph(e,22)+'</span>'))+
+    (libBrowseMode?'':'<span class="exg-add'+(sel?' on':'')+'" onclick=\'event.stopPropagation();pickEx("'+nm+'")\'>'+(sel?'✓':'＋')+'</span>')+
+    '</div><div class="exg-body"><div class="exg-name">'+trExName(e.name)+'</div><div class="exg-sub">'+trEquip(e.equip)+' · <span style="color:var('+lvCol+')">'+trLevel(e.level)+'</span></div></div></div>';
+}
+function libRowHTML(e){
+  const nm=e.name.replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  const lvCol=e.level==='Débutant'?'--ok':e.level==='Avancé'?'--bad':'--warn';
+  return '<div class="card" style="margin-bottom:8px;padding:12px"><div class="row"><div class="row" style="gap:10px;flex:1;cursor:pointer" onclick=\'openFiche("'+nm+'")\'>'+exThumb(e.name,48)+'<div><div style="font-weight:700;font-size:14px">'+trExName(e.name)+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+trEquip(e.equip)+' · <span style="color:var('+lvCol+')">'+trLevel(e.level)+'</span></div><div class="muscle-tags">'+(e.primary||[]).map(m=>'<span class="mtag">'+trMuscle(m)+'</span>').join('')+'</div></div></div>'+(libBrowseMode?'<button class="x" onclick=\'openFiche("'+nm+'")\'>›</button>':'<button class="x" style="color:var(--et,var(--e))" onclick=\'pickEx("'+nm+'")\'>＋</button>')+'</div></div>';
+}
+function libSliceHTML(list,from,to){ let h=''; for(let i=from;i<to;i++) h+=(libView==='grid'?libCardHTML(list[i],i-from):libRowHTML(list[i])); return h; }
+function libListHTML(){
+  const list=libFilteredList();
+  libShown=Math.min(LIB_PAGE,list.length);
+  let h='<div class="row" style="margin-bottom:8px"><div class="lab" style="flex:1">'+tp('exercisesCount',list.length)+'</div><div style="display:flex;gap:6px"><span class="mini-ic" style="'+(libView==='grid'?'color:var(--et,var(--e));border-color:var(--e)':'')+'" onclick="libView=\'grid\';renderLib()">▦</span><span class="mini-ic" style="'+(libView==='list'?'color:var(--et,var(--e));border-color:var(--e)':'')+'" onclick="libView=\'list\';renderLib()">☰</span></div></div>';
+  h+='<div id="libCards" class="'+(libView==='grid'?'exg-grid':'')+'">'+libSliceHTML(list,0,libShown)+'</div>';
+  if(list.length>libShown) h+='<div id="libMore" class="lib-more" role="button" onclick="libShowMore()">'+t('libMore')+'</div>';
   return h;
+}
+function libShowMore(){
+  const box=$('#libCards'); if(!box) return;
+  const list=libFilteredList(); if(libShown>=list.length){ const m0=$('#libMore'); if(m0) m0.remove(); return; }
+  const to=Math.min(libShown+LIB_PAGE,list.length);
+  box.insertAdjacentHTML('beforeend',libSliceHTML(list,libShown,to));
+  libShown=to;
+  if(libShown>=list.length){ const m=$('#libMore'); if(m) m.remove(); }
+}
+function libWatchMore(){
+  if(_libObs){ _libObs.disconnect(); _libObs=null; }
+  const sent=$('#libMore'); if(!sent||!window.IntersectionObserver) return;
+  _libObs=new IntersectionObserver(es=>{ if(es.some(x=>x.isIntersecting)) libShowMore(); },{rootMargin:'400px'});
+  _libObs.observe(sent);
 }
 function pickEx(name){
   // V4.15.2 : création d'un programme — on coche plusieurs exercices d'affilée, sans quitter la bibliothèque

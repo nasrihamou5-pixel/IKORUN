@@ -15,7 +15,7 @@
 /* ---------- petit menu de choix (même matière que les autres fenêtres) ---------- */
 function ikPick(title,opts,sub,grid){
   const old=document.getElementById('ikPickOv'); if(old) old.remove();
-  const ov=document.createElement('div'); ov.className='ov on'; ov.id='ikPickOv'; ov.style.zIndex=topZ();
+  const ov=document.createElement('div'); ov.className='ov on ov-dismiss'; ov.id='ikPickOv'; ov.style.zIndex=topZ();
   let h='<div class="ov-card ik-pick"><div class="card-t" style="justify-content:center;margin-bottom:'+(sub?'4px':'12px')+'">'+title+'</div>';
   if(sub) h+='<div class="ik-pick-sub">'+sub+'</div>';
   if(grid) h+='<div class="ik-pick-grid c'+grid+'">'+opts.map((o,i)=>'<div class="ik-tile'+(o.on?' on':'')+'" role="button" data-pk="'+i+'">'+(o.ic?'<span class="ik-tile-ic">'+o.ic+'</span>':'')+'<b>'+o.label+'</b></div>').join('')+'</div>';
