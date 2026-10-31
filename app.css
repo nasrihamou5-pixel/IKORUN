@@ -6303,3 +6303,16 @@ html:not(#_):not(#_):not(#_) #liveBody .set-swipe-row.lv-set{gap:8px}
 .ex-fiche-fig .mus-fig2{width:100%;height:auto;display:block}
 .def-sub{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 4px 8px}
 .def-tags{margin-top:8px}
+
+/* V4.26.3 : choix des filtres en grille de tuiles (gros dessin au-dessus du nom) */
+.ik-pick-grid{display:grid;gap:10px;margin-bottom:12px}
+.ik-pick-grid.c3{grid-template-columns:repeat(3,1fr)}
+.ik-pick-grid.c2{grid-template-columns:repeat(2,1fr)}
+.ik-tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:94px;padding:12px 6px;border-radius:16px;cursor:pointer;text-align:center;
+  background:color-mix(in srgb,var(--snow) 5%,transparent);border:1.5px solid color-mix(in srgb,var(--snow) 10%,transparent);transition:transform .12s,background .15s,border-color .15s}
+.ik-tile:active{transform:scale(.96)}
+.ik-tile b{font-size:12.5px;font-weight:700;line-height:1.15;overflow-wrap:anywhere}
+.ik-tile-ic .fic{display:grid;place-items:center;width:52px;height:52px;border-radius:16px;background:color-mix(in srgb,var(--e) 14%,transparent);color:var(--e)}
+.ik-tile-ic .fic svg{width:34px;height:34px}
+.ik-tile.on{border-color:var(--e);background:color-mix(in srgb,var(--e) 10%,transparent)}
+.ik-tile.on .ik-tile-ic .fic{background:var(--e);color:var(--accent-ink,#fff)}
